@@ -20,27 +20,67 @@
 package org.jetel.util;
 
 import java.io.File;
-
 import org.jetel.exception.*;
+import com.sun.tools.javac.Main;
 
 /**
- * @author Wes Maciorowski
- *
+ * @author      Wes Maciorowski, David Pavlis
+ * @since
+ * @revision    $Revision$
  */
 public class Compile {
 
-	public static boolean compileClass(String className, String classDirectory)
-		throws ClassCompilationException {
+	private final static String compilerClassname = "sun.tools.javac.Main";
+	//private static final constructorSignature = new Class[] { OutputStream.class, String.class };
 
-		String tmpLocation = System.getProperty("user.dir");
-		String[] args = new String[] { "-d", tmpLocation +File.separator+classDirectory, className };
+	/*
+	 *  static{
+	 *  / Find compiler class:
+	 *  try
+	 *  {
+	 *  compilerClass = Class.forName(compilerClassname);
+	 *  compilerConstructor = compilerClass.getConstructor(constructorSignature);
+	 *  / Get the method "compile(String[] arguments)".
+	 *  / The method has the same signature on the classic and modern
+	 *  / compiler, but they have different return types (boolean/int).
+	 *  / Since the return type is ignored here, it doesn't matter.
+	 *  Class[] methodSignature = { String[].class };
+	 *  compilerMethod = compilerClass.getMethod("compile", methodSignature);
+	 *  }
+	 *  catch (ClassNotFoundException cnf)
+	 *  {
+	 *  }
+	 *  catch (Exception e)
+	 *  {
+	 *  }
+	 *  }
+	 */
+	/**
+	 *  This method compiles specified class
+	 *
+	 * @param  className                      The name of the class (without .java)
+	 * @param  classDirectory                 The directory where to find souce code of the class and where
+	 *					  to put resulting compiled class
+	 * @return                                True if success, otherwise ClassCompilationException is raised
+	 * @exception  ClassCompilationException  Exception which indicates that something went wrong !
+	 */
+	public static boolean compileClass(String className, String classDirectory)
+			 throws ClassCompilationException {
+
+		String[] args = new String[]{"-d", classDirectory, classDirectory + className + ".java"
+						, "-Xstdout" , classDirectory + className + ".err" };
+
+		//debug
+		// for(int i=0;i<args.length;System.out.println(args[i++]));
 
 		int status = com.sun.tools.javac.Main.compile(args);
 
-		if (status != 0)
-			throw new ClassCompilationException(className);
+		if (status != 0) {
+			throw new ClassCompilationException(classDirectory+className);
+		}
 
 		return true;
 	}
 
 }
+
