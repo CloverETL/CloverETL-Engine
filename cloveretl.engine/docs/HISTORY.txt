@@ -2,19 +2,37 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+
 REL 1-1-1
 ---------
 New features:
++ added DBF data/database reader. It comes with DBFAnalyze utility
+which reads in DBF table and produces Clover metadata describing the
+record structure. See examples (graphDBFRead) for illustration how it works.
 + created ExtFilter component which somehow resembles "old" Filter
 with several enhancements (supports logical operators AND,OR,NOT,
 braces, etc.)
 + created org.jetel.interpreter package - currently, code
 supporting ExtFilter is there. This should become base
 for Clover's internal transformation language interpreter.
++ for all data fields types, own hashCode() method implemented.
 
 Changes:
-+ refactored code, namely created separate packages
-for data Parsers (org.jetel.data.parser) and Formatters (org.jetel.data.formatter).
++ All components which work on stream of records now contain yield() call (wihin
+their main processing loop. This should improve thread scheduling and consequently
+help improve data flow throughout the graph.
++ introduced checking of name validity for Nodes (all components), Edges,
+Records, Fields. Allowed characters are [A-Za-z0-9_]. This is due to
+planned future enhancements. Up to this version, was no particular constraint.
++ rearranged/refactored packages & classes. All data parsers (for textual data)
+are now int org.jetel.data.parser. All data formatters (for textual data) are in
+org.jetel.data.formatter. Also lookups have been moved to separate package -
+org.jetel.data.lookup.
++ Extended interface definition RecordTransform to support variety of transformation
+components. Use DataRecordTransform (in org.jetel.component package) class as a base
+class for your custom transformations.
+It allows you to omit implementation of many methods from RecordTransform interface
+which are not used/called most of the time but have to be provided.
 + created new package org.jetel.data.lookup - base for consolidating
 lookup tables support (old lookup tables have been put there). New
 interface LookupTable has been created.
@@ -25,6 +43,7 @@ record is delimited by new-line character(s))
 + components FixLenDataReaderNIO,FixLenDataWriterNIO have been enhanced
 to allow specifying of which character(s) is used to separate
 record on line - if required.
+
 
 REL 1-1-0
 ---------
