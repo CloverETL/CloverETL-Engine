@@ -16,6 +16,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.gui.fileformatwizard;
+import javax.swing.JFileChooser;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -34,6 +35,9 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import java.awt.Font;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 public class Screen4 extends JPanel implements  FormInterface
 {
@@ -117,7 +121,24 @@ public class Screen4 extends JPanel implements  FormInterface
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {
-		aFileFormatDataModel.recordMeta = aDataRecordMetadata;
+		//Create a file chooser
+		final JFileChooser fc = new JFileChooser();
+
+		//In response to a button click:
+		int returnVal = fc.showOpenDialog(this);
+		if (returnVal == JFileChooser.APPROVE_OPTION) {
+			File file = fc.getSelectedFile();
+			DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
+			aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane2.getText().getBytes()));
+			if( aDataRecordMetadata != null) {
+				try {
+					aReader.write(aDataRecordMetadata,new FileOutputStream(file));
+					System.exit(0);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 	/**
