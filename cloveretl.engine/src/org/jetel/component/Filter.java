@@ -30,8 +30,8 @@ import org.jetel.util.ComponentXMLAttributes;
 /**
  *  <h3>Filter Component</h3>
  *
- * <!-- All records not rejected by the filter are copied from input port:0 onto all connected output ports (multiplies number of records by number of defined
- * output ports -->
+ * <!-- All records not rejected by the filter are copied from input port:0 onto output port:0 
+ *  rejected records are copied to port:1 (if connected) -->
  * 
  * <table border="1">
  *  <th>Component:</th>
@@ -40,11 +40,13 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records not rejected by the filter are copied from input port:0 onto all connected output ports.</td></tr>
+ * <td>All records accepted by the filter (passing filter condition) are copied from input port:0 onto output port:0. Rejected records
+ * are copied onto output port:1 (if it is connected).</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>At least one connected output port.</td></tr>
+ * <td>[0] - accepted records<br>
+ * [1] - (optional) rejected records </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>It can filter on text, date, integer, numeric
  * fields with comparison <code>[>, <, =, =<, >=, !=]</code><br>
@@ -84,9 +86,10 @@ public class Filter extends Node {
 	public final static String COMPONENT_TYPE="FILTER";
 	private final static int READ_FROM_PORT=0;
 	
-	/* not really needed as record gets broadcasted to all defined output ports */
-	/* but this will change, with accepted nodes sent to port0, rejected ones to port 1*/
+	
+	
 	private final static int WRITE_TO_PORT=0;
+	private final static int REJECTED_PORT=1;
 	
 	private ByteBuffer recordBuffer;
 	private RecordFilter recordFilter;
@@ -103,6 +106,8 @@ public class Filter extends Node {
 	 */
 	public void run() {
 		InputPort inPort=getInputPort(READ_FROM_PORT);
+		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
+		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 
 		record.init();
@@ -113,10 +118,12 @@ public class Filter extends Node {
 				record=inPort.readRecord(record);
 				if (record==null){
 					isData = false;
+					break;
 				}
-				else if (recordFilter.accepts(record))
-				{
-					writeRecordBroadcast(record);
+				if (recordFilter.accepts(record)){
+					outPort.writeRecord(record);
+				}else if (rejectedPort!=null){
+					rejectedPort.writeRecord(record);
 				}
 
 			}catch(IOException ex){
