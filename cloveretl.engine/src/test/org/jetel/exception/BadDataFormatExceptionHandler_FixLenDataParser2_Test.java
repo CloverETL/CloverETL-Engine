@@ -102,10 +102,32 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		BadDataFormatExceptionHandler aHandler =  
 				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
 		aFixLenDataParser2.addBDFHandler(aHandler);
-		//TODO controlled functionality tests
+		
+//		1.0Stone    101   01/11/93
+//	  -15.5  Brook   112  11/03/02
+//	   -0.7Bone Broo    9901/01/03
+		int recCount = 0;
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){}
-		} catch (BadDataFormatException e){	
+			while((record=aFixLenDataParser2.getNext(record))!=null){
+				if(recCount==0) {
+					assertEquals(record.getField(0).toString(),"1.0");
+					assertEquals(record.getField(1).toString(),"Stone");
+					assertEquals(record.getField(2).toString(),"101");
+					assertEquals(record.getField(3).toString(),"01/11/93");
+				} else if(recCount==1) {
+					assertEquals(record.getField(0).toString(),"-15.5");
+					assertEquals(record.getField(1).toString(),"Brook");
+					assertEquals(record.getField(2).toString(),"112");
+					assertEquals(record.getField(3).toString(),"11/03/02");
+				} else if(recCount==2) {
+					assertEquals(record.getField(0).toString(),"-0.7");
+					assertEquals(record.getField(1).toString(),"Bone Broo");
+					assertEquals(record.getField(2).toString(),"99");
+					assertEquals(record.getField(3).toString(),"01/01/03");
+				}
+				recCount++;
+			}
+			assertEquals(3,recCount);		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
 		} catch (Exception ee){
@@ -125,9 +147,31 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
 		aFixLenDataParser2.addBDFHandler(aHandler);
 		
-		//TODO lenient functionality tests
+//		1.0Stone    101   01/11/93
+//	  -15.5  Brook   112  11/03/02
+//	   -0.7Bone Broo    9901/01/03
+ 		int recCount = 0;
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){}
+			while((record=aFixLenDataParser2.getNext(record))!=null){
+				if(recCount==0) {
+					assertEquals(record.getField(0).toString(),"1.0");
+					assertEquals(record.getField(1).toString(),"Stone");
+					assertEquals(record.getField(2).toString(),"101");
+					assertEquals(record.getField(3).toString(),"01/11/93");
+				} else if(recCount==1) {
+					assertEquals(record.getField(0).toString(),"-15.5");
+					assertEquals(record.getField(1).toString(),"Brook");
+					assertEquals(record.getField(2).toString(),"112");
+					assertEquals(record.getField(3).toString(),"11/03/02");
+				} else if(recCount==2) {
+					assertEquals(record.getField(0).toString(),"-0.7");
+					assertEquals(record.getField(1).toString(),"Bone Broo");
+					assertEquals(record.getField(2).toString(),"99");
+					assertEquals(record.getField(3).toString(),"01/01/03");
+				}
+				recCount++;
+			}
+			assertEquals(3,recCount);
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
@@ -150,8 +194,11 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		BadDataFormatExceptionHandler aHandler =  
 				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
 		aParser2.addBDFHandler(aHandler);
+		int recCount = 0;
 		try{
-			while((record=aParser2.getNext(record))!=null){}
+			while((record=aParser2.getNext(record))!=null){
+				recCount++;
+			}
 		} catch (BadDataFormatException e){	
 			failed = true;
 		} catch (Exception ee){
@@ -160,6 +207,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		}
 		if(!failed)
 			fail("Should raise an BadDataFormatException");
+		assertEquals(0,recCount);
 	}
 	
 	/**
@@ -212,6 +260,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 				}
 				recCount++;
 			}
+			assertEquals(3,recCount);
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
