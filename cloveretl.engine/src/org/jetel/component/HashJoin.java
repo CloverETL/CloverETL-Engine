@@ -118,9 +118,7 @@ public class HashJoin extends Node {
 	private RecordTransform transformation = null;
 	private DynamicJavaCode dynamicTransformation = null;
 
-	private DataRecord[] joinedRecords;
-
-	private boolean leftOuterJoin = false;
+	private boolean leftOuterJoin;
 
 	private String[] joinKeys;
 	private String[] slaveOverrideKeys = null;
@@ -129,10 +127,6 @@ public class HashJoin extends Node {
 	private RecordKey slaveKey;
 
 	private Map hashMap;
-
-	// for passing data records into transform function
-	private final static DataRecord[] inRecords = new DataRecord[2];
-
 	private int hashTableInitialCapacity;
 
 
@@ -144,12 +138,9 @@ public class HashJoin extends Node {
 	 * @param  transformClass  Description of the Parameter
 	 */
 	public HashJoin(String id, String[] joinKeys, String transformClass) {
-		super(id);
-		this.joinKeys = joinKeys;
+		this(id,joinKeys,null,false);
 		this.transformClassName = transformClass;
-		this.leftOuterJoin = false;
-		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
-		// no outer join
+		// no outer join by default
 	}
 
 
@@ -179,12 +170,9 @@ public class HashJoin extends Node {
 	 * @param  dynaTrans  Description of the Parameter
 	 */
 	public HashJoin(String id, String[] joinKeys, DynamicJavaCode dynaTrans) {
-		super(id);
-		this.joinKeys = joinKeys;
+	    this(id,joinKeys,null,false);
 		this.dynamicTransformation = dynaTrans;
-		this.leftOuterJoin = false;
-		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
-		// no outer join
+		// no outer join by default
 	}
 
 
@@ -233,14 +221,18 @@ public class HashJoin extends Node {
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		// allocate array for joined records (this array will be passed to reformat function)
-		joinedRecords = new DataRecord[inPorts.size()];
 		if (slaveOverrideKeys == null) {
 			slaveOverrideKeys = joinKeys;
 		}
 		(driverKey = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata())).init();
 		(slaveKey = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata())).init();
 
+		// allocate HashMap
+		hashMap = new HashMap(hashTableInitialCapacity);
+		if (hashMap == null) {
+		    throw new ComponentNotReadyException("Can't allocate HashMap of size: " + hashTableInitialCapacity);
+		}
+		
 		if (transformation == null) {
 			if (transformClassName != null) {
 				// try to load in transformation class & instantiate
@@ -295,29 +287,22 @@ public class HashJoin extends Node {
 		DataRecordMetadata slaveRecordMetadata = inSlavePort.getMetadata();
 		DataRecord driverRecord;
 		DataRecord slaveRecord;
+		DataRecord storeRecord;
 		DataRecord outRecord[]= {new DataRecord(outPort.getMetadata())};
+		DataRecord[] inRecords = new DataRecord[2];
 
-		hashMap = new HashMap(hashTableInitialCapacity);
-		if (hashMap == null) {
-			resultMsg = "Can't allocate HashMap of size: " + hashTableInitialCapacity;
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
-		}
-
+		slaveRecord=new DataRecord(inSlavePort.getMetadata());
+		slaveRecord.init();
+		
 		// first read all records from SLAVE port
-		while (runIt) {
+		while (slaveRecord!=null && runIt) {
 			try {
-				slaveRecord = new DataRecord(slaveRecordMetadata);
-				slaveRecord.init();
-				slaveRecord = inSlavePort.readRecord(slaveRecord);
-				if (slaveRecord != null) {
-					hashMap.put(new HashKey(slaveKey, slaveRecord),
-							slaveRecord);
-				} else {
-					// we have finished reading SLAVE records
-					break;
-				}
-				//yield();
+				if (inSlavePort.readRecord(slaveRecord) != null) {
+				    storeRecord=slaveRecord.duplicate();
+					hashMap.put(new HashKey(slaveKey, storeRecord),
+							storeRecord);
+				} 
+				yield();
 
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -347,7 +332,6 @@ public class HashJoin extends Node {
 		outRecord[0].init();
 		HashKey driverHashKey = new HashKey(driverKey, driverRecord);
 		inRecords[0] = driverRecord;
-		//inRecords[1] - assigned individually for every slave record
 
 		while (runIt && driverRecord != null) {
 			try {
