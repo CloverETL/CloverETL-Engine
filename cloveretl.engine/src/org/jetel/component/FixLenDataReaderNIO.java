@@ -34,6 +34,7 @@ import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.w3c.dom.NamedNodeMap;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Fixed Length Data NIO Reader Component</h3>
@@ -194,53 +195,30 @@ public class FixLenDataReaderNIO extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		FixLenDataReaderNIO aFixLenDataReaderNIO = null;
-		NamedNodeMap attribs = nodeXML.getAttributes();
-		if (attribs != null) {
-			org.w3c.dom.Node charset = attribs.getNamedItem("charset");
-			String id = attribs.getNamedItem("id").getNodeValue();
-			String fileURL = attribs.getNamedItem("fileURL").getNodeValue();
-
-			// commented by Steven -- String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-			// added by steven
-			org.w3c.dom.Node dataPolicyNode = attribs.getNamedItem("DataPolicy");
-			String aDataPolicy = null;
-			if (dataPolicyNode != null)
-				aDataPolicy = dataPolicyNode.getNodeValue();
-            // end of addition
-
-			// commented by Steven -- String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
-
-			// added by Steven
-			org.w3c.dom.Node oneRecordPerLineNode = attribs.getNamedItem("OneRecordPerLine");
-			String aOneRecordPerLine = null;
-			if (oneRecordPerLineNode != null)
-				aOneRecordPerLine = oneRecordPerLineNode.getNodeValue();
-			// end of addition
-
-			if ((id != null) && (fileURL != null)) {
-				if (charset != null) {
-					aFixLenDataReaderNIO = new FixLenDataReaderNIO(id, fileURL, charset.getNodeValue());
-				} else {
-					aFixLenDataReaderNIO = new FixLenDataReaderNIO(id, fileURL);
-				}
-				if (aOneRecordPerLine != null) {
-					if (aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
-						aFixLenDataReaderNIO.setOneRecordPerLinePolicy(true);
-					} else {
-						aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
-					}
-				}
-				// sets the default policy
-				// commented by Steven -- aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
-				// added by Steven
-				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(true);
-				// end of addition
-
-				if (aDataPolicy != null) {
-					aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
-				}
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+		
+		try {
+			if (xattribs.exists("charset")) {
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString("id"),
+						xattribs.getString("fileURL"),
+						xattribs.getString("charset"));
+			} else {
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString("id"),
+						xattribs.getString("fileURL"));
 			}
+			if (xattribs.exists("DataPolicy")) {
+				aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+					xattribs.getString("DataPolicy")));
+			}
+			if (xattribs.exists("OneRecordPerLine")){
+				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine"));
+			}
+			
+		} catch (Exception ex) {
+			System.err.println(ex.getMessage());
+			return null;
 		}
+
 		return aFixLenDataReaderNIO;
 	}
 
