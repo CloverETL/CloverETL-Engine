@@ -23,9 +23,6 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
-import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.graph.InputPort;
-import org.jetel.graph.OutputPort;
 
 /**
  *  A class that represents Edge - data connection between two NODEs
@@ -143,6 +140,9 @@ public abstract class EdgeBase {
 	 *@since    April 2, 2002
 	 */
 	public abstract void close();
+	
+	
+	public abstract boolean hasData();
 }
 /*
  *  end class Edge

@@ -293,6 +293,10 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	public void close() {
 		edge.close();
 	}
+	
+	public boolean hasData(){
+		return edge.hasData();
+	}
 }
 /*
  *  end class EdgeStub

@@ -27,7 +27,7 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.io.FileInputStream;
 import java.io.IOException;
-import org.jetel.data.DataParser;
+import org.jetel.data.parser.Parser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -44,7 +44,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * Preferences - Java - Code Generation - Code and Comments
  */
 
-public class DBFDataParser implements DataParser {
+public class DBFDataParser implements Parser {
 
     private BadDataFormatExceptionHandler handlerBDFE;
 

@@ -21,11 +21,7 @@ package org.jetel.util;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.jetel.data.Defaults;
 import org.jetel.exception.NotFoundException;
-import org.jetel.graph.TransformationGraph;
 import org.w3c.dom.NamedNodeMap;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string

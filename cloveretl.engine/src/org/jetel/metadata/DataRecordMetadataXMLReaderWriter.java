@@ -259,7 +259,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String recordType=null;
 		String itemName;
 		String itemValue;
-		String nullableValue;
 		Properties recordProperties=new Properties();
 		PropertyRefResolver refResolver=new PropertyRefResolver();
 		// get RECORD ---------------------------------------------

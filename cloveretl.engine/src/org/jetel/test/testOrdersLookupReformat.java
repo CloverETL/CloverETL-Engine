@@ -19,19 +19,21 @@
 package org.jetel.test;
 
 import java.io.*;
-import org.jetel.component.RecordTransform;
+import org.jetel.component.DataRecordTransform;
 import org.jetel.metadata.*;
 import org.jetel.data.*;
+import org.jetel.data.lookup.SimpleLookupTable;
+import org.jetel.data.parser.DelimitedDataParserNIO;
 import org.jetel.exception.JetelException;
 
 
-public class testOrdersLookupReformat implements RecordTransform{
+public class testOrdersLookupReformat extends DataRecordTransform{
 		int counter=0;
 		SimpleLookupTable lookup;
 		//String[] keys={"EmployeeID"};
 		RecordKey key;
 	
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
+	public boolean init(DataRecordMetadata sourceMetadata[], DataRecordMetadata targetMetadata[]){
 		DataRecordMetadata lookupMetadata;
 		DataRecordMetadataXMLReaderWriter metadataReader=new DataRecordMetadataXMLReaderWriter();
 		String[] lookupKey={"EmployeeID"};
@@ -52,17 +54,14 @@ public class testOrdersLookupReformat implements RecordTransform{
 		}
 		
 		String sourceDataKey[]={"EmployeeID"};
-		key = new RecordKey(sourceDataKey, sourceMetadata);
+		key = new RecordKey(sourceDataKey, sourceMetadata[0]);
 		key.init();
 		
 		return true;
 		
 	}
 	
-	public boolean init(DataRecordMetadata[] sourcesMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	
+
 	public boolean transform(DataRecord source, DataRecord target){
 		DataRecord lookupRec=lookup.get(key.getKeyString(source));
 		String employeeName=(lookupRec!=null)? GetVal.getString(lookupRec,"LastName")+" "+GetVal.getString(lookupRec,"FirstName")
@@ -83,12 +82,5 @@ public class testOrdersLookupReformat implements RecordTransform{
 		return true;
 	}
 	
-	public boolean transform(DataRecord[] sources, DataRecord target){
-		return true;
-	}
-	
-	public String getMessage(){ 
-		return "";
-	}
 }
 

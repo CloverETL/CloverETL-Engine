@@ -239,6 +239,9 @@ public class BufferedEdge extends EdgeBase {
 		// will be written
 	}
 
+	public boolean hasData(){
+		return (fileRecordBuffer.isEmpty() ? false : true);
+	}
 }
 /*
  *  end class BufferedEdge

@@ -94,6 +94,13 @@ public interface InputPort {
 	 * @since     May 17, 2002
 	 */
 	public int getRecordCounter();
+	
+	/**
+	 * Method which tests whether data is awaiting/ready to be read
+	 * 
+	 * @return True if read operation won't block due to lack of data
+	 */
+	public boolean hasData();
 }
 /*
  *  end interface InputPort

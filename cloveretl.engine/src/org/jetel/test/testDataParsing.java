@@ -20,6 +20,7 @@ package org.jetel.test;
 import java.io.*;
 import org.jetel.metadata.*;
 import org.jetel.data.*;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.JetelException;
 
 public class testDataParsing {

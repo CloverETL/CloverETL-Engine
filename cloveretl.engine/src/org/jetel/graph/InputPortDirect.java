@@ -44,5 +44,12 @@ public interface InputPortDirect {
 	 * @since                            April 2, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
+	
+	/**
+	 * Method which tests whether data is awaiting/ready to be read
+	 * 
+	 * @return True if read operation won't block due to lack of data
+	 */
+	public boolean hasData();
 }
 
