@@ -20,7 +20,6 @@ import javax.swing.JPanel;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 
-import java.awt.Event;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import javax.swing.JTextPane;
@@ -40,6 +39,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.Dimension;
+import java.util.StringTokenizer;
 
 import javax.swing.JFrame;
 import javax.swing.JComboBox;
@@ -50,6 +50,8 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class Screen2d extends JPanel implements  FormInterface
 {
+  protected boolean FirstLineFieldNames = false;
+  
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
   private JLabel jLabel1 = new JLabel();
   private JLabel jLabel2 = new JLabel();
@@ -65,7 +67,7 @@ public class Screen2d extends JPanel implements  FormInterface
   private JCheckBox OtherCheckBox = new JCheckBox();
   private JTextField OtherTextField = new JTextField();
   private JPanel jPanel2 = new JPanel();
-  //private JCheckBox ConseqDelimitCheckBox = new JCheckBox();
+  private JCheckBox FirstLineFieldNamesCheckBox = new JCheckBox();
   private GridBagLayout gridBagLayout3 = new GridBagLayout();
   private JLabel jLabel3 = new JLabel();
   private JComboBox TextQualifierComboBox = new JComboBox();
@@ -131,7 +133,6 @@ public class Screen2d extends JPanel implements  FormInterface
     jTextPane1.setText("Here goes screen help text.");
     jPanel1.setLayout(gridBagLayout2);
     jPanel1.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
-    //DataPreviewPanel.setBackground(new Color(68, 189, 236));
     TabCheckBox.setText("Tab");
 	TabCheckBox.addActionListener(new ActionListener()
 	  {
@@ -186,7 +187,22 @@ public class Screen2d extends JPanel implements  FormInterface
 	  });
 
     jPanel2.setLayout(gridBagLayout3);
-    //ConseqDelimitCheckBox.setText("Treat consecutive delimiters as one.");
+	FirstLineFieldNamesCheckBox.setText("Field names are in the first line.");
+	FirstLineFieldNamesCheckBox.addActionListener(new ActionListener()
+	  {
+		public void actionPerformed(ActionEvent e)
+		{
+			if(FirstLineFieldNamesCheckBox.isSelected()) {
+				FirstLineFieldNames = true;				
+			} else {
+				FirstLineFieldNames = false;				
+			}
+			delimiters_actionPerformed();
+		}
+	  });
+
+	
+	
 	TextQualifierComboBox.addItem("'");
 	TextQualifierComboBox.addItem("\"");
 	TextQualifierComboBox.addItem("{None}");
@@ -210,8 +226,9 @@ public class Screen2d extends JPanel implements  FormInterface
     jPanel1.add(OtherCheckBox, new GridBagConstraints(1, 1, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     jPanel1.add(OtherTextField, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 20, 0));
     this.add(jPanel1, new GridBagConstraints(0, 2, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
-    this.add(scrollPane, new GridBagConstraints(0, 3, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 20));
-    this.add(FillerPanel, new GridBagConstraints(2, 4, 3, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+	this.add(FirstLineFieldNamesCheckBox, new GridBagConstraints(0, 3, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
+    this.add(scrollPane, new GridBagConstraints(0, 4, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 100));
+    this.add(FillerPanel, new GridBagConstraints(2, 5, 3, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
     //jPanel2.add(ConseqDelimitCheckBox, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
     jPanel2.add(jLabel3, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     jPanel2.add(TextQualifierComboBox, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
@@ -224,9 +241,57 @@ public class Screen2d extends JPanel implements  FormInterface
 	 */
 	protected void delimiters_actionPerformed() {
 		generateDelimiters();
-		
+		reloadFile();
 	}
 
+	/**
+	 * 
+	 */
+	private void reloadFile() {
+		StringTokenizer st = new StringTokenizer(aFileFormatDataModel.linesFromFile[0],delimiters);
+		int aCount = st.countTokens();
+		columnNames = new String[aCount];
+		Object[][] data = null;
+		if(FirstLineFieldNames) {
+			data = new Object[aFileFormatDataModel.linesFromFile.length-1 ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						if(j == 0) {
+							columnNames[i] = st.nextToken();
+						} else {
+							data[j-1][i] = st.nextToken();
+						}
+						i++;
+					}
+				}
+			}
+		
+		}else {
+			data = new Object[aFileFormatDataModel.linesFromFile.length ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						data[j][i] = st.nextToken();
+						i++;
+					}
+				}
+			}
+		
+			columnNames = new String[aCount];
+			for(int i=0; i < columnNames.length ; i++ ) {
+				columnNames[i] ="Field "+Integer.toString(i);
+			}
+			
+		}
+
+		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
+		jTable1.setModel(aModel);
+	}
 	/**
 	 * 
 	 */
@@ -265,20 +330,13 @@ public class Screen2d extends JPanel implements  FormInterface
 		
 		delimiters = aFileFormatDataModel.fieldDelimiters;
 		if(delimiters == null) {
-			delimiters = new String();
+			delimiters = "";
 		}
 		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
 		if(aDataRecordMetadata.getNumFields()==0) {
 			// nothing before so lets initialize it with defaults
-			columnNames = new String[1];
-			columnNames[0] = "Field 1";
-
-			data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
-			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
-				if(aFileFormatDataModel.linesFromFile[j] != null ) {
-						data[j][0] = aFileFormatDataModel.linesFromFile[j];
-				}
-			}
+			generateDelimiters();
+			reloadFile();
 		} else {
 			columnNames = new String[aDataRecordMetadata.getNumFields()];
 			for( int i = 0 ; i < columnNames.length ; i++) {
@@ -324,8 +382,6 @@ public class Screen2d extends JPanel implements  FormInterface
 			
 		}
 
-		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
-		jTable1.setModel(aModel);
 	}
 	/**
 	 * Used to expose access to data model.
