@@ -88,8 +88,14 @@ public class Compile {
 	 */
 	public int compile() {
 		int status = 0;
-		File source = new File(srcFile);
-
+		File source;
+		try{
+			source = new File(srcFile);
+		}catch(Exception ex){
+			throw new RuntimeException(ex.getMessage());
+		}
+		
+		
 		if (forceCompile || needsRecompile()) {
 			if (useExecutable) {
 				String[] args = new String[]{compilerExecutable, "-d", destDir, srcFile,
@@ -133,11 +139,14 @@ public class Compile {
 	 * @return    true if souce file needs recompiling(was modified after compilation), otherwise false
 	 */
 	private boolean needsRecompile() {
-		File source = new File(srcFile);
-		File dest = new File(destDir + fileSeparator + source.getName());
 		try {
+			File source = new File(srcFile);
+			int index=source.getName().lastIndexOf('.');
+			String className=source.getName().substring(0,index);
+			// we need to conver blblabl.java to blablab.class to compare files
+			File dest = new File(destDir + fileSeparator + className+".class");
 			if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
-				return false;// is already compiled
+				return false;// is already compiled !!!!
 			} else {
 				return true;
 			}
@@ -148,27 +157,6 @@ public class Compile {
 	}
 
 
-	/*
-	 *  static{
-	 *  / Find compiler class:
-	 *  try
-	 *  {
-	 *  compilerClass = Class.forName(compilerClassname);
-	 *  compilerConstructor = compilerClass.getConstructor(constructorSignature);
-	 *  / Get the method "compile(String[] arguments)".
-	 *  / The method has the same signature on the classic and modern
-	 *  / compiler, but they have different return types (boolean/int).
-	 *  / Since the return type is ignored here, it doesn't matter.
-	 *  Class[] methodSignature = { String[].class };
-	 *  compilerMethod = compilerClass.getMethod("compile", methodSignature);
-	 *  }
-	 *  catch (ClassNotFoundException cnf)
-	 *  {
-	 *  }
-	 *  catch (Exception e)
-	 *  {
-	 *  }
-	 *  }
-	 */
+	
 }
 
