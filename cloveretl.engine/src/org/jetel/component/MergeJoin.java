@@ -85,7 +85,7 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming joined data</td></tr>
  *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false</td></tr>
  *    </table>
- *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="SORTED_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *
  * @author      dpavlis
  * @since       April 4, 2002
@@ -418,6 +418,7 @@ public class MergeJoin extends Node {
 				driverRecords[CURRENT] = driverRecords[TEMPORARY];
 				driverRecords[TEMPORARY] = tmpRec;
 			}
+			yield();
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
