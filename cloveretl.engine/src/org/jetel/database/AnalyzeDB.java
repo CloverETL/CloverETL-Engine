@@ -64,7 +64,7 @@ import java.util.Properties;
  */
 public class AnalyzeDB {
 
-	private final static int BUFFER_SIZE = 255;
+	private final static int BUFFER_SIZE = 2048;
 	private final static String VERSION = "1.1";
 	private final static String LAST_UPDATED = "2004/05/17";  
 	private final static String DEFAULT_DELIMITER = ",";
