@@ -81,8 +81,8 @@ public class DBConnection {
 	 */
 	public DBConnection(String dbDriver, String dbURL, String user, String password) {
 		this.config = new Properties();
-		config.setProperty("user", user);
-		config.setProperty("password", password);
+		if (user!=null) config.setProperty("user", user);
+		if (password!=null) config.setProperty("password", password);
 		this.dbDriverName = dbDriver;
 		this.dbURL = dbURL;
 	}
@@ -127,7 +127,7 @@ public class DBConnection {
 		try {
 			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
 		} catch (ClassNotFoundException ex) {
-			// let's try to load in any addition .jar library (if specified)
+			// let's try to load in any additional .jar library (if specified)
 			String jdbcDriverLibrary = config
 					.getProperty(JDBC_DRIVER_LIBRARY_NAME);
 			if (jdbcDriverLibrary != null) {
