@@ -132,11 +132,11 @@ public class FixLenDataParser2 implements DataParser {
 		// populate all data fields
 		try {
 			while (fieldCounter < metadata.getNumFields()) {
-				try {
+				//try {
 				populateField(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
-				} catch (BadDataFormatException ex) {
-					handlerBDFE.populateFieldFailure(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
-				}
+				//} catch (BadDataFormatException ex) {
+				//	handlerBDFE.populateFieldFailure(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
+				//}
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
@@ -180,10 +180,12 @@ public class FixLenDataParser2 implements DataParser {
 	 */
 	public DataRecord getNext(DataRecord record) throws IOException {
 		record = parseNext(record);
-		while(handlerBDFE.isThrowException()) {
-			handlerBDFE.handleException(record);
-			record.init();
-			record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				record.init();
+				record = parseNext(record);
+			}
 		}
 		return record;
 	}
@@ -200,7 +202,11 @@ public class FixLenDataParser2 implements DataParser {
 			record.getField(fieldNum).fromString( data );
 
 		} catch (BadDataFormatException bdfe) {
+			if(handlerBDFE != null ) {  //use handler only if configured
 			handlerBDFE.populateFieldFailure(record,fieldNum,data);
+			} else {
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+			}
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}

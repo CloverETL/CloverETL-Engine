@@ -22,6 +22,9 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
+
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.metadata.*;
 
 /**
@@ -40,6 +43,7 @@ import org.jetel.metadata.*;
  * @revision    $Revision$
  */
 public class DelimitedDataParserNIO implements DataParser {
+	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
 	private CharBuffer charBuffer;
 	private CharBuffer fieldStringBuffer;
@@ -125,7 +129,15 @@ public class DelimitedDataParserNIO implements DataParser {
 	 *@since                   May 2, 2002
 	 */
 	public DataRecord getNext(DataRecord record) throws IOException {
-		return parseNext(record);
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				record.init();
+				record = parseNext(record);
+			}
+		}
+		return record;
 	}
 
 
@@ -258,6 +270,8 @@ public class DelimitedDataParserNIO implements DataParser {
 			delimiterPosition = 0;
 			try {
 				while ((character = readChar()) != -1) {
+					if(character=='\r')  //fix for new line being \r\n
+						continue;
 					totalCharCounter++;
 					if ((result = is_delimiter((char) character, fieldCounter, delimiterPosition)) == 1) {
 						/*
@@ -319,6 +333,12 @@ public class DelimitedDataParserNIO implements DataParser {
 	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
 		try {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum,handleQuotedStrings));
+		} catch (BadDataFormatException bdfe) {
+			if(handlerBDFE != null ) {  //use handler only if configured
+				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+			} else {
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+			}
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}
@@ -379,6 +399,14 @@ public class DelimitedDataParserNIO implements DataParser {
 			return 0;
 			// not a match
 		}
+	}
+
+
+	/**
+	 * @param handler
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		this.handlerBDFE = handler;
 	}
 
 }
