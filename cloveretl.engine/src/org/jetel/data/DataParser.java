@@ -20,7 +20,7 @@
 
 package org.jetel.data;
 
-import java.io.*;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -39,7 +39,7 @@ public interface DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   March 27, 2002
 	 */
-	public DataRecord getNext() throws IOException;
+	public DataRecord getNext() throws JetelException;
 
 
 	// Operations
@@ -50,7 +50,7 @@ public interface DataParser {
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 27, 2002
 	 */
-	public void open(InputStream in, DataRecordMetadata _metadata);
+	public void open(Object inputDataSource, DataRecordMetadata _metadata);
 
 
 	/**
