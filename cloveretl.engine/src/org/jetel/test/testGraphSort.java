@@ -74,6 +74,7 @@ public class testGraphSort {
 	
 	graph.addNode(nodeRead);
 	graph.addNode(nodeSort);
+	graph.addPhase(new Phase(1));
 	graph.addNode(nodeWrite);
 	
 	
@@ -88,6 +89,11 @@ public class testGraphSort {
 		System.err.println("Graph initialization failed !");
 		return;
 	}
+	
+	// output graph layout
+	//graph.dumpGraphConfiguration();
+	
+	
 	if (!graph.run()){ // start all Nodes (each node is one thread)
 		System.out.println("Failed starting all nodes!");
 		return;		
