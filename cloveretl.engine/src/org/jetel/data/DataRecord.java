@@ -21,10 +21,10 @@ package org.jetel.data;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.jetel.data.util.ClassBuilder;
 import org.jetel.exception.ClassCompilationException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ClassBuilder;
 import org.jetel.util.CloverProperties;
 import org.jetel.util.Compile;
 
