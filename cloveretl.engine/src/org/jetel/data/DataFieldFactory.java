@@ -31,7 +31,8 @@ import org.jetel.metadata.DataFieldMetadata;
 public class DataFieldFactory {
 
 	/**
-	 *  Description of the Method
+	 *  Factory which creates data field based on specified field type and metadata.
+	 * You should use this method whenever you want to create a data field.
 	 *
 	 * @param  fieldType      One of the recognized Data Field Types
 	 * @param  fieldMetadata  metadata reference
@@ -55,6 +56,18 @@ public class DataFieldFactory {
 		}
 	}
 
+	
+	/**
+	 * Simplified version of previous. Gets field type from metadata.
+	 * 
+	 * @param fieldMetadata Metadata describing field's characteristics (eg. data-type, size)
+	 * @return
+	 */
+	public final static DataField createDataField(DataFieldMetadata fieldMetadata){
+		return createDataField(fieldMetadata.getType(),fieldMetadata);
+	}
+	
+	
 	/**
 	 * @param c
 	 * @param fieldMetadata
