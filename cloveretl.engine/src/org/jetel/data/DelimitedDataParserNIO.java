@@ -208,13 +208,16 @@ public class DelimitedDataParserNIO implements DataParser {
 	 *@return                   error message
 	 *@since                    September 19, 2002
 	 */
-	private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
+	private String getErrorMessage(String exceptionMessage,CharSequence value, int recNo, int fieldNo) {
 		StringBuffer message = new StringBuffer();
 		message.append(exceptionMessage);
 		message.append(" when parsing record #");
 		message.append(recordCounter);
 		message.append(" field ");
 		message.append(metadata.getField(fieldNo).getName());
+		if (value!=null){
+			message.append(" value \"").append(value).append("\"");
+		}
 		return message.toString();
 	}
 
@@ -314,7 +317,7 @@ public class DelimitedDataParserNIO implements DataParser {
 					throw new RuntimeException("Incomplete record");
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldCounter));
+				throw new RuntimeException(getErrorMessage(ex.getMessage(),null, recordCounter, fieldCounter));
 			}
 
 			// did we have EOF situation ?
@@ -353,10 +356,10 @@ public class DelimitedDataParserNIO implements DataParser {
 			if(handlerBDFE != null ) {  //use handler only if configured
 				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
 			} else {
-				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
+			throw new RuntimeException(getErrorMessage(ex.getMessage(),null,recordCounter, fieldNum));
 		}
 	}
 
