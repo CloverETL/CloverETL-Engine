@@ -1,0 +1,217 @@
+/*
+    Clover.ETL - filtering conditions grammar.
+    (c) 2004 David.Pavlis <david_pavlis@hotmail.com>
+    Released under LGPL license.
+*/
+
+options {
+   MULTI=true;
+   STATIC=false;
+   NODE_USES_PARSER=true;
+   LOOKAHEAD=2;
+   NODE_PREFIX="CLVF";
+   NODE_PACKAGE="org.jetel.interpreter";
+}
+
+
+/* *** Specifcation of the parser class *** */
+
+PARSER_BEGIN(FilterExpParser)
+
+package org.jetel.interpreter;
+
+import org.jetel.data.DataRecord;
+
+public class FilterExpParser {
+
+       DataRecord dataRecord;
+       Stack stack;
+
+       public FilterExpParser(DataRecord record,java.io.InputStream stream){
+              this(stream);
+              dataRecord=record;
+              stack=new Stack();
+              
+      }
+      
+      public Stack getStack(){
+         return stack;
+      }
+      
+      public DataRecord getDataRecord(){
+             return dataRecord;
+      }
+}
+
+PARSER_END(FilterExpParser)
+
+/* *** Token specification *** */
+
+/* Skip whitespace */
+SKIP : { " " | "\t" | "\n" | "\r" | "\n\r" }
+
+/* Logical operators */
+TOKEN [IGNORE_CASE]: {
+  < OR: "or" | "||" >
+| < AND: "and" | "&&" >
+| < NOT: "not" | "!" >
+}
+
+/* Literals */
+TOKEN : {
+ <INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? | <HEX_LITERAL> (["l","L"])? | <OCTAL_LITERAL> (["l","L"])?>
+|  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+|  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
+|  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
+|  <FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
+|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
+|  <STRING_LITERAL: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+}
+
+/* Array of literals */
+TOKEN: {
+ <STRING_ARRAY: "[" <STRING_LITERAL> ( "," <STRING_LITERAL>)* "]">
+|<INTEGER_ARRAY: "[" <INTEGER_LITERAL> ( "," <INTEGER_LITERAL>)* "]">
+|<FLOATING_POINT_ARRAY: "[" <FLOATING_POINT_LITERAL> ( "," <FLOATING_POINT_LITERAL>)* "]">
+}
+
+/* Operators */
+TOKEN: {
+  < EQUAL: "==" >
+| < NON_EQUAL: "!=" | "<>" >
+| < LESS_THAN: "<" >
+| < LESS_THAN_EQUAL: "<=" >
+| < GREATER_THAN: ">" >
+| < GREATER_THAN_EQUAL: ">=" >
+| < REGEX_EQUAL: "~=" >
+}
+
+TOKEN: {
+<#OPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
+| <GREATER_THAN_EQUAL> | <REGEX_EQUAL> >
+}
+
+/* Field Identifiers */
+TOKEN: {
+  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])+ >
+}
+
+/* Parenthesis */
+TOKEN: {
+  <OPEN_PAR: "("> |
+  <CLOSE_PAR: ")">
+}
+
+/* *** Context-free grammar (EBNF) *** */
+
+/* Each nonterminal is written like a kind of method, containing all its
+   productions. JavaC will generate a parsing method for each nonterminal.
+
+   Note: In the start nonterminal, the action "return jjtThis;" instructs
+   JavaCC to return the resulting parse tree from the generated parsing
+   method. Therefore the start nonterminal has a result type (SimpleNode).
+   All other nonterminals have no result type (void).
+*/
+
+/* The start nonterminal and its productions. */
+
+SimpleNode Start() : {}        // Start -> Exp
+{
+  LExpression() <EOF>
+  { return jjtThis; }
+}
+
+/* Other nonterminals and their productions */
+
+void LExpression() #void : {}        // Exp -> XFactor [XFactor]
+{
+   LPrimaryExpression()
+   ( <OR> LPrimaryExpression() #Or(2) )*
+}
+
+void LPrimaryExpression() #void : {}
+{
+   Condition()
+   ( <AND> Condition() #And(2) ) *
+}
+
+
+void Condition() #void : {}
+{
+     <NOT> PrimaryCondition() #Negation
+     | PrimaryCondition()
+}
+
+void PrimaryCondition() #void : {}
+{
+  IDExp() <EQUAL> Literal()  { jjtThis.cmpType=EQUAL; } #Comparison(2)
+  |IDExp() <NON_EQUAL> Literal() { jjtThis.cmpType=NON_EQUAL; } #Comparison(2)
+  |IDExp() <LESS_THAN> Literal() { jjtThis.cmpType=LESS_THAN; } #Comparison(2)
+  |IDExp() <GREATER_THAN> Literal() { jjtThis.cmpType=GREATER_THAN; } #Comparison(2)
+  |IDExp() <LESS_THAN_EQUAL> Literal() { jjtThis.cmpType=LESS_THAN_EQUAL; } #Comparison(2)
+  |IDExp() <GREATER_THAN_EQUAL> Literal() { jjtThis.cmpType=GREATER_THAN_EQUAL; } #Comparison(2)
+  |IDExp() <REGEX_EQUAL> RegexLiteral() { jjtThis.cmpType=REGEX_EQUAL; } #Comparison(2)
+  | <OPEN_PAR> LExpression() <CLOSE_PAR>
+}
+
+
+void Literal() #void : {}
+{
+     SLitExp()
+     |FPLitExp()
+     |IntLitExp()
+     |IDExp()
+}
+
+void Negation() : {}
+{
+  <NOT>
+}
+
+void FPLitExp() #void :            // FPLitExp -> FPLIT
+{
+	Token t;
+}
+{
+  t=<FLOATING_POINT_LITERAL>
+  	{ jjtThis.setVal(t.image);} #Literal
+  |  <FLOATING_POINT_ARRAY> #FloatArray
+}
+
+void IntLitExp() #void :            // FPLitExp -> FPLIT
+{
+	Token t;
+}
+{
+  t=<INTEGER_LITERAL>
+  	{ jjtThis.setVal(t.image);}   #Literal
+  |  <INTEGER_ARRAY> #IntegerArray
+}
+
+void SLitExp() #void :            // FPLitExp -> FPLIT
+{
+  Token t;
+}
+{
+  t=<STRING_LITERAL>
+  	{ jjtThis.setVal(t.image.substring(1,t.image.length()-1)); }   #Literal
+  | <STRING_ARRAY> #StringArray
+}
+
+void IDExp() #void :               // IDExp -> ID
+{
+	Token t;
+}
+{
+  t=<FIELD_ID> { jjtThis.setFieldName(t.image); } #JetelFieldLiteral
+}
+
+void RegexLiteral() #void :
+{
+	Token t;
+}
+{
+  t=<STRING_LITERAL> { jjtThis.setRegex(t.image); } #RegexLiteral
+}
+
