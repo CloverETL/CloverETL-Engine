@@ -100,6 +100,11 @@ public class FixLenDataParser2 implements DataParser {
 		CoderResult result;
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
+		
+		if (_metadata.getRecType()!=DataRecordMetadata.FIXEDLEN_RECORD){
+			throw new RuntimeException("Invalid record format - is not FIXLEN !");
+		}
+		
 		reader = ((FileInputStream) in).getChannel();
 		recordLength=0;
 		// create array of field sizes & initialize them
@@ -256,6 +261,24 @@ public class FixLenDataParser2 implements DataParser {
 	}
 
 	/**
+	 *  Assembles error message when exception occures during parsing
+	 *
+	 * @param  exceptionMessage  message from exception getMessage() call
+	 * @param  recNo             recordNumber
+	 * @param  fieldNo           fieldNumber
+	 * @return                   error message
+	 * @since                    September 19, 2002
+	 */
+	private String getErrorMessage(String exceptionMessage,CharSequence  value, int recNo, int fieldNo) {
+		StringBuffer message = new StringBuffer();
+		message.append(exceptionMessage);
+		message.append(" when parsing record #").append(recordCounter);
+		message.append(" field ").append(metadata.getField(fieldNo).getName());
+		message.append(" value \"").append(value).append("\"");
+		return message.toString();
+	}
+	
+	/**
 	 *  Returs next data record parsed from input stream or NULL if no more data
 	 *  available The specified DataRecord's fields are altered to contain new
 	 *  values.
@@ -291,7 +314,7 @@ public class FixLenDataParser2 implements DataParser {
 			if(handlerBDFE != null ) {  //use handler only if configured
 				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
 			} else {
-				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
