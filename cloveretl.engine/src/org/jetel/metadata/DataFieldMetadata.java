@@ -1,27 +1,29 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 // FILE: c:/projects/jetel/org/jetel/metadata/DataFieldMetadata.java
 
 package org.jetel.metadata;
 
 import java.util.Properties;
+import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.StringUtils;
 
 /**
  *  A class that represents metadata describing one particular data field.<br>
@@ -83,7 +85,7 @@ public class DataFieldMetadata {
 	private String codeStr;
 
 	private Properties fieldProperties;
-	
+
 	// Attributes
 
 	/**  Description of the Field */
@@ -113,6 +115,7 @@ public class DataFieldMetadata {
 	/**  Description of the Field */
 	public final static char UNKNOWN_FIELD = ' ';
 
+
 	/**
 	 *  Constructor for delimited type of field
 	 *
@@ -122,10 +125,13 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, char _type, String _delimiter) {
-		this.name = new String(_name);
-		this.delimiter = new String(_delimiter);
+		if (!StringUtils.isValidObjectName(_name)) {
+			throw new InvalidGraphObjectNameException(_name, "FIELD");
+		}
+		this.name = _name;
+		this.delimiter = _delimiter;
 		this.fieldType = _type;
-		this.fieldProperties=null;
+		this.fieldProperties = null;
 	}
 
 
@@ -137,10 +143,13 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, String _delimiter) {
-		this.name = new String(_name);
-		this.delimiter = new String(_delimiter);
+		if (!StringUtils.isValidObjectName(_name)) {
+			throw new InvalidGraphObjectNameException(_name, "FIELD");
+		}
+		this.name = _name;
+		this.delimiter = _delimiter;
 		this.fieldType = STRING_FIELD;
-		this.fieldProperties=null;
+		this.fieldProperties = null;
 	}
 
 
@@ -152,10 +161,13 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, short size) {
-		this.name = new String(_name);
+		if (!StringUtils.isValidObjectName(_name)) {
+			throw new InvalidGraphObjectNameException(_name, "FIELD");
+		}
+		this.name = _name;
 		this.size = size;
 		this.fieldType = STRING_FIELD;
-		this.fieldProperties=null;
+		this.fieldProperties = null;
 	}
 
 
@@ -168,10 +180,13 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, char _type, short size) {
-		this.name = new String(_name);
+		if (!StringUtils.isValidObjectName(_name)) {
+			throw new InvalidGraphObjectNameException(_name, "FIELD");
+		}
+		this.name = _name;
 		this.size = size;
 		this.fieldType = _type;
-		this.fieldProperties=null;
+		this.fieldProperties = null;
 	}
 
 
@@ -182,7 +197,10 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public void setName(String _name) {
-		this.name = new String(_name);
+		if (!StringUtils.isValidObjectName(_name)) {
+			throw new InvalidGraphObjectNameException(_name, "FIELD");
+		}
+		this.name = _name;
 	}
 
 
@@ -193,7 +211,7 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public void setDelimiter(String _delimiter) {
-		this.delimiter = new String(_delimiter);
+		this.delimiter = _delimiter;
 	}
 
 
@@ -204,7 +222,7 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	public void setFormatStr(String _format) {
-		this.formatStr = new String(_format);
+		this.formatStr = _format;
 	}
 
 
@@ -246,11 +264,11 @@ public class DataFieldMetadata {
 	/**
 	 *  Sets the Type attribute of the DataFieldMetadata object
 	 *
-	 * @param  c  The new type value
-	 * @since     October 30, 2002
+	 * @param  type  The new type value
+	 * @since        October 30, 2002
 	 */
-	public void setType(char c) {
-		fieldType = c;
+	public void setType(char type) {
+		fieldType = type;
 	}
 
 
@@ -268,10 +286,10 @@ public class DataFieldMetadata {
 	/**
 	 *  Sets the maximum field size (used only when dealing with fixed-size type of record)
 	 *
-	 * @param  s
+	 * @param  _size  The new size value
 	 */
-	public void setSize(short s) {
-		size = s;
+	public void setSize(short _size) {
+		size = _size;
 	}
 
 
@@ -348,20 +366,29 @@ public class DataFieldMetadata {
 		return codeStr;
 	}
 
+
+	/**
+	 *  Gets the fieldProperties attribute of the DataFieldMetadata object
+	 *
+	 * @return    The fieldProperties value
+	 */
 	public Properties getFieldProperties() {
 		return fieldProperties;
 	}
 
 
 	/**
-	 *  Sets the recordProperties attribute of the DataRecordMetadata object
+	 *  Sets the fieldProperties attribute of the DataRecordMetadata object.
+	 *  Field properties allows defining additional parameters for individual fields.
+	 *  These parameters (key-value pairs) are NOT normally handled by CloverETL, but
+	 *  can be used in user's code or Components - thus allow for greater flexibility.
 	 *
 	 * @param  properties  The new recordProperties value
 	 */
 	public void setFieldProperties(Properties properties) {
 		fieldProperties = properties;
 	}
-	
+
 }
 /*
  *  end class DataFieldMetadata

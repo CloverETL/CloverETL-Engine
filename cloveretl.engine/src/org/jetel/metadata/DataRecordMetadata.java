@@ -26,6 +26,9 @@ import java.util.List;
 import java.util.Map;
 
 import java.util.Properties;
+import org.jetel.util.StringUtils;
+import org.jetel.exception.InvalidGraphObjectNameException;
+
 
 /**
  *  A class that represents metadata describing DataRecord
@@ -69,7 +72,10 @@ public class DataRecordMetadata {
 	 * @since         May 2, 2002
 	 */
 	public DataRecordMetadata(String _name, char _type) {
-		this.name = new String(_name);
+		if (!StringUtils.isValidObjectName(_name)){
+			throw new InvalidGraphObjectNameException(_name,"RECORD");
+		}
+		this.name = _name;
 		this.recType = _type;
 		this.fields = new ArrayList();
 		fieldNames = new HashMap();
@@ -85,7 +91,10 @@ public class DataRecordMetadata {
 	 * @since         May 2, 2002
 	 */
 	public DataRecordMetadata(String _name) {
-		this.name = new String(_name);
+		if (!StringUtils.isValidObjectName(_name)){
+			throw new InvalidGraphObjectNameException(_name,"RECORD");
+		}
+		this.name = _name;
 		this.fields = new ArrayList();
 		fieldNames = new HashMap();
 		fieldTypes = new HashMap();
@@ -100,6 +109,9 @@ public class DataRecordMetadata {
 	 * @since
 	 */
 	public void setName(String _name) {
+		if (!StringUtils.isValidObjectName(_name)){
+			throw new InvalidGraphObjectNameException(_name,"RECORD");
+		}
 		this.name = _name;
 	}
 
@@ -260,12 +272,10 @@ public class DataRecordMetadata {
 	private void updateFieldTypesMap() {
 		DataFieldMetadata field;
 		// fieldNames.clear(); - not necessary as it is called only if Map is empty
-		try {
-			for (int i = 0; i < fields.size(); i++) {
-				field = (DataFieldMetadata) fields.get(i);
-				fieldTypes.put(new Integer(i), String.valueOf(field.getType()));
-			}
-		} catch (IndexOutOfBoundsException e) {
+	
+		for (int i = 0; i < fields.size(); i++) {
+			field = (DataFieldMetadata) fields.get(i);
+			fieldTypes.put(new Integer(i), String.valueOf(field.getType()));
 		}
 	}
 
@@ -275,12 +285,9 @@ public class DataRecordMetadata {
 	private void updateFieldNamesMap() {
 		DataFieldMetadata field;
 		// fieldNames.clear(); - not necessary as it is called only if Map is empty
-		try {
-			for (int i = 0; i < fields.size(); i++) {
-				field = (DataFieldMetadata) fields.get(i);
-				fieldNames.put(field.getName(), new Integer(i));
-			}
-		} catch (IndexOutOfBoundsException e) {
+		for (int i = 0; i < fields.size(); i++) {
+			field = (DataFieldMetadata) fields.get(i);
+			fieldNames.put(field.getName(), new Integer(i));
 		}
 	}
 
@@ -291,8 +298,8 @@ public class DataRecordMetadata {
 	 * @param  c  The new recType value
 	 * @since     May 3, 2002
 	 */
-	public void setRecType(char c) {
-		recType = c;
+	public void setRecType(char type) {
+		recType = type;
 	}
 
 
@@ -319,6 +326,9 @@ public class DataRecordMetadata {
 
 	/**
 	 *  Sets the recordProperties attribute of the DataRecordMetadata object
+	 *  Record properties allows defining additional parameters for record.
+	 *  These parameters (key-value pairs) are NOT normally handled by CloverETL, but
+	 *  can be used in user's code or specialised Components. 
 	 *
 	 * @param  properties  The new recordProperties value
 	 */
@@ -350,6 +360,7 @@ public class DataRecordMetadata {
 			fields.remove(_fieldNum);
 			fieldNames.clear();
 		} catch (IndexOutOfBoundsException e) {
+			// do nothing - may-be singnalize error
 		}
 	}
 

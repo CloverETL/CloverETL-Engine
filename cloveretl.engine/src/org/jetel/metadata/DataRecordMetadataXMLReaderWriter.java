@@ -23,6 +23,7 @@ package org.jetel.metadata;
 import java.io.*;
 import java.text.MessageFormat;
 import java.util.Properties;
+import java.util.Enumeration;
 import java.util.logging.Logger;
 import javax.xml.parsers.*;
 import org.jetel.util.PropertyRefResolver;
@@ -164,6 +165,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 */
 	public void write(DataRecordMetadata record, OutputStream outStream) {
 		PrintStream out;
+		Properties prop;
 		try{
 			out = new PrintStream(outStream,false,DEFAULT_CHARACTER_ENCODING);
 		}catch(UnsupportedEncodingException ex){
@@ -176,11 +178,21 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
 		// OUTPUT RECORD
-		MessageFormat recordForm = new MessageFormat("<Record name=\"{0}\" type=\"{1}\">");
+		MessageFormat recordForm = new MessageFormat("<Record name=\"{0}\" type=\"{1}\"");
 		Object[] recordArgs = {record.getName(),
 				record.getRecType() == DataRecordMetadata.DELIMITED_RECORD ? "delimited" : "fixed"};
 
-		out.println(recordForm.format(recordArgs));
+		out.print(recordForm.format(recordArgs));
+		prop=record.getRecordProperties();
+		if (prop!=null){
+			Enumeration enumeration=prop.propertyNames();
+			while(enumeration.hasMoreElements()){
+				String key=(String)enumeration.nextElement();
+				out.print(" "+key+"=\""+prop.get(key)+"\"");
+			}
+		}
+		// final closing bracket
+		out.println(">");
 
 		// OUTPUT FIELDS
 		MessageFormat fieldForm = new MessageFormat("\t<Field name=\"{0}\" type=\"{1}\" ");
@@ -212,6 +224,17 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					out.print("default=\""+field.getDefaultValue()+"\" ");
 				}
 				out.print("nullable=\""+(new Boolean(field.isNullable())).toString()+"\" ");
+				
+				// output field properties - if anything defined
+				prop=field.getFieldProperties();
+				if (prop!=null){
+					Enumeration enumeration=prop.propertyNames();
+					while(enumeration.hasMoreElements()){
+						String key=(String)enumeration.nextElement();
+						out.print(" "+key+"=\""+prop.get(key)+"\"");
+					}
+				}
+
 				if (field.getCodeStr()!=null){
 					out.println(">");
 					out.println("\t\t<Code>");
