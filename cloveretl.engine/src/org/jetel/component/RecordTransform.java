@@ -33,56 +33,60 @@ import org.jetel.metadata.DataRecordMetadata;
 public interface RecordTransform {
 
 	/**
-	 *  Initializes reformat class/function
-	 *
-	 *@param  sourceMetadata  Metadata describing source data record
-	 *@param  targetMetadata  Metadata describing target data record
-	 *@return                 True if OK, otherwise False
-	 *@since                  April 18, 2002
-	 */
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata);
-
-
-	/**
-	 *  Initializes reformat class/function<br>
+	 *  Initializes reformat class/function. This method is called only once at the
+	 * beginning of transformation process. Any object allocation/initialization should
+	 * happen here.
 	 *  This method is mostly for joining data
 	 *
 	 *@param  sourcesMetadata  Metadata describing source data records [array]
 	 *@param  targetMetadata   Metadata describing target data record
 	 *@return                  True if OK, otherwise False
 	 */
-	public boolean init(DataRecordMetadata[] sourcesMetadata, DataRecordMetadata targetMetadata);
+	public boolean init(DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata);
 
 
 	/**
-	 *  Perform reformat of one source record to target
-	 *
-	 *@param  source  Source DataRecord
-	 *@param  target  Target DataRecord
-	 *@return         True if OK, otherwise False
-	 *@since          April 18, 2002
-	 */
-	public boolean transform(DataRecord source, DataRecord target);
-
-
-	/**
-	 *  Perform reformat of source records to one target record<br>
-	 *  This method is mostly for joining data
+	 *  Performs reformat of source records to target records.
+	 *  This method is called as one step in transforming flow of
+	 * records.<br>
+	 * For example in simple reformat situation, for one input record, one
+	 * output record has to be generated. Thus for each incoming record, this
+	 * method is called by Reformat component.
 	 *
 	 *@param  sources  Source DataRecords
 	 *@param  target   Target DataRecord
 	 *@return          True if OK, otherwise False
 	 */
-	public boolean transform(DataRecord[] sources, DataRecord target);
+	public boolean transform(DataRecord[] sources, DataRecord[] target);
 
 
 	/**
-	 *  Returns description of error if one of the methods failed
+	 *  Returns description of error if one of the methods failed. Can be
+	 * also used to get any message produced by transformation.
 	 *
 	 *@return    Error message
 	 *@since     April 18, 2002
 	 */
 	public String getMessage();
 
+	
+	
+	/**
+	 * Method which can be used for signalling into transformation
+	 * that something outside happened.<br>
+	 * For example in aggregation component key changed.
+	 * 
+	 */
+	public void signal();
+	
+	
+	/**
+	 * Method which can be used for getting intermediate results out
+	 * of transformation.
+	 * 
+	 * @return
+	 */
+	public Object getSemiResult();
+	
 }
 

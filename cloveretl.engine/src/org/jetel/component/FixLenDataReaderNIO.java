@@ -30,7 +30,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.FixLenDataParser2;
+import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -75,7 +75,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * @author      dpavlis, maciorowski
  * @since       April 4, 2002
  * @revision    $Revision$
- * @see         org.jetel.data.FixLenDataParser, org.jetel.data.FixLenDataParser2
+ * @see         org.jetel.data.parser.FixLenDataParser, org.jetel.data.FixLenDataParser2
  */
 
 public class FixLenDataReaderNIO extends Node {

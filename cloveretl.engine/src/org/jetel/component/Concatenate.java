@@ -100,7 +100,6 @@ public class Concatenate extends Node {
 		Collection inputPorts = getInPorts();// keep it locally
 
 		iterator = inputPorts.iterator();
-		int counter = 0;
 
 		// till we have some port
 		while (iterator.hasNext() && runIt) {
@@ -115,6 +114,7 @@ public class Concatenate extends Node {
 					} else {
 						break;
 					}
+					yield();
 				} catch (IOException ex) {
 					resultMsg = ex.getMessage();
 					resultCode = Node.RESULT_ERROR;

@@ -23,7 +23,7 @@ import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.SQLDataParser;
+import org.jetel.data.parser.SQLDataParser;
 import org.jetel.database.*;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;

@@ -102,6 +102,7 @@ public class SimpleCopy extends Node {
 				if (isData) {
 					writeRecordBroadcastDirect(recordBuffer);
 				}
+				
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
@@ -112,7 +113,7 @@ public class SimpleCopy extends Node {
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
-
+			yield();
 		}
 		broadcastEOF();
 		if (runIt) {
