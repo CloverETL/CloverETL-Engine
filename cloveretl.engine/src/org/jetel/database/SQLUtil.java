@@ -21,6 +21,7 @@ import java.sql.Types;
 import java.sql.SQLException;
 import java.sql.ResultSet;
 import java.sql.DatabaseMetaData;
+import java.sql.ParameterMetaData;
 import java.util.List;
 import java.util.LinkedList;
 import org.jetel.metadata.DataFieldMetadata;
@@ -49,11 +50,18 @@ public class SQLUtil {
 		List fieldTypes = new LinkedList();
 		while (rs.next()) {
 			// get DATA TYPE - fifth column in result set from Database metadata
-			fieldTypes.add(new Short(rs.getShort(5)));
+			fieldTypes.add(new Integer(rs.getInt(5)));
 		}
 		return fieldTypes;
 	}
 
+	public static List getFieldTypes(ParameterMetaData metadata) throws SQLException {
+		List fieldTypes = new LinkedList();
+		for(int i=1;i<=metadata.getParameterCount();i++){
+			fieldTypes.add(new Integer(metadata.getParameterType(i)));
+		}
+		return fieldTypes;
+	}
 
 	/**
 	 *  Converts SQL data type into Jetel data type

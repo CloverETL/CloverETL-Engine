@@ -172,7 +172,7 @@ public abstract class CopySQLData {
 		ListIterator iterator = fieldTypes.listIterator();
 
 		while (iterator.hasNext()) {
-			switch (((Short) iterator.next()).shortValue()) {
+			switch (((Integer) iterator.next()).shortValue()) {
 							case Types.CHAR:
 							case Types.LONGVARCHAR:
 							case Types.VARCHAR:
