@@ -17,17 +17,17 @@ public class CLVFAnd extends SimpleNode {
 
      if (!((Boolean)(stack.pop())).booleanValue())
      {
-        stack.push(new Boolean(false));
+        stack.push(Stack.FALSE_VAL);
         return;
      }
 
      jjtGetChild(1).interpret();
 
      if (!((Boolean)(stack.pop())).booleanValue()){
-     	stack.push(new Boolean(false));
+     	stack.push(Stack.FALSE_VAL);
         return;
      }else{
-     	stack.push(new Boolean(true));
+     	stack.push(Stack.TRUE_VAL);
         return;
      }
   }

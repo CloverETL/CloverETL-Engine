@@ -30,6 +30,10 @@ public class Stack {
 	Object[] stack;
 	java.util.Map symtab;
 	int top;
+	// these constants are used by interpreter when true or false
+	// result has to be indicated
+	public static final Boolean TRUE_VAL=new Boolean(true);
+	public static final Boolean FALSE_VAL=new Boolean(false);
 	
 	public Stack(){
 		stack= new Object[16];
