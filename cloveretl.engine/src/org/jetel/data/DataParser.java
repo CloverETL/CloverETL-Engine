@@ -20,8 +20,6 @@
 
 package org.jetel.data;
 
-import java.io.IOException;
-
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;

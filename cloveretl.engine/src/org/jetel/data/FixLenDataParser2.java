@@ -18,11 +18,11 @@
 // FILE: c:/projects/jetel/org/jetel/data/FixLenDataParser2.java
 
 package org.jetel.data;
-import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.Channels;
+import java.nio.CharBuffer;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
@@ -34,11 +34,12 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- *  Parsing fix length data. Supports fields up to <tt><b>FIELD_BUFFER_LENGTH</b></tt> long.
+ *  Parsing fix length data. It should be used in cases where new lines 
+ *  separate records.  Supports fields up to <tt><b>FIELD_BUFFER_LENGTH</b></tt> long.
  *  Size of each individual field must be specified - through metadata definition.
  *
  *  This class is using the new IO (NIO) features introduced in Java 1.4 - directly mapped
- *  byte buffers & character encoders/decoders
+ *  byte buffers & character encoders/decoders.  
  *
  * @author     David Pavlis,Wes Maciorowski     
  * @since    August 21, 2002
@@ -47,14 +48,17 @@ import org.jetel.metadata.DataRecordMetadata;
  * @revision    $Revision$
  */
 public class FixLenDataParser2 implements DataParser {
+	private boolean oneRecordPerLinePolicy;
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
-	private ByteBuffer fieldBuffer;
+//	private ByteBuffer fieldBuffer;
+	private CharBuffer charBuffer;
+	private CharBuffer fieldStringBuffer;
 	private DataRecordMetadata metadata;
 	private int recordCounter;
 	private int fieldLengths[];
 	private int recordLength;
-	private BufferedReader reader = null;
+	private ReadableByteChannel reader = null;
 	private CharsetDecoder decoder;
 	/**
 	 *Constructor for the FixLenDataParser object
@@ -62,8 +66,11 @@ public class FixLenDataParser2 implements DataParser {
 	 * @since    August 21, 2002
 	 */
 	public FixLenDataParser2() {
+		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charBuffer.flip(); // initially empty 
+		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+//		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 	}
 	/**
@@ -73,9 +80,12 @@ public class FixLenDataParser2 implements DataParser {
 	 * @since    August 21, 2002
 	 */
 	public FixLenDataParser2(String charsetDecoder) {
+		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charBuffer.flip(); // initially empty 
+		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		//fieldStringBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+//		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(charsetDecoder).newDecoder();
 	}
 	/**
@@ -89,8 +99,9 @@ public class FixLenDataParser2 implements DataParser {
 		CoderResult result;
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
-        reader = 
-			new BufferedReader(Channels.newReader( ((FileInputStream) in).getChannel(), Defaults.DataParser.DEFAULT_CHARSET_DECODER ) );
+		reader = ((FileInputStream) in).getChannel();
+//        reader = 
+//			new BufferedReader(Channels.newReader( ((FileInputStream) in).getChannel(), Defaults.DataParser.DEFAULT_CHARSET_DECODER ) );
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
@@ -116,7 +127,7 @@ public class FixLenDataParser2 implements DataParser {
 		int posCounter = 0;
 		String line = null;
 		try {
-			line = reader.readLine();
+			line = readRecord();
 			while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
 				line = reader.readLine();
 			}
@@ -150,6 +161,31 @@ public class FixLenDataParser2 implements DataParser {
 		return record;
 	}
 
+
+	/**
+	 * @return
+	 */
+	private String readRecord() {
+		int size;
+		byte[] tmp;
+		// check if we have enough data in buffer to satisfy reading
+		if (charBuffer.remaining() < recordLength) {
+			charBuffer.compact();
+			size = reader.read(dataBuffer);
+			System.out.println( "Read: " + size);
+			dataBuffer.flip();
+
+			// if no more data or incomplete record
+			if ((size == -1) || (dataBuffer.remaining() < recordLength)) {
+				return null;
+			}
+		}
+		dataBuffer.get(tmp);
+		fieldBuffer.flip();
+		fieldBuffer.limit(length);
+		fieldBuffer.put(tmp);
+		return null;
+	}
 
 	/**
 	 *  Assembles error message when exception occures during parsing
@@ -246,11 +282,20 @@ public class FixLenDataParser2 implements DataParser {
 
 
 
-	/**
+	/** 
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
 	 * @param handler
 	 */
 	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
 		this.handlerBDFE = handler;
+	}
+
+	/**
+	 *  Sets OneRecordPerLinePolicy.
+	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 */
+	public void setOneRecordPerLinePolicy(boolean b) {
+		oneRecordPerLinePolicy = b;
 	}
 
 }

@@ -19,7 +19,6 @@ package org.jetel.component;
 
 import java.io.*;
 import java.sql.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.database.*;
 import org.jetel.data.DataRecord;

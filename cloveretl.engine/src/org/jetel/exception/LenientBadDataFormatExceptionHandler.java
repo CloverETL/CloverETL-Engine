@@ -20,9 +20,9 @@
 package org.jetel.exception;
 
 import org.jetel.data.DataRecord;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Lenient handler sets incorrect data to default values.
  * @author maciorowski
  *
  */

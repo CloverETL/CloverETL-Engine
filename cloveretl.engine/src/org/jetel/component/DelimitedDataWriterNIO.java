@@ -17,7 +17,6 @@
 */
 
 package org.jetel.component;
-import java.util.*;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
@@ -161,9 +160,9 @@ public class DelimitedDataWriterNIO extends Node {
 		catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 		}
-		catch (IOException ex){
-			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
-		}
+//		catch (IOException ex){
+//			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
+//		}
 	}
 	
 	/**
@@ -187,21 +186,42 @@ public class DelimitedDataWriterNIO extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		NamedNodeMap attribs=nodeXML.getAttributes();
+		DelimitedDataWriterNIO aDelimitedDataWriterNIO = null;
 		
 		if (attribs!=null){
 			String id=attribs.getNamedItem("id").getNodeValue();
 			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
 			String append=attribs.getNamedItem("append").getNodeValue();
 			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
+			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
 			if ((id!=null) && (fileURL!=null)){
 				if (charset!=null){
-					return new DelimitedDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
+					aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
 				}else{
-					return new DelimitedDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
+					aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
 				}
+				
+				if(aOneRecordPerLine != null  ) {
+					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
+						aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(true);
+					}else {
+						aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
+					}
+				}
+				// sets the default policy
+				aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
 			}
 		}
-		return null;
+		return aDelimitedDataWriterNIO;
+	}
+
+	/**
+	 * True allows only one record per line.  False puts all records 
+	 * on one line.
+	 * @param b
+	 */
+	private void setOneRecordPerLinePolicy(boolean b) {
+		formatter.setOneRecordPerLinePolicy(b);
 	}
 	
 }

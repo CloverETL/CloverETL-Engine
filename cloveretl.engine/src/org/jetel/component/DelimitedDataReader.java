@@ -17,12 +17,13 @@
 */
 
 package org.jetel.component;
-import java.util.*;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DelimitedDataParser;
+import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 
 
@@ -52,6 +53,7 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  </tr>
  *  </table>  
  *
@@ -162,15 +164,29 @@ public class DelimitedDataReader extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		NamedNodeMap attribs=nodeXML.getAttributes();
+		DelimitedDataReader aDelimitedDataReader = null;
 		
 		if (attribs!=null){
 			String id=attribs.getNamedItem("id").getNodeValue();
 			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
+			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
 			if ((id!=null) && (fileURL!=null)){
-				return new DelimitedDataReader(id,fileURL);
+				aDelimitedDataReader = new DelimitedDataReader(id,fileURL);
+
+				if(aDataPolicy != null) {
+					aDelimitedDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
+				}
 			}
 		}
-		return null;
+		return aDelimitedDataReader;
+	}
+	
+	/**
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
+	 * @param handler
+	 */
+	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		parser.addBDFHandler(handler);
 	}
 }
 
