@@ -19,9 +19,11 @@ package org.jetel.component;
 
 import java.io.*;
 import java.sql.*;
+import java.util.List;
 import org.jetel.graph.*;
 import org.jetel.database.*;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
 
@@ -57,6 +59,8 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td>
+ *  <tr><td><b>dbFields<br><i>optional</i></b></td><td>delimited list of target table's fields to be populated</td>
  *  </tr>
  *  </table>  
  *
@@ -73,6 +77,8 @@ public class DBOutputTable extends Node {
 	private String dbConnectionName;
 	private String dbTableName;
 	private PreparedStatement preparedStatement;
+	private int[] skipList;
+	private String[] dbFields;
 
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
@@ -91,6 +97,8 @@ public class DBOutputTable extends Node {
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.dbTableName = dbTableName;
+		skipList=null;
+		dbFields=null;
 
 	}
 
@@ -105,7 +113,14 @@ public class DBOutputTable extends Node {
 		return COMPONENT_TYPE;
 	}
 
-
+	public void setDBFields(String[] dbFields){
+		this.dbFields=dbFields;
+	}
+	
+	public void setSkipList(int[] skipList){
+		this.skipList=skipList;
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -148,20 +163,40 @@ public class DBOutputTable extends Node {
 		int i;
 		int result;
 		int recCount=0;
+		List dbFieldTypes;
+		String sql;
 
 		inRecord.init();
 		try {
-			String sql=SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(),dbTableName);
+			// do we have specified list of fields to populate ? 
+			if (dbFields!=null){
+				sql=SQLUtil.assembleInsertSQLStatement(dbTableName,dbFields);
+				dbFieldTypes=SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName,dbFields);
+			}else{
+				// populate all fields
+				sql=SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(),dbTableName);
+				dbFieldTypes=SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
+			}
 			preparedStatement = dbConnection.prepareStatement(sql);
-			dbConnection.getConnection().setAutoCommit(false);
+			
+			// this does not work for some drivers
+			try{
+				dbConnection.getConnection().setAutoCommit(false);
+			}catch(SQLException ex){
+			}
+			
 			/* this somehow doesn't work (crashes system) at least when tested with Interbase
 			ParameterMetaData metaData=preparedStatement.getParameterMetaData();
 			if (metaData==null){
 				System.err.println("metada data is null!");
 			}
 			*/
-			transMap=CopySQLData.jetel2sqlTransMap(SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName), 
-							inRecord);
+			// do we have skip list defined ? (which fields skip - no to populate)
+			if (skipList!=null){
+				transMap=CopySQLData.jetel2sqlTransMap(dbFieldTypes,inRecord,skipList);
+			}else{
+				transMap=CopySQLData.jetel2sqlTransMap(dbFieldTypes,inRecord);
+			}
 
 			while (inRecord!=null && runIt) {
 				inRecord=readRecord(READ_FROM_PORT, inRecord);
@@ -229,11 +264,27 @@ public class DBOutputTable extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
-
+		DBOutputTable outputTable;
+		
 		try{
-			return new DBOutputTable(xattribs.getString("id"),
+			outputTable= new DBOutputTable(xattribs.getString("id"),
 				xattribs.getString("dbConnection"),
 				xattribs.getString("dbTable"));
+				
+			if (xattribs.exists("dbFields")){
+				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
+			// if specified, use skip list which indicates which fields to skip
+			if (xattribs.exists("skipFields")){
+				String[] strList=xattribs.getString("skipFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				int[] skipList=new int[strList.length];
+				for(int i=0;i<skipList.length;i++){
+					skipList[i]=Integer.parseInt(strList[i]);
+				}
+				outputTable.setSkipList(skipList);
+			}
+			return outputTable;
+				
 		}catch(Exception ex){
 			System.err.println(ex.getMessage());
 			return null;
