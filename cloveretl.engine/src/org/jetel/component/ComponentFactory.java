@@ -55,6 +55,7 @@ public class ComponentFactory {
 		registerComponent(Dedup.COMPONENT_TYPE,"org.jetel.component.Dedup");
 		registerComponent(FixLenDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataReaderNIO");
 		registerComponent(Merge.COMPONENT_TYPE,"org.jetel.component.Merge");
+		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash");
 	}
 	
 	
