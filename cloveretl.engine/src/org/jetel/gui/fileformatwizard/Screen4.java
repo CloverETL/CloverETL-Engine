@@ -59,24 +59,6 @@ public class Screen4 extends JPanel implements  FormInterface
 
   }
 
-  public Screen4()
-  {
-	try
-	{
-	  jbInit();
-	}
-	catch(Exception e)
-	{
-	  e.printStackTrace();
-	}
-
-  }
-
-  public static void main(String[] args)
-  {
-    Screen4 screen4 = new Screen4();
-  }
-
   private void jbInit() throws Exception
   {
     this.setLayout(gridBagLayout1);

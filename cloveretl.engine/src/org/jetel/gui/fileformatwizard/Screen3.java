@@ -18,7 +18,6 @@
 package org.jetel.gui.fileformatwizard;
 import javax.swing.JPanel;
 import java.awt.GridBagLayout;
-import java.awt.Dimension;
 import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -31,10 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
-import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.JCheckBox;
@@ -42,9 +38,6 @@ import javax.swing.JComboBox;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.table.TableColumn;
-import javax.swing.table.TableColumnModel;
 
 import org.jetel.gui.component.FormInterface;
 import org.jetel.metadata.DataFieldMetadata;
@@ -93,56 +86,6 @@ public class Screen3 extends JPanel implements FormInterface {
       e.printStackTrace();
     }
 
-  }
-  public Screen3()
-  {
-	try
-	{
-	String[] petStrings = { "Bird", "Cat", "Dog", "Rabbit", "Pig" };
-	jComboBox1 = new JComboBox(petStrings);
-	Object[][] data = {
-		{"Mary", "Campione", 
-		 "Snowboarding", new Integer(5), new Boolean(false)},
-		{"Alison", "Huml", 
-		 "Rowing", new Integer(3), new Boolean(true)},
-		{"Kathy", "Walrath",
-		 "Chasing toddlers", new Integer(2), new Boolean(false)},
-		{"Mark", "Andrews",
-		 "Speed reading", new Integer(20), new Boolean(true)},
-		{"Angela", "Lih",
-		 "Teaching high school", new Integer(4), new Boolean(false)}
-	};
-	
-	columnNames = new String[5];
-	columnNames[0]="First Name";
-	columnNames[1]="Last Name";
-	columnNames[2]="Sport";
-	columnNames[3]="# of Years";
-	columnNames[4]="Vegetarian";
-
-
-	  jTable1 = new JTable(data, columnNames);
-
-	  jbInit();
-	}
-	catch(Exception e)
-	{
-	  e.printStackTrace();
-	}
-
-  }
-
-  public static void main(String[] args)
-  {
-    Screen3 screen3 = new Screen3();
-        JFrame f = new JFrame("RulerPanel");
-        f.addWindowListener(new WindowAdapter() {
-            public void windowClosing(WindowEvent e) {System.exit(0);}
-        });
-        f.getContentPane().add("Center", screen3);
-        f.setSize(new Dimension(400,20));
-        f.pack();
-        f.show();
   }
 
   private void jbInit() throws Exception
@@ -290,11 +233,9 @@ private void jTextField1_focusLost(FocusEvent e)
 	if(selectedCol!= -1) { //reset values only if something is selected
 		aDataRecordMetadata.getField(selectedCol).setName(jTextField1.getText());
 		columnNames[selectedCol]=jTextField1.getText();
-		TableColumnModel aModel= jTable1.getColumnModel();
-		TableColumn aTableColumn = aModel.getColumn(selectedCol);
-		aTableColumn.setHeaderValue(jTextField1.getText());
-		jTable1.setColumnModel(aModel);
-		jTable1.tableChanged( new TableModelEvent(jTable1.getModel(),TableModelEvent.HEADER_ROW,TableModelEvent.HEADER_ROW,selectedCol));
+		jTable1.getColumnModel().getColumn(selectedCol).setHeaderValue(jTextField1.getText());
+//		Force the header to resize and repaint itself
+		jTable1.getTableHeader().resizeAndRepaint();
 	}
 }
 	/* (non-Javadoc)

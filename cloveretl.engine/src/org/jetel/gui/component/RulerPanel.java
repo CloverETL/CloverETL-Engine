@@ -61,7 +61,7 @@ public class RulerPanel extends JPanel {
     private String[] linesFromFile = null;
 
 	private HashMap pointList = null;
-	private int step = 7;
+	private int charWidth = 7;    //will set it in paint()
 	private int draggedMark = 0;
 	private boolean isDragged = false;
 
@@ -133,19 +133,19 @@ public class RulerPanel extends JPanel {
         int gridHeight = d.height ;
 
 		fontMetrics = g2.getFontMetrics();
-		int charWidth = fontMetrics.charWidth('0');
-		panelMargin = charWidth;
-		step = charWidth;
+		int chararacterWidth = fontMetrics.charWidth('0');
+		panelMargin = chararacterWidth;
+		charWidth = chararacterWidth;
 
         int charHeight = fontMetrics.getHeight();
-        int lineLenght = (linesFromFile == null) ? 120*step : linesFromFile[0].length()*step;
+        int lineLenght = (linesFromFile == null) ? 120*charWidth : linesFromFile[0].length()*charWidth;
         // int mainLineStartX = panelMargin; 
         int mainLineStartX = panelMargin;
         int textPosY = charHeight + panelMargin;
         int mainLineStartY = textPosY + 1 + bigMark;
 
         // draw Line2D.Double
-        g2.draw(new Line2D.Double(mainLineStartX, mainLineStartY, mainLineStartX+lineLenght * step , mainLineStartY));
+        g2.draw(new Line2D.Double(mainLineStartX, mainLineStartY, mainLineStartX+lineLenght * charWidth , mainLineStartY));
         int curX = mainLineStartX;
         String curString = null;
         for( int i = 0 ; i <= lineLenght ; i++ ) 
@@ -163,12 +163,12 @@ public class RulerPanel extends JPanel {
           } else {
             g2.draw(new Line2D.Double(curX, mainLineStartY - smallMark, curX , mainLineStartY));
           }
-          curX = curX + step;
+          curX = curX + charWidth;
         }
 		textPosY = mainLineStartY + charHeight + 2;
 		// draw white rectangle as a background for test
 		g2.setColor(Color.white);
-		g2.fill(new Rectangle(mainLineStartX , textPosY - charHeight, lineLenght * step , 5* charHeight+4));
+		g2.fill(new Rectangle(mainLineStartX , textPosY - charHeight, lineLenght * charWidth , 5* charHeight+4));
 		// display preview lines from file - linesFromFile
 		g2.setColor(Color.black);
 		if(linesFromFile != null ) {
@@ -185,13 +185,13 @@ public class RulerPanel extends JPanel {
 		int tmpX = 0;
 		Iterator anIterator = pointList.values().iterator();
 		while(anIterator.hasNext()) {
-			tmpX = ((Integer) anIterator.next()).intValue()*step;
+			tmpX = ((Integer) anIterator.next()).intValue()*charWidth;
 			g.drawLine(tmpX,0,tmpX,gridHeight);
 		  }  
 
 		  if(isDragged) {
 			g.setColor(Color.red);
-			g.drawLine(draggedMark*step,0,draggedMark*step,gridHeight);
+			g.drawLine(draggedMark*charWidth,0,draggedMark*charWidth,gridHeight);
 		  }
     }
 
@@ -206,7 +206,7 @@ public class RulerPanel extends JPanel {
     this.setFont(aFont);
 	this.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-	int lineLenght = (linesFromFile == null) ? 400 : linesFromFile[0].length()*step;
+	int lineLenght = (linesFromFile == null) ? 400 : linesFromFile[0].length()*charWidth;
 	lineLenght = lineLenght + 2*panelMargin;
 	this.setPreferredSize(new Dimension(lineLenght, 100));
 	this.setMinimumSize(new Dimension(lineLenght, 100));
@@ -258,7 +258,7 @@ public class RulerPanel extends JPanel {
    */
   private int findClosestAvailableMarkPosition(int x) 
   {
-	return Math.round(((float) (x)) / step);
+	return Math.round(((float) (x)) / charWidth);
   }
   
   /**
@@ -270,7 +270,7 @@ public class RulerPanel extends JPanel {
   private void this_mousePressed(MouseEvent e)
   {
 	int tmpX = findClosestAvailableMarkPosition(e.getX());
-	if(tmpX*step< panelMargin) return; //field needs to be at least 1char
+	if(tmpX*charWidth< panelMargin) return; //field needs to be at least 1char
 	isDragged = true;
 	draggedMark = tmpX;
 	repaint();
@@ -289,7 +289,7 @@ public class RulerPanel extends JPanel {
 	}
   	
 	int tmpX = findClosestAvailableMarkPosition(e.getX());
-	if(tmpX*step < panelMargin) return; //field needs to be at least 1char
+	if(tmpX*charWidth < panelMargin) return; //field needs to be at least 1char
 
 	  Integer tmpInt = new Integer(tmpX);
 	  if(pointList.containsKey(tmpInt)) {
@@ -308,7 +308,7 @@ public class RulerPanel extends JPanel {
    */
 public void setLinesFromFile(String[] linesFromFile) {
 	this.linesFromFile = linesFromFile;
-	int lineLenght = (linesFromFile == null) ? 120*step : linesFromFile[0].length()*step;
+	int lineLenght = (linesFromFile == null) ? 120*charWidth : linesFromFile[0].length()*charWidth;
 	lineLenght = lineLenght + 4*panelMargin;
 	this.setPreferredSize(new Dimension(lineLenght, 100));
 	System.out.println(lineLenght);
