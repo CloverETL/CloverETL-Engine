@@ -25,6 +25,7 @@ import org.jetel.data.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 
 /**
@@ -163,20 +164,21 @@ public class DelimitedDataReader extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		DelimitedDataReader aDelimitedDataReader = null;
 		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
-			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-			if ((id!=null) && (fileURL!=null)){
-				aDelimitedDataReader = new DelimitedDataReader(id,fileURL);
-
-				if(aDataPolicy != null) {
-					aDelimitedDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
-				}
+		try{
+			aDelimitedDataReader = new DelimitedDataReader(xattribs.getString("id"),
+									xattribs.getString("fileURL"));
+			if (xattribs.exists("DataPolicy")){
+				aDelimitedDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+								xattribs.getString("DataPolicy")));
 			}
+						
+									
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
 		return aDelimitedDataReader;
 	}

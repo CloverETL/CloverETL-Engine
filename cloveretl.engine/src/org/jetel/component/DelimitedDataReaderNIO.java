@@ -26,6 +26,7 @@ import org.jetel.data.DelimitedDataParserNIO;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Delimited Data Reader Component</h3>
@@ -174,25 +175,27 @@ public class DelimitedDataReaderNIO extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		DelimitedDataReaderNIO aDelimitedDataReaderNIO = null;
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		if (attribs!=null){
-			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
-			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-
-			if ((id!=null) && (fileURL!=null)){
-				if (charset!=null){
-					aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(id,fileURL,charset.getNodeValue());
-				}else{
-					aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(id,fileURL);
-				}
-				if(aDataPolicy != null) {
-					aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
-				}
-				
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		
+		try{
+			if (xattribs.exists("charset")){
+				aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(xattribs.getString("id"),
+										xattribs.getString("fileURL"),
+										xattribs.getString("charset"));
+			}else{
+				aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(xattribs.getString("id"),
+										xattribs.getString("fileURL"));
 			}
+			if (xattribs.exists("DataPolicy")){
+				aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+									xattribs.getString("fileURL")));
+			}
+				
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
+		
 		return aDelimitedDataReaderNIO;
 	}
 	
