@@ -167,7 +167,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 
 		// OUTPUT RECORD
-		MessageFormat recordForm = new MessageFormat("<Record name=\"{0}\" type=\"{1}\"/>");
+		MessageFormat recordForm = new MessageFormat("<Record name=\"{0}\" type=\"{1}\">");
 		Object[] recordArgs = {record.getName(),
 				record.getRecType() == DataRecordMetadata.DELIMITED_RECORD ? "delimited" : "fixed"};
 
