@@ -54,6 +54,7 @@ public class DateDataField extends DataField {
 	private Date value;
 	private DateFormat dateFormat;
 	private ParsePosition parsePosition;
+	private Locale locale;
 	
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
@@ -69,10 +70,22 @@ public class DateDataField extends DataField {
 	 */
 	public DateDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
+		// handle locale
+		if (_metadata.getLocaleStr()!=null){
+			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+			if (localeLC.length>1){
+				locale=new Locale(localeLC[0],localeLC[1]);
+			}else{
+				locale=new Locale(localeLC[0]);
+			}
+		}else{
+			locale=Locale.getDefault();
+		}
+		// handle format string
 		String formatString;
 		formatString = _metadata.getFormatStr();
 		if ((formatString != null) && (formatString.length() != 0)) {
-			dateFormat = new SimpleDateFormat(formatString);
+			dateFormat = new SimpleDateFormat(formatString,locale);
 			dateFormat.setLenient(false);
 		} else {
 			dateFormat = null;
@@ -89,17 +102,7 @@ public class DateDataField extends DataField {
 	 * @since             April 23, 2002
 	 */
 	public DateDataField(DataFieldMetadata _metadata, Date _value) {
-		super(_metadata);
-		String formatString;
-		formatString = _metadata.getFormatStr();
-		if ((formatString != null) && (formatString.length() != 0)) {
-			dateFormat = new SimpleDateFormat(formatString);
-			dateFormat.setLenient(false);
-		} else {
-			dateFormat = null;
-		}
-		parsePosition = new ParsePosition(0);
-
+		this(_metadata);
 		setValue(_value);
 	}
 
@@ -259,7 +262,7 @@ public class DateDataField extends DataField {
 			super.setNull(false);
 		} catch (ParseException e) {
 			super.setNull(true);
-			throw new BadDataFormatException("not Date", _valueStr);
+			throw new BadDataFormatException("not a Date", _valueStr);
 		}
 
 	}
