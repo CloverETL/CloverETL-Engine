@@ -56,6 +56,7 @@ public class ComponentFactory {
 		registerComponent(FixLenDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataReaderNIO");
 		registerComponent(Merge.COMPONENT_TYPE,"org.jetel.component.Merge");
 		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash");
+		registerComponent(SortedJoin.COMPONENT_TYPE,"org.jetel.component.SortedJoin");
 	}
 	
 	
