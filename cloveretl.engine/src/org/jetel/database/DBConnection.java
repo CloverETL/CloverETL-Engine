@@ -197,5 +197,9 @@ public class DBConnection {
 		}
 		
 	}
+	
+	public String toString(){
+		return dbURL;
+	}
 }
 
