@@ -181,7 +181,7 @@ public class DelimitedDataParserNIO implements Parser {
 		}
 		decoder.reset();
 		// reset CharsetDecoder
-		recordCounter = 0;
+		recordCounter = 1;
 		// reset record counter
 
 	}
@@ -358,7 +358,7 @@ public class DelimitedDataParserNIO implements Parser {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum,handleQuotedStrings));
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum), record,fieldNum,data.toString());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}

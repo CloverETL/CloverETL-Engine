@@ -195,7 +195,7 @@ public class DelimitedDataParserNIOMap implements Parser {
 		}
 		decoder.reset();
 		// reset CharsetDecoder
-		recordCounter = 0;
+		recordCounter = 1;
 		// reset record counter
 	}
 
@@ -372,7 +372,7 @@ public class DelimitedDataParserNIOMap implements Parser {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum, handleQuotedStrings));
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum,data.toString());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}

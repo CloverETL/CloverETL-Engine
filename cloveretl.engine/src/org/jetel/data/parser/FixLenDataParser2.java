@@ -121,7 +121,7 @@ public class FixLenDataParser2 implements Parser {
 			recordLength += fieldLengths[i];
 		}
 		decoder.reset();
-		recordCounter = 0;
+		recordCounter = 1;
 		if (oneRecordPerLinePolicy){
 			recordLength+=lineSeparatorSize;
 		}
@@ -320,7 +320,7 @@ public class FixLenDataParser2 implements Parser {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum, false));
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum),record,fieldNum,data.toString());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}
