@@ -2,6 +2,13 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-3a
+----------
+Changes:
++ BufferedEdge has been rolled back to version 1.1.1 since the version
+from rel 1.1.3 turned out to be buggy.
++ DirectEdge has been reworked and tuned. It should be also better tested now.
+
 REL 1-1-3
 ---------
 New features:
