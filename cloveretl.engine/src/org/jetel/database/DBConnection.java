@@ -1,0 +1,186 @@
+/*
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jetel.database;
+import java.io.*;
+import java.sql.*;
+import java.util.Properties;
+import org.w3c.dom.NamedNodeMap;
+
+/**
+ *  CloverETL's class for connecting to databases.<br>
+ *  It practically wraps around JDBC's Connection class and adds some useful
+ *  methods.
+ *
+ *@author     dpavlis
+ *@created    January 15, 2003
+ */
+public class DBConnection {
+
+	String dbDriverName;
+	String dbURL;
+	String user;
+	String password;
+	Driver dbDriver;
+	Connection dbConnection;
+
+
+	/**
+	 *  Constructor for the DBConnection object
+	 *
+	 *@param  dbDriver  Description of the Parameter
+	 *@param  dbURL     Description of the Parameter
+	 *@param  user      Description of the Parameter
+	 *@param  password  Description of the Parameter
+	 */
+	public DBConnection(String dbDriver, String dbURL, String user, String password) {
+		this.dbDriverName = dbDriver;
+		this.dbURL = dbURL;
+		this.user = user;
+		this.password = password;
+	}
+
+
+	/**
+	 *  Constructor for the DBConnection object
+	 *
+	 *@param  configFilename  properties filename containing definition of driver, dbURL, username, password
+	 */
+	public DBConnection(String configFilename) {
+		Properties config = new Properties();
+
+		try {
+			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
+			config.load(stream);
+			stream.close();
+			this.dbDriverName = config.getProperty("dbDriver");
+			this.dbURL = config.getProperty("dbURL");
+			this.user = config.getProperty("user");
+			this.password = config.getProperty("password");
+
+		} catch (Exception ex) {
+			throw new RuntimeException(ex);
+		}
+	}
+
+
+	/**
+	 *  Description of the Method
+	 */
+	public void connect() {
+		Properties property = new Properties();
+		if (user != null) {
+			property.setProperty("user", user);
+		}
+		if (password != null) {
+			property.setProperty("password", password);
+		}
+
+		try {
+			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
+			dbConnection = dbDriver.connect(dbURL, property);
+		} catch (SQLException ex) {
+			throw new RuntimeException("Can't connect to DB :" + ex.getMessage());
+		} catch (Exception ex) {
+			throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+		}
+		if (dbConnection == null) {
+			throw new RuntimeException("Not suitable driver for specified DB URL : " + dbDriver + " ; " + dbURL);
+		}
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@exception  SQLException  Description of the Exception
+	 */
+	public void close() throws SQLException {
+		dbConnection.close();
+	}
+
+
+	/**
+	 *  Gets the connection attribute of the DBConnection object
+	 *
+	 *@return    The connection value
+	 */
+	public Connection getConnection() {
+		return dbConnection;
+	}
+
+
+	/**
+	 *  Gets the statement attribute of the DBConnection object
+	 *
+	 *@return                   The statement value
+	 *@exception  SQLException  Description of the Exception
+	 */
+	public Statement getStatement() throws SQLException {
+		return dbConnection.createStatement();
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  sql               Description of the Parameter
+	 *@return                   Description of the Return Value
+	 *@exception  SQLException  Description of the Exception
+	 */
+	public PreparedStatement prepareStatement(String sql) throws SQLException {
+		return dbConnection.prepareStatement(sql);
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  nodeXML  Description of the Parameter
+	 *@return          Description of the Return Value
+	 */
+	public static DBConnection fromXML(org.w3c.dom.Node nodeXML) {
+		NamedNodeMap attribs = nodeXML.getAttributes();
+
+		if (attribs != null) {
+			// do we have dbConfig parameter specified ??
+			if (attribs.getNamedItem("dbConfig")!=null){
+				return new DBConnection(attribs.getNamedItem("dbConfig").getNodeValue());
+			}else{
+			// all parameters has to be taken from attributes
+				String dbDriver = attribs.getNamedItem("dbDriver").getNodeValue();
+				String dbURL = attribs.getNamedItem("dbURL").getNodeValue();
+				String user;
+				String password;
+				try {
+					user = attribs.getNamedItem("user").getNodeValue();
+					password = attribs.getNamedItem("password").getNodeValue();
+				} catch (NullPointerException ex) {
+					user = null;
+					password = null;
+				}
+				if (dbDriver != null && dbURL != null) {
+					return new DBConnection(dbDriver, dbURL, user, password);
+				} else {
+					return null;
+				}
+			}
+		}
+		return null;
+	}
+}
+
