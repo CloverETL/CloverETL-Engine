@@ -20,8 +20,10 @@
 
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataFormatter.java
 
-package org.jetel.data;
+package org.jetel.data.formatter;
 import java.io.*;
+
+import org.jetel.data.DataRecord;
 import org.jetel.metadata.*;
 /**
  * Outputs delimited data record. Handles encoding of characters.
@@ -30,7 +32,7 @@ import org.jetel.metadata.*;
  * @since    March 28, 2002
  * @see        OtherClasses
  */
-public class DelimitedDataFormatter implements DataFormatter {
+public class DelimitedDataFormatter implements Formatter {
 
 	private boolean oneRecordPerLinePolicy = false;
 	
@@ -125,7 +127,7 @@ public class DelimitedDataFormatter implements DataFormatter {
 
 	/**
 	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;

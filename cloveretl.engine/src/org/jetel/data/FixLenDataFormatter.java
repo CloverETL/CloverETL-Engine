@@ -17,13 +17,22 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.charset.*;
-import java.io.*;
+package org.jetel.data.formatter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 import java.util.Arrays;
-import org.jetel.metadata.*;
+
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  Outputs fix-len data record. Handles encoding of character based fields.
@@ -34,7 +43,7 @@ import org.jetel.metadata.*;
  * @see        FixLenDataParser
  * @revision   $Revision$
  */
-public class FixLenDataFormatter implements DataFormatter {
+public class FixLenDataFormatter implements Formatter {
 
 	private ByteBuffer dataBuffer;
 	private ByteBuffer fieldBuffer;
@@ -199,7 +208,7 @@ public class FixLenDataFormatter implements DataFormatter {
 
 	/**
 	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;

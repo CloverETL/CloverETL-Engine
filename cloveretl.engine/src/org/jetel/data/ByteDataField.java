@@ -195,7 +195,7 @@ public class ByteDataField extends DataField {
 	 *@since     October 29, 2002
 	 */
 	public String toString() {
-		return value.toString();
+		return new String(value);
 	}
 
 
@@ -300,7 +300,8 @@ public class ByteDataField extends DataField {
 	}
 	
 	/**
-	 *  Gets the size attribute of the IntegerDataField object
+	 *  Returns how many bytes will be occupied when this field with current
+	 *  value is serialized into ByteBuffer
 	 *
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField

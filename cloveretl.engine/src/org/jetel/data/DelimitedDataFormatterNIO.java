@@ -20,12 +20,21 @@
 
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataFormatter.java
 
-package org.jetel.data;
-import java.io.*;
-import org.jetel.metadata.*;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.charset.*;
+package org.jetel.data.formatter;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.WritableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
+
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.Defaults.DataFormatter;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Outputs delimited data record. Handles encoding of characters. Uses NIO classes
@@ -34,7 +43,7 @@ import java.nio.charset.*;
  * @since    July 25, 2002
  * @see        DataFormatter
  */
-public class DelimitedDataFormatterNIO implements DataFormatter {
+public class DelimitedDataFormatterNIO implements Formatter {
 
 	private boolean oneRecordPerLinePolicy=false;
 	// Attributes
@@ -149,7 +158,7 @@ public class DelimitedDataFormatterNIO implements DataFormatter {
 
 	/**
 	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;

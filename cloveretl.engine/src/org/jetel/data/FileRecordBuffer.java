@@ -156,7 +156,8 @@ public class FileRecordBuffer {
 
 
 	/**
-	 *  Clears the buffer.
+	 *  Clears the buffer. Temp file (if it was created) remains
+	 * unchanged size-wise
 	 */
 	public void clear() {
 		readPosition = 0;
@@ -310,6 +311,9 @@ public class FileRecordBuffer {
 		isDirty = false;
 	}
 
+	public boolean isEmpty(){
+		return (readPosition>=writePosition ? true : false);
+	}
 
 	/**
 	 *  Description of the Method

@@ -156,4 +156,7 @@ public class CodeField extends DataField {
 		return aDataField.toString();
 	}
 
+	public int getSizeSerialized(){
+		return 0;
+	}
 }

@@ -18,12 +18,13 @@
 *
 */
 
-package org.jetel.data;
+package org.jetel.data.parser;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jetel.data.DataRecord;
 import org.jetel.database.CopySQLData;
 import org.jetel.database.SQLUtil;
 import org.jetel.database.DBConnection;
@@ -37,7 +38,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author maciorowski
  *
  */
-public class SQLDataParser implements DataParser {
+public class SQLDataParser implements Parser {
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
 
 	private BadDataFormatExceptionHandler handlerBDFE;

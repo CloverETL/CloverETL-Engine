@@ -17,11 +17,16 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data;
+package org.jetel.data.lookup;
 
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -35,7 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class SimpleLookupTable {
 
 	private DataRecordMetadata metadata;
-	private DataParser dataParser;
+	private Parser dataParser;
 	private Map lookupTable;
 	private InputStream inData;
 	private RecordKey key;
@@ -56,7 +61,7 @@ public class SimpleLookupTable {
 	 * @param  keys      Names of fields which comprise key to lookup table
 	 * @since            May 2, 2002
 	 */
-	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, DataParser parser, InputStream in) {
+	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser, InputStream in) {
 		this.dataParser = parser;
 		this.metadata = metadata;
 		inData = in;
@@ -75,7 +80,7 @@ public class SimpleLookupTable {
 	 * @param  mapObject  Object implementing Map interface. It will be used to hold key->data pairs
 	 * @since             May 2, 2002
 	 */
-	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, DataParser parser, InputStream in, Map mapObject) {
+	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser, InputStream in, Map mapObject) {
 		this.dataParser = parser;
 		this.metadata = metadata;
 		inData = in;
