@@ -87,7 +87,6 @@ public class DelimitedDataWriterNIO extends Node {
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		formatter = new DelimitedDataFormatterNIO();
-		System.out.println(fileURL);
 	}
 
 	public DelimitedDataWriterNIO(String id, String fileURL, String charset, boolean appendData) {
@@ -95,7 +94,6 @@ public class DelimitedDataWriterNIO extends Node {
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		formatter = new DelimitedDataFormatterNIO(charset);
-		System.out.println(fileURL);
 	}
 
 
