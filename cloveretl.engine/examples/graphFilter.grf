@@ -2,18 +2,23 @@
 <?xml-stylesheet href="graph.xsl" type="text/xsl"?>
 <Graph name="Testing Filter">
 <!-- This graph demonstrates functionality of Filter component. 
-It can filter on text, date, integer
-fields with comparison >, <, =. text fields can also be compared to a
-Java regexp.
-A filter can be made of different parts separated by a ";" (from the
-Default class). If one of the parts is verified, the record passes the
+It can filter on text, date, integer, numeric
+fields with comparison [>, <, =, <=, >=, !=]. 
+Text fields can also be compared to a Java regexp using ~ (tilda) operator.
+A filter can be made of different parts separated by a ";" (semicolon). 
+If one of the parts is verified, the record passes the
 filter (it's an OR combination of the parts, and AND can be achieved by
-several filters).
-Date format used for comparison is yyyy-MM-dd.
+several filters cascaded).
+Date format used for comparison depends on input field's format - e.g.
+if input field HireDate has defined date format "yyyy-MM-dd", then the
+same format must be used in filter when specifying date constant.
 
 This graph produces two output files:
 First with  all employees who were hired before 1993-12-31.
 Second with all employees who have in their memo that they are "fluent" in some language
+
+
+Note: some of the comparison operators have to be XML encoded  - e.g. ">" as "&gt;" etc. 
 -->
 <Global>
 <Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
