@@ -18,18 +18,20 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
+import java.io.PrintStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.Map;
-import java.util.HashMap;
-import java.io.PrintStream;
-import org.jetel.data.Defaults;
-import org.jetel.exception.GraphConfigurationException;
+import java.util.Set;
+import java.util.Stack;
 
 import java.util.logging.Logger;
+import org.jetel.data.Defaults;
+import org.jetel.exception.GraphConfigurationException;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -50,24 +52,6 @@ public class TransformationGraphAnalyzer {
 	static PrintStream log = System.out;// default info messages to stdout
 
 
-	//public TransformationGraphAnalyzer() {
-	//}
-
-
-	/*
-	 *  public static void analyzeEdges(List edges){
-	 *  Iterator iterator=edges.iterator();
-	 *  Edge edge;
-	 *  while(iterator.hasNext()){
-	 *  edge=(Edge)iterator.next();
-	 *  if (edge.getReader().getPhase()!=edge.getWriter().getPhase()){
-	 *  / edge connecting two nodes belonging to different phases
-	 *  / has to be buffered
-	 *  edge.setType(Edge.EDGE_TYPE_BUFFERED);
-	 *  }
-	 *  }
-	 *  }
-	 */
 	/**
 	 *  Returns list (precisely array) of all Nodes. The order of Nodes listed is such that
 	 *  any parent Node is guaranteed to be listed befor child Node.
@@ -81,14 +65,13 @@ public class TransformationGraphAnalyzer {
 	public static Node[] enumerateNodes(List nodes) throws GraphConfigurationException {
 		Set set1 = new HashSet();
 		Set set2 = new HashSet();
-		Set tmpSet = new HashSet(nodes.size());
-		Map nodesEncountered=new HashMap(nodes.size());
 		Set actualSet;
 		Set enumerationOfNodes = new LinkedHashSet(nodes.size());
-		int totalNodesEncountered = 0;
+		Stack nodesStack = new Stack();
+		List rootNodes;
 		Node node;
 		Iterator iterator;
-		
+
 		// initial populating of set1 - with root Nodes only
 		iterator = nodes.iterator();
 		while (iterator.hasNext()) {
@@ -97,25 +80,28 @@ public class TransformationGraphAnalyzer {
 				set1.add(node);
 			}
 		}
-		
+
 		if (set1.isEmpty()) {
 			logger.severe("No root Nodes detected! There must be at least one root node defined." +
 					" (Root node is	node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
 
-		int nRootNodes=set1.size();
-		// populate hash of all nodes with #of input ports (for detecting loops in graph) multiplied by
-		// number of root nodes.
-		// the algorithm is simple/stupid. It expects that each node can be visited only
-		// so many times as there are edges going to node multiplied by number of root nodes
-		// basically, from each root node, there is some path through graph
-		// 
-		for(Iterator i=nodes.iterator();i.hasNext();){
-			node=(Node)i.next();
-			nodesEncountered.put(node,new Integer(node.getInPorts().size()*nRootNodes));	
+		// we need root nodes to traverse graph
+		rootNodes = new LinkedList(set1);
+
+		// DETECTING CIRCULAR REFERENCES IN GRAPH
+		iterator = rootNodes.iterator();
+		while (iterator.hasNext()) {
+			nodesStack.clear();
+			nodesStack.push(new AnalyzedNode((Node) iterator.next()));
+			if (!inspectPath(nodesStack)) {
+				throw new GraphConfigurationException("Circular reference found in graph !");
+			}
 		}
-		
+
+		// enumerate all nodes
+
 		actualSet = set1;
 		// initialize - actualSet is set1 for the very first run
 		while (!actualSet.isEmpty()) {
@@ -130,24 +116,47 @@ public class TransformationGraphAnalyzer {
 				findNodesSuccessors(set2, set1);
 				actualSet = set1;
 			}
-		/* following piece of code doesn't work well ;-)	
-			for(iterator=actualSet.iterator();iterator.hasNext();){
-				node=(Node)iterator.next();
-				Integer count=(Integer)nodesEncountered.get(node);
-				if (count.intValue()<=0){
-					logger.severe("Circular reference found in graph ! Suspicious node: "+node.getID());
-					dumpNodesReferences(actualSet.iterator());
-					throw new GraphConfigurationException("Circular reference found in graph !");
-				}else{
-					nodesEncountered.put(node,new Integer(count.intValue()-1));
-				}
-			}*/
-			
 		}
+
 		// returning nodes ordered by their appearance in the graph -> not really guratanteed that it
 		// works for all configurations, but should be sufficient
-		
+
 		return (Node[]) enumerationOfNodes.toArray(new Node[0]);
+	}
+
+
+	/**
+	 *  Tests whether there is no loop/cycle in path from root node to leaf node
+	 *  This test must be run for each root note to ensure that the whole graph is free of cycles
+	 *  It assumes that the IDs of individual nodes are unique -> it is constraint imposed by design
+	 *
+	 * @param  nodesStack  Stack with one elemen - root node from which to start analyzing
+	 * @return             true if path has no loops, otherwise false
+	 */
+	private static boolean inspectPath(Stack nodesStack) {
+		OutputPort port;
+		Node nextNode;
+		Set nodesEncountered = new HashSet();
+		while (!nodesStack.empty()) {
+			port = ((AnalyzedNode) nodesStack.peek()).getNextPort();
+			if (port == null) {
+				// this node has no more ports (offsprings)
+				// we have to remove it from already visited nodes
+				nodesEncountered.remove(((AnalyzedNode) nodesStack.pop()).getNode().getID());
+			} else {
+				nextNode = port.getReader();
+				//debug ! System.out.println("-"+nextNode.getID());
+				if (nextNode != null) {
+					// have we seen this node before ? if yes, then it is a loop
+					if (!nodesEncountered.add(nextNode.getID())) {
+						dumpNodesReferences(nodesStack.iterator(), nextNode);
+						return false;
+					}
+					nodesStack.push(new AnalyzedNode(nextNode));// put this node on top
+				}
+			}
+		}
+		return true;
 	}
 
 
@@ -194,26 +203,19 @@ public class TransformationGraphAnalyzer {
 	/**
 	 *  This is only for reporting problems
 	 *
-	 * @param  iterator  Description of the Parameter
+	 * @param  iterator     Description of the Parameter
+	 * @param  problemNode  Description of the Parameter
 	 */
-	protected static void dumpNodesReferences(Iterator iterator) {
-		Node node;
-		Iterator portIterator;
-		InputPort inPort;
+	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
+		System.out.println("Dump of references between nodes:");
+		System.out.println("Detected loop when encountered node " + problemNode.getID());
+		System.out.println("Chain of references:");
 		while (iterator.hasNext()) {
-			node = (Node) iterator.next();
-			log.print("> " + node.getID());
-			log.println(" referenced from: ");
+			System.out.print(((AnalyzedNode) iterator.next()).getNode().getID());
+			System.out.print(" -> ");
 
-			portIterator = node.getInPorts().iterator();
-			while (portIterator.hasNext()) {
-				inPort = (InputPort) portIterator.next();
-				// is some Node reading data produced by our source node ?
-				if (inPort.getWriter() != null) {
-					log.println(" -- " + inPort.getWriter().getID());
-				}
-			}
 		}
+		System.out.println(problemNode.getID());
 	}
 
 
@@ -223,9 +225,9 @@ public class TransformationGraphAnalyzer {
 	 *  destroyed (memory is freed and resources reclaimed).<br>
 	 *  Then next phase is started.
 	 *
-	 * @param  phasesList  Description of the Parameter
 	 * @param  nodes       Description of the Parameter
 	 * @param  edges       Description of the Parameter
+	 * @param  phases      Description of the Parameter
 	 */
 	public static void distributeNodes2Phases(Phase[] phases, Node[] nodes, List edges) {
 		Map phaseMap = new HashMap(phases.length);
@@ -236,11 +238,11 @@ public class TransformationGraphAnalyzer {
 		Integer currentPhase;
 
 		// create map of Phases so we can easily get appropriate phase number
-		for(int i=0;i<phases.length;i++){
-			if (phaseMap.put(new Integer(phases[i].getPhaseNum()), phases[i])!=null){
+		for (int i = 0; i < phases.length; i++) {
+			if (phaseMap.put(new Integer(phases[i].getPhaseNum()), phases[i]) != null) {
 				// we have two phases with the same number - wrong !!
-				logger.severe("Phase number not unique: "+phases[i].getPhaseNum());
-				throw new RuntimeException("Phase number not unique: "+phases[i].getPhaseNum());
+				logger.severe("Phase number not unique: " + phases[i].getPhaseNum());
+				throw new RuntimeException("Phase number not unique: " + phases[i].getPhaseNum());
 			}
 		}
 
@@ -283,6 +285,55 @@ public class TransformationGraphAnalyzer {
 			}
 		}
 	}
+
+
+	/**
+	 *  Description of the Class
+	 *
+	 * @author      dpavlis
+	 * @since       12. únor 2004
+	 * @revision    $Revision$
+	 */
+	private static class AnalyzedNode {
+		Node node;
+		int analyzedPort;
+
+
+		/**
+		 *Constructor for the AnalyzedNode object
+		 *
+		 * @param  node  Description of the Parameter
+		 */
+		AnalyzedNode(Node node) {
+			this.node = node;
+			analyzedPort = 0;
+		}
+
+
+		/**
+		 *  Gets the nextPort attribute of the AnalyzedNode object
+		 *
+		 * @return    The nextPort value
+		 */
+		OutputPort getNextPort() {
+			if (analyzedPort >= node.getOutPorts().size()) {
+				return null;
+			} else {
+				return node.getOutputPort(analyzedPort++);
+			}
+		}
+
+
+		/**
+		 *  Gets the node attribute of the AnalyzedNode object
+		 *
+		 * @return    The node value
+		 */
+		Node getNode() {
+			return node;
+		}
+	}
+
 }
 /*
  *  end class TransformationGraphAnalyzer
