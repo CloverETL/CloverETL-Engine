@@ -27,33 +27,101 @@ import junit.framework.TestCase;
  */
 public class IntegerDataFieldTest  extends TestCase {
 
-	
-
 protected void setUp() { 
-
 }
-
-
 
 protected void tearDown() {
-
-
 }
 
+/**
+ *  Test for @link org.jetel.data.IntegerDataField.IntegerDataField(DataFieldMetadata _metadata)
+ *
+ */
+public void test_1_IntegerDataField() {
+	}
 
 
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.IntegerDataField(DataFieldMetadata _metadata, int value)
+	 *
+	 */
+	public void test_2_IntegerDataField() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.setValue(Object _value)
+	 *                 org.jetel.data.IntegerDataField.setValue(double value)
+	 *                 org.jetel.data.IntegerDataField.setValue(int value)
+	 */
+	public void test_setValue() {
+	}
+
+
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.getValue()
+	 *
+	 */
+	public void test_getValue() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.toString()
+	 *
+	 */
+	public void test_toString() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException
+	 *
+	 */
+	public void test_fromByteBuffer() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException
+	 *
+	 */
+	public void test_toByteBuffer() {
+	}
 
 
 /**
-
- *  Test for @link org.jetel.metadata.DataRecordMetadata.getField(int _fieldNum)
-
+ *  Test for @link org.jetel.data.IntegerDataField.fromString(String valueStr)
  *
+ */
+public void test_fromString() {
+}
 
+
+/**
+ *  Test for @link org.jetel.data.IntegerDataField.deserialize(ByteBuffer buffer)
+ *           @link org.jetel.data.IntegerDataField.serialize(ByteBuffer buffer)
+ *
  */
 
-public void test_1_getField() {
+public void test_serialize() {
+}
+
+/**
+ *  Test for @link org.jetel.data.IntegerDataField.equals(Object obj)
+ *
+ */
+public void test_equals() {
+}
+
+/**
+ *  Test for @link org.jetel.data.IntegerDataField.compareTo(Object obj)
+ *
+ */
+public void test_1_compareTo() {
+}
+/**
+ *  Test for @link org.jetel.data.IntegerDataField.compareTo(int compInt)
+ *
+ */
+public void test_2_compareTo() {
+}
 
 
-	}
 }
