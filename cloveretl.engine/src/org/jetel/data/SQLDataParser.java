@@ -50,6 +50,7 @@ public class SQLDataParser implements DataParser {
 
 	private ResultSet resultSet = null;
 	private CopySQLData[] transMap;
+	private DataRecord outRecord = null;
 
 	/**
 	 * @param sqlQuery
@@ -61,13 +62,13 @@ public class SQLDataParser implements DataParser {
 
 
 	/**
-	 *  Returs next data record parsed from input stream or NULL if no more data
+	 *  Returs next data record parsed from input data sorce or NULL if no more data
 	 *  available The specified DataRecord's fields are altered to contain new
 	 *  values.
 	 *
 	 *@param  record           Description of Parameter
 	 *@return                  The Next value
-	 *@exception  IOException  Description of Exception
+	 *@exception  SQLException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
 
@@ -106,21 +107,18 @@ public class SQLDataParser implements DataParser {
 
 
 	/**
-	 *  Gets the Next attribute of the FixLenDataParser object
+	 *  Gets the Next attribute of the SQLDataParser object
 	 *
 	 * @return                  The Next value
-	 * @exception  IOException  Description of Exception
+	 * @exception  JetelException  Description of Exception
 	 * @since                   August 21, 2002
 	 */
 
 	public DataRecord getNext() throws JetelException {
-		// create a new data record
-		DataRecord record = new DataRecord(metadata);
-
-		record.init();
+		outRecord.init();
 
 		try {
-			return getNext(record);
+			return getNext(outRecord);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new JetelException(e.getMessage());
@@ -153,16 +151,16 @@ public class SQLDataParser implements DataParser {
 	 */
 
 	protected void populateField(DataRecord record, int fieldNum) {
-		String data = null;
+		//String data = null;
 		
 		try {
-			//transMap[fieldNum].sql2jetel(resultSet);
-			data = resultSet.getString(fieldNum);
-			record.getField(fieldNum-1).fromString( data );
+			transMap[fieldNum-1].sql2jetel(resultSet);
+			//data = resultSet.getString(fieldNum);
+			//record.getField(fieldNum-1).fromString( data );
 
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-			handlerBDFE.populateFieldFailure(record,fieldNum-1,data);
+				handlerBDFE.populateFieldFailure(record,fieldNum-1,bdfe.getOffendingFormat());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
@@ -171,16 +169,20 @@ public class SQLDataParser implements DataParser {
 		}
 	}
 
+public void initSQLDataMap(DataRecord record){
+	transMap = CopySQLData.sql2JetelTransMap( metadata, record);
+}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
 	 */
 	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		DataRecord outRecord = new DataRecord(_metadata);
+		//outRecord = new DataRecord(_metadata);
+		metadata = _metadata;
 		fieldCount = _metadata.getNumFields();
 		int i;
 
-		outRecord.init();
+		//outRecord.init();
 		// get dbConnection from graph
 		dbConnection= (DBConnection) inputDataSource;
 		if (dbConnection==null){

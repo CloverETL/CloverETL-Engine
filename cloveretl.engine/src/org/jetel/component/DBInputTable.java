@@ -153,7 +153,7 @@ public class DBInputTable extends Node {
 
 		record.init();
 
-		
+		parser.initSQLDataMap(record);
 
 		try{
 

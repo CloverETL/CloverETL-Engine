@@ -25,13 +25,12 @@ package org.jetel.exception;
  *
  */
 public class BadDataFormatException extends RuntimeException {
-
+	private String offendingFormat = null;
 	/**
 	 * 
 	 */
 	public BadDataFormatException() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
 	/**
@@ -39,7 +38,22 @@ public class BadDataFormatException extends RuntimeException {
 	 */
 	public BadDataFormatException(String arg0) {
 		super(arg0);
-		// TODO Auto-generated constructor stub
 	}
 
+	/**
+	 * @param arg0
+	 * @param offendingFormat
+	 */
+	public BadDataFormatException(String arg0, String offendingFormat) {
+		super(arg0);
+		setOffendingFormat(offendingFormat);
+	}
+
+	public void setOffendingFormat(String offendingFormat) {
+		this.offendingFormat = offendingFormat;
+	}
+
+	public String getOffendingFormat() {
+		return offendingFormat;
+	}
 }
