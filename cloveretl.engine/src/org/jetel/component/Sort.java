@@ -125,7 +125,6 @@ public class Sort extends Node {
 		
 		while (inRecord!=null && runIt) {
 			try {
-				recordBuffer.clear();
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 				if (inRecord!=null) {
 					if (lexicalSort)
