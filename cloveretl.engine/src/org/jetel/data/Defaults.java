@@ -152,5 +152,10 @@ public final class Defaults {
 		public final static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5;
 
 	}
+	
+	public final static class GraphProperties{
+		
+		public final static String PROPERTY_PLACEHOLDER_REGEX = "\\$\\{(\\w+)\\}";
+	}
 }
 
