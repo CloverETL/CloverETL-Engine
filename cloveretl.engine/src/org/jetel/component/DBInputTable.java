@@ -18,10 +18,10 @@
 package org.jetel.component;
 
 import java.io.*;
-import java.sql.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
+import org.jetel.data.SQLDataParser;
 import org.jetel.database.*;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
@@ -73,15 +73,13 @@ import org.jetel.exception.ComponentNotReadyException;
  * @revision   $Revision$
  */
 public class DBInputTable extends Node {
-	private BadDataFormatExceptionHandler handlerBDFE;
+	private SQLDataParser parser;
 
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String sqlQuery;
-	private Statement statement;
 
 	public final static String COMPONENT_TYPE = "DB_INTPUT_TABLE";
-	private final static int SQL_FETCH_SIZE_ROWS = 100;
 	private final static int WRITE_TO_PORT = 0;
 
 
@@ -98,6 +96,7 @@ public class DBInputTable extends Node {
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
 
+		parser=new SQLDataParser(sqlQuery);
 	}
 
 
@@ -122,20 +121,10 @@ public class DBInputTable extends Node {
 		if (outPorts.size()<1){
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		// get dbConnection from graph
-		dbConnection=TransformationGraph.getReference().getDBConnection(dbConnectionName);
-		if (dbConnection==null){
-			throw new ComponentNotReadyException("Can't find DBConnection ID: "+dbConnectionName);
-		}
-		try {
-			statement = dbConnection.getStatement();
-			// following calls are not always supported (as it seems)
-			//statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-			//statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
-		}
-		catch (SQLException ex) {
-			throw new ComponentNotReadyException(ex.getMessage());
-		}
+
+
+		// try to open file & initialize data parser
+		parser.open(TransformationGraph.getReference().getDBConnection(dbConnectionName), getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 
@@ -157,81 +146,59 @@ public class DBInputTable extends Node {
 	 * @since    September 27, 2002
 	 */
 	public void run() {
-		ResultSet resultSet = null;
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		DataRecord outRecord = new DataRecord(outPort.getMetadata());
-		CopySQLData[] transMap;
-		int i;
 
-		outRecord.init();
-		transMap = CopySQLData.sql2JetelTransMap(outPort.getMetadata(), outRecord);
-		// run sql query
-		try {
-			resultSet = statement.executeQuery(sqlQuery);
-			if(handlerBDFE != null ) {  //use handler only if configured
-				while (resultSet.next() && runIt) {
-					for (i = 0; i < transMap.length; i++) {
-						transMap[i].sql2jetel(resultSet);
-					}
-					
-					if(handlerBDFE.isThrowException()) {
-						handlerBDFE.handleException(outRecord);
-					} else {
-						// send the record through output port
-						writeRecord(WRITE_TO_PORT, outRecord);
-					}
-				}
-			} else {
-				while (resultSet.next() && runIt) {
-					for (i = 0; i < transMap.length; i++) {
-						transMap[i].sql2jetel(resultSet);
-					}
-					// send the record through output port
-					writeRecord(WRITE_TO_PORT, outRecord);
-				}
-			}
+		// we need to create data record - take the metadata from first output port
 
-		}
-		catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		}
-		catch (SQLException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		}
-		catch (Exception ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
-		}
-		finally {
-			try {
-				if (resultSet != null) {
-					resultSet.close();
-				}
-				statement.close();
-				broadcastEOF();
-				if (resultMsg==null){
-					if (runIt) {
-						resultMsg = "OK";
-					} else {
-						resultMsg = "STOPPED";
-					}
-					resultCode = Node.RESULT_OK;
-				}
-			}
-			catch (SQLException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-			}
-		}
+		DataRecord record=new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+
+		record.init();
+
 		
+
+		try{
+
+			// till it reaches end of data or it is stopped from outside
+
+			while(((record=parser.getNext(record))!=null)&&runIt){
+
+				//broadcast the record to all connected Edges
+
+				writeRecordBroadcast(record);
+
+			}
+
+		}
+
+		catch(IOException ex){
+
+			resultMsg=ex.getMessage();
+
+			resultCode=Node.RESULT_ERROR;
+
+			closeAllOutputPorts();
+
+			return;
+
+		}catch(Exception ex){
+
+			 resultMsg=ex.getMessage();
+
+			 resultCode=Node.RESULT_FATAL_ERROR;
+
+			 return;
+
+		}
+
+		// we are done, close all connected output ports to indicate end of stream
+
+		parser.close();
+
+		broadcastEOF();
+
+		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
+
+		resultCode=Node.RESULT_OK;
+
 	}
 
 
@@ -267,8 +234,9 @@ public class DBInputTable extends Node {
 	 * @param handler
 	 */
 	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		handlerBDFE = handler;
+		parser.addBDFHandler(handler);
 	}
+
 
 }
 
