@@ -19,7 +19,10 @@
 
 package test.org.jetel.data;
 
+import java.nio.ByteBuffer;
+
 import org.jetel.data.IntegerDataField;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -81,7 +84,17 @@ public void test_1_IntegerDataField() {
 	 */
 	public void test_setValue() {
 		anIntegerDataField1.setValue(15.45);
-		//assertEquals(anIntegerDataField1.getDouble(),(double)15);
+		assertEquals("setValue(double value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
+
+		anIntegerDataField1.setValue(15);
+		assertEquals("setValue(int value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
+
+		anIntegerDataField1.setValue(new Integer(15));
+		assertEquals("setValue(Object value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
+		assertFalse(anIntegerDataField1.isNull());
+
+		anIntegerDataField1.setValue(null);
+		assertTrue(anIntegerDataField1.isNull());
 	}
 
 
@@ -90,6 +103,8 @@ public void test_1_IntegerDataField() {
 	 *
 	 */
 	public void test_getValue() {
+		anIntegerDataField1.setValue(17.45);
+		assertEquals("getValue() failed",anIntegerDataField1.getValue(), new Integer(17));
 	}
 
 	/**
@@ -97,28 +112,22 @@ public void test_1_IntegerDataField() {
 	 *
 	 */
 	public void test_toString() {
+		anIntegerDataField1.setValue(19.45);
+		assertEquals("toString() failed",anIntegerDataField1.toString(), "19");
 	}
-
-	/**
-	 *  Test for @link org.jetel.data.IntegerDataField.fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException
-	 *
-	 */
-	public void test_fromByteBuffer() {
-	}
-
-	/**
-	 *  Test for @link org.jetel.data.IntegerDataField.toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException
-	 *
-	 */
-	public void test_toByteBuffer() {
-	}
-
 
 /**
  *  Test for @link org.jetel.data.IntegerDataField.fromString(String valueStr)
  *
  */
 public void test_fromString() {
+	anIntegerDataField1.fromString("123");
+	assertEquals(anIntegerDataField1.getInt(),123);
+	
+	try {
+		anIntegerDataField1.fromString("123.234");
+		fail("Should raise an BadDataFormatException");
+	} catch (BadDataFormatException e){	}
 }
 
 
@@ -129,6 +138,29 @@ public void test_fromString() {
  */
 
 public void test_serialize() {
+	ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+	
+	anIntegerDataField1.setValue(123);
+	anIntegerDataField1.serialize(buffer);
+	buffer.rewind();
+	anIntegerDataField4.deserialize(buffer);
+	assertEquals(anIntegerDataField4.getInt(),123);
+	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+	assertEquals(anIntegerDataField4,anIntegerDataField1);
+	
+	buffer.rewind();
+	anIntegerDataField1.setNull(true);
+	anIntegerDataField1.serialize(buffer);
+	buffer.rewind();
+	anIntegerDataField4.deserialize(buffer);
+	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+
+	buffer.rewind();
+	anIntegerDataField1.setValue(null);
+	anIntegerDataField1.serialize(buffer);
+	buffer.rewind();
+	anIntegerDataField4.deserialize(buffer);
+	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
 }
 
 /**
@@ -136,6 +168,11 @@ public void test_serialize() {
  *
  */
 public void test_equals() {
+	anIntegerDataField4.setValue(5);
+	assertTrue(anIntegerDataField1.equals(anIntegerDataField4));
+	
+	anIntegerDataField4.setValue(7);
+	assertFalse(anIntegerDataField1.equals(anIntegerDataField4));
 }
 
 /**
@@ -143,12 +180,15 @@ public void test_equals() {
  *
  */
 public void test_1_compareTo() {
+	anIntegerDataField4.setValue(5);
+	assertEquals(anIntegerDataField1.compareTo(anIntegerDataField4),0);
 }
 /**
  *  Test for @link org.jetel.data.IntegerDataField.compareTo(int compInt)
  *
  */
 public void test_2_compareTo() {
+	assertEquals(anIntegerDataField1.compareTo(5),0);
 }
 
 
