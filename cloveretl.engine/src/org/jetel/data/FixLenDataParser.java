@@ -191,6 +191,23 @@ public class FixLenDataParser implements DataParser {
 		return message.toString();
 	}
 
+	/**
+	 *  Assembles error message when exception occures during parsing
+	 *
+	 * @param  exceptionMessage  message from exception getMessage() call
+	 * @param  recNo             recordNumber
+	 * @param  fieldNo           fieldNumber
+	 * @return                   error message
+	 * @since                    September 19, 2002
+	 */
+	private String getErrorMessage(String exceptionMessage,CharSequence  value, int recNo, int fieldNo) {
+		StringBuffer message = new StringBuffer();
+		message.append(exceptionMessage);
+		message.append(" when parsing record #").append(recordCounter);
+		message.append(" field ").append(metadata.getField(fieldNo).getName());
+		message.append(" value \"").append(value).append("\"");
+		return message.toString();
+	}
 
 	/**
 	 *  Description of the Method
