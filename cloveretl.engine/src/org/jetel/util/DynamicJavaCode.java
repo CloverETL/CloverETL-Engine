@@ -49,13 +49,15 @@ public class DynamicJavaCode {
 		this.srcCode=srcCode;
 		srcPath = System.getProperty("java.io.tmpdir", ".");
 		fileSeparator = System.getProperty("file.separator", "/");
-		Pattern pattern=Pattern.compile("class\\s+([A-Za-z0-9_]+)\\s*{");
+		Pattern pattern=Pattern.compile("class\\s+(\\w+)"); 
 		Matcher matcher=pattern.matcher(srcCode);
-		className=matcher.group();
+		if (!matcher.find()){
+			throw new RuntimeException("Can't find class name within source code !");
+		}
+		className=matcher.group(1);
 		if (className.length()==0){
 			throw new RuntimeException("Can't extract class name from source code !");
 		}
-		
 	}
 
 	private void saveSrc(){
@@ -72,6 +74,7 @@ public class DynamicJavaCode {
 			try{
 				FileWriter writer=new FileWriter(fileName);
 				writer.write(srcCode);
+				writer.close();
 			}catch(IOException ex){
 				throw new RuntimeException("Error when trying to save source code: "+ex.getMessage());
 			}
@@ -111,7 +114,7 @@ public class DynamicJavaCode {
 		try {
 			tClass = Class.forName(className, true, classLoader);
 		} catch (ClassNotFoundException ex) {
-			throw new RuntimeException(ex);
+			throw new RuntimeException("Can not find class: "+ex);
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
@@ -148,23 +151,6 @@ public class DynamicJavaCode {
 	}
 	
 	
-
-//	public static void main(String args[]){
-//		DynamicJavaCode code = new DynamicJavaCode(args[0],args[1],args[1]);
-//		try{
-//			code.compile();
-//		}catch(Exception ex){
-//			ex.printStackTrace();
-//		}
-//		DataRecordTransform trans;
-//		Object testClass=code.instantiate();
-//
-//		trans=(DataRecordTransform)testClass;
-//
-//		System.out.println(trans.toString());
-//	}
-
-
 	public static DynamicJavaCode fromXML(org.w3c.dom.Node nodeXML){
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		String srcCode;
