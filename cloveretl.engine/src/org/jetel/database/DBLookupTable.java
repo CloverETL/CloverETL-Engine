@@ -19,12 +19,13 @@
 */
 package org.jetel.database;
 
-import java.util.*;
-import java.io.*;
-import java.sql.*;
-import org.jetel.data.*;
-import org.jetel.metadata.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
