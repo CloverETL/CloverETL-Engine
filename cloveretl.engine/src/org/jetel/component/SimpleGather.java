@@ -19,7 +19,6 @@
 package org.jetel.component;
 import java.util.*;
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -72,7 +71,7 @@ public class SimpleGather extends Node {
 	}
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
+	 *  Gets the Type attribute of the SimpleGather object
 	 *
 	 * @return    The Type value
 	 * @since     April 4, 2002
@@ -83,7 +82,7 @@ public class SimpleGather extends Node {
 
 
 	/**
-	 *  Main processing method for the SimpleCopy object
+	 *  Main processing method for the SimpleGather object
 	 *
 	 * @since    April 4, 2002
 	 */
