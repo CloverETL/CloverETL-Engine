@@ -19,6 +19,8 @@ package org.jetel.data;
 
 import java.util.*;
 import java.io.*;
+
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -97,7 +99,7 @@ public class SimpleLookupTable {
 	 * @exception  IOException  Description of Exception
 	 * @since                   May 2, 2002
 	 */
-	public void init() throws IOException {
+	public void init() throws JetelException {
 		DataRecord record;
 		key.init();
 		dataParser.open(inData, metadata);

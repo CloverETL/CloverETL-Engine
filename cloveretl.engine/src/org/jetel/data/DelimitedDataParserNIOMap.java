@@ -22,6 +22,8 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
+
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.*;
 
 /**
@@ -111,11 +113,18 @@ public class DelimitedDataParserNIOMap implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
-	public DataRecord getNext() throws IOException {
+	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
+
 		record.init();
-		return parseNext(record);
+
+		try {
+			return parseNext(record);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new JetelException(e.getMessage());
+		}
 	}
 
 
@@ -141,7 +150,7 @@ public class DelimitedDataParserNIOMap implements DataParser {
 	 *@param  _metadata  Metadata describing the structure of data
 	 *@since             March 27, 2002
 	 */
-	public void open(InputStream in, DataRecordMetadata _metadata) {
+	public void open(Object in, DataRecordMetadata _metadata) {
 		CoderResult result;
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
