@@ -81,7 +81,7 @@ public class ComponentXMLAttributes {
 	public String getString(String key) {
 		try {
 			return refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
-		} catch (NullPointerException ex) {
+		} catch (Exception ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 	}
@@ -242,7 +242,7 @@ public class ComponentXMLAttributes {
 				}
 			}
 		}
-		return null;
+		throw new NotFoundException("Text not found !");
 	}
 
 
