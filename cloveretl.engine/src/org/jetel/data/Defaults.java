@@ -32,6 +32,14 @@ public final class Defaults {
 	 *  when buffering IO, what is the default size of the buffer
 	 */
 	public final static int DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768;
+	
+	/**
+	 * when creating/parsing date from string, what is the expected/default
+	 * format of date
+	 */
+	
+	public final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
+	public final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
 
 	/**
