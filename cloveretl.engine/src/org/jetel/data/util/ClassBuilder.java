@@ -19,6 +19,8 @@
  */
 package org.jetel.data.util;
 
+import java.util.HashMap;
+
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -31,6 +33,10 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public class ClassBuilder {
+	/** used to store position of record and field tuples*/
+	HashMap inputFieldRefs = null;
+	/** used to store position of record and field tuples*/
+	HashMap recordFieldRefs = null;
 
 	/**
 	 * Constructor.  It is used to create info for class name and constructor
@@ -38,6 +44,27 @@ public class ClassBuilder {
 	 * @param arrayDataRecordMetadata
 	 */
 	public ClassBuilder(DataRecord record, DataRecordMetadata[] arrayDataRecordMetadata) {
+		int[] rec_field_poz = null;
+		StringBuffer bufRecord = new StringBuffer();
+		StringBuffer bufField = new StringBuffer();
+		
+		inputFieldRefs = new HashMap();
+		for(int i = 0; i < arrayDataRecordMetadata.length ; i++ ) {
+			bufRecord.setLength(0);
+			bufRecord.append('[').append(arrayDataRecordMetadata[i].getName()).append(']');
+			for(int j = 0 ; j < arrayDataRecordMetadata[i].getNumFields() ; j++ ) {
+				bufField.setLength(0);
+				bufField.append(bufRecord).append('.');
+				bufField.append('[').append(arrayDataRecordMetadata[i].getField(j).getName()).append(']');
+				
+				rec_field_poz = new int[2];
+				rec_field_poz[0] = i;
+				rec_field_poz[1] = j;
+				
+				inputFieldRefs.put( bufField.toString(), rec_field_poz);
+				
+			}
+		}
 		
 		// TODO Auto-generated constructor stub
 	}
@@ -60,11 +87,11 @@ public class ClassBuilder {
 	}
 
 	/**
-	 * 
+	 * @param string
+	 * @return
 	 */
-	public String getMethodName() {
+	public String getMethodName(String string) {
 		// TODO Auto-generated method stub
-		
 		return null;
 	}
 

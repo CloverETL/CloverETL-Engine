@@ -14,6 +14,8 @@ import org.jetel.metadata.DataFieldMetadata;
  * This is a placeholder for future full blown property class implementation.
  */
 public final class CloverProperties {
+	public final static String CLASS_DIRECTORY = "BIN";
+	
 	private static String[] getTypeNameList={"String","Date","Numeric","Integer"};
 	
 	public final static String getTypeName(char c) {
@@ -64,4 +66,5 @@ public final class CloverProperties {
 	public final static String[] getTypeNameList() {
 		return getTypeNameList;
 	}
+
 }

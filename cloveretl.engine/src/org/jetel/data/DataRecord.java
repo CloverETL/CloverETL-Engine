@@ -25,6 +25,7 @@ import org.jetel.data.util.ClassBuilder;
 import org.jetel.exception.ClassCompilationException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverProperties;
 import org.jetel.util.Compile;
 
 /**
@@ -221,7 +222,7 @@ public class DataRecord implements Serializable {
 					DataFieldFactory.createDataField(
 						fieldMetadata.getType(),
 						fieldMetadata,
-						aClassBuilder.getMethodName(),
+						aClassBuilder.getMethodName(fieldMetadata.getName()),
 						sequencedDependencies);
 			} else {
 				fields[i] =
@@ -232,7 +233,7 @@ public class DataRecord implements Serializable {
 		}
 		setCodeClassName(aClassBuilder.getClassName());
 		try {
-			Compile.compileClass(aClassBuilder.getClassName());
+			Compile.compileClass(aClassBuilder.getClassName(),CloverProperties.CLASS_DIRECTORY);
 		} catch (ClassCompilationException e) {
 			e.printStackTrace();
 			throw new RuntimeException(
