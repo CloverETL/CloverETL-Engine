@@ -187,8 +187,7 @@ public class FixLenDataParser2 implements Parser {
 					fieldStringBuffer.reset();
 					//fieldStringBuffer.limit(fieldStringBuffer.position()-1);
 				} catch (InvalidMarkException e) {
-					System.err.println("Exception: "+e.getMessage());
-					fieldStringBuffer.clear();
+					// not a real problem, would need new logic to get rid of 
 				}
 				// prepare for reading
 				fieldStringBuffer.flip();
