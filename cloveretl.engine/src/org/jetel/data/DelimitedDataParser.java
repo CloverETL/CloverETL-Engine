@@ -22,6 +22,8 @@ package org.jetel.data;
 import java.nio.*;
 import java.io.*;
 
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.*;
 
@@ -35,6 +37,7 @@ import org.jetel.metadata.*;
  * @see        OtherClasses
  */
 public class DelimitedDataParser implements DataParser {
+	private BadDataFormatExceptionHandler handlerBDFE;
 	private CharBuffer buffer;
 	private DataRecordMetadata metadata;
 	private Reader reader;
@@ -85,12 +88,15 @@ public class DelimitedDataParser implements DataParser {
 
 		record.init();
 
-		try {
-			return parseNext(record);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				//record.init();   //redundant
+				record = parseNext(record);
+			}
 		}
+		return record;
 	}
 
 
@@ -103,8 +109,16 @@ public class DelimitedDataParser implements DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   May 2, 2002
 	 */
-	public DataRecord getNext(DataRecord record) throws IOException {
-		return parseNext(record);
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				//record.init();   //redundant
+				record = parseNext(record);
+			}
+		}
+		return record;
 	}
 
 
@@ -156,7 +170,7 @@ public class DelimitedDataParser implements DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   March 27, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws IOException {
+	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int character;
 
@@ -168,26 +182,31 @@ public class DelimitedDataParser implements DataParser {
 			character = 0;
 			// read data till we reach delimiter, end of file or exceed buffer size
 			// exceeded buffer is indicated by BufferOverflowException
-			while ((character = reader.read()) != -1) {
-				// patch for Windows platform, this will have to be improved ;-)
-				if (character == '\r') continue;  
-				if (character == delimiters[fieldCounter]) {
-					break;
-				} else {
-					try {
-						buffer.put((char) character);
-					}
-					catch (BufferOverflowException e) {
-						System.err.println(e.getMessage());
-						e.printStackTrace();
+			try {
+				while ((character = reader.read()) != -1) {
+					// patch for Windows platform, this will have to be improved ;-)
+					if (character == '\r') continue;  
+					if (character == delimiters[fieldCounter]) {
 						break;
+					} else {
+						try {
+							buffer.put((char) character);
+						}
+						catch (BufferOverflowException e) {
+							System.err.println(e.getMessage());
+							e.printStackTrace();
+							break;
+						}
 					}
 				}
-			}
 			// did we have EOF situation ?
 			if (character == -1) {
 				reader.close();
 				return null;
+			}
+			} catch (IOException e1) {
+				e1.printStackTrace();
+				throw new JetelException(e1.getMessage());
 			}
 			buffer.flip();
 			// prepare for reading
@@ -207,7 +226,23 @@ public class DelimitedDataParser implements DataParser {
 	 * @since            March 28, 2002
 	 */
 	private void populateField(DataRecord record, int fieldNum, String data) {
-		record.getField(fieldNum).fromString(data);
+		try {
+			record.getField(fieldNum).fromString(data);
+		} catch (BadDataFormatException bdfe) {
+			if(handlerBDFE != null ) {  //use handler only if configured
+				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+			} else {
+				throw new RuntimeException(bdfe.getMessage());
+			}
+		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		this.handlerBDFE = handler;
 	}
 
 }

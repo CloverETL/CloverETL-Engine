@@ -27,7 +27,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.jetel.data.DataParser;
 import org.jetel.data.DataRecord;
+import org.jetel.data.FixLenDataParser;
 import org.jetel.data.FixLenDataParser2;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
@@ -49,7 +51,7 @@ public static final String COMPONENT_TYPE="FIXED_DATA_READER_NIO";
 private static final int OUTPUT_PORT=0;
 private String fileURL;
 	
-private FixLenDataParser2 parser;
+private DataParser parser;
 	
 public FixLenDataReaderNIO(String id,String fileURL){
 	super(id);
@@ -155,13 +157,22 @@ public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		String id = attribs.getNamedItem("id").getNodeValue();
 		String fileURL = attribs.getNamedItem("fileURL").getNodeValue();
 		String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-
+		String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
 		if ((id!=null) && (fileURL!=null)){
 			if (charset!=null){
 				aFixLenDataReaderNIO = new FixLenDataReaderNIO(id,fileURL,charset.getNodeValue());
 			}else{
 				aFixLenDataReaderNIO = new FixLenDataReaderNIO(id,fileURL);
 			}
+			if(aOneRecordPerLine != null  ) {
+				if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
+					aFixLenDataReaderNIO.setOneRecordPerLinePolicy(true);
+				}else {
+					aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
+				}
+			}
+			// sets the default policy
+			aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
 			if(aDataPolicy != null) {
 				aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
 			}
@@ -173,6 +184,21 @@ public static Node fromXML(org.w3c.dom.Node nodeXML) {
 
 
 /**
+ * @param b
+ */
+private void setOneRecordPerLinePolicy(boolean b) {
+	if(b) { 
+		parser=new FixLenDataParser();
+	} else {
+		parser=new FixLenDataParser2();
+	}
+	
+}
+
+
+
+/**
+ * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
  * @param handler
  */
 private void addBDFHandler(BadDataFormatExceptionHandler handler) {

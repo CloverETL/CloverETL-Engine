@@ -72,7 +72,7 @@ public class SQLDataParser implements DataParser {
 	 *@since                   May 2, 2002
 	 */
 
-	public DataRecord getNext(DataRecord record) throws SQLException {
+	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(handlerBDFE != null ) {  //use handler only if configured
 			while(handlerBDFE.isThrowException()) {
@@ -117,12 +117,7 @@ public class SQLDataParser implements DataParser {
 	public DataRecord getNext() throws JetelException {
 		outRecord.init();
 
-		try {
-			return getNext(outRecord);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
-		}
+		return getNext(outRecord);
 	}
 
 
@@ -130,9 +125,14 @@ public class SQLDataParser implements DataParser {
 	 * @param record
 	 * @return
 	 */
-	private DataRecord parseNext(DataRecord record) throws SQLException {
-		if(resultSet.next() == false)
-			return null;
+	private DataRecord parseNext(DataRecord record) throws JetelException {
+		try {
+			if(resultSet.next() == false)
+				return null;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new JetelException(e.getMessage());
+		}
 			
 			for (int i = 1; i <= fieldCount; i++) {
 				populateField(record, i);

@@ -23,6 +23,8 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
 
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.*;
 
@@ -42,6 +44,7 @@ import org.jetel.metadata.*;
  *@revision    $Revision$
  */
 public class DelimitedDataParserNIOMap implements DataParser {
+	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
 	private MappedByteBuffer mappedDataBuffer;
 	private CharBuffer charBuffer;
@@ -119,12 +122,15 @@ public class DelimitedDataParserNIOMap implements DataParser {
 
 		record.init();
 
-		try {
-			return parseNext(record);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				//record.init();   //redundant
+				record = parseNext(record);
+			}
 		}
+		return record;
 	}
 
 
@@ -138,8 +144,16 @@ public class DelimitedDataParserNIOMap implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
-	public DataRecord getNext(DataRecord record) throws IOException {
-		return parseNext(record);
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				//record.init();   //redundant
+				record = parseNext(record);
+			}
+		}
+		return record;
 	}
 
 
@@ -265,7 +279,7 @@ public class DelimitedDataParserNIOMap implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   March 27, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws IOException {
+	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int result;
 		int fieldCounter = 0;
 		int character;
@@ -322,7 +336,12 @@ public class DelimitedDataParserNIOMap implements DataParser {
 
 			// did we have EOF situation ?
 			if (character == -1) {
-				reader.close();
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new JetelException(e.getMessage());
+				}
 				return null;
 			}
 
@@ -347,6 +366,12 @@ public class DelimitedDataParserNIOMap implements DataParser {
 	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
 		try {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum, handleQuotedStrings));
+		} catch (BadDataFormatException bdfe) {
+			if(handlerBDFE != null ) {  //use handler only if configured
+				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+			} else {
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+			}
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}
@@ -414,6 +439,14 @@ public class DelimitedDataParserNIOMap implements DataParser {
 			return 0;
 			// not a match
 		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		this.handlerBDFE = handler;
 	}
 
 }

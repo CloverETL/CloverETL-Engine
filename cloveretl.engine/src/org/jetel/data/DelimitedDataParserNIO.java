@@ -117,12 +117,15 @@ public class DelimitedDataParserNIO implements DataParser {
 
 		record.init();
 
-		try {
-			return parseNext(record);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
+		record = parseNext(record);
+		if(handlerBDFE != null ) {  //use handler only if configured
+			while(handlerBDFE.isThrowException()) {
+				handlerBDFE.handleException(record);
+				//record.init();   //redundant
+				record = parseNext(record);
+			}
 		}
+		return record;
 	}
 
 
@@ -136,7 +139,7 @@ public class DelimitedDataParserNIO implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
-	public DataRecord getNext(DataRecord record) throws IOException {
+	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(handlerBDFE != null ) {  //use handler only if configured
 			while(handlerBDFE.isThrowException()) {
@@ -257,7 +260,7 @@ public class DelimitedDataParserNIO implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   March 27, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws IOException {
+	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int result;
 		int fieldCounter = 0;
 		int character;
@@ -316,7 +319,12 @@ public class DelimitedDataParserNIO implements DataParser {
 
 			// did we have EOF situation ?
 			if (character == -1) {
-				reader.close();
+				try {
+					reader.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new JetelException(e.getMessage());
+				}
 				return null;
 			}
 

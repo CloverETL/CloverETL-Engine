@@ -20,6 +20,9 @@
 
 package org.jetel.data;
 
+import java.io.IOException;
+
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -60,6 +63,19 @@ public interface DataParser {
 	 * @since    May 2, 2002
 	 */
 	public void close();
+
+
+	/**
+	 * @param record
+	 * @return
+	 */
+	public DataRecord getNext(DataRecord record) throws JetelException;
+
+
+	/**
+	 * @param handler
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler);
 
 }
 /*

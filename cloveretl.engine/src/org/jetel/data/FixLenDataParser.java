@@ -23,6 +23,7 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
 
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.*;
 
@@ -93,12 +94,7 @@ public class FixLenDataParser implements DataParser {
 
 		record.init();
 
-		try {
-			return parseNext(record);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
-		}
+		return parseNext(record);
 	}
 
 
@@ -110,7 +106,7 @@ public class FixLenDataParser implements DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   August 21, 2002
 	 */
-	public DataRecord getNext(DataRecord record) throws IOException {
+	public DataRecord getNext(DataRecord record) throws JetelException {
 		return parseNext(record);
 	}
 
@@ -212,7 +208,7 @@ public class FixLenDataParser implements DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   August 21, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws IOException {
+	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int character;
 		long size = 0;
@@ -225,14 +221,19 @@ public class FixLenDataParser implements DataParser {
 			fieldStringBuffer.clear();
 
 			// populate fieldBuffer with data
-			if (!readData(fieldBuffer, fieldLengths[fieldCounter])) {
-				reader.close();
-				fieldBuffer.flip();
-				if ((fieldBuffer.remaining()>0)||(fieldCounter>0)){
-					throw new RuntimeException(getErrorMessage("Incomplete record", recordCounter, fieldCounter));
-				}else{
-					return null;
+			try {
+				if (!readData(fieldBuffer, fieldLengths[fieldCounter])) {
+					reader.close();
+					fieldBuffer.flip();
+					if ((fieldBuffer.remaining()>0)||(fieldCounter>0)){
+						throw new RuntimeException(getErrorMessage("Incomplete record", recordCounter, fieldCounter));
+					}else{
+						return null;
+					}
 				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new JetelException(e.getMessage());
 			}
 			
 			// prepare for populating data field
@@ -260,6 +261,15 @@ public class FixLenDataParser implements DataParser {
 		catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}
+	}
+
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

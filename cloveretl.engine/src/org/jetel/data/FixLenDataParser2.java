@@ -111,17 +111,23 @@ public class FixLenDataParser2 implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   March 27, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws IOException {
+	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int posCounter = 0;
 		String line = null;
-		line = reader.readLine();
-		while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
+		try {
 			line = reader.readLine();
-		}
-		if((line) == null) {  //end of file been reached
-			reader.close();
-			return null;
+			while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
+				line = reader.readLine();
+			}
+
+			if((line) == null) {  //end of file been reached
+				reader.close();
+				return null;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new JetelException(e.getMessage());
 		}
 		if(line.length()<recordLength){ //incomplete record
 			//- incomplete record - do something
@@ -174,7 +180,7 @@ public class FixLenDataParser2 implements DataParser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   May 2, 2002
 	 */
-	public DataRecord getNext(DataRecord record) throws IOException {
+	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(handlerBDFE != null ) {  //use handler only if configured
 			while(handlerBDFE.isThrowException()) {
@@ -219,12 +225,7 @@ public class FixLenDataParser2 implements DataParser {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
 		record.init();
-		try {
-			return parseNext(record);
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
-		}
+		return parseNext(record);
 	}
 
 	/**
