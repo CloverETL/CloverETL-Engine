@@ -55,7 +55,7 @@ public class FixLenDataFormatter implements Formatter {
 	private int fieldLengths[];
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
-	private byte[] crLF="\n".getBytes();
+	private byte[] crLF;
 	
 	private boolean oneRecordPerLinePolicy = false;
 
@@ -74,6 +74,7 @@ public class FixLenDataFormatter implements Formatter {
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER ).newEncoder();
 		initFieldFiller();
 		encoder.reset();
+		crLF=System.getProperty("line.separator","\n").getBytes();
 	}
 
 
@@ -89,6 +90,7 @@ public class FixLenDataFormatter implements Formatter {
 		encoder = Charset.forName(charEncoder).newEncoder();
 		initFieldFiller();
 		encoder.reset();
+		crLF=System.getProperty("line.separator","\n").getBytes();
 	}
 
 
@@ -214,6 +216,15 @@ public class FixLenDataFormatter implements Formatter {
 		oneRecordPerLinePolicy = b;
 	}
 
+	/**
+	 * Sets line separator char(s) - allows to specify
+	 * different than default EOL character (\n).
+	 * 
+	 * @param separator
+	 */
+	public void setLineSeparator(String separator){
+		crLF=separator.getBytes();
+	}
 }
 /*
  *  end class FixLenDataFormatter
