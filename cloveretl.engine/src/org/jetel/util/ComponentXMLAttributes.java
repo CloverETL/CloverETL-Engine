@@ -16,10 +16,15 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.util;
-import org.jetel.exception.NotFoundException;
-import org.w3c.dom.NamedNodeMap;
-import java.util.List;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.jetel.data.Defaults;
+import org.jetel.exception.NotFoundException;
+import org.jetel.graph.TransformationGraph;
+import org.w3c.dom.NamedNodeMap;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
@@ -35,6 +40,8 @@ public class ComponentXMLAttributes {
 
 	private NamedNodeMap attributes;
 	private org.w3c.dom.Node nodeXML;
+	private Matcher regexMatcher;
+	private Properties graphProperties;
 
 	//private Map    childNodes;
 
@@ -46,6 +53,60 @@ public class ComponentXMLAttributes {
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
 		attributes = nodeXML.getAttributes();
 		this.nodeXML = nodeXML;
+		// if some property is defined for graph, we will
+		// try to look for refereneces to graph properties within XML attributes values;
+		graphProperties = TransformationGraph.getReference().getGraphProperties();
+		if (graphProperties != null) {
+			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+			regexMatcher = pattern.matcher("");
+		}
+	}
+
+
+	/**
+	 *Constructor for the ComponentXMLAttributes object
+	 *
+	 * @param  nodeXML     Description of the Parameter
+	 * @param  properties  Description of the Parameter
+	 */
+	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
+		attributes = nodeXML.getAttributes();
+		this.nodeXML = nodeXML;
+		graphProperties = properties;
+		Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
+		regexMatcher = pattern.matcher("");
+	}
+
+
+	/**
+	 *  Looks for reference to global graph properties within string and
+	 *  tries to resolve them - replace by the property's value.<br>
+	 *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
+	 *  usually in the form ${_property_name_}
+	 *
+	 * @param  value  String potentially containing one or more references to property
+	 * @return        String with all references resolved
+	 * @see           org.jetel.data.Defaults
+	 */
+	String resolvePropertyRef(String value) {
+		String reference;
+		String resolvedReference;
+		StringBuffer strBuf = new StringBuffer();
+		if (graphProperties != null) {
+			regexMatcher.reset(value);
+			while (regexMatcher.find()) {
+				reference = regexMatcher.group(1);
+				resolvedReference = graphProperties.getProperty(reference);
+				if (resolvedReference == null) {
+					throw new RuntimeException("Can't resolve reference to graph property: " + reference);
+				}
+				regexMatcher.appendReplacement(strBuf, resolvedReference);
+			}
+			regexMatcher.appendTail(strBuf);
+			return strBuf.toString();
+		} else {
+			return value;
+		}
 	}
 
 
@@ -250,11 +311,19 @@ public class ComponentXMLAttributes {
 		}
 		return null;
 	}
-	
-	public org.w3c.dom.Node[] getChildNodes(org.w3c.dom.Node nodeXML, String childNodeName){
+
+
+	/**
+	 *  Gets the childNodes attribute of the ComponentXMLAttributes object
+	 *
+	 * @param  nodeXML        Description of the Parameter
+	 * @param  childNodeName  Description of the Parameter
+	 * @return                The childNodes value
+	 */
+	public org.w3c.dom.Node[] getChildNodes(org.w3c.dom.Node nodeXML, String childNodeName) {
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
-		List childNodesList=new LinkedList();
+		List childNodesList = new LinkedList();
 		if (nodeXML.hasChildNodes()) {
 			list = nodeXML.getChildNodes();
 			for (int i = 0; i < list.getLength(); i++) {
@@ -264,9 +333,28 @@ public class ComponentXMLAttributes {
 				}
 			}
 		}
-		return (org.w3c.dom.Node[])childNodesList.toArray(new org.w3c.dom.Node[0]);
+		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[0]);
 	}
 
+/* Test/Debug code	
+	public static void main(String args[]){
+		Properties prop=new Properties();
+		try{
+		InputStream inStream = new BufferedInputStream(new FileInputStream(args[0]));
+		prop.load(inStream);
+		}catch(IOException ex){
+			ex.printStackTrace();
+		}
+		ComponentXMLAttributes attr=new ComponentXMLAttributes(null,prop);
+		System.out.println("DB driver is: '{${dbDriver}}' ...");
+		System.out.println(attr.resolvePropertyRef("DB driver is: '{${dbDriver}}' ..."));
+		System.out.println("${user} is user");
+		System.out.println(attr.resolvePropertyRef("${user} is user"));
+		System.out.println("${usr}/${password} is user/password");
+		System.out.println(attr.resolvePropertyRef("${usr}/${password} is user/password"));
+				
+	}
+*/
 }
 /*
  *  End class StringUtils
