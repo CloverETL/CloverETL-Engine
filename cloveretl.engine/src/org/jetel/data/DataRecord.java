@@ -56,24 +56,53 @@ public class DataRecord implements Serializable {
 	 */
 	private transient DataRecordMetadata metadata;
 
-	// Attributes
-	/**
-	 *  An attribute that represents ...
-	 *
-	 * @param  _metadata  Description of Parameter
-	 * @since
-	 */
-
-	// Operations
 
 	public DataRecord(DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
 		fields = new DataField[metadata.getNumFields()];
 	}
 
+	/**
+	 * Private constructor used when clonning/copying DataRecord objects.
+	 * 
+	 * @param _metadata metadata describing this record
+	 * @param numFields number of fields this record should contain
+	 */
+	private DataRecord(DataRecordMetadata _metadata, int numFields){
+	    this.metadata = _metadata;
+	    fields = new DataField[numFields];
+	}
 
+	
+	
+	/**
+	 * Creates deep copy of existing record (field by field).
+	 * 
+	 * @return new DataRecord
+	 */
+	public DataRecord duplicate(){
+	    DataRecord newRec=new DataRecord(metadata,fields.length);
+	    for (int i=0;i<fields.length;i++){
+	        newRec.fields[i]=fields[i].duplicate();
+	    }
+	    return newRec;
+	}
+	
+	/**
+	 * Set fields by copying the fields from the record passed as argument.
+	 * Does assume that both records have the same structure - i.e. metadata.
+	 * @param fromRecord DataRecord from which to get fields' values
+	 */
+	public void copyFrom(DataRecord fromRecord){
+	    for (int i=0;i<fields.length;i++){
+	        this.fields[i].copyFrom(fromRecord.fields[i]);
+	    } 
+	}
+	
+	
 	/**
 	 *  Set fields by copying the fields from the record passed as argument.
+	 * Can handle situation when records are not exactly the same.
 	 *
 	 * @param  _record  Record from which fields are copied
 	 * @since
@@ -124,9 +153,9 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  Description of the Method
+	 *  Refreshes this record's content from ByteBuffer. 
 	 *
-	 * @param  buffer  Description of Parameter
+	 * @param  buffer  ByteBuffer from which this record's fields should be read
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
@@ -244,9 +273,9 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  Description of the Method
+	 *  Serializes this record's content into ByteBuffer.
 	 *
-	 * @param  buffer  Description of Parameter
+	 * @param  buffer  ByteBuffer into which the individual fields of this record should be put
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
@@ -300,7 +329,7 @@ public class DataRecord implements Serializable {
 
 	/**
 	 *  Creates textual representation of record's content based on values of individual
-	 *  fields.  Format is: Field Number|Field Name|Field Type(S|D|I|N|B)->Field Value
+	 *  fields
 	 *
 	 * @return    Description of the Return Value
 	 */

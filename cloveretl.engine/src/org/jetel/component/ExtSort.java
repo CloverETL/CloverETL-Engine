@@ -76,7 +76,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <pre>&lt;Node id="SORT_CUSTOMER" type="EXT_SORT" sortKey="Name:Address" sortOrder="A"/&gt;</pre>
  *
  * @author      dpavlis
- * @since       April 4, 2002
+ * @since       February 15, 2005
  * @revision    $Revision$
  */
 public class ExtSort extends Node {

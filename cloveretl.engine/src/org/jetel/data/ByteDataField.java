@@ -77,11 +77,33 @@ public class ByteDataField extends DataField {
 	 */
 	public ByteDataField(DataFieldMetadata _metadata, byte[] value) {
 		super(_metadata);
-		this.value = value;
-		setNull(false);
+		setValue(value);
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    return new ByteDataField(metadata,value);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    if (fromField instanceof ByteDataField){
+	        if (!fromField.isNull){
+	            int length=((ByteDataField)fromField).value.length;
+	            if (this.value.length!=length){
+	                this.value=new byte[length];
+	            }
+	            System.arraycopy(this.value,0,((ByteDataField)fromField).value,0,length);
+	        }
+	        setNull(fromField.isNull);
+	    }
+	}
+	
 	/**
 	 *  Sets the value of the field
 	 *
@@ -269,7 +291,13 @@ public class ByteDataField extends DataField {
 	 *@since       October 29, 2002
 	 */
 	public boolean equals(Object obj) {
-		return Arrays.equals(this.value, ((ByteDataField) obj).getByte());
+		if (obj instanceof ByteDataField){
+			return Arrays.equals(this.value, ((ByteDataField) obj).getByte());
+		}else if (obj instanceof byte[]){
+			return Arrays.equals(this.value, (byte[])obj);
+		}else {
+			return false;
+		}
 	}
 
 
@@ -280,7 +308,16 @@ public class ByteDataField extends DataField {
 	 *@return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		byte[] byteObj = (byte[]) ((ByteDataField) obj).getValue();
+		byte[] byteObj;
+		
+		if (obj instanceof ByteDataField){
+			byteObj = (byte[]) ((ByteDataField) obj).getValue();
+		}else if (obj instanceof byte[]){
+			byteObj= (byte[])obj;
+		}else {
+			throw new RuntimeException("Object is NOT a ByteDataField or byte[] array: "+obj);
+		}
+		 
 		int compLength = value.length >= byteObj.length ? value.length : byteObj.length;
 		for (int i = 0; i < compLength; i++) {
 			if (value[i] > byteObj[i]) {
