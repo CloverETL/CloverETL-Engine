@@ -1,21 +1,20 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002  David Pavlis
-*
-*    This program is free software; you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation; either version 2 of the License, or
-*    (at your option) any later version.
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.component;
 
 import java.io.*;
@@ -28,10 +27,10 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
 /**
-  *  <h3>Sort Component</h3>
+ *  <h3>Sort Component</h3>
  *
  * <!-- Sorts the incoming records based on specified key -->
- * 
+ *
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
@@ -49,41 +48,64 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"SORT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sortKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>sortOrder</b></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td>
+ *  <tr><td><b>sortOrder</b><br><i>optional</i></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td>
  *  </tr>
- *  </table>  
- * 
+ *  </table>
+ *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="SORT_CUSTOMER" type="SORT" sortKey="Name:Address" sortOrder="A"/&gt;</pre>
  *
- * @author     dpavlis
- * @since    April 4, 2002
+ * @author      dpavlis
+ * @since       April 4, 2002
+ * @revision    $Revision$
  */
 public class Sort extends Node {
 
-	public static final String COMPONENT_TYPE="SORT";
-	
-	private static final int WRITE_TO_PORT = 0;
-	private static final int READ_FROM_PORT = 0;
+	/**  Description of the Field */
+	public final static String COMPONENT_TYPE = "SORT";
+
+	private final static int WRITE_TO_PORT = 0;
+	private final static int READ_FROM_PORT = 0;
 
 	private SortDataRecordInternal sorter;
 	private boolean sortOrderAscending;
 	private String[] sortKeys;
 	private ByteBuffer recordBuffer;
-	
-	public Sort(String id,String[] sortKeys, boolean sortOrder){
+
+
+	/**
+	 *Constructor for the Sort object
+	 *
+	 * @param  id         Description of the Parameter
+	 * @param  sortKeys   Description of the Parameter
+	 * @param  sortOrder  Description of the Parameter
+	 */
+	public Sort(String id, String[] sortKeys, boolean sortOrder) {
 		super(id);
-		this.sortOrderAscending=sortOrder;
-		this.sortKeys=sortKeys;
+		this.sortOrderAscending = sortOrder;
+		this.sortKeys = sortKeys;
 	}
-	
-	
+
+
+	/**
+	 *Constructor for the Sort object
+	 *
+	 * @param  id        Description of the Parameter
+	 * @param  sortKeys  Description of the Parameter
+	 */
+	public Sort(String id, String[] sortKeys) {
+		super(id);
+		this.sortOrderAscending = true;// default ascending
+		this.sortKeys = sortKeys;
+	}
+
+
 	/**
 	 *  Gets the Type attribute of the SimpleCopy object
 	 *
@@ -101,86 +123,101 @@ public class Sort extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		InputPort inPort=getInputPort(READ_FROM_PORT);
-		DataRecord inRecord=new DataRecord(inPort.getMetadata());
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 
-		while(inRecord!=null && runIt){
-			try{
-				inRecord=inPort.readRecord(inRecord); // readRecord(READ_FROM_PORT,inRecord);
-				if (inRecord!=null){
+		while (inRecord != null && runIt) {
+			try {
+				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
+				if (inRecord != null) {
 					sorter.put(inRecord);
 				}
-			}catch(BufferOverflowException ex){
-				resultMsg="Buffer Overflow";
-				resultCode=Node.RESULT_ERROR;
+			} catch (BufferOverflowException ex) {
+				resultMsg = "Buffer Overflow";
+				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}catch(IOException ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
+			} catch (IOException ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}catch(Exception ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
+			} catch (Exception ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
 				//closeAllOutputPorts();
 				return;
 			}
 		}
 		// sort the records now
-		try{
+		try {
 			sorter.sort();
-		}catch(Exception ex){
-			resultMsg="Error when sorting: "+ex.getMessage();
-			resultCode=Node.RESULT_FATAL_ERROR;
+		} catch (Exception ex) {
+			resultMsg = "Error when sorting: " + ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 			return;
 		}
 		// we read directly into buffer so we don't waste time with deserialization of record
 		// it will happen if needed on the other side
 		recordBuffer.clear();
-		while( sorter.getNext(recordBuffer) && runIt){
-			try{
+		while (sorter.getNext(recordBuffer) && runIt) {
+			try {
 				writeRecordBroadcastDirect(recordBuffer);
 				recordBuffer.clear();
-			}catch(IOException ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
+			} catch (IOException ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}catch(Exception ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
+			} catch (Exception ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
 				//closeAllOutputPorts();
 				return;
 			}
 		}
 		broadcastEOF();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}	
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
+	}
+
+
+	/**
+	 *  Sets the sortOrderAscending attribute of the Sort object
+	 *
+	 * @param  ascending  The new sortOrderAscending value
+	 */
+	public void setSortOrderAscending(boolean ascending) {
+		sortOrderAscending = ascending;
+	}
 
 
 	/**
 	 *  Description of the Method
 	 *
-	 * @since    April 4, 2002
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one input port and one output
-		if (inPorts.size()<1){
+		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		}else if (outPorts.size()<1){
+		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		recordBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer==null){
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:"+
-			Defaults.Record.MAX_RECORD_SIZE);
+		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		if (recordBuffer == null) {
+			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
+					Defaults.Record.MAX_RECORD_SIZE);
 		}
-		
-		sorter=new SortDataRecordInternal(getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+
+		sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
 	}
 
 
@@ -204,18 +241,20 @@ public class Sort extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
-
-		try{
-			return new Sort(xattribs.getString("id"),
-				xattribs.getString("sortKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-				xattribs.getString("sortOrder").matches("^[Aa].*"));
-		}catch(Exception ex){
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+		Sort sort;
+		try {
+			sort = new Sort(xattribs.getString("id"),
+					xattribs.getString("sortKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists("sortOrder")) {
+				sort.setSortOrderAscending(xattribs.getString("sortOrder").matches("^[Aa].*"));
+			}
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
-		
+		return sort;
 	}
-	
+
 }
 
