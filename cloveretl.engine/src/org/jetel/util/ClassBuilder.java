@@ -34,6 +34,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @version 1.0
  *
  */
+ 
+
 public class ClassBuilder {
 	/** used to store position of input record and field tuples*/
 	private HashMap inputFieldRefs = null;
@@ -59,6 +61,7 @@ public class ClassBuilder {
 	 * @param arrayDataRecordMetadata
 	 */
 	public ClassBuilder(DataRecord record, DataRecordMetadata[] arrayDataRecordMetadata) {
+	/*
 		int[] rec_field_poz = null;
 		StringBuffer bufRecord = new StringBuffer();
 		StringBuffer bufField = new StringBuffer();
@@ -99,11 +102,14 @@ public class ClassBuilder {
 		
 		// let's assume that record names are well behaved and can be used as the names
 		// for Java classes
+	
+		/*
 		recordClassName = record.getMetadata().getName();
 		
 		recordPackageName = CloverProperties.USER_JAVA_PACKAGE_NAME;
 		
 		javaMethodList = new ArrayList();
+		*/
 	}
 
 	/**
@@ -111,9 +117,10 @@ public class ClassBuilder {
 	 * @return
 	 */
 	public int[][] constructMethod(DataFieldMetadata fieldMetadata) {
+	
 		int[][] inputRecordFieldDependencies = null;
 		int[] intraRecordFieldDependencies = null;
-		
+		/*
 		String tmpCode = fieldMetadata.getCodeStr();
 		if(tmpCode != null) {
 			CodeParser aCodeParser = new CodeParser(inputFieldRefs,recordFieldRefs);
@@ -121,8 +128,9 @@ public class ClassBuilder {
 			inputRecordFieldDependencies = aCodeParser.getInputRecordFieldDependencies();
 			intraRecordFieldDependencies = aCodeParser.getIntraRecordFieldDependencies();
 		}
-
+		*/
 		return inputRecordFieldDependencies;
+
 	}
 
 	/**
@@ -144,7 +152,7 @@ public class ClassBuilder {
 	 * @return
 	 */
 	public String getMethodName(String string) {
-		// TODO Auto-generated method stub
+//		 /*TODO Auto-generated method stub*/
 		return null;
 	}
 
@@ -165,3 +173,4 @@ public class ClassBuilder {
 	}
 
 }
+
