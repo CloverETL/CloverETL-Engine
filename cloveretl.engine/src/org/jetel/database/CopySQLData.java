@@ -139,25 +139,30 @@ public abstract class CopySQLData {
 	 *      data from DB into Jetel record
 	 *@since            September 26, 2002
 	 */
-	public static CopySQLData[] sql2JetelTransMap(DataRecordMetadata metadata, DataRecord record) {
+	public static CopySQLData[] sql2JetelTransMap(List fieldTypes,DataRecordMetadata metadata, DataRecord record) {
 		CopySQLData[] transMap = new CopySQLData[metadata.getNumFields()];
-
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			switch (metadata.getField(i).getType()) {
-				case DataFieldMetadata.STRING_FIELD:
-					transMap[i] = new CopyString(record, i, i);
-					break;
-				case DataFieldMetadata.NUMERIC_FIELD:
-					transMap[i] = new CopyNumeric(record, i, i);
-					break;
-				case DataFieldMetadata.INTEGER_FIELD:
-					transMap[i] = new CopyInteger(record, i, i);
-					break;
-				case DataFieldMetadata.DATE_FIELD:
-					transMap[i] = new CopyDate(record, i, i);
-					break;
-			}
+		int i=0;
+		for(ListIterator iterator = fieldTypes.listIterator();iterator.hasNext();){
+			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(), record, i, i);
+			i++;
 		}
+		
+//		for (int i = 0; i < metadata.getNumFields(); i++) {
+//			switch (metadata.getField(i).getType()) {
+//				case DataFieldMetadata.STRING_FIELD:
+//					transMap[i] = new CopyString(record, i, i);
+//					break;
+//				case DataFieldMetadata.NUMERIC_FIELD:
+//					transMap[i] = new CopyNumeric(record, i, i);
+//					break;
+//				case DataFieldMetadata.INTEGER_FIELD:
+//					transMap[i] = new CopyInteger(record, i, i);
+//					break;
+//				case DataFieldMetadata.DATE_FIELD:
+//					transMap[i] = new CopyDate(record, i, i);
+//					break;
+//			}
+	
 		return transMap;
 	}
 
@@ -259,6 +264,11 @@ public abstract class CopySQLData {
 				return new CopyDate(record, fromIndex, toIndex);
 			case Types.TIMESTAMP:
 				return new CopyTimestamp(record, fromIndex, toIndex);
+			case Types.BOOLEAN:
+			case Types.BIT:
+				if (jetelFieldType==DataFieldMetadata.STRING_FIELD){
+					return new CopyBoolean(record,fromIndex,toIndex);
+				}
 			default:
 				throw new RuntimeException("SQL data type not supported: " + SQLType);
 		}
@@ -500,17 +510,59 @@ public abstract class CopySQLData {
 		 *@since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			if (field.getValue()==null)
-                        {
-                              pStatement.setNull(fieldSQL,java.sql.Types.TIMESTAMP);
-			}
-			else
-			{
-                               pStatement.setTimestamp(fieldSQL, new
-					Timestamp(((java.util.Date) field.getValue()).getTime()));
-			}
+			pStatement.setTimestamp(fieldSQL, new Timestamp(((java.util.Date) field.getValue()).getTime()));
 		}
 	}
+	
+	/**
+	 *  Copy object for boolean/bit type fields. Expects String data
+	 *  representation on Clover's side
+	 *  for logical
+	 *
+	 *@author     dpavlis
+	 *@since      November 27, 2003
+	 */
+	static class CopyBoolean extends CopySQLData {
+		private static String _TRUE_="T";
+		private static String _FALSE_="F";
+		/**
+		 *  Constructor for the CopyString object
+		 *
+		 *@param  record      Description of Parameter
+		 *@param  fieldSQL    Description of Parameter
+		 *@param  fieldJetel  Description of Parameter
+		 *@since              October 7, 2002
+		 */
+		CopyBoolean(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+
+		/**
+		 *  Sets the Jetel attribute of the CopyString object
+		 *
+		 *@param  resultSet         The new Jetel value
+		 *@exception  SQLException  Description of Exception
+		 *@since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			field.fromString(resultSet.getBoolean(fieldSQL) ? _TRUE_ : _FALSE_);
+		}
+
+
+		/**
+		 *  Sets the SQL attribute of the CopyString object
+		 *
+		 *@param  pStatement        The new SQL value
+		 *@exception  SQLException  Description of Exception
+		 *@since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			pStatement.setBoolean(fieldSQL, field.toString().equalsIgnoreCase(_TRUE_) );
+		}
+
+	}
+
 
 }
 
