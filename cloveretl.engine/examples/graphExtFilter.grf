@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet href="graph.xsl" type="text/xsl"?>
+<Graph name="Testing Filter">
+<!-- This graph demonstrates functionality of Extended Filter component. 
+It can filter on text, date, integer, numeric
+fields with comparison operators: [ >, <, =, <=, >=, !=].
+Text fields can also be compared to a Java regexp using ~= operator.
+
+A filter can be made of different parts separated by a logical operator
+AND, OR. Parenthesis for grouping individual comparisons are also supported -
+e.g. $Age>10 and ($Age <20 or $HireDate<"2003-01-01")
+
+Filter works on single input record, where individual fields of record
+are reference using dollar sign and field's name - e.g. $Age,$Name, etc.
+
+Date format used for date constans is yyyy-MM-dd or yyy-MM-dd hh:mm:ss.
+
+This graph produces two output files:
+First with  all employees who were hired before 1993-12-31.
+Second with all employees who have in their memo that they are "fluent" in some 
+language and were hired before 1993-12-31.
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$HireDate&lt;&quot;1993-12-31&quot;"/>
+<Node id="FILTEREMPL2" type="EXT_FILTER">
+$Memo~=".*fluent.*" and $HireDate&lt;"1993-12-31"
+</Node>
+<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees.filtered_1.dat"  append="false" />
+<Node id="OUTPUT2" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees.filtered_2.dat"  append="false" />
+<!-- Edges  -->
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="FILTEREMPL1:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE1" fromNode="FILTEREMPL1:0" toNode="OUTPUT1:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE2" fromNode="INPUT1:1" toNode="FILTEREMPL2:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE3" fromNode="FILTEREMPL2:0" toNode="OUTPUT2:0" metadata="InMetadata"/>
+</Phase>
+</Graph>
