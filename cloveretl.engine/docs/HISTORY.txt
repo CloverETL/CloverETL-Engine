@@ -1,8 +1,18 @@
 *******************************************************************************
-                                 HISTORY
+                          CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
-2002-12-03
-+ Added code for sorting records. So far all the sorting happens in memory. The external sort will follow.
-+ Extended DataParser (DelimitedDataParserNIO) to handle multiple characters delimiters (the default limit is 32)
-+ Minor inprovement into TransformationGraph$WatchDog to properly report which component caused exception
+REL 1-0-8
+---------
+New features:
++ updated DBOutputTable component to support selective source2target fields
+mapping - attribute cloverFields added.
++ updated Sort component to support lexicographics sorting & normal sorting
++ created new component - HashJoin.
++ created new class HashKey (used for building hash tables of DataRecords)
++ created new class RecordComparator to be used for sorting DataRecords
+
+Bugs corrected:
++ fixed problem in DataRecordMetadataXMLReaderWriter - part writing XML was wrongly
+outputting format string for defaultValue attribute.
+
