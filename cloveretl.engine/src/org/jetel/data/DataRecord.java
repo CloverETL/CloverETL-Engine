@@ -300,14 +300,17 @@ public class DataRecord implements Serializable {
 
 	/**
 	 *  Creates textual representation of record's content based on values of individual
-	 *  fields
+	 *  fields.  Format is: Field Number|Field Name|Field Type(S|D|I|N|B)->Field Value
 	 *
 	 * @return    Description of the Return Value
 	 */
 	public String toString() {
 		StringBuffer str = new StringBuffer();
 		for (int i = 0; i < fields.length; i++) {
-			str.append("#").append(i).append("->");
+			str.append("#").append(i).append("|");
+			str.append(fields[i].getMetadata().getName()).append("|");
+			str.append(fields[i].getType());
+			str.append("->");
 			str.append(fields[i].toString());
 			str.append("\n");
 		}
