@@ -85,6 +85,17 @@ public class DataRecordMetadata {
 		fieldNames = new HashMap();
 	}
 
+	/**
+	 *  Constructor for the DataRecordMetadata object
+	 *
+	 *@param  _name  Name of the Data Record
+	 *@since         May 2, 2002
+	 */
+	public DataRecordMetadata(String _name) {
+		this.name = new String(_name);
+		this.fields = new ArrayList();
+		fieldNames = new HashMap();
+	}
 
 	/**
 	 *  An operation that sets Record Name
@@ -211,6 +222,15 @@ public class DataRecordMetadata {
 		}
 	}
 
+	/**
+	 *  Sets the Record Type (Delimited/Fix-length)
+	 *
+	 *@return    The Record Type
+	 *@since     May 3, 2002
+	 */
+	public void setRecType(char c) {
+		recType = c;
+	}
 
 	/**
 	 *  Gets the Record Type (Delimited/Fix-length)
@@ -266,6 +286,50 @@ public class DataRecordMetadata {
 		if (position != null) {
 			delField(position.intValue());
 		}
+	}
+
+	/**
+	 * This method is used by gui to prepopulate record meta info with
+	 * default fields and user defined sizes.  It also adjusts the number of fields
+	 * and their sizes based on user selection.
+	 * @param objects
+	 */
+	public void bulkLoadFieldSizes(short[] fieldWidths) {
+		DataFieldMetadata aField = null;
+		int fieldsNumber = fields.size();
+		int oldPos = 0;
+		int newPos = 0;
+		
+		//if no fields then create default fields with sizes as in objects
+		if( fieldsNumber == 0) {
+			for(int i=0; i < fieldWidths.length ; i++ ) {
+				newPos = fieldWidths[i];
+				addField(new DataFieldMetadata("Field"+Integer.toString(i),(short)(newPos - oldPos)));
+				oldPos = newPos;				
+			}
+		} else {
+			//fields exist
+			for(int i=0; i < fieldWidths.length ; i++ ) {
+				newPos = fieldWidths[i];
+				if( i < fieldsNumber ) {
+					// adjust the sizes
+					aField = getField(i);
+					aField.setSize( (short)(newPos - oldPos) );
+				} else {
+					// insert new fileds, if any
+					addField(new DataFieldMetadata("Field"+Integer.toString(i),(short)(newPos - oldPos) ));				
+				}
+				oldPos = newPos;				
+			}
+			if( fieldsNumber > fieldWidths.length ) {
+				// remove deleted fields, if any
+				for(int i=fieldWidths.length; i < fieldsNumber ; i++ ) {
+					delField(i);				
+				}
+			}
+			
+		}
+		
 	}
 
 }
