@@ -268,10 +268,11 @@ public class SQLUtil {
 			if (dbMetadata.isNullable(i) == ResultSetMetaData.columnNullable) {
 				fieldMetadata.setNullable(true);
 			}
+			/* this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
 			if (dbMetadata.isCurrency(i)) {
 				fieldMetadata.setFormatStr("¤#.#");
 			}
-
+			*/
 			jetelMetadata.addField(fieldMetadata);
 		}
 		return jetelMetadata;
