@@ -118,5 +118,24 @@ public final class Defaults {
 		public final static short MAX_BUFFERS_ALLOCATED = 99;
 		// all together up to 990 MB
 	}
+	
+	public final static class WatchDog{
+		public final static int WATCHDOG_SLEEP_INTERVAL = 200;  	//milliseconds
+		/**
+		 *  how often is watchdog reporting about graph progress
+		 *
+		 * @since    July 30, 2002
+		 */
+		public final static int DEFAULT_WATCHDOG_TRACKING_INTERVAL = 30000;
+
+		/**
+		 *  One tick is one awakening of watch dog. Sleep interval * number_of_ticks
+		 *  determines how often is checked status of each component.
+		 *
+		 * @since    October 1, 2002
+		 */
+		public final static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5;
+
+	}
 }
 
