@@ -67,7 +67,6 @@ protected void tearDown() {
 public void test_1_IntegerDataField() {
 	assertNotNull(anIntegerDataField2);
 	assertNotNull(anIntegerDataField4);
-	assertTrue(anIntegerDataField4.isNull());
 	}
 
 
@@ -97,8 +96,18 @@ public void test_1_IntegerDataField() {
 		assertEquals("setValue(Object value) failed",anIntegerDataField1.getDouble(), 15.0, 0.0);
 		assertFalse(anIntegerDataField1.isNull());
 
-		anIntegerDataField1.setValue(null);
-		assertTrue(anIntegerDataField1.isNull());
+		try {
+			anIntegerDataField2.setValue(null);
+			fail("anIntegerDataField2 is not nullable - BadDataFormatException should be thrown");
+		} catch(BadDataFormatException e){}
+
+		try {
+			anIntegerDataField1.setValue(null);
+			assertTrue(anIntegerDataField1.isNull());
+			assertEquals("setValue(null) failed", null, anIntegerDataField1.getValue());
+		} catch(BadDataFormatException e){
+			fail("anIntegerDataField1 is nullable - BadDataFormatException should not be thrown");
+		}
 	}
 
 
@@ -109,6 +118,10 @@ public void test_1_IntegerDataField() {
 	public void test_getValue() {
 		anIntegerDataField1.setValue(17.45);
 		assertEquals("getValue() failed",anIntegerDataField1.getValue(), new Integer(17));
+
+		anIntegerDataField1.setValue(null);
+		assertEquals(null, anIntegerDataField1.getValue());
+
 	}
 
 	/**
@@ -118,6 +131,9 @@ public void test_1_IntegerDataField() {
 	public void test_toString() {
 		anIntegerDataField1.setValue(19.45);
 		assertEquals("toString() failed",anIntegerDataField1.toString(), "19");
+
+		anIntegerDataField1.setValue(null);
+		assertEquals("", anIntegerDataField1.toString());
 	}
 
 /**
@@ -128,8 +144,21 @@ public void test_fromString() {
 	anIntegerDataField1.fromString("123");
 	assertEquals(anIntegerDataField1.getInt(),123);
 	
+	
+	anIntegerDataField1.fromString(null);
+	assertTrue(anIntegerDataField1.isNull());
+	assertEquals("", anIntegerDataField1.toString());
+	
+	anIntegerDataField1.fromString("");
+	assertTrue(anIntegerDataField1.isNull());
+	assertEquals("", anIntegerDataField1.toString());
+		
 	try {
-		anIntegerDataField1.fromString("");
+		anIntegerDataField2.fromString("");
+		fail("Should raise an BadDataFormatException");
+	} catch (BadDataFormatException e){	}
+
+	try {
 		anIntegerDataField1.fromString("123.234");
 		fail("Should raise an BadDataFormatException");
 	} catch (BadDataFormatException e){	}
@@ -166,6 +195,14 @@ public void test_serialize() {
 	buffer.rewind();
 	anIntegerDataField4.deserialize(buffer);
 	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+
+
+	buffer.rewind();
+	anIntegerDataField1.fromString("");
+	anIntegerDataField1.serialize(buffer);
+	buffer.rewind();
+	anIntegerDataField4.deserialize(buffer);
+	assertEquals(anIntegerDataField4.getValue(),anIntegerDataField1.getValue());
 	buffer = null;
 }
 

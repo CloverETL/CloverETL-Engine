@@ -73,7 +73,6 @@ protected void tearDown() {
 public void test_1_NumericDataField() {
 	assertNotNull(aNumericDataField2);
 	assertNotNull(aNumericDataField4);
-	assertTrue(aNumericDataField4.isNull());
 	}
 
 
@@ -103,8 +102,18 @@ public void test_1_NumericDataField() {
 		assertEquals("setValue(Object value) failed",aNumericDataField1.getDouble(), 15.1234, 0.0);
 		assertFalse(aNumericDataField1.isNull());
 
-		aNumericDataField1.setValue(null);
-		assertTrue(aNumericDataField1.isNull());
+		try {
+			aNumericDataField2.setValue(null);
+			fail("aNumericDataField2 is not nullable - BadDataFormatException should be thrown");
+		} catch(BadDataFormatException e){}
+
+		try {
+			aNumericDataField1.setValue(null);
+			assertTrue(aNumericDataField1.isNull());
+			assertEquals("setValue(null) failed", null, aNumericDataField1.getValue());
+		} catch(BadDataFormatException e){
+			fail("aNumericDataField1 is nullable - BadDataFormatException should not be thrown");
+		}
 	}
 
 
@@ -115,6 +124,12 @@ public void test_1_NumericDataField() {
 	public void test_getValue() {
 		aNumericDataField1.setValue(17.45);
 		assertEquals("getValue() failed",aNumericDataField1.getValue(), new Double(17.45));
+
+		aNumericDataField1.setValue(null);
+		assertEquals(null, aNumericDataField1.getValue());
+
+		aNumericDataField1.setValue(null);
+		assertEquals("", aNumericDataField1.toString());
 	}
 
 	/**
@@ -134,8 +149,21 @@ public void test_fromString() {
 	aNumericDataField1.fromString("123");
 	assertEquals(aNumericDataField1.getInt(),123);
 
+	
+	aNumericDataField1.fromString(null);
+	assertTrue(aNumericDataField1.isNull());
+	assertEquals("", aNumericDataField1.toString());
+	
+	aNumericDataField1.fromString("");
+	assertTrue(aNumericDataField1.isNull());
+	assertEquals("", aNumericDataField1.toString());
+		
 	try {
-		aNumericDataField1.fromString("");
+		aNumericDataField2.fromString("");
+		fail("Should raise an BadDataFormatException");
+	} catch (BadDataFormatException e){	}
+
+	try {
 		aNumericDataField1.fromString("r123.43");
 		fail("Should raise an BadDataFormatException");
 	} catch (BadDataFormatException e){	}
@@ -172,6 +200,13 @@ public void test_serialize() {
 	buffer.rewind();
 	aNumericDataField4.deserialize(buffer);
 	assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
+
+	buffer.rewind();
+	aNumericDataField1.fromString("");
+	aNumericDataField1.serialize(buffer);
+	buffer.rewind();
+	aNumericDataField4.deserialize(buffer);
+	assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
 	buffer = null;
 }
 
