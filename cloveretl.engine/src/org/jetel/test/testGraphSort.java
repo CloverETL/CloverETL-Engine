@@ -24,6 +24,9 @@ import org.jetel.graph.*;
 import org.jetel.component.*;
 
 public class testGraphSort {
+	
+	private static final int _PHASE_1=0;
+	private static final int _PHASE_2=1;
 
 	public static void main(String args[]){
 		
@@ -68,21 +71,22 @@ public class testGraphSort {
 	Node nodeSort=new Sort("Sorter",sortKeys, true);
 	Node nodeWrite=new DelimitedDataWriterNIO("Data Writer",args[1],false);
 	
-	// add	Edges & Nodes to graph
+	// add	Edges & Nodes & Phases to graph
 	graph.addEdge(inEdge);
 	graph.addEdge(outEdge);
 	
-	graph.addNode(nodeRead);
-	graph.addNode(nodeSort);
-	graph.addPhase(new Phase(1));
-	graph.addNode(nodeWrite);
+	graph.addPhase(new Phase(_PHASE_1));
+	graph.addNode(nodeRead,_PHASE_1);
+	graph.addNode(nodeSort,_PHASE_1);
+	graph.addPhase(new Phase(_PHASE_2));
+	graph.addNode(nodeWrite,_PHASE_2);
 	
 	
 	// assign ports (input & output)
-	nodeRead.addOutputPort(inEdge);
-	nodeSort.addInputPort(inEdge);
-	nodeSort.addOutputPort(outEdge);
-	nodeWrite.addInputPort(outEdge);
+	nodeRead.addOutputPort(0,inEdge);
+	nodeSort.addInputPort(0,inEdge); 
+	nodeSort.addOutputPort(0,outEdge);
+	nodeWrite.addInputPort(0,outEdge);
 	
 	
 	if(!graph.init(System.out)){

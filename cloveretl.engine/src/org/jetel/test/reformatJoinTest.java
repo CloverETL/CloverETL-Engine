@@ -18,55 +18,39 @@
 
 package org.jetel.test;
 
-import org.jetel.component.RecordTransform;
+import org.jetel.component.DataRecordTransform;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.data.*;
 
 
-public class reformatJoinTest implements RecordTransform{
+public class reformatJoinTest extends DataRecordTransform{
 
 	String message;
 	int counter=0;
 	int field=0;
 
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	public boolean init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	
-	public boolean transform(DataRecord source, DataRecord target){
-		System.out.println("reformat Join Test Called! #"+(counter++));
-		System.out.print(source.toString());
-		return true;
-	}
-	
-	public boolean transform(DataRecord[] source, DataRecord target){
+		
+	public boolean transform(DataRecord[] source, DataRecord target[]){
 		//System.out.println("reformat Join Test Called! #"+(counter++));
 		
 		System.out.print(source[0].getField(0).toString());
-		target.getField(0).setValue(source[0].getField(0).getValue());
+		target[0].getField(0).setValue(source[0].getField(0).getValue());
 		System.out.print("|");
 		System.out.print(source[0].getField(1).toString());
-		target.getField(1).setValue(source[0].getField(1).getValue());
+		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		System.out.print("|");
 		System.out.print(source[0].getField(2).toString());
-		target.getField(2).setValue(source[0].getField(2).getValue());
+		target[0].getField(2).setValue(source[0].getField(2).getValue());
 		if (source[1]!=null){
 			System.out.print("|");
 			System.out.print(source[1].getField(0).toString());
-			target.getField(3).setValue(source[1].getField(0).getValue());
+			target[0].getField(3).setValue(source[1].getField(0).getValue());
 			System.out.print("|");
 			System.out.print(source[1].getField(1).toString());
-			target.getField(4).setValue(source[1].getField(1).getValue());
+			target[0].getField(4).setValue(source[1].getField(1).getValue());
 		}
 		System.out.println();
 		
 		return true;
-	}
-
-	public String getMessage(){
-		return message;
 	}
 }

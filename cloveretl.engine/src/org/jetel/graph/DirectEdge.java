@@ -233,6 +233,9 @@ public class DirectEdge extends EdgeBase {
 		recordBuffer.close();
 	}
 
+	public boolean hasData(){
+		return ( recordBuffer.full.isEmpty() ? false : true);
+	}
 
 	/**
 	 *  Description of the Class

@@ -22,7 +22,6 @@ package org.jetel.component;
 import java.util.*;
 import java.io.*;
 import java.nio.ByteBuffer;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.FileRecordBuffer;
@@ -111,8 +110,6 @@ public class MergeJoin extends Node {
 	private RecordTransform transformation = null;
 	private DynamicJavaCode dynamicTransformation = null;
 
-	private DataRecord[] joinedRecords;
-
 	private boolean leftOuterJoin = false;
 
 	private String[] joinKeys;
@@ -125,6 +122,7 @@ public class MergeJoin extends Node {
 
 	// for passing data records into transform function
 	private final static DataRecord[] inRecords = new DataRecord[2];
+	private DataRecord[] outRecords=new DataRecord[2];
 
 
 	/**
@@ -277,12 +275,13 @@ public class MergeJoin extends Node {
 		dataBuffer.clear();
 		inRecords[0] = driver;
 		inRecords[1] = slave;
+		outRecords[0]= out;
 
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
 			slave.deserialize(dataBuffer);
 			// **** call transform function here ****
-			if (!transformation.transform(inRecords, out)) {
+			if (!transformation.transform(inRecords, outRecords)) {
 				resultMsg = transformation.getMessage();
 				return false;
 			}
@@ -308,8 +307,9 @@ public class MergeJoin extends Node {
 			 throws IOException, InterruptedException {
 		inRecords[0] = driver;
 		inRecords[1] = null;
+		outRecords[0]= out;
 
-		if (!transformation.transform(inRecords, out)) {
+		if (!transformation.transform(inRecords, outRecords)) {
 			resultMsg = transformation.getMessage();
 			return false;
 		}
@@ -344,7 +344,6 @@ public class MergeJoin extends Node {
 	 */
 	public void run() {
 		boolean isDriverDifferent;
-		ByteBuffer data = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 
 		// get all ports involved
 		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
@@ -455,8 +454,6 @@ public class MergeJoin extends Node {
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		// allocate array for joined records (this array will be passed to reformat function)
-		joinedRecords = new DataRecord[inPorts.size()];
 		if (slaveOverrideKeys == null) {
 			slaveOverrideKeys = joinKeys;
 		}

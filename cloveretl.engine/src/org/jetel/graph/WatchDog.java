@@ -24,7 +24,6 @@ import java.util.*;
 
 import java.util.logging.Logger;
 import org.jetel.data.Defaults;
-import org.jetel.database.DBConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.StringUtils;
 
@@ -43,6 +42,7 @@ class WatchDog extends Thread {
 	private TransformationGraph graph;
 	private Phase[] phases;
 	private Phase currentPhase;
+	private int currentPhaseNum;
 	private Runtime javaRuntime;
 	private int freeMemoryStampKB;
 
@@ -101,8 +101,8 @@ class WatchDog extends Thread {
 		log.println("[WatchDog] Thread started.");
 		log.print("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)");
 		log.println(" max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
-		for (int i = 0; i < phases.length; i++) {
-			if (!runPhase(phases[i])) {
+		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+			if (!runPhase(phases[currentPhaseNum])) {
 				watchDogStatus = WATCH_DOG_STATUS_ERROR;
 				log.println("[WatchDog] !!! Phase finished with error - stopping graph run !!!");
 				return;
@@ -222,8 +222,6 @@ class WatchDog extends Thread {
 		int i;
 		int recCount;
 		Node node;
-		StringBuffer stringBuf;
-		stringBuf = new StringBuffer(90);
 		log.println("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
 		log.print("Time: ");
 		// France is here just to get 24hour time format
@@ -345,5 +343,12 @@ class WatchDog extends Thread {
 	 *  private void initialize(){
 	 *  }
 	 */
+	/**
+	 * @return Returns the currentPhaseNum - which phase is currently 
+	 * beeing executed
+	 */
+	public int getCurrentPhaseNum() {
+		return currentPhaseNum;
+	}
 }
 

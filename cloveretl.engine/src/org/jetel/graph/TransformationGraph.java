@@ -21,15 +21,12 @@
 
 package org.jetel.graph;
 import java.io.*;
-import java.text.DateFormat;
 import java.util.*;
 
 import java.util.logging.Logger;
 import org.jetel.data.Defaults;
 import org.jetel.database.DBConnection;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.util.StringUtils;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -126,6 +123,12 @@ public final class TransformationGraph {
 	}
 
 
+	/**
+	 * @return Returns the Phases array.
+	 */
+	public Phase[] getPhases() {
+		return phasesArray;
+	}
 	/**
 	 * An operation that starts execution of graph
 	 *
@@ -487,6 +490,20 @@ public final class TransformationGraph {
 		graphProperties.putAll(properties);
 	}
 
+	/**
+	 * If graph is running (WatchDog thread is running) then
+	 * it returns which phase (number) is currently beeing executed.
+	 * Otherwise it returns -1;
+	 * 
+	 * @return Phase number or -1 is no phase is beeing executed
+	 */
+	public int getRunningPhaseNum(){
+		if (watchDog!=null){
+			return watchDog.getCurrentPhaseNum();
+		}else{
+			return -1;
+		}
+	}
 }
 /*
  *  end class TransformationGraph

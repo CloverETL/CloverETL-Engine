@@ -363,9 +363,7 @@ public class TransformationGraphXMLReaderWriter {
 		String fromNodeAttr;
 		String toNodeAttr;
 		String[] specNodePort;
-		String fromNode;
 		int fromPort;
-		String toNode;
 		int toPort;
 		DataRecordMetadata edgeMetadata;
 		org.jetel.graph.Edge graphEdge;

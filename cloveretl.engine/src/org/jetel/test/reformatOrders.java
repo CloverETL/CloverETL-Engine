@@ -18,25 +18,20 @@
 
 package org.jetel.test;
 
-import org.jetel.component.RecordTransform;
+import org.jetel.component.DataRecordTransform;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.data.*;
 
 
-public class reformatOrders implements RecordTransform{
+public class reformatOrders extends DataRecordTransform{
 
 	String message;
 	int counter=0;
 	int field=0;
 
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	public boolean init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	
-	public boolean transform(DataRecord source, DataRecord target){
+	public boolean transform(DataRecord _source[], DataRecord _target[]){
+		DataRecord source=_source[0];
+		DataRecord target=_target[0];
 		try{
 		SetVal.setInt(target,"OrderID",GetVal.getInt(source,"OrderID"));
 		SetVal.setString(target,"CustomerID",GetVal.getString(source,"CustomerID"));
@@ -50,13 +45,5 @@ public class reformatOrders implements RecordTransform{
 		}
 		counter++;
 			return true;
-	}
-	
-	public boolean transform(DataRecord[] source, DataRecord target){
-		return true;
-	}
-
-	public String getMessage(){
-		return message;
 	}
 }
