@@ -28,6 +28,7 @@ public class MetadataTestSuite  extends TestSuite  {
 public static Test suite() {
 	TestSuite suite= new TestSuite("All org.jetel.metadata Tests");
 	suite.addTest(new TestSuite(test.org.jetel.metadata.DataRecordMetadataTest.class));
+	suite.addTest(new TestSuite(DataRecordMetadataXMLReaderWriterTest.class));
 	return suite;
 }
 	

@@ -65,6 +65,19 @@ public class DataFieldMetadata {
 	
 	private String defaultValueStr;
 
+	/**
+	 * Field can be populated by execution of Java code which
+	 * can include references to fields from input records.  The
+	 * code corresponds to a body of a methodwhich has to return
+	 * a value that has a type of the field type.
+	 * 
+	 * The syntax for the field references is as follows:
+	 * 
+	 *   [record name].[field name]
+	 *  
+	 */
+	private String codeStr;
+
 	// Attributes
 	/**
 	 *  Description of the Field
@@ -293,13 +306,35 @@ public class DataFieldMetadata {
 	public String getDefaultValue() {
 		return defaultValueStr;
 	}
-
+	/**
+	 * Sets the nullable attribute of the DataFieldMetadata object
+	 * @param nullable
+	 */
 	public void setNullable(boolean nullable) {
 		this.nullable = nullable;
 	}
-
+	/**
+	 * Gets the nullable of the DataFieldMetadata object
+	 * @return
+	 */
 	public boolean isNullable() {
 		return nullable;
+	}
+
+	/**
+	 * Sets the codeStr attribute of the DataFieldMetadata object
+	 * @param codeStr
+	 */
+	public void setCodeStr(String codeStr) {
+		this.codeStr = codeStr;
+	}
+
+	/**
+	 * Gets the codeStr of the DataFieldMetadata object
+	 * @return
+	 */
+	public String getCodeStr() {
+		return codeStr;
 	}
 
 }

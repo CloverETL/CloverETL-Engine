@@ -58,7 +58,7 @@ protected void setUp() {
 	testFile1 = "data\\out\\test1.txt";	
 	File aFile=new File(testFile1);
 	 if(!aFile.exists()) {
-		new File(aFile.getParent()).mkdir();
+		new File(aFile.getParent()).mkdirs();
 		try {
 			aFile.createNewFile();
 		} catch (IOException e3) {

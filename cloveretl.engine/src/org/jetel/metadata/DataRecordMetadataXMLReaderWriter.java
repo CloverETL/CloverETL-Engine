@@ -86,6 +86,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	//private static boolean setSchemaFullSupport = false;
 	private static final String RECORD_ELEMENT = "Record";
 	private static final String FIELD_ELEMENT = "Field";
+	private static final String CODE_ELEMENT = "Code";
 
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 	
@@ -203,7 +204,15 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					out.print("default=\""+field.getFormatStr()+"\" ");
 				}
 				out.print("nullable=\""+(new Boolean(field.isNullable())).toString()+"\" ");
-				out.println("/>");
+				if (field.getCodeStr()!=null){
+					out.println(">");
+					out.println("\t\t<Code>");
+					out.println(field.getCodeStr());
+					out.println("\t\t</Code>");
+					out.println("\t</Field>");
+				} else {
+					out.println("/>");
+				}
 
 			}
 		}
@@ -287,6 +296,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}catch(NullPointerException ex){
 			}
 
+			NodeList fieldCodeElements = fieldElements.item(i).getChildNodes();
+			if( fieldCodeElements != null ) {
+				for(int l = 0; l < fieldCodeElements.getLength() ; l++) {
+					if(fieldCodeElements.item( l ).getNodeName().equals(CODE_ELEMENT)) {
+						field.setCodeStr(fieldCodeElements.item( l ).getFirstChild().getNodeValue());
+					}
+				}
+			}
 			recordMetadata.addField(field);
 		}
 		return recordMetadata;
