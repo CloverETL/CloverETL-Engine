@@ -20,6 +20,7 @@ package org.jetel.component;
 
 import java.util.*;
 import java.io.*;
+import java.nio.ByteBuffer;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
@@ -93,6 +94,7 @@ public class SortedJoin extends Node {
 		this.joinKeys=joinKeys;
 		this.transformClassName=transformClass;
 		this.inputDataRequired=inputDataRequired;
+		throw new RuntimeException("SortedJoin component not finished");
 	}
 	
 	public SortedJoin(String id,String[] joinKeys, RecordTransform transformClass, boolean[] inputDataRequired){
@@ -100,6 +102,7 @@ public class SortedJoin extends Node {
 		this.joinKeys=joinKeys;
 		this.transformation=transformClass;
 		this.inputDataRequired=inputDataRequired;
+		throw new RuntimeException("SortedJoin component not finished");
 	}
 	/**
 	 *  Gets the Status attribute of the SimpleCopy object
@@ -123,7 +126,8 @@ public class SortedJoin extends Node {
 	}
 
 	
-	private void fillRBuffer(FileRecordBuffer buffer,ByteBuffer data,DataRecord record,RecordKey key,InputPort port){
+	private void fillRBuffer(FileRecordBuffer buffer,ByteBuffer data,DataRecord record,RecordKey key,InputPort port)
+		throws IOException,InterruptedException{
 			DataRecord next=new DataRecord(record.getMetadata());
 			next.init();
 			
@@ -142,12 +146,13 @@ public class SortedJoin extends Node {
 	}
 	
 	
-	private boolean matchAB(DataRecord a,DataRecord b,InputPort portA,InputPort portB,RecordKey rkA,RecordKey rkB){
+	private boolean matchAB(DataRecord a,DataRecord b,InputPort portA,InputPort portB,RecordKey rkA,RecordKey rkB)
+		throws IOException,InterruptedException{
 		// these two lines probably not neccessary
 		//a=portA.readRecord(a);
 		//b=portB.readRecord(b);
 		while(a!=null && b!=null){
-			switch(rkA.compare(rkB,a,b){
+			switch(rkA.compare(rkB,a,b)){
 				case -1: a=portA.readRecord(a);
 					break;
 				case 0:	return true;
@@ -158,20 +163,21 @@ public class SortedJoin extends Node {
 		return false;
 	}
 	
-	private boolean flushCombinations(DataRecord a,DataRecord b,DataRecord out,FileRecordBuffer buffer,OutputPort port){
-		DataRecords[] inRecords={a,b};
-		ByteBuffer data;
+	private boolean flushCombinations(DataRecord a,DataRecord b,DataRecord out,FileRecordBuffer buffer,OutputPort port)
+		throws IOException,InterruptedException{
+		DataRecord[] inRecords={a,b};
+		ByteBuffer data=null;
 		buffer.rewind();
 		
 		while(buffer.shift(data)!=null){
 			b.deserialize(data);
 			// call transform function here
-			if (!transformation.transform(inRecords,outRecord))
+			if (!transformation.transform(inRecords,out))
 			{
 				resultMsg=transformation.getMessage();
 				return false;
 			}
-			port.writeRecord(outRecord);
+			port.writeRecord(out);
 		}
 		return true;
 	}
