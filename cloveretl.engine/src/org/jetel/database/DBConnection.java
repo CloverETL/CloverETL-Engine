@@ -17,6 +17,9 @@
  */
 package org.jetel.database;
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Properties;
 import org.jetel.util.ComponentXMLAttributes;
@@ -53,6 +56,8 @@ public class DBConnection {
 	Driver dbDriver;
 	Connection dbConnection;
 	Properties config;
+
+	private final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
 
 
 	/**
@@ -97,11 +102,33 @@ public class DBConnection {
 	public void connect() {
 		try {
 			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
+		} catch (ClassNotFoundException ex) {
+			// let's try to load in any addition .jar library (if specified)
+			String jdbcDriverLibrary = config.getProperty(JDBC_DRIVER_LIBRARY_NAME);
+			if (jdbcDriverLibrary != null) {
+				String urlString = "file:" + jdbcDriverLibrary;
+				URL[] myURLs;
+				try {
+					myURLs = new URL[]{new URL(urlString)};
+					URLClassLoader classLoader = new URLClassLoader(myURLs);
+					dbDriver = (Driver) Class.forName(dbDriverName, true, classLoader).newInstance();
+				} catch (MalformedURLException ex1) {
+					throw new RuntimeException("Malformed URL: "+ex1.getMessage());
+				} catch (ClassNotFoundException ex1) {
+					throw new RuntimeException("Can not find class: " + ex1);
+				} catch (Exception ex1) {
+					throw new RuntimeException("General exception: "+ex1.getMessage());
+				}
+			} else {
+				throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+			}
+		} catch (Exception ex) {
+			throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+		}
+		try {
 			dbConnection = dbDriver.connect(dbURL, this.config);
 		} catch (SQLException ex) {
 			throw new RuntimeException("Can't connect to DB :" + ex.getMessage());
-		} catch (Exception ex) {
-			throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
 		}
 		if (dbConnection == null) {
 			throw new RuntimeException("Not suitable driver for specified DB URL : " + dbDriver + " ; " + dbURL);
@@ -160,6 +187,16 @@ public class DBConnection {
 	 */
 	public void setProperty(String name, String value) {
 		config.setProperty(name, value);
+	}
+
+
+	/**
+	 *  Sets the property attribute of the DBConnection object
+	 *
+	 * @param  properties  The new property value
+	 */
+	public void setProperty(Properties properties) {
+		config.putAll(properties);
 	}
 
 
