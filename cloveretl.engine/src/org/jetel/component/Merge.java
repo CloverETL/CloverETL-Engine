@@ -26,6 +26,7 @@ import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -306,16 +307,15 @@ public class Merge extends Node {
 	 *@since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs = nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 
-		if (attribs != null) {
-			String id = attribs.getNamedItem("id").getNodeValue();
-			String keyStr = attribs.getNamedItem("mergeKey").getNodeValue();
-			if (id != null && keyStr != null) {
-				return new Merge(id, keyStr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
+		try{
+			return new Merge(xattribs.getString("id"),
+				xattribs.getString("mergeKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 
 }
