@@ -286,6 +286,9 @@ public abstract class CopySQLData {
 	 *@since      October 7, 2002
 	 */
 	static class CopyDate extends CopySQLData {
+		
+		java.sql.Date dateValue;
+		
 		/**
 		 *  Constructor for the CopyDate object
 		 *
@@ -296,6 +299,7 @@ public abstract class CopySQLData {
 		 */
 		CopyDate(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
+			dateValue=new java.sql.Date(0);
 		}
 
 
@@ -319,7 +323,8 @@ public abstract class CopySQLData {
 		 *@since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setDate(fieldSQL, (Date) field.getValue());
+			dateValue.setTime(((Date) field.getValue()).getTime());
+			pStatement.setDate(fieldSQL, dateValue);
 		}
 	}
 
