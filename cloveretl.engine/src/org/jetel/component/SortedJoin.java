@@ -29,6 +29,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Sorted Join Component</h3>
@@ -76,6 +77,7 @@ public class SortedJoin extends Node {
 	
 	private static final int WRITE_TO_PORT = 0;
 	private static final int DRIVER_ON_PORT = 0;
+	private static final int SLAVE_ON_PORT = 1;
 	
 	private String transformClassName;
 	
@@ -89,12 +91,15 @@ public class SortedJoin extends Node {
 	
 	private RecordKey recordKeys[];
 	
-	public SortedJoin(String id,String[] joinKeys, String transformClass, boolean[] inputDataRequired){
+	private ByteBuffer dataBuffer;
+	private FileRecordBuffer recordBuffer;
+	
+	public SortedJoin(String id,String[] joinKeys, String transformClass /*boolean[] inputDataRequired*/){
 		super(id);
 		this.joinKeys=joinKeys;
 		this.transformClassName=transformClass;
-		this.inputDataRequired=inputDataRequired;
-		throw new RuntimeException("SortedJoin component not finished");
+		//this.inputDataRequired=inputDataRequired;
+		//throw new RuntimeException("SortedJoin component not finished");
 	}
 	
 	public SortedJoin(String id,String[] joinKeys, RecordTransform transformClass, boolean[] inputDataRequired){
@@ -102,18 +107,9 @@ public class SortedJoin extends Node {
 		this.joinKeys=joinKeys;
 		this.transformation=transformClass;
 		this.inputDataRequired=inputDataRequired;
-		throw new RuntimeException("SortedJoin component not finished");
+		//throw new RuntimeException("SortedJoin component not finished");
 	}
-	/**
-	 *  Gets the Status attribute of the SimpleCopy object
-	 *
-	 * @return    The Status value
-	 * @since     April 4, 2002
-	 */
-	public String getStatus() {
-		return "OK";
-	}
-
+	
 
 	/**
 	 *  Gets the Type attribute of the SimpleCopy object
@@ -126,58 +122,64 @@ public class SortedJoin extends Node {
 	}
 
 	
-	private void fillRBuffer(FileRecordBuffer buffer,ByteBuffer data,DataRecord record,RecordKey key,InputPort port)
+	private void fillRecordBuffer(InputPort port,DataRecord curRecord,DataRecord nextRecord,RecordKey key)
 		throws IOException,InterruptedException{
-			DataRecord next=new DataRecord(record.getMetadata());
-			next.init();
 			
-			while(next!=null){
-				next=port.readRecord(next);
-				if (next!=null){
-					if(key.compare(record,next)==0){
-						next.serialize(data);
-						buffer.push(data);
-					}else{
+			recordBuffer.clear();
+			if(curRecord!=null){
+				dataBuffer.clear();
+				curRecord.serialize(dataBuffer);
+				dataBuffer.flip();
+				recordBuffer.push(dataBuffer);
+				while(nextRecord!=null){
+					nextRecord=port.readRecord(nextRecord);
+					if (nextRecord!=null){
+						if(key.compare(curRecord,nextRecord)==0){
+							dataBuffer.clear();
+							nextRecord.serialize(dataBuffer);
+							dataBuffer.flip();
+							recordBuffer.push(dataBuffer);
+						}else{
+							return;
+						}
 					}
 				}
 			}
-			
-		
 	}
 	
 	
-	private boolean matchAB(DataRecord a,DataRecord b,InputPort portA,InputPort portB,RecordKey rkA,RecordKey rkB)
+	private int getCorrespondingRecord(DataRecord driver,DataRecord slave,InputPort slavePort,RecordKey key[])
 		throws IOException,InterruptedException{
-		// these two lines probably not neccessary
-		//a=portA.readRecord(a);
-		//b=portB.readRecord(b);
-		while(a!=null && b!=null){
-			switch(rkA.compare(rkB,a,b)){
-				case -1: a=portA.readRecord(a);
+		
+		while(slave!=null){
+			switch(key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT],driver,slave)){
+				case 1: slave=slavePort.readRecord(slave);
 					break;
-				case 0:	return true;
-				case 1: b=portB.readRecord(b);
-					break;
+				case 0:	return 0;
+				case -1: return -1;
 			}
 		}
-		return false;
+		return -1; // no more records on slave port
 	}
 	
-	private boolean flushCombinations(DataRecord a,DataRecord b,DataRecord out,FileRecordBuffer buffer,OutputPort port)
+	private boolean flushCombinations(DataRecord driver,DataRecord slave,DataRecord out,OutputPort port)
 		throws IOException,InterruptedException{
-		DataRecord[] inRecords={a,b};
-		ByteBuffer data=null;
-		buffer.rewind();
+		DataRecord inRecords[]={driver,slave};
+		recordBuffer.rewind();
+		dataBuffer.clear();
 		
-		while(buffer.shift(data)!=null){
-			b.deserialize(data);
+		while(recordBuffer.shift(dataBuffer)!=null){
+			dataBuffer.flip();
+			slave.deserialize(dataBuffer);
 			// call transform function here
 			if (!transformation.transform(inRecords,out))
 			{
 				resultMsg=transformation.getMessage();
 				return false;
 			}
-			port.writeRecord(out);
+			// TODO::::
+			//port.writeRecord(out);
+			dataBuffer.clear();
 		}
 		return true;
 	}
@@ -192,50 +194,57 @@ public class SortedJoin extends Node {
 	 */
 	public void run() {
 		ByteBuffer data = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		boolean isDifferent;
+		// get all ports involved
 		InputPort driverPort=getInputPort(DRIVER_ON_PORT);
-		InputPort dataPort=getInputPort(1);
+		InputPort slavePort=getInputPort(SLAVE_ON_PORT);
 		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
+		
+		//initialize input records & output record
 		DataRecord driverRecord=new DataRecord(driverPort.getMetadata());
-		DataRecord dataRecord=new DataRecord(dataPort.getMetadata());
-		DataRecord outRecord=new DataRecord(outPort.getMetadata());
+		DataRecord driverNextRecord=new DataRecord(driverPort.getMetadata());
+		DataRecord slaveRecord=new DataRecord(slavePort.getMetadata());
+		DataRecord slaveNextRecord=new DataRecord(slavePort.getMetadata());
+		//DataRecord outRecord=new DataRecord(outPort.getMetadata());
+		DataRecord outRecord=driverRecord; // only work around
 		driverRecord.init();
-		dataRecord.init();
+		slaveRecord.init();
+		slaveNextRecord.init();
+		driverNextRecord.init();
 		outRecord.init();
-		DataRecord[] inRecords={driverRecord,dataRecord};
-		FileRecordBuffer fbuffer=new FileRecordBuffer(""); // curr path
-
+		
+		// create buffer for slave records
+		recordBuffer=new FileRecordBuffer(null); // systen TEMP path
+		//for the first time, we expect that records are different
+		isDifferent=true;
 		
 		try{
 			// first initial load of records
 			driverRecord=driverPort.readRecord(driverRecord);
-			dataRecord=dataPort.readRecord(dataRecord);
-			while(runIt){
-				if (driverRecord!=null&&dataRecord!=null){
-					// compare records
-					switch(recordKeys[0].compare(recordKeys[1],driverRecord,dataRecord)){
-						case 0: /* match */
-							// fill in temp buffer with the same records from data (port[1])
-							
-						
-							if (!transformation.transform(inRecords,outRecord))
-							{
-								resultMsg=transformation.getMessage();
-								break;
-							}
-							outPort.writeRecord(outRecord);
-							driverRecord=driverPort.readRecord(driverRecord);
-							dataRecord=dataPort.readRecord(dataRecord);
-						break;
-						case 1: /* driver greater */
-							dataRecord=dataPort.readRecord(dataRecord);
-							break;
-						case -1: /* driver lover */
-							driverRecord=driverPort.readRecord(driverRecord);
-							break;
+			slaveRecord=slavePort.readRecord(slaveRecord);
+			while(runIt && driverRecord!=null){
+				
+				if (isDifferent){
+					if (getCorrespondingRecord(driverRecord,slaveRecord,slavePort,recordKeys)!=0){
+						driverRecord=driverPort.readRecord(driverRecord);
+						isDifferent=true;
+						continue;
+					}else{
+						fillRecordBuffer(slavePort,slaveRecord,slaveNextRecord,recordKeys[SLAVE_ON_PORT]);
+						isDifferent=false;
 					}
-				}else{
-					break;
 				}
+				flushCombinations(driverRecord,slaveRecord,outRecord,outPort);
+				driverNextRecord=driverPort.readRecord(driverNextRecord);
+				// different driver record ??
+				if(recordKeys[DRIVER_ON_PORT].compare(driverRecord,driverNextRecord)!=0){
+					// detected change;
+					isDifferent=true;
+				}
+				DataRecord tmpRec=driverRecord;
+				driverRecord=driverNextRecord;
+				driverNextRecord=tmpRec;
+			
 			}
 		}catch(IOException ex){
 			resultMsg=ex.getMessage();
@@ -265,7 +274,7 @@ public class SortedJoin extends Node {
 		// test that we have at least one input port and one output
 		if (inPorts.size()<2){
 			throw new ComponentNotReadyException("At least two input ports have to be defined!");
-		}else if (outPorts.size()<1){
+		}else if (outPorts.size()<0){ // TODO:
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
 		// allocate array for joined records (this array will be passed to reformat function)
@@ -300,10 +309,12 @@ public class SortedJoin extends Node {
 		while(i.hasNext()){
 			inMetadata[counter++]=((InputPort)i.next()).getMetadata();
 		}
-		if (!transformation.init(inMetadata,getOutputPort(WRITE_TO_PORT).getMetadata()))
+		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
+		if (!transformation.init(inMetadata,null))
 		{
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
+		dataBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
 
@@ -327,18 +338,18 @@ public class SortedJoin extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String className=attribs.getNamedItem("transformClass").getNodeValue();
-			String keyStr=attribs.getNamedItem("joinKey").getNodeValue();
-			if (id!=null){
-				return new SortedJoin(id,keyStr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),className,null);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new SortedJoin(xattribs.getString("id"),
+				xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+				xattribs.getString("transformClass"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
+		
 	
 }
 
