@@ -37,137 +37,56 @@ import org.jetel.util.ComponentXMLAttributes;
  *  transformation class implementing org.jetel.component.RecordTransform
  *  interface. The method transform is called for every record passing through
  *  this component -->
- *  <tableborder="1">
+ *  <table border="1">
  *
  *    <th>
  *      Component:
  *    </th>
- *
- *    <tr>
- *
- *      <td>
- *        <h4><i>Name:</i> </h4>
- *      </td>
- *
- *      <td>
- *        SortedJoin
- *      </td>
- *
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>SortedJoin</td>
  *    </tr>
- *
- *    <tr>
- *
- *      <td>
- *        <h4><i>Category:</i> </h4>
- *      </td>
- *
- *      <td>
- *
- *      </td>
- *
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
  *    </tr>
- *
- *    <tr>
- *
+ *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- *        <h4><i>Description:</i> </h4>
+ *        Joins sorted records on input ports. It expects that on port [0], there is a
+ *	driver and on port [1] is slave<br>
+ *	For each driver record, all slave records with corresponding key are found and
+ *	sent to transformation class.<br>
+ *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
+ *	It skips driver records for which there is no corresponding slave - unless outer
+ *	join is specified, when only driver record is passed to <i>transform<i> method.
  *      </td>
- *
- *      <td>
- *        Changes / reformats the data between pair of INPUT/OUTPUT ports.<br>
- *        This component is only a wrapper around transformation class
- *        implementing <i>org.jetel.component.RecordTransform</i> interface. The
- *        method <i>transform</i> is called for every record passing through
- *        this component.<br>
- *
- *      </td>
- *
  *    </tr>
- *
- *    <tr>
- *
- *      <td>
- *        <h4><i>Inputs:</i> </h4>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0] - driver records<br>
+ *	  [1] - slave records<br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
- *
- *      <td>
- *        [0..n]- input records (min 2 ports active)
- *      </td>
- *
- *    </tr>
- *
- *    <tr>
- *
- *      <td>
- *        <h4><i>Outputs:</i> </h4>
- *      </td>
- *
  *      <td>
  *        [0] - one output port
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
- *
+ *      <td></td>
  *    </tr>
- *
- *    <tr>
- *
- *      <td>
- *        <h4><i>Comment:</i> </h4>
- *      </td>
- *
- *      <td>
- *
- *      </td>
- *
- *    </tr>
- *
  *  </table>
  *  <br>
- *
- *  <tableborder="1">
- *
- *    <th>
- *      XML attributes:
- *    </th>
- *
- *    <tr>
- *
- *      <td>
- *        <b>type</b>
- *      </td>
- *
- *      <td>
- *        "SORTED_JOIN"
- *      </td>
- *
- *    </tr>
- *
- *    <tr>
- *
- *      <td>
- *        <b>id</b>
- *      </td>
- *
- *      <td>
- *        component identification
- *      </td>
- *
- *      <tr>
- *
- *        <td>
- *          <b>transformClass</b>
- *        </td>
- *
- *        <td>
- *          name of the class to be used for transforming joined data
- *        </td>
- *
- *      </tr>
- *
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>"SORTED_JOIN"</td></tr>
+ *    <tr><td><b>id</b></td><td>component identification</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming joined data</td></tr>
+ *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false</td></tr>
  *    </table>
- *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="SORTED_JOIN" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="SORTED_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *
  *@author     dpavlis
- *@created    4. èerven 2003
+ *@created    4. June 2003
  *@since      April 4, 2002
  */
 public class SortedJoin extends Node {
@@ -194,20 +113,22 @@ public class SortedJoin extends Node {
 	private boolean leftOuterJoin = false;
 
 	private String[] joinKeys;
-	private String[] slaveOverrideKeys=null;
+	private String[] slaveOverrideKeys = null;
 
 	private RecordKey recordKeys[];
 
 	private ByteBuffer dataBuffer;
 	private FileRecordBuffer recordBuffer;
 
+	// for passing data records into transform function
+	private final static DataRecord[] inRecords=new DataRecord[2];
 
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
-	 *@param  id              Description of the Parameter
-	 *@param  joinKeys        Description of the Parameter
-	 *@param  transformClass  Description of the Parameter
+	 *@param  id              id of component
+	 *@param  joinKeys        field names composing key
+	 *@param  transformClass  class (name) to be used for transforming data
 	 */
 	public SortedJoin(String id, String[] joinKeys, String transformClass) {
 		super(id);
@@ -221,10 +142,10 @@ public class SortedJoin extends Node {
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
-	 *@param  id              Description of the Parameter
-	 *@param  joinKeys        Description of the Parameter
-	 *@param  transformClass  Description of the Parameter
-	 *@param  leftOuterJoin   Description of the Parameter
+	 *@param  id              id of component
+	 *@param  joinKeys        field names composing key
+	 *@param  transformClass  class (name) to be used for transforming data
+	 *@param  leftOuterJoin   indicates, whether to perform left outer join
 	 */
 	public SortedJoin(String id, String[] joinKeys, RecordTransform transformClass, boolean leftOuterJoin) {
 		super(id);
@@ -246,7 +167,7 @@ public class SortedJoin extends Node {
 
 
 	/**
-	 *  Sets the leftOuterJoin attribute of the SortedJoin object
+	 *  Sets on/off leftOuterJoin indicator
 	 *
 	 *@param  outerJoin  The new leftOuterJoin value
 	 */
@@ -254,24 +175,33 @@ public class SortedJoin extends Node {
 		leftOuterJoin = outerJoin;
 	}
 
-	public void setSlaveOverrideKey(String[] slaveKeys){
-		this.slaveOverrideKeys=slaveKeys;
-	}
 
 	/**
-	 *  Description of the Method
+	 *  Sets specific key (string) for slave records<br>
+	 *  Can be used if slave record has different names
+	 *  for fields composing the key
+	 *
+	 *@param  slaveKeys  The new slaveOverrideKey value
+	 */
+	public void setSlaveOverrideKey(String[] slaveKeys) {
+		this.slaveOverrideKeys = slaveKeys;
+	}
+
+
+	/**
+	 *  Populates record buffer with all slave records having the same key
 	 *
 	 *@param  port                      Description of the Parameter
-	 *@param  curRecord                 Description of the Parameter
 	 *@param  nextRecord                Description of the Parameter
 	 *@param  key                       Description of the Parameter
+	 *@param  currRecord                Description of the Parameter
 	 *@exception  IOException           Description of the Exception
 	 *@exception  InterruptedException  Description of the Exception
 	 *@exception  JetelException        Description of the Exception
 	 */
 	private void fillRecordBuffer(InputPort port, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
 			 throws IOException, InterruptedException, JetelException {
-		
+
 		recordBuffer.clear();
 		if (currRecord != null) {
 			dataBuffer.clear();
@@ -300,7 +230,7 @@ public class SortedJoin extends Node {
 
 
 	/**
-	 *  Gets the correspondingRecord attribute of the SortedJoin object
+	 *  Finds corresponding slave record for current driver (if there is some)
 	 *
 	 *@param  driver                    Description of the Parameter
 	 *@param  slave                     Description of the Parameter
@@ -316,9 +246,6 @@ public class SortedJoin extends Node {
 		while (slave != null) {
 			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave)) {
 				case 1:
-					//if (leftOuterJoin) {
-					//	return 1;
-					//}
 					slave = slavePort.readRecord(slave);
 					break;
 				case 0:
@@ -333,7 +260,8 @@ public class SortedJoin extends Node {
 
 
 	/**
-	 *  Description of the Method
+	 *  Outputs all combinations of current driver record and all slaves with the
+	 *  same key
 	 *
 	 *@param  driver                    Description of the Parameter
 	 *@param  slave                     Description of the Parameter
@@ -345,14 +273,15 @@ public class SortedJoin extends Node {
 	 */
 	private boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
 			 throws IOException, InterruptedException {
-		DataRecord inRecords[] = {driver, slave};
 		recordBuffer.rewind();
 		dataBuffer.clear();
+		inRecords[0]=driver;
+		inRecords[1]=slave;
 
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
 			slave.deserialize(dataBuffer);
-			// call transform function here
+			// **** call transform function here ****
 			if (!transformation.transform(inRecords, out)) {
 				resultMsg = transformation.getMessage();
 				return false;
@@ -365,7 +294,8 @@ public class SortedJoin extends Node {
 
 
 	/**
-	 *  Description of the Method
+	 *  If there is no corresponding slave record and is defined outer join, then
+	 *  output driver only.
 	 *
 	 *@param  driver                    Description of the Parameter
 	 *@param  out                       Description of the Parameter
@@ -376,7 +306,8 @@ public class SortedJoin extends Node {
 	 */
 	private boolean flushDriverOnly(DataRecord driver, DataRecord out, OutputPort port)
 			 throws IOException, InterruptedException {
-		DataRecord inRecords[] = {driver, null};
+		inRecords[0]=driver;
+		inRecords[1]=null;
 
 		if (!transformation.transform(inRecords, out)) {
 			resultMsg = transformation.getMessage();
@@ -425,14 +356,13 @@ public class SortedJoin extends Node {
 		DataRecord[] slaveRecords = allocateRecords(slavePort.getMetadata(), 2);
 
 		// initialize output record
-		DataRecord outRecord=new DataRecord(outPort.getMetadata());
+		DataRecord outRecord = new DataRecord(outPort.getMetadata());
 		outRecord.init();
-		
+
 		// tmp record for switching contents
 		DataRecord tmpRec;
-		// create file buffer for slave records
+		// create file buffer for slave records - system TEMP path
 		recordBuffer = new FileRecordBuffer(null);
-		// systen TEMP path
 
 		//for the first time (as initialization), we expect that records are different
 		isDriverDifferent = true;
@@ -447,32 +377,31 @@ public class SortedJoin extends Node {
 						case -1:
 							// driver lower
 							// no corresponding slave
-							if (leftOuterJoin){
+							if (leftOuterJoin) {
 								flushDriverOnly(driverRecords[CURRENT], outRecord, outPort);
 							}
 							driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-							isDriverDifferent=true;
+							isDriverDifferent = true;
 							continue;
 						case 0:
 							// match
 							fillRecordBuffer(slavePort, slaveRecords[CURRENT], slaveRecords[TEMPORARY], recordKeys[SLAVE_ON_PORT]);
 							// switch temporary --> current
-							tmpRec=slaveRecords[CURRENT];
-							slaveRecords[CURRENT]=slaveRecords[TEMPORARY];
-							slaveRecords[TEMPORARY]=tmpRec;
+							tmpRec = slaveRecords[CURRENT];
+							slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
+							slaveRecords[TEMPORARY] = tmpRec;
 							isDriverDifferent = false;
 							break;
 						case 1:
-							// can not happen !!
-							throw new RuntimeException(getType()+" - program internal error !");
-							
+							// should not happen !!
+							throw new RuntimeException(getType() + " - program internal error !");
 					}
 				}
 				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], outRecord, outPort);
 				// get next driver
-				
+
 				driverRecords[TEMPORARY] = driverPort.readRecord(driverRecords[TEMPORARY]);
-				if (driverRecords[TEMPORARY]!=null){
+				if (driverRecords[TEMPORARY] != null) {
 					// different driver record ??
 					switch (recordKeys[DRIVER_ON_PORT].compare(driverRecords[CURRENT], driverRecords[TEMPORARY])) {
 						case 0:
@@ -528,8 +457,8 @@ public class SortedJoin extends Node {
 		}
 		// allocate array for joined records (this array will be passed to reformat function)
 		joinedRecords = new DataRecord[inPorts.size()];
-		if(slaveOverrideKeys==null){
-			slaveOverrideKeys=joinKeys;
+		if (slaveOverrideKeys == null) {
+			slaveOverrideKeys = joinKeys;
 		}
 		recordKeys = new RecordKey[2];
 		recordKeys[0] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
@@ -596,11 +525,11 @@ public class SortedJoin extends Node {
 			join = new SortedJoin(xattribs.getString("id"),
 					xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString("transformClass"));
-			if (xattribs.exists("slaveOverrideKey")){
+			if (xattribs.exists("slaveOverrideKey")) {
 				join.setSlaveOverrideKey(xattribs.getString("slaveOverrideKey").
-								split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				
-			}					
+						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+			}
 			if (xattribs.exists("leftOuterJoin")) {
 				join.setLeftOuterJoin(xattribs.getBoolean("leftOuterJoin"));
 			}
