@@ -58,10 +58,13 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <!-- <tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td> -->
- *  <tr><td><b>dbFields<br><i>optional</i></b></td><td>delimited list of target table's fields to be populated<br>
+ *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
- *  <tr><td><b>commit</b><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, default is 100</td>
+ *  <tr><td><b>commit</b><br><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, DEFAULT is 100</td>
+ *  <tr><td><b>cloverFields</b><br><i>optional</i></td><td>delimited list of input record's fields.<br>Only listed fields (in the order
+ *  they appear in the list) will be considered for mapping onto target table's fields. Combined with <b>dbFields</b> option you can
+ *  specify mapping from source (Clover's) fields to DB table fields. If no <i>dbFields</i> are specified, then #of <i>cloverFields</i> must
+ *  correspond to number of target DB table fields.</td>
  *  </tr>
  *  </table>
  *
@@ -69,9 +72,14 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"/&gt;</pre>
  *  <br>
  *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z" dbFields="f_name;l_name;phone"/&gt;</pre>
- *  <br><i>This example shows how to populate only selected fields within target DB table. It can be used for skipping target fields which
- *  are automatically populated by DB (such as autoincremented fields)</i>
- *
+ *  <i>Example above shows how to populate only selected fields within target DB table. It can be used for skipping target fields which
+ *  are automatically populated by DB (such as autoincremented fields).</i>
+ *  <br>
+ *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z" 
+ *	   dbFields="f_name;l_name" cloverFields="LastName;FirstName"/&gt;</pre>
+ *  <i>Example shows how to simply map Clover's LastName and FirstName fields onto f_name and l_name DB table fields. The order
+ *  in which these fields appear in Clover data record is not important.</i> 
+ * 
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
@@ -84,7 +92,7 @@ public class DBOutputTable extends Node {
 	private String dbConnectionName;
 	private String dbTableName;
 	private PreparedStatement preparedStatement;
-	private int[] skipList;
+	private String[] cloverFields;
 	private String[] dbFields;
 	private int recordsInCommit;
 
@@ -108,7 +116,7 @@ public class DBOutputTable extends Node {
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.dbTableName = dbTableName;
-		skipList = null;
+		cloverFields = null;
 		dbFields = null;
 		recordsInCommit = RECORDS_IN_COMMIT;
 		// default
@@ -127,12 +135,12 @@ public class DBOutputTable extends Node {
 
 
 	/**
-	 *  Sets the skipList attribute of the DBOutputTable object
+	 *  Sets the cloverFields attribute of the DBOutputTable object
 	 *
-	 * @param  skipList  The new skipList value
+	 * @param  cloverFields  The new cloverFields value
 	 */
-	public void setSkipList(int[] skipList) {
-		this.skipList = skipList;
+	public void setCloverFields(String[] cloverFields) {
+		this.cloverFields = cloverFields;
 	}
 
 
@@ -220,9 +228,9 @@ public class DBOutputTable extends Node {
 			 *  System.err.println("metada data is null!");
 			 *  }
 			 */
-			// do we have skip list defined ? (which fields skip - no to populate)
-			if (skipList != null) {
-				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, skipList);
+			// do we have cloverFields list defined ? (which fields from input record to consider)
+			if (cloverFields != null) {
+				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, cloverFields);
 			} else {
 				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
 			}
@@ -302,14 +310,9 @@ public class DBOutputTable extends Node {
 			if (xattribs.exists("dbFields")) {
 				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
-			// if specified, use skip list which indicates which fields to skip
-			if (xattribs.exists("skipFields")) {
-				String[] strList = xattribs.getString("skipFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				int[] skipList = new int[strList.length];
-				for (int i = 0; i < skipList.length; i++) {
-					skipList[i] = Integer.parseInt(strList[i]);
-				}
-				outputTable.setSkipList(skipList);
+			
+			if (xattribs.exists("cloverFields")) {
+				outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 
 			if (xattribs.exists("commit")) {
