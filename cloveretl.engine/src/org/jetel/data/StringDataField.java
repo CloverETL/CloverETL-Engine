@@ -296,7 +296,7 @@ public class StringDataField extends DataField {
 		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
 		int valueLenght = value.length();
 		int strObjLenght = strObj.length();
-		int compLength = valueLenght >= strObjLenght ? valueLenght : strObjLenght;
+		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
 		for (int i = 0; i < compLength; i++) {
 			if (value.charAt(i) > strObj.charAt(i)) {
 				return 1;
