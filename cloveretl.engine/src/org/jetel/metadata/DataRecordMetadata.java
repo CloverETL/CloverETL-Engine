@@ -179,7 +179,7 @@ public class DataRecordMetadata {
 	 *  Gets the fieldPosition attribute of the DataRecordMetadata object
 	 *
 	 *@param  fieldName  Description of the Parameter
-	 *@return            The fieldPosition value
+	 *@return            The position of the field within record
 	 */
 	public int getFieldPosition(String fieldName) {
 		Integer position;
@@ -199,7 +199,7 @@ public class DataRecordMetadata {
 	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
 	 *
 	 *@param  fieldName  Description of the Parameter
-	 *@return            The fieldPosition value
+	 *@return            The field type
 	 */
 	public char getFieldType(String fieldName) {
 		Integer position;
@@ -213,11 +213,24 @@ public class DataRecordMetadata {
 			return fieldMetadata.getType();
 		}
 		else {
-			return ' ';
+			return DataFieldMetadata.UNKNOWN_FIELD;
 		}
 	}
 
-
+	/**
+	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
+	 *
+	 *@param  fieldNumber  The position of the field within record
+	 *@return            The field type
+	 */
+	public char getFieldType(int fieldNo) {
+		DataFieldMetadata fieldMetadata = getField(fieldNo);
+		if (fieldMetadata!=null){
+			return fieldMetadata.getType();
+		}else{
+			return DataFieldMetadata.UNKNOWN_FIELD;
+		}
+	}
 
 
 	/**

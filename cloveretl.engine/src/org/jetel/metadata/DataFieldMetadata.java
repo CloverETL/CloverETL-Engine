@@ -23,9 +23,10 @@ package org.jetel.metadata;
  *  A class that represents metadata describing one particular data field.<br>
  *  Handles encoding of characters.
  *
- * @author     D.Pavlis
- * @since      March 26, 2002
- * @see        org.jetel.metadata.DataRecordMetadata
+ * @author      D.Pavlis
+ * @since       March 26, 2002
+ * @revision    $Revision$
+ * @see         org.jetel.metadata.DataRecordMetadata
  */
 public class DataFieldMetadata {
 
@@ -62,7 +63,7 @@ public class DataFieldMetadata {
 	 * @since
 	 */
 	private boolean nullable = true;
-	
+
 	private String defaultValueStr;
 
 	/**
@@ -70,58 +71,41 @@ public class DataFieldMetadata {
 	 * can include references to fields from input records.  The
 	 * code corresponds to a body of a methodwhich has to return
 	 * a value that has a type of the field type.
-	 * 
+	 *
 	 * The syntax for the field references is as follows:
-	 * 
+	 *
 	 *   [record name].[field name]
-	 *  
 	 */
 	private String codeStr;
 
 	// Attributes
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char STRING_FIELD = 'S';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char DATE_FIELD = 'D';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char DATETIME_FIELD = 'T';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char NUMERIC_FIELD = 'N';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char INTEGER_FIELD = 'i';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char DECIMAL_FIELD = 'd';
-	/**
-	 *  Description of the Field
-	 *
-	 * @since    October 30, 2002
-	 */
+
+	/**  Description of the Field */
 	public final static char BYTE_FIELD = 'B';
 
+	/**  Description of the Field */
+	public final static char SEQUENCE_FIELD = 'q';
+
+	/**  Description of the Field */
+	public final static char UNKNOWN_FIELD = ' ';
 
 	/**
 	 *  Constructor for delimited type of field
@@ -137,6 +121,7 @@ public class DataFieldMetadata {
 		this.fieldType = _type;
 	}
 
+
 	/**
 	 *  Constructor for default(String) delimited type of field
 	 *
@@ -150,12 +135,12 @@ public class DataFieldMetadata {
 		this.fieldType = STRING_FIELD;
 	}
 
+
 	/**
 	 *  Constructor for default(String) fixLength type of field
 	 *
-	 * @param  _name   Name of the field
-	 * @param  _type   Description of Parameter
-	 * @param  size    Description of Parameter
+	 * @param  _name  Name of the field
+	 * @param  size   Description of Parameter
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, short size) {
@@ -164,12 +149,13 @@ public class DataFieldMetadata {
 		this.fieldType = STRING_FIELD;
 	}
 
+
 	/**
 	 *  Constructor for fixLength type of field
 	 *
-	 * @param  _name   Name of the field
-	 * @param  _type   Description of Parameter
-	 * @param  size    Description of Parameter
+	 * @param  _name  Name of the field
+	 * @param  _type  Description of Parameter
+	 * @param  size   Description of Parameter
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, char _type, short size) {
@@ -177,6 +163,7 @@ public class DataFieldMetadata {
 		this.size = size;
 		this.fieldType = _type;
 	}
+
 
 	/**
 	 *  Sets name of the field
@@ -249,12 +236,13 @@ public class DataFieldMetadata {
 	/**
 	 *  Sets the Type attribute of the DataFieldMetadata object
 	 *
-	 * @return    The Type value
+	 * @param  c  The new type value
 	 * @since     October 30, 2002
 	 */
 	public void setType(char c) {
 		fieldType = c;
 	}
+
 
 	/**
 	 *  Returns the specified maximum field size (used only when dealing with fixed-size type of record)
@@ -269,11 +257,13 @@ public class DataFieldMetadata {
 
 	/**
 	 *  Sets the maximum field size (used only when dealing with fixed-size type of record)
-	 * @param s
+	 *
+	 * @param  s
 	 */
 	public void setSize(short s) {
 		size = s;
 	}
+
 
 	/**
 	 *  An operation that does ...
@@ -284,6 +274,7 @@ public class DataFieldMetadata {
 	public String getDelimiter() {
 		return delimiter;
 	}
+
 
 	/**
 	 *  Gets Format string specifying pattern which will be used when
@@ -306,31 +297,41 @@ public class DataFieldMetadata {
 	public String getDefaultValue() {
 		return defaultValueStr;
 	}
+
+
 	/**
 	 * Sets the nullable attribute of the DataFieldMetadata object
-	 * @param nullable
+	 *
+	 * @param  nullable
 	 */
 	public void setNullable(boolean nullable) {
 		this.nullable = nullable;
 	}
+
+
 	/**
 	 * Gets the nullable of the DataFieldMetadata object
+	 *
 	 * @return
 	 */
 	public boolean isNullable() {
 		return nullable;
 	}
 
+
 	/**
 	 * Sets the codeStr attribute of the DataFieldMetadata object
-	 * @param codeStr
+	 *
+	 * @param  codeStr
 	 */
 	public void setCodeStr(String codeStr) {
 		this.codeStr = codeStr;
 	}
 
+
 	/**
 	 * Gets the codeStr of the DataFieldMetadata object
+	 *
 	 * @return
 	 */
 	public String getCodeStr() {
