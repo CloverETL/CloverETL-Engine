@@ -22,6 +22,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.InvalidMarkException;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -100,8 +101,6 @@ public class FixLenDataParser2 implements DataParser {
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
 		reader = ((FileInputStream) in).getChannel();
-//        reader = 
-//			new BufferedReader(Channels.newReader( ((FileInputStream) in).getChannel(), Defaults.DataParser.DEFAULT_CHARSET_DECODER ) );
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
@@ -112,6 +111,8 @@ public class FixLenDataParser2 implements DataParser {
 		// reset CharsetDecoder
 		recordCounter = 0;
 		// reset record counter
+//		charBuffer.clear();
+//		dataBuffer.clear();
 	}
 	/**
 	 *  An operation that does ...
@@ -125,14 +126,11 @@ public class FixLenDataParser2 implements DataParser {
 	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int posCounter = 0;
-		String line = null;
+		boolean isDataAvailable = false;
 		try {
-			line = readRecord();
-			while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
-				line = reader.readLine();
-			}
+			isDataAvailable = readRecord();
 
-			if((line) == null) {  //end of file been reached
+			if( !isDataAvailable )  {  //end of file been reached
 				reader.close();
 				return null;
 			}
@@ -140,16 +138,46 @@ public class FixLenDataParser2 implements DataParser {
 			e.printStackTrace();
 			throw new JetelException(e.getMessage());
 		}
-		if(line.length()<recordLength){ //incomplete record
+
+		// check if we have enough data in buffer to satisfy reading
+		if (charBuffer.remaining() < recordLength) {
 			//- incomplete record - do something
 			throw new RuntimeException("Incomplete record");
-			//TODO - need exception records bucket
 		}
 		// process the line 
 		// populate all data fields
 		try {
 			while (fieldCounter < metadata.getNumFields()) {
-				populateField(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
+				fieldStringBuffer.clear();
+				char c;
+				boolean skippingLeadingBlanks = true;
+				boolean trackingTrailingBlanks = false;
+				for(int i=0; i < fieldLengths[fieldCounter] ; i++) {
+					// skip leading blanks
+					c = charBuffer.get();
+					if(skippingLeadingBlanks && c == ' ') {
+						continue;
+					} 
+					
+					if(skippingLeadingBlanks && c != ' ') {
+						skippingLeadingBlanks  = false;
+					}
+					//keep track of trailing blanks
+					fieldStringBuffer.put( c );
+
+					if( c != ' ') {
+						fieldStringBuffer.mark();
+					} 
+					
+				}
+				try {
+					fieldStringBuffer.reset();
+					//fieldStringBuffer.limit(fieldStringBuffer.position()-1);
+				} catch (InvalidMarkException e) {
+				}
+				// prepare for reading
+				fieldStringBuffer.flip();
+				populateField(record, fieldCounter, fieldStringBuffer);
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
@@ -163,28 +191,44 @@ public class FixLenDataParser2 implements DataParser {
 
 
 	/**
-	 * @return
+	 * Fills the charBuffer with at least records worth of chars.
+	 * 
+	 * @return false if there is nothing left to read; true at least one record's worth is available
 	 */
-	private String readRecord() {
+	private boolean readRecord() throws IOException {
+		CoderResult decodingResult;
 		int size;
-		byte[] tmp;
 		// check if we have enough data in buffer to satisfy reading
 		if (charBuffer.remaining() < recordLength) {
-			charBuffer.compact();
+			if(charBuffer.remaining()>0) {
+				charBuffer.compact();
+				dataBuffer.limit(dataBuffer.capacity()-charBuffer.limit());
+			} else {
+				charBuffer.clear();
+			}
 			size = reader.read(dataBuffer);
-			System.out.println( "Read: " + size);
+			//System.out.println( "Read: " + size);
 			dataBuffer.flip();
 
-			// if no more data or incomplete record
-			if ((size == -1) || (dataBuffer.remaining() < recordLength)) {
-				return null;
+			// if no more data 
+			if ( size == 0 ) {
+				return false;
 			}
+
+			decodingResult=decoder.decode(dataBuffer,charBuffer,true);
+			charBuffer.flip();
+
 		}
-		dataBuffer.get(tmp);
-		fieldBuffer.flip();
-		fieldBuffer.limit(length);
-		fieldBuffer.put(tmp);
-		return null;
+		
+		// check if \r or \n ; if yes discard
+		charBuffer.mark();
+		char c = charBuffer.get();
+		while (c=='\r' || c=='\n') {
+			charBuffer.mark();
+			c = charBuffer.get();
+		}
+		charBuffer.reset();
+		return true;
 	}
 
 	/**
@@ -235,13 +279,12 @@ public class FixLenDataParser2 implements DataParser {
 	 *@param  data      Description of Parameter
 	 *@since            March 28, 2002
 	 */
-	protected void populateField(DataRecord record, int fieldNum, String data) {
+	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
 		try {
-			record.getField(fieldNum).fromString( data );
-
+			record.getField(fieldNum).fromString(buffer2String(data, fieldNum, false));
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-			handlerBDFE.populateFieldFailure(record,fieldNum,data);
+				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
@@ -250,6 +293,37 @@ public class FixLenDataParser2 implements DataParser {
 		}
 	}
 
+	/**
+	 *  Transfers CharBuffer into string and handles quoting of strings (removes quotes)
+	 *
+	 *@param  buffer        Character buffer to work on
+	 *@param  removeQuotes  true/false remove quotation characters
+	 *@return               String with quotes removed if specified
+	 */
+	private String buffer2String(CharBuffer buffer,int fieldNum, boolean removeQuotes) {
+		if (removeQuotes && buffer.hasRemaining() &&
+			metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
+			/* if first & last characters are quotes (and quoted is at least one character, remove quotes */
+			if (buffer.charAt(0) == '\'') { 
+				if (buffer.charAt(buffer.limit()-1) == '\'') {
+					if (buffer.remaining()>2){
+						return buffer.subSequence(1, buffer.limit() - 1).toString();
+					}else{
+						return ""; //empty string after quotes removed
+					}
+				}
+			} else if (buffer.charAt(0) == '"' ) {
+				if (buffer.charAt(buffer.limit()-1) == '"') {
+					if ( buffer.remaining()>2){
+						return buffer.subSequence(1, buffer.limit() - 1).toString();
+					}else{
+						return ""; //empty string after quotes removed
+					}
+				}
+			}
+		}
+		return buffer.toString();
+	}
 	/**
 	 *  Gets the Next attribute of the FixLenDataParser object
 	 *
