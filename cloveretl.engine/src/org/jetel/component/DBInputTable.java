@@ -26,6 +26,7 @@ import org.jetel.database.*;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -124,7 +125,7 @@ public class DBInputTable extends Node {
 
 
 		// try to open file & initialize data parser
-		parser.open(TransformationGraph.getReference().getDBConnection(dbConnectionName), getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.open(TransformationGraph.getReference().getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
 	}
 
 
@@ -149,7 +150,7 @@ public class DBInputTable extends Node {
 
 		// we need to create data record - take the metadata from first output port
 
-		DataRecord record=new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecord record=new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 
 		record.init();
 
@@ -210,22 +211,24 @@ public class DBInputTable extends Node {
 	 * @since           September 27, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs = nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		DBInputTable aDBInputTable = null;
-
-		if (attribs != null) {
-			String id = attribs.getNamedItem("id").getNodeValue();
-			String sqlQuery = attribs.getNamedItem("sqlQuery").getNodeValue();
-			String dbConnectionName = attribs.getNamedItem("dbConnection").getNodeValue();
-			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-			if (id != null && sqlQuery != null && dbConnectionName != null) {
-				aDBInputTable = new DBInputTable(id, dbConnectionName, sqlQuery);
-
-				if(aDataPolicy != null) {
-					aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
-				}
+		
+		try{
+			aDBInputTable= new DBInputTable(xattribs.getString("id"), 
+							xattribs.getString("dbConnection"),
+							xattribs.getString("sqlQuery"));
+			if (xattribs.exists("DataPolicy")){
+				aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+								xattribs.getString("DataPolicy")));
+				
 			}
+			
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
+		
 		return aDBInputTable;
 	}
 

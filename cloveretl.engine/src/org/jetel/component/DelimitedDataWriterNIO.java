@@ -23,6 +23,7 @@ import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DelimitedDataFormatterNIO;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>DelimitedDataWriter Component</h3>
@@ -185,33 +186,36 @@ public class DelimitedDataWriterNIO extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		DelimitedDataWriterNIO aDelimitedDataWriterNIO = null;
 		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
-			String append=attribs.getNamedItem("append").getNodeValue();
-			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
-			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
-			if ((id!=null) && (fileURL!=null)){
-				if (charset!=null){
-					aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
+		try{
+			if (xattribs.exists("charset")){
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString("id"),
+										xattribs.getString("fileURL"),
+										xattribs.getString("charset"),
+										xattribs.getBoolean("append"));	
+			}else{
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString("id"),
+										xattribs.getString("fileURL"),
+										xattribs.getBoolean("append"));	
+			}
+			if (xattribs.exists("OneRecordPerLine")){
+				if(xattribs.getBoolean("OneRecordPerLine")){
+					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(true);
 				}else{
-					aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
+					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
 				}
-				
-				if(aOneRecordPerLine != null  ) {
-					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
-						aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(true);
-					}else {
-						aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
-					}
-				}
+			}else{
 				// sets the default policy
 				aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
 			}
+			
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
+		
 		return aDelimitedDataWriterNIO;
 	}
 

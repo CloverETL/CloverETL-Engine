@@ -23,6 +23,7 @@ import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>DelimitedDataWriter Component</h3>
@@ -176,27 +177,26 @@ public class DelimitedDataWriter extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		DelimitedDataWriter aDelimitedDataWriter = null;
 		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
-			String append=attribs.getNamedItem("append").getNodeValue();
-			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
-			if ((id!=null) && (fileURL!=null)){
-				aDelimitedDataWriter = new DelimitedDataWriter(id,fileURL,Boolean.valueOf(append).booleanValue());
-
-				if(aOneRecordPerLine != null  ) {
-					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
-						aDelimitedDataWriter.setOneRecordPerLinePolicy(true);
-					}else {
-						aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
-					}
+		try{
+			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString("id"),
+									xattribs.getString("fileURL"),
+									xattribs.getBoolean("append"));
+			if (xattribs.exists("OneRecordPerLine")){
+				if(xattribs.getBoolean("OneRecordPerLine")){
+					aDelimitedDataWriter.setOneRecordPerLinePolicy(true);
+				}else{
+					aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
 				}
-				// sets the default policy
+			}else{
 				aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
 			}
+			
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
 		return aDelimitedDataWriter;
 	}
