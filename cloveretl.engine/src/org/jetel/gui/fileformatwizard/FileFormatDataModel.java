@@ -27,10 +27,13 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class FileFormatDataModel 
 implements Cloneable {
-	public short[] recordSizes;
 	public String fileName = null;
 	public String[] linesFromFile = new String[5];
 	public boolean isFileDelimited = false;
+	public boolean oneRecordPerLine = true;
+
+	public short[] recordSizes;
+
 	public DataRecordMetadata recordMeta = new DataRecordMetadata("No Name");
 	
     

@@ -17,10 +17,14 @@
  */
 package org.jetel.gui.fileformatwizard;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.SystemColor;
+
 import javax.swing.JTextPane;
 
 import org.jetel.gui.component.FormInterface;
@@ -35,6 +39,7 @@ public class Screen4 extends JPanel implements  FormInterface
 {
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
   private JLabel jLabel1 = new JLabel();
+  private JTextPane jTextPane2 = new JTextPane();
   private JTextPane jTextPane1 = new JTextPane();
   private JLabel jLabel2 = new JLabel();
 	 
@@ -64,26 +69,29 @@ public class Screen4 extends JPanel implements  FormInterface
     this.setLayout(gridBagLayout1);
     jLabel1.setText("Screen 4 of 4");
     jLabel1.setFont(new Font("Dialog", 1, 11));
-    //jTextPane1.setText("jTextPane1");
+	jTextPane1.setText("You can edit record information and any changes you make will be imported back into the wizard.\n\nPlease note that there is no 'Undo' button.");
+	jTextPane1.setBackground(SystemColor.control);
     jLabel2.setText(" Preview Final XML");
+	JScrollPane scrollPane = new JScrollPane(jTextPane2);
     this.add(jLabel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
-    this.add(jTextPane1, new GridBagConstraints(0, 1, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
+	this.add(jTextPane1, new GridBagConstraints(0, 1, 2, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+    this.add(scrollPane, new GridBagConstraints(0, 2, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jLabel2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
-	loadData();
+	//loadData();
   }
 
 /* (non-Javadoc)
  * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
  */
-public boolean validateData() {
+public String validateData() {
 	// TODO Auto-generated method stub
 	//parse the document
 	DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
-	aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane1.getText().getBytes()));
+	aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane2.getText().getBytes()));
 	if( aDataRecordMetadata == null) {
-		return false;
+		return "Errors Parsing Record elements!";
 	}
-	return true;
+	return null;
 }
 
 /* (non-Javadoc)
@@ -102,6 +110,6 @@ public void loadData() {
 	ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	DataRecordMetadataXMLReaderWriter aWriter = new DataRecordMetadataXMLReaderWriter();
 	aWriter.write(aDataRecordMetadata,baos);
-	jTextPane1.setText(baos.toString());
+	jTextPane2.setText(baos.toString());
 }
 }

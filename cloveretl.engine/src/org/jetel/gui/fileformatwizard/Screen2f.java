@@ -46,13 +46,13 @@ public class Screen2f extends JPanel implements  FormInterface
   private JTextPane jTextPane1 = new JTextPane();
 	 
   private FileFormatDispatcher aDispatcher;
-  private FileFormatDataModel aFileFormatParameters;
+  private FileFormatDataModel aFileFormatDataModel;
   private short[] fieldWidths;	
   
-  public Screen2f(FileFormatDispatcher aDispatcher, FileFormatDataModel aFileFormatParameters)
+  public Screen2f(FileFormatDispatcher aDispatcher, FileFormatDataModel aFileFormatDataModel)
   {
 	this.aDispatcher = aDispatcher;
-	this.aFileFormatParameters = aFileFormatParameters;
+	this.aFileFormatDataModel = aFileFormatDataModel;
   	
 	try
 	{
@@ -88,7 +88,7 @@ public class Screen2f extends JPanel implements  FormInterface
     jTextPane1.setText("Here goes screen help text.");
     jTextPane1.setBackground(SystemColor.control);
     
-	loadData();
+	//loadData();
 	
     this.add(jLabel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jLabel2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
@@ -123,14 +123,20 @@ public class Screen2f extends JPanel implements  FormInterface
 	}
 	
 	public void loadData() {
-		   if(aFileFormatParameters != null) {
-				if(aFileFormatParameters.fileName != null) {   	
-				  jLabel3.setText(aFileFormatParameters.fileName);
+		   if(aFileFormatDataModel != null) {
+				if(aFileFormatDataModel.fileName != null) {   	
+				  jLabel3.setText(aFileFormatDataModel.fileName);
 				}
-				if(aFileFormatParameters.linesFromFile != null) {
-				  setLinesFromFile(aFileFormatParameters.linesFromFile);
+				if(aFileFormatDataModel.linesFromFile != null) {
+				  setLinesFromFile(aFileFormatDataModel.linesFromFile);
 					
 				}
+if(aFileFormatDataModel.oneRecordPerLine) {
+	jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  You should not mark the last field as it is defined with the end of line.");
+} else {
+	jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  The last mark will also denote the end of record.");
+}
+
 		   } else {
 			  jLabel3.setText("filename goes here...");
 		   }
@@ -139,7 +145,7 @@ public class Screen2f extends JPanel implements  FormInterface
 	/* (non-Javadoc)
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
-	public boolean validateData() {
+	public String validateData() {
 		int oldPos = 0;
 		int newPos = 0;
 		Object[] objects = aRulerPanel.getPointList();
@@ -153,29 +159,41 @@ public class Screen2f extends JPanel implements  FormInterface
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		if(aFileFormatDataModel.oneRecordPerLine) {
+			String[] tmp = getLinesFromFile();				
+			short[] fieldWidths = new short[objects.length+1];
 		
-		short[] fieldWidths = new short[objects.length+1];
+			for(int i=0; i < tmpFieldPos.length ; i++ ) {
+				newPos = tmpFieldPos[i] -1;
+				if(newPos>tmp[0].length()) {
+					return "Mark at position "+ Integer.toString(newPos) + " goes beyond the end of line!";
+				}
+				fieldWidths[i]=(short)(newPos - oldPos );
+				oldPos = newPos;
+			}
+			fieldWidths[fieldWidths.length-1]=(short)(tmp[0].length()-oldPos);
+			if(fieldWidths[fieldWidths.length-1]>0) { 
+				this.fieldWidths = fieldWidths;
+			}
+		} else { // if more than one record per line then each record should have its end marked
+			short[] fieldWidths = new short[objects.length];
 		
-		for(int i=0; i < tmpFieldPos.length ; i++ ) {
-			newPos = tmpFieldPos[i] -1;
-			fieldWidths[i]=(short)(newPos - oldPos );
-			oldPos = newPos;
-		}
-		String[] tmp = getLinesFromFile();				
-		fieldWidths[fieldWidths.length-1]=(short)(tmp[0].length()-oldPos);
-		if(fieldWidths[fieldWidths.length-1]>0) { 
+			for(int i=0; i < tmpFieldPos.length ; i++ ) {
+				newPos = tmpFieldPos[i] -1;
+				fieldWidths[i]=(short)(newPos - oldPos );
+				oldPos = newPos;
+			}
 			this.fieldWidths = fieldWidths;
-			return true;
 		}
 			
-		return false;
+		return null;
 	}
 	/* (non-Javadoc)
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {
-		aFileFormatParameters.recordSizes = fieldWidths;
-		aFileFormatParameters.recordMeta.bulkLoadFieldSizes(fieldWidths);
+		aFileFormatDataModel.recordSizes = fieldWidths;
+		aFileFormatDataModel.recordMeta.bulkLoadFieldSizes(fieldWidths);
 	}
 
 }

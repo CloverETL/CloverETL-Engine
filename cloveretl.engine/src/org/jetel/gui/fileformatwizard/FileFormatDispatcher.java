@@ -274,21 +274,9 @@ public class FileFormatDispatcher {
 	 * it, and show it.
 	 */
 	protected void startPhase(FormInterface newFrame) {
+		newFrame.loadData();
 		getAFileFormatWizard().showScreen(Integer.toString(currentPhase));
 		
-//		// clean up previous phase
-//		if (null != getCurrentPhaseFrame()) {
-//			desktopPane.remove(getCurrentPhaseFrame());
-//			//currentPhaseFrame.dispose();
-//			setCurrentPhaseFrame(null);
-//		}
-//		setCurrentPhaseFrame(newFrame);
-//		// save id on stack so Previous button will work
-//		frameStack.add(new Integer(currentPhase));
-//		// add to desktop and show
-//		desktopPane.add(getCurrentPhaseFrame());
-//		//currentPhaseFrame.centerFrameInParent();
-//		getCurrentPhaseFrame().setVisible(true);
 	}
     
     
@@ -323,7 +311,8 @@ public class FileFormatDispatcher {
 	 */
 	protected void processCancelled() {
 		currentPhase = -1;
-		destroyCurrentPhaseFrame();
+		aFileFormatWizard.hide();
+		System.exit(0);
 	}
     
 	/**

@@ -153,9 +153,9 @@ public class Screen2d extends JPanel implements  FormInterface
 /* (non-Javadoc)
  * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
  */
-public boolean validateData() {
+public String validateData() {
 	// TODO Auto-generated method stub
-	return false;
+	return null;
 }
 
 /* (non-Javadoc)
