@@ -44,6 +44,7 @@ public class FixLenDataFormatter implements DataFormatter {
 	private int fieldLengths[];
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
+	private byte[] crLF="\n".getBytes();
 	
 	private boolean oneRecordPerLinePolicy = false;
 
@@ -147,7 +148,10 @@ public class FixLenDataFormatter implements DataFormatter {
 			dataBuffer.put(fieldBuffer);
 		}
 		if(oneRecordPerLinePolicy){
-			dataBuffer.put("\n".getBytes());
+			if (dataBuffer.remaining()<crLF.length){
+				flushBuffer();
+			}
+			dataBuffer.put(crLF);
 		}
 	}
 
