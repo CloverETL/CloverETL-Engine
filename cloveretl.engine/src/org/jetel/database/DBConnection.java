@@ -22,14 +22,14 @@ import java.util.Properties;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
- *  CloverETL's class for connecting to databases.<br>
+ *  CloverETL class for connecting to databases.<br>
  *  It practically wraps around JDBC's Connection class and adds some useful
  *  methods.
- *
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>id</b></td><td>connection identification</td>
- *  <tr><td><b>dbConfig</b><i>optional</i></td><td>filename of the config file from which to take connection parameters<br>
+ *  <tr><td><b>dbConfig</b><br><i>optional</i></td><td>filename of the config file from which to take connection parameters<br>
  *  If used, then all other attributes are ignored.</td></tr>
  *  <tr><td><b>dbDriver</b></td><td>name of the JDBC driver</td></tr>
  *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
@@ -38,7 +38,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  </table>  
  *
  *  <h4>Example:</h4>  
- *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"/&gt;</pre>
+ *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
  *
  *@author     dpavlis
  *@created    January 15, 2003
