@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="TestingMerge">
+<Graph name="TestingSort">
 <!-- This graph illustrates usage of Sort component. It sorts data based on specified key. 
 -->
 <Global>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingDBOutputTable">
+<!--
+This graph illustrates usage of dbFields and cloverFields parameters of
+DB_OUTPUT_TABLE component.
+Parameter dbFields allows to specify that only certain fields of target DB table
+will be populated.
+Parameter cloverFields allows to specify which input/Clover fields are used
+for populating target fields.
+The final mapping is determined by the order in which Clover fields and DB fields appear
+in the parameters.
+Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and
+input field FIRST_NAME onto LAST_NAME in DB.
+Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works
+only with DBs/JDBC drivers which support this feature (e.g. Oracle).
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="employees.list.dat" />
+<Node id="OUTPUT" type="DB_OUTPUT_TABLE" commit="300" dbConnection="InterbaseDB"  batchMode="Yes" dbTable="employee_tmp" 
+	dbFields="FIRST_NAME;LAST_NAME" 
+	cloverFields="LAST_NAME;FIRST_NAME" />
+<Edge id="INEDGE2" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="TestingDB2">
+<Graph name="Testing DB Load">
 <Global>
 <Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
 <DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="employees.list.out" />
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="employees.list.dat" />
 <Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="InterbaseDB" dbTable="employee_tmp"/>
 <Edge id="INEDGE" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
 </Phase>
