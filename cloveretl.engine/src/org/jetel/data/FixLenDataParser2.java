@@ -19,7 +19,7 @@
 */
 // FILE: c:/projects/jetel/org/jetel/data/FixLenDataParser2.java
 
-package org.jetel.data;
+package org.jetel.data.parser;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -46,11 +48,11 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author     David Pavlis,Wes Maciorowski     
  * @since    August 21, 2002
- * @see        DataParser
+ * @see        Parser
  * @see      Defaults
  * @revision    $Revision$
  */
-public class FixLenDataParser2 implements DataParser {
+public class FixLenDataParser2 implements Parser {
 	private boolean oneRecordPerLinePolicy;
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
@@ -396,7 +398,7 @@ public class FixLenDataParser2 implements DataParser {
 
 	/**
 	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;

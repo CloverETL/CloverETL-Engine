@@ -19,12 +19,14 @@
 */
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataParser.java
 
-package org.jetel.data;
+package org.jetel.data.parser;
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -42,10 +44,10 @@ import org.jetel.metadata.*;
  *
  *@author     D.Pavlis
  *@since      March 27, 2002
- *@see        DataParser
+ *@see        Parser
  *@revision    $Revision$
  */
-public class DelimitedDataParserNIOMap implements DataParser {
+public class DelimitedDataParserNIOMap implements Parser {
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
 	private MappedByteBuffer mappedDataBuffer;

@@ -30,7 +30,6 @@ import java.nio.charset.CharacterCodingException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
-import java.util.logging.Logger;
 
 /**
  *  A class that represents decimal number field (double precision)
@@ -403,7 +402,8 @@ public class NumericDataField extends DataField {
 	}
 
 	/**
-	 *  Gets the size attribute of the IntegerDataField object
+	 *  Returns how many bytes will be occupied when this field with current
+	 *  value is serialized into ByteBuffer
 	 *
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField

@@ -20,10 +20,11 @@
 
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataParser.java
 
-package org.jetel.data;
+package org.jetel.data.parser;
 import java.nio.*;
 import java.io.*;
 
+import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -38,7 +39,7 @@ import org.jetel.metadata.*;
  * @since    March 27, 2002
  * @see        OtherClasses
  */
-public class DelimitedDataParser implements DataParser {
+public class DelimitedDataParser implements Parser {
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private CharBuffer buffer;
 	private DataRecordMetadata metadata;

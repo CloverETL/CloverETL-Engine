@@ -23,12 +23,8 @@ package org.jetel.data;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.jetel.exception.ClassCompilationException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ClassBuilder;
-import org.jetel.util.CloverProperties;
-import org.jetel.util.Compile;
 
 /**
  *  A class that represents one data record Fields are not deleted & created all
@@ -85,9 +81,9 @@ public class DataRecord implements Serializable {
 
 	public void copyFieldsByPosition(DataRecord _record) {
 		DataRecordMetadata sourceMetadata = _record.getMetadata();
-		DataFieldMetadata fieldMetadata;
 		DataField sourceField;
 		DataField targetField;
+		//DataFieldMetadata fieldMetadata;
 		int sourceLength = sourceMetadata.getNumFields();
 		int targetLength = this.metadata.getNumFields();
 		int copyLength;
@@ -99,7 +95,7 @@ public class DataRecord implements Serializable {
 
 		for (int i = 0; i < copyLength; i++) {
 
-			fieldMetadata = metadata.getField(i);
+			//fieldMetadata = metadata.getField(i);
 			sourceField = _record.getField(i);
 			targetField = this.getField(i);
 			if (sourceField.getType() == targetField.getType()) {
@@ -327,7 +323,7 @@ public class DataRecord implements Serializable {
 	 */
 	public int getSizeSerialized() {
 		int size=0;
-		for (int i = 0; i < fields.length; size+=fields[i++].getSize());
+		for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
 		return size;
 	}
 }

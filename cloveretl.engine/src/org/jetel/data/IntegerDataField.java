@@ -24,7 +24,6 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
-import java.util.logging.Logger;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -368,7 +367,8 @@ public class IntegerDataField extends DataField {
 
 
 	/**
-	 *  Gets the size attribute of the IntegerDataField object
+	 *  Returns how many bytes will be occupied when this field with current
+	 *  value is serialized into ByteBuffer
 	 *
 	 * @return    The size value
 	 * @see	      org.jetel.data.DataField

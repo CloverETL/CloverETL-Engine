@@ -19,12 +19,14 @@
 */
 // FILE: c:/projects/jetel/org/jetel/data/FixLenDataParser.java
 
-package org.jetel.data;
+package org.jetel.data.parser;
 import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -40,11 +42,11 @@ import org.jetel.metadata.*;
  * 
  * @author     David Pavlis
  * @since    August 21, 2002
- * @see        DataParser
+ * @see        Parser
  * @see      Defaults
  * @revision    $Revision$
  */
-public class FixLenDataParser implements DataParser {
+public class FixLenDataParser implements Parser {
 
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
@@ -316,7 +318,7 @@ public class FixLenDataParser implements DataParser {
 
 	/** 
 	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 * 	 * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
+	 * 	 * @see org.jetel.data.parser.Parser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
 	 */
 	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
 		this.handlerBDFE = handler;
