@@ -184,9 +184,11 @@ public abstract class PhaseFrame extends JFrame {
      */
     protected void nextPressed() {
 		FormInterface currentPhaseFrame = dispatcher.getCurrentPhaseFrame();
-        if ( ! currentPhaseFrame.validateData() )
+		String msg = currentPhaseFrame.validateData();
+        if ( msg != null) {
+			displayMessage(msg);
             return;
-        
+        }
 		currentPhaseFrame.saveData();
         
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_NEXT, null);
@@ -228,11 +230,14 @@ public abstract class PhaseFrame extends JFrame {
      */
     protected void finishPressed() {
 		FormInterface currentPhasePanel = dispatcher.getCurrentPhaseFrame();
-        if ( ! currentPhasePanel.validateData() )
-            return;
+
+		String msg = currentPhasePanel.validateData();
+		if ( msg != null) {
+			displayMessage(msg);
+			return;
+		}
         
 		currentPhasePanel.saveData();
-        //setVisible(false);
         
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_FINISH, null);
 		repaint();
@@ -357,4 +362,7 @@ public abstract class PhaseFrame extends JFrame {
 		return dispatcher;
 	}
     
+    private void displayMessage(String msg) {
+		JOptionPane.showMessageDialog(this, msg);
+    }
 }

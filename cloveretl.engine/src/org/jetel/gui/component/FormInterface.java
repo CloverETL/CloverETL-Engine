@@ -34,11 +34,11 @@ public interface  FormInterface {
 	 * Naturally, false should be returned if there is
 	 * any invalid data.
 	 * <p>
-	 * @return <code>true</code> if the data in the dialog is acceptable,
-	 * <code>false</code> if the data fails to meet validation criteria.
+	 * @return <code>null</code> if the data in the dialog is acceptable,
+	 * <code>String message</code> if the data fails to meet validation criteria.
 	 *
 	 */
-	public boolean validateData();
+	public String validateData();
     
 	/**
 	 * Normally, if the data is valid (see {@link #validateData validateData},)

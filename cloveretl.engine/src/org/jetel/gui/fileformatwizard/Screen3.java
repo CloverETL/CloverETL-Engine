@@ -38,6 +38,7 @@ import javax.swing.JComboBox;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
 
 import org.jetel.gui.component.FormInterface;
 import org.jetel.metadata.DataFieldMetadata;
@@ -78,7 +79,7 @@ public class Screen3 extends JPanel implements FormInterface {
     {
 		String[] petStrings = CloverProperties.getTypeNameList();
 		jComboBox1 = new JComboBox(petStrings);
-		loadData();
+		//loadData();
 		jbInit();
     }
     catch(Exception e)
@@ -94,7 +95,7 @@ public class Screen3 extends JPanel implements FormInterface {
     jLabel1.setText("Screen 3 of 4");
     jLabel1.setFont(new Font("Dialog", 1, 11));
     jLabel2.setText("Specify Field Attributes");
-    jTextPane1.setText("Here goes screen help text.");
+    jTextPane1.setText("You can edit field attributes by clicking on the table and selecting a column that corresponds to field you want to change.  Now you can change field name and any other attributes that are displayed.\n\nPlease note that all attributes are saved automatically.  There is no 'Cancel' button.");
     jTextPane1.setBackground(SystemColor.control);
     jPanel2.setLayout(gridBagLayout2);
     jLabel3.setText("Field Name");
@@ -136,6 +137,7 @@ public class Screen3 extends JPanel implements FormInterface {
     
     
     
+	jTable1 = new JTable();
 	jTable1.setRowSelectionAllowed(false);
 	jTable1.setColumnSelectionAllowed(true);
 	//jTable1.setCellSelectionEnabled(false);
@@ -153,7 +155,7 @@ public class Screen3 extends JPanel implements FormInterface {
 		public void valueChanged(ListSelectionEvent e) {
 			//Ignore extra messages.
 			if (e.getValueIsAdjusting()) return;
-			System.out.println("ListSelectionEvent " + e.getFirstIndex());
+//			System.out.println("ListSelectionEvent " + e.getFirstIndex());
 
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			if (lsm.isSelectionEmpty()) {
@@ -163,11 +165,11 @@ public class Screen3 extends JPanel implements FormInterface {
 				jCheckBox1.setEnabled(false);
 				jComboBox1.setEnabled(false);
 				jLabel7.setText("Nothing");
-				System.out.println("No columns are selected.");
+				//System.out.println("No columns are selected.");
 			} else {
 				selectedCol = lsm.getMinSelectionIndex();
-				System.out.println("Column " + selectedCol
-								   + " is now selected.");
+//				System.out.println("Column " + selectedCol
+//								   + " is now selected.");
 				jTextField1.setEnabled(true);
 				jCheckBox1.setEnabled(true);
 				jComboBox1.setEnabled(true);
@@ -207,13 +209,13 @@ public class Screen3 extends JPanel implements FormInterface {
 
   private void jTable1_mouseClicked(MouseEvent e)
   {
-  	System.out.println("jTable1_mouseClicked " + e.getX() + " " + e.getY());
+  	//System.out.println("jTable1_mouseClicked " + e.getX() + " " + e.getY());
   }
 
 private void jCheckBox1_actionPerformed(ActionEvent e)
 {
 	Object source = e.getSource();
-	System.out.println("ActionEvent e " + jCheckBox1.isSelected());
+	//System.out.println("ActionEvent e " + jCheckBox1.isSelected());
 	if(selectedCol!= -1) { //reset values only if something is selected
 		aDataRecordMetadata.getField(selectedCol).setNullable(jCheckBox1.isSelected());
 	}
@@ -221,7 +223,7 @@ private void jCheckBox1_actionPerformed(ActionEvent e)
 
 private void jComboBox1_actionPerformed(ActionEvent e)
 {
-	System.out.println("ActionEvent e " + jComboBox1.getSelectedItem());
+	//System.out.println("ActionEvent e " + jComboBox1.getSelectedItem());
 	if(selectedCol!= -1) { //reset values only if something is selected
 		aDataRecordMetadata.getField(selectedCol).setType(CloverProperties.getTypeOfName((String)jComboBox1.getSelectedItem()));
 	}
@@ -229,7 +231,7 @@ private void jComboBox1_actionPerformed(ActionEvent e)
 
 private void jTextField1_focusLost(FocusEvent e)
 {
-	System.out.println("FocusEvent e " + " "+ jTextField1.getText());
+	//System.out.println("FocusEvent e " + " "+ jTextField1.getText());
 	if(selectedCol!= -1) { //reset values only if something is selected
 		aDataRecordMetadata.getField(selectedCol).setName(jTextField1.getText());
 		columnNames[selectedCol]=jTextField1.getText();
@@ -242,38 +244,63 @@ private void jTextField1_focusLost(FocusEvent e)
 	 * @see org.jetel.gui.component.FormInterface#loadData()
 	 */
 	public void loadData() {
+		Object[][] data = null;
+		
 		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
 		columnNames = new String[aDataRecordMetadata.getNumFields()];
 		for( int i = 0 ; i < columnNames.length ; i++) {
 			columnNames[i] = aDataRecordMetadata.getField(i).getName();
 		}
-		
-		Object[][] data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
+		data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
 		int fieldSize =  0;
 		int fieldStart = 0;
 		int fieldEnd = 0;
-		for( int i = 0 ; i < columnNames.length ; i++) {
-			fieldSize = aDataRecordMetadata.getField(i).getSize();
-			fieldEnd = fieldEnd + fieldSize;
-			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
-				if(aFileFormatDataModel.linesFromFile[j] != null ) {
-					data[j][i] = aFileFormatDataModel.linesFromFile[j].substring(fieldStart, fieldEnd);
+		int recordSize = 0;
+		
+		if(aFileFormatDataModel.oneRecordPerLine) {
+			for( int i = 0 ; i < columnNames.length ; i++) {
+				fieldSize = aDataRecordMetadata.getField(i).getSize();
+				fieldEnd = fieldEnd + fieldSize;
+				for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+					if(aFileFormatDataModel.linesFromFile[j] != null ) {
+							data[j][i] = aFileFormatDataModel.linesFromFile[j].substring(fieldStart, fieldEnd);
+					}
 				}
+				fieldStart = fieldStart + fieldSize;
 			}
-			fieldStart = fieldStart + fieldSize;
-		}
+		} else {  // more than oneRecordPerLine
+			for( int i = 0 ; i < columnNames.length ; i++) {
+				recordSize = recordSize +aDataRecordMetadata.getField(i).getSize();
+			}
+			for( int i = 0 ; i < columnNames.length ; i++) {
+				fieldSize = aDataRecordMetadata.getField(i).getSize();
+				fieldEnd = fieldEnd + fieldSize;
+				for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+					// all on one line
+					if(aFileFormatDataModel.linesFromFile[0] != null ) {
+						if(aFileFormatDataModel.linesFromFile[0]!= null && (recordSize*j+fieldEnd)<aFileFormatDataModel.linesFromFile[0].length()) {
+							data[j][i] = aFileFormatDataModel.linesFromFile[0].substring((recordSize*j+fieldStart), (recordSize*j+fieldEnd));
+						} else {
+							data[j][i] = null;
+						}
+					}
+				}
+				fieldStart = fieldStart + fieldSize;
+			}
+		}	
 
-		jTable1 = new JTable(data, columnNames);
+		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
+		jTable1.setModel(aModel);
 	}
 	
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
-	public boolean validateData() {
+	public String validateData() {
 		//no validation required; if the user does not make any changes then we just
 		//have default values
-		return true;
+		return null;
 	}
 	
 	/* (non-Javadoc)

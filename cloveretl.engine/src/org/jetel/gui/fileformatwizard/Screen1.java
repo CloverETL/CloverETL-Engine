@@ -65,13 +65,13 @@ public class Screen1 extends JPanel implements FormInterface
 	 private JLabel jLabel6 = new JLabel();
 	 
 	 private FileFormatDispatcher aDispatcher;
-	 private FileFormatDataModel aFileFormatParameters;
+	 private FileFormatDataModel aFileFormatDataModel;
 	 private String[] linesFromFile = new String[5];
 	
   public Screen1(FileFormatDispatcher aDispatcher, FileFormatDataModel aFileFormatParameters)
   {
   	this.aDispatcher = aDispatcher;
-  	this.aFileFormatParameters = aFileFormatParameters;
+  	this.aFileFormatDataModel = aFileFormatParameters;
   	
 	    try
     {
@@ -101,7 +101,7 @@ public class Screen1 extends JPanel implements FormInterface
 	this.setLayout(gridBagLayout1);
     this.setSize(new Dimension(425, 303));
    
-	loadData();
+	//loadData();
    jLabel1.setText("Screen 1 of 4");
    jLabel1.setFont(new Font("Dialog", 1, 12));
    FileChooserButton.setText("Select File");
@@ -151,7 +151,6 @@ public class Screen1 extends JPanel implements FormInterface
    group2.add(OneRecordPerLineRadioButton);
    group2.add(ManyRecordPerLineRadioButton);
    
-   ManyRecordPerLineRadioButton.setEnabled(false);
   }
   
   public void setPreviewFileNameLabel(String previewFileNameLabel) {
@@ -204,52 +203,59 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 
 
 	public void loadData() {
-		   if(aFileFormatParameters != null) {
-				if(aFileFormatParameters.fileName != null) {   	
-					jLabel2.setText(aFileFormatParameters.fileName);
+		   if(aFileFormatDataModel != null) {
+				if(aFileFormatDataModel.fileName != null) {   	
+					jLabel2.setText(aFileFormatDataModel.fileName);
+				} else {
+				 	jLabel2.setText("(No File Selected)");
 				}
-				if(aFileFormatParameters.linesFromFile != null) {
+				if(aFileFormatDataModel.linesFromFile != null) {
 					StringBuffer buf = new StringBuffer();
-					for(int i = 0 ; i < aFileFormatParameters.linesFromFile.length; i++ ) {
-						if( aFileFormatParameters.linesFromFile[i] != null)
-							buf.append(aFileFormatParameters.linesFromFile[i] ).append("\n" );	
+					for(int i = 0 ; i < aFileFormatDataModel.linesFromFile.length; i++ ) {
+						if( aFileFormatDataModel.linesFromFile[i] != null)
+							buf.append(aFileFormatDataModel.linesFromFile[i] ).append("\n" );	
 					}
 					jTextPane1.setText(buf.toString());
 				}
-				if( aFileFormatParameters.isFileDelimited ) {
+				if( aFileFormatDataModel.isFileDelimited ) {
 					DelimitedRadioButton.setSelected(true);
 				} else {
 					FixedWidthRadioButton.setSelected(true);
 				}
+			if( aFileFormatDataModel.oneRecordPerLine ) {
+				OneRecordPerLineRadioButton.setSelected(true);
+			} else {
+				ManyRecordPerLineRadioButton.setSelected(true);
+			}
 		   } else {
 			jLabel2.setText("(No File Selected)");
 			jTextPane1.setText("");
+			OneRecordPerLineRadioButton.setSelected(true);
 		   }
 		   
-		OneRecordPerLineRadioButton.setSelected(true);
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
-	public boolean validateData() {
+	public String validateData() {
 		// at minimum we need to have file selected
 		if(jLabel2.getText().equalsIgnoreCase("(No File Selected)")){
-			return false;
+			return "No File Selected!";
 		}
-		return true;
+		return null;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {
-		aFileFormatParameters.fileName = jLabel2.getText();
-		aFileFormatParameters.recordMeta.setName(jLabel2.getText());
+		aFileFormatDataModel.fileName = jLabel2.getText();
+		aFileFormatDataModel.recordMeta.setName(jLabel2.getText());
 		if(DelimitedRadioButton.isSelected()){
-			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+			aFileFormatDataModel.recordMeta.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		} else {
-			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
+			aFileFormatDataModel.recordMeta.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
 		}
 //		if(ManyRecordPerLineRadioButton.isSelected()){
 //			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.DELIMITED_RECORD);
@@ -257,8 +263,9 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 //			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
 //		}
 		
-		aFileFormatParameters.isFileDelimited = DelimitedRadioButton.isSelected();
-		aFileFormatParameters.linesFromFile = linesFromFile;
+		aFileFormatDataModel.isFileDelimited = DelimitedRadioButton.isSelected();
+		aFileFormatDataModel.linesFromFile = linesFromFile;
+		aFileFormatDataModel.oneRecordPerLine=OneRecordPerLineRadioButton.isSelected();
 	}
 
 }
