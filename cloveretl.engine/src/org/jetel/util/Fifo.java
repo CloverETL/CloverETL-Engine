@@ -97,9 +97,11 @@ public class Fifo {
 	 *@param  length  Description of the Parameter
 	 */
 	private final void copyArray(Object[] array, int from, int to, int length) {
-		for (int i = length - 1; i >= 0; i--) {
-			array[to + i] = array[from + i];
-		}
+		
+		System.arraycopy(array,from,array,to,length);
+		//for (int i = length - 1; i >= 0; i--) {
+		//	array[to + i] = array[from + i];
+		//}
 	}
 
 
