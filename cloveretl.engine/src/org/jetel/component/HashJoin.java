@@ -317,7 +317,7 @@ public class HashJoin extends Node {
 					// we have finished reading SLAVE records
 					break;
 				}
-				yield();
+				//yield();
 
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -330,11 +330,15 @@ public class HashJoin extends Node {
 				return;
 			}
 		}
-		//DEBUG START
-		//for (Iterator i=hashMap.values().iterator();i.hasNext();){
-		//	System.out.println("> "+i.next());
-		//}
-		// DEBUG END
+		//XDEBUG START
+		//		for (Iterator i=hashMap.values().iterator();i.hasNext();){
+		//			System.out.println("> "+i.next());
+		//		}
+		//		System.out.println("***KEYS***");
+		//		for (Iterator i=hashMap.keySet().iterator();i.hasNext();){
+		//			System.out.println("> "+i.next());
+		//		}
+		//XDEBUG END
 
 		// now read all records from DRIVER port and try to look up corresponding
 		// record from SLAVE records set.
