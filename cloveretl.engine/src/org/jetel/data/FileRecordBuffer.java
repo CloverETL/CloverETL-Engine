@@ -17,9 +17,12 @@
  */
 package org.jetel.data;
 
-import java.io.*;
-import java.nio.*;
-import java.nio.channels.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 
 /**
  *  Class implementing RecordBuffer backed by temporary file - i.e. unlimited
@@ -47,6 +50,7 @@ public class FileRecordBuffer {
 
 	private boolean hasFile;
 	private boolean isDirty;
+	private boolean isClosed;
 	// indicates whether buffer contains unwritten data
 
 	// data
@@ -79,6 +83,7 @@ public class FileRecordBuffer {
 		mapPosition = 0;
 		isDirty = false;
 		hasFile = false;
+		isClosed=false;
 		dataBuffer = ByteBuffer.allocateDirect(dataBufferSize > DEFAULT_BUFFER_SIZE ? dataBufferSize : DEFAULT_BUFFER_SIZE);
 	}
 
@@ -96,6 +101,7 @@ public class FileRecordBuffer {
 		mapPosition = 0;
 		isDirty = false;
 		hasFile = false;
+		isClosed=false;
 		dataBuffer = ByteBuffer.allocateDirect(DEFAULT_BUFFER_SIZE);
 	}
 
@@ -115,6 +121,7 @@ public class FileRecordBuffer {
 		tmpFile.deleteOnExit();
 		// we want the temp file be deleted on exit
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
+		hasFile=true;
 	}
 
 
@@ -125,6 +132,7 @@ public class FileRecordBuffer {
 	 *@since                   September 17, 2002
 	 */
 	public void close() throws IOException {
+		isClosed=true;
 		if (hasFile) {
 			tmpFileChannel.close();
 			if (!tmpFile.delete()) {
@@ -165,6 +173,10 @@ public class FileRecordBuffer {
 	 *@since                   September 17, 2002
 	 */
 	public void push(ByteBuffer data) throws IOException {
+		if(isClosed){
+			throw new IOException("Buffer has been closed !");
+		}
+		
 		int recordSize = data.remaining();
 
 		secureBuffer(writePosition, recordSize + LEN_SIZE_SPECIFIER);
@@ -226,6 +238,9 @@ public class FileRecordBuffer {
 	 */
 	public ByteBuffer shift(ByteBuffer data) throws IOException {
 		int recordSize;
+		if(isClosed){
+			throw new IOException("Buffer has been closed !");
+		}
 		if (readPosition >= writePosition) {
 			return null;
 		}
@@ -254,6 +269,9 @@ public class FileRecordBuffer {
 	 */
 	public ByteBuffer get(ByteBuffer data) throws IOException {
 		int recordSize;
+		if(isClosed){
+			throw new IOException("Buffer has been closed !");
+		}
 		if (readPosition >= writePosition) {
 			return null;
 		}
@@ -283,7 +301,6 @@ public class FileRecordBuffer {
 			dataBuffer.flip();
 			if (!hasFile) {
 				openTmpFile();
-				hasFile = true;
 			}
 			tmpFileChannel.write(dataBuffer, mapPosition);
 		}
