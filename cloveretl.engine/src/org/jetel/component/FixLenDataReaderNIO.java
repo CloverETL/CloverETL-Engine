@@ -35,7 +35,6 @@ import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -66,6 +65,11 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
+ *  <tr><td><b>SkipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each field should be skipped.</td>
+ *  <tr><td><b>LineSeparatorSize</b><br><i>optional</i></td><td> sets the size/length of line delimiter. It is 1 for "\n" - UNIX style
+ *   and 2 for "\n\r" - DOS/Windows style. Can be set to any value and is added
+ *   to total record length.<br>It is automatically determined from system properties. This method overrides the default value.<br>
+ *   Has any meaning only if OneRecordPerLine is set to True - i.e. records are on separate lines.</td>
  *  </tr>
  *  </table>
  *
@@ -133,6 +137,7 @@ public class FixLenDataReaderNIO extends Node {
 				//broadcast the record to all connected Edges
 				writeRecordBroadcast(record);
 			}
+			yield();
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
@@ -215,6 +220,12 @@ public class FixLenDataReaderNIO extends Node {
 			if (xattribs.exists("OneRecordPerLine")){
 				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine"));
 			}
+			if (xattribs.exists("SkipLeadingBlanks")){
+				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean("SkipLeadingBlanks"));
+			}
+			if (xattribs.exists("LineSeparatorSize")){
+				aFixLenDataReaderNIO.setLineSeparatorSize(xattribs.getInteger("LineSeparatorSize"));
+			}
 			
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
@@ -233,7 +244,14 @@ public class FixLenDataReaderNIO extends Node {
 	private void setOneRecordPerLinePolicy(boolean b) {
 		parser.setOneRecordPerLinePolicy(b);
 	}
+	
+	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
+		parser.setSkipLeadingBlanks(skipLeadingBlanks);
+	}
 
+	public void setLineSeparatorSize(int lineSeparatorSize) {
+		parser.setLineSeparatorSize(lineSeparatorSize);
+	}
 
 	/**
 	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.

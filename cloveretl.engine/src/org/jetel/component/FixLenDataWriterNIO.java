@@ -216,6 +216,9 @@ public class FixLenDataWriterNIO extends Node {
 						xattribs.getBoolean("append",_APPEND_));
 			}
 			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine",_ONE_REC_PER_LINE_));
+			if (xattribs.exists("LineSeparator")){
+				aFixLenDataWriterNIO.setLineSeparator(xattribs.getString("LineSeparator"));
+			}
 		
 		}catch(Exception ex){
 			System.err.println(ex.getMessage());
@@ -237,7 +240,19 @@ public class FixLenDataWriterNIO extends Node {
 		formatter.setOneRecordPerLinePolicy(b);
 	}
 
-
+	/**
+	 * Sets line separator char(s) - allows to specify
+	 * different than default EOL character (\n).
+	 * 
+	 * @param separator
+	 */
+	private void setLineSeparator(String separator){
+		// this should be somehow generalized
+		if (formatter instanceof FixLenDataFormatter){
+			((FixLenDataFormatter)formatter).setLineSeparator(separator);
+		}
+	}
+	
 	/**
 	 *  Description of the Method
 	 *
