@@ -270,6 +270,8 @@ public abstract class CopySQLData {
 				if (jetelFieldType==DataFieldMetadata.STRING_FIELD){
 					return new CopyBoolean(record,fromIndex,toIndex);
 				}
+			case Types.OTHER: // When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
+				return new CopyString(record,fromIndex,toIndex);
 			default:
 				throw new RuntimeException("SQL data type not supported: " + SQLType);
 		}
