@@ -48,6 +48,9 @@ public class testXMLGraph{
 		System.err.println("Graph initialization failed !");
 		return;
 		}
+		
+		graph.dumpGraphConfiguration();
+		
 		if (!graph.run()){ // start all Nodes (each node is one thread)
 		System.out.println("Failed starting all nodes!");
 		return;		
