@@ -224,12 +224,11 @@ public class FixLenDataParser implements Parser {
 	 */
 	private boolean readData(ByteBuffer fielddBuffer, int length) throws IOException {
 		int size;
-		byte[] tmp;
 		// check if we have enough data in buffer to satisfy reading
 		if (dataBuffer.remaining() < length) {
 			dataBuffer.compact();
 			size = reader.read(dataBuffer);
-			System.out.println( "Read: " + size);
+			//debug: System.out.println( "Read: " + size);
 			dataBuffer.flip();
 
 			// if no more data or incomplete record
@@ -237,11 +236,10 @@ public class FixLenDataParser implements Parser {
 				return false;
 			}
 		}
-		tmp = new byte[length];
-		dataBuffer.get(tmp);
-		fieldBuffer.flip();
-		fieldBuffer.limit(length);
-		fieldBuffer.put(tmp);
+		int saveLimit=dataBuffer.limit();
+		dataBuffer.limit(dataBuffer.position()+length);
+		fieldBuffer.put(dataBuffer);
+		dataBuffer.limit(saveLimit);
 		return true;
 	}
 
@@ -257,7 +255,6 @@ public class FixLenDataParser implements Parser {
 	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int character;
-		long size = 0;
 
 		// populate all data fields
 

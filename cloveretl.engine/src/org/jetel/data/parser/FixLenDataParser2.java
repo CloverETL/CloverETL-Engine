@@ -53,7 +53,9 @@ import org.jetel.metadata.DataRecordMetadata;
  * @revision    $Revision$
  */
 public class FixLenDataParser2 implements Parser {
-	private boolean oneRecordPerLinePolicy;
+	private boolean oneRecordPerLinePolicy = false;
+	private boolean skipLeadingBlanks = true;
+	private int lineSeparatorSize;
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
 //	private ByteBuffer fieldBuffer;
@@ -77,6 +79,7 @@ public class FixLenDataParser2 implements Parser {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 //		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+		lineSeparatorSize=System.getProperty("line.separator","\n").length();
 	}
 	/**
 	 *Constructor for the FixLenDataParser object
@@ -92,6 +95,7 @@ public class FixLenDataParser2 implements Parser {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 //		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(charsetDecoder).newDecoder();
+		lineSeparatorSize=System.getProperty("line.separator","\n").length();
 	}
 	/**
 	 *  An operation that opens/initializes parser.
@@ -102,7 +106,6 @@ public class FixLenDataParser2 implements Parser {
 	 */
 	public void open(Object in, DataRecordMetadata _metadata) {
 		CoderResult result;
-		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
 		
 		if (_metadata.getRecType()!=DataRecordMetadata.FIXEDLEN_RECORD){
@@ -118,11 +121,10 @@ public class FixLenDataParser2 implements Parser {
 			recordLength += fieldLengths[i];
 		}
 		decoder.reset();
-		// reset CharsetDecoder
 		recordCounter = 0;
-		// reset record counter
-//		charBuffer.clear();
-//		dataBuffer.clear();
+		if (oneRecordPerLinePolicy){
+			recordLength+=lineSeparatorSize;
+		}
 
 	}
 	/**
@@ -138,6 +140,7 @@ public class FixLenDataParser2 implements Parser {
 		int fieldCounter = 0;
 		int posCounter = 0;
 		boolean isDataAvailable;
+		boolean skipBlanks=skipLeadingBlanks;
 		int remaining=charBuffer.remaining();
 				
 		if (charBuffer.remaining() < recordLength){
@@ -153,7 +156,6 @@ public class FixLenDataParser2 implements Parser {
 					return null; // end of data stream 
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
 				throw new JetelException(e.getMessage());
 			}
 		}
@@ -164,30 +166,29 @@ public class FixLenDataParser2 implements Parser {
 			while (fieldCounter < metadata.getNumFields()) {
 				fieldStringBuffer.clear();
 				char c;
-				boolean skippingLeadingBlanks = true;
-				boolean trackingTrailingBlanks = false;
 				for(int i=0; i < fieldLengths[fieldCounter] ; i++) {
-					// skip leading blanks
+					
 					c = charBuffer.get();
-					if(skippingLeadingBlanks && c == ' ') {
+					//	skip leading blanks
+					if(skipBlanks && c == ' ') {
 						continue;
 					} 
 					
-					if(skippingLeadingBlanks && c != ' ') {
-						skippingLeadingBlanks  = false;
+					if(skipBlanks && c != ' ') {
+						skipBlanks  = false;
 					}
 					//keep track of trailing blanks
 					fieldStringBuffer.put( c );
-
 					if( c != ' ') {
 						fieldStringBuffer.mark();
 					} 
-					
 				}
 				try {
 					fieldStringBuffer.reset();
 					//fieldStringBuffer.limit(fieldStringBuffer.position()-1);
 				} catch (InvalidMarkException e) {
+					System.err.println("Exception: "+e.getMessage());
+					fieldStringBuffer.clear();
 				}
 				// prepare for reading
 				fieldStringBuffer.flip();
@@ -195,8 +196,12 @@ public class FixLenDataParser2 implements Parser {
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
+			// handle EOL chars ? we just read as many chars as specified to
+			// constitute line delimiter
+			if (oneRecordPerLinePolicy){
+				for(int i=0;i<lineSeparatorSize;i++) charBuffer.get();
+			}
 		} catch (Exception ex) {
-
 			throw new RuntimeException(ex.getMessage());
 		}
 
@@ -397,11 +402,31 @@ public class FixLenDataParser2 implements Parser {
 	}
 
 	/**
-	 *  Sets OneRecordPerLinePolicy.
+	 *  Sets OneRecordPerLinePolicy - if set to true, then the parser assumes that
+	 * each record is on separate line - i.e. at the end of each record, the newline
+	 * characeter(s) is present. This character gets automatically removed.
 	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;
 	}
 
+	/**
+	 * Specifies whether leading blanks at each field should be skipped
+	 * @param skippingLeadingBlanks The skippingLeadingBlanks to set.
+	 */
+	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+	/**
+	 * Sets the size/length of line delimiter. It is 1 for "\n" - UNIX style
+	 * and 2 for "\n\r" - DOS/Windows style. Can be set to any value and is added
+	 * to total record length.<br>
+	 * It is automatically determined from system properties. This method overrides
+	 * the default value. 
+	 * @param lineDelimiterSize The lineDelimiterSize to set.
+	 */
+	public void setLineSeparatorSize(int lineDelimiterSize) {
+		this.lineSeparatorSize = lineDelimiterSize;
+	}
 }
