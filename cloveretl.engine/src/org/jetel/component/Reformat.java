@@ -18,11 +18,12 @@
 package org.jetel.component;
 
 import java.io.*;
-import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.*;
+import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.DynamicJavaCode;
 
 /**
  *  <h3>Reformat Component</h3>
@@ -74,18 +75,16 @@ public class Reformat extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private String transformClassName;
-	private String sourceCode;
-	private String[] sourceCodeImports;
-
+	private String transformClassName = null;
+	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
 
 
 	/**
 	 *Constructor for the Reformat object
 	 *
-	 * @param  id              Description of the Parameter
-	 * @param  transformClass  Description of the Parameter
+	 * @param  id              unique identification of component
+	 * @param  transformClass  Name of transformation CLASS (e.g. org.jetel.test.DemoTrans)
 	 */
 	public Reformat(String id, String transformClass) {
 		super(id);
@@ -96,22 +95,29 @@ public class Reformat extends Node {
 	/**
 	 *Constructor for the Reformat object
 	 *
-	 * @param  id              Description of the Parameter
-	 * @param  transformClass  Description of the Parameter
+	 * @param  id              unique identification of component
+	 * @param  transformClass  Object of class implementing RecordTransform interface
 	 */
 	public Reformat(String id, RecordTransform transformClass) {
 		super(id);
 		this.transformation = transformClass;
 	}
 
-	public Reformat(String id, String sourceCode,String[] sourceCodeImports) {
-		super(id);
-		this.sourceCode=sourceCode;
-		this.sourceCodeImports=sourceCodeImports;
-	}
 
 	/**
-	 *  Main processing method for the SimpleCopy object
+	 *Constructor for the Reformat object
+	 *
+	 * @param  id           unique identification of component
+	 * @param  dynamicCode  DynamicJavaCode object
+	 */
+	public Reformat(String id, DynamicJavaCode dynamicCode) {
+		super(id);
+		this.dynamicTransformCode = dynamicCode;
+	}
+
+
+	/**
+	 *  Main processing method for the reformat object
 	 *
 	 * @since    April 4, 2002
 	 */
@@ -156,7 +162,7 @@ public class Reformat extends Node {
 
 
 	/**
-	 *  Description of the Method
+	 *  Initialization of component
 	 *
 	 * @exception  ComponentNotReadyException  Description of the Exception
 	 * @since                                  April 4, 2002
@@ -169,20 +175,32 @@ public class Reformat extends Node {
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-
+		// do we have transformation object directly specified or shall we create it ourselves
 		if (transformation == null) {
-			// try to load in transformation class & instantiate
-			try {
-				tClass = Class.forName(transformClassName);
-			} catch (ClassNotFoundException ex) {
-				throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-			} catch (Exception ex) {
-				throw new ComponentNotReadyException(ex.getMessage());
-			}
-			try {
-				transformation = (RecordTransform) tClass.newInstance();
-			} catch (Exception ex) {
-				throw new ComponentNotReadyException(ex.getMessage());
+			if (transformClassName != null) {
+				// try to load in transformation class & instantiate
+				try {
+					tClass = Class.forName(transformClassName);
+				} catch (ClassNotFoundException ex) {
+					throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+				} catch (Exception ex) {
+					throw new ComponentNotReadyException(ex.getMessage());
+				}
+				try {
+					transformation = (RecordTransform) tClass.newInstance();
+				} catch (Exception ex) {
+					throw new ComponentNotReadyException(ex.getMessage());
+				}
+			} else {
+				System.out.print(" (compiling dynamic source) ");
+				// use DynamicJavaCode to instantiate transformation class
+				Object transObject = dynamicTransformCode.instantiate();
+				if (transObject instanceof RecordTransform) {
+					transformation = (RecordTransform) transObject;
+				} else {
+					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+				}
+
 			}
 
 		}
@@ -214,26 +232,20 @@ public class Reformat extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-		ComponentXMLAttributes xattribsChild;
-		String importClassStr[]=null;
-		org.w3c.dom.Node childNode;
-		
+		DynamicJavaCode dynaTransCode;
+
 		try {
 			//if transform class defined (as an attribute) use it first
-			if (xattribs.exists("transformClass")){
+			if (xattribs.exists("transformClass")) {
 				return new Reformat(xattribs.getString("id"),
-					xattribs.getString("transformClass"));
-			}else{
+						xattribs.getString("transformClass"));
+			} else {
 				// do we have child node wich Java source code ?
-				childNode=xattribs.getChildNode(nodeXML,"SourceCode");
-				if (childNode==null){
-					throw new RuntimeException("Can't find <SourceCode> node !");
+				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				if (dynaTransCode == null) {
+					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
-				 xattribsChild=new ComponentXMLAttributes(childNode);
-				 if (xattribsChild.exists("importClass")){
-					 importClassStr=xattribsChild.getString("importClass").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				 }
-				 return new Reformat(xattribs.getString("id"),xattribsChild.getText(childNode),importClassStr);
+				return new Reformat(xattribs.getString("id"), dynaTransCode);
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
@@ -242,7 +254,11 @@ public class Reformat extends Node {
 	}
 
 
-	/**  Description of the Method */
+	/**
+	 *  Checks that component is configured properly
+	 *
+	 * @return    Description of the Return Value
+	 */
 	public boolean checkConfig() {
 		return true;
 	}

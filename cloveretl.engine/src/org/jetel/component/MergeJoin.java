@@ -30,6 +30,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.DynamicJavaCode;
 
 /**
  *  <h3>Sorted Join Component</h3> <!-- Changes / reformats the data between
@@ -106,6 +107,7 @@ public class MergeJoin extends Node {
 	private String transformClassName;
 
 	private RecordTransform transformation = null;
+	private DynamicJavaCode dynamicTransformation = null;
 
 	private DataRecord[] joinedRecords;
 
@@ -154,7 +156,14 @@ public class MergeJoin extends Node {
 		this.leftOuterJoin = leftOuterJoin;
 	}
 
-
+	public MergeJoin(String id, String[] joinKeys, DynamicJavaCode dynaTransCode) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.dynamicTransformation=dynaTransCode;
+		this.leftOuterJoin = false;
+		// no outer join
+	}
+	
 	/**
 	 *  Sets on/off leftOuterJoin indicator
 	 *
@@ -456,20 +465,31 @@ public class MergeJoin extends Node {
 		recordKeys[1].init();
 
 		if (transformation == null) {
-			// try to load in transformation class & instantiate
-			try {
-				tClass = Class.forName(transformClassName);
-			} catch (ClassNotFoundException ex) {
-				throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-			} catch (Exception ex) {
-				throw new ComponentNotReadyException(ex.getMessage());
-			}
-			try {
-				transformation = (RecordTransform) tClass.newInstance();
-			} catch (Exception ex) {
-				throw new ComponentNotReadyException(ex.getMessage());
-			}
+			if (transformClassName != null) {
+				// try to load in transformation class & instantiate
+				try {
+					tClass = Class.forName(transformClassName);
+				} catch (ClassNotFoundException ex) {
+					throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+				} catch (Exception ex) {
+					throw new ComponentNotReadyException(ex.getMessage());
+				}
+				try {
+					transformation = (RecordTransform) tClass.newInstance();
+				} catch (Exception ex) {
+					throw new ComponentNotReadyException(ex.getMessage());
+				}
+			} else {
+				System.out.print(" (compiling dynamic source) ");
+				// use DynamicJavaCode to instantiate transformation class
+				Object transObject = dynamicTransformation.instantiate();
+				if (transObject instanceof RecordTransform) {
+					transformation = (RecordTransform) transObject;
+				} else {
+					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+				}
 
+			}
 		}
 		// init transformation
 		Collection col = getInPorts();
@@ -509,11 +529,23 @@ public class MergeJoin extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		MergeJoin join;
+		DynamicJavaCode dynaTransCode;
 
 		try {
-			join = new MergeJoin(xattribs.getString("id"),
-					xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString("transformClass"));
+			if (xattribs.exists("transformClass")){
+				join = new MergeJoin(xattribs.getString("id"),
+						xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+						xattribs.getString("transformClass"));
+			}else{
+				// do we have child node wich Java source code ?
+				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				if (dynaTransCode == null) {
+					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+				}
+				return new MergeJoin(xattribs.getString("id"),
+							xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+							dynaTransCode);
+			}
 			if (xattribs.exists("slaveOverrideKey")) {
 				join.setSlaveOverrideKey(xattribs.getString("slaveOverrideKey").
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
