@@ -54,6 +54,8 @@ public class DateDataField extends DataField {
 	private Date value;
 	private DateFormat dateFormat;
 	private ParsePosition parsePosition;
+	
+	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
 
 	// Associations
@@ -71,6 +73,7 @@ public class DateDataField extends DataField {
 		formatString = _metadata.getFormatStr();
 		if ((formatString != null) && (formatString.length() != 0)) {
 			dateFormat = new SimpleDateFormat(formatString);
+			dateFormat.setLenient(false);
 		} else {
 			dateFormat = null;
 		}
@@ -91,6 +94,7 @@ public class DateDataField extends DataField {
 		formatString = _metadata.getFormatStr();
 		if ((formatString != null) && (formatString.length() != 0)) {
 			dateFormat = new SimpleDateFormat(formatString);
+			dateFormat.setLenient(false);
 		} else {
 			dateFormat = null;
 		}
@@ -236,7 +240,7 @@ public class DateDataField extends DataField {
 	 * @since             April 23, 2002
 	 */
 	public void fromString(String _valueStr) {
-		parsePosition.setIndex(0);
+		//parsePosition.setIndex(0);
 		if (_valueStr == null || _valueStr.equals("")) {
 			if (this.metadata.isNullable()) {
 				value = null;
@@ -331,6 +335,17 @@ public class DateDataField extends DataField {
 	public int compareTo(Date obj) {
 		return value.compareTo(obj);
 	}
+	
+	/**
+	 *  Gets the size attribute of the IntegerDataField object
+	 *
+	 * @return    The size value
+	 * @see	      org.jetel.data.DataField
+	 */
+	public int getSizeSerialized() {
+		return FIELD_SIZE_BYTES;
+	}
+
 }
 /*
  *  end class DateDataField

@@ -45,15 +45,14 @@ public class NumericDataField extends DataField {
 	private double value;
 	private DecimalFormat numberFormat;
 	private ParsePosition parsePosition;
-
+	
+	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	// Attributes
 	/**
 	 *  An attribute that represents ...
 	 *
 	 *@since
 	 */
-
-	static Logger logger = Logger.getLogger("org.jetel.data");
 
 	private static Locale DEFAULT_LOCALE = Locale.US;
 
@@ -298,8 +297,6 @@ public class NumericDataField extends DataField {
 					value = Double.parseDouble(valueStr);
 				}
 			} catch (Exception ex) {
-//				logger.info("Error when parsing string: " + valueStr);
-//				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
 				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr,valueStr);
 			}
 		}
@@ -403,6 +400,16 @@ public class NumericDataField extends DataField {
 		} else {
 			return 0;
 		}
+	}
+
+	/**
+	 *  Gets the size attribute of the IntegerDataField object
+	 *
+	 * @return    The size value
+	 * @see	      org.jetel.data.DataField
+	 */
+	public int getSizeSerialized() {
+		return FIELD_SIZE_BYTES;
 	}
 
 }
