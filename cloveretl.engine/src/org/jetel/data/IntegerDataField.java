@@ -84,7 +84,7 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
 			}
 			return;
 		}
@@ -96,7 +96,7 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString());
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
 		}
 	}
 
@@ -108,6 +108,15 @@ public class IntegerDataField extends DataField {
 	 *@since         August 19, 2002
 	 */
 	public void setValue(double value) {
+		if (value == Double.NaN) {
+			if(this.metadata.isNullable()) {
+				value = Integer.MIN_VALUE;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+			}
+			return;
+		}
 		this.value = (int) value;
 		setNull(false);
 	}
@@ -120,6 +129,15 @@ public class IntegerDataField extends DataField {
 	 *@since         August 19, 2002
 	 */
 	public void setValue(int value) {
+		if (value == Integer.MIN_VALUE) {
+			if(this.metadata.isNullable()) {
+				value = Integer.MIN_VALUE;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+			}
+			return;
+		}
 		this.value = value;
 		setNull(false);
 	}
@@ -186,6 +204,9 @@ public class IntegerDataField extends DataField {
 	 *@since     August 19, 2002
 	 */
 	public double getDouble() {
+		if (value == Integer.MIN_VALUE) {
+			return Double.NaN;
+		}
 		return (double) value;
 	}
 
@@ -227,14 +248,14 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",valueStr);
 			return;
 		} else {
 			try {
 				value = Integer.parseInt(valueStr);
 			} catch (Exception ex) {
 //				logger.info("Error when parsing string: " + valueStr);
-				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr);
+				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr,valueStr);
 			}
 		}
 	}
