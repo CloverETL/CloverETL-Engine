@@ -151,9 +151,9 @@ public class FileFormatDispatcher {
 				break;
 			case  SCREEN5_EDIT_DEL_ATT:
 				if(aFormInterface[currentPhase] == null) {
-					Screen2d aScreen2d = new Screen2d(this, getParameters());
-					aFormInterface[currentPhase] = aScreen2d;
-					getAFileFormatWizard().addScreen(aScreen2d, Integer.toString(currentPhase));
+					Screen3 aScreen3 = new Screen3(this, getParameters());
+					aFormInterface[currentPhase] = aScreen3;
+					getAFileFormatWizard().addScreen(aScreen3, Integer.toString(currentPhase));
 				}
 				startPhase(aFormInterface[currentPhase]);
 				getAFileFormatWizard().middleFrameUI();
