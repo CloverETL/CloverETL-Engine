@@ -19,10 +19,14 @@
 
 package test.org.jetel.data;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.FixLenDataFormatter;
 import org.jetel.data.FixLenDataParser2;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
@@ -36,17 +40,21 @@ import junit.framework.TestCase;
  * @author maciorowski
  *
  */
-public class FixLenDataParser2Test   extends TestCase {
+public class FixLenDataFormatterTest extends TestCase {
 private FixLenDataParser2 aParser = null;
 private FixLenDataParser2 aParser2 = null;
 private FixLenDataParser2 aParser3 = null;
+private FixLenDataParser2 testParser = null;
+private FixLenDataFormatter aFixLenDataFormatter= null;
 private DataRecord record;
+private String testFile1 = null;	
+private DataRecordMetadata metadata = null;
 	
 protected void setUp() { 
 	FileInputStream in = null;
 	FileInputStream in2 = null;
 	FileInputStream in3 = null;
-	DataRecordMetadata metadata = null;
+	metadata = null;
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 	try {
@@ -57,10 +65,30 @@ protected void setUp() {
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
+
+    // we are going to write our test data here
+	testFile1 = "data\\out\\test1.txt";	
+	File aFile=new File(testFile1);
+	 if(!aFile.exists()) {
+		new File(aFile.getParent()).mkdir();
+		try {
+			aFile.createNewFile();
+		} catch (IOException e3) {
+			e3.printStackTrace();
+		}
+	 }
+	aFixLenDataFormatter = new FixLenDataFormatter();
+	try {
+		aFixLenDataFormatter.open(new FileOutputStream(testFile1),metadata);
+	} catch (FileNotFoundException e2) {
+		e2.printStackTrace();
+	}
 	
 	aParser = new FixLenDataParser2();
 	aParser2 = new FixLenDataParser2();
 	aParser3 = new FixLenDataParser2();
+	testParser = new FixLenDataParser2();
+	
 	BadDataFormatExceptionHandler aHandler =  
 	   BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
 	aParser.addBDFHandler(aHandler);
@@ -73,6 +101,8 @@ protected void setUp() {
 
 	aParser3.addBDFHandler(aHandler);
 	aParser3.open(in,metadata);
+
+	testParser.addBDFHandler(aHandler);
 }
 	
    protected void tearDown() {
@@ -85,6 +115,16 @@ protected void setUp() {
 	   aParser.close();
 	   aParser = null;
 	   record  = null;
+
+	testParser.close();
+	testParser = null;
+
+		aFixLenDataFormatter = null;
+	   //remove testFile if any
+	   File aFile=new File(testFile1);
+		if(aFile.exists()) {
+			aFile.delete();
+		}
    }
 
    /**
@@ -93,18 +133,41 @@ protected void setUp() {
 	*/
 public void test_parsing_bad() {
 // the content of the test file
-//  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99        //
+//	N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99        //
 	int recCount = 0;
    try{
 	   record=aParser.getNext(record);
+	   aFixLenDataFormatter.write(record);
 	   fail("Should raise an BadDataFormatException");
    } catch (BadDataFormatException e){	
    } catch (Exception ee){
 	   fail("Should not throw Exception");
 	   ee.printStackTrace();
    }
+   
+   try{
+	   while((record=aParser.getNext(record))!=null){
+		   aFixLenDataFormatter.write(record);
+	   }
+	   aFixLenDataFormatter.flush();
+	   aFixLenDataFormatter.close();
+   } catch (BadDataFormatException e){	
+	   fail("Should not raise an BadDataFormatException");
+	   e.printStackTrace();
+   } catch (Exception ee){
+	   fail("Should not throw Exception");
+	   ee.printStackTrace();
+   }
+
+   
+   
 	try{
-		while((record=aParser.getNext(record))!=null){
+		FileInputStream fis = new FileInputStream(testFile1);
+		testParser.open(fis,metadata);
+		record = new DataRecord(metadata);
+		record.init();
+
+		while((record=testParser.getNext(record))!=null){
 			if(recCount==0) {
 				assertEquals(record.getField(0).toString(),"-15.5");
 				assertTrue(record.getField(1).isNull());
@@ -134,10 +197,31 @@ public void test_parsing_bad() {
  */
 public void test_parsing_good() {
 // the content of the test file
-//  1.0Stone    101   01/11/93-15.5  Brook   112  11/03/02 -0.7Bone Broo    9901/01/03 //
+//	1.0Stone    101   01/11/93-15.5  Brook   112  11/03/02 -0.7Bone Broo    9901/01/03 //
 	int recCount = 0;
 	try{
 		while((record=aParser2.getNext(record))!=null){
+			aFixLenDataFormatter.write(record);
+		}
+		aFixLenDataFormatter.flush();
+		aFixLenDataFormatter.close();
+	} catch (BadDataFormatException e){	
+		fail("Should not raise an BadDataFormatException");
+		e.printStackTrace();
+	} catch (Exception ee){
+		fail("Should not throw Exception");
+		ee.printStackTrace();
+	}
+
+   
+   
+	 try{
+		 FileInputStream fis = new FileInputStream(testFile1);
+		 testParser.open(fis,metadata);
+		record = new DataRecord(metadata);
+		record.init();
+
+		 while((record=testParser.getNext(record))!=null){
 			if(recCount==0) {
 				assertEquals(record.getField(0).toString(),"1.0");
 				assertEquals(record.getField(1).toString(),"Stone");
@@ -174,8 +258,30 @@ public void test_parsing_NL_good() {
 // the content of the test file
 //	1.0Stone    101   01/11/93-15.5  Brook   112  11/03/02 -0.7Bone Broo    9901/01/03 //
 	int recCount = 0;
+   
 	try{
 		while((record=aParser3.getNext(record))!=null){
+			aFixLenDataFormatter.write(record);
+		}
+		aFixLenDataFormatter.flush();
+		aFixLenDataFormatter.close();
+	} catch (BadDataFormatException e){	
+		fail("Should not raise an BadDataFormatException");
+		e.printStackTrace();
+	} catch (Exception ee){
+		fail("Should not throw Exception");
+		ee.printStackTrace();
+	}
+
+   
+   
+	 try{
+		 FileInputStream fis = new FileInputStream(testFile1);
+		 testParser.open(fis,metadata);
+		record = new DataRecord(metadata);
+		record.init();
+
+		 while((record=testParser.getNext(record))!=null){
 			if(recCount==0) {
 				assertEquals(record.getField(0).toString(),"1.0");
 				assertEquals(record.getField(1).toString(),"Stone");
@@ -203,5 +309,6 @@ public void test_parsing_NL_good() {
 	}
    assertEquals(3,recCount);
 }
+
 
 }

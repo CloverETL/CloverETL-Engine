@@ -27,9 +27,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import java.nio.channels.Channels;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.FixLenDataFormatter;
 import org.jetel.data.SQLDataParser;
