@@ -200,7 +200,7 @@ public class DelimitedDataReaderNIO extends Node {
 			}
 			if (xattribs.exists("DataPolicy")) {
 				aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-						xattribs.getString("fileURL")));
+						xattribs.getString("DataPolicy")));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
