@@ -1,0 +1,199 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2002  David Pavlis
+*
+*    This program is free software; you can redistribute it and/or modify
+*    it under the terms of the GNU General Public License as published by
+*    the Free Software Foundation; either version 2 of the License, or
+*    (at your option) any later version.
+*    This program is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*    GNU General Public License for more details.
+*
+*    You should have received a copy of the GNU General Public License
+*    along with this program; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*/
+
+package org.jetel.component;
+
+import java.io.*;
+import java.nio.ByteBuffer;
+import org.jetel.graph.*;
+import org.jetel.data.Defaults;
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordFilter;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
+
+/**
+ *  <h3>Simple Copy Component</h3>
+ *
+ * <!-- All records not rejected by the filter are copied from input port:0 onto all connected output ports (multiplies number of records by number of defined
+ * output ports -->
+ * 
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>Filter</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>All records not rejected by the filter are copied from input port:0 onto all connected output ports.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>[0]- input records</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>At least one connected output port.</td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td></td></tr>
+ * </table>
+ *  <br>  
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"FILTER"</td></tr>
+ *  <tr><td><b>id</b></td>
+ *  <td>component identification</td>
+ *  </tr>
+ *  </table>  
+ *
+ * @author     rbauduin
+ * @since    July 23, 2003
+ * @see		org.jetel.graph.TransformationGraph
+ * @see		org.jetel.graph.Node
+ * @see 	org.jetel.graph.Edge
+ */
+public class Filter extends Node {
+
+	public final static String COMPONENT_TYPE="FILTER";
+	private final static int READ_FROM_PORT=0;
+	
+	/* not really needed as record gets broadcasted to all defined output ports */
+	/* but this will change, with accepted nodes sent to port0, rejected ones to port 1*/
+	private final static int WRITE_TO_PORT=0;
+	
+	private ByteBuffer recordBuffer;
+	private RecordFilter recordFilter;
+	
+	public Filter(String id){
+		super(id);
+		
+	}
+
+	/**
+	 *  Gets the Type attribute of the Filter object
+	 *
+	 * @return    The Type value
+	 * @since     July 23, 2002
+	 */
+ //   public String getType() {
+ //   	return COMPONENT_TYPE;
+ //   }
+
+
+	/**
+	 *  Main processing method for the Filter object
+	 *
+	 * @since    July 23, 2002
+	 */
+	public void run() {
+		InputPort inPort=getInputPort(READ_FROM_PORT);
+		DataRecord record = new DataRecord(inPort.getMetadata());
+
+		record.init();
+		boolean isData=true;
+		
+		while(isData && runIt){
+			try{
+				record=inPort.readRecord(record);
+				if (record==null){
+					isData = false;
+				}
+				else if (recordFilter.accepts(record))
+				{
+					writeRecordBroadcast(record);
+				}
+
+			}catch(IOException ex){
+				resultMsg=ex.getMessage();
+				resultCode=Node.RESULT_ERROR;
+				closeAllOutputPorts();
+				return;
+			}catch(Exception ex){
+				resultMsg=ex.getMessage();
+				resultCode=Node.RESULT_FATAL_ERROR;
+				return;
+			}
+			
+		}
+		broadcastEOF();
+		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
+		resultCode=Node.RESULT_OK;
+	}	
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @since    July 23, 2002
+	 */
+	public void init() throws ComponentNotReadyException {
+		// test that we have at least one input port and one output
+		if (inPorts.size()<1){
+			throw new ComponentNotReadyException("At least one input port has to be defined!");
+		}else if (outPorts.size()<1){
+			throw new ComponentNotReadyException("At least one output port has to be defined!");
+		}
+	}
+	
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     July 23, 2002
+	 */
+	public org.w3c.dom.Node toXML() {
+		// TODO
+		return null;
+	}
+
+	public void setRecordFilter(RecordFilter rf)
+	{
+		recordFilter = rf;
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  nodeXML  Description of Parameter
+	 * @return          Description of the Returned Value
+	 * @since           July 23, 2002
+	 */
+	public static Node fromXML(org.w3c.dom.Node nodeXML) {
+		Filter filter;
+		String filterExpression;
+		String [] filterParts;
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		
+
+		try{
+			filter = new Filter(xattribs.getString("id"));
+			if (xattribs.exists("filterExpression")){
+				filterExpression=xattribs.getString("filterExpression");
+				filter.setRecordFilter(new RecordFilter(filterExpression));
+			}
+			return filter;
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
+		}
+	}
+
+	/**  Description of the Method */
+    public boolean checkConfig() {
+		return true;
+	}
+
+}
+
+
