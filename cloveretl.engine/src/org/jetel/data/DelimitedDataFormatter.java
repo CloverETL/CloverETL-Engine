@@ -30,6 +30,8 @@ import org.jetel.metadata.*;
  */
 public class DelimitedDataFormatter implements DataFormatter {
 
+	private boolean oneRecordPerLinePolicy = false;
+	
 	// Attributes
 	private DataRecordMetadata metadata;
 	private PrintStream writer;
@@ -114,8 +116,18 @@ public class DelimitedDataFormatter implements DataFormatter {
 			writer.print(str);
 			writer.print(delimiters[i]);
 		}
+		if(oneRecordPerLinePolicy){
+			writer.print("\n");
+		}
 	}
 
+	/**
+	 *  Sets OneRecordPerLinePolicy.
+	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 */
+	public void setOneRecordPerLinePolicy(boolean b) {
+		oneRecordPerLinePolicy = b;
+	}
 }
 /*
  *  end class DelimitedDataFormatter

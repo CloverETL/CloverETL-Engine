@@ -165,6 +165,7 @@ public class SQLDataParser implements DataParser {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
+			ex.printStackTrace();
 			throw new RuntimeException(ex.getMessage());
 		}
 	}

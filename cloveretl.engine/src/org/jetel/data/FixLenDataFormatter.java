@@ -43,6 +43,8 @@ public class FixLenDataFormatter implements DataFormatter {
 	private int fieldLengths[];
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
+	
+	private boolean oneRecordPerLinePolicy = false;
 
 	// Attributes
 	// use space (' ') to fill/pad field
@@ -143,6 +145,9 @@ public class FixLenDataFormatter implements DataFormatter {
 			fieldBuffer.flip();
 			dataBuffer.put(fieldBuffer);
 		}
+		if(oneRecordPerLinePolicy){
+			dataBuffer.put("\n".getBytes());
+		}
 	}
 
 
@@ -182,6 +187,15 @@ public class FixLenDataFormatter implements DataFormatter {
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
+	}
+
+
+	/**
+	 *  Sets OneRecordPerLinePolicy.
+	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 */
+	public void setOneRecordPerLinePolicy(boolean b) {
+		oneRecordPerLinePolicy = b;
 	}
 
 }

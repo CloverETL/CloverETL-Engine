@@ -187,6 +187,7 @@ public class FixLenDataWriterNIO extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
+		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
 		NamedNodeMap attribs=nodeXML.getAttributes();
 		
 		if (attribs!=null){
@@ -194,15 +195,34 @@ public class FixLenDataWriterNIO extends Node {
 			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
 			String append=attribs.getNamedItem("append").getNodeValue();
 			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
+			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
 			if ((id!=null) && (fileURL!=null)){
 				if (charset!=null){
-					return new FixLenDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
+					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
 				}else{
-					return new FixLenDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
+					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
 				}
+				if(aOneRecordPerLine != null  ) {
+					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
+						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(true);
+					}else {
+						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(false);
+					}
+				}
+				// sets the default policy
+				aFixLenDataWriterNIO.setOneRecordPerLinePolicy(false);
 			}
 		}
-		return null;
+		return aFixLenDataWriterNIO;
+	}
+
+	/**
+	 * True allows only one record per line.  False asks that all records 
+	 * will be on one line.
+	 * @param b
+	 */
+	private void setOneRecordPerLinePolicy(boolean b) {
+		formatter.setOneRecordPerLinePolicy(b);
 	}
 	
 }
