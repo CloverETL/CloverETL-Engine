@@ -123,6 +123,10 @@ public class Screen2f extends JPanel implements  FormInterface
 		return aRulerPanel.getLinesFromFile();
 	}
 	
+	/**
+	 * Used to populate the form with data.
+	 * <p>
+	 */ 
 	public void loadData() {
 		   if(aFileFormatDataModel != null) {
 				if(aFileFormatDataModel.fileName != null) {   	
@@ -132,18 +136,33 @@ public class Screen2f extends JPanel implements  FormInterface
 				  setLinesFromFile(aFileFormatDataModel.linesFromFile);
 					
 				}
-if(aFileFormatDataModel.oneRecordPerLine) {
-	jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  You should not mark the last field as it is defined with the end of line.");
-} else {
-	jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  The last mark will also denote the end of record.");
-}
+				if(aFileFormatDataModel.oneRecordPerLine) {
+					jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  You should not mark the last field as it is defined with the end of line.");
+				} else {
+					jTextPane1.setText("You can place marks by clicking your mouse on desired location. Click once more to remove erroneus marks.\n\nUse mouse to mark the end of each field.  The last mark will also denote the end of record.");
+				}
 
 		   } else {
 			  jLabel3.setText("filename goes here...");
 		   }
 	}
 
-	/* (non-Javadoc)
+	/**
+	 * Typically, data is retrieved from the frame's UI
+	 * objects and tested for validity. If there are any
+	 * problems, often <code>badDataAlert</code> is used
+	 * to communicate it to the user.
+	 * <p>
+	 * If all of the data is valid, this should return null
+	 * so that the caller can proceed (usually by storing
+	 * the result somewhere and destroying the frame.)
+	 * Naturally, error message should be returned if there is
+	 * any invalid data.
+	 * <p>
+	 * @return <code>null</code> if the data in the dialog is acceptable,
+	 * <code>String message</code> if the data fails to meet validation criteria.
+	 *
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
 	public String validateData() {
@@ -189,7 +208,12 @@ if(aFileFormatDataModel.oneRecordPerLine) {
 			
 		return null;
 	}
-	/* (non-Javadoc)
+	/**
+	 * Normally, if the data is valid (see {@link #validateData validateData},)
+	 * This is then called to store the data before the dialog is
+	 * destroyed.
+	 * <p>
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {

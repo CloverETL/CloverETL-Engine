@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.MouseEvent;
+import java.util.StringTokenizer;
 
 import javax.swing.JScrollPane;
 import javax.swing.JTextField;
@@ -240,13 +241,81 @@ private void jTextField1_focusLost(FocusEvent e)
 		jTable1.getTableHeader().resizeAndRepaint();
 	}
 }
-	/* (non-Javadoc)
+
+	/**
+	 * Used to populate the form with data.
+	 * <p>
 	 * @see org.jetel.gui.component.FormInterface#loadData()
 	 */
 	public void loadData() {
+		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
+		if(aDataRecordMetadata.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
+			loadFixedData();
+		} else {
+			loadDelimitedData();
+		}
+	}
+	
+	
+	/**
+	 * 
+	 */
+	private void loadDelimitedData() {
+		Object[][] data = null;
+		StringBuffer buf = new StringBuffer();
+		DataFieldMetadata aDataFieldMetadata = null;
+		
+		columnNames = new String[aDataRecordMetadata.getNumFields()];
+		for( int i = 0 ; i < columnNames.length ; i++) {
+			aDataFieldMetadata = aDataRecordMetadata.getField(i);
+			columnNames[i] = aDataFieldMetadata.getName();
+			buf.append(aDataFieldMetadata.getDelimiter());
+		}
+		String delimiters= buf.toString();
+
+		data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
+		StringTokenizer st = new StringTokenizer(aFileFormatDataModel.linesFromFile[0],delimiters);
+		int aCount = st.countTokens();
+		
+		if(aFileFormatDataModel.firstLineFieldNames) {
+			data = new Object[aFileFormatDataModel.linesFromFile.length-1 ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						if(j != 0) {
+							data[j-1][i] = st.nextToken();
+						}
+						i++;
+					}
+				}
+			}
+		
+		}else {
+			data = new Object[aFileFormatDataModel.linesFromFile.length ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						data[j][i] = st.nextToken();
+						i++;
+					}
+				}
+			}
+		}
+
+		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
+		jTable1.setModel(aModel);
+	}
+
+	/**
+	 * 
+	 */
+	private void loadFixedData() {
 		Object[][] data = null;
 		
-		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
 		columnNames = new String[aDataRecordMetadata.getNumFields()];
 		for( int i = 0 ; i < columnNames.length ; i++) {
 			columnNames[i] = aDataRecordMetadata.getField(i).getName();
@@ -292,9 +361,23 @@ private void jTextField1_focusLost(FocusEvent e)
 		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
 		jTable1.setModel(aModel);
 	}
-	
-	
-	/* (non-Javadoc)
+
+	/**
+	 * Typically, data is retrieved from the frame's UI
+	 * objects and tested for validity. If there are any
+	 * problems, often <code>badDataAlert</code> is used
+	 * to communicate it to the user.
+	 * <p>
+	 * If all of the data is valid, this should return null
+	 * so that the caller can proceed (usually by storing
+	 * the result somewhere and destroying the frame.)
+	 * Naturally, error message should be returned if there is
+	 * any invalid data.
+	 * <p>
+	 * @return <code>null</code> if the data in the dialog is acceptable,
+	 * <code>String message</code> if the data fails to meet validation criteria.
+	 *
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
 	public String validateData() {
@@ -303,7 +386,12 @@ private void jTextField1_focusLost(FocusEvent e)
 		return null;
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * Normally, if the data is valid (see {@link #validateData validateData},)
+	 * This is then called to store the data before the dialog is
+	 * destroyed.
+	 * <p>
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {

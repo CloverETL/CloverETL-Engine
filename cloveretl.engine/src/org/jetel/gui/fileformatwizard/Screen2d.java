@@ -22,6 +22,8 @@ import javax.swing.JLabel;
 
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.SystemColor;
+
 import javax.swing.JTextPane;
 import java.awt.Font;
 
@@ -46,6 +48,7 @@ import javax.swing.JComboBox;
 import javax.swing.SwingConstants;
 
 import org.jetel.gui.component.FormInterface;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class Screen2d extends JPanel implements  FormInterface
@@ -130,7 +133,9 @@ public class Screen2d extends JPanel implements  FormInterface
     jLabel2.setText("Specify Field Delimiters");
     jLabel2.setHorizontalTextPosition(SwingConstants.CENTER);
     jLabel2.setHorizontalAlignment(SwingConstants.CENTER);
-    jTextPane1.setText("Here goes screen help text.");
+	jTextPane1.setText("You can choose one or more of predefined delimiters or check 'Others' and enter your own.  Below you can also preview how your file will parse with preselected delimiters.");
+	jTextPane1.setBackground(SystemColor.control);
+	jTextPane1.setEditable(false);
     jPanel1.setLayout(gridBagLayout2);
     jPanel1.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     TabCheckBox.setText("Tab");
@@ -302,27 +307,80 @@ public class Screen2d extends JPanel implements  FormInterface
 		if(SemicolonCheckBox.isSelected()) buf.append(';' );
 		if(CommaCheckBox.isSelected()) buf.append(',' );
 		if(OtherCheckBox.isSelected() && OtherTextField.getText().length()>0) {
-			buf.append( OtherTextField.getText().charAt(0) );
+			buf.append( OtherTextField.getText() );
 		} 
 		
 		delimiters = buf.toString();
 	}
-	/* (non-Javadoc)
+	
+	/**
+	 * Typically, data is retrieved from the frame's UI
+	 * objects and tested for validity. If there are any
+	 * problems, often <code>badDataAlert</code> is used
+	 * to communicate it to the user.
+	 * <p>
+	 * If all of the data is valid, this should return null
+	 * so that the caller can proceed (usually by storing
+	 * the result somewhere and destroying the frame.)
+	 * Naturally, error message should be returned if there is
+	 * any invalid data.
+	 * <p>
+	 * @return <code>null</code> if the data in the dialog is acceptable,
+	 * <code>String message</code> if the data fails to meet validation criteria.
+	 *
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
 	 */
 	public String validateData() {
-		// TODO Auto-generated method stub
+		// nothing to validate as no action is required on this screen.
+		
 		return null;
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * Normally, if the data is valid (see {@link #validateData validateData},)
+	 * This is then called to store the data before the dialog is
+	 * destroyed.
+	 * <p>
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {
-		// TODO Auto-generated method stub
-		
+		DefaultTableModel aModel = (DefaultTableModel) jTable1.getModel();
+		String aColumnName = null;
+		String aDelimiter = null;
+		DataFieldMetadata aDataFieldMetadata = null;
+		StringTokenizer st = new StringTokenizer(aFileFormatDataModel.linesFromFile[0],delimiters,true);
+		int aSize = aModel.getColumnCount();
+		for(int i= 0 ; i < aSize ; i++ ) {
+			aColumnName = aModel.getColumnName(i);
+			//get token
+			st.nextToken();
+			//get delimiter
+			if(st.hasMoreTokens()) {
+				aDelimiter = st.nextToken();
+			} else {
+				aDelimiter = "\n";
+			}
+			
+			if(i < aFileFormatDataModel.recordMeta.getNumFields() ) {
+				aDataFieldMetadata = aFileFormatDataModel.recordMeta.getField(i);
+				if(!aColumnName.equalsIgnoreCase(aDataFieldMetadata.getName())) {
+					aDataFieldMetadata.setName(aColumnName);
+				}
+				if(!aDelimiter.equalsIgnoreCase(aDataFieldMetadata.getDelimiter())) {
+					aDataFieldMetadata.setDelimiter(aDelimiter);
+				}
+				} else {
+					// new field - just add it
+					aFileFormatDataModel.recordMeta.addField( new DataFieldMetadata(aColumnName,aDelimiter));
+				}
+		}
+		aFileFormatDataModel.firstLineFieldNames = FirstLineFieldNamesCheckBox.isSelected();
 	}
-	/* (non-Javadoc)
+	/**
+	 * Used to populate the form with data.
+	 * <p>
 	 * @see org.jetel.gui.component.FormInterface#loadData()
 	 */
 	public void loadData() {
@@ -333,56 +391,72 @@ public class Screen2d extends JPanel implements  FormInterface
 			delimiters = "";
 		}
 		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
+		FirstLineFieldNamesCheckBox.setSelected(aFileFormatDataModel.firstLineFieldNames);
+		FirstLineFieldNames = aFileFormatDataModel.firstLineFieldNames;
 		if(aDataRecordMetadata.getNumFields()==0) {
 			// nothing before so lets initialize it with defaults
 			generateDelimiters();
 			reloadFile();
 		} else {
-			columnNames = new String[aDataRecordMetadata.getNumFields()];
-			for( int i = 0 ; i < columnNames.length ; i++) {
-				columnNames[i] = aDataRecordMetadata.getField(i).getName();
-			}
-			data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
-			int fieldSize =  0;
-			int fieldStart = 0;
-			int fieldEnd = 0;
-			int recordSize = 0;
-		
-			if(aFileFormatDataModel.oneRecordPerLine) {
-				for( int i = 0 ; i < columnNames.length ; i++) {
-					fieldSize = aDataRecordMetadata.getField(i).getSize();
-					fieldEnd = fieldEnd + fieldSize;
-					for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
-						if(aFileFormatDataModel.linesFromFile[j] != null ) {
-								data[j][i] = aFileFormatDataModel.linesFromFile[j].substring(fieldStart, fieldEnd);
-						}
-					}
-					fieldStart = fieldStart + fieldSize;
-				}
-			} else {  // more than oneRecordPerLine
-				for( int i = 0 ; i < columnNames.length ; i++) {
-					recordSize = recordSize +aDataRecordMetadata.getField(i).getSize();
-				}
-				for( int i = 0 ; i < columnNames.length ; i++) {
-					fieldSize = aDataRecordMetadata.getField(i).getSize();
-					fieldEnd = fieldEnd + fieldSize;
-					for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
-						// all on one line
-						if(aFileFormatDataModel.linesFromFile[0] != null ) {
-							if(aFileFormatDataModel.linesFromFile[0]!= null && (recordSize*j+fieldEnd)<aFileFormatDataModel.linesFromFile[0].length()) {
-								data[j][i] = aFileFormatDataModel.linesFromFile[0].substring((recordSize*j+fieldStart), (recordSize*j+fieldEnd));
-							} else {
-								data[j][i] = null;
-							}
-						}
-					}
-					fieldStart = fieldStart + fieldSize;
-				}
-			}	
-			
+			loadExistingDelimitedRecords();						
 		}
 
 	}
+
+	/**
+	 * 
+	 */
+	private void loadExistingDelimitedRecords() {
+		Object[][] data = null;
+		StringBuffer buf = new StringBuffer();
+		DataFieldMetadata aDataFieldMetadata = null;
+		
+		columnNames = new String[aDataRecordMetadata.getNumFields()];
+		for( int i = 0 ; i < columnNames.length ; i++) {
+			aDataFieldMetadata = aDataRecordMetadata.getField(i);
+			columnNames[i] = aDataFieldMetadata.getName();
+			buf.append(aDataFieldMetadata.getDelimiter());
+		}
+		String delimiters= buf.toString();
+
+		data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
+		StringTokenizer st = new StringTokenizer(aFileFormatDataModel.linesFromFile[0],delimiters);
+		int aCount = st.countTokens();
+		
+		if(aFileFormatDataModel.firstLineFieldNames) {
+			data = new Object[aFileFormatDataModel.linesFromFile.length-1 ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						if(j != 0) {
+							data[j-1][i] = st.nextToken();
+						}
+						i++;
+					}
+				}
+			}
+		
+		}else {
+			data = new Object[aFileFormatDataModel.linesFromFile.length ][aCount];
+			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
+				if(aFileFormatDataModel.linesFromFile[j] != null ) {
+					st = new StringTokenizer(aFileFormatDataModel.linesFromFile[j],delimiters);
+					int i = 0;
+					while (st.hasMoreTokens() && i < aCount) {
+						data[j][i] = st.nextToken();
+						i++;
+					}
+				}
+			}
+		}
+
+		DefaultTableModel aModel = new DefaultTableModel(data, columnNames);
+		jTable1.setModel(aModel);
+	}
+	
+	
 	/**
 	 * Used to expose access to data model.
 	 * @see org.jetel.gui.component.FormInterface#getFileFormatDataModel()

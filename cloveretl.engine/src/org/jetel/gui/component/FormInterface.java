@@ -30,10 +30,10 @@ public interface  FormInterface {
 	 * problems, often <code>badDataAlert</code> is used
 	 * to communicate it to the user.
 	 * <p>
-	 * If all of the data is valid, this should return true
+	 * If all of the data is valid, this should return null
 	 * so that the caller can proceed (usually by storing
 	 * the result somewhere and destroying the frame.)
-	 * Naturally, false should be returned if there is
+	 * Naturally, error message should be returned if there is
 	 * any invalid data.
 	 * <p>
 	 * @return <code>null</code> if the data in the dialog is acceptable,
