@@ -2,15 +2,42 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-0
+---------
+New features:
++ change of lincese from GPL to LGPL
++ enhanced DBOutputTable to allow for hand-written SQL/DML statements - this
+should give 100% flexibility when populating target DB table
++ improved CopySQL primitives to cope with basic datatype conversions - integer->decimal,
+date->datetime, etc. - it regards to Clover-DB interaction
++ graph layouts (component attributes) can now reference globally defined
+properties (through ${...property name...} ). These references are resolved
+when materializing componets/metadata.
++ added handling of NULLs when copying data to/from Database 
+for fields (String, Date, Integer, Numeric);
++ for components requiring transformation classes to be specified (e.g. Reformat,Joins..),
+the possibility to embed the Java source into XML text defining graph layout is possible. The source
+code gets automatically compiled. When the graph is executed multiple times, it is
+checked whether the source code changed and if not, compilation is skipped.
+
+Bugs corrected:
++ fixed bug in CopyDate class (CopySQLData) when copying/setting DATE filed - thanks to Khelfa Mohamed
+
+
 REL 1-0-8
 ---------
 New features:
 + updated DBOutputTable component to support selective source2target fields
 mapping - attribute cloverFields added.
++ updated DBOutputTable to support batch updates
 + updated Sort component to support lexicographics sorting & normal sorting
 + created new component - HashJoin.
 + created new class HashKey (used for building hash tables of DataRecords)
 + created new class RecordComparator to be used for sorting DataRecords
++ added Java Properties for DataRecordMetadata and DataFieldMetadata
++ new component CheckForeignKey added - contributed by Stewart Jeacocke
++ altered Filter component to send rejected records to second output port
+  (if connected)
 
 Bugs corrected:
 + fixed problem in DataRecordMetadataXMLReaderWriter - part writing XML was wrongly
