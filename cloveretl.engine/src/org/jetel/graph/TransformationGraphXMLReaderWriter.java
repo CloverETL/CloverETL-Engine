@@ -258,7 +258,9 @@ public class TransformationGraphXMLReaderWriter {
 						logger.severe("Error when reading/parsing record metadata definition file: "+fileURL);
 						throw new RuntimeException("Can't parse metadata: "+metadataID);
 					}else{
-						metadata.put(metadataID, recordMetadata);
+						if (metadata.put(metadataID, recordMetadata)!=null){
+							throw new RuntimeException("Metadata "+metadataID+" already defined - duplicate ID detected!");
+						}
 					}
 			} else {
 				throw new RuntimeException("Attributes missing");
@@ -273,7 +275,7 @@ public class TransformationGraphXMLReaderWriter {
 		org.jetel.graph.Phase phase;
 		String phaseNum;
 		NodeList nodeElements;
-
+		
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < phaseElements.getLength(); i++) {
 			attributes = phaseElements.item(i).getAttributes();
@@ -307,6 +309,7 @@ public class TransformationGraphXMLReaderWriter {
 		org.jetel.graph.Node graphNode;
 		String nodeType;
 		String nodeID;
+		
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < nodeElements.getLength(); i++) {
 			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i).getNodeName())!=0){
@@ -382,22 +385,34 @@ public class TransformationGraphXMLReaderWriter {
 				}
 
 				graphEdge = new Edge(edgeID, edgeMetadata);
-				edges.put(edgeID, graphEdge);
+				if (edges.put(edgeID, graphEdge)!=null){
+					throw new RuntimeException("Duplicate EdgeID detected: "+edgeID);
+				}
 				// assign edge to fromNode
 				specNodePort = fromNodeAttr.split(":");
 				graphNode = (org.jetel.graph.Node) nodes.get(specNodePort[0]);
+				fromPort=Integer.parseInt(specNodePort[1]);
 				if (graphNode == null) {
 					throw new RuntimeException("Can't find node ID: " + fromNodeAttr);
 				}
-				graphNode.addOutputPort(Integer.parseInt(specNodePort[1]), graphEdge);
+				// check whether port isn't already assigned
+				if (graphNode.getOutputPort(fromPort)!=null){
+					throw new RuntimeException("Output port ["+fromPort+"] of "+graphNode.getID()+" already assigned !");
+				}
+				graphNode.addOutputPort(fromPort, graphEdge);
 				// assign edge to toNode
 				specNodePort = toNodeAttr.split(":");
 				// Node & port specified in form of: <nodeID>:<portNum>
 				graphNode = (org.jetel.graph.Node) nodes.get(specNodePort[0]);
+				toPort=Integer.parseInt(specNodePort[1]);
 				if (graphNode == null) {
 					throw new RuntimeException("Can't find node ID: " + fromNodeAttr);
 				}
-				graphNode.addInputPort(Integer.parseInt(specNodePort[1]), graphEdge);
+				// check whether port isn't already assigned
+				if (graphNode.getInputPort(toPort)!=null){
+					throw new RuntimeException("Input port ["+toPort+"] of "+graphNode.getID()+" already assigned !");
+				}
+				graphNode.addInputPort(toPort, graphEdge);
 
 			} else {
 				// TODO : some error reporting should take place here
