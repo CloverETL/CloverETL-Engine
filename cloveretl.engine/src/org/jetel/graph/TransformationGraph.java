@@ -24,6 +24,7 @@ import java.text.DateFormat;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.database.DBConnection;
 import org.jetel.util.StringUtils;
+import org.jetel.data.Defaults;
 
 import java.util.logging.Logger;
 /*
@@ -129,7 +130,7 @@ public final class TransformationGraph {
 	public boolean run() {
 		WatchDog watchDog;
 		
-		watchDog = new WatchDog(log, WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+		watchDog = new WatchDog(log, Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
 		
 		log.println("[Clover] starting WatchDog thread ...");
 		watchDog.start();
@@ -423,30 +424,6 @@ public final class TransformationGraph {
 		int watchDogStatus;
 
 		/**
-		 *  Description of the Field
-		 *
-		 * @since    July 30, 2002
-		 */
-		public final static int WATCHDOG_SLEEP_INTERVAL = 200;
-		//milliseconds
-		/**
-		 *  Description of the Field
-		 *
-		 * @since    July 30, 2002
-		 */
-		public final static int DEFAULT_WATCHDOG_TRACKING_INTERVAL = 30000;
-
-		/**
-		 *  Description of the Field
-		 *
-		 * @since    October 1, 2002
-		 */
-		public final static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5;
-
-
-		//milliseconds
-
-		/**
 		 *Constructor for the WatchDog object
 		 *
 		 * @since    July 29, 2002
@@ -454,7 +431,7 @@ public final class TransformationGraph {
 		WatchDog() {
 			super("WatchDog");
 			log = System.out;
-			trackingInterval = DEFAULT_WATCHDOG_TRACKING_INTERVAL;
+			trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 			setDaemon(true);
 		}
 
@@ -485,7 +462,7 @@ public final class TransformationGraph {
 			ListIterator leafNodesIterator;
 			ListIterator nodesIterator;
 			Node node;
-			int ticker = NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
+			int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 			long lastTimestamp;
 			long currentTimestamp;
 			long startTimestamp;
@@ -515,7 +492,7 @@ public final class TransformationGraph {
 				}
 				// check that no Node finished with some fatal error
 				if ((ticker--) == 0) {
-					ticker = NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
+					ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 					nodesIterator = orderedNodes.listIterator();
 					while (nodesIterator.hasNext()) {
 						node = (Node) nodesIterator.next();
@@ -530,13 +507,13 @@ public final class TransformationGraph {
 				}
 				// Display processing status, if it is time
 				currentTimestamp = System.currentTimeMillis();
-				if ((currentTimestamp - lastTimestamp) >= DEFAULT_WATCHDOG_TRACKING_INTERVAL) {
+				if ((currentTimestamp - lastTimestamp) >= Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL) {
 					printProcessingStatus(orderedNodes.listIterator());
 					lastTimestamp = currentTimestamp;
 				}
 				// rest for some time
 				try {
-					sleep(WATCHDOG_SLEEP_INTERVAL);
+					sleep(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL);
 				}
 				catch (InterruptedException ex) {
 					watchDogStatus = -1;
