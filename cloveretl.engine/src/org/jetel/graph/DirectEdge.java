@@ -40,13 +40,15 @@ import org.jetel.data.Defaults;
 public class DirectEdge extends EdgeBase {
 
 	
-	protected EdgeRecordBuffer recordBuffer;
+	protected EdgeRecordBufferPool recordBuffer;
 	protected int recordCounter;
 
 	// Attributes
 	
 	/**
 	 *  Number of internal buffers for storing records
+	 * Note: it does not improve performance much if this
+	 * number is increased.
 	 *
 	 * @since    April 11, 2002
 	 */
@@ -93,7 +95,7 @@ public class DirectEdge extends EdgeBase {
 	public void init() throws IOException {
 		// initialize & open the data pipe
 		// we are ready to supply data
-		recordBuffer=new EdgeRecordBuffer(INTERNAL_BUFFERS_NUM, Defaults.Record.MAX_RECORD_SIZE);
+		recordBuffer=new EdgeRecordBufferPool(INTERNAL_BUFFERS_NUM, Defaults.Record.MAX_RECORD_SIZE);
 		recordCounter = 0;
 	}
 
@@ -114,16 +116,14 @@ public class DirectEdge extends EdgeBase {
 		ByteBuffer buffer;
 		// is the port still OPEN ?? - should be as long as the graph executes
 
-		//System.out.println("Going to call getFullBuffer - edge :"+id);
 		buffer = recordBuffer.getFullBuffer();
 		if (buffer == null) {
 			return null;
 			// no more data in a flow
 		}
-		//System.out.println("Going to deserialize  - edge :"+id);
-		record.deserialize(buffer);
 		// create the record/read it from buffer
-		//System.out.println("Going to call setFree - edge :"+id);
+		record.deserialize(buffer);
+		
 		recordBuffer.setFree(buffer);
 
 		return record;
@@ -168,17 +168,13 @@ public class DirectEdge extends EdgeBase {
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
 		ByteBuffer buffer;
 
-		//System.out.println("Going to call getEmptyBuffer - edge :"+id);
 		buffer = recordBuffer.getFreeBuffer();
 		if (buffer == null) {
 			throw new IOException("Output port closed !");
 		}
-		//System.out.println("Going to call serialize - edge :"+id);
 		buffer.clear();
-		record.serialize(buffer);
-		// serialize the record
+		record.serialize(buffer); 	// serialize the record
 		buffer.flip();
-		//System.out.println("Going to call setFull - edge :"+id);
 		recordBuffer.setFull(buffer);
 		
 		recordCounter++;
@@ -197,7 +193,6 @@ public class DirectEdge extends EdgeBase {
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
 		ByteBuffer buffer;
 
-		//System.out.println("Going to call getEmptyBuffer - edge :"+id);
 		buffer = recordBuffer.getFreeBuffer();
 		if (buffer == null) {
 			throw new IOException("Output port closed !");
@@ -233,45 +228,47 @@ public class DirectEdge extends EdgeBase {
 	}
 
 	public boolean hasData(){
-		return ( recordBuffer.readPointer!=recordBuffer.writePointer ? false : true);
+		return recordBuffer.hasData();
 	}
 
 	/**
-	 *  Description of the Class
+	 *  Class implementing semafor/internal buffer for handling
+	 * Producer,Consumer scenario of two threads.
 	 *
 	 * @author     dpavlis
 	 * @since    June 5, 2002
 	 */
-	class EdgeRecordBuffer {
-		ByteBuffer buffers[];
-		int readPointer;
-		int writePointer;
-		int size;
-		boolean isOpen;
-		boolean sw;
+	static class EdgeRecordBufferPool {
+	    private final static int MIN_NUM_BUFFERS = 2; // minimum number of internal buffers for correct behaviour
+	    
+	    ByteBuffer buffers[];
+		volatile int readPointer;
+		volatile int writePointer;
+		final int size;
+		volatile boolean isOpen;
+		
 
 
 		/**
-		 *Constructor for the EdgeRecordBuffer object
+		 *Constructor for the EdgeRecordBufferPool object
 		 *
-		 * @param  numBuffers  Description of Parameter
-		 * @param  bufferSize  Description of Parameter
+		 * @param  numBuffers  number of internal buffers allocated for storing DataRecords
+		 * @param  bufferSize  size of 1 internal buffer - should be similar to org.jetel.data.Defaults.Record.MAX_RECORD_SIZE
 		 * @since              June 5, 2002
 		 */
-		EdgeRecordBuffer(int numBuffers, int bufferSize) {
-			// create buffers
-			buffers = new ByteBuffer[numBuffers];
+		EdgeRecordBufferPool(int numBuffers, int bufferSize) {
+		    size= numBuffers > MIN_NUM_BUFFERS ? numBuffers : MIN_NUM_BUFFERS;
+		    // create/allocate  buffers
+			buffers = new ByteBuffer[size];
 			readPointer=0;
 			writePointer=0;
-			size=numBuffers;
-			for (int i = 0; i < numBuffers; i++) {
+			for (int i = 0; i < size; i++) {
 				buffers[i] = ByteBuffer.allocateDirect(bufferSize);
 				if (buffers[i] == null) {
 					throw new RuntimeException("Failed buffer allocation");
 				}
 			}
 			isOpen = true; // the buffer is implicitly open - can be read/written
-			sw=false;
 		}
 
 
@@ -282,11 +279,7 @@ public class DirectEdge extends EdgeBase {
 		 * @since          June 5, 2002
 		 */
 		synchronized void setFree(ByteBuffer buffer) {
-			readPointer++;
-			if (readPointer==size){
-				readPointer=0;
-				sw=false;
-			}
+			readPointer=(readPointer+1)%size;
 			notify();
 		}
 
@@ -298,19 +291,15 @@ public class DirectEdge extends EdgeBase {
 		 * @since          June 5, 2002
 		 */
 		synchronized void setFull(ByteBuffer buffer) {
-			writePointer++;
-			if (writePointer==size){
-				writePointer=0;
-				sw=true;
-			}
-			notify();
+		    writePointer=(writePointer+1)%size;
+		    notify();
 		}
 
 
 		/**
-		 *  Gets the Open attribute of the EdgeRecordBuffer object
+		 * Determines status of this buffer pool (open/closed) 
 		 *
-		 * @return    The Open value
+		 * @return    True if EdgeRecordBufferPool is open for reading&writing
 		 * @since     June 6, 2002
 		 */
 		synchronized boolean isOpen() {
@@ -319,22 +308,25 @@ public class DirectEdge extends EdgeBase {
 
 
 		/**
-		 *  Gets one free buffer or waits till some buffer is free
+		 *  Gets buffer which can be used for writing record or
+		 * waits till such buffer exists (is freed).
+		 * If EdgeRecordBufer is closed, it returns null.
 		 *
 		 * @return                           The EmptyBuffer value
 		 * @exception  InterruptedException  Description of Exception
 		 * @since                            June 5, 2002
 		 */
 		synchronized ByteBuffer getFreeBuffer() throws InterruptedException {
-			// if already closed - return null - EnfOfData
-			if ((!isOpen) && (sw && readPointer==writePointer)) {
+			// if already closed - return null - NoMoreData required
+			if (!isOpen){
 				return null;
 			}
-			while (sw && writePointer==readPointer) {
-				// while empty, wait
+			// can we move forward in next step ?
+			int tmpWrite=(writePointer+1)%size;
+			while(tmpWrite==readPointer){
+			    // the next slot is still occupied by read thread
 				wait();
-				// if still empty & is closed - no more data
-				if ((!isOpen) && (sw && readPointer==writePointer)) {
+				if (!isOpen) {
 					return null;
 				}
 			}
@@ -343,21 +335,22 @@ public class DirectEdge extends EdgeBase {
 
 
 		/**
-		 *  Gets one buffer containing data or waits till some buffer is filled
+		 *  Gets one buffer containing data or waits till some buffer is filled by
+		 * producer.
 		 *
 		 * @return                           The FullBuffer value
 		 * @exception  InterruptedException  Description of Exception
 		 * @since                            June 5, 2002
 		 */
 		synchronized ByteBuffer getFullBuffer() throws InterruptedException {
-			// already closed ?
-			if ((!isOpen) && (!sw && readPointer==writePointer)) {
-				return null;
+			// already closed and no more data left
+		    if ((!isOpen) && (readPointer==writePointer)) {
+		        return null;
 			}
-			while (!sw && readPointer==writePointer) {
+			while (readPointer==writePointer) {
 				// wait till something shows up
 				wait();
-				if ((!isOpen) && (!sw && readPointer==writePointer)) {
+				if ((!isOpen) && (readPointer==writePointer)){
 					return null;
 				}
 			}
@@ -366,7 +359,7 @@ public class DirectEdge extends EdgeBase {
 
 
 		/**
-		 *  Sets end-of-data flag
+		 *  Sets end-of-data flag, closes this pool
 		 *
 		 * @since    June 5, 2002
 		 */
@@ -377,7 +370,7 @@ public class DirectEdge extends EdgeBase {
 
 
 		/**
-		 *  Opens all internal buffers for reading/writing
+		 *  Opens this buffer pool for reading/writing
 		 *
 		 * @since    June 6, 2002
 		 */
@@ -386,6 +379,13 @@ public class DirectEdge extends EdgeBase {
 			notify();
 		}
 
+		public boolean hasData(){
+		    if (readPointer!=writePointer){
+		        return true;
+		    }else{
+		        return false;
+		    }
+		}
 	}
 }
 /*
