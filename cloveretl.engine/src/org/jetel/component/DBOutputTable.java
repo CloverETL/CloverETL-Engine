@@ -21,11 +21,11 @@ import java.io.*;
 import java.sql.*;
 import java.util.List;
 import java.util.logging.*;
-import org.jetel.graph.*;
-import org.jetel.database.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -65,6 +65,8 @@ import org.jetel.util.ComponentXMLAttributes;
  *  they appear in the list) will be considered for mapping onto target table's fields. Combined with <b>dbFields</b> option you can
  *  specify mapping from source (Clover's) fields to DB table fields. If no <i>dbFields</i> are specified, then #of <i>cloverFields</i> must
  *  correspond to number of target DB table fields.</td>
+ *  <tr><td><b>batchMode</b><br><i>optional</i></td><td>[Yes/No] determines whether to use batch mode for sending statemetns to DB, DEFAULT is No.<br>
+ *  <i>Note:If your database/JDBC driver supports this feature, switch it on as it significantly speeds up table population.</i></td>
  *  </tr>
  *  </table>
  *
@@ -75,11 +77,12 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <i>Example above shows how to populate only selected fields within target DB table. It can be used for skipping target fields which
  *  are automatically populated by DB (such as autoincremented fields).</i>
  *  <br>
- *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z" 
+ *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"
  *	   dbFields="f_name;l_name" cloverFields="LastName;FirstName"/&gt;</pre>
  *  <i>Example shows how to simply map Clover's LastName and FirstName fields onto f_name and l_name DB table fields. The order
- *  in which these fields appear in Clover data record is not important.</i> 
- * 
+ *  in which these fields appear in Clover data record is not important.</i>
+ *
+ *
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
@@ -95,14 +98,17 @@ public class DBOutputTable extends Node {
 	private String[] cloverFields;
 	private String[] dbFields;
 	private int recordsInCommit;
+	private boolean useBatch;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
 	private final static int READ_FROM_PORT = 0;
 	private final static int RECORDS_IN_COMMIT = 100;
+	private final static int RECORDS_IN_BATCH = 25;
 
 	static Logger logger = Logger.getLogger("org.jetel");
+
 
 	/**
 	 *  Constructor for the DBInputTable object
@@ -119,6 +125,7 @@ public class DBOutputTable extends Node {
 		cloverFields = null;
 		dbFields = null;
 		recordsInCommit = RECORDS_IN_COMMIT;
+		useBatch=false;
 		// default
 
 	}
@@ -131,6 +138,16 @@ public class DBOutputTable extends Node {
 	 */
 	public void setDBFields(String[] dbFields) {
 		this.dbFields = dbFields;
+	}
+
+
+	/**
+	 *  Sets the useBatch attribute of the DBOutputTable object
+	 *
+	 * @param  batchMode  The new useBatch value
+	 */
+	public void setUseBatch(boolean batchMode) {
+		this.useBatch = batchMode;
 	}
 
 
@@ -196,13 +213,25 @@ public class DBOutputTable extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		CopySQLData[] transMap;
 		int i;
-		int result;
+		int result = 0;
 		int recCount = 0;
+		int batchCount = 0;
 		List dbFieldTypes;
 		String sql;
 
 		inRecord.init();
 		try {
+			// first check that what we require is supported
+			if (useBatch && !dbConnection.getConnection().getMetaData().supportsBatchUpdates()){
+				logger.warning("DB indicates no support for batch updates -> switching it off !");
+				useBatch=false;
+			}
+			// it is probably wise to have COMMIT size multiplication of BATCH size
+			if (useBatch && (recordsInCommit % RECORDS_IN_BATCH != 0)){
+				int multiply= recordsInCommit/RECORDS_IN_BATCH;
+				recordsInCommit=(multiply+1) * RECORDS_IN_BATCH;
+			}
+			
 			// do we have specified list of fields to populate ?
 			if (dbFields != null) {
 				sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
@@ -218,16 +247,9 @@ public class DBOutputTable extends Node {
 			try {
 				dbConnection.getConnection().setAutoCommit(false);
 			} catch (SQLException ex) {
-				logger.warning("Can't disable AutoCommit mode for DB: "+dbConnection+" > possible slower execution...");
+				logger.warning("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
 			}
 
-			/*
-			 *  this somehow doesn't work (crashes system) at least when tested with Interbase
-			 *  ParameterMetaData metaData=preparedStatement.getParameterMetaData();
-			 *  if (metaData==null){
-			 *  System.err.println("metada data is null!");
-			 *  }
-			 */
 			// do we have cloverFields list defined ? (which fields from input record to consider)
 			if (cloverFields != null) {
 				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, cloverFields);
@@ -241,14 +263,48 @@ public class DBOutputTable extends Node {
 					for (i = 0; i < transMap.length; i++) {
 						transMap[i].jetel2sql(preparedStatement);
 					}
-					result = preparedStatement.executeUpdate();
-					if (result != 1) {
-						throw new SQLException("Error when inserting record");
+					
+					
+					/* BATCH MODE */
+					if (useBatch){
+						preparedStatement.addBatch();
+						if (batchCount++ % RECORDS_IN_BATCH == 0) {
+							try {
+								preparedStatement.executeBatch();
+								preparedStatement.clearBatch();
+							} catch (BatchUpdateException ex) {
+								throw new SQLException("Batch error:"+ex.getMessage());
+							}
+							batchCount = 0;
+						}
+					/* NORMAL MODE */
+					}else{
+						result = preparedStatement.executeUpdate();
+						if (result != 1) {
+							throw new SQLException("Error when inserting record");
+						}
+						preparedStatement.clearParameters();
 					}
-					preparedStatement.clearParameters();
 				}
 				if (recCount++ % recordsInCommit == 0) {
+					if (useBatch && batchCount!=0){
+						try {
+							preparedStatement.executeBatch();
+							preparedStatement.clearBatch();
+						} catch (BatchUpdateException ex) {
+							throw new SQLException("Batch error:"+ex.getMessage());
+						}
+						batchCount = 0;
+					}
 					dbConnection.getConnection().commit();
+				}
+			}
+			// end of records stream - final commits;
+			if (useBatch){
+				try{
+					preparedStatement.executeBatch();
+				}catch (BatchUpdateException ex) {
+					throw new SQLException("Batch error:"+ex.getMessage());
 				}
 			}
 			dbConnection.getConnection().commit();
@@ -256,19 +312,16 @@ public class DBOutputTable extends Node {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
-			return;
 		} catch (SQLException ex) {
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
-			return;
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
-			return;
 		} finally {
 			try {
 				broadcastEOF();
@@ -288,6 +341,7 @@ public class DBOutputTable extends Node {
 				resultCode = Node.RESULT_ERROR;
 			}
 		}
+		return;
 	}
 
 
@@ -310,7 +364,7 @@ public class DBOutputTable extends Node {
 			if (xattribs.exists("dbFields")) {
 				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
-			
+
 			if (xattribs.exists("cloverFields")) {
 				outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
@@ -318,7 +372,11 @@ public class DBOutputTable extends Node {
 			if (xattribs.exists("commit")) {
 				outputTable.setRecordsInCommit(xattribs.getInteger("commit"));
 			}
-
+			
+			if (xattribs.exists("batchMode")) {
+				outputTable.setUseBatch(xattribs.getBoolean("batchMode"));
+			}
+			
 			return outputTable;
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
@@ -327,7 +385,11 @@ public class DBOutputTable extends Node {
 	}
 
 
-	/**  Description of the Method */
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
 	public boolean checkConfig() {
 		return true;
 	}
