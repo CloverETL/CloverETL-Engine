@@ -71,7 +71,7 @@ public class SQLUtil {
 		if (fieldTypes.size() == 0) {
 			//throw new RuntimeException("No metadata obtained for table: " + tableName);
 			//Warn !
-			System.out.println("Warning: No metadata obtained for table: " + tableName + " will use workaround ...");
+			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
 			// WE HAVE SOME PATCH, but ...
 			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
 			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
@@ -111,7 +111,7 @@ public class SQLUtil {
 		if (dbFieldsMap.size() == 0) {
 			//throw new RuntimeException("No metadata obtained for table: " + tableName);
 			//Warn !
-			System.out.println("Warning: No metadata obtained for table: " + tableName + " will use workaround ...");
+			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
 			// WE HAVE SOME PATCH, but ...
 			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
 			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
