@@ -32,7 +32,7 @@ import org.jetel.gui.fileformatwizard.FileFormatDispatcher;
 public abstract class PhaseFrame extends JFrame {
     
     /**
-     * This is the main panel we insert all UI into
+     * This is the main frame we insert all UI into
      */
     private JPanel backgroundPanel;
     
@@ -80,28 +80,6 @@ public abstract class PhaseFrame extends JFrame {
      */
     public PhaseFrame(String inTitle) {
         this.setTitle((null != inTitle) ? inTitle : "[Untitled]");
-        
-//        addInternalFrameListener( new javax.swing.event.InternalFrameAdapter() {
-//            public void internalFrameOpened(InternalFrameEvent e) {
-//                //  -- Setting Initial Focus --
-//                // JComponent.requestFocus() must be run at the /end/
-//                // of the Swing event queue to work properly. We will
-//                // use SwingUtilities.invokeLater to request focus,
-//                // triggered by the windowOpened event.
-//                
-//                SwingUtilities.invokeLater(new Runnable() {
-//                    public void run() {
-//                        if (null != btn_next) {
-//                            getRootPane().setDefaultButton(btn_next);
-//                            btn_next.requestFocus();
-//                        } else if (null != btn_finish) {
-//                            getRootPane().setDefaultButton(btn_finish);
-//                            btn_finish.requestFocus();
-//                        }
-//                    }
-//                });
-//            }
-//        });
         
         // background panel holds everything
         backgroundPanel = new JPanel();
@@ -210,7 +188,6 @@ public abstract class PhaseFrame extends JFrame {
             return;
         
 		currentPhaseFrame.saveData();
-        //setVisible(false);
         
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_NEXT, null);
 		repaint();
@@ -224,7 +201,6 @@ public abstract class PhaseFrame extends JFrame {
      * </pre>
      */
     protected void prevPressed() {
-        //setVisible(false);
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_PREV, null);
         repaint();
     }
@@ -234,7 +210,6 @@ public abstract class PhaseFrame extends JFrame {
      * is pressed
      */
     protected void cancelPressed() {
-        //setVisible(false);
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_CANCEL, null);
     }
     
@@ -243,7 +218,6 @@ public abstract class PhaseFrame extends JFrame {
      * @param newPhase value identifying the new phase.
      */
     public void skipToPhase(int newPhase) {
-        //setVisible(false);
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_SKIP, new Integer(newPhase));
 		repaint();
     }

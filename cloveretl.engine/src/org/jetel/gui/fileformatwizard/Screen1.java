@@ -1,6 +1,23 @@
+/*
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Created on Apr 4, 2003
+ *  Copyright (C) 2003, 2002  David Pavlis, Wes Maciorowski
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.gui.fileformatwizard;
 
-import javax.swing.JFrame;
 import java.awt.GridBagLayout;
 import javax.swing.JLabel;
 import java.awt.GridBagConstraints;
@@ -9,8 +26,6 @@ import javax.swing.JButton;
 import javax.swing.JTextPane;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.Font;
 
 import javax.swing.ButtonGroup;
@@ -77,21 +92,6 @@ public class Screen1 extends JPanel implements FormInterface
 	}
 
   }
-
-  public static void main(String[] args)
-  {
-    Screen1 filePreviewFormatPanel = new Screen1();
-	String[] linesFromFile = null;
-	filePreviewFormatPanel.setPreviewFileNameLabel("IAC_Data\\INF\\EP\\FERC\\FERC_423\\RawData\\Final Files");
-	JFrame f = new JFrame("RulerPanel");
-  f.addWindowListener(new WindowAdapter() {
-	  public void windowClosing(WindowEvent e) {System.exit(0);}
-  });
-  f.getContentPane().add("Center", filePreviewFormatPanel);
-  //f.setSize(new Dimension(400,20));
-  f.pack();
-  f.show();
-}
 
   private void jbInit() throws Exception
   {

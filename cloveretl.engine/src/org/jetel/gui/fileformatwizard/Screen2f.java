@@ -16,7 +16,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.gui.fileformatwizard;
-import javax.swing.JFrame;
+
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 
@@ -34,8 +34,6 @@ import org.jetel.gui.component.RulerPanel;
 import org.jetel.util.QSortAlgorithm;
 
 import java.awt.SystemColor;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 public class Screen2f extends JPanel implements  FormInterface
 {
@@ -79,26 +77,6 @@ public class Screen2f extends JPanel implements  FormInterface
 	  e.printStackTrace();
 	}
 
-  }
-
-  public static void main(String[] args)
-  {
-    Screen2f screen2f = new Screen2f();
-	String[] linesFromFile = new String[5];
-	linesFromFile[0] = "2590   189 Alabama Electric Coop Inc          56 Lowman              1  2 S           BIT U   9  KY 225        LODESTAR ENERGY, INC.                        36.174   11939    2   11    132.100 2001";
-	linesFromFile[1] = "2591   189 Alabama Electric Coop Inc          56 Lowman              1  2 S           BIT S   13 AL 93         MANN STEEL PRODUCTS, INC.                     8.970   10760    2   18    136.300 2001";
-	linesFromFile[2] = "2592   189 Alabama Electric Coop Inc          56 Lowman              1  2 C           BIT S   13 AL 57         PITTSBURG & MIDWAY COAL - BASE                 30.995   12089    2   12    135.300 2001";
-	linesFromFile[3] = "2593   189 Alabama Electric Coop Inc          56 Lowman              1  2 C           BIT S   13 AL 57         PITTSBURG & MIDWAY COAL-SUPPLEMENT             18.600   12195    1   12    130.900 2001";
-	linesFromFile[4] = "2594   189 Alabama Electric Coop Inc          56 Lowman              1  2 S           FO2     0                MINTO ENERGY CORPORATION                        0.595  130500    0    0    675.700 2001";
-	screen2f.setLinesFromFile(linesFromFile);
-	JFrame f = new JFrame("RulerPanel");
-  f.addWindowListener(new WindowAdapter() {
-	  public void windowClosing(WindowEvent e) {System.exit(0);}
-  });
-  f.getContentPane().add("Center", screen2f);
-  //f.setSize(new Dimension(400,20));
-  f.pack();
-  f.show();
   }
 
   private void jbInit() throws Exception
