@@ -98,6 +98,7 @@ import java.util.logging.Logger;
  * @since    May 21, 2002
  */
 public class TransformationGraphXMLReaderWriter {
+	private final static String GRAPH_ELEMENT = "Graph";
 	private final static String GLOBAL_ELEMENT = "Global";
 	private final static String NODE_ELEMENT = "Node";
 	private final static String EDGE_ELEMENT = "Edge";
@@ -105,6 +106,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String PHASE_ELEMENT = "Phase";
 	private final static String DBCONNECTION_ELEMENT = "DBConnection";
 
+	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
 	 * Default parser name.
 	 *
@@ -141,13 +143,15 @@ public class TransformationGraphXMLReaderWriter {
 	public boolean read(TransformationGraph graph, InputStream in) {
 		Document document;
 		Iterator colIterator;
-		Map metadata = new HashMap();
-		Map nodes = new HashMap();
-		Map edges = new HashMap();
+		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
+		List phases = new LinkedList();
+		Map allNodes = new LinkedHashMap(ALLOCATE_MAP_SIZE);
+		Map edges = new HashMap(ALLOCATE_MAP_SIZE);
 
 		// delete all Nodes & Edges possibly held by TransformationGraph
 		graph.deleteEdges();
 		graph.deleteNodes();
+		graph.deletePhases();
 		graph.deleteDBConnections();
 
 		try {
@@ -165,6 +169,7 @@ public class TransformationGraphXMLReaderWriter {
 			DocumentBuilder db = dbf.newDocumentBuilder();
 			
 			document =  db.parse(new BufferedInputStream(in)); 
+			document.normalize();
 
 		}catch(SAXParseException ex){
 			System.err.print(ex.getMessage());
@@ -180,15 +185,21 @@ public class TransformationGraphXMLReaderWriter {
 
 		try {
 
-			// process document - create metadata
+			// process document
+			// get graph name
+			NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+			org.w3c.dom.NamedNodeMap grfAttributes = graphElement.item(0).getAttributes();
+			graph.setName(grfAttributes.getNamedItem("name").getNodeValue());
+
+			//create metadata
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
 			instantiateMetadata(metadataElements, metadata);
 
-			NodeList nodeElements = document.getElementsByTagName(NODE_ELEMENT);
-			instantiateNodes(nodeElements, nodes);
+			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
+			instantiatePhases(phaseElements, phases,allNodes);
 
 			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-			instantiateEdges(edgeElements, edges, metadata, nodes);
+			instantiateEdges(edgeElements, edges, metadata, allNodes);
 
 			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
 			instantiateDBConnections(dbConnectionElements, graph);
@@ -198,10 +209,15 @@ public class TransformationGraphXMLReaderWriter {
 			ex.printStackTrace(System.err);
 			return false;
 		}
-		// register all NODEs & EDGEs within transformation graph;
-		colIterator = nodes.values().iterator();
+		// register all PHASEs, NODEs & EDGEs within transformation graph;
+		colIterator = phases.iterator();
 		while (colIterator.hasNext()) {
-			graph.addNode((org.jetel.graph.Node) colIterator.next());
+			graph.addPhase((org.jetel.graph.Phase) colIterator.next());
+		}
+		colIterator = allNodes.values().iterator();
+		while (colIterator.hasNext()) {
+			Node node=(org.jetel.graph.Node) colIterator.next();
+			graph.addNode(node,node.getPhase());
 		}
 		colIterator = edges.values().iterator();
 		while (colIterator.hasNext()) {
@@ -251,6 +267,33 @@ public class TransformationGraphXMLReaderWriter {
 		// we successfully instantiated all metadata
 	}
 
+	
+	private void instantiatePhases(NodeList phaseElements, List phases,Map allNodes) {
+		org.w3c.dom.NamedNodeMap attributes;
+		org.jetel.graph.Phase phase;
+		String phaseNum;
+		NodeList nodeElements;
+
+		// loop through all Node elements & create appropriate Metadata objects
+		for (int i = 0; i < phaseElements.getLength(); i++) {
+			attributes = phaseElements.item(i).getAttributes();
+			// process Phase element attribute "number"
+			phaseNum = attributes.getNamedItem("number").getNodeValue();
+
+			if (phaseNum != null){
+				phase=new Phase(Integer.parseInt(phaseNum));
+				phases.add(phase);
+			} else {
+				throw new RuntimeException("Attribute \"number\" missing for phase");
+			}
+			// get all nodes defined in this phase and instantiate them
+			// we expect that all childern of phase are Nodes
+			//phaseElements.item(i).normalize();
+			nodeElements=phaseElements.item(i).getChildNodes();
+			instantiateNodes(phase.getPhaseNum(),nodeElements,allNodes);
+		}
+	}
+
 
 	/**
 	 *  Description of the Method
@@ -259,26 +302,31 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateNodes(NodeList nodeElements, Map nodes) {
+	private void instantiateNodes(int phaseNum,NodeList nodeElements, Map nodes) {
 		org.w3c.dom.NamedNodeMap attributes;
 		org.jetel.graph.Node graphNode;
 		String nodeType;
 		String nodeID;
-
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < nodeElements.getLength(); i++) {
+			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i).getNodeName())!=0){
+				continue;
+			}
 			attributes = nodeElements.item(i).getAttributes();
-
+			
 			// process Node element attributes "id" & "type"
 			nodeID = attributes.getNamedItem("id").getNodeValue();
 			nodeType = attributes.getNamedItem("type").getNodeValue();
-
+			
 			if ((nodeID != null) && (nodeType != null)) {
 
-				// TODO: here, call some node factory which will create appropriate Node type
+				
 				graphNode = ComponentFactory.createComponent(nodeType, nodeElements.item(i));
+				graphNode.setPhase(phaseNum);
 				if (graphNode != null) {
-					nodes.put(nodeID, graphNode);
+					if (nodes.put(nodeID, graphNode)!=null){
+						throw new RuntimeException("Duplicate NodeID detected: "+nodeID);
+					}
 				} else {
 					throw new RuntimeException("Error when creating Component type :" + nodeType);
 				}
@@ -289,6 +337,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		}
 	}
+
 
 
 	/**

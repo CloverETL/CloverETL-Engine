@@ -38,65 +38,20 @@ import org.jetel.exception.ComponentNotReadyException;
  */
 public abstract class Node extends Thread {
 
-	// Associations
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected TransformationGraph graph;
-
-	// Attributes
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected String id;
 
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected TreeMap outPorts;
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected TreeMap inPorts;
 
-	/**
-	 *  Description of the Field
-	 */
 	protected List outPortList;
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected OutputPort logPort;
 
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected volatile boolean runIt = true;
 
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected int resultCode;
-	/**
-	 *  Description of the Field
-	 *
-	 *@since    August 13, 2002
-	 */
 	protected String resultMsg;
+	protected int phase = 0;// default phase is 0
 
 	/**
 	 *  Various PORT kinds identifiers
@@ -104,13 +59,9 @@ public abstract class Node extends Thread {
 	 *@since    August 13, 2002
 	 */
 	public final static char OUTPUT_PORT = 'O';
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static char INPUT_PORT = 'I';
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static char LOG_PORT = 'L';
 
 	/**
@@ -119,21 +70,13 @@ public abstract class Node extends Thread {
 	 *@since    August 13, 2002
 	 */
 	public final static int RESULT_RUNNING = 0;
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static int RESULT_OK = 1;
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static int RESULT_ERROR = 2;
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static int RESULT_ABORTED = 3;
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static int RESULT_FATAL_ERROR = -1;
 
 
@@ -151,6 +94,7 @@ public abstract class Node extends Thread {
 		logPort = null;
 		setDaemon(true);
 		// this thread is daemon - won't live if main thread ends
+		phase = 0;
 	}
 
 
@@ -180,9 +124,6 @@ public abstract class Node extends Thread {
 	}
 
 
-	/*
-	 *
-	 */
 	/**
 	 *  Returns brief message describing current status
 	 *
@@ -207,13 +148,16 @@ public abstract class Node extends Thread {
 	}
 
 
+
 	/**
 	 *  Gets the Type attribute of the Node object
 	 *
 	 *@return    The Type value
 	 *@since     April 4, 2002
 	 */
-	public abstract String getType();
+	public static String getType() {
+		return null;
+	}
 
 
 	/**
@@ -240,6 +184,15 @@ public abstract class Node extends Thread {
 			return false;
 		}
 	}
+	
+	public boolean isPhaseLeaf(){
+		Iterator iterator=getOutPorts().iterator();
+		while(iterator.hasNext()){
+			if (phase!=((OutputPort)(iterator.next())).getReader().getPhase())
+				return true;
+		}
+		return false;
+	}
 
 
 	/**
@@ -254,6 +207,41 @@ public abstract class Node extends Thread {
 		} else {
 			return false;
 		}
+	}
+
+
+	/**
+	 *  Sets the processing phase of the Node object.<br>
+	 *  Default is 0 (ZERO).
+	 *
+	 *@param  phase  The new phase number
+	 */
+	public void setPhase(int phase) {
+		this.phase = phase;
+	}
+
+
+	/**
+	 *  Gets the processing phase of the Node object
+	 *
+	 *@return    The phase value
+	 */
+	public int getPhase() {
+		return phase;
+	}
+
+
+	/**
+	 *  Check the Node configuration - defined input&output ports and if all parameters defined are meaningful.<br>
+	 *  
+	 *
+	 *@return    True if Node configuration is OK, otherwise False
+	 */
+	public abstract boolean checkConfig();
+
+
+	/**  Frees all internally allocated resources - such as buffers, etc. */
+	public void freeResources(){
 	}
 
 
@@ -366,8 +354,10 @@ public abstract class Node extends Thread {
 	 *@since    April 4, 2002
 	 */
 	public void abort() {
-		resultCode = RESULT_ABORTED;
-		interrupt();
+		if (resultCode==RESULT_RUNNING){
+			resultCode = RESULT_ABORTED;
+			interrupt();
+		}
 	}
 
 
@@ -591,9 +581,9 @@ public abstract class Node extends Thread {
 
 	/**
 	 *  Converts the collection of ports into List (LinkedList)<br>
-	 *  This is auxiliary method which "caches" list of ports for
-	 *  faster access when we need to go through all ports sequentially.
-	 *  Namely in RecordBroadcast situations
+	 *  This is auxiliary method which "caches" list of ports for faster access
+	 *  when we need to go through all ports sequentially. Namely in
+	 *  RecordBroadcast situations
 	 *
 	 *@param  ports  Collection of Ports
 	 *@return        List (LinkedList) of ports
