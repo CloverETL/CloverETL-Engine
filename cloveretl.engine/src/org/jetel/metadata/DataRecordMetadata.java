@@ -39,6 +39,7 @@ public class DataRecordMetadata {
 	private List fields;
 
 	private Map fieldNames;
+	private Map fieldTypes;
 
 	// Attributes
 	/**
@@ -83,6 +84,7 @@ public class DataRecordMetadata {
 		this.recType = _type;
 		this.fields = new ArrayList();
 		fieldNames = new HashMap();
+		fieldTypes = new HashMap();
 	}
 
 	/**
@@ -95,6 +97,7 @@ public class DataRecordMetadata {
 		this.name = new String(_name);
 		this.fields = new ArrayList();
 		fieldNames = new HashMap();
+		fieldTypes = new HashMap();
 	}
 
 	/**
@@ -192,6 +195,30 @@ public class DataRecordMetadata {
 		}
 	}
 
+	/**
+	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
+	 *
+	 *@param  fieldName  Description of the Parameter
+	 *@return            The fieldPosition value
+	 */
+	public char getFieldType(String fieldName) {
+		Integer position;
+		if (fieldNames.isEmpty()) {
+			updateFieldNamesMap();
+		}
+
+		position = (Integer) fieldNames.get(fieldName);
+		if (position != null) {
+			DataFieldMetadata fieldMetadata = getField(position.intValue());
+			return fieldMetadata.getType();
+		}
+		else {
+			return ' ';
+		}
+	}
+
+
+
 
 	/**
 	 *  Gets the Map where keys are FieldNames and values Field Order Numbers
@@ -205,6 +232,38 @@ public class DataRecordMetadata {
 		}
 		return new HashMap(fieldNames);
 	}
+
+
+
+	/**
+	 *  Gets the Map where keys are FieldNames and values Field Types
+	 *
+	 *@return    Map object {FieldName->Order Number}
+	 *@since     May 2, 2002
+	 */
+	public Map getFieldTypes() {
+		if (fieldTypes.isEmpty()) {
+			updateFieldTypesMap();
+		}
+		return new HashMap(fieldTypes);
+	}
+
+
+	/**
+	 *  Description of the Method
+	 */
+	private void updateFieldTypesMap() {
+		DataFieldMetadata field;
+		// fieldNames.clear(); - not necessary as it is called only if Map is empty
+		try {
+			for (int i = 0; i < fields.size(); i++) {
+				field = (DataFieldMetadata) fields.get(i);
+				fieldTypes.put(  new Integer(i),String.valueOf(field.getType()) );
+			}
+		} catch (IndexOutOfBoundsException e) {
+		}
+	}
+
 
 
 	/**

@@ -198,6 +198,8 @@ public abstract class CopySQLData {
 		int i = 0;
 		int fromIndex = 0;
 		int toIndex = 0;
+		short jdbcType;
+		
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size() - skipList.length];
 		ListIterator iterator = fieldTypes.listIterator();
 		Set skipSet = new HashSet();
@@ -207,8 +209,9 @@ public abstract class CopySQLData {
 		}
 
 		while (iterator.hasNext()) {
+			jdbcType=((Integer) iterator.next()).shortValue();
 			if (!skipSet.contains(new Integer(toIndex))) {
-				transMap[i++] = createCopyObject(((Integer) iterator.next()).shortValue(), record, fromIndex, toIndex);
+				transMap[i++] = createCopyObject(jdbcType, record, fromIndex, toIndex);
 				fromIndex++;
 			}
 			toIndex++;
