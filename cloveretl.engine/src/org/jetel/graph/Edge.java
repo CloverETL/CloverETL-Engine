@@ -24,6 +24,8 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
+import org.jetel.util.StringUtils;
+import org.jetel.exception.InvalidGraphObjectNameException;
 
 /**
  *  A class that represents Edge Proxy - surrogate which directs calls to
@@ -65,7 +67,10 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @since            April 2, 2002
 	 */
 	public Edge(String id, DataRecordMetadata metadata) {
-		this.id = new String(id);
+		if (!StringUtils.isValidObjectName(id)){
+			throw new InvalidGraphObjectNameException(id,"EDGE");
+		}
+		this.id = id;
 		this.metadata = metadata;
 		this.graph = null;
 		reader = writer = null;
