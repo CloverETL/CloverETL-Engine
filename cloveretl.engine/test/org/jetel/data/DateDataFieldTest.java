@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 
 import org.jetel.data.DateDataField;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -46,18 +47,22 @@ protected void setUp() {
 	Date trialTime1 = null;
 	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'D',(short)3);
+	fixedFieldMeta1.setFormatStr("MM/dd/yyyy");
 	aDateDataField1 = new DateDataField(fixedFieldMeta1, trialTime1);
 	
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'D',(short)3);
+	fixedFieldMeta2.setFormatStr("MM/dd/yyyy");
 	aDateDataField2 = new DateDataField(fixedFieldMeta2);
 
 	calendar = new GregorianCalendar(2002,6,10);
 	trialTime1 = null;
 	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");
+	delimFieldMeta1.setFormatStr("MM/dd/yyyy");
 	aDateDataField3 = new DateDataField(delimFieldMeta1,trialTime1);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'D',",");
+	delimFieldMeta2.setFormatStr("MM/dd/yyyy");
 	aDateDataField4 = new DateDataField(delimFieldMeta2);
 
 
@@ -99,6 +104,15 @@ public void test_1_DateDataField() {
 	 *
 	 */
 	public void test_setValue() {
+		Calendar calendar = new GregorianCalendar(2003,4,10);
+		Date trialTime1 = null;
+		trialTime1 = calendar.getTime(); 
+		aDateDataField1.setValue(trialTime1);
+		assertEquals("setValue(Object value) failed",aDateDataField1.getValue(), trialTime1);
+		assertFalse(aDateDataField1.isNull());
+
+		aDateDataField1.setValue(null);
+		assertTrue(aDateDataField1.isNull());
 	}
 
 
@@ -107,6 +121,11 @@ public void test_1_DateDataField() {
 	 *
 	 */
 	public void test_getValue() {
+		Calendar calendar = new GregorianCalendar(2003,4,10);
+		Date trialTime1 = null;
+		trialTime1 = calendar.getTime(); 
+		aDateDataField1.setValue(trialTime1);
+		assertEquals("getValue() failed",aDateDataField1.getValue(), trialTime1);
 	}
 
 	/**
@@ -114,6 +133,10 @@ public void test_1_DateDataField() {
 	 *
 	 */
 	public void test_toString() {
+		Calendar cal = new GregorianCalendar(2003,3,10);
+		Date trialTime1 = cal.getTime(); 
+		aDateDataField1.setValue(trialTime1);
+		assertEquals("toString() failed",aDateDataField1.toString(), "04/10/2003");
 	}
 
 
@@ -122,6 +145,16 @@ public void test_1_DateDataField() {
  *
  */
 public void test_fromString() {
+	aDateDataField1.fromString("07/10/1996");
+	assertEquals(aDateDataField1.toString(),"07/10/1996");
+
+	aDateDataField1.fromString(null);
+	assertTrue(aDateDataField1.isNull());
+	
+	try {
+		aDateDataField1.fromString("123.234");
+		fail("Should raise an BadDataFormatException");
+	} catch (BadDataFormatException e){	}
 }
 
 
@@ -141,7 +174,7 @@ public void test_serialize() {
 	aDateDataField1.serialize(buffer);
 	buffer.rewind();
 	aDateDataField4.deserialize(buffer);
-	assertEquals(aDateDataField4.toString(),"04/10/2003");
+	assertEquals(aDateDataField4.getValue(),aDateDataField1.getValue());
 	assertEquals(aDateDataField4.isNull(),aDateDataField1.isNull());
 	assertEquals(aDateDataField4,aDateDataField1);
 	
