@@ -58,6 +58,7 @@ public class ComponentFactory {
 		registerComponent(MergeJoin.COMPONENT_TYPE,"org.jetel.component.MergeJoin");
 		registerComponent("SORTED_JOIN","org.jetel.component.MergeJoin"); // synonym for MergeJoin (former name)
 		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash"); 
+		registerComponent(Filter.COMPONENT_TYPE,"org.jetel.component.Filter");
 	}
 	
 	

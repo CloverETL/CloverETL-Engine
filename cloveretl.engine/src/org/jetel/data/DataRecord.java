@@ -72,6 +72,55 @@ public class DataRecord implements Serializable {
 		fields = new DataField[metadata.getNumFields()];
 	}
 
+
+	/**
+	 *  Set fields by copying the fields from the record passed as argument.
+	 *  
+	 *@param  _record  Record from which fields are copied
+	 *@since
+	 */
+
+    public void copyFieldsByPosition(DataRecord _record) {
+        DataRecordMetadata sourceMetadata = _record.getMetadata();
+        DataFieldMetadata fieldMetadata;
+        DataField sourceField;
+        DataField targetField;
+        int sourceLength = sourceMetadata.getNumFields();
+        int targetLength = this.metadata.getNumFields();
+        int copyLength;
+        if (sourceLength<targetLength)
+        {
+            copyLength = sourceLength;
+        }
+        else
+        {
+            copyLength = targetLength;
+        }
+
+        for (int i=0;i<copyLength;i++)
+        {
+
+            fieldMetadata = metadata.getField(i);
+            sourceField=_record.getField(i);
+            targetField= this.getField(i);
+            if(sourceField.getType()==targetField.getType())
+            {
+                targetField.setValue(sourceField.getValue());
+            }
+            else
+            {
+                targetField.setToDefaultValue();
+            }
+        }
+    }
+
+
+
+
+
+
+	
+
 	/**
 	 *  Description of the Method
 	 *
