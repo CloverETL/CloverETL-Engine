@@ -16,17 +16,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.util;
+import org.jetel.exception.NotFoundException;
 
 import org.w3c.dom.NamedNodeMap;
-import org.jetel.exception.NotFoundException;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
  *  Used in conjunction with org.jetel.Component.*
  *
- *@author     dpavlis
- *@created    26. March 2003
- *@since      July 25, 2002
+ * @author      dpavlis
+ * @since       July 25, 2002
+ * @revision    $Revision$
+ * @created     26. March 2003
  */
 
 public class ComponentXMLAttributes {
@@ -36,11 +37,10 @@ public class ComponentXMLAttributes {
 
 	//private Map    childNodes;
 
-
 	/**
 	 *  Constructor for the ComponentXMLAttributes object
 	 *
-	 *@param  nodeXML  Description of the Parameter
+	 * @param  nodeXML  Description of the Parameter
 	 */
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
 		attributes = nodeXML.getAttributes();
@@ -49,76 +49,147 @@ public class ComponentXMLAttributes {
 
 
 	/**
-	 *  Gets the string attribute of the ComponentXMLAttributes object
+	 *  Returns the String value of specified XML attribute
 	 *
-	 *@param  key  Description of the Parameter
-	 *@return      The string value
+	 * @param  key  name of the attribute
+	 * @return      The string value
 	 */
 	public String getString(String key) {
 		try {
 			return attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException("Attribute "+key+" not found!");
+			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 	}
 
 
 	/**
-	 *  Gets the integer attribute of the ComponentXMLAttributes object
+	 *  Returns the String value of specified XML attribute
 	 *
-	 *@param  key  Description of the Parameter
-	 *@return      The integer value
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The string value
+	 */
+	public String getString(String key, String defaultValue) {
+		try {
+			return attributes.getNamedItem(key).getNodeValue();
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
+
+
+	/**
+	 *  Returns the int value of specified XML attribute
+	 *
+	 * @param  key  name of the attribute
+	 * @return      The integer value
 	 */
 	public int getInteger(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException("Attribute "+key+" not found!");
+			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return Integer.parseInt(value);
 	}
 
 
 	/**
-	 *  Gets the boolean attribute of the ComponentXMLAttributes object
+	 *  Returns the int value of specified XML attribute
 	 *
-	 *@param  key  Description of the Parameter
-	 *@return      The boolean value
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The integer value
+	 */
+	public int getInteger(String key, int defaultValue) {
+		String value;
+		try {
+			value = attributes.getNamedItem(key).getNodeValue();
+			return Integer.parseInt(value);
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
+
+
+	/**
+	 *  Returns the boolean value of specified XML attribute
+	 *
+	 * @param  key  name of the attribute
+	 * @return      The boolean value
 	 */
 	public boolean getBoolean(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException("Attribute "+key+" not found!");
+			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return value.matches("^[tTyY].*");
 	}
 
 
 	/**
-	 *  Gets the double attribute of the ComponentXMLAttributes object
+	 *  Returns the boolean value of specified XML attribute
 	 *
-	 *@param  key  Description of the Parameter
-	 *@return      The double value
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The boolean value
+	 */
+	public boolean getBoolean(String key, boolean defaultValue) {
+		String value;
+		try {
+			value = attributes.getNamedItem(key).getNodeValue();
+			return value.matches("^[tTyY].*");
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+
+	}
+
+
+	/**
+	 *  Returns the double value of specified XML attribute
+	 *
+	 * @param  key  name of the attribute
+	 * @return      The double value
 	 */
 	public double getDouble(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException("Attribute "+key+" not found!");
+			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return Double.parseDouble(value);
 	}
 
 
 	/**
-	 *  Description of the Method
+	 *  Returns the double value of specified XML attribute
 	 *
-	 *@param  key  Description of the Parameter
-	 *@return      Description of the Return Value
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The double value
+	 */
+	public double getDouble(String key, double defaultValue) {
+		String value;
+		try {
+			value = attributes.getNamedItem(key).getNodeValue();
+			return Double.parseDouble(value);
+		} catch (Exception ex) {
+			return defaultValue;
+		}
+	}
+
+
+	/**
+	 *  Checks whether specified attribute exists (XML node has such attribute defined)
+	 *
+	 * @param  key  name of the attribute
+	 * @return      true if exists, otherwise false
 	 */
 	public boolean exists(String key) {
 		if (attributes.getNamedItem(key) != null) {
@@ -132,8 +203,8 @@ public class ComponentXMLAttributes {
 	/**
 	 *  Returns first TEXT_NODE child under specified XML Node
 	 *
-	 *@param  nodeXML  Description of the Parameter
-	 *@return          The TEXT_NODE value (String) if any exist or null
+	 * @param  nodeXML  XML node from which to start searching
+	 * @return          The TEXT_NODE value (String) if any exist or null
 	 */
 	public String getText(org.w3c.dom.Node nodeXML) {
 		org.w3c.dom.Node childNode;
@@ -154,9 +225,9 @@ public class ComponentXMLAttributes {
 	/**
 	 *  Searches for specific child node name under specified XML Node
 	 *
-	 *@param  nodeXML        Description of the Parameter
-	 *@param  childNodeName  Description of the Parameter
-	 *@return                childNode if exist under specified name or null
+	 * @param  nodeXML        XML node from which to start searching
+	 * @param  childNodeName  name of the child node to be searched for
+	 * @return                childNode if exist under specified name or null
 	 */
 	public org.w3c.dom.Node getChildNode(org.w3c.dom.Node nodeXML, String childNodeName) {
 		org.w3c.dom.Node childNode;

@@ -64,11 +64,11 @@ public class Compile {
 	 * @return                                True if success, otherwise ClassCompilationException is raised
 	 * @exception  ClassCompilationException  Exception which indicates that something went wrong !
 	 */
-	public static boolean compileClass(String className, String classDirectory)
+	public static boolean compileClass(String sourceCodeFile, String classDirectory)
 			 throws ClassCompilationException {
 
-		String[] args = new String[]{"-d", classDirectory, classDirectory + className + ".java"
-						, "-Xstdout" , classDirectory + className + ".err" };
+		String[] args = new String[]{"-d", classDirectory, sourceCodeFile,
+						 "-Xstdout" , sourceCodeFile + ".err" };
 
 		//debug
 		// for(int i=0;i<args.length;System.out.println(args[i++]));
@@ -76,7 +76,7 @@ public class Compile {
 		int status = com.sun.tools.javac.Main.compile(args);
 
 		if (status != 0) {
-			throw new ClassCompilationException(classDirectory+className);
+			throw new ClassCompilationException(sourceCodeFile);
 		}
 
 		return true;
