@@ -17,8 +17,9 @@
  */
 package org.jetel.util;
 import org.jetel.exception.NotFoundException;
-
 import org.w3c.dom.NamedNodeMap;
+import java.util.List;
+import java.util.LinkedList;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
@@ -248,6 +249,22 @@ public class ComponentXMLAttributes {
 			}
 		}
 		return null;
+	}
+	
+	public org.w3c.dom.Node[] getChildNodes(org.w3c.dom.Node nodeXML, String childNodeName){
+		org.w3c.dom.Node childNode;
+		org.w3c.dom.NodeList list;
+		List childNodesList=new LinkedList();
+		if (nodeXML.hasChildNodes()) {
+			list = nodeXML.getChildNodes();
+			for (int i = 0; i < list.getLength(); i++) {
+				childNode = list.item(i);
+				if (childNodeName.equals(childNode.getNodeName())) {
+					childNodesList.add(childNode);
+				}
+			}
+		}
+		return (org.w3c.dom.Node[])childNodesList.toArray(new org.w3c.dom.Node[0]);
 	}
 
 }
