@@ -25,6 +25,7 @@ package test.org.jetel;
  *
  */
 import test.org.jetel.data.DataTestSuite;
+import test.org.jetel.exception.ExceptionTestSuite;
 import test.org.jetel.metadata.MetadataTestSuite;
 import test.org.jetel.util.UtilTestSuite;
 
@@ -42,6 +43,7 @@ public class AllTests {
 
 		suite.addTest(UtilTestSuite.suite());
 		suite.addTest(MetadataTestSuite.suite());
+		suite.addTest(ExceptionTestSuite.suite());
 		suite.addTest(DataTestSuite.suite());
 		
 		return suite;
