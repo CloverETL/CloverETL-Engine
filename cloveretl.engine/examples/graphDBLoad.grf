@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph name="Testing DB Load">
 <Global>
-<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<Metadata id="InMetadata" fileURL="metadata/employeeDB.fmt"/>
 <DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
 </Global>
 <Phase number="0">
