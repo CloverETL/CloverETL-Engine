@@ -15,7 +15,7 @@ Note2: parameter batchMode allows for grouping of inserts into DB thus increasin
 only with DBs/JDBC drivers which support this feature (e.g. Oracle).
 -->
 <Global>
-<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<Metadata id="InMetadata" fileURL="metadata/employeeDB.fmt"/>
 <DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
 </Global>
 <Phase number="0">

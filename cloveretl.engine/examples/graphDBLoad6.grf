@@ -6,7 +6,7 @@ substituted by input fields (in order they are listed in cloverFields). Also tar
 are devised from input field types - this may cause some problems when trying to map incompatible data types.
 -->
 <Global>
-<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<Metadata id="InMetadata" fileURL="metadata/employeeDB.fmt"/>
 <DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
 </Global>
 <Phase number="0">

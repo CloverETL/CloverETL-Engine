@@ -12,7 +12,7 @@ For successfull compilation, tools.jar library must be part of CLASSPATH.
 </Global>
 <Phase number="0">
 <Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
-<Node id="REF" type="REFORMAT" />
+<Node id="REF" type="REFORMAT" >
 import org.jetel.component.RecordTransform;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.data.*;
@@ -39,7 +39,7 @@ public class reformatOrders implements RecordTransform{
 			strBuf.append(GetVal.getString(source,"ShipAddress")).append(';');
 			strBuf.append(GetVal.getString(source,"ShipCity")).append(';');
 			strBuf.append(GetVal.getString(source,"ShipCountry"));
-			// mapping among source & target fields
+			// mapping among source + target fields
 			// some fields get assigned directly from source fields, some
 			// are assigned from internall variables
 			SetVal.setInt(target,"OrderKey",counter);
