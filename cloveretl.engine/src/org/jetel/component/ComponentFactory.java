@@ -55,8 +55,9 @@ public class ComponentFactory {
 		registerComponent(Dedup.COMPONENT_TYPE,"org.jetel.component.Dedup");
 		registerComponent(FixLenDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataReaderNIO");
 		registerComponent(Merge.COMPONENT_TYPE,"org.jetel.component.Merge");
-		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash");
-		registerComponent(SortedJoin.COMPONENT_TYPE,"org.jetel.component.SortedJoin");
+		registerComponent(MergeJoin.COMPONENT_TYPE,"org.jetel.component.MergeJoin");
+		registerComponent("SORTED_JOIN","org.jetel.component.MergeJoin"); // synonym for MergeJoin (former name)
+		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash"); 
 	}
 	
 	
