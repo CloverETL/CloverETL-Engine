@@ -30,6 +30,7 @@ import java.nio.channels.*;
  *  buffer is cca 4GB.
  *
  *@author     dpavlis
+ *@created    21. kvìten 2003
  *@since      December 09, 2002
  */
 public class FileRecordBuffer {
@@ -49,7 +50,7 @@ public class FileRecordBuffer {
 	// indicates whether buffer contains unwritten data
 
 	// data
-	private final static int DEFAULT_BUFFER_SIZE = 32768;
+	private final static int DEFAULT_BUFFER_SIZE = Defaults.Record.MAX_RECORD_SIZE * 8;
 	// size of BUFFER - used for push & shift operations
 	private final static int LEN_SIZE_SPECIFIER = 4;
 	// size of integer variable used to keep record length
@@ -186,7 +187,7 @@ public class FileRecordBuffer {
 	 *@param  requestedSize  Description of the Parameter
 	 *@return                Description of the Return Value
 	 */
-	private boolean needRemap(int position, int requestedSize) {
+	private final boolean needRemap(int position, int requestedSize) {
 		if (position < mapPosition || position > (mapPosition + dataBuffer.remaining())) {
 			return true;
 		} else if (position - mapPosition + requestedSize > dataBuffer.remaining()) {
@@ -205,7 +206,7 @@ public class FileRecordBuffer {
 	 *@param  requestedSize    Description of the Parameter
 	 *@exception  IOException  Description of the Exception
 	 */
-	private void secureBuffer(int position, int requestedSize) throws IOException {
+	private final void secureBuffer(int position, int requestedSize) throws IOException {
 		if (needRemap(position, requestedSize)) {
 			flushBuffer();
 			boolean reloadNeed = position < writePosition ? true : false;
@@ -238,6 +239,35 @@ public class FileRecordBuffer {
 		data.put(dataBuffer);
 		dataBuffer.limit(oldLimit);
 		readPosition += recordSize;
+		return data;
+	}
+
+
+	/**
+	 *  Reads next record from the buffer but leaves the record there - FIFO order.
+	 *  Subsequent calls to this method returns the same record.	
+	 *
+	 *@param  data             ByteBuffer into which store data
+	 *@return                  ByteBuffer populated with record's data or NULL if
+	 *      no more record can be retrieved
+	 *@exception  IOException  Description of the Exception
+	 */
+	public ByteBuffer get(ByteBuffer data) throws IOException {
+		int recordSize;
+		if (readPosition >= writePosition) {
+			return null;
+		}
+		secureBuffer(readPosition, LEN_SIZE_SPECIFIER);
+		dataBuffer.mark();
+		dataBuffer.position(readPosition - mapPosition);
+		recordSize = dataBuffer.getInt();
+		readPosition += LEN_SIZE_SPECIFIER;
+		secureBuffer(readPosition, recordSize);
+		int oldLimit = dataBuffer.limit();
+		dataBuffer.limit(dataBuffer.position() + recordSize);
+		data.put(dataBuffer);
+		dataBuffer.limit(oldLimit);
+		dataBuffer.reset();
 		return data;
 	}
 
@@ -283,7 +313,6 @@ public class FileRecordBuffer {
 		}
 		isDirty = false;
 	}
-
 
 //	public static void main(String argv[]) {
 //		byte[] charArray = new byte[100];
