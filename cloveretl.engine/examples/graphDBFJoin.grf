@@ -41,7 +41,7 @@ public class joinOrdersDetails extends  DataRecordTransform{
 	}
 }
 </Node>
-<Node id="IN_CUSTOMERS" type="DELIMITED_DATA_READER_NIO" fileURL="data/Customers2.txt" />
+<Node id="IN_CUSTOMERS" type="DELIMITED_DATA_READER_NIO" fileURL="data/Customers.txt" />
 <Node id="JOIN_CUSTOMER" type="HASH_JOIN"  joinKey="CUSTOMERID" leftOuterJoin="true">
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
