@@ -18,11 +18,9 @@
 
 package org.jetel.component;
 
-import java.util.*;
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.SortDataRecordInternal;

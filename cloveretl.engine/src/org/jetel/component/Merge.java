@@ -17,15 +17,11 @@
  */
 package org.jetel.component;
 
-import java.util.*;
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
 
