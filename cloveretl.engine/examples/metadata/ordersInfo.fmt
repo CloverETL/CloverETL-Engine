@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="ORDERS_Info" type="delimited">
+	<Field name="ORDERID" type="numeric" delimiter=";" nullable="true" />
+	<Field name="CUSTOMERID" type="string" delimiter=";" nullable="true" />
+	<Field name="CUSTOMER" type="string" delimiter=";" nullable="true" />
+	<Field name="PRODUCTID" type="numeric" delimiter=";" nullable="true" />
+	<Field name="UNITPRICE" type="numeric" delimiter=";" nullable="true" />
+	<Field name="QUANTITY" type="numeric" delimiter=";" nullable="true" />
+	<Field name="DISCOUNT" type="numeric" delimiter="\n" nullable="true" />
+</Record>

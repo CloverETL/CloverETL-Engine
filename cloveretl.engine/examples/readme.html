@@ -20,12 +20,15 @@ CloverETL</a> framework or you built one from sources.<br>
 The binary package (.zip file - usually <tt>CloverETL.xxxxx.zip</tt>) will be further referred 
 to as <tt>CloverETL.zip</tt>.<br>
 In all examples, I assume that <tt>CloverETL.zip</tt> is stored in <tt>/home/clover</tt>. If you have put
-the package into other directory, You have to change the path in examples accordingly.<br>
+the package into other directory, you have to change the path in examples accordingly.<br>
 When executing examples, You have to be in directory where you unzipped the examples. Let's assume
-you have extracted the archive into <tt>/home/clover/examples</tt>. Then when executing any example, You
+you have extracted the archive into <tt>/home/clover/examples</tt>. Then when executing any example, you
 have to be switched in <tt>/home/clover/examples</tt> (the directory where the <tt>.grf</tt> files are). 
 </p>
 <h4>Installing JAXP XML parser</h4>
+<p>This step is usually not required as new Java SDKs have this already solved. However, if you
+get error message connected with XML data parsing, you can try to solve it
+by installing JAXP XML parser according to following instructions:
 <p>
 CloverETL depends (partially) on presence of JAXP compatible parser - such as Crimson or Xerces.<br>The easiest
 way of installing it is to put the <tt>xxx.jar</tt> file into <tt>$JAVA_HOME/jre/lib/ext</tt><br>.
@@ -55,34 +58,33 @@ The Trash component normally discards all records it receives on input port.
 Executing:<br>
 <tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphSimpleCopy.grf" target="_blank">graphSimpleCopy.grf</a></tt><br>
 <br>This is the expected output produced by the framework:
-<hr><pre><tt>
-***  CloverETL framework, (c) 2002-03 D.Pavlis, released under GNU Public License  ***
+<hr><pre><tt>***  CloverETL framework/transformation graph runner, (c) 2002-04 D.Pavlis, released under GNU Public Licence  ***
 
 Graph definition file: graphSimpleCopy.grf
 [Clover] starting WatchDog thread ...
 [WatchDog] Thread started.
-[WatchDog] Running on 1 CPU(s) max available memory for JVM 1679 kB
+[WatchDog] Running on 1 CPU(s) max available memory for JVM 1585 KB
 [Clover] Initializing phase: 0
  all edges initialized successfully...
  initializing nodes:
-        INPUT1
-        BROADCAST
-        TRASH2
-        BROADCAST2
-        TRASH1
-        TRASH3
+        INPUT1 ...OK
+        BROADCAST ...OK
+        TRASH2 ...OK
+        TRASH1 ...OK
+        BROADCAST2 ...OK
+        TRASH3 ...OK
 [Clover] phase: 0 initialized successfully.
 [WatchDog] Starting up all nodes in phase [0]
 [WatchDog]   INPUT1 ... started
 [WatchDog]   BROADCAST ... started
 [WatchDog]   TRASH2 ... started
-[WatchDog]   BROADCAST2 ... started
 [WatchDog]   TRASH1 ... started
+[WatchDog]   BROADCAST2 ... started
 [WatchDog]   TRASH3 ... started
 [WatchDog] Sucessfully started all nodes in phase!
-[WatchDog] Execution of phase [0] sucessfully finished - elapsed time(sec): 0
+[WatchDog] Execution of phase [0] successfully finished - elapsed time(sec): 1
 ---------------------** Start of tracking Log for phase [0] **-------------------
-Time: 11/09/03 18:08:18
+Time: 07/09/04 22:17:35
 Node                        Status         Port                          #Records
 ---------------------------------------------------------------------------------
 INPUT1                      OK
@@ -94,18 +96,23 @@ BROADCAST                   OK
                                            Out:2                               12
 TRASH2                      OK
                                             In:0                               12
+TRASH1                      OK
+                                            In:0                               12
 BROADCAST2                  OK
                                             In:0                               12
                                            Out:0                               12
-TRASH1                      OK
-                                            In:0                               12
 TRASH3                      OK
                                             In:0                               12
 ---------------------------------** End of Log **--------------------------------
 [WatchDog] Forcing garbage collection ...
+-----------------------** Summary of Phases execution **---------------------
+Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)
+0                 0                                  1                91
+------------------------------** End of Summary **---------------------------
 [Clover] WatchDog thread finished - total execution time: 1 (sec)
 [Clover] Graph execution finished successfully
-</tt></pre><hr>
+Execution of graph finished !</tt></pre>
+<hr>
 <!-- Reformat -->
 <h3>Reformat example</h3>
 <p>
@@ -139,14 +146,33 @@ Executing:<br>
 <p>
 Merge component combines several <u>sorted</u> input data flows into one based on specified key. The
 resulting data flow is sorted according to specified key.<br>
-This component can be successfully used when You have several sorted data files and you need
-to combine them into one big sorted file, but You don't want to waste resources on resorting
+This component can be successfully used when you have several sorted data files and you need
+to combine them into one big sorted file, but you don't want to waste resources on resorting
 the big file.<br>
 The testing graph reads data form <tt>orders.sorted</tt> file (actually three readers access the file at the
 same time) and stores the result into <tt>orders.merged</tt> file.
 <P>
 Executing:<br>
 <tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphMergeData.grf" target="_blank">graphMergeData.grf</a></tt><br>
+</p>
+<!-- Filter -->
+<h3>Filter example</h3>
+<p>
+Filter component allows filtering any input data records based on
+specified filter condition. It can split flow of data into two. One
+with records which fulfill the condition and the other with those which don't.<br>
+Filter condition is composed of one or more simple comparisons <tt>&lt;,&gt;,&lt;=,&gt;=,==,!=</tt>. Individual
+comparisons can be combined using logical operators <tt>AND</tt> and <tt>OR</tt>. Parenthesis
+can be used to group comparisons.<br>
+This graph produces two output files:
+<ul>
+<li>first with  all employees who were hired before 1993-12-31</li>
+<li>second with all employees who have in their memo that they are "fluent" in some 
+language and were hired before 1993-12-31</li>
+</ul>
+<P>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphExtFilter.grf" target="_blank">graphExtFilter.grf</a></tt><br>
 </p>
 <!-- Join -->
 <h3>Join example</h3>
@@ -190,7 +216,8 @@ the current directory as the class for transforming is present there.</i>
 <p>
 As with Reformat component, transformation class which is executed
 for each pair of input records can be embedded directly into graph.<br>
-It is again dynamically compiled at run-time.<br> 
+It is again dynamically compiled at run-time.<br>
+<i>Note:In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.</i>
 </p><p>
 Executing:<br>
 <tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinHashInline.grf" target="_blank">graphJoinHashInline.grf</a></tt><br>
@@ -241,6 +268,30 @@ one flow and saved to file.<br>
 <P>
 Executing:<br>
 <tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphPhasesDemo.grf" target="_blank">graphPhasesDemo.grf</a></tt><br>
+</p>
+<!-- Complex example -->
+<h2>Complex example</h2>
+<p>This examples combines several components to perform useful transformation
+similar to one you could use in a real life.<br>
+It combines information about orders made and information about individual
+items/products purchased within each order. It also adds information about
+which customer ordered the goods.<br>
+To get all this information, it needs to join data from <tt>ORDERS.DBF</tt> (a dBase table)
+<tt>ODETAILS.DBF</tt> and <tt>Customers.txt</tt>.<br>
+First two data sets are joined using <tt>MERGE_JOIN</tt> component, thus
+they have to be sorted first. Then information about customer is added using
+<tt>HASH_JOIN</tt>. As both joins require transformation code, two transformation
+classes are embedded directly into graph file and dynamically compiled at run-time.<br>
+As there is a possibility that data set containing info about orders references
+customer which is not in <tt>Customers.txt</tt> file, second join is
+defined to be a left join. At the end, <tt>EXT_FILTER</tt> is used
+to split data to two sets - one with customer info complete and the other
+with missing.<br>
+</p>
+<i>Note:In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.</i>
+<P>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBFJoin.grf" target="_blank">graphDBFJoin.grf</a></tt><br>
 </p>
 <!-- Database related examples -->
 <h2>Database related examples</h2>

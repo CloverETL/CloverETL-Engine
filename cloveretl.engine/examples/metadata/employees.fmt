@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Record name="Employees" type="delimited">
-	<Field name="EmployeeID" type="numeric" delimiter=";" format="#" />
+	<Field name="EmployeeID" type="string" delimiter=";" />
 	<Field name="LastName" type="string" delimiter=";" format="#" />
 	<Field name="FirstName" type="string" delimiter=";"/>
 	<Field name="Title" type="string" delimiter=";"/>

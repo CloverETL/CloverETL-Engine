@@ -26,7 +26,7 @@ language and were hired before 1993-12-31.
 <Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
 <Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$HireDate&lt;&quot;1993-12-31&quot;"/>
 <Node id="FILTEREMPL2" type="EXT_FILTER">
-$Memo~=".*fluent.*" and $HireDate&lt;"1993-12-31"
+$Memo~=".*fluent.*" and $HireDate&lt;1993-12-31
 </Node>
 <Node id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees.filtered_1.dat"  append="false" />
 <Node id="OUTPUT2" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees.filtered_2.dat"  append="false" />
