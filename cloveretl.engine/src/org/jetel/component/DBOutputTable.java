@@ -198,6 +198,13 @@ public class DBOutputTable extends Node {
 
 
 	/**
+	 * @param dbTableName The dbTableName to set.
+	 */
+	public void setDBTableName(String dbTableName) {
+		this.dbTableName = dbTableName;
+	}
+	
+	/**
 	 *  Sets the recordsInCommit attribute of the DBOutputTable object
 	 *
 	 * @param  nRecs  The new recordsInCommit value
@@ -253,7 +260,15 @@ public class DBOutputTable extends Node {
 			// if SQL/DML statement is given, then only prepare statement
 			if (sqlQuery!=null){
 				sql=sqlQuery;
-				dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+				// if dbFields and dbTableName defined, then
+				// get target DB fields metadata from it
+				if ((dbFields!=null)&&(dbTableName!=null)){
+					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
+				}else{
+				// we have to assume that Clover fields types correspond
+				// to taget DB table fields types
+					dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+				}	
 			}else{
 				// do we have specified list of fields to populate ?
 				if (dbFields != null) {
@@ -387,6 +402,14 @@ public class DBOutputTable extends Node {
 					xattribs.getString("dbConnection"),
 					xattribs.getString("sqlQuery"),
 					xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+					
+					if (xattribs.exists("dbFields")) {
+						outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+					}
+					
+					if (xattribs.exists("dbTable")) {
+						outputTable.setDBTableName(xattribs.getString("dbTable"));
+					}
 				
 			}else{
 				// standard - old fashion way
