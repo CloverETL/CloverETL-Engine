@@ -122,6 +122,8 @@ public void test_1_IntegerDataField() {
 		anIntegerDataField1.setValue(null);
 		assertEquals(null, anIntegerDataField1.getValue());
 
+		anIntegerDataField1.setValue(null);
+		assertEquals("", anIntegerDataField1.toString());
 	}
 
 	/**

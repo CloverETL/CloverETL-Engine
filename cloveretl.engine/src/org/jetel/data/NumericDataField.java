@@ -73,7 +73,6 @@ public class NumericDataField extends DataField {
 			numberFormat = null;
 		}
 		parsePosition = new ParsePosition(0);
-		setNull(true);
 	}
 
 
@@ -106,13 +105,22 @@ public class NumericDataField extends DataField {
 	 */
 	public void setValue(Object _value) {
 		if (_value == null) {
-			setNull(true);
+			if(this.metadata.isNullable()) {
+				value = Double.NaN;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			}
 			return;
 		}
 		if (_value instanceof Double) {
 			value = ((Double) _value).doubleValue();
 		} else {
-			throw new BadDataFormatException("not Double");
+			if(this.metadata.isNullable()) {
+				value = Double.NaN;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
 		}
 	}
 
@@ -186,6 +194,9 @@ public class NumericDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public Object getValue() {
+		if( Double.isNaN(value) ) {
+			return null;
+		}
 		return new Double(value);
 	}
 
@@ -230,6 +241,9 @@ public class NumericDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public String toString() {
+		if( Double.isNaN(value) ) {
+			return "";
+		}
 		if (numberFormat != null) {
 			return numberFormat.format(value);
 		} else {
@@ -245,7 +259,14 @@ public class NumericDataField extends DataField {
 	 *@since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if ( valueStr != null ) {
+		if(valueStr == null || valueStr.equals("")) {
+			if(this.metadata.isNullable()) {
+				value = Double.NaN;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			return;
+		} else {
 			try {
 				if (numberFormat != null) {
 					parsePosition.setIndex(0);
@@ -258,10 +279,6 @@ public class NumericDataField extends DataField {
 //				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
 				throw new BadDataFormatException("Parsing string: " + valueStr);
 			}
-		} else {
-			value = Double.NaN;
-			super.setNull(true);
-			// NULL value assigned (hmm, not really null)
 		}
 	}
 
@@ -326,11 +343,7 @@ public class NumericDataField extends DataField {
 	public boolean equals(Object obj) {
 		Double numValue = new Double(this.value);
 
-		if (numValue.equals((((NumericDataField) obj).getValue()))) {
-			return true;
-		} else {
-			return false;
-		}
+		return (numValue.equals((((NumericDataField) obj).getValue())));
 	}
 
 
