@@ -278,7 +278,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			((NumericDataField) field).setValue(resultSet.getDouble(fieldSQL));
+			double i = resultSet.getDouble(fieldSQL);
+			if(resultSet.wasNull()) {
+				((NumericDataField) field).setValue(null);
+			} else {
+				((NumericDataField) field).setValue(i);
+			}
 		}
 
 
@@ -316,7 +321,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			((IntegerDataField) field).setValue(resultSet.getInt(fieldSQL));
+			int i = resultSet.getInt(fieldSQL);
+			if(resultSet.wasNull()) {
+				((IntegerDataField) field).setValue(null);
+			} else {
+				((IntegerDataField) field).setValue(i);
+			}
 		}
 
 
