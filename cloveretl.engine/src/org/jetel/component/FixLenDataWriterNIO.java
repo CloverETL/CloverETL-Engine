@@ -1,21 +1,20 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002  David Pavlis
-*
-*    This program is free software; you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation; either version 2 of the License, or
-*    (at your option) any later version.
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.component;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
@@ -29,7 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <h3>FixLenDataWriter Component</h3>
  *
  * <!-- All records from input port [0] are formatted with delimiter and written to specified file -->
- * 
+ *
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
@@ -46,7 +45,7 @@ import org.jetel.exception.ComponentNotReadyException;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>This component uses java.nio.* classes.</td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_WRITER_NIO"</td></tr>
@@ -56,20 +55,22 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
  *  <tr><td><b>OneRecordPerLine</b></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
  * <h4>Example:</h4>
  * <pre>&lt;Node type="FIXLEN_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
- * 
- * @author     dpavlis
- * @since    April 4, 2002
- * @revision $Revision$
+ *
+ *
+ * @author      dpavlis
+ * @since       April 4, 2002
+ * @revision    $Revision$
  */
 public class FixLenDataWriterNIO extends Node {
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatter formatter;
 
+	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER_NIO";
 	private final static int READ_FROM_PORT = 0;
 
@@ -89,6 +90,15 @@ public class FixLenDataWriterNIO extends Node {
 		formatter = new FixLenDataFormatter();
 	}
 
+
+	/**
+	 *Constructor for the FixLenDataWriterNIO object
+	 *
+	 * @param  id          Description of the Parameter
+	 * @param  fileURL     Description of the Parameter
+	 * @param  charset     Description of the Parameter
+	 * @param  appendData  Description of the Parameter
+	 */
 	public FixLenDataWriterNIO(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
@@ -96,16 +106,6 @@ public class FixLenDataWriterNIO extends Node {
 		formatter = new FixLenDataFormatter(charset);
 	}
 
-
-	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
 
 
 	/**
@@ -123,25 +123,27 @@ public class FixLenDataWriterNIO extends Node {
 				if (record != null) {
 					formatter.write(record);
 				}
-			}
-			catch (IOException ex) {
+			} catch (IOException ex) {
 				System.err.println("Writer IOException !");
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}
-			catch (Exception ex) {
+			} catch (Exception ex) {
 				System.err.println("Writer Exception !");
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
 
 		}
 		formatter.close();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
 	}
 
 
@@ -159,15 +161,15 @@ public class FixLenDataWriterNIO extends Node {
 		// based on file mask, create/open output file
 		try {
 			formatter.open(new FileOutputStream(fileURL, appendData), getInputPort(READ_FROM_PORT).getMetadata());
-		}
-		catch (FileNotFoundException ex) {
+		} catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 		}
 //		catch (IOException ex){
 //			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 //		}
 	}
-	
+
+
 	/**
 	 *  Description of the Method
 	 *
@@ -189,24 +191,24 @@ public class FixLenDataWriterNIO extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
-			String append=attribs.getNamedItem("append").getNodeValue();
-			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
+		NamedNodeMap attribs = nodeXML.getAttributes();
+
+		if (attribs != null) {
+			String id = attribs.getNamedItem("id").getNodeValue();
+			String fileURL = attribs.getNamedItem("fileURL").getNodeValue();
+			String append = attribs.getNamedItem("append").getNodeValue();
+			org.w3c.dom.Node charset = attribs.getNamedItem("charset");
 			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
-			if ((id!=null) && (fileURL!=null)){
-				if (charset!=null){
-					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id,fileURL,charset.getNodeValue(),Boolean.valueOf(append).booleanValue());
-				}else{
-					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id,fileURL,Boolean.valueOf(append).booleanValue());
+			if ((id != null) && (fileURL != null)) {
+				if (charset != null) {
+					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id, fileURL, charset.getNodeValue(), Boolean.valueOf(append).booleanValue());
+				} else {
+					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id, fileURL, Boolean.valueOf(append).booleanValue());
 				}
-				if(aOneRecordPerLine != null  ) {
-					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
+				if (aOneRecordPerLine != null) {
+					if (aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
 						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(true);
-					}else {
+					} else {
 						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(false);
 					}
 				}
@@ -217,14 +219,25 @@ public class FixLenDataWriterNIO extends Node {
 		return aFixLenDataWriterNIO;
 	}
 
+
 	/**
-	 * True allows only one record per line.  False puts all records 
+	 * True allows only one record per line.  False puts all records
 	 * on one line.
-	 * @param b
+	 *
+	 * @param  b
 	 */
 	private void setOneRecordPerLinePolicy(boolean b) {
 		formatter.setOneRecordPerLinePolicy(b);
 	}
-	
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	public boolean checkConfig() {
+		return true;
+	}
 }
 

@@ -32,8 +32,8 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <h3>DatabaseInputTable Component</h3>
  *
  * <!-- This component reads data from DB. It first executes specified query on DB and then
- *  extracts all the rows returned.The metadata provided throuh output port/edge must precisely 
- *  describe the structure of read rows. Use DBAnalyze utilitity to analyze DB structures and 
+ *  extracts all the rows returned.The metadata provided throuh output port/edge must precisely
+ *  describe the structure of read rows. Use DBAnalyze utilitity to analyze DB structures and
  *  create Jetel/Clover metadata. -->
  *
  * <table border="1">
@@ -55,7 +55,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
@@ -63,15 +63,16 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>sqlQuery</b></td><td>query to be sent to database</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
- *  <h4>Example:</h4> 
+ *  <h4>Example:</h4>
  *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="select * from employee_z"/&gt;</pre>
- * 
- * @author     dpavlis
- * @since    September 27, 2002
- * @see		org.jetel.database.AnalyzeDB
- * @revision   $Revision$
+ *
+ *
+ * @author      dpavlis
+ * @since       September 27, 2002
+ * @revision    $Revision$
+ * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {
 	private SQLDataParser parser;
@@ -80,6 +81,7 @@ public class DBInputTable extends Node {
 	private String dbConnectionName;
 	private String sqlQuery;
 
+	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
 
@@ -97,18 +99,7 @@ public class DBInputTable extends Node {
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
 
-		parser=new SQLDataParser(dbConnectionName, sqlQuery);
-	}
-
-
-	/**
-	 *  Gets the Type attribute of the DBInputTable object
-	 *
-	 * @return    The Type value
-	 * @since     September 27, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
+		parser = new SQLDataParser(dbConnectionName, sqlQuery);
 	}
 
 
@@ -119,10 +110,9 @@ public class DBInputTable extends Node {
 	 * @since                                  September 27, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		if (outPorts.size()<1){
+		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-
 
 		// try to open file & initialize data parser
 		parser.open(TransformationGraph.getReference().getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
@@ -150,17 +140,17 @@ public class DBInputTable extends Node {
 
 		// we need to create data record - take the metadata from first output port
 
-		DataRecord record=new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
+		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 
 		record.init();
 
 		parser.initSQLDataMap(record);
 
-		try{
+		try {
 
 			// till it reaches end of data or it is stopped from outside
 
-			while(((record=parser.getNext(record))!=null) && runIt){
+			while (((record = parser.getNext(record)) != null) && runIt) {
 
 				//broadcast the record to all connected Edges
 
@@ -168,26 +158,22 @@ public class DBInputTable extends Node {
 
 			}
 
-		}
+		} catch (IOException ex) {
 
-		catch(IOException ex){
+			resultMsg = ex.getMessage();
 
-			resultMsg=ex.getMessage();
-
-			resultCode=Node.RESULT_ERROR;
+			resultCode = Node.RESULT_ERROR;
 
 			closeAllOutputPorts();
 
 			return;
+		} catch (Exception ex) {
 
-		}catch(Exception ex){
+			resultMsg = ex.getMessage();
 
-			 resultMsg=ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
 
-			 resultCode=Node.RESULT_FATAL_ERROR;
-
-			 return;
-
+			return;
 		}
 
 		// we are done, close all connected output ports to indicate end of stream
@@ -196,9 +182,13 @@ public class DBInputTable extends Node {
 
 		broadcastEOF();
 
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
 
-		resultCode=Node.RESULT_OK;
+		resultCode = Node.RESULT_OK;
 
 	}
 
@@ -211,35 +201,39 @@ public class DBInputTable extends Node {
 	 * @since           September 27, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		DBInputTable aDBInputTable = null;
-		
-		try{
-			aDBInputTable= new DBInputTable(xattribs.getString("id"), 
-							xattribs.getString("dbConnection"),
-							xattribs.getString("sqlQuery"));
-			if (xattribs.exists("DataPolicy")){
+
+		try {
+			aDBInputTable = new DBInputTable(xattribs.getString("id"),
+					xattribs.getString("dbConnection"),
+					xattribs.getString("sqlQuery"));
+			if (xattribs.exists("DataPolicy")) {
 				aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-								xattribs.getString("DataPolicy")));
-				
+						xattribs.getString("DataPolicy")));
+
 			}
-			
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
-		
+
 		return aDBInputTable;
 	}
 
 
 	/**
-	 * @param handler
+	 * @param  handler
 	 */
 	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
 		parser.addBDFHandler(handler);
 	}
 
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
+	}
 
 }
 

@@ -1,21 +1,20 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002  David Pavlis
-*
-*    This program is free software; you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation; either version 2 of the License, or
-*    (at your option) any later version.
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.component;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
@@ -46,7 +45,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_WRITER"</td></tr>
@@ -55,19 +54,22 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
- *  <h4>Example:</h4> 
+ *  <h4>Example:</h4>
  *  <pre>&lt;Node type="DELIMITED_DATA_WRITER" id="Writer" fileURL="/tmp/transform.dat" append="true" /&gt;</pre>
- * 
- * @author     dpavlis
- * @since    April 4, 2002
+ *
+ *
+ * @author      dpavlis
+ * @since       April 4, 2002
+ * @revision    $Revision$
  */
 public class DelimitedDataWriter extends Node {
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatter formatter;
 
+	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
@@ -89,17 +91,6 @@ public class DelimitedDataWriter extends Node {
 
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
-	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
 	 * @since    April 4, 2002
@@ -114,23 +105,25 @@ public class DelimitedDataWriter extends Node {
 				if (record != null) {
 					formatter.write(record);
 				}
-			}
-			catch (IOException ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
+			} catch (IOException ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}
-			catch (Exception ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
+			} catch (Exception ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
 
 		}
 		formatter.close();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
 	}
 
 
@@ -148,15 +141,15 @@ public class DelimitedDataWriter extends Node {
 		// based on file mask, create/open output file
 		try {
 			formatter.open(new FileOutputStream(fileURL, appendData), getInputPort(READ_FROM_PORT).getMetadata());
-		}
-		catch (FileNotFoundException ex) {
+		} catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 		}
 //		catch (IOException ex){
 //			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 //		}
 	}
-	
+
+
 	/**
 	 *  Description of the Method
 	 *
@@ -177,38 +170,45 @@ public class DelimitedDataWriter extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		DelimitedDataWriter aDelimitedDataWriter = null;
-		
-		try{
+
+		try {
 			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString("id"),
-									xattribs.getString("fileURL"),
-									xattribs.getBoolean("append"));
-			if (xattribs.exists("OneRecordPerLine")){
-				if(xattribs.getBoolean("OneRecordPerLine")){
+					xattribs.getString("fileURL"),
+					xattribs.getBoolean("append"));
+			if (xattribs.exists("OneRecordPerLine")) {
+				if (xattribs.getBoolean("OneRecordPerLine")) {
 					aDelimitedDataWriter.setOneRecordPerLinePolicy(true);
-				}else{
+				} else {
 					aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
 				}
-			}else{
+			} else {
 				aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
 			}
-			
-		}catch(Exception ex){
+
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
 		return aDelimitedDataWriter;
 	}
 
+
 	/**
-	 * True allows only one record per line.  False puts all records 
+	 * True allows only one record per line.  False puts all records
 	 * on one line.
-	 * @param b
+	 *
+	 * @param  b
 	 */
 	private void setOneRecordPerLinePolicy(boolean b) {
 		formatter.setOneRecordPerLinePolicy(b);
 	}
-	
+
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
+	}
 }
 

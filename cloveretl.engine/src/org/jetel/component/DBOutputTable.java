@@ -27,10 +27,8 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
 
-
 /**
  *  <h3>DatabaseOutputTable Component</h3>
- *
  * <!-- his component performs append (so far) operation on specified database table.
  *  The metadata describing data comming in through input port[0] must be in the same
  *  structure as the target table. -->
@@ -52,29 +50,32 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_OUTPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <!--><tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td><!-->
+ *  <!-- <tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td> -->
  *  <tr><td><b>dbFields<br><i>optional</i></b></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
+ *  <tr><td><b>commit</b><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, default is 100</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
- *  <h4>Example:</h4>  
+ *  <h4>Example:</h4>
  *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"/&gt;</pre>
  *  <br>
  *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z" dbFields="f_name;l_name;phone"/&gt;</pre>
  *  <br><i>This example shows how to populate only selected fields within target DB table. It can be used for skipping target fields which
  *  are automatically populated by DB (such as autoincremented fields)</i>
- * @author     dpavlis
- * @since    September 27, 2002
- * @see		org.jetel.database.AnalyzeDB
- * @revision   $Revision$ 
+ *
+ * @author      dpavlis
+ * @since       September 27, 2002
+ * @revision    $Revision$
+ * @created     22. èervenec 2003
+ * @see         org.jetel.database.AnalyzeDB
  */
 public class DBOutputTable extends Node {
 
@@ -84,48 +85,55 @@ public class DBOutputTable extends Node {
 	private PreparedStatement preparedStatement;
 	private int[] skipList;
 	private String[] dbFields;
+	private int recordsInCommit;
 
+	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
 	private final static int READ_FROM_PORT = 0;
 	private final static int RECORDS_IN_COMMIT = 100;
 
+
 	/**
-	 *Constructor for the DBInputTable object
+	 *  Constructor for the DBInputTable object
 	 *
 	 * @param  id                Description of Parameter
 	 * @param  dbConnectionName  Description of Parameter
-	 * @param  sqlQuery          Description of Parameter
+	 * @param  dbTableName       Description of the Parameter
 	 * @since                    September 27, 2002
 	 */
 	public DBOutputTable(String id, String dbConnectionName, String dbTableName) {
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.dbTableName = dbTableName;
-		skipList=null;
-		dbFields=null;
+		skipList = null;
+		dbFields = null;
+		recordsInCommit = RECORDS_IN_COMMIT;
+		// default
 
 	}
 
 
 	/**
-	 *  Gets the Type attribute of the DBInputTable object
+	 *  Sets the dBFields attribute of the DBOutputTable object
 	 *
-	 * @return    The Type value
-	 * @since     September 27, 2002
+	 * @param  dbFields  The new dBFields value
 	 */
-	public String getType() {
-		return COMPONENT_TYPE;
+	public void setDBFields(String[] dbFields) {
+		this.dbFields = dbFields;
 	}
 
-	public void setDBFields(String[] dbFields){
-		this.dbFields=dbFields;
+
+	/**
+	 *  Sets the skipList attribute of the DBOutputTable object
+	 *
+	 * @param  skipList  The new skipList value
+	 */
+	public void setSkipList(int[] skipList) {
+		this.skipList = skipList;
 	}
-	
-	public void setSkipList(int[] skipList){
-		this.skipList=skipList;
-	}
-	
+
+
 	/**
 	 *  Description of the Method
 	 *
@@ -133,13 +141,25 @@ public class DBOutputTable extends Node {
 	 * @since                                  September 27, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		if (inPorts.size()<1){
+		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
 		// get dbConnection from graph
-		dbConnection=TransformationGraph.getReference().getDBConnection(dbConnectionName);
-		if (dbConnection==null){
-			throw new ComponentNotReadyException("Can't find DBConnection ID: "+dbConnectionName);
+		dbConnection = TransformationGraph.getReference().getDBConnection(dbConnectionName);
+		if (dbConnection == null) {
+			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+		}
+	}
+
+
+	/**
+	 *  Sets the recordsInCommit attribute of the DBOutputTable object
+	 *
+	 * @param  nRecs  The new recordsInCommit value
+	 */
+	public void setRecordsInCommit(int nRecs) {
+		if (nRecs > 0) {
+			recordsInCommit = nRecs;
 		}
 	}
 
@@ -167,83 +187,84 @@ public class DBOutputTable extends Node {
 		CopySQLData[] transMap;
 		int i;
 		int result;
-		int recCount=0;
+		int recCount = 0;
 		List dbFieldTypes;
 		String sql;
 
 		inRecord.init();
 		try {
-			// do we have specified list of fields to populate ? 
-			if (dbFields!=null){
-				sql=SQLUtil.assembleInsertSQLStatement(dbTableName,dbFields);
-				dbFieldTypes=SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName,dbFields);
-			}else{
+			// do we have specified list of fields to populate ?
+			if (dbFields != null) {
+				sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
+				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
+			} else {
 				// populate all fields
-				sql=SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(),dbTableName);
-				dbFieldTypes=SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
+				sql = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
+				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
 			}
 			preparedStatement = dbConnection.prepareStatement(sql);
-			
+
 			// this does not work for some drivers
-			try{
+			try {
 				dbConnection.getConnection().setAutoCommit(false);
-			}catch(SQLException ex){
-			}
-			
-			/* this somehow doesn't work (crashes system) at least when tested with Interbase
-			ParameterMetaData metaData=preparedStatement.getParameterMetaData();
-			if (metaData==null){
-				System.err.println("metada data is null!");
-			}
-			*/
-			// do we have skip list defined ? (which fields skip - no to populate)
-			if (skipList!=null){
-				transMap=CopySQLData.jetel2sqlTransMap(dbFieldTypes,inRecord,skipList);
-			}else{
-				transMap=CopySQLData.jetel2sqlTransMap(dbFieldTypes,inRecord);
+			} catch (SQLException ex) {
 			}
 
-			while (inRecord!=null && runIt) {
-				inRecord=readRecord(READ_FROM_PORT, inRecord);
-				if (inRecord!=null){
+			/*
+			 *  this somehow doesn't work (crashes system) at least when tested with Interbase
+			 *  ParameterMetaData metaData=preparedStatement.getParameterMetaData();
+			 *  if (metaData==null){
+			 *  System.err.println("metada data is null!");
+			 *  }
+			 */
+			// do we have skip list defined ? (which fields skip - no to populate)
+			if (skipList != null) {
+				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, skipList);
+			} else {
+				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
+			}
+
+			while (inRecord != null && runIt) {
+				inRecord = readRecord(READ_FROM_PORT, inRecord);
+				if (inRecord != null) {
 					for (i = 0; i < transMap.length; i++) {
 						transMap[i].jetel2sql(preparedStatement);
 					}
 					result = preparedStatement.executeUpdate();
-					if (result!=1){
+					if (result != 1) {
 						throw new SQLException("Error when inserting record");
 					}
-					preparedStatement.clearParameters(); 
+					preparedStatement.clearParameters();
 				}
-				if (recCount++ % RECORDS_IN_COMMIT ==0 ) dbConnection.getConnection().commit();
+				if (recCount++ % recordsInCommit == 0) {
+					dbConnection.getConnection().commit();
+				}
 			}
 			dbConnection.getConnection().commit();
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
-		}
-		catch (SQLException ex) {
+		} catch (SQLException ex) {
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
-		}
-		catch (Exception ex) {
+		} catch (Exception ex) {
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 			return;
-		}
-		finally {
+		} finally {
 			try {
 				broadcastEOF();
-				if (preparedStatement!=null) preparedStatement.close();
-				if (resultMsg==null){
+				if (preparedStatement != null) {
+					preparedStatement.close();
+				}
+				if (resultMsg == null) {
 					if (runIt) {
 						resultMsg = "OK";
 					} else {
@@ -251,8 +272,7 @@ public class DBOutputTable extends Node {
 					}
 					resultCode = Node.RESULT_OK;
 				}
-			}
-			catch (SQLException ex) {
+			} catch (SQLException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 			}
@@ -268,32 +288,42 @@ public class DBOutputTable extends Node {
 	 * @since           September 27, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		DBOutputTable outputTable;
-		
-		try{
-			outputTable= new DBOutputTable(xattribs.getString("id"),
-				xattribs.getString("dbConnection"),
-				xattribs.getString("dbTable"));
-				
-			if (xattribs.exists("dbFields")){
+
+		try {
+			outputTable = new DBOutputTable(xattribs.getString("id"),
+					xattribs.getString("dbConnection"),
+					xattribs.getString("dbTable"));
+
+			if (xattribs.exists("dbFields")) {
 				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			// if specified, use skip list which indicates which fields to skip
-			if (xattribs.exists("skipFields")){
-				String[] strList=xattribs.getString("skipFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				int[] skipList=new int[strList.length];
-				for(int i=0;i<skipList.length;i++){
-					skipList[i]=Integer.parseInt(strList[i]);
+			if (xattribs.exists("skipFields")) {
+				String[] strList = xattribs.getString("skipFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				int[] skipList = new int[strList.length];
+				for (int i = 0; i < skipList.length; i++) {
+					skipList[i] = Integer.parseInt(strList[i]);
 				}
 				outputTable.setSkipList(skipList);
 			}
+
+			if (xattribs.exists("commit")) {
+				outputTable.setRecordsInCommit(xattribs.getInteger("commit"));
+			}
+
 			return outputTable;
-				
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
+	}
+
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
 	}
 
 }
