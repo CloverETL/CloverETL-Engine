@@ -53,11 +53,12 @@ public class DBLookupTable {
 	 *  Constructor for the DBLookupTable object.<br>
 	 *
 	 *
-	 *@param  keys              Names of fields which comprise key to lookup table
-	 *@param  sqlQuery          Description of the Parameter
-	 *@param  keyDataRecord     data record from which the key-field values will be taken
-	 *@param  dbConnection      Description of the Parameter
-	 *@since                    May 2, 2002
+	 *@param  keys           Names of fields which comprise key to lookup table
+	 *@param  sqlQuery       Description of the Parameter
+	 *@param  keyDataRecord  data record from which the key-field values will be
+	 *      taken
+	 *@param  dbConnection   Description of the Parameter
+	 *@since                 May 2, 2002
 	 */
 	public DBLookupTable(DBConnection dbConnection, DataRecord keyDataRecord, String[] keys, String sqlQuery) {
 		this.dbConnection = dbConnection;
@@ -72,9 +73,29 @@ public class DBLookupTable {
 	/**
 	 *  Constructor for the DBLookupTable object
 	 *
-	 *@param  sqlQuery          SQL query which returns data record based on
-	 *      specified condition
 	 *@param  dbConnection      Description of the Parameter
+	 *@param  dbRecordMetadata  Description of the Parameter
+	 *@param  keyDataRecord     Description of the Parameter
+	 *@param  keys              Description of the Parameter
+	 *@param  sqlQuery          Description of the Parameter
+	 */
+	public DBLookupTable(DBConnection dbConnection, DataRecordMetadata dbRecordMetadata, DataRecord keyDataRecord, String[] keys, String sqlQuery) {
+		this.dbConnection = dbConnection;
+		this.sqlQuery = sqlQuery;
+		this.keyDataRecord = keyDataRecord;
+		this.metadata = dbRecordMetadata;
+		key = new RecordKey(keys, keyDataRecord.getMetadata());
+		key.init();
+		keyFields = key.getKeyFields();
+	}
+
+
+	/**
+	 *  Constructor for the DBLookupTable object
+	 *
+	 *@param  sqlQuery      SQL query which returns data record based on specified
+	 *      condition
+	 *@param  dbConnection  Description of the Parameter
 	 */
 	public DBLookupTable(DBConnection dbConnection, String sqlQuery) {
 		this.dbConnection = dbConnection;
@@ -83,8 +104,23 @@ public class DBLookupTable {
 
 
 	/**
+	 *  Constructor for the DBLookupTable object
+	 *
+	 *@param  dbConnection      Description of the Parameter
+	 *@param  dbRecordMetadata  Description of the Parameter
+	 *@param  sqlQuery          Description of the Parameter
+	 */
+	public DBLookupTable(DBConnection dbConnection, DataRecordMetadata dbRecordMetadata, String sqlQuery) {
+		this.dbConnection = dbConnection;
+		this.metadata = dbRecordMetadata;
+		this.sqlQuery = sqlQuery;
+	}
+
+
+	/**
 	 *  Gets the metadata attribute of the DBLookupTable object.<br>
 	 *  <i>init() must be called prior to calling this method</i>
+	 *
 	 *@return    The metadata value
 	 */
 	public DataRecordMetadata getMetadata() {
@@ -109,6 +145,8 @@ public class DBLookupTable {
 			for (int i = 0; i < transMap.length; i++) {
 				keyTransMap[i].jetel2sql(pStatement);
 			}
+			//execute query
+			resultSet = pStatement.executeQuery();
 			fetch();
 		} catch (SQLException ex) {
 			throw new JetelException(ex.getMessage());
@@ -133,6 +171,8 @@ public class DBLookupTable {
 			for (i = 0; i < keys.length; i++) {
 				pStatement.setObject(i + 1, keys[i]);
 			}
+			//execute query
+			resultSet = pStatement.executeQuery();
 			if (!fetch()) {
 				return null;
 			}
@@ -157,6 +197,8 @@ public class DBLookupTable {
 			// statement uses indexing from 1
 			pStatement.clearParameters();
 			pStatement.setString(1, keyStr);
+			//execute query
+			resultSet = pStatement.executeQuery();
 			if (!fetch()) {
 				return null;
 			}
@@ -175,8 +217,6 @@ public class DBLookupTable {
 	 *@exception  SQLException  Description of the Exception
 	 */
 	private boolean fetch() throws SQLException {
-		//execute query
-		resultSet = pStatement.executeQuery();
 		// go to first result
 		if (!resultSet.next()) {
 			return false;
@@ -186,6 +226,26 @@ public class DBLookupTable {
 			transMap[i].sql2jetel(resultSet);
 		}
 		return true;
+	}
+
+
+	/**
+	 *  Returns the next found record if previous get() method succeeded.<br>
+	 *  If no more records, returns NULL
+	 *
+	 *@return                     The next found record
+	 *@exception  JetelException  Description of the Exception
+	 */
+	public DataRecord getNext() throws JetelException {
+		try {
+			if (!fetch()) {
+				return null;
+			} else {
+				return dataRecord;
+			}
+		} catch (SQLException ex) {
+			throw new JetelException(ex.getMessage());
+		}
 	}
 
 
@@ -204,11 +264,13 @@ public class DBLookupTable {
 		} catch (SQLException ex) {
 			throw new JetelException("Can't establish DB connection: " + ex.getMessage());
 		}
-		// obtain metadata info
-		try {
-			metadata = SQLUtil.dbMetadata2jetel(pStatement.getMetaData());
-		} catch (SQLException ex) {
-			throw new JetelException("Can't obtain metadata: " + ex.getMessage());
+		// obtain metadata info if needed
+		if (metadata == null) {
+			try {
+				metadata = SQLUtil.dbMetadata2jetel(pStatement.getMetaData());
+			} catch (SQLException ex) {
+				throw new JetelException("Can't automatically obtain metadata (use other constructor): " + ex.getMessage());
+			}
 		}
 		// create data record
 		dataRecord = new DataRecord(metadata);
