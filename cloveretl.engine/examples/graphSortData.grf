@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingMerge">
+<!-- This graph illustrates usage of Sort component. It sorts data based on specified key. 
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="SORT" type="SORT" sortKey="ShipName;ShipVia"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.sorted"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="SORT:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="SORT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

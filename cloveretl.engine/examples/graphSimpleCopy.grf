@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Simple Copy">
+<!-- This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is
+duplicated onto all connected output ports.
+It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose
+is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="BROADCAST" type="SIMPLE_COPY"/>
+<Node id="TRASH1" type="TRASH" debugFilename="Trash1_output.txt"/>
+<Node id="TRASH2" type="TRASH"/>
+<Node id="BROADCAST2" type="SIMPLE_COPY"/>
+<Node id="TRASH3" type="TRASH"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="TRASH1:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE2" fromNode="BROADCAST:1" toNode="TRASH2:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE3" fromNode="BROADCAST:2" toNode="BROADCAST2:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE4" fromNode="BROADCAST2:0" toNode="TRASH3:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

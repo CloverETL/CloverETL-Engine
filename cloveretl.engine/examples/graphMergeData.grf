@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingMerge">
+<!-- This graph illustrates usage of MERGE component. It merges data based on specified key. 
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.sorted" />
+<Node id="INPUT2" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.sorted" />
+<Node id="INPUT3" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.sorted" />
+<Node id="MERGE" type="MERGE" mergeKey="ShipName;ShipVia"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.merged"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="MERGE:0" metadata="InMetadata"/>
+<Edge id="INEDGE2" fromNode="INPUT2:0" toNode="MERGE:1" metadata="InMetadata"/>
+<Edge id="INEDGE3" fromNode="INPUT3:0" toNode="MERGE:2" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="MERGE:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

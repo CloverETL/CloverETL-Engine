@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingDB2">
+<Global>
+<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/> 
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DB_INTPUT_TABLE" dbConnection="InterbaseDB" sqlQuery="select * from employee"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="employees.list.out"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>
