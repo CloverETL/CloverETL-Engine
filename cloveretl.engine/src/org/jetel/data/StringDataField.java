@@ -30,10 +30,11 @@ import org.jetel.metadata.DataFieldMetadata;
 /**
  *  A class that represents String type data field
  *
- *@author     D.Pavlis
- *@created    January 26, 2003
- *@since      March 27, 2002
- *@see        org.jetel.metadata.DataFieldMetadata
+ * @author      D.Pavlis
+ * @since       March 27, 2002
+ * @revision    $Revision$
+ * @created     January 26, 2003
+ * @see         org.jetel.metadata.DataFieldMetadata
  */
 public class StringDataField extends DataField {
 
@@ -43,7 +44,7 @@ public class StringDataField extends DataField {
 	/**
 	 *  An attribute that represents ...
 	 *
-	 *@since
+	 * @since
 	 */
 	private final static int INITIAL_STRING_BUFFER_CAPACITY = 32;
 
@@ -55,8 +56,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Constructor for the StringDataField object
 	 *
-	 *@param  _metadata  Description of Parameter
-	 *@since             April 23, 2002
+	 * @param  _metadata  Description of Parameter
+	 * @since             April 23, 2002
 	 */
 	public StringDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
@@ -71,9 +72,9 @@ public class StringDataField extends DataField {
 	/**
 	 *  Constructor for the StringDataField object
 	 *
-	 *@param  _metadata  Description of Parameter
-	 *@param  _value     Description of Parameter
-	 *@since             April 23, 2002
+	 * @param  _metadata  Description of Parameter
+	 * @param  _value     Description of Parameter
+	 * @since             April 23, 2002
 	 */
 	public StringDataField(DataFieldMetadata _metadata, String _value) {
 		this(_metadata);
@@ -84,16 +85,17 @@ public class StringDataField extends DataField {
 	/**
 	 *  Sets the Value attribute of the StringDataField object
 	 *
-	 *@param  value  The new value value
-	 *@since         April 23, 2002
+	 * @param  value                       The new value value
+	 * @exception  BadDataFormatException  Description of the Exception
+	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object value) throws BadDataFormatException {
 		this.value.setLength(0);
-		if (value == null || ((value instanceof StringBuffer) && (((StringBuffer)value).length()==0))) {
-			if(this.metadata.isNullable()) {
+		if (value == null || ((value instanceof StringBuffer) && (((StringBuffer) value).length() == 0))) {
+			if (this.metadata.isNullable()) {
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
@@ -106,22 +108,22 @@ public class StringDataField extends DataField {
 	/**
 	 *  Sets the value attribute of the StringDataField object
 	 *
-	 *@param  seq  The character sequence from which to set the value (either
+	 * @param  seq  The character sequence from which to set the value (either
 	 *      String, StringBuffer or Char Buffer)
-	 *@since       October 29, 2002
+	 * @since       October 29, 2002
 	 */
 	public void setValue(CharSequence seq) {
 		value.setLength(0);
-		if(seq != null  && seq.length() > 0) {
+		if (seq != null && seq.length() > 0) {
 			for (int i = 0; i < seq.length(); i++) {
 				value.append(seq.charAt(i));
 			}
 			setNull(false);
 		} else {
-			if(this.metadata.isNullable()) {
+			if (this.metadata.isNullable()) {
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
@@ -131,8 +133,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Sets the Null value indicator
 	 *
-	 *@param  isNull  The new Null value
-	 *@since          October 29, 2002
+	 * @param  isNull  The new Null value
+	 * @since          October 29, 2002
 	 */
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
@@ -145,8 +147,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Gets the Null value indicator
 	 *
-	 *@return    The Null value
-	 *@since     October 29, 2002
+	 * @return    The Null value
+	 * @since     October 29, 2002
 	 */
 	public boolean isNull() {
 		return super.isNull();
@@ -156,19 +158,29 @@ public class StringDataField extends DataField {
 	/**
 	 *  Gets the Value attribute of the StringDataField object
 	 *
-	 *@return    The Value value
-	 *@since     April 23, 2002
+	 * @return    The Value value
+	 * @since     April 23, 2002
 	 */
 	public Object getValue() {
-		return ( value.length() == 0 ? null: value );
+		return (value.length() == 0 ? null : value);
+	}
+
+
+	/**
+	 *  Gets the value of the StringDataField object as charSequence
+	 *
+	 * @return    The charSequence value
+	 */
+	public CharSequence getCharSequence() {
+		return value;
 	}
 
 
 	/**
 	 *  Gets the Type attribute of the StringDataField object
 	 *
-	 *@return    The Type value
-	 *@since     April 23, 2002
+	 * @return    The Type value
+	 * @since     April 23, 2002
 	 */
 	public char getType() {
 		return DataFieldMetadata.STRING_FIELD;
@@ -178,10 +190,10 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  dataBuffer                    Description of Parameter
-	 *@param  decoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
+	 * @param  dataBuffer                    Description of Parameter
+	 * @param  decoder                       Description of Parameter
+	 * @exception  CharacterCodingException  Description of Exception
+	 * @since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
 		fromString(decoder.decode(dataBuffer).toString());
@@ -191,10 +203,10 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  dataBuffer                    Description of Parameter
-	 *@param  encoder                       Description of Parameter
-	 *@exception  CharacterCodingException  Description of Exception
-	 *@since                                October 31, 2002
+	 * @param  dataBuffer                    Description of Parameter
+	 * @param  encoder                       Description of Parameter
+	 * @exception  CharacterCodingException  Description of Exception
+	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
 		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
@@ -204,8 +216,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@return    Description of the Returned Value
-	 *@since     April 23, 2002
+	 * @return    Description of the Returned Value
+	 * @since     April 23, 2002
 	 */
 	public String toString() {
 		return value.toString();
@@ -215,8 +227,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  value  Description of the Parameter
-	 *@since         April 23, 2002
+	 * @param  value  Description of the Parameter
+	 * @since         April 23, 2002
 	 */
 	public void fromString(String value) {
 		setValue(value);
@@ -226,8 +238,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  buffer  Description of Parameter
-	 *@since          April 23, 2002
+	 * @param  buffer  Description of Parameter
+	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
 		int length = value.length();
@@ -247,8 +259,8 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  buffer  Description of Parameter
-	 *@since          April 23, 2002
+	 * @param  buffer  Description of Parameter
+	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		int length = buffer.getInt();
@@ -271,19 +283,19 @@ public class StringDataField extends DataField {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  obj  Description of Parameter
-	 *@return      Description of the Returned Value
-	 *@since       April 23, 2002
+	 * @param  obj  Description of Parameter
+	 * @return      Description of the Returned Value
+	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
 		// THIS DOES NOT WORK !!!! --->return value.toString().equals(((StringDataField) obj).getValue());
-		StringBuffer strObj=(StringBuffer)((StringDataField) obj).getValue();
-		
-		if (strObj==null || value.length()!=strObj.length()) {
+		StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
+
+		if (strObj == null || value.length() != strObj.length()) {
 			return false;
 		}
-		for(int i=0;i<value.length();i++){
-			if (value.charAt(i)!=strObj.charAt(i)){
+		for (int i = 0; i < value.length(); i++) {
+			if (value.charAt(i) != strObj.charAt(i)) {
 				return false;
 			}
 		}
@@ -294,17 +306,17 @@ public class StringDataField extends DataField {
 	/**
 	 *  Compares this object with the specified object for order.
 	 *
-	 *@param  obj  Description of the Parameter
-	 *@return      Description of the Return Value
+	 * @param  obj  Description of the Parameter
+	 * @return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
 		//THIS DOES NOT WORK !!!! -> return value.toString().compareTo(((StringDataField) obj).getValue());
-		
-		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
-		if (strObj==null){
-			return 1; // ?? shall we raise an exception ??
+
+		StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
+		if (strObj == null) {
+			return 1;// ?? shall we raise an exception ??
 		}
-		
+
 		int valueLenght = value.length();
 		int strObjLenght = strObj.length();
 		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
