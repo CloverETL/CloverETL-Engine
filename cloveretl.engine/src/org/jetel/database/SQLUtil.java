@@ -88,6 +88,7 @@ public class SQLUtil {
 		switch (sqlType) {
 						case Types.INTEGER:
 						case Types.SMALLINT:
+						case Types.TINYINT:
 							return DataFieldMetadata.INTEGER_FIELD;
 						case Types.BIGINT:
 						case Types.DECIMAL:
