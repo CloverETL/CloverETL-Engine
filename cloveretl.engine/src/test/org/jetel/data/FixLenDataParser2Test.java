@@ -73,18 +73,15 @@ public class FixLenDataParser2Test  extends TestCase {
 //	   N/AStone          01/11/93
 //	 -15.5          112  11/03/02
 //	  -0.7Bone Broo    99        
-	boolean failed = false;
 	 int recCount = 0;
 	try{
 		record=aParser2.getNext(record);
+		fail("Should raise an BadDataFormatException");
 	} catch (BadDataFormatException e){	
-		failed = true;
 	} catch (Exception ee){
 		fail("Should not throw Exception");
 		ee.printStackTrace();
 	}
-	if(!failed)
-		fail("Should raise an BadDataFormatException");
 	 try{
 		 while((record=aParser2.getNext(record))!=null){
 			 if(recCount==0) {
