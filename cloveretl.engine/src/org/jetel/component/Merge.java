@@ -49,27 +49,26 @@ import org.jetel.exception.ComponentNotReadyException;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"MERGE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>mergeKey</b></td><td>key which specifies the sort order to be preserved while merging</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
- *  <h4>Example:</h4> 
+ *  <h4>Example:</h4>
  *  <pre>&lt;Node id="MERGE" type="MERGE" mergeKey="name"/&gt;</pre>
  *
- *@author     dpavlis
- *@created    22. duben 2003
- *@since      April 22, 2003
+ * @author      dpavlis
+ * @since       April 22, 2003
+ * @revision    $Revision$
+ * @created     22. duben 2003
  */
 public class Merge extends Node {
 
-	/**
-	 *  Description of the Field
-	 */
+	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE";
 
 	private final static int WRITE_TO_PORT = 0;
@@ -84,8 +83,8 @@ public class Merge extends Node {
 	/**
 	 *  Constructor for the Merge object
 	 *
-	 *@param  id         Description of the Parameter
-	 *@param  mergeKeys  Description of the Parameter
+	 * @param  id         Description of the Parameter
+	 * @param  mergeKeys  Description of the Parameter
 	 */
 	public Merge(String id, String[] mergeKeys) {
 		super(id);
@@ -94,24 +93,13 @@ public class Merge extends Node {
 
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 *@return    The Type value
-	 *@since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
-	/**
 	 *  Gets the first open/active port starting at specified index.
 	 *  This is auxiliary function to simplify process of seeking
 	 *  next port from which data can be read.
 	 *
-	 *@param  isEOF  Description of the Parameter
-	 *@param  from   Description of the Parameter
-	 *@return        The firstOpen value
+	 * @param  isEOF  Description of the Parameter
+	 * @param  from   Description of the Parameter
+	 * @return        The firstOpen value
 	 */
 	private int getNextOpen(boolean[] isEOF, int from) {
 		for (int i = from; i < isEOF.length; i++) {
@@ -128,9 +116,9 @@ public class Merge extends Node {
 	 *  value (based on defined key) is lowest. It then returns
 	 *  the index of that port
 	 *
-	 *@param  inputRecords  Description of the Parameter
-	 *@param  isEOF         Description of the Parameter
-	 *@return               The lowestRecIndex value
+	 * @param  inputRecords  Description of the Parameter
+	 * @param  isEOF         Description of the Parameter
+	 * @return               The lowestRecIndex value
 	 */
 	private int getLowestRecIndex(DataRecord[] inputRecords, boolean[] isEOF) {
 		int lowest;
@@ -143,8 +131,8 @@ public class Merge extends Node {
 
 		while (compareTo < isEOF.length && compareTo != -1) {
 			if (comparisonKey.compare(inputRecords[lowest], inputRecords[compareTo]) == 1) {
-				lowest = compareTo; // we have new lowest
-			} 
+				lowest = compareTo;// we have new lowest
+			}
 			compareTo = getNextOpen(isEOF, compareTo + 1);
 		}
 
@@ -156,12 +144,12 @@ public class Merge extends Node {
 	/**
 	 *  First time reads data from all input ports
 	 *
-	 *@param  inputRecords              Description of the Parameter
-	 *@param  inPorts                   Description of the Parameter
-	 *@param  isEOF                     Description of the Parameter
-	 *@return                           Description of the Return Value
-	 *@exception  IOException           Description of the Exception
-	 *@exception  InterruptedException  Description of the Exception
+	 * @param  inputRecords              Description of the Parameter
+	 * @param  inPorts                   Description of the Parameter
+	 * @param  isEOF                     Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
 	 */
 	private int populateRecords(DataRecord[] inputRecords, InputPort[] inPorts, boolean[] isEOF)
 			 throws IOException, InterruptedException {
@@ -180,7 +168,7 @@ public class Merge extends Node {
 	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
-	 *@since    April 4, 2002
+	 * @since    April 4, 2002
 	 */
 	public void run() {
 		/*
@@ -189,26 +177,26 @@ public class Merge extends Node {
 		 */
 		InputPort inPorts[];
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		
-		int numActive; 	// counter of still active ports - those without EOF status
+
+		int numActive;// counter of still active ports - those without EOF status
 		int readFromPort;
 		int index;
-		
+
 		//get array of all input ports defined/connected - use collection Collection - getInPorts();
-		inPorts = (InputPort[])getInPorts().toArray(new InputPort[0]);
+		inPorts = (InputPort[]) getInPorts().toArray(new InputPort[0]);
 		//create array holding incoming records
-		inputRecords=new DataRecord[inPorts.length];
+		inputRecords = new DataRecord[inPorts.length];
 		boolean[] isEOF = new boolean[inPorts.length];
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
 
-		// initialize array of data records (for each input port one)	
+		// initialize array of data records (for each input port one)
 		for (int i = 0; i < inPorts.length; i++) {
 			inputRecords[i] = new DataRecord(inPorts[i].getMetadata());
 			inputRecords[i].init();
 		}
-		
+
 		// initially load in records from all connected inputs
 		try {
 			numActive = populateRecords(inputRecords, inPorts, isEOF);
@@ -222,13 +210,12 @@ public class Merge extends Node {
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
-		
 
 		// main merging loop - till there is some open port, try to
 		// read and merge data from it
 		while (runIt && numActive > 0) {
 			index = getLowestRecIndex(inputRecords, isEOF);
-			if (index!=-1){
+			if (index != -1) {
 				try {
 					outPort.writeRecord(inputRecords[index]);
 					inputRecords[index] = inPorts[index].readRecord(inputRecords[index]);
@@ -261,8 +248,8 @@ public class Merge extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@exception  ComponentNotReadyException  Description of the Exception
-	 *@since                                  April 4, 2002
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		Class tClass;
@@ -285,8 +272,8 @@ public class Merge extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@return    Description of the Returned Value
-	 *@since     May 21, 2002
+	 * @return    Description of the Returned Value
+	 * @since     May 21, 2002
 	 */
 	public org.w3c.dom.Node toXML() {
 		// TODO
@@ -297,20 +284,30 @@ public class Merge extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  nodeXML  Description of Parameter
-	 *@return          Description of the Returned Value
-	 *@since           May 21, 2002
+	 * @param  nodeXML  Description of Parameter
+	 * @return          Description of the Returned Value
+	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 
-		try{
+		try {
 			return new Merge(xattribs.getString("id"),
-				xattribs.getString("mergeKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-		}catch(Exception ex){
+					xattribs.getString("mergeKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	public boolean checkConfig() {
+		return true;
 	}
 
 }
