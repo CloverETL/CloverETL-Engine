@@ -35,7 +35,7 @@ public class Fifo {
 	 *
 	 *@param  size  Maximum length of the FIFO
 	 */
-	Fifo(int size) {
+	public Fifo(int size) {
 		this.size = size;
 		fifoArray = new Object[size];
 		fifoLength = 0;
@@ -55,6 +55,16 @@ public class Fifo {
 		} else {
 			throw new RuntimeException("Fifo is already full !");
 		}
+	}
+
+
+	/**
+	 *  Gets the empty attribute of the Fifo object
+	 *
+	 *@return    The empty value
+	 */
+	public boolean isEmpty() {
+		return fifoLength == 0 ? true : false;
 	}
 
 
