@@ -19,12 +19,22 @@
 */
 package org.jetel.data;
 
+import java.nio.ByteBuffer;
 import java.util.*;
 import org.jetel.metadata.DataRecordMetadata;
 
-import java.util.Arrays;
 /**
- *  This class serves the role of DataRecord to recordKey(String value) mapper.
+ *  This class serves the role of DataRecords comparator.<br>
+ * It can compare two records with different structure based on
+ * specified fields. It is used when sorting, hashing or (in general)
+ * comparing data.<br>
+ * <br>
+ * <i>Usage:</i><br>
+ * <code>
+ * key = new RecordKey(keyFieldNames,recordMetadata);<br>
+ * key.init();<br>
+ * key.compare(recordA,recordB);
+ * </code>
  *
  * @author      dpavlis
  * @since       May 2, 2002
@@ -37,7 +47,7 @@ public class RecordKey {
 	private DataRecordMetadata metadata;
 	private String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
-	private final static int DEFAULT_KEY_LENGTH = 64;
+	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
 
 	private StringBuffer keyStr;
 
@@ -45,8 +55,8 @@ public class RecordKey {
 	/**
 	 *  Constructor for the RecordKey object
 	 *
-	 * @param  keyFieldNames  Description of Parameter
-	 * @param  metadata       Description of Parameter
+	 * @param  keyFieldNames  names of individual fields composing key
+	 * @param  metadata       metadata describing structure of DataRecord for which the key is built
 	 * @since                 May 2, 2002
 	 */
 	public RecordKey(String keyFieldNames[], DataRecordMetadata metadata) {
@@ -57,15 +67,19 @@ public class RecordKey {
 	// end init
 
 	/**
-	 *  Assembles String key from current record's fields
+	 *  Assembles string representation of the key based on current record's value.
 	 *
-	 * @param  record  Description of Parameter
+	 * @param  record  DataRecord whose field's values will be used to create key string.
 	 * @return         The KeyString value
 	 * @since          May 2, 2002
 	 */
 	public String getKeyString(DataRecord record) {
-		keyStr.setLength(0);
-		// clean buffer
+		
+		if (keyStr == null){ 
+			keyStr = new StringBuffer(DEFAULT_STRING_KEY_LENGTH);
+		}else{ 
+			keyStr.setLength(0); 
+		}
 		for (int i = 0; i < keyFields.length; i++) {
 			keyStr.append(record.getField(keyFields[i]).toString());
 			// not used for now keyStr.append(KEY_ITEMS_DELIMITER);
@@ -82,7 +96,6 @@ public class RecordKey {
 	public void init() {
 
 		Integer position;
-		keyStr = new StringBuffer(DEFAULT_KEY_LENGTH);
 		keyFields = new int[keyFieldNames.length];
 		Map fields = metadata.getFieldNames();
 
@@ -108,14 +121,7 @@ public class RecordKey {
 
 	// end getKeyString
 
-	/*
-	 *  public int compareTo(Object otherKey){
-	 *  for (int i = 0; i < keyFields.length; i++) {
-	 *  keyStr.append(record.getField(keyFields[i]).toString());
-	 *  / not used for now keyStr.append(KEY_ITEMS_DELIMITER);
-	 *  }
-	 *  }
-	 */
+	
 	/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)
 	 *
@@ -186,8 +192,35 @@ public class RecordKey {
 		}
 		return true;
 	}
+	
 
-    /**
+	/**
+	 * This method serializes (saves) content of key fields (for specified record) into
+	 * buffer.
+	 * 
+	 * @param buffer ByteBuffer into which serialize key fields
+	 * @param record data record from which key fields will be serialized into ByteBuffer
+	 */
+	public void serializeKeyFields(ByteBuffer buffer,DataRecord record) {
+		for (int i = 0; i < keyFields.length; i++) {
+			record.getField(keyFields[i]).serialize(buffer);
+		}
+	}
+	
+	/**
+	 * This method creates DataRecordMetadata object which represents fields composing this key. It can
+	 * be used for creating data record composed from key fields only.
+	 * @return DataRecordMetadata object
+	 */
+	public DataRecordMetadata generateKeyRecordMetadata(){
+		DataRecordMetadata metadata = new DataRecordMetadata(this.metadata.getName()+"key");
+		for (int i = 0; i < keyFields.length; i++) {
+			metadata.addField(this.metadata.getField(keyFields[i]));
+		}
+		return metadata;
+	}
+	
+	/**
      * toString method: creates a String representation of the object
      * @return the String representation
      */
@@ -213,11 +246,12 @@ public class RecordKey {
             buffer.append(", keyFieldNames = ").append(Arrays.asList(keyFieldNames).toString());
         }
         buffer.append(", KEY_ITEMS_DELIMITER = ").append(KEY_ITEMS_DELIMITER);
-        buffer.append(", DEFAULT_KEY_LENGTH = ").append(DEFAULT_KEY_LENGTH);
+        buffer.append(", DEFAULT_KEY_LENGTH = ").append(DEFAULT_STRING_KEY_LENGTH);
         buffer.append(", keyStr = ").append(keyStr);
         buffer.append("]");
         return buffer.toString();
     }
+
 }
 // end RecordKey
 

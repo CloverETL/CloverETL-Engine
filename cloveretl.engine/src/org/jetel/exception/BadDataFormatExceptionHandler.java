@@ -39,22 +39,56 @@ public class BadDataFormatExceptionHandler {
 	private boolean throwException = false;
 	
 	/**
+	 *  Error message of this exception.
+	 */
+	private String errorMessage = null;
+	
+	/**
+	 *  Data record causing the exception.
+	 */
+	private DataRecord record = null;
+	
+	/**
+	 *  Field which caused the exception.
+	 */
+	private int fieldCounter = -1;
+	
+	/**
+	 *  The field content that caused the error. 
+	 */
+	private String fieldContent = null;
+	
+	/**
 	 * It implements the behavior of the handles.
 	 */
 	public void handleException(DataRecord record) {
-		if(isThrowException()) {
+		if (isThrowException()) {
 			throwException = false;
-			throw new BadDataFormatException();
+			throw new
+			BadDataFormatException(getErrorMessage());
 		}
 	}
 	
 	/**
-	 * @param record
-	 * @param fieldCounter
-	 * @param string
+	 *  Populate the exception.
+	 * 
+	 *  @param errorMessage Error message for this exception
+	 *  @param record Record that caused the exception
+	 *  @param fieldCounter Number of the field in the record that
+	 caused the execption
+	 *  @param stringContent Contents of the field that caused the
+	 exception
 	 */
-	public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+	public void populateFieldFailure(
+			String errorMessage,
+			DataRecord record,
+			int fieldCounter,
+			String stringContent) {
 		setThrowException(true);
+		this.errorMessage = errorMessage;
+		this.record = record;
+		this.fieldCounter = fieldCounter;
+		this.fieldContent = stringContent;
 	}
 
 	protected void setThrowException(boolean throwException) {
@@ -63,5 +97,49 @@ public class BadDataFormatExceptionHandler {
 
 	public boolean isThrowException() {
 		return throwException;
+	}
+	
+	/**
+	 *  Return error message of this exception 
+	 * 
+	 *  @return error message
+	 */
+	public String getErrorMessage() {
+		return errorMessage; 
+	} 
+	
+	/**
+	 *  Return field number on which the exception occured.
+	 * 
+	 *  @return field number of exception
+	 */
+	public int getFieldCounter() {
+		return fieldCounter;
+	}
+	
+	/**
+	 *  Return the record that caused the exception.
+	 * 
+	 *  @return record causing the exception
+	 */
+	public DataRecord getRecord() {
+		return record;
+	}
+	
+	/**
+	 *  Return the field content (string) causing the exception.
+	 * 
+	 *  @return field content causing the exception
+	 */
+	public String getFieldContent() {
+		return fieldContent;
+	}
+	
+	/**
+	 *  Return name of the field which caused the exception
+	 * @return field name causing the exception
+	 */
+	public String getFieldName(){
+		return record.getMetadata().getField(fieldCounter).getName();
 	}
 }
