@@ -615,6 +615,7 @@ public abstract class Node extends Thread {
 
 			try {
 				port.writeRecordDirect(recordBuffer);
+				recordBuffer.rewind();
 			} catch (IndexOutOfBoundsException ex) {
 				ex.printStackTrace();
 			} catch (IOException ex) {
