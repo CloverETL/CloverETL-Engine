@@ -1,0 +1,61 @@
+Main focus:
+
+- documentation + examples
+- sorting (external) & joining (will be done soon)
+- handling of NULL values - done partially and not in a very consistent way
+
+What is missing:
+
+A) Better handling of error states/ hung threads 
+   - watchdog thread testing all Nodes every single while
+   		 should be part/inner class of Transformation Graph class . It will ensure that Trans Graph is only waiting
+		 for one thread (the Watchdog)
+		 
+		 DONE - partially......  need to update components not to throw exception but only finish execution and set
+		 		 		 		 result Code :  		 0 - success 
+		 		 		 		 		 		 1 - processing error 
+		 		 		 		 		 		 -1 fatal error (some runtime error)
+   
+
+B) Better reporting of processing status - records processed so far, bytes, time spent, status (running/waiting/finished)
+		 - has to be supported at Node (class-source code) level
+		 - this must to go Port level, there is currently only counter of processed records, not bytes (will be 
+		 enhanced to count bytes as well)
+		 ... DONE - partially done as a part of WatchDog - should be improved
+
+
+D) Scripting Record Transformations (using bean shell probably) - use existing interface to
+   - done - is rather slow . slightly improved by smart using Interpreter and This object, but generally 5 times slower
+   - will test with jython (java implementation of python)
+   - dynamic java is another option
+   
+   - will use Java compiled transformations -> fast (transformation must be included in Java object)
+   - there could be some simple transformation language which will be transformed by preprocessor into Java
+   class and then compiled -->> speed gain
+
+E) External/Internal Sorting & JOINING data (merge JOIN)
+    - implement quick/shell sort or similar
+    - implement data records temporary files (using NIO - mapped)
+    		 - this may-be done as replacement of Edge (file is the "buffer" between InPort & OutPort)
+		 
+		 ...IMPLEMENTED... for now in memory sort only. Uses JDK's Array.sort method (variant of merge sort)
+
+		 
+    
+E1) DB Connection - components for accessing DBs through JDBC 
+		 - implemented using JDBC -> quite a slow
+		 - will investigate usage of native loaders (SQLLoader etc.)
+		 
+    
+F) Direct access to data from ports - some components don't cate about record content - they only pass it to other port. This
+will eliminate useless deserializing/serializing of records in components like (Gather/Simple Copy/Concatenate etc.).    
+		 -- done, implemented
+		 
+
+G) better/proper handling of NULL values - infrastructure partially implemented     
+    
+Future directions:
+
+1) Distributed/Parallel Cluster transform - way of splitting data between more computers
+and parallel execution of the same transformation graphs on more computers..
+

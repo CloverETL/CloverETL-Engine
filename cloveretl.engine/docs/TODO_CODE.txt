@@ -1,0 +1,8 @@
+TODO list:
+* change handling of null values with individual fields - use bit-array at record level to indicate which 
+  field has null value
+
+* implement external sorting
+* implement merge component - merging of data flows based on keys specified
+* implement data joiner - joining of data flows based on keys 
+* implement external look-up tables - sort of hash-files used for hash-joins and lookup tables in general
