@@ -27,9 +27,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import org.jetel.data.DataParser;
 import org.jetel.data.DataRecord;
-import org.jetel.data.FixLenDataParser;
 import org.jetel.data.FixLenDataParser2;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
@@ -39,11 +37,43 @@ import org.w3c.dom.NamedNodeMap;
 
 
 /**
- * @author maciorowski
+ *  <h3>Fixed Length Data NIO Reader Component</h3>
  *
- * To change this generated comment go to 
- * Window>Preferences>Java>Code Generation>Code and Comments
+ * <!-- Parses specified input data file and broadcasts the records to all connected out ports -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>DelimitedDataReader</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Parses specified fixed-length-record, input data file and broadcasts the records to all connected out ports.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>At least one output port defined/connected.</td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td></td></tr>
+ * </table>
+ *  <br>  
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"FIXED_DATA_READER_NIO"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>OneRecordPerLine</b></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
+ *  </tr>
+ *  </table>  
+ *
+ *  <h4>Example:</h4> 
+ *  <pre>&lt;Node type="FIXED_DATA_READER_NIO" id="InputFile" fileURL="/tmp/mydata.dat" /&gt;</pre>
+ * @author     dpavlis, maciorowski
+ * @since    April 4, 2002
+ * @see		org.jetel.data.FixLenDataParser, org.jetel.data.FixLenDataParser2
  */
+
 public class FixLenDataReaderNIO  extends Node {
 
 public static final String COMPONENT_TYPE="FIXED_DATA_READER_NIO";
@@ -51,7 +81,7 @@ public static final String COMPONENT_TYPE="FIXED_DATA_READER_NIO";
 private static final int OUTPUT_PORT=0;
 private String fileURL;
 	
-private DataParser parser;
+private FixLenDataParser2 parser;
 	
 public FixLenDataReaderNIO(String id,String fileURL){
 	super(id);
@@ -181,29 +211,19 @@ public static Node fromXML(org.w3c.dom.Node nodeXML) {
 	return aFixLenDataReaderNIO;
 }
 
-
-
-/**
- * @param b
- */
-private void setOneRecordPerLinePolicy(boolean b) {
-	if(b) { 
-		parser=new FixLenDataParser();
-	} else {
-		parser=new FixLenDataParser2();
+	/**
+	 * Sets OneRecordPerLinePolicy.
+	 * @param b
+	 */
+	private void setOneRecordPerLinePolicy(boolean b) {
+		parser.setOneRecordPerLinePolicy( b );
 	}
 	
-}
-
-
-
-/**
- * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
- * @param handler
- */
-private void addBDFHandler(BadDataFormatExceptionHandler handler) {
-	parser.addBDFHandler(handler);
-}
-	
-
+	/**
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
+	 * @param handler
+	 */
+	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		parser.addBDFHandler(handler);
+	}
 }

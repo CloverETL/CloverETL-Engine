@@ -54,6 +54,7 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>OneRecordPerLine</b></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
  *  </tr>
  *  </table>  
  *
@@ -162,9 +163,9 @@ public class FixLenDataWriterNIO extends Node {
 		catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 		}
-		catch (IOException ex){
-			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
-		}
+//		catch (IOException ex){
+//			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
+//		}
 	}
 	
 	/**
@@ -217,8 +218,8 @@ public class FixLenDataWriterNIO extends Node {
 	}
 
 	/**
-	 * True allows only one record per line.  False asks that all records 
-	 * will be on one line.
+	 * True allows only one record per line.  False puts all records 
+	 * on one line.
 	 * @param b
 	 */
 	private void setOneRecordPerLinePolicy(boolean b) {

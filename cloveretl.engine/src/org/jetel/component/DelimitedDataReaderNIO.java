@@ -54,6 +54,7 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  </tr>
  *  </table>  
  *
@@ -196,6 +197,7 @@ public class DelimitedDataReaderNIO extends Node {
 	}
 	
 	/**
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
 	 * @param handler
 	 */
 	private void addBDFHandler(BadDataFormatExceptionHandler handler) {

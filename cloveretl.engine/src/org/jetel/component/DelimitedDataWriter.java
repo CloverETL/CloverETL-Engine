@@ -17,7 +17,6 @@
 */
 
 package org.jetel.component;
-import java.util.*;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
@@ -152,9 +151,9 @@ public class DelimitedDataWriter extends Node {
 		catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 		}
-		catch (IOException ex){
-			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
-		}
+//		catch (IOException ex){
+//			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
+//		}
 	}
 	
 	/**
@@ -178,16 +177,37 @@ public class DelimitedDataWriter extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		NamedNodeMap attribs=nodeXML.getAttributes();
+		DelimitedDataWriter aDelimitedDataWriter = null;
 		
 		if (attribs!=null){
 			String id=attribs.getNamedItem("id").getNodeValue();
 			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
 			String append=attribs.getNamedItem("append").getNodeValue();
+			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
 			if ((id!=null) && (fileURL!=null)){
-				return new DelimitedDataWriter(id,fileURL,Boolean.valueOf(append).booleanValue());
+				aDelimitedDataWriter = new DelimitedDataWriter(id,fileURL,Boolean.valueOf(append).booleanValue());
+
+				if(aOneRecordPerLine != null  ) {
+					if ( aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
+						aDelimitedDataWriter.setOneRecordPerLinePolicy(true);
+					}else {
+						aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
+					}
+				}
+				// sets the default policy
+				aDelimitedDataWriter.setOneRecordPerLinePolicy(false);
 			}
 		}
-		return null;
+		return aDelimitedDataWriter;
+	}
+
+	/**
+	 * True allows only one record per line.  False puts all records 
+	 * on one line.
+	 * @param b
+	 */
+	private void setOneRecordPerLinePolicy(boolean b) {
+		formatter.setOneRecordPerLinePolicy(b);
 	}
 	
 }

@@ -20,6 +20,7 @@ package org.jetel.test;
 import java.io.*;
 import org.jetel.metadata.*;
 import org.jetel.data.*;
+import org.jetel.exception.JetelException;
 
 public class testDataParsing {
 
@@ -51,20 +52,19 @@ public class testDataParsing {
 	record = new DataRecord(metadata);
 	record.init();
 	
-	try{
-	while((record=parser.getNext(record))!=null){
-		out.print("Name:"+record.getField(0).toString());
-		out.print(" Age:"+record.getField(1).toString());
-		out.println(" City:"+record.getField(2).toString());
-		//System.out.println("Name:"+record.getField(0).toString());
-		//System.out.println("Age:"+record.getField(1).toString());
-		//System.out.println("City:"+record.getField(2).toString());
-		//System.out.println();
-	}
-		
-	}
-	catch(IOException e){
-		e.printStackTrace();
+	try {
+		while((record=parser.getNext(record))!=null){
+			out.print("Name:"+record.getField(0).toString());
+			out.print(" Age:"+record.getField(1).toString());
+			out.println(" City:"+record.getField(2).toString());
+			//System.out.println("Name:"+record.getField(0).toString());
+			//System.out.println("Age:"+record.getField(1).toString());
+			//System.out.println("City:"+record.getField(2).toString());
+			//System.out.println();
+		}
+	} catch (JetelException e1) {
+		// TODO Auto-generated catch block
+		e1.printStackTrace();
 	}
 	
 	}
