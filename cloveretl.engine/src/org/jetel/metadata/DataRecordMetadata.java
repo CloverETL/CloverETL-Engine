@@ -429,6 +429,25 @@ public class DataRecordMetadata {
 
 	}
 
+    /**
+     * toString method: creates a String representation of the object
+     * @return the String representation
+     */
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("DataRecordMetadata[");
+        buffer.append("fields = ").append(fields);
+        buffer.append(", fieldNames = ").append(fieldNames);
+        buffer.append(", fieldTypes = ").append(fieldTypes);
+        buffer.append(", name = ").append(name);
+        buffer.append(", recType = ").append(recType);
+        buffer.append(", localeStr = ").append(localeStr);
+        buffer.append(", recordProperties = ").append(recordProperties);
+        buffer.append(", DELIMITED_RECORD = ").append(DELIMITED_RECORD);
+        buffer.append(", FIXEDLEN_RECORD = ").append(FIXEDLEN_RECORD);
+        buffer.append("]");
+        return buffer.toString();
+    }
 }
 /*
  *  end class DataRecordMetadata
