@@ -49,7 +49,7 @@ public static final String COMPONENT_TYPE="FIXED_DATA_READER_NIO";
 private static final int OUTPUT_PORT=0;
 private String fileURL;
 	
-	private FixLenDataParser2 parser;
+private FixLenDataParser2 parser;
 	
 public FixLenDataReaderNIO(String id,String fileURL){
 	super(id);
@@ -107,7 +107,6 @@ public void run() {
 	if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
 	resultCode=Node.RESULT_OK;
 }	
-
 
 /**
  *  Description of the Method
