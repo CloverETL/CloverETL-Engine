@@ -33,10 +33,18 @@ import org.jetel.graph.TransformationGraph;
  * @since       12. May 2004
  * @revision    $Revision$
  */
+/**
+ * @author dpavlis
+ * @since  3.8.2004
+ *
+ * TODO To change the template for this generated type comment go to
+ * Window - Preferences - Java - Code Generation - Code and Comments
+ */
 public class PropertyRefResolver {
 	private Matcher regexMatcher;
 	private Properties properties;
 
+	private static final int MAX_RECURSION_DEPTH=10;
 
 	/**Constructor for the PropertyRefResolver object */
 	public PropertyRefResolver() {
@@ -76,51 +84,71 @@ public class PropertyRefResolver {
 	 *  Looks for reference to global graph properties within string and
 	 *  tries to resolve them - replace by the property's value.<br>
 	 *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
-	 *  usually in the form ${_property_name_}
+	 *  usually in the form ${<i>_property_name_</i>}.
+	 *  It can handle nested reference - when global property is referencing another property 
 	 *
 	 * @param  value  String potentially containing one or more references to property
 	 * @return        String with all references resolved
 	 * @see           org.jetel.data.Defaults
 	 */
-	public String resolveRef(String value) {
+	
+	public String resolveRef(String value){
+		StringBuffer strBuf = new StringBuffer(value);
+		resolveRef(strBuf);
+		return strBuf.toString();	
+	}
+	
+	/**
+	 * Method which Looks for reference to global graph properties within string -
+	 * this is the actual implementation. The public version is only a wrapper.
+	 * 
+	 * @param value	String buffer containing plain text mixed with references to 
+	 * global properties - > reference is in form ${<i>..property_name..</i>}
+	 * @return true if at least one reference to global property was found and resolved
+	 */
+	private boolean resolveRef(StringBuffer value) {
 		String reference;
 		String resolvedReference;
-		StringBuffer strBuf = new StringBuffer();
+		boolean found=false;
 		if ((value != null) && (properties != null)) {
 			regexMatcher.reset(value);
 			while (regexMatcher.find()) {
+				found=true;
 				reference = regexMatcher.group(1);
+				//System.out.println("Reference: "+reference);
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
 					throw new RuntimeException("Can't resolve reference to graph property: " + reference);
 				}
-				regexMatcher.appendReplacement(strBuf, resolvedReference);
+				value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
+				regexMatcher.reset(value);
 			}
-			regexMatcher.appendTail(strBuf);
-			return strBuf.toString();
+			return found;
 		} else {
-			return value;
+			return false;
 		}
 	}
 
-	/*
-	 *  Test/Debug code
-	 *  public static void main(String args[]){
-	 *  Properties prop=new Properties();
-	 *  try{
-	 *  InputStream inStream = new BufferedInputStream(new FileInputStream(args[0]));
-	 *  prop.load(inStream);
-	 *  }catch(IOException ex){
-	 *  ex.printStackTrace();
-	 *  }
-	 *  PropertyRefResolver attr=new PropertyRefResolver(prop);
-	 *  System.out.println("DB driver is: '{${dbDriver}}' ...");
-	 *  System.out.println(attr.resolvePropertyRef("DB driver is: '{${dbDriver}}' ..."));
-	 *  System.out.println("${user} is user");
-	 *  System.out.println(attr.resolvePropertyRef("${user} is user"));
-	 *  System.out.println("${usr}/${password} is user/password");
-	 *  System.out.println(attr.resolvePropertyRef("${usr}/${password} is user/password"));
-	 *  }
-	 */
+
+//	   //Test/Debug code
+//	   public static void main(String args[]){
+//	   Properties prop=new Properties();
+//	   System.out.println("Property name: "+args[0]);
+//	   try{
+//	   		InputStream inStream = new BufferedInputStream(new FileInputStream(args[0]));
+//	   		prop.load(inStream);
+//	   }catch(IOException ex){
+//	   	ex.printStackTrace();
+//	   }
+//	   PropertyRefResolver attr=new PropertyRefResolver(prop);
+//	   System.out.println("DB driver is: '{${dbDriver}}' ...");
+//	   System.out.println(attr.resolveRef("DB driver is: '{${dbDriver}}' ..."));
+//	   System.out.println("${user} is user");
+//	   System.out.println(attr.resolveRef("${user} is user"));
+//	   System.out.println("${user}/${password} is user/password");
+//	   System.out.println(attr.resolveRef("${user}/${password} is user/password"));
+//	   }
+	
+	 
 }
 
