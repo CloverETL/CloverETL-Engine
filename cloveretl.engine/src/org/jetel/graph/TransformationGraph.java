@@ -18,16 +18,16 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
-import java.util.*;
 import java.io.*;
 import java.text.DateFormat;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.database.DBConnection;
-import org.jetel.util.StringUtils;
-import org.jetel.data.Defaults;
-import org.jetel.exception.GraphConfigurationException;
+import java.util.*;
 
 import java.util.logging.Logger;
+import org.jetel.data.Defaults;
+import org.jetel.database.DBConnection;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.GraphConfigurationException;
+import org.jetel.util.StringUtils;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -43,21 +43,12 @@ import java.util.logging.Logger;
 
 public final class TransformationGraph {
 
-	// Attributes
-
-	// Associations
-	/**
-	 * @since    April 2, 2002
-	 */
 	private List phases;
 
 	private List nodes;
 
 	private Node[] nodesArray;
 	private Phase[] phasesArray;
-	/**
-	 * @since    April 2, 2002
-	 */
 	private List edges;
 
 	private Map dbConnections;
@@ -76,6 +67,8 @@ public final class TransformationGraph {
 
 	private WatchDog watchDog;
 
+	private Properties graphProperties;
+
 
 	/**
 	 *Constructor for the TransformationGraph object
@@ -93,6 +86,7 @@ public final class TransformationGraph {
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
 		currentPhase = null;
+		graphProperties = null;
 	}
 
 
@@ -153,7 +147,7 @@ public final class TransformationGraph {
 		log.println(" (sec)");
 
 		freeResources();
-		
+
 		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
 			log.println("[Clover] Graph execution finished successfully");
 			return true;
@@ -436,6 +430,59 @@ public final class TransformationGraph {
 			log.println("--- end phase ---");
 		}
 		log.println("*** END OF GRAPH LIST ***");
+	}
+
+
+	/**
+	 *  Gets the graphProperties attribute of the TransformationGraph object
+	 *
+	 * @return    The graphProperties value
+	 */
+	public Properties getGraphProperties() {
+		return graphProperties;
+	}
+
+
+	/**
+	 *  Sets the graphProperties attribute of the TransformationGraph object
+	 *
+	 * @param  properties  The new graphProperties value
+	 */
+	public void setGraphProperties(Properties properties) {
+		this.graphProperties = properties;
+	}
+
+
+	/**
+	 *  Loads global graph properties from specified file. These properties
+	 *  can later be used throughout graph elements (Nodes, Edges, etc).
+	 *
+	 * @param  filename  Description of the Parameter
+	 */
+	public void loadGraphProperties(String filename) {
+		if (graphProperties == null) {
+			graphProperties = new Properties();
+		}
+		try {
+			InputStream inStream = new BufferedInputStream(new FileInputStream(filename));
+			graphProperties.load(inStream);
+		} catch (IOException ex) {
+			logger.severe(ex.getMessage());
+		}
+	}
+
+
+	/**
+	 *  Populates global graph properties from specified property
+	 *  object. <br> Can be used for "loading-in" system properties, etc.
+	 *
+	 * @param  properties  Description of the Parameter
+	 */
+	public void loadGraphProperties(Properties properties) {
+		if (graphProperties == null) {
+			graphProperties = new Properties();
+		}
+		graphProperties.putAll(properties);
 	}
 
 }
