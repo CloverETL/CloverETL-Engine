@@ -297,7 +297,7 @@ public class HashJoin extends Node {
 		// first read all records from SLAVE port
 		while (slaveRecord!=null && runIt) {
 			try {
-				if (inSlavePort.readRecord(slaveRecord) != null) {
+				if ((slaveRecord=inSlavePort.readRecord(slaveRecord)) != null) {
 				    storeRecord=slaveRecord.duplicate();
 					hashMap.put(new HashKey(slaveKey, storeRecord),
 							storeRecord);

@@ -2,6 +2,24 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-4pre1
+-------------
+New features:
++ new ExtSort component has been added. It performs external sorting (on-disk sorting)
+if input data file is too big to fit into available memory.
+Changes:
++ added/extended toString() methods to DataRecord,DataRecordMetadata
++ changed size specifier when (de)serializing StringDataField from
+int to short -> saves two bytes on each serialized field which speeds up
+processing. However, poses the limit that string can be max 32K chars long.
++ added duplicate() method to DataRecord and all field classes. It
+makes duplicating (making copies) of existing records easier and much faster
+(it doesn't perform several checkings which are not neccessary in this context).
+Creates new object.
++ added copyFrom() method to DataRecord and all field classes. Enables faster
+copying of content of one record into another. Does not create new object.
+
+
 REL 1-1-3a
 ----------
 Changes:

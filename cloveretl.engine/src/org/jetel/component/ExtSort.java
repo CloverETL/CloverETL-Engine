@@ -209,7 +209,6 @@ public class ExtSort extends Node {
                     closeAllOutputPorts();
                     return;
                 } catch (Exception ex) {
-                    ex.printStackTrace(System.err);
                     resultMsg = ex.getClass().getName() + " : "
                             + ex.getMessage();
                     resultCode = Node.RESULT_FATAL_ERROR;
