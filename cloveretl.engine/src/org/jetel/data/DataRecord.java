@@ -1,21 +1,20 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002  David Pavlis
-*
-*    This program is free software; you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation; either version 2 of the License, or
-*    (at your option) any later version.
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 // FILE: c:/projects/jetel/org/jetel/data/DataRecord.java
 
 package org.jetel.data;
@@ -25,24 +24,25 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- *  A class that represents one data record
- *  Fields are not deleted & created all the time. Instead, they are created only once and
- *  updated when it is needed
- *  When we need to send record through the EDGE, we just serialize it (it isn't standard version of serializing)
+ *  A class that represents one data record Fields are not deleted & created all
+ *  the time. Instead, they are created only once and updated when it is needed
+ *  When we need to send record through the EDGE, we just serialize it (it isn't
+ *  standard version of serializing)
  *
- * @author     D.Pavlis
- * @since    March 26, 2002
- * @see      org.jetel.metadata.DataRecordMetadata
+ *@author     D.Pavlis
+ *@created    18. kvìten 2003
+ *@since      March 26, 2002
+ *@see        org.jetel.metadata.DataRecordMetadata
  */
 public class DataRecord implements Serializable {
 
 	// Associations
 	/**
-	 * @since
+	 *@since
 	 */
 	private transient DataRecordMetadata metadata;
 	/**
-	 * @since
+	 *@since
 	 */
 	private DataField fields[];
 
@@ -51,8 +51,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  An attribute that represents ...
 	 *
-	 * @param  _metadata  Description of Parameter
-	 * @since
+	 *@param  _metadata  Description of Parameter
+	 *@since
 	 */
 
 	// Operations
@@ -66,8 +66,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Sets the Metadata attribute of the DataRecord object
 	 *
-	 * @param  metadata  The new Metadata value
-	 * @since            April 5, 2002
+	 *@param  metadata  The new Metadata value
+	 *@since            April 5, 2002
 	 */
 	public void setMetadata(DataRecordMetadata metadata) {
 		this.metadata = metadata;
@@ -75,12 +75,10 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  An attribute that represents ...
+	 *  An attribute that represents ... An operation that does ...
 	 *
-	 *  An operation that does ...
-	 *
-	 * @return    The Metadata value
-	 * @since
+	 *@return    The Metadata value
+	 *@since
 	 */
 	public DataRecordMetadata getMetadata() {
 		return metadata;
@@ -90,8 +88,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  An operation that does ...
 	 *
-	 * @return    The NumFields value
-	 * @since
+	 *@return    The NumFields value
+	 *@since
 	 */
 	public int getNumFields() {
 		return metadata.getNumFields();
@@ -101,14 +99,14 @@ public class DataRecord implements Serializable {
 	/**
 	 *  An operation that does ...
 	 *
-	 * @param  _name  Description of Parameter
-	 * @return        The Field value
-	 * @since
+	 *@param  _name  Description of Parameter
+	 *@return        The Field value
+	 *@since
 	 */
 	public DataField getField(String _name) {
-		try{
+		try {
 			return fields[metadata.getFieldPosition(_name)];
-		}catch (IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			return null;
 		}
 	}
@@ -117,15 +115,14 @@ public class DataRecord implements Serializable {
 	/**
 	 *  An operation that does ...
 	 *
-	 * @param  _fieldNum  Description of Parameter
-	 * @return            The Field value
-	 * @since
+	 *@param  _fieldNum  Description of Parameter
+	 *@return            The Field value
+	 *@since
 	 */
 	public DataField getField(int _fieldNum) {
 		try {
 			return fields[_fieldNum];
-		}
-		catch (IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 			return null;
 		}
 	}
@@ -134,46 +131,49 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Description of the Method
 	 *
-	 * @since    April 5, 2002
+	 *@since    April 5, 2002
 	 */
 	public void init() {
 		DataFieldMetadata fieldMetadata;
 		// create appropriate data fields based on metadata supplied
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
-			fields[i]=DataFieldFactory.createDataField(fieldMetadata.getType(),fieldMetadata);
+			fields[i] = DataFieldFactory.createDataField(fieldMetadata.getType(), fieldMetadata);
 		}
 	}
 
+
 	/**
 	 *  An operation that sets value of all data fields to their default value.
-	 *
 	 */
 	public void setToDefaultValue() {
 		for (int i = 0; i < fields.length; i++) {
 			fields[i].setToDefaultValue();
 		}
 	}
-	
+
+
 	/**
-	 *  An operation that sets value of the selected data field to its default value.
-	 * 
+	 *  An operation that sets value of the selected data field to its default
+	 *  value.
+	 *
+	 *@param  _fieldNum  The new toDefaultValue value
 	 */
 	public void setToDefaultValue(int _fieldNum) {
-			fields[_fieldNum].setToDefaultValue();
+		fields[_fieldNum].setToDefaultValue();
 	}
-	
+
+
 	/**
 	 *  Description of the Method
 	 *
-	 * @param  _fieldNum  Description of Parameter
-	 * @since
+	 *@param  _fieldNum  Description of Parameter
+	 *@since
 	 */
 	public void delField(int _fieldNum) {
 		try {
 			fields[_fieldNum] = null;
-		}
-		catch (IndexOutOfBoundsException e) {
+		} catch (IndexOutOfBoundsException e) {
 		}
 	}
 
@@ -181,8 +181,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Description of the Method
 	 *
-	 * @param  buffer  Description of Parameter
-	 * @since          April 23, 2002
+	 *@param  buffer  Description of Parameter
+	 *@since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
 		for (int i = 0; i < fields.length; i++) {
@@ -194,8 +194,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Description of the Method
 	 *
-	 * @param  buffer  Description of Parameter
-	 * @since          April 23, 2002
+	 *@param  buffer  Description of Parameter
+	 *@since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		for (int i = 0; i < fields.length; i++) {
@@ -207,13 +207,15 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Description of the Method
 	 *
-	 * @param  obj  Description of Parameter
-	 * @return      Description of the Returned Value
-	 * @since       April 23, 2002
+	 *@param  obj  Description of Parameter
+	 *@return      Description of the Returned Value
+	 *@since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		/* first test that both records have the same structure i.e. point to the same
-		 metadata */
+		/*
+		 *  first test that both records have the same structure i.e. point to the same
+		 *  metadata
+		 */
 		if (metadata != ((DataRecord) obj).getMetadata()) {
 			return false;
 		}
@@ -224,6 +226,23 @@ public class DataRecord implements Serializable {
 			}
 		}
 		return true;
+	}
+
+
+	/**
+	 *  Creates textual representation of record's content based on values of individual
+	 *  fields
+	 *
+	 *@return    Description of the Return Value
+	 */
+	public String toString() {
+		StringBuffer str = new StringBuffer();
+		for (int i = 0; i < fields.length; i++) {
+			str.append("#").append(i).append("->");
+			str.append(fields[i].toString());
+			str.append("\n");
+		}
+		return str.toString();
 	}
 }
 /*
