@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This graph illustrates complex transformation. It reads data about orders made and
+combines them (joins) with data about which items were purchased. It then adds
+information about which company made particular order/bought particular item.
+It illustrates usage of DBFDataReader,Sort,MergeJoin,HashJoin,Filter.
+
+It also shows how to embed data transformation routine directly into transformation
+graph layou file (both joins have the transformations embedded - see below).
+
+Note: It is faster to reference record's fields by index as opposite to names - used
+in this example.
+-->
+<Graph name="ComplexTransformation">
+<Global>
+<Metadata id="InMetadata1" fileURL="metadata/ordersDBF.fmt"/>
+<Metadata id="InMetadata2" fileURL="metadata/odetailsDBF.fmt"/>
+<Metadata id="InMetadata3" fileURL="metadata/customers.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersInfo.fmt"/>
+</Global>
+<!-- List of nodes which we will use for transformation -->
+<Phase number="0">
+<Node id="IN_ORDERS" type="DBF_DATA_READER" fileURL="data/ORDERS.DBF" charset="ISO-8859-1"/>
+<Node id="IN_DETAILS" type="DBF_DATA_READER" fileURL="data/ODETAILS.DBF" charset="ISO-8859-1"/>
+<Node id="SORT_ORDERS" type="SORT" sortKey="ORDERID"/>
+<Node id="SORT_DETAILS" type="SORT" sortKey="ORDERID"/>
+<Node id="JOIN" type="MERGE_JOIN" joinKey="ORDERID" leftOuterJoin="true">
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+public class joinOrdersDetails extends  DataRecordTransform{
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		target[0].getField("ORDERID").setValue(source[0].getField("ORDERID").getValue());
+		target[0].getField("CUSTOMERID").setValue(source[0].getField("CUSTOMERID").getValue());
+		target[0].getField("PRODUCTID").setValue(source[1].getField("PRODUCTID").getValue());
+		target[0].getField("UNITPRICE").setValue(source[1].getField("UNITPRICE").getValue());		
+		target[0].getField("QUANTITY").setValue(source[1].getField("QUANTITY").getValue());		
+		target[0].getField("DISCOUNT").setValue(source[1].getField("DISCOUNT").getValue());		
+		return true;
+	}
+}
+</Node>
+<Node id="IN_CUSTOMERS" type="DELIMITED_DATA_READER_NIO" fileURL="data/Customers2.txt" />
+<Node id="JOIN_CUSTOMER" type="HASH_JOIN"  joinKey="CUSTOMERID" leftOuterJoin="true">
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+public class joinCustomers extends  DataRecordTransform{
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		target[0].copyFieldsByPosition(source[0]);
+		if (source[1]!=null){
+			target[0].getField("CUSTOMER").setValue(source[1].getField("CompanyName").getValue());
+		}else{
+			target[0].getField("CUSTOMER").setValue("N/A");
+		}
+		return true;
+	}
+}
+</Node>
+<Node id="FILTER" type="EXT_FILTER" filterExpression="$CUSTOMER!=&quot;N/A&quot;"/>
+<Node id="WRITER1" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joinedDBForders.out"/>
+<Node id="WRITER2" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joinedDBFordersNA.out"/>
+</Phase>
+<!-- Edges connecting nodes -->
+<Edge id="E1" fromNode="IN_ORDERS:0" toNode="SORT_ORDERS:0" metadata="InMetadata1"/>
+<Edge id="E2" fromNode="IN_DETAILS:0" toNode="SORT_DETAILS:0" metadata="InMetadata2"/>
+<Edge id="E3" fromNode="SORT_ORDERS:0" toNode="JOIN:0" metadata="InMetadata1"/>
+<Edge id="E4" fromNode="SORT_DETAILS:0" toNode="JOIN:1" metadata="InMetadata2"/>
+<Edge id="E5" fromNode="JOIN:0" toNode="JOIN_CUSTOMER:0" metadata="OutMetadata"/>
+<Edge id="E6" fromNode="IN_CUSTOMERS:0" toNode="JOIN_CUSTOMER:1" metadata="InMetadata3"/>
+<Edge id="E8" fromNode="JOIN_CUSTOMER:0" toNode="FILTER:0" metadata="OutMetadata"/>
+<Edge id="E9" fromNode="FILTER:0" toNode="WRITER1:0" metadata="OutMetadata"/>
+<Edge id="E10" fromNode="FILTER:1" toNode="WRITER2:0" metadata="OutMetadata"/>
+
+</Graph>
