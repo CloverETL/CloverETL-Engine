@@ -89,20 +89,9 @@ public class Trash extends Node {
 	public Trash(String id) {
 		super(id);
 		debugPrint = false;
-		debugFilename=null;
-		outStream=null;
+		debugFilename = null;
+		outStream = null;
 
-	}
-
-
-	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
 	}
 
 
@@ -116,28 +105,35 @@ public class Trash extends Node {
 		debugPrint = print;
 	}
 
-	public void setDebugFile(String filename){
-		debugFilename=filename;
+
+	/**
+	 *  Sets the debugFile attribute of the Trash object
+	 *
+	 * @param  filename  The new debugFile value
+	 */
+	public void setDebugFile(String filename) {
+		debugFilename = filename;
 	}
-	
+
+
 	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		int recCounter=0;
+		int recCounter = 0;
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		boolean isData = true;
 		DataRecord dataRecord = null;
-		if (outStream!=null) {
+		if (outStream != null) {
 			dataRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			dataRecord.init();
 		}
 		while (isData && runIt) {
 			try {
 				isData = inPort.readRecordDirect(recordBuffer);
-				if (outStream!=null && isData) {
+				if (outStream != null && isData) {
 					dataRecord.deserialize(recordBuffer);
 					outStream.println("*** Record# " + recCounter++ + " ***");
 					outStream.print(dataRecord);
@@ -180,14 +176,14 @@ public class Trash extends Node {
 			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
 					Defaults.Record.MAX_RECORD_SIZE);
 		}
-		if(debugFilename!=null){
-			try{
-				outStream=new PrintStream(new FileOutputStream(debugFilename));
-			}catch(FileNotFoundException ex){
+		if (debugFilename != null) {
+			try {
+				outStream = new PrintStream(new FileOutputStream(debugFilename));
+			} catch (FileNotFoundException ex) {
 				throw new ComponentNotReadyException(ex.getMessage());
 			}
-		}else if(debugPrint){
-			outStream=System.out;
+		} else if (debugPrint) {
+			outStream = System.out;
 		}
 	}
 
@@ -220,7 +216,7 @@ public class Trash extends Node {
 			if (xattribs.exists("debugPrint")) {
 				trash.setDebugPrint(xattribs.getBoolean("debugPrint"));
 			}
-			if (xattribs.exists("debugFilename")){
+			if (xattribs.exists("debugFilename")) {
 				trash.setDebugFile(xattribs.getString("debugFilename"));
 			}
 		} catch (Exception ex) {
@@ -230,5 +226,14 @@ public class Trash extends Node {
 		return trash;
 	}
 
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	public boolean checkConfig() {
+		return true;
+	}
 }
 
