@@ -19,6 +19,7 @@ package org.jetel.database;
 
 import java.sql.Types;
 import java.sql.SQLException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.DatabaseMetaData;
 import java.sql.ParameterMetaData;
@@ -35,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  * @author      dpavlis
  * @since       September 25, 2002
- * @revision    $Revision$
+ * @revision    $Revision: 1.10 
  * @created     January 24, 2003
  */
 public class SQLUtil {
@@ -59,7 +60,7 @@ public class SQLUtil {
 		if (tableName.indexOf(".") != -1) {
 			tableSpec = tableName.toUpperCase().split("\\.", 2);
 		}
-		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%"); //null as last parm
 		List fieldTypes = new LinkedList();
 		int counter = 0;
 		while (rs.next()) {
@@ -67,7 +68,14 @@ public class SQLUtil {
 			fieldTypes.add(new Integer(rs.getInt(5)));
 		}
 		if (fieldTypes.size() == 0) {
-			throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//Warn !
+			System.out.println("Warning: No metadata obtained for table: " + tableName+" will use workaround ...");
+			// WE HAVE SOME PATCH, but ...
+			 ResultSetMetaData fieldsMetadata=getTableFieldsMetadata(metadata.getConnection(),tableName);
+			 for(int i=0;i<fieldsMetadata.getColumnCount();i++){
+				fieldTypes.add(new Integer(fieldsMetadata.getColumnType(i+1))); 
+			 }
 		}
 
 		return fieldTypes;
@@ -89,7 +97,7 @@ public class SQLUtil {
 		if (tableName.indexOf(".") != -1) {
 			tableSpec = tableName.toUpperCase().split("\\.", 2);
 		}
-		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%"); //null as last parm
 		Map dbFieldsMap = new HashMap();
 		List fieldTypes = new LinkedList();
 		Integer dataType;
@@ -100,7 +108,15 @@ public class SQLUtil {
 			dbFieldsMap.put(rs.getString(4).toUpperCase(), new Integer(rs.getInt(5)));
 		}
 		if (dbFieldsMap.size() == 0) {
-			throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//Warn !
+			System.out.println("Warning: No metadata obtained for table: " + tableName+" will use workaround ...");
+			// WE HAVE SOME PATCH, but ...
+			 ResultSetMetaData fieldsMetadata=getTableFieldsMetadata(metadata.getConnection(),tableName);
+			 for(int i=0;i<fieldsMetadata.getColumnCount();i++){
+				dbFieldsMap.put(fieldsMetadata.getColumnName(i+1).toUpperCase(), 
+						new Integer(fieldsMetadata.getColumnType(i+1)));
+			 }
 		}
 		for (int i = 0; i < dbFields.length; i++) {
 			dataType = (Integer) dbFieldsMap.get(dbFields[i].toUpperCase());
@@ -112,6 +128,15 @@ public class SQLUtil {
 		return fieldTypes;
 	}
 
+	
+	public static ResultSetMetaData getTableFieldsMetadata(Connection con,String tableName) throws SQLException  {
+		StringBuffer queryStr=new StringBuffer("select * from ");
+		queryStr.append(tableName);
+		
+		ResultSet rs=con.createStatement().executeQuery(queryStr.toString());
+		return rs.getMetaData();
+		
+	}
 
 	/**
 	 *  Gets the fieldTypes attribute of the SQLUtil class
