@@ -355,7 +355,7 @@ public class Screen2d extends JPanel implements  FormInterface
 		for(int i= 0 ; i < aSize ; i++ ) {
 			aColumnName = aModel.getColumnName(i);
 			//get token
-			st.nextToken();
+			if(st.hasMoreTokens()) st.nextToken();
 			//get delimiter
 			if(st.hasMoreTokens()) {
 				aDelimiter = st.nextToken();
@@ -376,7 +376,7 @@ public class Screen2d extends JPanel implements  FormInterface
 					aFileFormatDataModel.recordMeta.addField( new DataFieldMetadata(aColumnName,aDelimiter));
 				}
 		}
-		aFileFormatDataModel.firstLineFieldNames = FirstLineFieldNamesCheckBox.isSelected();
+		aFileFormatDataModel.firstLineFieldNames = FirstLineFieldNames;
 	}
 	/**
 	 * Used to populate the form with data.
@@ -391,13 +391,13 @@ public class Screen2d extends JPanel implements  FormInterface
 			delimiters = "";
 		}
 		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
-		FirstLineFieldNamesCheckBox.setSelected(aFileFormatDataModel.firstLineFieldNames);
-		FirstLineFieldNames = aFileFormatDataModel.firstLineFieldNames;
 		if(aDataRecordMetadata.getNumFields()==0) {
 			// nothing before so lets initialize it with defaults
 			generateDelimiters();
 			reloadFile();
 		} else {
+			FirstLineFieldNamesCheckBox.setSelected(aFileFormatDataModel.firstLineFieldNames);
+			FirstLineFieldNames = aFileFormatDataModel.firstLineFieldNames;
 			loadExistingDelimitedRecords();						
 		}
 
