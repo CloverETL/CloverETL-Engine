@@ -55,7 +55,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_OUTPUT_TABLE"</td></tr>
- *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
@@ -68,6 +68,10 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>batchMode</b><br><i>optional</i></td><td>[Yes/No] determines whether to use batch mode for sending statemetns to DB, DEFAULT is No.<br>
  *  <i>Note:If your database/JDBC driver supports this feature, switch it on as it significantly speeds up table population.</i></td>
  *  </tr>
+ *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>allows specification of SQL query/DML statement to be executed against
+ *  database. Questionmarks [?] in the query text are placeholders which are filled with values from input fields specified in <b>cloverFields</b>
+ *  attribute. If you use this option/parameter, cloverFields must be specified as well - it determines which input fields will
+ *  be used/mapped onto target fields</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -81,7 +85,9 @@ import org.jetel.util.ComponentXMLAttributes;
  *	   dbFields="f_name;l_name" cloverFields="LastName;FirstName"/&gt;</pre>
  *  <i>Example shows how to simply map Clover's LastName and FirstName fields onto f_name and l_name DB table fields. The order
  *  in which these fields appear in Clover data record is not important.</i>
- *
+ *  <br>
+ *   <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="insert into myemployee2 (FIRST_NAME,LAST_NAME,DATE,ID) values (?,?,sysdate,123)"
+ *	   cloverFields="FirstName;LastName"/&gt;</pre>
  *
  * @author      dpavlis
  * @since       September 27, 2002
@@ -97,6 +103,7 @@ public class DBOutputTable extends Node {
 	private PreparedStatement preparedStatement;
 	private String[] cloverFields;
 	private String[] dbFields;
+	private String sqlQuery;
 	private int recordsInCommit;
 	private boolean useBatch;
 
@@ -130,7 +137,18 @@ public class DBOutputTable extends Node {
 
 	}
 
+	public DBOutputTable(String id, String dbConnectionName, String sqlQuery, String[] cloverFields) {
+		super(id);
+		this.dbConnectionName = dbConnectionName;
+		this.dbTableName = null;
+		this.sqlQuery=sqlQuery;
+		this.cloverFields = cloverFields;
+		recordsInCommit = RECORDS_IN_COMMIT;
+		useBatch=false;
+		// default
 
+	}
+	
 	/**
 	 *  Sets the dBFields attribute of the DBOutputTable object
 	 *
@@ -232,14 +250,20 @@ public class DBOutputTable extends Node {
 				recordsInCommit=(multiply+1) * RECORDS_IN_BATCH;
 			}
 			
-			// do we have specified list of fields to populate ?
-			if (dbFields != null) {
-				sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
-				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
-			} else {
-				// populate all fields
-				sql = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
-				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
+			// if SQL/DML statement is given, then only prepare statement
+			if (sqlQuery!=null){
+				sql=sqlQuery;
+				dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+			}else{
+				// do we have specified list of fields to populate ?
+				if (dbFields != null) {
+					sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
+					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
+				} else {
+					// populate all fields
+					sql = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
+					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
+				}
 			}
 			preparedStatement = dbConnection.prepareStatement(sql);
 
@@ -357,18 +381,29 @@ public class DBOutputTable extends Node {
 		DBOutputTable outputTable;
 
 		try {
-			outputTable = new DBOutputTable(xattribs.getString("id"),
+			// allows specifying parameterized SQL (with ? - questionmarks)
+			if (xattribs.exists("sqlQuery")) {
+					outputTable = new DBOutputTable(xattribs.getString("id"),
 					xattribs.getString("dbConnection"),
-					xattribs.getString("dbTable"));
-
-			if (xattribs.exists("dbFields")) {
-				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+					xattribs.getString("sqlQuery"),
+					xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+				
+			}else{
+				// standard - old fashion way
+				
+				outputTable = new DBOutputTable(xattribs.getString("id"),
+						xattribs.getString("dbConnection"),
+						xattribs.getString("dbTable"));
+	
+				if (xattribs.exists("dbFields")) {
+					outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+				}
+	
+				if (xattribs.exists("cloverFields")) {
+					outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+				}
 			}
-
-			if (xattribs.exists("cloverFields")) {
-				outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
-
+			
 			if (xattribs.exists("commit")) {
 				outputTable.setRecordsInCommit(xattribs.getInteger("commit"));
 			}
@@ -378,6 +413,7 @@ public class DBOutputTable extends Node {
 			}
 			
 			return outputTable;
+			
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
