@@ -290,8 +290,8 @@ public class DBConnection {
 
 				String dbDriver = xattribs.getString("dbDriver");
 				String dbURL = xattribs.getString("dbURL");
-				String user = null;
-				String password = null;
+				String user = "";
+				String password = "";
 
 				con = new DBConnection(dbDriver, dbURL, user, password);
 
