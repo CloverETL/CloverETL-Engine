@@ -19,6 +19,9 @@
 
 package test.org.jetel.data;
 
+import org.jetel.data.IntegerDataField;
+import org.jetel.metadata.DataFieldMetadata;
+
 import junit.framework.TestCase;
 
 /**
@@ -26,11 +29,30 @@ import junit.framework.TestCase;
  *
  */
 public class IntegerDataFieldTest  extends TestCase {
+	private IntegerDataField anIntegerDataField1 = null;
+	private IntegerDataField anIntegerDataField2 = null;
+	private IntegerDataField anIntegerDataField3 = null;
+	private IntegerDataField anIntegerDataField4 = null;
 
 protected void setUp() { 
+	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'i',(short)3);
+	anIntegerDataField1 = new IntegerDataField(fixedFieldMeta1,5);
+	
+	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'i',(short)3);
+	anIntegerDataField2 = new IntegerDataField(fixedFieldMeta2);
+
+	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
+	anIntegerDataField3 = new IntegerDataField(delimFieldMeta1,5);
+	
+	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
+	anIntegerDataField4 = new IntegerDataField(delimFieldMeta2);
 }
 
 protected void tearDown() {
+	anIntegerDataField1 = null;
+	anIntegerDataField2 = null;
+	anIntegerDataField3 = null;
+	anIntegerDataField4 = null;
 }
 
 /**
@@ -38,6 +60,8 @@ protected void tearDown() {
  *
  */
 public void test_1_IntegerDataField() {
+	assertNotNull(anIntegerDataField2);
+	assertNotNull(anIntegerDataField4);
 	}
 
 
@@ -46,6 +70,8 @@ public void test_1_IntegerDataField() {
 	 *
 	 */
 	public void test_2_IntegerDataField() {
+		assertNotNull(anIntegerDataField1);
+		assertNotNull(anIntegerDataField3);
 	}
 
 	/**
@@ -54,6 +80,8 @@ public void test_1_IntegerDataField() {
 	 *                 org.jetel.data.IntegerDataField.setValue(int value)
 	 */
 	public void test_setValue() {
+		anIntegerDataField1.setValue(15.45);
+		//assertEquals(anIntegerDataField1.getDouble(),(double)15);
 	}
 
 
