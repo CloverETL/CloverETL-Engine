@@ -34,6 +34,7 @@ import java.nio.charset.*;
  */
 public class DelimitedDataFormatterNIO implements DataFormatter {
 
+	private boolean oneRecordPerLinePolicy=false;
 	// Attributes
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
@@ -128,6 +129,9 @@ public class DelimitedDataFormatterNIO implements DataFormatter {
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
+		if(oneRecordPerLinePolicy){
+			charBuffer.put("\n");
+		}
 	}
 	
 	
@@ -141,6 +145,13 @@ public class DelimitedDataFormatterNIO implements DataFormatter {
 		charBuffer.clear();
 	}
 
+	/**
+	 *  Sets OneRecordPerLinePolicy.
+	 * @see org.jetel.data.DataFormatter#setOneRecordPerLinePolicy(boolean)
+	 */
+	public void setOneRecordPerLinePolicy(boolean b) {
+		oneRecordPerLinePolicy = b;
+	}
 }
 /*
  *  end class DelimitedDataFormatter

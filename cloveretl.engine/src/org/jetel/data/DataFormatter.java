@@ -63,6 +63,14 @@ public interface DataFormatter {
 	 */
 	public void flush();
 
+
+	/**
+	 * True allows only one record per line.  False asks that all records 
+	 * will be on one line.
+	 * @param b
+	 */
+	public void setOneRecordPerLinePolicy(boolean b);
+
 }
 /*
  *  end class DataFormatter

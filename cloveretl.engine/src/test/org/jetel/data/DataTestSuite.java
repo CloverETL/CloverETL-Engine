@@ -38,7 +38,7 @@ public class DataTestSuite  extends TestSuite  {
 		suite.addTest(new TestSuite(test.org.jetel.data.NumericDataFieldTest.class));
 		suite.addTest(new TestSuite(test.org.jetel.data.StringDataFieldTest.class));
 		suite.addTest(new TestSuite(test.org.jetel.data.FixLenDataParser2Test.class));
-	
+		suite.addTest(new TestSuite(test.org.jetel.data.OneRecordPerLinePolicyTest.class));
 		return suite;
 	
 	}

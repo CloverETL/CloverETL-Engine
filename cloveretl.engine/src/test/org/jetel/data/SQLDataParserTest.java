@@ -26,8 +26,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.SQLDataParser;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -54,14 +52,16 @@ protected void setUp() {
 		e.printStackTrace();
 	}
 	
+	record = new DataRecord(metadata);
+	record.init();
+
 	aParser2 = new SQLDataParser("connection","SELECT * FROM bad");
 	try {
 		aParser2.open(aDBConnection,metadata);
+		aParser2.initSQLDataMap(record);
 	} catch (ComponentNotReadyException e1) {
 		e1.printStackTrace();
 	}
-	record = new DataRecord(metadata);
-	record.init();
 }
 	
    protected void tearDown() {

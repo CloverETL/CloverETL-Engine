@@ -22,6 +22,7 @@ import java.io.*;
 import org.jetel.component.RecordTransform;
 import org.jetel.metadata.*;
 import org.jetel.data.*;
+import org.jetel.exception.JetelException;
 
 
 public class testOrdersLookupReformat implements RecordTransform{
@@ -39,7 +40,12 @@ public class testOrdersLookupReformat implements RecordTransform{
 			lookupMetadata=metadataReader.read(new FileInputStream("employees.fmt"));
 			lookup=new SimpleLookupTable(lookupMetadata,lookupKey, 
 						new DelimitedDataParserNIO(), new FileInputStream("employees.dat"));
-			lookup.init();
+			try {
+				lookup.init();
+			} catch (JetelException e) {
+				e.printStackTrace();
+				return false;
+			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 			return false;
