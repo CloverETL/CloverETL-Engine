@@ -152,7 +152,7 @@ public class FixLenDataParser implements Parser {
 		}
 		decoder.reset();
 		// reset CharsetDecoder
-		recordCounter = 0;
+		recordCounter = 1;
 		// reset record counter
 		dataBuffer.clear();
 		dataBuffer.compact();
@@ -302,7 +302,7 @@ public class FixLenDataParser implements Parser {
 			record.getField(fieldNum).fromByteBuffer(data,decoder);
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-			handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
+			handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum,data.toString());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
