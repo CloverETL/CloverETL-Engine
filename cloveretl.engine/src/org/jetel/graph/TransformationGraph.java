@@ -38,14 +38,9 @@ import java.util.logging.Logger;
  * @author      D.Pavlis
  * @since       April 2, 2002
  * @revision    $Revision$
- * @see         OtherClasses
+ * @see         org.jetel.graph.WatchDog
  */
 
-/*
- *  TODO: enumerateNodes called too many times. The result should be preserved somewhere. It is
- *  not a big problem now, but with increasing complexity of graph, the time needed to complete
- *  this task will grow. However, it affects only initialization phase.
- */
 public final class TransformationGraph {
 
 	// Attributes
@@ -156,6 +151,9 @@ public final class TransformationGraph {
 		log.print("[Clover] WatchDog thread finished - total execution time: ");
 		log.print((System.currentTimeMillis() - timestamp) / 1000);
 		log.println(" (sec)");
+
+		freeResources();
+		
 		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
 			log.println("[Clover] Graph execution finished successfully");
 			return true;
@@ -163,6 +161,7 @@ public final class TransformationGraph {
 			log.println("[Clover] !!! Graph execution finished with errors !!!");
 			return false;
 		}
+
 	}
 
 
@@ -170,7 +169,7 @@ public final class TransformationGraph {
 	/**
 	 * An operation that aborts execution of graph
 	 *
-	 * @since       April 2, 2002
+	 * @since    April 2, 2002
 	 */
 	public void abort() {
 		if (watchDog != null) {
@@ -187,12 +186,31 @@ public final class TransformationGraph {
 	 * @since       April 10, 2002
 	 */
 	public boolean init(OutputStream out) {
+		Iterator iterator;
+		DBConnection dbCon;
+		int i = 0;
+
 		if (out != null) {
 			log = new PrintStream(out);
 		}
-
-		Iterator iterator;
-		int i = 0;
+		// initialize DB Connections
+		// iterate through all dbConnection(s) and initialize them - try to connect to db
+		iterator = dbConnections.values().iterator();
+		while (iterator.hasNext()) {
+			log.print("Initializing DB connection: ");
+			try {
+				dbCon = (DBConnection) iterator.next();
+				log.print(dbCon);
+				dbCon.connect();
+				log.println(" ... OK");
+			} catch (Exception ex) {
+				log.println(" ... !!! ERROR !!!");
+				logger.severe("Can't connect to database: " + ex.getMessage());
+				return false;
+			}
+		}
+		// initialize phases
+		i = 0;
 		phasesArray = new Phase[phases.size()];
 		iterator = phases.iterator();
 		while (iterator.hasNext()) {
@@ -215,6 +233,28 @@ public final class TransformationGraph {
 		Arrays.sort(phasesArray);
 		// initialized OK
 		return true;
+	}
+
+
+	/**  Free all allocated resources which need special care */
+	private void freeResources() {
+		// Free (close) all opened db connections
+		// some JDBC drivers start up thread which monitors opened connection
+		// this thread sometimes won't die when the main thread is finished - hence
+		// this code
+		Iterator iterator;
+		DBConnection dbCon;
+		iterator = dbConnections.values().iterator();
+		while (iterator.hasNext()) {
+			try {
+				dbCon = (DBConnection) iterator.next();
+				dbCon.close();
+			} catch (Exception ex) {
+				log.println(ex.getMessage());
+			}
+		}
+		// any other deinitialization shoud go here
+		//
 	}
 
 
@@ -351,10 +391,11 @@ public final class TransformationGraph {
 	}
 
 
-	/**  Description of the Method */
+	/**  Remove all lookup table definitions */
 	public void deleteLookupTables() {
 		lookupTables.clear();
 	}
+
 
 
 	/**
