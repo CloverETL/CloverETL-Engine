@@ -18,10 +18,11 @@
  *  Created on May 31, 2003
  */
 package org.jetel.util;
+import com.sun.tools.javac.Main;
 
 import java.io.File;
+import java.io.IOException;
 import org.jetel.exception.*;
-import com.sun.tools.javac.Main;
 
 /**
  * @author      Wes Maciorowski, David Pavlis
@@ -31,7 +32,121 @@ import com.sun.tools.javac.Main;
 public class Compile {
 
 	private final static String compilerClassname = "sun.tools.javac.Main";
-	//private static final constructorSignature = new Class[] { OutputStream.class, String.class };
+	private final static String compilerExecutable = "javac";
+
+	private String srcFile;
+	private String destDir;
+	private String fileSeparator;
+	private boolean forceCompile;
+	private boolean compiled;
+	private boolean useExecutable = false;
+
+
+	/**
+	 *Constructor for the JavaCompiler object
+	 *
+	 * @param  srcFile  Description of the Parameter
+	 */
+	public Compile(String srcFile) {
+		this.srcFile = srcFile;
+		destDir = System.getProperty("java.io.tmpdir", ".");
+		forceCompile = false;
+		compiled = false;
+		fileSeparator = System.getProperty("file.separator", "/");
+	}
+
+
+	/**
+	 *Constructor for the JavaCompiler object
+	 *
+	 * @param  srcFile  Description of the Parameter
+	 * @param  destDir  Description of the Parameter
+	 */
+	public Compile(String srcFile, String destDir) {
+		this.srcFile = srcFile;
+		this.destDir = destDir;
+		forceCompile = false;
+		compiled = false;
+		fileSeparator = System.getProperty("file.separator", "/");
+	}
+
+
+	/**
+	 *  Sets the forceCompile attribute of the JavaCompiler object
+	 *
+	 * @param  forceCompile  The new forceCompile value
+	 */
+	public void setForceCompile(boolean forceCompile) {
+		this.forceCompile = forceCompile;
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	public int compile() {
+		int status = 0;
+		File source = new File(srcFile);
+
+		if (forceCompile || needsRecompile()) {
+			if (useExecutable) {
+				String[] args = new String[]{compilerExecutable, "-d", destDir, srcFile,
+						"-Xstdout", destDir + source.getName() + ".err"};
+				Runtime runtime = Runtime.getRuntime();
+				try{
+					status = runtime.exec(args).waitFor();
+				}catch(Exception ex){
+					status=-1;
+				}
+
+			} else {
+				String[] args = new String[]{"-d", destDir, srcFile,
+						"-Xstdout", destDir + source.getName() + ".err"};
+
+				status = com.sun.tools.javac.Main.compile(args);
+
+			}
+			if (status==0) { 
+			compiled = true;
+			}
+		}
+		
+		return status;
+	}
+
+
+	/**
+	 *  Gets the compiledClassPath attribute of the JavaCompiler object
+	 *
+	 * @return    The compiledClassPath value
+	 */
+	public String getCompiledClassPath() {
+		return destDir;
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    true if souce file needs recompiling(was modified after compilation), otherwise false
+	 */
+	private boolean needsRecompile() {
+		File source = new File(srcFile);
+		File dest = new File(destDir + fileSeparator + source.getName());
+		try {
+			if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
+				return false;// is already compiled
+			} else {
+				return true;
+			}
+
+		} catch (Exception ex) {
+			return true;// needs recompile
+		}
+	}
+
 
 	/*
 	 *  static{
@@ -55,32 +170,5 @@ public class Compile {
 	 *  }
 	 *  }
 	 */
-	/**
-	 *  This method compiles specified class
-	 *
-	 * @param  className                      The name of the class (without .java)
-	 * @param  classDirectory                 The directory where to find souce code of the class and where
-	 *					  to put resulting compiled class
-	 * @return                                True if success, otherwise ClassCompilationException is raised
-	 * @exception  ClassCompilationException  Exception which indicates that something went wrong !
-	 */
-	public static boolean compileClass(String sourceCodeFile, String classDirectory)
-			 throws ClassCompilationException {
-
-		String[] args = new String[]{"-d", classDirectory, sourceCodeFile,
-						 "-Xstdout" , sourceCodeFile + ".err" };
-
-		//debug
-		// for(int i=0;i<args.length;System.out.println(args[i++]));
-
-		int status = com.sun.tools.javac.Main.compile(args);
-
-		if (status != 0) {
-			throw new ClassCompilationException(sourceCodeFile);
-		}
-
-		return true;
-	}
-
 }
 
