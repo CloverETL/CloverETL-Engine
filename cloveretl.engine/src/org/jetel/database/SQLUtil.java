@@ -201,7 +201,7 @@ public class SQLUtil {
 		strBuf.insert(0, tableName);
 		strBuf.insert(0, "insert into ");
 		strBuf.append(")");
-		System.out.println(strBuf.toString());
+		//debug: System.out.println(strBuf.toString());
 		return strBuf.toString();
 	}
 
