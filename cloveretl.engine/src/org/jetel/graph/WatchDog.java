@@ -100,7 +100,7 @@ class WatchDog extends Thread {
 		watchDogStatus = WATCH_DOG_STATUS_RUNNING;
 		log.println("[WatchDog] Thread started.");
 		log.print("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)");
-		log.println(" max available memory for JVM " + javaRuntime.freeMemory() / 1000 + " kB");
+		log.println(" max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
 		for (int i = 0; i < phases.length; i++) {
 			if (!runPhase(phases[i])) {
 				watchDogStatus = WATCH_DOG_STATUS_ERROR;
@@ -260,15 +260,15 @@ class WatchDog extends Thread {
 
 	/**  Outputs summary info about executed phases */
 	void printPhasesSummary() {
-		log.println("---------------------** Summary of Phases execution **-------------------");
-		log.println("Phase#            Finished Status         RunTime(sec)    MemoryAllocation");
+		log.println("-----------------------** Summary of Phases execution **---------------------");
+		log.println("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 		for (int i = 0; i < phases.length; i++) {
 			Object nodeInfo[] = {new Integer(phases[i].getPhaseNum()), new Integer(0),
 					new Integer(phases[i].getPhaseExecTime()/1000), new Integer(phases[i].getPhaseMemUtilization())};
-			int nodeSizes[] = {-18, -24, 14, 16};
+			int nodeSizes[] = {-18, -24, 12, 18};
 			log.println(StringUtils.formatString(nodeInfo, nodeSizes));
 		}
-		log.println("----------------------------** End of Summary **-------------------------");
+		log.println("------------------------------** End of Summary **---------------------------");
 	}
 
 
