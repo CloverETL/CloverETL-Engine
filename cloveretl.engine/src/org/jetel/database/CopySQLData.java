@@ -32,6 +32,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DateDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.data.IntegerDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -531,6 +532,8 @@ public abstract class CopySQLData {
 	static class CopyBoolean extends CopySQLData {
 		private static String _TRUE_="T";
 		private static String _FALSE_="F";
+		private static char _TRUE_CHAR_='T';
+		private static char _TRUE_SMCHAR_='t';
 		/**
 		 *  Constructor for the CopyString object
 		 *
@@ -564,7 +567,8 @@ public abstract class CopySQLData {
 		 *@since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setBoolean(fieldSQL, field.toString().equalsIgnoreCase(_TRUE_) );
+			char value=((StringDataField)field).getCharSequence().charAt(0);
+			pStatement.setBoolean(fieldSQL,  ((value==_TRUE_CHAR_)||(value==_TRUE_SMCHAR_))  );
 		}
 
 	}
