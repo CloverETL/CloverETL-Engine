@@ -154,16 +154,29 @@ public class Phase implements Comparable {
 		while (nodeIterator.hasNext()) {
 			try {
 				node = (Node) nodeIterator.next();
+				// if logger exists, print some out information
+				if (log != null) {
+					log.print("\t");
+					log.print(node.getID());
+				}
 				node.init();
 			} catch (ComponentNotReadyException ex) {
+				if (log!=null){
+					log.println(" ...FAILED !");
+				}
+				logger.severe(ex.getMessage());
+				return false;
+			} catch (Exception ex) {
+				if (log!=null){
+					log.println(" ...FATAL ERROR !");
+				}
 				logger.severe(ex.getMessage());
 				return false;
 			}
-			// if logger exists, print some out information
 			if (log != null) {
-				log.print("\t");
-				log.println(node.getID());
+				log.println(" ...OK");
 			}
+			
 		}
 		if (log != null) {
 			log.print("[Clover] phase: ");
