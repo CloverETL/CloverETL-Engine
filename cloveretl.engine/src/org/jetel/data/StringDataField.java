@@ -38,7 +38,7 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class StringDataField extends DataField {
+public class StringDataField extends DataField implements CharSequence{
 
 	private StringBuffer value;
 	
@@ -377,6 +377,35 @@ public class StringDataField extends DataField {
 		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
 		// size of length indicator (basically int variable)
 		return value.length()*2+STRING_LENGTH_INDICATOR_SIZE;
+	}
+	
+	/**
+	 * Method which implements charAt method of CharSequence interface
+	 * 
+	 * @param position
+	 * @return
+	 */
+	public char charAt(int position){
+		return value.charAt(position);
+	}
+	
+	/**Method which implements length method of CharSequence interfaceMethod which ...
+	 * 
+	 * @return
+	 */
+	public int length(){
+		return value.length();
+	}
+	
+	/**
+	 * Method which implements subSequence method of CharSequence interface
+	 * 
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public CharSequence subSequence(int start, int end){
+		return value.subSequence(start,end);
 	}
 }
 /*

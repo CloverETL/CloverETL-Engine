@@ -5,59 +5,61 @@ package org.jetel.interpreter;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.data.Defaults;
 
-public class CLVFLiteral extends SimpleNode implements FilterExpParserTreeConstants {
-
-  String valueImage; 
-  Object value;
-  
-  public CLVFLiteral(int id) {
-    super(id);
-  }
-
-  public CLVFLiteral(FilterExpParser p, int id) {
-    super(p, id);
-  }
-
-  
-  void init(DataFieldMetadata dataFieldMeta) throws org.jetel.interpreter.ParseException{
-  	switch(dataFieldMeta.getType()){
-  		case DataFieldMetadata.NUMERIC_FIELD:
-  			value= Double.valueOf(valueImage);
-  		break;
-  		case DataFieldMetadata.STRING_FIELD:
-  			value=valueImage;
-  		break;
-  		case DataFieldMetadata.INTEGER_FIELD:
-  			value= Integer.valueOf(valueImage);
-  		break;
-  		case DataFieldMetadata.DATE_FIELD:
-  			// do we have date & time or only date value
-  			DateFormat dateFormat;
-  			if (valueImage.length()>10){
-  				dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
-  			}else{
-  				dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
-  			}
-  			try{
-  				value=dateFormat.parse(valueImage); 		
-  			}catch(java.text.ParseException ex){
-  				throw new org.jetel.interpreter.ParseException("Unrecognized date value: "+valueImage);
-  			}
-  			break;
-  		default:
-  			throw new org.jetel.interpreter.ParseException("Can't handle datatype of field "+dataFieldMeta.getName());
-  	}
-  }
-  
-  void setVal(String valueImage){
-  	this.valueImage=valueImage;
-  }
-  
-  public void interpret()
-  {
-     stack.push(value);
-  }
+public class CLVFLiteral extends SimpleNode implements FilterExpParserConstants {
+	
+	String valueImage; 
+	Object value;
+	int literalType;
+	
+	public CLVFLiteral(int id) {
+		super(id);
+	}
+	
+	public CLVFLiteral(FilterExpParser p, int id) {
+	    super(p, id);
+	  }
+	
+	/** Accept the visitor. **/
+	public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+		return visitor.visit(this, data);
+	}
+	
+	public void init() throws org.jetel.interpreter.InterpreterRuntimeException {
+		try{
+			switch(literalType){
+			case FLOATING_POINT_LITERAL:
+				value= Double.valueOf(valueImage);
+				break;
+			case STRING_LITERAL:
+				value=valueImage;
+				break;
+			case INTEGER_LITERAL:
+				value= Integer.valueOf(valueImage);
+				break;
+			case DATE_LITERAL:
+				DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+				value=dateFormat.parse(valueImage); 
+				break;
+			case DATETIME_LITERAL:
+				DateFormat dateFormat2=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
+				value=dateFormat2.parse(valueImage); 		
+				break;
+				//case BOOLEAN_LITERAL:
+				//	value=Boolean.valueOf(valueImage);
+				//break;
+			default:
+				throw new InterpreterRuntimeException(this,new Object[0],"Can't handle datatype "
+						+tokenImage[literalType]);
+			}
+		}catch(java.text.ParseException ex){
+			throw new InterpreterRuntimeException(this,new Object[0],"Unrecognized value: "+valueImage);
+		} 
+	}
+	
+	void setVal(int literalType, String valueImage){
+		this.valueImage=valueImage;
+		this.literalType=literalType;
+	}
 }

@@ -2,100 +2,20 @@
 
 package org.jetel.interpreter;
 
-import java.util.regex.Matcher;
-import org.jetel.data.DataField;
-import org.jetel.data.StringDataField;
-
 public class CLVFComparison extends SimpleNode implements FilterExpParserConstants {
-
- 	int cmpType;
-
-  public CLVFComparison(int id) {
-    super(id);
-  }
-
-  public CLVFComparison(FilterExpParser p, int id) {
-    super(p, id);
-  }
-
-  public void interpret()
-	{
-  	
-		int cmpResult;
-		boolean lValue=false; 
-		
-		// special handling for Regular expression
-		if (cmpType==REGEX_EQUAL){
-			jjtGetChild(0).interpret();
-			StringDataField field1=(StringDataField)stack.pop();
-			jjtGetChild(1).interpret();
-			Matcher regex=(Matcher)stack.pop();
-			regex.reset(field1.getCharSequence());
-			if(regex.matches()){
-				lValue=true;
-			}else{
-				lValue=false;
-			}
-		// other types of comparison
-		}else{
-			jjtGetChild(0).interpret();
-			DataField field1=(DataField)stack.pop();
-			jjtGetChild(1).interpret();
-			Object literal=stack.pop();
-			cmpResult=field1.compareTo(literal);
-			
-			switch (cmpType) {
-			case EQUAL:
-				if (cmpResult == 0) {
-					lValue=true;
-				}
-				break;// equal
-			case LESS_THAN:
-				if (cmpResult == -1) {
-					lValue=true;
-				}
-				break;// less than
-			case GREATER_THAN:
-				if (cmpResult == 1) {
-					lValue=true;
-				}
-				break;// grater than
-			case LESS_THAN_EQUAL:
-				if (cmpResult <= 0) {
-					lValue=true;
-				}
-				break;// less than equal
-			case GREATER_THAN_EQUAL:
-				if (cmpResult >= 0) {
-					lValue=true;
-				}
-				break;// greater than equal
-			case NON_EQUAL:
-				if (cmpResult != 0) {
-					lValue=true;
-				}
-				break;
-			default:
-				// this should never happen !!!
-				throw new RuntimeException("Unsupported cmparison operator !");
-			}
-		}
-		stack.push(lValue ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+	
+	int cmpType;
+	
+	public CLVFComparison(int id) {
+		super(id);
 	}
-  
-  public void init(){
-  	jjtGetChild(0).init();
-
-  	if (cmpType!=REGEX_EQUAL){
-  		Object obj=jjtGetChild(1);
-  		if (obj instanceof CLVFLiteral ){
-  			jjtGetChild(0).interpret();
-  			try{
-  				((CLVFLiteral)obj).init( ((DataField)stack.pop()).getMetadata() );
-  			}catch(ParseException ex){
-  				throw new RuntimeException(ex);
-  			}
-  		}
-  	}
-  }
+	
+	public CLVFComparison(FilterExpParser p, int id) {
+		super(p, id);
+	}
+	
+	/** Accept the visitor. **/
+	public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+		return visitor.visit(this, data);
+	}
 }

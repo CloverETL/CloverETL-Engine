@@ -15,7 +15,6 @@ public class SimpleNode implements Node {
   public SimpleNode(FilterExpParser p, int i) {
     this(i);
     parser = p;
-    stack=p.getStack();
   }
 
   public void jjtOpen() {
@@ -46,6 +45,21 @@ public class SimpleNode implements Node {
     return (children == null) ? 0 : children.length;
   }
 
+  /** Accept the visitor. **/
+  public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+    return visitor.visit(this, data);
+  }
+
+  /** Accept the visitor. **/
+  public Object childrenAccept(FilterExpParserVisitor visitor, Object data) {
+    if (children != null) {
+      for (int i = 0; i < children.length; ++i) {
+        children[i].jjtAccept(visitor, data);
+      }
+    }
+    return data;
+  }
+
   /* You can override these two methods in subclasses of SimpleNode to
      customize the way the node appears when the tree is dumped.  If
      your output uses more than one line you should override
@@ -69,19 +83,6 @@ public class SimpleNode implements Node {
       }
     }
   }
-  /* added by D.Pavlis for CloverETL based on work of Sreeni*/
-
-  /* stack for calculations and symbol map. This one is not static
-   * so we can have more independent interpreters running at once.
-   * This stack is created by parser and the reference is kept there.
-   */
-   
-  Stack stack;
-
-  public void interpret()
-  {
-     throw new Error(); // It better not come here.
-  }
   
   /* implicitly call or childern with init(), if there is a need to
    * initialize node, then the node should implement its own init() method
@@ -94,10 +95,6 @@ public class SimpleNode implements Node {
 
     for (i = 0; i < k; i++)
        jjtGetChild(i).init(); 
-  }
-  
-  public Stack getStack(){
-  	return stack;
   }
 }
 
