@@ -15,6 +15,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 package org.jetel.database;
 
 import java.sql.Types;
@@ -275,6 +276,29 @@ public class SQLUtil {
 		}
 		return jetelMetadata;
 	}
-
+	
+ 	/**
+ 	 *  Converts Jetel data type into SQL data type
+ 	 *
+ 	 *@param  jetelType  
+ 	 *@return          corresponding Jetel data type
+ 	 *@since           September 25, 2002
+ 	 */
+ 	public static int jetelType2sql(int jetelType) {
+ 		switch (jetelType) {
+ 						case DataFieldMetadata.INTEGER_FIELD:
+ 							return  Types.INTEGER;
+ 						case DataFieldMetadata.NUMERIC_FIELD:
+ 							return Types.NUMERIC;
+ 						case DataFieldMetadata.STRING_FIELD:
+ 							return Types.VARCHAR;
+ 						case DataFieldMetadata.DATE_FIELD:
+ 							return Types.DATE;
+ 						default:
+ 							return -1;
+ 						// unknown or not possible to translate
+ 		}
+ 	}
+ 
 }
 
