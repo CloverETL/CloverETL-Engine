@@ -24,7 +24,12 @@ import java.awt.Insets;
 import javax.swing.JTextPane;
 
 import org.jetel.gui.component.FormInterface;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+
 import java.awt.Font;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class Screen4 extends JPanel implements  FormInterface
 {
@@ -34,13 +39,14 @@ public class Screen4 extends JPanel implements  FormInterface
   private JLabel jLabel2 = new JLabel();
 	 
   private FileFormatDispatcher aDispatcher;
-  private FileFormatDataModel aFileFormatParameters;
+  private FileFormatDataModel aFileFormatDataModel;
+  private DataRecordMetadata aDataRecordMetadata;
 	
   
   public Screen4(FileFormatDispatcher aDispatcher, FileFormatDataModel aFileFormatParameters)
   {
 	this.aDispatcher = aDispatcher;
-	this.aFileFormatParameters = aFileFormatParameters;
+	this.aFileFormatDataModel = aFileFormatParameters;
   	
     try
     {
@@ -76,11 +82,12 @@ public class Screen4 extends JPanel implements  FormInterface
     this.setLayout(gridBagLayout1);
     jLabel1.setText("Screen 4 of 4");
     jLabel1.setFont(new Font("Dialog", 1, 11));
-    jTextPane1.setText("jTextPane1");
+    //jTextPane1.setText("jTextPane1");
     jLabel2.setText(" Preview Final XML");
     this.add(jLabel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jTextPane1, new GridBagConstraints(0, 1, 2, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jLabel2, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
+	loadData();
   }
 
 /* (non-Javadoc)
@@ -88,15 +95,20 @@ public class Screen4 extends JPanel implements  FormInterface
  */
 public boolean validateData() {
 	// TODO Auto-generated method stub
-	return false;
+	//parse the document
+	DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
+	aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane1.getText().getBytes()));
+	if( aDataRecordMetadata == null) {
+		return false;
+	}
+	return true;
 }
 
 /* (non-Javadoc)
  * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
  */
 public void saveData() {
-	// TODO Auto-generated method stub
-	
+	aFileFormatDataModel.recordMeta = aDataRecordMetadata;
 }
 
 /* (non-Javadoc)
@@ -104,6 +116,10 @@ public void saveData() {
  */
 public void loadData() {
 	// TODO Auto-generated method stub
-	
+	aDataRecordMetadata= aFileFormatDataModel.recordMeta;
+	ByteArrayOutputStream baos = new ByteArrayOutputStream();
+	DataRecordMetadataXMLReaderWriter aWriter = new DataRecordMetadataXMLReaderWriter();
+	aWriter.write(aDataRecordMetadata,baos);
+	jTextPane1.setText(baos.toString());
 }
 }
