@@ -40,8 +40,8 @@ public class ComponentXMLAttributes {
 
 	private NamedNodeMap attributes;
 	private org.w3c.dom.Node nodeXML;
-	private Matcher regexMatcher;
-	private Properties graphProperties;
+	private PropertyRefResolver refResolver;
+	
 
 	//private Map    childNodes;
 
@@ -55,11 +55,7 @@ public class ComponentXMLAttributes {
 		this.nodeXML = nodeXML;
 		// if some property is defined for graph, we will
 		// try to look for refereneces to graph properties within XML attributes values;
-		graphProperties = TransformationGraph.getReference().getGraphProperties();
-		if (graphProperties != null) {
-			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-			regexMatcher = pattern.matcher("");
-		}
+		refResolver=new PropertyRefResolver();
 	}
 
 
@@ -72,44 +68,12 @@ public class ComponentXMLAttributes {
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
 		attributes = nodeXML.getAttributes();
 		this.nodeXML = nodeXML;
-		graphProperties = properties;
-		Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
-		regexMatcher = pattern.matcher("");
+		refResolver=new PropertyRefResolver(properties);
+
 	}
 
 
-	/**
-	 *  Looks for reference to global graph properties within string and
-	 *  tries to resolve them - replace by the property's value.<br>
-	 *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
-	 *  usually in the form ${_property_name_}
-	 *
-	 * @param  value  String potentially containing one or more references to property
-	 * @return        String with all references resolved
-	 * @see           org.jetel.data.Defaults
-	 */
-	String resolvePropertyRef(String value) {
-		String reference;
-		String resolvedReference;
-		StringBuffer strBuf = new StringBuffer();
-		if (graphProperties != null) {
-			regexMatcher.reset(value);
-			while (regexMatcher.find()) {
-				reference = regexMatcher.group(1);
-				resolvedReference = graphProperties.getProperty(reference);
-				if (resolvedReference == null) {
-					throw new RuntimeException("Can't resolve reference to graph property: " + reference);
-				}
-				regexMatcher.appendReplacement(strBuf, resolvedReference);
-			}
-			regexMatcher.appendTail(strBuf);
-			return strBuf.toString();
-		} else {
-			return value;
-		}
-	}
-
-
+	
 	/**
 	 *  Returns the String value of specified XML attribute
 	 *
@@ -118,8 +82,8 @@ public class ComponentXMLAttributes {
 	 */
 	public String getString(String key) {
 		try {
-			return attributes.getNamedItem(key).getNodeValue();
-		} catch (Exception ex) {
+			return refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 	}
@@ -134,7 +98,7 @@ public class ComponentXMLAttributes {
 	 */
 	public String getString(String key, String defaultValue) {
 		try {
-			return attributes.getNamedItem(key).getNodeValue();
+			return refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
 		} catch (Exception ex) {
 			return defaultValue;
 		}
@@ -150,8 +114,8 @@ public class ComponentXMLAttributes {
 	public int getInteger(String key) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
-		} catch (Exception ex) {
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return Integer.parseInt(value);
@@ -168,7 +132,7 @@ public class ComponentXMLAttributes {
 	public int getInteger(String key, int defaultValue) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
 			return Integer.parseInt(value);
 		} catch (Exception ex) {
 			return defaultValue;
@@ -185,8 +149,8 @@ public class ComponentXMLAttributes {
 	public boolean getBoolean(String key) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
-		} catch (Exception ex) {
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return value.matches("^[tTyY].*");
@@ -203,7 +167,7 @@ public class ComponentXMLAttributes {
 	public boolean getBoolean(String key, boolean defaultValue) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
 			return value.matches("^[tTyY].*");
 		} catch (Exception ex) {
 			return defaultValue;
@@ -221,8 +185,8 @@ public class ComponentXMLAttributes {
 	public double getDouble(String key) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
-		} catch (Exception ex) {
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
 		return Double.parseDouble(value);
@@ -239,7 +203,7 @@ public class ComponentXMLAttributes {
 	public double getDouble(String key, double defaultValue) {
 		String value;
 		try {
-			value = attributes.getNamedItem(key).getNodeValue();
+			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
 			return Double.parseDouble(value);
 		} catch (Exception ex) {
 			return defaultValue;
@@ -336,25 +300,7 @@ public class ComponentXMLAttributes {
 		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[0]);
 	}
 
-/* Test/Debug code	
-	public static void main(String args[]){
-		Properties prop=new Properties();
-		try{
-		InputStream inStream = new BufferedInputStream(new FileInputStream(args[0]));
-		prop.load(inStream);
-		}catch(IOException ex){
-			ex.printStackTrace();
-		}
-		ComponentXMLAttributes attr=new ComponentXMLAttributes(null,prop);
-		System.out.println("DB driver is: '{${dbDriver}}' ...");
-		System.out.println(attr.resolvePropertyRef("DB driver is: '{${dbDriver}}' ..."));
-		System.out.println("${user} is user");
-		System.out.println(attr.resolvePropertyRef("${user} is user"));
-		System.out.println("${usr}/${password} is user/password");
-		System.out.println(attr.resolvePropertyRef("${usr}/${password} is user/password"));
-				
-	}
-*/
+
 }
 /*
  *  End class StringUtils
