@@ -56,7 +56,7 @@ public class Screen2d extends JPanel implements  FormInterface
   private JCheckBox OtherCheckBox = new JCheckBox();
   private JTextField OtherTextField = new JTextField();
   private JPanel jPanel2 = new JPanel();
-  private JCheckBox ConseqDelimitCheckBox = new JCheckBox();
+  //private JCheckBox ConseqDelimitCheckBox = new JCheckBox();
   private GridBagLayout gridBagLayout3 = new GridBagLayout();
   private JLabel jLabel3 = new JLabel();
   private JComboBox TextQualifierComboBox = new JComboBox();
@@ -126,8 +126,11 @@ public class Screen2d extends JPanel implements  FormInterface
     CommaCheckBox.setText("Comma");
     OtherCheckBox.setText("Other");
     jPanel2.setLayout(gridBagLayout3);
-    ConseqDelimitCheckBox.setText("Treat consecutive delimiters as one.");
-    jLabel3.setText("Text Qualifier");
+    //ConseqDelimitCheckBox.setText("Treat consecutive delimiters as one.");
+	TextQualifierComboBox.addItem("'");
+	TextQualifierComboBox.addItem("\"");
+	TextQualifierComboBox.addItem("{None}");
+    jLabel3.setText("Text Delimited by");
     this.add(jLabel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jLabel2, new GridBagConstraints(1, 0, 2, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jTextPane1, new GridBagConstraints(0, 1, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
@@ -140,7 +143,7 @@ public class Screen2d extends JPanel implements  FormInterface
     this.add(jPanel1, new GridBagConstraints(0, 2, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     this.add(DataPreviewPanel, new GridBagConstraints(0, 3, 3, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 20));
     this.add(FillerPanel, new GridBagConstraints(2, 4, 3, 1, 1.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
-    jPanel2.add(ConseqDelimitCheckBox, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
+    //jPanel2.add(ConseqDelimitCheckBox, new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
     jPanel2.add(jLabel3, new GridBagConstraints(1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     jPanel2.add(TextQualifierComboBox, new GridBagConstraints(2, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
     this.add(jPanel2, new GridBagConstraints(2, 2, 1, 1, 0.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, -7));
