@@ -18,10 +18,14 @@
 // FILE: c:/projects/jetel/org/jetel/data/DataRecord.java
 
 package org.jetel.data;
-import java.io.*;
-import java.nio.*;
-import org.jetel.metadata.DataRecordMetadata;
+import java.io.Serializable;
+import java.nio.ByteBuffer;
+
+import org.jetel.data.util.ClassBuilder;
+import org.jetel.exception.ClassCompilationException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.Compile;
 
 /**
  *  A class that represents one data record Fields are not deleted & created all
@@ -36,16 +40,21 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class DataRecord implements Serializable {
 
-	// Associations
 	/**
 	 *@since
 	 */
-	private transient DataRecordMetadata metadata;
+	private transient String codeClassName;
+
 	/**
 	 *@since
 	 */
 	private DataField fields[];
 
+	// Associations
+	/**
+	 *@since
+	 */
+	private transient DataRecordMetadata metadata;
 
 	// Attributes
 	/**
@@ -62,108 +71,6 @@ public class DataRecord implements Serializable {
 		fields = new DataField[metadata.getNumFields()];
 	}
 
-
-	/**
-	 *  Sets the Metadata attribute of the DataRecord object
-	 *
-	 *@param  metadata  The new Metadata value
-	 *@since            April 5, 2002
-	 */
-	public void setMetadata(DataRecordMetadata metadata) {
-		this.metadata = metadata;
-	}
-
-
-	/**
-	 *  An attribute that represents ... An operation that does ...
-	 *
-	 *@return    The Metadata value
-	 *@since
-	 */
-	public DataRecordMetadata getMetadata() {
-		return metadata;
-	}
-
-
-	/**
-	 *  An operation that does ...
-	 *
-	 *@return    The NumFields value
-	 *@since
-	 */
-	public int getNumFields() {
-		return metadata.getNumFields();
-	}
-
-
-	/**
-	 *  An operation that does ...
-	 *
-	 *@param  _name  Description of Parameter
-	 *@return        The Field value
-	 *@since
-	 */
-	public DataField getField(String _name) {
-		try {
-			return fields[metadata.getFieldPosition(_name)];
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
-	}
-
-
-	/**
-	 *  An operation that does ...
-	 *
-	 *@param  _fieldNum  Description of Parameter
-	 *@return            The Field value
-	 *@since
-	 */
-	public DataField getField(int _fieldNum) {
-		try {
-			return fields[_fieldNum];
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@since    April 5, 2002
-	 */
-	public void init() {
-		DataFieldMetadata fieldMetadata;
-		// create appropriate data fields based on metadata supplied
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldMetadata = metadata.getField(i);
-			fields[i] = DataFieldFactory.createDataField(fieldMetadata.getType(), fieldMetadata);
-		}
-	}
-
-
-	/**
-	 *  An operation that sets value of all data fields to their default value.
-	 */
-	public void setToDefaultValue() {
-		for (int i = 0; i < fields.length; i++) {
-			fields[i].setToDefaultValue();
-		}
-	}
-
-
-	/**
-	 *  An operation that sets value of the selected data field to its default
-	 *  value.
-	 *
-	 *@param  _fieldNum  The new toDefaultValue value
-	 */
-	public void setToDefaultValue(int _fieldNum) {
-		fields[_fieldNum].setToDefaultValue();
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -177,20 +84,6 @@ public class DataRecord implements Serializable {
 		}
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  buffer  Description of Parameter
-	 *@since          April 23, 2002
-	 */
-	public void serialize(ByteBuffer buffer) {
-		for (int i = 0; i < fields.length; i++) {
-			fields[i].serialize(buffer);
-		}
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -202,7 +95,6 @@ public class DataRecord implements Serializable {
 			fields[i].deserialize(buffer);
 		}
 	}
-
 
 	/**
 	 *  Description of the Method
@@ -228,6 +120,170 @@ public class DataRecord implements Serializable {
 		return true;
 	}
 
+	public String getCodeClassName() {
+		return codeClassName;
+	}
+
+	/**
+	 *  An operation that does ...
+	 *
+	 *@param  _fieldNum  Description of Parameter
+	 *@return            The Field value
+	 *@since
+	 */
+	public DataField getField(int _fieldNum) {
+		try {
+			return fields[_fieldNum];
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+
+	/**
+	 *  An operation that does ...
+	 *
+	 *@param  _name  Description of Parameter
+	 *@return        The Field value
+	 *@since
+	 */
+	public DataField getField(String _name) {
+		try {
+			return fields[metadata.getFieldPosition(_name)];
+		} catch (IndexOutOfBoundsException e) {
+			return null;
+		}
+	}
+
+	/**
+	 *  An attribute that represents ... An operation that does ...
+	 *
+	 *@return    The Metadata value
+	 *@since
+	 */
+	public DataRecordMetadata getMetadata() {
+		return metadata;
+	}
+
+	/**
+	 *  An operation that does ...
+	 *
+	 *@return    The NumFields value
+	 *@since
+	 */
+	public int getNumFields() {
+		return metadata.getNumFields();
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@since    April 5, 2002
+	 */
+	public void init() {
+		DataFieldMetadata fieldMetadata;
+		// create appropriate data fields based on metadata supplied
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			fieldMetadata = metadata.getField(i);
+			fields[i] =
+				DataFieldFactory.createDataField(
+					fieldMetadata.getType(),
+					fieldMetadata);
+		}
+	}
+
+	/**
+	 *  This initialization method should be used preferably as
+	 * it supports code property functionality.
+	 *
+	 *@since    April 5, 2002
+	 */
+	public void init(DataRecordMetadata[] arrayDataRecordMetadata) {
+		DataFieldMetadata fieldMetadata;
+		ClassBuilder aClassBuilder = null;
+		String tmpCode = null;
+		int[][] sequencedDependencies = null;
+		// create appropriate data fields based on metadata supplied
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			fieldMetadata = metadata.getField(i);
+
+			//if there is no code fields then we do not have to worry
+			//about setting up [record][field] mapping and compiling
+			tmpCode = fieldMetadata.getCodeStr();
+			if (tmpCode != null) {
+				if (aClassBuilder == null) {
+					aClassBuilder =
+						new ClassBuilder(this, arrayDataRecordMetadata);
+				}
+				sequencedDependencies = aClassBuilder.constructMethod(tmpCode);
+				// does tmpCode contain refs to this and/or other fields
+
+				fields[i] =
+					DataFieldFactory.createDataField(
+						fieldMetadata.getType(),
+						fieldMetadata,
+						aClassBuilder.getMethodName(),
+						sequencedDependencies);
+			} else {
+				fields[i] =
+					DataFieldFactory.createDataField(
+						fieldMetadata.getType(),
+						fieldMetadata);
+			}
+		}
+		setCodeClassName(aClassBuilder.getClassName());
+		try {
+			Compile.compileClass(aClassBuilder.getClassName());
+		} catch (ClassCompilationException e) {
+			e.printStackTrace();
+			throw new RuntimeException(
+				aClassBuilder.getClassName() + "  " + e.getMessage());
+		}
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  buffer  Description of Parameter
+	 *@since          April 23, 2002
+	 */
+	public void serialize(ByteBuffer buffer) {
+		for (int i = 0; i < fields.length; i++) {
+			fields[i].serialize(buffer);
+		}
+	}
+
+	public void setCodeClassName(String codeClassName) {
+		this.codeClassName = codeClassName;
+	}
+
+	/**
+	 *  Sets the Metadata attribute of the DataRecord object
+	 *
+	 *@param  metadata  The new Metadata value
+	 *@since            April 5, 2002
+	 */
+	public void setMetadata(DataRecordMetadata metadata) {
+		this.metadata = metadata;
+	}
+
+	/**
+	 *  An operation that sets value of all data fields to their default value.
+	 */
+	public void setToDefaultValue() {
+		for (int i = 0; i < fields.length; i++) {
+			fields[i].setToDefaultValue();
+		}
+	}
+
+	/**
+	 *  An operation that sets value of the selected data field to its default
+	 *  value.
+	 *
+	 *@param  _fieldNum  The new toDefaultValue value
+	 */
+	public void setToDefaultValue(int _fieldNum) {
+		fields[_fieldNum].setToDefaultValue();
+	}
 
 	/**
 	 *  Creates textual representation of record's content based on values of individual
@@ -248,4 +304,3 @@ public class DataRecord implements Serializable {
 /*
  *  end class DataRecord
  */
-

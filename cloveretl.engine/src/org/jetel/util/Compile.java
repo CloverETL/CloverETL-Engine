@@ -1,7 +1,6 @@
 /*
  *  jETeL/Clover - Java based ETL application framework.
- *  Created on Mar 26, 2003
- *  Copyright (C) 2003, 2002  David Pavlis, Wes Maciorowski
+ *  Copyright (C) 2002  David Pavlis
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,36 +14,33 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ *  Created on May 31, 2003
  */
+package org.jetel.util;
 
-package test.org.jetel.util;
+import java.io.File;
 
-import junit.framework.*;
+import org.jetel.exception.*;
 
 /**
- * @author maciorowski
- * @version 1.0
+ * @author Wes Maciorowski
  *
  */
+public class Compile {
 
-public class UtilTestSuite extends TestSuite {
+	public static boolean compileClass(String className, String classDirectory)
+		throws ClassCompilationException {
 
-	public static Test suite() {
+		String tmpLocation = System.getProperty("user.dir");
+		String[] args = new String[] { "-d", tmpLocation +File.separator+classDirectory, className };
 
-		TestSuite suite = new TestSuite("All org.jetel.util Tests");
+		int status = com.sun.tools.javac.Main.compile(args);
 
-		suite.addTest(new TestSuite(test.org.jetel.util.StringUtilsTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.ClassBuilderTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CompileTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CreateJavaObjectTest.class));
-		return suite;
+		if (status != 0)
+			throw new ClassCompilationException(className);
 
-	}
-
-	public static void main(String[] args) {
-
-		junit.textui.TestRunner.run(suite());
-
+		return true;
 	}
 
 }
