@@ -1,7 +1,6 @@
 /*
  *  jETeL/Clover - Java based ETL application framework.
- *  Created on Mar 26, 2003
- *  Copyright (C) 2003, 2002  David Pavlis, Wes Maciorowski
+ *  Copyright (C) 2002  David Pavlis
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,35 +15,14 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
-package test.org.jetel.util;
-
-import junit.framework.*;
+package org.jetel.exception;
 
 /**
- * @author maciorowski
- * @version 1.0
+ * @author Wes Maciorowski
  *
  */
-
-public class UtilTestSuite extends TestSuite {
-
-	public static Test suite() {
-
-		TestSuite suite = new TestSuite("All org.jetel.util Tests");
-
-		suite.addTest(new TestSuite(test.org.jetel.util.StringUtilsTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.ClassBuilderTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CompileTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CreateJavaObjectTest.class));
-		return suite;
-
+public class ClassCompilationException extends Exception {
+	public ClassCompilationException(String className) {
+			super(className);
 	}
-
-	public static void main(String[] args) {
-
-		junit.textui.TestRunner.run(suite());
-
-	}
-
 }

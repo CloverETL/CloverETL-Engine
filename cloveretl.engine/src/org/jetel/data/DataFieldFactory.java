@@ -53,5 +53,17 @@ public class DataFieldFactory {
 		}
 	}
 
+	/**
+	 * @param c
+	 * @param fieldMetadata
+	 * @param object
+	 * @param sequencedDependencies
+	 * @return
+	 */
+	public static DataField createDataField(char c, DataFieldMetadata fieldMetadata, String methodName, int[][] sequencedDependencies) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }
 
