@@ -5,23 +5,24 @@ package org.jetel.interpreter;
 import java.util.regex.*;
 
 public class CLVFRegexLiteral extends SimpleNode {
-
-  Matcher matcher;
-
-  public CLVFRegexLiteral(int id) {
-    super(id);
-  }
-
-  public CLVFRegexLiteral(FilterExpParser p, int id) {
-    super(p, id);
-  }
-
-  void setRegex(String regex){
-  	matcher=Pattern.compile(regex.substring(1,regex.length()-1)).matcher(new String("dummy"));
-  }
-
-  public void interpret()
-  {
-     stack.push(matcher);
-  }
+	
+	Matcher matcher;
+	
+	public CLVFRegexLiteral(int id) {
+		super(id);
+	}
+	
+	public CLVFRegexLiteral(FilterExpParser p, int id) {
+	    super(p, id);
+	  }
+	
+	/** Accept the visitor. **/
+	public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+		return visitor.visit(this, data);
+	}
+	
+	void setRegex(String regex){
+		matcher=Pattern.compile(regex.substring(1,regex.length()-1)).matcher(new String("dummy"));
+	}
+	
 }

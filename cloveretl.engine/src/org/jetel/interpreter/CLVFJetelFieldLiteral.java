@@ -5,28 +5,29 @@ package org.jetel.interpreter;
 import org.jetel.data.DataField;
 
 public class CLVFJetelFieldLiteral extends SimpleNode {
-
-  DataField field;
-
-  public CLVFJetelFieldLiteral(int id) {
-    super(id);
-  }
-
-  public CLVFJetelFieldLiteral(FilterExpParser p, int id) {
-    super(p, id);
-  }
-  
-  public void setFieldName(String fName) throws ParseException{
-  	// get rid of leading '$' character (the 1st character)
-  	fName=fName.substring(1);
-  	field=parser.getDataRecord().getField(fName);
-  	if (field==null){
-  		throw new ParseException("Wrong field name when parsing filtering condition: "+fName);
-  	}
-  }
-
-  public void interpret()
-  {
-    stack.push(field);
-  }
+	
+	DataField field;
+	
+	public CLVFJetelFieldLiteral(int id) {
+		super(id);
+	}
+	
+	public CLVFJetelFieldLiteral(FilterExpParser p, int id) {
+		super(p, id);
+	}
+	
+	/** Accept the visitor. **/
+	public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+		return visitor.visit(this, data);
+	}
+	
+	public void setFieldName(String fName) throws ParseException{
+		// get rid of leading '$' character (the 1st character)
+		fName=fName.substring(1);
+		field=parser.getDataRecord().getField(fName);
+		if (field==null){
+			throw new ParseException("Wrong field name when parsing filtering condition: "+fName);
+		}
+	}
+	
 }

@@ -29,9 +29,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Node;
+import org.jetel.interpreter.CLVFStart;
 import org.jetel.interpreter.FilterExpParser;
-import org.jetel.interpreter.SimpleNode;
-import org.jetel.interpreter.Stack;
+import org.jetel.interpreter.FilterExpParserExecutor;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -57,31 +57,53 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>It can filter on text, date, integer, numeric
  * fields with comparison <code>[>, <, ==, =<, >=, !=]</code><br>
- * Text fields can also be compared to a
- * Java regexp. using ~= (tilda,equal sign) characters<br>
+ * Text fields/expressions can also be compared to a
+ * Java regexp. using <tt>~=</tt> (tilda,equal sign) characters<br>
  * A filter can be made of different parts separated by a logical
  * operator AND, OR. You can as well use parenthesis to give precendence<br> 
- * <b>NoteL</b>Date format used for specifying date value is yyyy-MM-dd for
- * dates only and yyyy-MM-dd HH:mm:ss for date&time.
+ * <b>Note:</b>Date format used for specifying date value is <tt>yyyy-MM-dd</tt> for
+ * dates only and <tt>yyyy-MM-dd HH:mm:ss</tt> for date&time.
  * When referencing particular field, you have to precede field's name with 
- * dollar [$] sign - e.g. $FirstName.
+ * dollar [$] sign - e.g. $FirstName.<br>
+ * To ease the burden of converting comparison operators to XML-compatible form,
+ * each operator has its textual abbreviation - <tt>[.eq. .ne. .lt. .le. .gt. .ge.]</tt><br>
+ * Built-in functions you can use in expressions:
+ * <ul>
+ * <li>today()
+ * <li>uppercase( ..str expression.. )
+ * <li>lowercase( ..str expression.. )
+ * <li>substring( ..str expression.. , from, length)
+ * <li>trim( .. str expression.. )
+ * <li>length( ..str expression.. )
+ * <li>isnull( <field reference> )
+ * <li>concat( ..str expression.., ..str expression.. , ...... )
+ * <li>dateadd( ..date expression.., ..amount.. , year|month|day )
+ * </ul> 
  * </td></tr>
  * </table>
  *  <br>  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"FILTER"</td></tr>
+ *  <tr><td><b>type</b></td><td>"EXT_FILTER"</td></tr>
  *  <tr><td><b>id</b></td>
  *  <td>component identification</td>
  *  </tr>
  *  <tr><td><b>filterExpression</b></td><td>Expression used for filtering records. <i>See above.</i></td></tr>
  *  </table>
- * 
- *  <h4>Example:</h4>
+ * <i>Note: you can also put the expression inside the XML Node - see examples.</i>
+ *  <h4>Examples:</h4>
  * Want to filter on HireDate field. HireDate must be less than 31st of December 1993<br>
- *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="$HireDate &amp;lt; &quot;1993-12-31&quot;"/&gt;</pre>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$HireDate &amp;lt; &quot;1993-12-31&quot;"/&gt;</pre>
  * Want to filter on Name and Age fields. Name must start with 'A' char and Age must be greater than 25<br> 
- * <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="$Name~=&quot;^A.*&quot; and $Age &amp;gt;25"/&gt;</pre>
+ * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER" filterExpression="$Name~=&quot;^A.*&quot; and $Age &amp;gt;25"/&gt;</pre>
+ * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER"&gt;
+ * $Name~="^A.*" and $Age.gt.25
+ *&lt;/Node&gt;</pre>
+ * More complex example showing how to use various built-in functions.<br>
+ * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER"&gt;
+ * ( trim($CustomerName)~=".*Peter.*" or $DateSale==dateadd(today(),-1,month)) and $Age*2.lt.$Weight-10
+ *&lt;/Node&gt;</pre>
+ * </pre>
  * <br>
  * <b>Hint:</b> If you have combination of filtering expressions connected by AND operator, it
  * is wise to write first those which can be quickly evaluated - comparing integers, numbers, dates.
@@ -101,7 +123,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	private final static int REJECTED_PORT=1;
 	
 	private ByteBuffer recordBuffer;
-	private SimpleNode recordFilter;
+	private CLVFStart  recordFilter;
 	private String filterExpression;
 	private DataRecord record;
 	
@@ -120,7 +142,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
 		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
 		boolean isData=true;
-		Stack stack=recordFilter.getStack();
+		FilterExpParserExecutor executor=new FilterExpParserExecutor();
+	      
 		
 		while(isData && runIt){
 			try{
@@ -129,8 +152,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 					isData = false;
 					break;
 				}
-				recordFilter.interpret();
-				if (((Boolean)stack.pop()).booleanValue()){
+				executor.visit(recordFilter,null);
+				if (((Boolean)executor.getResult()).booleanValue()){
 					outPort.writeRecord(record);
 				}else if (rejectedPort!=null){
 					rejectedPort.writeRecord(record);
@@ -139,6 +162,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 			}catch(IOException ex){
 				resultMsg=ex.getMessage();
 				resultCode=Node.RESULT_ERROR;
+				closeAllOutputPorts();
+				return;
+			}catch(ClassCastException ex){
+				resultMsg="Invalid filter expression - does not evaluate to TRUE/FALSE !";
+				resultCode=Node.RESULT_FATAL_ERROR;
 				closeAllOutputPorts();
 				return;
 			}catch(Exception ex){

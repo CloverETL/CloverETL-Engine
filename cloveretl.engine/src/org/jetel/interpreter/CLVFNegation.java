@@ -11,10 +11,9 @@ public class CLVFNegation extends SimpleNode {
     super(p, id);
   }
 
-  public void interpret()
-  {
-     jjtGetChild(0).interpret();
-     stack.push( ((Boolean)stack.pop()).booleanValue() ? Stack.FALSE_VAL 
-     													: Stack.TRUE_VAL);
+
+  /** Accept the visitor. **/
+  public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+    return visitor.visit(this, data);
   }
 }

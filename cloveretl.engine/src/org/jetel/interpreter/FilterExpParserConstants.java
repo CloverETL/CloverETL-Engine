@@ -8,27 +8,34 @@ public interface FilterExpParserConstants {
   int AND = 7;
   int NOT = 8;
   int INTEGER_LITERAL = 9;
-  int DECIMAL_LITERAL = 10;
-  int HEX_LITERAL = 11;
-  int OCTAL_LITERAL = 12;
-  int FLOATING_POINT_LITERAL = 13;
-  int EXPONENT = 14;
-  int CHARACTER_LITERAL = 15;
+  int DIGIT = 10;
+  int DECIMAL_LITERAL = 11;
+  int HEX_LITERAL = 12;
+  int OCTAL_LITERAL = 13;
+  int FLOATING_POINT_LITERAL = 14;
+  int EXPONENT = 15;
   int STRING_LITERAL = 16;
-  int STRING_ARRAY = 17;
-  int INTEGER_ARRAY = 18;
-  int FLOATING_POINT_ARRAY = 19;
-  int EQUAL = 20;
-  int NON_EQUAL = 21;
-  int LESS_THAN = 22;
-  int LESS_THAN_EQUAL = 23;
-  int GREATER_THAN = 24;
-  int GREATER_THAN_EQUAL = 25;
-  int REGEX_EQUAL = 26;
-  int OPERATOR = 27;
-  int FIELD_ID = 28;
-  int OPEN_PAR = 29;
-  int CLOSE_PAR = 30;
+  int QUOTED_STRING = 17;
+  int DQUOTED_STRING = 18;
+  int DATE_LITERAL = 19;
+  int DATETIME_LITERAL = 20;
+  int EQUAL = 21;
+  int NON_EQUAL = 22;
+  int LESS_THAN = 23;
+  int LESS_THAN_EQUAL = 24;
+  int GREATER_THAN = 25;
+  int GREATER_THAN_EQUAL = 26;
+  int REGEX_EQUAL = 27;
+  int CMPOPERATOR = 28;
+  int MINUS = 29;
+  int PLUS = 30;
+  int MULTIPLY = 31;
+  int DIVIDE = 32;
+  int MODULO = 33;
+  int FIELD_ID = 34;
+  int OPEN_PAR = 35;
+  int CLOSE_PAR = 36;
+  int DATE_FIELD_LITERAL = 48;
 
   int DEFAULT = 0;
 
@@ -43,27 +50,45 @@ public interface FilterExpParserConstants {
     "<AND>",
     "<NOT>",
     "<INTEGER_LITERAL>",
+    "<DIGIT>",
     "<DECIMAL_LITERAL>",
     "<HEX_LITERAL>",
     "<OCTAL_LITERAL>",
     "<FLOATING_POINT_LITERAL>",
     "<EXPONENT>",
-    "<CHARACTER_LITERAL>",
     "<STRING_LITERAL>",
-    "<STRING_ARRAY>",
-    "<INTEGER_ARRAY>",
-    "<FLOATING_POINT_ARRAY>",
-    "\"==\"",
+    "<QUOTED_STRING>",
+    "<DQUOTED_STRING>",
+    "<DATE_LITERAL>",
+    "<DATETIME_LITERAL>",
+    "<EQUAL>",
     "<NON_EQUAL>",
-    "\"<\"",
-    "\"<=\"",
-    "\">\"",
-    "\">=\"",
-    "\"~=\"",
-    "<OPERATOR>",
+    "<LESS_THAN>",
+    "<LESS_THAN_EQUAL>",
+    "<GREATER_THAN>",
+    "<GREATER_THAN_EQUAL>",
+    "<REGEX_EQUAL>",
+    "<CMPOPERATOR>",
+    "\"-\"",
+    "\"+\"",
+    "\"*\"",
+    "\"/\"",
+    "\"%\"",
     "<FIELD_ID>",
     "\"(\"",
     "\")\"",
+    "\";\"",
+    "\"substring\"",
+    "\",\"",
+    "\"uppercase\"",
+    "\"lowercase\"",
+    "\"trim\"",
+    "\"length\"",
+    "\"today\"",
+    "\"isnull\"",
+    "\"concat\"",
+    "\"dateadd\"",
+    "<DATE_FIELD_LITERAL>",
   };
 
 }

@@ -3,11 +3,13 @@
     Clover.ETL - filtering conditions grammar.
     (c) 2004 David.Pavlis <david_pavlis@hotmail.com>
     Released under LGPL license.
+    
+    (Adapted from Ken Beesley and Metamata's javacc 'Interpreter' example.)
+ 
 */
 
 options {                
-   STATIC=false;                           
-   LOOKAHEAD=2;                                                                  
+   STATIC=false;                                                                                                                
 }
 
 
@@ -25,19 +27,12 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
 /*@egen*/
 
        DataRecord dataRecord;
-       Stack stack;
 
        public FilterExpParser(DataRecord record,java.io.InputStream stream){
               this(stream);
               dataRecord=record;
-              stack=new Stack();
-              
       }
-      
-      public Stack getStack(){
-         return stack;
-      }
-      
+
       public DataRecord getDataRecord(){
              return dataRecord;
       }
@@ -60,36 +55,43 @@ TOKEN [IGNORE_CASE]: {
 /* Literals */
 TOKEN : {
  <INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? | <HEX_LITERAL> (["l","L"])? | <OCTAL_LITERAL> (["l","L"])?>
+|  <#DIGIT: ["0"-"9"]>
 |  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
 |  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
 |  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
-|  <FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|<FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
-|  <STRING_LITERAL: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+|  <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
+|  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
+|  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+// |<BOOLEAN_LITERAL: "true" | "false" >
+|<DATE_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? >
+|<DATETIME_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? " " <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)?>
 }
 
-/* Array of literals */
+/* Comparison Operators */
 TOKEN: {
- <STRING_ARRAY: "[" <STRING_LITERAL> ( "," <STRING_LITERAL>)* "]">
-|<INTEGER_ARRAY: "[" <INTEGER_LITERAL> ( "," <INTEGER_LITERAL>)* "]">
-|<FLOATING_POINT_ARRAY: "[" <FLOATING_POINT_LITERAL> ( "," <FLOATING_POINT_LITERAL>)* "]">
-}
-
-/* Operators */
-TOKEN: {
-  < EQUAL: "==" >
-| < NON_EQUAL: "!=" | "<>" >
-| < LESS_THAN: "<" >
-| < LESS_THAN_EQUAL: "<=" >
-| < GREATER_THAN: ">" >
-| < GREATER_THAN_EQUAL: ">=" >
-| < REGEX_EQUAL: "~=" >
+  < EQUAL: "==" | ".eq.">
+| < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < LESS_THAN: "<" | ".lt." >
+| < LESS_THAN_EQUAL: "<=" | ".le." >
+| < GREATER_THAN: ">" | ".gt.">
+| < GREATER_THAN_EQUAL: ">=" | ".ge." >
+| < REGEX_EQUAL: "~=" | ".regex." >
 }
 
 TOKEN: {
-<#OPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
+<CMPOPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
 | <GREATER_THAN_EQUAL> | <REGEX_EQUAL> >
+}
+
+/* Numeric Operators */
+TOKEN: {
+ <MINUS: "-" >
+| <PLUS: "+">
+| <MULTIPLY: "*">
+| <DIVIDE: "/">
+| <MODULO: "%">
 }
 
 /* Field Identifiers */
@@ -103,20 +105,9 @@ TOKEN: {
   <CLOSE_PAR: ")">
 }
 
-/* *** Context-free grammar (EBNF) *** */
-
-/* Each nonterminal is written like a kind of method, containing all its
-   productions. JavaC will generate a parsing method for each nonterminal.
-
-   Note: In the start nonterminal, the action "return jjtThis;" instructs
-   JavaCC to return the resulting parse tree from the generated parsing
-   method. Therefore the start nonterminal has a result type (SimpleNode).
-   All other nonterminals have no result type (void).
-*/
-
 /* The start nonterminal and its productions. */
 
-SimpleNode Start() : {/*@bgen(jjtree) Start */
+CLVFStart Start() : {/*@bgen(jjtree) Start */
   CLVFStart jjtn000 = new CLVFStart(this, JJTSTART);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
@@ -124,7 +115,7 @@ SimpleNode Start() : {/*@bgen(jjtree) Start */
 {/*@bgen(jjtree) Start */
   try {
 /*@egen*/
-  LExpression() <EOF>/*@bgen(jjtree)*/
+  CompilationUnit() <EOF>/*@bgen(jjtree)*/
   {
     jjtree.closeNodeScope(jjtn000, true);
     jjtc000 = false;
@@ -153,11 +144,28 @@ SimpleNode Start() : {/*@bgen(jjtree) Start */
 /*@egen*/
 }
 
+void CompilationUnit()       :
+{
+}
+{
+	Statement()
+   ( ";" 
+       Statement()
+   )*
+}
+
+void Statement()       : {}
+{
+    //LOOKAHEAD(3) AdditiveExpression()
+    ConditionalOrExpression()
+    
+}
+
 /* Other nonterminals and their productions */
 
-void LExpression()       : {}        // Exp -> XFactor [XFactor]
+void ConditionalOrExpression()       : {}        
 {
-   LPrimaryExpression()
+   ConditionalAndExpression()
    ( <OR>/*@bgen(jjtree) #Or( 2) */
           {
             CLVFOr jjtn001 = new CLVFOr(this, JJTOR);
@@ -165,7 +173,7 @@ void LExpression()       : {}        // Exp -> XFactor [XFactor]
             jjtree.openNodeScope(jjtn001);
           }
           try {
-/*@egen*/ LPrimaryExpression()/*@bgen(jjtree)*/
+/*@egen*/ ConditionalAndExpression()/*@bgen(jjtree)*/
           } catch (Throwable jjte001) {
             if (jjtc001) {
               jjtree.clearNodeScope(jjtn001);
@@ -188,9 +196,9 @@ void LExpression()       : {}        // Exp -> XFactor [XFactor]
 /*@egen*/ )*
 }
 
-void LPrimaryExpression()       : {}
+void ConditionalAndExpression()       : {}
 {
-   Condition()
+   EqualityExpression()
    ( <AND>/*@bgen(jjtree) #And( 2) */
            {
              CLVFAnd jjtn001 = new CLVFAnd(this, JJTAND);
@@ -198,7 +206,7 @@ void LPrimaryExpression()       : {}
              jjtree.openNodeScope(jjtn001);
            }
            try {
-/*@egen*/ Condition()/*@bgen(jjtree)*/
+/*@egen*/ EqualityExpression()/*@bgen(jjtree)*/
            } catch (Throwable jjte001) {
              if (jjtc001) {
                jjtree.clearNodeScope(jjtn001);
@@ -221,210 +229,498 @@ void LPrimaryExpression()       : {}
 /*@egen*/ ) *
 }
 
-
-void Condition()       : {}
+void EqualityExpression()       :
+{}
 {
-     <NOT>/*@bgen(jjtree) Negation */
-           {
-             CLVFNegation jjtn001 = new CLVFNegation(this, JJTNEGATION);
-             boolean jjtc001 = true;
-             jjtree.openNodeScope(jjtn001);
-           }
-           try {
-/*@egen*/ PrimaryCondition()/*@bgen(jjtree)*/
-           } catch (Throwable jjte001) {
-             if (jjtc001) {
-               jjtree.clearNodeScope(jjtn001);
-               jjtc001 = false;
-             } else {
-               jjtree.popNode();
-             }
-             if (jjte001 instanceof RuntimeException) {
-               throw (RuntimeException)jjte001;
-             }
-             if (jjte001 instanceof ParseException) {
-               throw (ParseException)jjte001;
-             }
-             throw (Error)jjte001;
-           } finally {
-             if (jjtc001) {
-               jjtree.closeNodeScope(jjtn001, true);
-             }
-           }
-/*@egen*/
-     | PrimaryCondition()
-}
-
-void PrimaryCondition()       : {}
-{
-  IDExp() <EQUAL> Literal()/*@bgen(jjtree) #Comparison( 2) */
-                             {
-                               CLVFComparison jjtn001 = new CLVFComparison(this, JJTCOMPARISON);
-                               boolean jjtc001 = true;
-                               jjtree.openNodeScope(jjtn001);
-                             }
-                             try {
-/*@egen*//*@bgen(jjtree)*/
-                             {
-                               jjtree.closeNodeScope(jjtn001,  2);
-                               jjtc001 = false;
-                             }
-/*@egen*/  { jjtn001.cmpType=EQUAL; }/*@bgen(jjtree)*/
-                             } finally {
-                               if (jjtc001) {
-                                 jjtree.closeNodeScope(jjtn001,  2);
-                               }
-                             }
-/*@egen*/
-  |IDExp() <NON_EQUAL> Literal()/*@bgen(jjtree) #Comparison( 2) */
-                                 {
-                                   CLVFComparison jjtn002 = new CLVFComparison(this, JJTCOMPARISON);
-                                   boolean jjtc002 = true;
-                                   jjtree.openNodeScope(jjtn002);
-                                 }
-                                 try {
-/*@egen*//*@bgen(jjtree)*/
-                                 {
-                                   jjtree.closeNodeScope(jjtn002,  2);
-                                   jjtc002 = false;
-                                 }
-/*@egen*/ { jjtn002.cmpType=NON_EQUAL; }/*@bgen(jjtree)*/
-                                 } finally {
-                                   if (jjtc002) {
-                                     jjtree.closeNodeScope(jjtn002,  2);
-                                   }
-                                 }
-/*@egen*/
-  |IDExp() <LESS_THAN> Literal()/*@bgen(jjtree) #Comparison( 2) */
-                                 {
-                                   CLVFComparison jjtn003 = new CLVFComparison(this, JJTCOMPARISON);
-                                   boolean jjtc003 = true;
-                                   jjtree.openNodeScope(jjtn003);
-                                 }
-                                 try {
-/*@egen*//*@bgen(jjtree)*/
-                                 {
-                                   jjtree.closeNodeScope(jjtn003,  2);
-                                   jjtc003 = false;
-                                 }
-/*@egen*/ { jjtn003.cmpType=LESS_THAN; }/*@bgen(jjtree)*/
-                                 } finally {
-                                   if (jjtc003) {
-                                     jjtree.closeNodeScope(jjtn003,  2);
-                                   }
-                                 }
-/*@egen*/
-  |IDExp() <GREATER_THAN> Literal()/*@bgen(jjtree) #Comparison( 2) */
+  RelationalExpression()
+  (
+     <EQUAL> RelationalExpression()/*@bgen(jjtree) #Comparison( 2) */
                                     {
-                                      CLVFComparison jjtn004 = new CLVFComparison(this, JJTCOMPARISON);
-                                      boolean jjtc004 = true;
-                                      jjtree.openNodeScope(jjtn004);
+                                      CLVFComparison jjtn001 = new CLVFComparison(this, JJTCOMPARISON);
+                                      boolean jjtc001 = true;
+                                      jjtree.openNodeScope(jjtn001);
                                     }
                                     try {
 /*@egen*//*@bgen(jjtree)*/
                                     {
-                                      jjtree.closeNodeScope(jjtn004,  2);
-                                      jjtc004 = false;
+                                      jjtree.closeNodeScope(jjtn001,  2);
+                                      jjtc001 = false;
                                     }
-/*@egen*/ { jjtn004.cmpType=GREATER_THAN; }/*@bgen(jjtree)*/
+/*@egen*/ { jjtn001.cmpType=EQUAL; }/*@bgen(jjtree)*/
                                     } finally {
-                                      if (jjtc004) {
-                                        jjtree.closeNodeScope(jjtn004,  2);
+                                      if (jjtc001) {
+                                        jjtree.closeNodeScope(jjtn001,  2);
                                       }
                                     }
 /*@egen*/
-  |IDExp() <LESS_THAN_EQUAL> Literal()/*@bgen(jjtree) #Comparison( 2) */
-                                       {
-                                         CLVFComparison jjtn005 = new CLVFComparison(this, JJTCOMPARISON);
-                                         boolean jjtc005 = true;
-                                         jjtree.openNodeScope(jjtn005);
-                                       }
-                                       try {
-/*@egen*//*@bgen(jjtree)*/
-                                       {
-                                         jjtree.closeNodeScope(jjtn005,  2);
-                                         jjtc005 = false;
-                                       }
-/*@egen*/ { jjtn005.cmpType=LESS_THAN_EQUAL; }/*@bgen(jjtree)*/
-                                       } finally {
-                                         if (jjtc005) {
-                                           jjtree.closeNodeScope(jjtn005,  2);
-                                         }
-                                       }
-/*@egen*/
-  |IDExp() <GREATER_THAN_EQUAL> Literal()/*@bgen(jjtree) #Comparison( 2) */
-                                          {
-                                            CLVFComparison jjtn006 = new CLVFComparison(this, JJTCOMPARISON);
-                                            boolean jjtc006 = true;
-                                            jjtree.openNodeScope(jjtn006);
-                                          }
-                                          try {
-/*@egen*//*@bgen(jjtree)*/
-                                          {
-                                            jjtree.closeNodeScope(jjtn006,  2);
-                                            jjtc006 = false;
-                                          }
-/*@egen*/ { jjtn006.cmpType=GREATER_THAN_EQUAL; }/*@bgen(jjtree)*/
-                                          } finally {
-                                            if (jjtc006) {
-                                              jjtree.closeNodeScope(jjtn006,  2);
-                                            }
-                                          }
-/*@egen*/
-  |IDExp() <REGEX_EQUAL> RegexLiteral()/*@bgen(jjtree) #Comparison( 2) */
+   |
+     <NON_EQUAL> RelationalExpression()/*@bgen(jjtree) #Comparison( 2) */
                                         {
-                                          CLVFComparison jjtn007 = new CLVFComparison(this, JJTCOMPARISON);
-                                          boolean jjtc007 = true;
-                                          jjtree.openNodeScope(jjtn007);
+                                          CLVFComparison jjtn002 = new CLVFComparison(this, JJTCOMPARISON);
+                                          boolean jjtc002 = true;
+                                          jjtree.openNodeScope(jjtn002);
                                         }
                                         try {
 /*@egen*//*@bgen(jjtree)*/
                                         {
-                                          jjtree.closeNodeScope(jjtn007,  2);
-                                          jjtc007 = false;
+                                          jjtree.closeNodeScope(jjtn002,  2);
+                                          jjtc002 = false;
                                         }
-/*@egen*/ { jjtn007.cmpType=REGEX_EQUAL; }/*@bgen(jjtree)*/
+/*@egen*/ { jjtn002.cmpType=NON_EQUAL; }/*@bgen(jjtree)*/
                                         } finally {
-                                          if (jjtc007) {
-                                            jjtree.closeNodeScope(jjtn007,  2);
+                                          if (jjtc002) {
+                                            jjtree.closeNodeScope(jjtn002,  2);
                                           }
                                         }
 /*@egen*/
-  | <OPEN_PAR> LExpression() <CLOSE_PAR>
+  )*
 }
 
-
-void Literal()       : {}
+void RelationalExpression()       :
+{}
 {
-     SLitExp()
-     |FPLitExp()
-     |IntLitExp()
+  AdditiveExpression()
+  (
+    <LESS_THAN> AdditiveExpression()/*@bgen(jjtree) #Comparison( 2) */
+                                     {
+                                       CLVFComparison jjtn001 = new CLVFComparison(this, JJTCOMPARISON);
+                                       boolean jjtc001 = true;
+                                       jjtree.openNodeScope(jjtn001);
+                                     }
+                                     try {
+/*@egen*//*@bgen(jjtree)*/
+                                     {
+                                       jjtree.closeNodeScope(jjtn001,  2);
+                                       jjtc001 = false;
+                                     }
+/*@egen*/ { jjtn001.cmpType=LESS_THAN; }/*@bgen(jjtree)*/
+                                     } finally {
+                                       if (jjtc001) {
+                                         jjtree.closeNodeScope(jjtn001,  2);
+                                       }
+                                     }
+/*@egen*/
+   |
+    <GREATER_THAN> AdditiveExpression()/*@bgen(jjtree) #Comparison( 2) */
+                                        {
+                                          CLVFComparison jjtn002 = new CLVFComparison(this, JJTCOMPARISON);
+                                          boolean jjtc002 = true;
+                                          jjtree.openNodeScope(jjtn002);
+                                        }
+                                        try {
+/*@egen*//*@bgen(jjtree)*/
+                                        {
+                                          jjtree.closeNodeScope(jjtn002,  2);
+                                          jjtc002 = false;
+                                        }
+/*@egen*/ { jjtn002.cmpType=GREATER_THAN; }/*@bgen(jjtree)*/
+                                        } finally {
+                                          if (jjtc002) {
+                                            jjtree.closeNodeScope(jjtn002,  2);
+                                          }
+                                        }
+/*@egen*/
+   |
+    <LESS_THAN_EQUAL> AdditiveExpression()/*@bgen(jjtree) #Comparison( 2) */
+                                           {
+                                             CLVFComparison jjtn003 = new CLVFComparison(this, JJTCOMPARISON);
+                                             boolean jjtc003 = true;
+                                             jjtree.openNodeScope(jjtn003);
+                                           }
+                                           try {
+/*@egen*//*@bgen(jjtree)*/
+                                           {
+                                             jjtree.closeNodeScope(jjtn003,  2);
+                                             jjtc003 = false;
+                                           }
+/*@egen*/ { jjtn003.cmpType=LESS_THAN_EQUAL; }/*@bgen(jjtree)*/
+                                           } finally {
+                                             if (jjtc003) {
+                                               jjtree.closeNodeScope(jjtn003,  2);
+                                             }
+                                           }
+/*@egen*/
+   |
+    <GREATER_THAN_EQUAL> AdditiveExpression()/*@bgen(jjtree) #Comparison( 2) */
+                                              {
+                                                CLVFComparison jjtn004 = new CLVFComparison(this, JJTCOMPARISON);
+                                                boolean jjtc004 = true;
+                                                jjtree.openNodeScope(jjtn004);
+                                              }
+                                              try {
+/*@egen*//*@bgen(jjtree)*/
+                                              {
+                                                jjtree.closeNodeScope(jjtn004,  2);
+                                                jjtc004 = false;
+                                              }
+/*@egen*/ { jjtn004.cmpType=GREATER_THAN_EQUAL; }/*@bgen(jjtree)*/
+                                              } finally {
+                                                if (jjtc004) {
+                                                  jjtree.closeNodeScope(jjtn004,  2);
+                                                }
+                                              }
+/*@egen*/
+   | 
+   	<REGEX_EQUAL>  RegexLiteral()/*@bgen(jjtree) #Comparison( 2) */
+                                      {
+                                        CLVFComparison jjtn005 = new CLVFComparison(this, JJTCOMPARISON);
+                                        boolean jjtc005 = true;
+                                        jjtree.openNodeScope(jjtn005);
+                                      }
+                                      try {
+/*@egen*//*@bgen(jjtree)*/
+                                      {
+                                        jjtree.closeNodeScope(jjtn005,  2);
+                                        jjtc005 = false;
+                                      }
+/*@egen*/ { jjtn005.cmpType=REGEX_EQUAL; }/*@bgen(jjtree)*/
+                                      } finally {
+                                        if (jjtc005) {
+                                          jjtree.closeNodeScope(jjtn005,  2);
+                                        }
+                                      }
+/*@egen*/
+  )*
+}
+
+void AdditiveExpression()       : {}
+{
+ MultiplicativeExpression()
+ (
+     <PLUS>/*@bgen(jjtree) #AddNode( 2) */
+            {
+              CLVFAddNode jjtn001 = new CLVFAddNode(this, JJTADDNODE);
+              boolean jjtc001 = true;
+              jjtree.openNodeScope(jjtn001);
+            }
+            try {
+/*@egen*/ MultiplicativeExpression()/*@bgen(jjtree)*/
+            } catch (Throwable jjte001) {
+              if (jjtc001) {
+                jjtree.clearNodeScope(jjtn001);
+                jjtc001 = false;
+              } else {
+                jjtree.popNode();
+              }
+              if (jjte001 instanceof RuntimeException) {
+                throw (RuntimeException)jjte001;
+              }
+              if (jjte001 instanceof ParseException) {
+                throw (ParseException)jjte001;
+              }
+              throw (Error)jjte001;
+            } finally {
+              if (jjtc001) {
+                jjtree.closeNodeScope(jjtn001,  2);
+              }
+            }
+/*@egen*/
+   |
+     <MINUS>/*@bgen(jjtree) #SubNode( 2) */
+             {
+               CLVFSubNode jjtn002 = new CLVFSubNode(this, JJTSUBNODE);
+               boolean jjtc002 = true;
+               jjtree.openNodeScope(jjtn002);
+             }
+             try {
+/*@egen*/ MultiplicativeExpression()/*@bgen(jjtree)*/
+             } catch (Throwable jjte002) {
+               if (jjtc002) {
+                 jjtree.clearNodeScope(jjtn002);
+                 jjtc002 = false;
+               } else {
+                 jjtree.popNode();
+               }
+               if (jjte002 instanceof RuntimeException) {
+                 throw (RuntimeException)jjte002;
+               }
+               if (jjte002 instanceof ParseException) {
+                 throw (ParseException)jjte002;
+               }
+               throw (Error)jjte002;
+             } finally {
+               if (jjtc002) {
+                 jjtree.closeNodeScope(jjtn002,  2);
+               }
+             }
+/*@egen*/
+  )*
+}
+
+void MultiplicativeExpression()       : {}
+{
+     UnaryExpression()
+  (
+    <MULTIPLY>/*@bgen(jjtree) #MulNode( 2) */
+               {
+                 CLVFMulNode jjtn001 = new CLVFMulNode(this, JJTMULNODE);
+                 boolean jjtc001 = true;
+                 jjtree.openNodeScope(jjtn001);
+               }
+               try {
+/*@egen*/ UnaryExpression()/*@bgen(jjtree)*/
+               } catch (Throwable jjte001) {
+                 if (jjtc001) {
+                   jjtree.clearNodeScope(jjtn001);
+                   jjtc001 = false;
+                 } else {
+                   jjtree.popNode();
+                 }
+                 if (jjte001 instanceof RuntimeException) {
+                   throw (RuntimeException)jjte001;
+                 }
+                 if (jjte001 instanceof ParseException) {
+                   throw (ParseException)jjte001;
+                 }
+                 throw (Error)jjte001;
+               } finally {
+                 if (jjtc001) {
+                   jjtree.closeNodeScope(jjtn001,  2);
+                 }
+               }
+/*@egen*/
+   |
+    <DIVIDE>/*@bgen(jjtree) #DivNode( 2) */
+             {
+               CLVFDivNode jjtn002 = new CLVFDivNode(this, JJTDIVNODE);
+               boolean jjtc002 = true;
+               jjtree.openNodeScope(jjtn002);
+             }
+             try {
+/*@egen*/ UnaryExpression()/*@bgen(jjtree)*/
+             } catch (Throwable jjte002) {
+               if (jjtc002) {
+                 jjtree.clearNodeScope(jjtn002);
+                 jjtc002 = false;
+               } else {
+                 jjtree.popNode();
+               }
+               if (jjte002 instanceof RuntimeException) {
+                 throw (RuntimeException)jjte002;
+               }
+               if (jjte002 instanceof ParseException) {
+                 throw (ParseException)jjte002;
+               }
+               throw (Error)jjte002;
+             } finally {
+               if (jjtc002) {
+                 jjtree.closeNodeScope(jjtn002,  2);
+               }
+             }
+/*@egen*/
+   |
+    <MODULO>/*@bgen(jjtree) #ModNode( 2) */
+             {
+               CLVFModNode jjtn003 = new CLVFModNode(this, JJTMODNODE);
+               boolean jjtc003 = true;
+               jjtree.openNodeScope(jjtn003);
+             }
+             try {
+/*@egen*/ UnaryExpression()/*@bgen(jjtree)*/
+             } catch (Throwable jjte003) {
+               if (jjtc003) {
+                 jjtree.clearNodeScope(jjtn003);
+                 jjtc003 = false;
+               } else {
+                 jjtree.popNode();
+               }
+               if (jjte003 instanceof RuntimeException) {
+                 throw (RuntimeException)jjte003;
+               }
+               if (jjte003 instanceof ParseException) {
+                 throw (ParseException)jjte003;
+               }
+               throw (Error)jjte003;
+             } finally {
+               if (jjtc003) {
+                 jjtree.closeNodeScope(jjtn003,  2);
+               }
+             }
+/*@egen*/
+  )*
+}
+
+void UnaryExpression()       :
+{}
+{
+	 PrimaryExpression()
+	 | LOOKAHEAD(3) "-"/*@bgen(jjtree) #MinusNode( 1) */
+                            {
+                              CLVFMinusNode jjtn001 = new CLVFMinusNode(this, JJTMINUSNODE);
+                              boolean jjtc001 = true;
+                              jjtree.openNodeScope(jjtn001);
+                            }
+                            try {
+/*@egen*/ PrimaryExpression()/*@bgen(jjtree)*/
+                            } catch (Throwable jjte001) {
+                              if (jjtc001) {
+                                jjtree.clearNodeScope(jjtn001);
+                                jjtc001 = false;
+                              } else {
+                                jjtree.popNode();
+                              }
+                              if (jjte001 instanceof RuntimeException) {
+                                throw (RuntimeException)jjte001;
+                              }
+                              if (jjte001 instanceof ParseException) {
+                                throw (ParseException)jjte001;
+                              }
+                              throw (Error)jjte001;
+                            } finally {
+                              if (jjtc001) {
+                                jjtree.closeNodeScope(jjtn001,  1);
+                              }
+                            }
+/*@egen*/
+	 | <NOT>/*@bgen(jjtree) #Negation( 1) */
+                 {
+                   CLVFNegation jjtn002 = new CLVFNegation(this, JJTNEGATION);
+                   boolean jjtc002 = true;
+                   jjtree.openNodeScope(jjtn002);
+                 }
+                 try {
+/*@egen*/ UnaryExpression()/*@bgen(jjtree)*/
+                 } catch (Throwable jjte002) {
+                   if (jjtc002) {
+                     jjtree.clearNodeScope(jjtn002);
+                     jjtc002 = false;
+                   } else {
+                     jjtree.popNode();
+                   }
+                   if (jjte002 instanceof RuntimeException) {
+                     throw (RuntimeException)jjte002;
+                   }
+                   if (jjte002 instanceof ParseException) {
+                     throw (ParseException)jjte002;
+                   }
+                   throw (Error)jjte002;
+                 } finally {
+                   if (jjtc002) {
+                     jjtree.closeNodeScope(jjtn002,  1);
+                   }
+                 }
+/*@egen*/
+} 
+
+void PrimaryExpression()       : {}
+{
+     
+     LitExp()
+     |BuildInFunction()     
      |IDExp()
+     |<OPEN_PAR> Statement() <CLOSE_PAR>
 }
 
-void Negation() : {/*@bgen(jjtree) Negation */
-  CLVFNegation jjtn000 = new CLVFNegation(this, JJTNEGATION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) Negation */
-  try {
+void BuildInFunction()       : {}
+{
+	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #SubStrNode( 3) */
+                                                                                               {
+                                                                                                 CLVFSubStrNode jjtn001 = new CLVFSubStrNode(this, JJTSUBSTRNODE);
+                                                                                                 boolean jjtc001 = true;
+                                                                                                 jjtree.openNodeScope(jjtn001);
+                                                                                               }
+                                                                                               try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                                                                               } finally {
+                                                                                                 if (jjtc001) {
+                                                                                                   jjtree.closeNodeScope(jjtn001,  3);
+                                                                                                 }
+                                                                                               }
+/*@egen*/ // (string,from index,length)
+	|"uppercase" "(" AdditiveExpression()/*@bgen(jjtree) #UppercaseNode( 1) */
+                                              {
+                                                CLVFUppercaseNode jjtn002 = new CLVFUppercaseNode(this, JJTUPPERCASENODE);
+                                                boolean jjtc002 = true;
+                                                jjtree.openNodeScope(jjtn002);
+                                              }
+                                              try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                              } finally {
+                                                if (jjtc002) {
+                                                  jjtree.closeNodeScope(jjtn002,  1);
+                                                }
+                                              }
 /*@egen*/
-  <NOT>/*@bgen(jjtree)*/
-  } finally {
-    if (jjtc000) {
-      jjtree.closeNodeScope(jjtn000, true);
-    }
-  }
+	|"lowercase" "(" AdditiveExpression()/*@bgen(jjtree) #LowercaseNode( 1) */
+                                              {
+                                                CLVFLowercaseNode jjtn003 = new CLVFLowercaseNode(this, JJTLOWERCASENODE);
+                                                boolean jjtc003 = true;
+                                                jjtree.openNodeScope(jjtn003);
+                                              }
+                                              try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                              } finally {
+                                                if (jjtc003) {
+                                                  jjtree.closeNodeScope(jjtn003,  1);
+                                                }
+                                              }
+/*@egen*/
+	|"trim" "(" AdditiveExpression()/*@bgen(jjtree) #TrimNode( 1) */
+                                         {
+                                           CLVFTrimNode jjtn004 = new CLVFTrimNode(this, JJTTRIMNODE);
+                                           boolean jjtc004 = true;
+                                           jjtree.openNodeScope(jjtn004);
+                                         }
+                                         try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                         } finally {
+                                           if (jjtc004) {
+                                             jjtree.closeNodeScope(jjtn004,  1);
+                                           }
+                                         }
+/*@egen*/
+	|"length" "(" AdditiveExpression()/*@bgen(jjtree) #LengthNode( 1) */
+                                           {
+                                             CLVFLengthNode jjtn005 = new CLVFLengthNode(this, JJTLENGTHNODE);
+                                             boolean jjtc005 = true;
+                                             jjtree.openNodeScope(jjtn005);
+                                           }
+                                           try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                           } finally {
+                                             if (jjtc005) {
+                                               jjtree.closeNodeScope(jjtn005,  1);
+                                             }
+                                           }
+/*@egen*/
+	|ConcatNode()
+	|DateAddNode()
+	|"today" "("/*@bgen(jjtree) #TodayNode( 0) */
+                     {
+                       CLVFTodayNode jjtn006 = new CLVFTodayNode(this, JJTTODAYNODE);
+                       boolean jjtc006 = true;
+                       jjtree.openNodeScope(jjtn006);
+                     }
+                     try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                     } finally {
+                       if (jjtc006) {
+                         jjtree.closeNodeScope(jjtn006,  0);
+                       }
+                     }
+/*@egen*/
+	|"isnull" "(" IDExp()/*@bgen(jjtree) #IsNullNode( 1) */
+                              {
+                                CLVFIsNullNode jjtn007 = new CLVFIsNullNode(this, JJTISNULLNODE);
+                                boolean jjtc007 = true;
+                                jjtree.openNodeScope(jjtn007);
+                              }
+                              try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                              } finally {
+                                if (jjtc007) {
+                                  jjtree.closeNodeScope(jjtn007,  1);
+                                }
+                              }
 /*@egen*/
 }
 
-void FPLitExp()       :            // FPLitExp -> FPLIT
+void LitExp()       :            // 
 {
 	Token t;
 }
 {
-  t=<FLOATING_POINT_LITERAL>/*@bgen(jjtree) Literal */
+ t=<FLOATING_POINT_LITERAL>/*@bgen(jjtree) Literal */
         {
           CLVFLiteral jjtn001 = new CLVFLiteral(this, JJTLITERAL);
           boolean jjtc001 = true;
@@ -437,108 +733,94 @@ void FPLitExp()       :            // FPLitExp -> FPLIT
           jjtc001 = false;
         }
 /*@egen*/
-  	{ jjtn001.setVal(t.image);}/*@bgen(jjtree)*/
+  	{ jjtn001.setVal(FLOATING_POINT_LITERAL,t.image);}/*@bgen(jjtree)*/
         } finally {
           if (jjtc001) {
             jjtree.closeNodeScope(jjtn001, true);
           }
         }
 /*@egen*/
-  |/*@bgen(jjtree) FloatArray */
-     {
-       CLVFFloatArray jjtn002 = new CLVFFloatArray(this, JJTFLOATARRAY);
-       boolean jjtc002 = true;
-       jjtree.openNodeScope(jjtn002);
-     }
-     try {
-/*@egen*/  <FLOATING_POINT_ARRAY>/*@bgen(jjtree)*/
-     } finally {
-       if (jjtc002) {
-         jjtree.closeNodeScope(jjtn002, true);
-       }
-     }
-/*@egen*/
-}
-
-void IntLitExp()       :            // FPLitExp -> FPLIT
-{
-	Token t;
-}
-{
-  t=<INTEGER_LITERAL>/*@bgen(jjtree) Literal */
+ |t=<INTEGER_LITERAL>/*@bgen(jjtree) Literal */
         {
-          CLVFLiteral jjtn001 = new CLVFLiteral(this, JJTLITERAL);
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
+          CLVFLiteral jjtn002 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc002 = true;
+          jjtree.openNodeScope(jjtn002);
         }
         try {
 /*@egen*//*@bgen(jjtree)*/
         {
-          jjtree.closeNodeScope(jjtn001, true);
-          jjtc001 = false;
+          jjtree.closeNodeScope(jjtn002, true);
+          jjtc002 = false;
         }
 /*@egen*/
-  	{ jjtn001.setVal(t.image);}/*@bgen(jjtree)*/
+  	{ jjtn002.setVal(INTEGER_LITERAL,t.image);}/*@bgen(jjtree)*/
         } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001, true);
+          if (jjtc002) {
+            jjtree.closeNodeScope(jjtn002, true);
           }
         }
 /*@egen*/
-  |/*@bgen(jjtree) IntegerArray */
-     {
-       CLVFIntegerArray jjtn002 = new CLVFIntegerArray(this, JJTINTEGERARRAY);
-       boolean jjtc002 = true;
-       jjtree.openNodeScope(jjtn002);
-     }
-     try {
-/*@egen*/  <INTEGER_ARRAY>/*@bgen(jjtree)*/
-     } finally {
-       if (jjtc002) {
-         jjtree.closeNodeScope(jjtn002, true);
-       }
-     }
-/*@egen*/
-}
-
-void SLitExp()       :            // FPLitExp -> FPLIT
-{
-  Token t;
-}
-{
-  t=<STRING_LITERAL>/*@bgen(jjtree) Literal */
+ |t=<STRING_LITERAL>/*@bgen(jjtree) Literal */
         {
-          CLVFLiteral jjtn001 = new CLVFLiteral(this, JJTLITERAL);
-          boolean jjtc001 = true;
-          jjtree.openNodeScope(jjtn001);
+          CLVFLiteral jjtn003 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc003 = true;
+          jjtree.openNodeScope(jjtn003);
         }
         try {
 /*@egen*//*@bgen(jjtree)*/
         {
-          jjtree.closeNodeScope(jjtn001, true);
-          jjtc001 = false;
+          jjtree.closeNodeScope(jjtn003, true);
+          jjtc003 = false;
         }
 /*@egen*/
-  	{ jjtn001.setVal(t.image.substring(1,t.image.length()-1)); }/*@bgen(jjtree)*/
+  	{ jjtn003.setVal(STRING_LITERAL,t.image.substring(1,t.image.length()-1)); }/*@bgen(jjtree)*/
         } finally {
-          if (jjtc001) {
-            jjtree.closeNodeScope(jjtn001, true);
+          if (jjtc003) {
+            jjtree.closeNodeScope(jjtn003, true);
           }
         }
 /*@egen*/
-  |/*@bgen(jjtree) StringArray */
-    {
-      CLVFStringArray jjtn002 = new CLVFStringArray(this, JJTSTRINGARRAY);
-      boolean jjtc002 = true;
-      jjtree.openNodeScope(jjtn002);
-    }
-    try {
-/*@egen*/ <STRING_ARRAY>/*@bgen(jjtree)*/
-    } finally {
-      if (jjtc002) {
-        jjtree.closeNodeScope(jjtn002, true);
-      }
-    }
+ //|t=<BOOLEAN_LITERAL>
+ // 	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
+ |t=<DATE_LITERAL>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn004 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc004 = true;
+          jjtree.openNodeScope(jjtn004);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn004, true);
+          jjtc004 = false;
+        }
+/*@egen*/
+ 	{ jjtn004.setVal(DATE_LITERAL,t.image);}/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc004) {
+            jjtree.closeNodeScope(jjtn004, true);
+          }
+        }
+/*@egen*/
+ |t=<DATETIME_LITERAL>/*@bgen(jjtree) Literal */
+        {
+          CLVFLiteral jjtn005 = new CLVFLiteral(this, JJTLITERAL);
+          boolean jjtc005 = true;
+          jjtree.openNodeScope(jjtn005);
+        }
+        try {
+/*@egen*//*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn005, true);
+          jjtc005 = false;
+        }
+/*@egen*/
+  	{ jjtn005.setVal(DATETIME_LITERAL,t.image);}/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc005) {
+            jjtree.closeNodeScope(jjtn005, true);
+          }
+        }
 /*@egen*/
 }
 
@@ -594,3 +876,70 @@ void RegexLiteral()       :
 /*@egen*/
 }
 
+void ConcatNode() : // concatenates strings
+{/*@bgen(jjtree) ConcatNode */
+  CLVFConcatNode jjtn000 = new CLVFConcatNode(this, JJTCONCATNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/}
+{/*@bgen(jjtree) ConcatNode */
+   try {
+/*@egen*/
+   "concat" "(" AdditiveExpression() ( "," AdditiveExpression() )+ ")"/*@bgen(jjtree)*/
+   } catch (Throwable jjte000) {
+     if (jjtc000) {
+       jjtree.clearNodeScope(jjtn000);
+       jjtc000 = false;
+     } else {
+       jjtree.popNode();
+     }
+     if (jjte000 instanceof RuntimeException) {
+       throw (RuntimeException)jjte000;
+     }
+     if (jjte000 instanceof ParseException) {
+       throw (ParseException)jjte000;
+     }
+     throw (Error)jjte000;
+   } finally {
+     if (jjtc000) {
+       jjtree.closeNodeScope(jjtn000, true);
+     }
+   }
+/*@egen*/
+}
+
+void DateAddNode() :
+{/*@bgen(jjtree) DateAddNode */
+  CLVFDateAddNode jjtn000 = new CLVFDateAddNode(this, JJTDATEADDNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t;}
+{/*@bgen(jjtree) DateAddNode */
+        try {
+/*@egen*/
+	"dateadd" "(" AdditiveExpression() "," AdditiveExpression() "," 
+			t=<DATE_FIELD_LITERAL> { jjtn000.setCalendarField(t.image); }
+	")"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" > }

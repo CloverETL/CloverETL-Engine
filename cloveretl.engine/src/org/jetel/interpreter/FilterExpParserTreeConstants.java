@@ -8,14 +8,26 @@ public interface FilterExpParserTreeConstants
   public int JJTVOID = 1;
   public int JJTOR = 2;
   public int JJTAND = 3;
-  public int JJTNEGATION = 4;
-  public int JJTCOMPARISON = 5;
-  public int JJTLITERAL = 6;
-  public int JJTFLOATARRAY = 7;
-  public int JJTINTEGERARRAY = 8;
-  public int JJTSTRINGARRAY = 9;
-  public int JJTJETELFIELDLITERAL = 10;
-  public int JJTREGEXLITERAL = 11;
+  public int JJTCOMPARISON = 4;
+  public int JJTADDNODE = 5;
+  public int JJTSUBNODE = 6;
+  public int JJTMULNODE = 7;
+  public int JJTDIVNODE = 8;
+  public int JJTMODNODE = 9;
+  public int JJTMINUSNODE = 10;
+  public int JJTNEGATION = 11;
+  public int JJTSUBSTRNODE = 12;
+  public int JJTUPPERCASENODE = 13;
+  public int JJTLOWERCASENODE = 14;
+  public int JJTTRIMNODE = 15;
+  public int JJTLENGTHNODE = 16;
+  public int JJTTODAYNODE = 17;
+  public int JJTISNULLNODE = 18;
+  public int JJTLITERAL = 19;
+  public int JJTJETELFIELDLITERAL = 20;
+  public int JJTREGEXLITERAL = 21;
+  public int JJTCONCATNODE = 22;
+  public int JJTDATEADDNODE = 23;
 
 
   public String[] jjtNodeName = {
@@ -23,13 +35,25 @@ public interface FilterExpParserTreeConstants
     "void",
     "Or",
     "And",
-    "Negation",
     "Comparison",
+    "AddNode",
+    "SubNode",
+    "MulNode",
+    "DivNode",
+    "ModNode",
+    "MinusNode",
+    "Negation",
+    "SubStrNode",
+    "UppercaseNode",
+    "LowercaseNode",
+    "TrimNode",
+    "LengthNode",
+    "TodayNode",
+    "IsNullNode",
     "Literal",
-    "FloatArray",
-    "IntegerArray",
-    "StringArray",
     "JetelFieldLiteral",
     "RegexLiteral",
+    "ConcatNode",
+    "DateAddNode",
   };
 }

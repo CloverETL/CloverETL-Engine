@@ -10,26 +10,10 @@ public class CLVFOr extends SimpleNode {
   public CLVFOr(FilterExpParser p, int id) {
     super(p, id);
   }
-  
-  public void interpret()
-  {
-     jjtGetChild(0).interpret();
 
-     if (((Boolean)(stack.pop())).booleanValue())
-     {
-        stack.push(Stack.TRUE_VAL);
-        return;
-     }
 
-     jjtGetChild(1).interpret();
-
-     if (((Boolean)stack.pop()).booleanValue())
-     {
-        stack.push(Stack.TRUE_VAL);
-
-     }else{
-     	stack.push(Stack.FALSE_VAL);
-     }
+  /** Accept the visitor. **/
+  public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+    return visitor.visit(this, data);
   }
-
 }

@@ -81,9 +81,30 @@ public class SetVal {
 		field.fromString(value);
 	}
 
+	/**
+	 *  Assign Date value into field.<br>
+	 *
+	 * @param  record   data record containing field to set
+	 * @param  fieldNo  field ordinal number within record
+	 * @param  value    The new Date value
+	 * @since           September 16, 2004
+	 */
+	public final static void setDate(DataRecord record, int fieldNo, java.util.Date value) {
+		DataField field = record.getField(fieldNo);
+		if (field instanceof DateDataField) {
+			 field.setValue(value);
+		} else if (field instanceof StringDataField){
+			field.fromString(value.toString());
+		}else{
+			throw new RuntimeException("Not a DateDataField!");
+		}
+	}
 
 	/**
-	 *  Assign Object value/reference into data field
+	 *  Assign Object value/reference into data field.<br>
+	 * What is going to be assigned depends on DataField type and
+	 * Object type. This method/function can be used to set NULL value 
+	 * to any field type.
 	 *
 	 * @param  record   data record containing field to set
 	 * @param  fieldNo  field ordinal number within record
@@ -94,7 +115,21 @@ public class SetVal {
 		record.getField(fieldNo).setValue(value);
 	}
 
+	/**
+	 * Set field's value to NULL.<br>Warning: setting to NULL field
+	 * which has specified not nullable option will raise
+	 * BadDataFormatException
+	 * 
+	 * @param record
+	 * @param fieldNo
+	 * @see org.jetel.exception.BadDataFormatException
+	 */
+	public final static void setNull(DataRecord record, int fieldNo) {
+		record.getField(fieldNo).setNull(true);
+	}
 
+	
+	
 	/**
 	 *  Assign integer value into Numeric field
 	 *
@@ -147,10 +182,32 @@ public class SetVal {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
 		field.fromString(value);
 	}
+	
+	/**
+	 *  Assign Date value into field.<br>
+	 *
+	 * @param  record   data record containing field to set
+	 * @param  fieldNo  field ordinal number within record
+	 * @param  value    The new Date value
+	 * @since           September 16, 2004
+	 */
+	public final static void setDate(DataRecord record, String fieldName, java.util.Date value) {
+		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
+		if (field instanceof DateDataField) {
+			 field.setValue(value);
+		} else if (field instanceof StringDataField){
+			field.fromString(value.toString());
+		}else{
+			throw new RuntimeException("Not a DateDataField!");
+		}
+	}
 
 
 	/**
-	 *  Assign Object value/reference into data field
+	 *  Assign Object value/reference into data field.<br>
+	 * What is going to be assigned depends on DataField type and
+	 * Object type. This method/function can be used to set NULL value 
+	 * to any field type.
 	 *
 	 * @param  record     data record containing field to set
 	 * @param  fieldName  name of the field to set
@@ -159,6 +216,19 @@ public class SetVal {
 	 */
 	public final static void setValue(DataRecord record, String fieldName, Object value) {
 		record.getField(record.getMetadata().getFieldPosition(fieldName)).setValue(value);
+	}
+	
+	/**
+	 * Set field's value to NULL.<br>Warning: setting to NULL field
+	 * which has specified not nullable option will raise
+	 * BadDataFormatException
+	 * 
+	 * @param record
+	 * @param fieldNo
+	 * @see org.jetel.exception.BadDataFormatException
+	 */
+	public final static void setNull(DataRecord record, String fieldName) {
+		record.getField(record.getMetadata().getFieldPosition(fieldName)).setNull(true);
 	}
 }
 

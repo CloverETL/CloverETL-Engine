@@ -31,9 +31,10 @@ public interface Node {
 
   /** Return the number of children the node has. */
   public int jjtGetNumChildren();
+
+  /** Accept the visitor. **/
+  public Object jjtAccept(FilterExpParserVisitor visitor, Object data);
   
   /* added by D.Pavlis for CloverETL based on work of Sreeni*/
-  public void interpret();
-  
   public void init();
 }

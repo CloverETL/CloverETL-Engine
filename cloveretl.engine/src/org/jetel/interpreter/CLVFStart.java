@@ -11,8 +11,9 @@ public class CLVFStart extends SimpleNode {
     super(p, id);
   }
 
-  public void interpret(){
-  	jjtGetChild(0).interpret();
+
+  /** Accept the visitor. **/
+  public Object jjtAccept(FilterExpParserVisitor visitor, Object data) {
+    return visitor.visit(this, data);
   }
-  
 }

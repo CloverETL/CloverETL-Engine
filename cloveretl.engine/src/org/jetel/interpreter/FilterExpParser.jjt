@@ -2,13 +2,16 @@
     Clover.ETL - filtering conditions grammar.
     (c) 2004 David.Pavlis <david_pavlis@hotmail.com>
     Released under LGPL license.
+    
+    (Adapted from Ken Beesley and Metamata's javacc 'Interpreter' example.)
+ 
 */
 
 options {
    MULTI=true;
    STATIC=false;
+   VISITOR=true; 
    NODE_USES_PARSER=true;
-   LOOKAHEAD=2;
    NODE_PREFIX="CLVF";
    NODE_PACKAGE="org.jetel.interpreter";
 }
@@ -25,19 +28,12 @@ import org.jetel.data.DataRecord;
 public class FilterExpParser {
 
        DataRecord dataRecord;
-       Stack stack;
 
        public FilterExpParser(DataRecord record,java.io.InputStream stream){
               this(stream);
               dataRecord=record;
-              stack=new Stack();
-              
       }
-      
-      public Stack getStack(){
-         return stack;
-      }
-      
+
       public DataRecord getDataRecord(){
              return dataRecord;
       }
@@ -60,36 +56,43 @@ TOKEN [IGNORE_CASE]: {
 /* Literals */
 TOKEN : {
  <INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? | <HEX_LITERAL> (["l","L"])? | <OCTAL_LITERAL> (["l","L"])?>
+|  <#DIGIT: ["0"-"9"]>
 |  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
 |  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
 |  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
-|  <FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|<FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-|  <CHARACTER_LITERAL: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"])) "\'">
-|  <STRING_LITERAL: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+|  <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
+|  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
+|  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+// |<BOOLEAN_LITERAL: "true" | "false" >
+|<DATE_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? >
+|<DATETIME_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? " " <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)?>
 }
 
-/* Array of literals */
+/* Comparison Operators */
 TOKEN: {
- <STRING_ARRAY: "[" <STRING_LITERAL> ( "," <STRING_LITERAL>)* "]">
-|<INTEGER_ARRAY: "[" <INTEGER_LITERAL> ( "," <INTEGER_LITERAL>)* "]">
-|<FLOATING_POINT_ARRAY: "[" <FLOATING_POINT_LITERAL> ( "," <FLOATING_POINT_LITERAL>)* "]">
-}
-
-/* Operators */
-TOKEN: {
-  < EQUAL: "==" >
-| < NON_EQUAL: "!=" | "<>" >
-| < LESS_THAN: "<" >
-| < LESS_THAN_EQUAL: "<=" >
-| < GREATER_THAN: ">" >
-| < GREATER_THAN_EQUAL: ">=" >
-| < REGEX_EQUAL: "~=" >
+  < EQUAL: "==" | ".eq.">
+| < NON_EQUAL: "!=" | "<>" | ".ne." >
+| < LESS_THAN: "<" | ".lt." >
+| < LESS_THAN_EQUAL: "<=" | ".le." >
+| < GREATER_THAN: ">" | ".gt.">
+| < GREATER_THAN_EQUAL: ">=" | ".ge." >
+| < REGEX_EQUAL: "~=" | ".regex." >
 }
 
 TOKEN: {
-<#OPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
+<CMPOPERATOR : <EQUAL> | <NON_EQUAL> | <LESS_THAN> | <LESS_THAN_EQUAL> | <GREATER_THAN>
 | <GREATER_THAN_EQUAL> | <REGEX_EQUAL> >
+}
+
+/* Numeric Operators */
+TOKEN: {
+ <MINUS: "-" >
+| <PLUS: "+">
+| <MULTIPLY: "*">
+| <DIVIDE: "/">
+| <MODULO: "%">
 }
 
 /* Field Identifiers */
@@ -103,100 +106,142 @@ TOKEN: {
   <CLOSE_PAR: ")">
 }
 
-/* *** Context-free grammar (EBNF) *** */
-
-/* Each nonterminal is written like a kind of method, containing all its
-   productions. JavaC will generate a parsing method for each nonterminal.
-
-   Note: In the start nonterminal, the action "return jjtThis;" instructs
-   JavaCC to return the resulting parse tree from the generated parsing
-   method. Therefore the start nonterminal has a result type (SimpleNode).
-   All other nonterminals have no result type (void).
-*/
-
 /* The start nonterminal and its productions. */
 
-SimpleNode Start() : {}        // Start -> Exp
+CLVFStart Start() : {}        // Start -> Exp
 {
-  LExpression() <EOF>
+  CompilationUnit() <EOF>
   { return jjtThis; }
+}
+
+void CompilationUnit() #void :
+{
+}
+{
+	Statement()
+   ( ";" 
+       Statement()
+   )*
+}
+
+void Statement() #void : {}
+{
+    //LOOKAHEAD(3) AdditiveExpression()
+    ConditionalOrExpression()
+    
 }
 
 /* Other nonterminals and their productions */
 
-void LExpression() #void : {}        // Exp -> XFactor [XFactor]
+void ConditionalOrExpression() #void : {}        
 {
-   LPrimaryExpression()
-   ( <OR> LPrimaryExpression() #Or(2) )*
+   ConditionalAndExpression()
+   ( <OR> ConditionalAndExpression() #Or(2) )*
 }
 
-void LPrimaryExpression() #void : {}
+void ConditionalAndExpression() #void : {}
 {
-   Condition()
-   ( <AND> Condition() #And(2) ) *
+   EqualityExpression()
+   ( <AND> EqualityExpression() #And(2) ) *
 }
 
-
-void Condition() #void : {}
+void EqualityExpression() #void :
+{}
 {
-     <NOT> PrimaryCondition() #Negation
-     | PrimaryCondition()
+  RelationalExpression()
+  (
+     <EQUAL> RelationalExpression() { jjtThis.cmpType=EQUAL; } #Comparison(2)
+   |
+     <NON_EQUAL> RelationalExpression() { jjtThis.cmpType=NON_EQUAL; } #Comparison(2)
+  )*
 }
 
-void PrimaryCondition() #void : {}
+void RelationalExpression() #void :
+{}
 {
-  IDExp() <EQUAL> Literal()  { jjtThis.cmpType=EQUAL; } #Comparison(2)
-  |IDExp() <NON_EQUAL> Literal() { jjtThis.cmpType=NON_EQUAL; } #Comparison(2)
-  |IDExp() <LESS_THAN> Literal() { jjtThis.cmpType=LESS_THAN; } #Comparison(2)
-  |IDExp() <GREATER_THAN> Literal() { jjtThis.cmpType=GREATER_THAN; } #Comparison(2)
-  |IDExp() <LESS_THAN_EQUAL> Literal() { jjtThis.cmpType=LESS_THAN_EQUAL; } #Comparison(2)
-  |IDExp() <GREATER_THAN_EQUAL> Literal() { jjtThis.cmpType=GREATER_THAN_EQUAL; } #Comparison(2)
-  |IDExp() <REGEX_EQUAL> RegexLiteral() { jjtThis.cmpType=REGEX_EQUAL; } #Comparison(2)
-  | <OPEN_PAR> LExpression() <CLOSE_PAR>
+  AdditiveExpression()
+  (
+    <LESS_THAN> AdditiveExpression() { jjtThis.cmpType=LESS_THAN; } #Comparison(2)
+   |
+    <GREATER_THAN> AdditiveExpression() { jjtThis.cmpType=GREATER_THAN; } #Comparison(2)
+   |
+    <LESS_THAN_EQUAL> AdditiveExpression() { jjtThis.cmpType=LESS_THAN_EQUAL; } #Comparison(2)
+   |
+    <GREATER_THAN_EQUAL> AdditiveExpression() { jjtThis.cmpType=GREATER_THAN_EQUAL; } #Comparison(2)
+   | 
+   	<REGEX_EQUAL>  RegexLiteral() { jjtThis.cmpType=REGEX_EQUAL; } #Comparison(2)
+  )*
 }
 
-
-void Literal() #void : {}
+void AdditiveExpression() #void : {}
 {
-     SLitExp()
-     |FPLitExp()
-     |IntLitExp()
+ MultiplicativeExpression()
+ (
+     <PLUS> MultiplicativeExpression() #AddNode(2)
+   |
+     <MINUS> MultiplicativeExpression() #SubNode(2)
+  )*
+}
+
+void MultiplicativeExpression() #void : {}
+{
+     UnaryExpression()
+  (
+    <MULTIPLY> UnaryExpression() #MulNode(2)
+   |
+    <DIVIDE> UnaryExpression() #DivNode(2)
+   |
+    <MODULO> UnaryExpression() #ModNode(2)
+  )*
+}
+
+void UnaryExpression() #void :
+{}
+{
+	 PrimaryExpression()
+	 | LOOKAHEAD(3) "-" PrimaryExpression() #MinusNode(1)
+	 | <NOT> UnaryExpression() #Negation(1)
+} 
+
+void PrimaryExpression() #void : {}
+{
+     
+     LitExp()
+     |BuildInFunction()     
      |IDExp()
+     |<OPEN_PAR> Statement() <CLOSE_PAR>
 }
 
-void Negation() : {}
+void BuildInFunction() #void : {}
 {
-  <NOT>
+	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #SubStrNode(3) // (string,from index,length)
+	|"uppercase" "(" AdditiveExpression() ")" #UppercaseNode(1)
+	|"lowercase" "(" AdditiveExpression() ")" #LowercaseNode(1)
+	|"trim" "(" AdditiveExpression() ")" #TrimNode(1)
+	|"length" "(" AdditiveExpression() ")" #LengthNode(1)
+	|ConcatNode()
+	|DateAddNode()
+	|"today" "(" ")" #TodayNode(0)
+	|"isnull" "(" IDExp() ")" #IsNullNode(1)
 }
 
-void FPLitExp() #void :            // FPLitExp -> FPLIT
+void LitExp() #void :            // 
 {
 	Token t;
 }
 {
-  t=<FLOATING_POINT_LITERAL>
-  	{ jjtThis.setVal(t.image);} #Literal
-  |  <FLOATING_POINT_ARRAY> #FloatArray
-}
-
-void IntLitExp() #void :            // FPLitExp -> FPLIT
-{
-	Token t;
-}
-{
-  t=<INTEGER_LITERAL>
-  	{ jjtThis.setVal(t.image);}   #Literal
-  |  <INTEGER_ARRAY> #IntegerArray
-}
-
-void SLitExp() #void :            // FPLitExp -> FPLIT
-{
-  Token t;
-}
-{
-  t=<STRING_LITERAL>
-  	{ jjtThis.setVal(t.image.substring(1,t.image.length()-1)); }   #Literal
-  | <STRING_ARRAY> #StringArray
+ t=<FLOATING_POINT_LITERAL>
+  	{ jjtThis.setVal(FLOATING_POINT_LITERAL,t.image);} #Literal
+ |t=<INTEGER_LITERAL>
+  	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
+ |t=<STRING_LITERAL>
+  	{ jjtThis.setVal(STRING_LITERAL,t.image.substring(1,t.image.length()-1)); }   #Literal
+ //|t=<BOOLEAN_LITERAL>
+ // 	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
+ |t=<DATE_LITERAL>
+ 	{ jjtThis.setVal(DATE_LITERAL,t.image);}   #Literal
+ |t=<DATETIME_LITERAL>
+  	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
 }
 
 void IDExp() #void :               // IDExp -> ID
@@ -215,3 +260,18 @@ void RegexLiteral() #void :
   t=<STRING_LITERAL> { jjtThis.setRegex(t.image); } #RegexLiteral
 }
 
+void ConcatNode() : // concatenates strings
+{}
+{
+   "concat" "(" AdditiveExpression() ( "," AdditiveExpression() )+ ")"
+}
+
+void DateAddNode() :
+{ Token t;}
+{
+	"dateadd" "(" AdditiveExpression() "," AdditiveExpression() "," 
+			t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); }
+	")"
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" > }
