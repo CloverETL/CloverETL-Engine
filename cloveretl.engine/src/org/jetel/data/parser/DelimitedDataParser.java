@@ -235,7 +235,7 @@ public class DelimitedDataParser implements Parser {
 			if(handlerBDFE != null ) {  //use handler only if configured
 				handlerBDFE.populateFieldFailure(record,fieldNum,data.toString());
 			} else {
-				throw new RuntimeException(bdfe.getMessage());
+				throw new RuntimeException(bdfe.getMessage() + ":" + bdfe.getOffendingFormat() );
 			}
 		}
 	}
