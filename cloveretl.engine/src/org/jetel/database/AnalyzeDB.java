@@ -52,7 +52,11 @@ import java.util.Properties;
  * dbURL=jdbc:interbase://localhost/opt/borland/interbase/examples/database/employee.gdb
  * user=SYSDBA
  * password=masterkey
+ * driverLibrary=/opt/borland/interbase/jdbc/lib/jdbcdrv.jar
  * </pre>
+ * <u>Note:</u>
+ * The <tt>driverLibrary</tt> option is not used by JDBC driver (thus not required). It is option which allows CloverETL automatically
+ * load-in addition library containing JDBC driver if class specified in option dbDriver can't be found in standard CLASSPATH.<br>
  * @author     dpavlis
  * @since    September 25, 2002
  */
@@ -179,7 +183,7 @@ public class AnalyzeDB {
 	 */
 	private static void doAnalyze(Properties config) throws IOException, SQLException {
 		PrintStream print;
-		Connection connection;
+		DBConnection connection;
 		boolean utf8Encoding=false;
 		// initialization of PrintStream
 		if (filename != null) {
@@ -194,33 +198,24 @@ public class AnalyzeDB {
 			print = System.out;
 		}
 		// load in Database Driver & try to connect to database
-		try {
-			driver = (Driver) Class.forName(config.getProperty("dbDriver")).newInstance();
-			connection = driver.connect(config.getProperty("dbURL"), config);
-			
-		}catch (SQLException ex){
-			throw new RuntimeException("Can't connect to DB :"+ex.getMessage());
-		}catch (Exception ex) {
-			throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
-		}
+		connection=new DBConnection(config.getProperty("dbDriver"), config.getProperty("dbURL"),"","");
+		connection.setProperty(config);
+		connection.connect();
 
-		if (connection == null) {
-			throw new SQLException("Not suitable driver for specified DB URL !");
-		}
 		// do we want just to display driver properties ?
 		if (showDriverInfo){
 			printDriverProperty(config);
 			System.exit(0);
 		}
 		// Execute Query
-		ResultSet resultSet = connection.createStatement().executeQuery(query);
+		ResultSet resultSet = connection.getStatement().executeQuery(query);
 		ResultSetMetaData metadata = resultSet.getMetaData();
 
 		// here we print XML description of data 
 		print.print("<?xml version=\"1.0\"");
 		if (utf8Encoding) print.println(" encoding=\""+DEFAULT_XML_ENCODING+"\" ?>");
 		else print.println("?>");
-		print.println("<!-- Automatically generated from database " + connection.getCatalog() + " -->");
+		print.println("<!-- Automatically generated from database " + connection.getConnection().getMetaData().getURL() + " -->");
 		print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
 
 		for (int i = 1; i <= metadata.getColumnCount(); i++) {

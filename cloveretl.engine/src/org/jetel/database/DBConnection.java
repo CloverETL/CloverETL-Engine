@@ -39,8 +39,9 @@ import org.w3c.dom.NamedNodeMap;
  *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
  *  <tr><td><b>user</b><br><i>optional</i></td><td>username to use when connecting to DB</td></tr>
  *  <tr><td><b>password</b><br><i>optional</i></td><td>password to use when connecting to DB</td></tr>
+ *  <tr><td><b>driverLibrary</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *  to search for class containing JDBC driver specified in <tt>dbDriver<tt> parameter.</td></tr>
  *  </table>
- *
  *  <h4>Example:</h4>
  *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
  *
