@@ -1,0 +1,21 @@
+insert into employee values(2,'Robert','Nelson','250',28/12/1988,'600','VP',2.0,'USA',105900.0,'Nelson, Robert');
+insert into employee values(4,'Bruce','Young','233',28/12/1988,'621','Eng',2.0,'USA',97500.0,'Young, Bruce');
+insert into employee values(5,'Kim','Lambert','22',06/02/1989,'130','Eng',2.0,'USA',102750.0,'Lambert, Kim');
+insert into employee values(8,'Leslie','Johnson','410',05/04/1989,'180','Mktg',3.0,'USA',64635.0,'Johnson, Leslie');
+insert into employee values(9,'Phil','Forest','229',17/04/1989,'622','Mngr',3.0,'USA',75060.0,'Forest, Phil');
+insert into employee values(11,'K. J.','Weston','34',17/01/1990,'130','SRep',4.0,'USA',86292.9375,'Weston, K. J.');
+insert into employee values(12,'Terri','Lee','256',01/05/1990,'000','Admin',4.0,'USA',53793.0,'Lee, Terri');
+insert into employee values(14,'Stewart','Hall','227',04/06/1990,'900','Finan',3.0,'USA',69482.625,'Hall, Stewart');
+insert into employee values(15,'Katherine','Young','231',14/06/1990,'623','Mngr',3.0,'USA',67241.25,'Young, Katherine');
+insert into employee values(20,'Chris','Papadopoulos','887',01/01/1990,'671','Mngr',3.0,'USA',89655.0,'Papadopoulos, Chris');
+insert into employee values(24,'Pete','Fisher','888',12/09/1990,'671','Eng',3.0,'USA',81810.1875,'Fisher, Pete');
+insert into employee values(28,'Ann','Bennet','5',01/02/1991,'120','Admin',5.0,'England',22935.0,'Bennet, Ann');
+insert into employee values(29,'Roger','De Souza','288',18/02/1991,'623','Eng',3.0,'USA',69482.625,'De Souza, Roger');
+insert into employee values(34,'Janet','Baldwin','2',21/03/1991,'110','Sales',3.0,'USA',61637.8125,'Baldwin, Janet');
+insert into employee values(36,'Roger','Reeves','6',25/04/1991,'120','Sales',3.0,'England',33620.625,'Reeves, Roger');
+insert into employee values(37,'Willie','Stansbury','7',25/04/1991,'120','Eng',4.0,'England',39224.0625,'Stansbury, Willie');
+insert into employee values(44,'Leslie','Phong','216',03/06/1991,'623','Eng',4.0,'USA',56034.375,'Phong, Leslie');
+insert into employee values(45,'Ashok','Ramanathan','209',01/08/1991,'621','Eng',3.0,'USA',80689.5,'Ramanathan, Ashok');
+insert into employee values(46,'Walter','Steadman','210',09/08/1991,'900','CFO',1.0,'USA',116100.0,'Steadman, Walter');
+insert into employee values(52,'Carol','Nordstrom','420',02/10/1991,'180','PRel',4.0,'USA',42742.5,'Nordstrom, Carol');
+

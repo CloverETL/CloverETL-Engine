@@ -1,0 +1,314 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+	<title>CloverETL examples</title>
+</head>
+
+<body>
+<font color="green"><h1>CloverETL examples</h1></font>
+<i>by David Pavlis, Last modified <script LANGUAGE="javascript">
+document.writeln(document.lastModified)
+</script></i>
+<hr>
+<p>
+</p>
+<h2>Prerequisites</h2>
+<p>
+I assume that you have downloaded a binary package of <a href="http://cloveretl.berlios.de/download/" target="_blank">
+CloverETL</a> framework or you built one from sources.<br>
+The binary package (.zip file - usually <tt>CloverETL.xxxxx.zip</tt>) will be further referred 
+to as <tt>CloverETL.zip</tt>.<br>
+In all examples, I assume that <tt>CloverETL.zip</tt> is stored in <tt>/home/clover</tt>. If you have put
+the package into other directory, You have to change the path in examples accordingly.<br>
+When executing examples, You have to be in directory where you unzipped the examples. Let's assume
+you have extracted the archive into <tt>/home/clover/examples</tt>. Then when executing any example, You
+have to be switched in <tt>/home/clover/examples</tt> (the directory where the <tt>.grf</tt> files are). 
+</p>
+<h4>Installing JAXP XML parser</h4>
+<p>
+CloverETL depends (partially) on presence of JAXP compatible parser - such as Crimson or Xerces.<br>The easiest
+way of installing it is to put the <tt>xxx.jar</tt> file into <tt>$JAVA_HOME/jre/lib/ext</tt><br>.
+</p>
+<p>
+<i>Note: It is a good idea to read <a href="http://cloveretl.berlios.de/doc1.html" target="_blank">
+CloverETL general documentation</a> first.</i> 
+</p>
+<h3>Common things</h3>
+<p>
+The examples presented here use various inputs and create various outputs. In general, input
+data is taken from files stored in <tt>data/</tt> subdirectory. Outputs are created in <tt>output/</tt> subdirectory
+and required metadata is read from <tt>metadata/</tt> subdirectory.
+</p>
+<!-- Simple Examples -->
+<h2>Simple Examples</h2>
+<!-- Simple copy -->
+<h3>SimpleCopy example</h3>
+<p>
+This example illustrates usage of SimpleCopy & Trash components. It reads <tt>employees.dat</tt> file,
+parses the records, sends them to SimpleCopy component which in turn replicates them to several Trash components connected to SimpleCopy
+component.<br> 
+One of the Trash components is configured to dump all incoming records into text
+file <tt>Trash1_output.txt</tt> - mostly for debugging purpose.<br>
+The Trash component normally discards all records it receives on input port.
+</p>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphSimpleCopy.grf" target="_blank">graphSimpleCopy.grf</a></tt><br>
+<br>This is the expected output produced by the framework:
+<hr><pre><tt>
+***  CloverETL framework, (c) 2002-03 D.Pavlis, released under GNU Public License  ***
+
+Graph definition file: graphSimpleCopy.grf
+[Clover] starting WatchDog thread ...
+[WatchDog] Thread started.
+[WatchDog] Running on 1 CPU(s) max available memory for JVM 1679 kB
+[Clover] Initializing phase: 0
+ all edges initialized successfully...
+ initializing nodes:
+        INPUT1
+        BROADCAST
+        TRASH2
+        BROADCAST2
+        TRASH1
+        TRASH3
+[Clover] phase: 0 initialized successfully.
+[WatchDog] Starting up all nodes in phase [0]
+[WatchDog]   INPUT1 ... started
+[WatchDog]   BROADCAST ... started
+[WatchDog]   TRASH2 ... started
+[WatchDog]   BROADCAST2 ... started
+[WatchDog]   TRASH1 ... started
+[WatchDog]   TRASH3 ... started
+[WatchDog] Sucessfully started all nodes in phase!
+[WatchDog] Execution of phase [0] sucessfully finished - elapsed time(sec): 0
+---------------------** Start of tracking Log for phase [0] **-------------------
+Time: 11/09/03 18:08:18
+Node                        Status         Port                          #Records
+---------------------------------------------------------------------------------
+INPUT1                      OK
+                                           Out:0                               12
+BROADCAST                   OK
+                                            In:0                               12
+                                           Out:0                               12
+                                           Out:1                               12
+                                           Out:2                               12
+TRASH2                      OK
+                                            In:0                               12
+BROADCAST2                  OK
+                                            In:0                               12
+                                           Out:0                               12
+TRASH1                      OK
+                                            In:0                               12
+TRASH3                      OK
+                                            In:0                               12
+---------------------------------** End of Log **--------------------------------
+[WatchDog] Forcing garbage collection ...
+[Clover] WatchDog thread finished - total execution time: 1 (sec)
+[Clover] Graph execution finished successfully
+</tt></pre><hr>
+<!-- Reformat -->
+<h3>Reformat example</h3>
+<p>
+Reformat component changes format and/or content of data records by applying "reformat" method on
+all data recrods flowing through it.<br>
+For every record it receives through input port it calls <tt>transform()</tt> method
+of specified class (name defined through <tt>transformClass</tt> attribute of Reformat component), which 
+has to implement <tt><a href="reformatOrders.java">org.jetel.component.RecordTransform</a></tt> interface.<br>
+The transformation class has to be compiled separately prior to running Reformat component and it must reside
+in directory accessed by Java when searching for classes (i.e. either included in CLASSPATH or defined using <tt>-cp</tt> parameter when
+starting java VM.
+<P>
+Executing:<br>
+<tt>java -cp "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphOrdersReformat.grf" target="_blank">graphOrdersReformat.grf</a></tt><br>
+</p>
+<!-- Reformat Inline -->
+<h3>Reformat example with transformation class source embedded</h3>
+<p>
+This example is similar to previous one except transformation class (its source code) is
+directly embedded into graph definition file. The source code is automatically compiled
+when the graph is started and then transformation object is created to be executed for
+each record.<br>
+When the graph is run subsequently, the source is recompiled only if it changes between two runs.<br>
+In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.  
+<P>
+Executing:<br>
+<tt>java -cp "/home/clover/CloverETL.zip" org.jetel.main.runGraph <a href="graphOrdersReformatInline.grf" target="_blank">graphOrdersReformatInline.grf</a></tt><br>
+</p>
+<!-- Merge -->
+<h3>Merge example</h3>
+<p>
+Merge component combines several <u>sorted</u> input data flows into one based on specified key. The
+resulting data flow is sorted according to specified key.<br>
+This component can be successfully used when You have several sorted data files and you need
+to combine them into one big sorted file, but You don't want to waste resources on resorting
+the big file.<br>
+The testing graph reads data form <tt>orders.sorted</tt> file (actually three readers access the file at the
+same time) and stores the result into <tt>orders.merged</tt> file.
+<P>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphMergeData.grf" target="_blank">graphMergeData.grf</a></tt><br>
+</p>
+<!-- Join -->
+<h3>Join example</h3>
+<p>
+Join component joins two <u>sorted</u> input data flows into one based on specified key. 
+It can produce classical inner join or left outer join (based on parameters).<br>
+This component can be useful when you have main data set - for example with orders
+(driver) containing part number and you need to join it with other data set containing
+price for each part (slave).<br> 
+The testing graph reads data form <tt>orders.dat</tt> file (driver) and <tt>employees.dat</tt>
+and produces records with combined information from both files.<br>
+Each pair of corresponding records is transformed by <tt>reformatJoinTest.class</tt>. The
+source code for this class is attached as well.
+<P>
+Executing:<br>
+<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinData.grf" target="_blank">graphJoinData.grf</a></tt><br>
+<br><i>!!! Important: note the change in running this example. You have to extend the CLASSPATH by
+the current directory as the class for transforming is present there.</i>
+</p>
+<!-- Hash Join -->
+<h3>Hash Join example</h3>
+<p>
+Hash Join component joins two input data flows into one based on specified key. 
+It can produce classical inner join or left outer join (based on parameters).<br>
+Functionality of this component is similar to previous one, but it doesn't require input data to be sorted.
+It is most suited to join two data sets when one is relatively large (master) and the other one small (slave) - typically
+when using lookup table to convert key into corresponding value.<br> 
+The testing graph reads data form <tt>orders.dat</tt> file (driver) and <tt>employees.dat</tt>
+and produces records with combined information from both files.<br>
+Each pair of corresponding records is transformed by <tt>reformatJoinTest.class</tt>. The
+source code for this class is attached as well.
+</p>
+<P>
+Executing:<br>
+<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinHash.grf" target="_blank">graphJoinHash.grf</a></tt><br>
+<br><i>!!! Important: note the change in running this example. You have to extend the CLASSPATH by
+the current directory as the class for transforming is present there.</i>
+</p>
+<!-- Hash Join Inline-->
+<h3>Hash Join with transformation class source embedded</h3>
+<p>
+As with Reformat component, transformation class which is executed
+for each pair of input records can be embedded directly into graph.<br>
+It is again dynamically compiled at run-time.<br> 
+</p><p>
+Executing:<br>
+<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinHashInline.grf" target="_blank">graphJoinHashInline.grf</a></tt><br>
+</p>
+<!-- Sort -->
+<h3>Sort example</h3>
+<p>
+Sort component sorts input data flow based on specified key. You can
+use more than one field name for key.<br>
+Sorted data flow is required by several components (Merge, Join, etc..) so this
+is very useful component.<br>
+One limitation - it can't perform external sorting. You are limited by the amount
+of memory you have.<br>
+The testing graph reads data form <tt>orders.dat</tt> file, sorts them and stores the result into <tt>orders.sorted</tt> file.
+<P>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphSortData.grf" target="_blank">graphSortData.grf</a></tt><br>
+</p>
+<!-- Sort Universal -->
+<h3>Sort Universal example</h3>
+<p>
+Similar to previous example, this one sorts input data. The difference is that the exact
+datafile to be sorted is not hardcoded within graph definition, it is determined based on
+supplied parameters.<br>
+CloverETL allows global graph properties to be defined and these properties can be reference
+from within the graph. Each reference is replaced by property value at run-time.<br>
+</p><p>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph 
+-P:sortKey=<i>&lt;..your.fieldName..&gt;</i> -P:metadata=<i>&lt;..metadata filename..&gt;</i> -P:data=<i>&lt;..datafile..&gt;</i> -P:output=<i>&lt;..datafile..&gt;</i> <a href="graphSortUniversal.grf" target="_blank">graphSortUniversal.grf</a></tt><br>
+</p>
+<!-- Phases examples -->
+<h3>Phases example</h3>
+<p>
+Components can be grouped into individual phases. Each phase has assigned a unique number.
+In each transformation graph, there must exists at least one phases (with any number assigned
+to it).<br>
+Execution of graph is done by phases. It starts with phase with the lowest number and continues
+in ascending order. All components in particular phase are initialized and run. Then 
+components from next phase are started and so on. If there are any connections (Edges) between
+components from different phases, these connections are buffered so the first component (from
+preceding phase) can finish its job and the second component (from following - not necessarily 
+next) can read the data produced by the fist component.<br>
+</p>
+Example presented here is divided into three phases. First,data is read and sorted,
+in second,data is copied into three similar flows. In third, data is again merged into
+one flow and saved to file.<br> 
+<P>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphPhasesDemo.grf" target="_blank">graphPhasesDemo.grf</a></tt><br>
+</p>
+<!-- Database related examples -->
+<h2>Database related examples</h2>
+When experimenting with database, presented example graphs expect that there exists database
+table <tt>EMPLOYEE</tt> with following structure:<br>
+<pre><tt>
+create table MYEMPLOYEE
+(
+  EMP_NO      NUMBER not null,
+  FIRST_NAME  VARCHAR2(15) not null,
+  LAST_NAME   VARCHAR2(20) not null,
+  PHONE_EXT   VARCHAR2(4),
+  HIRE_DATE   DATE not null,
+  DEPT_NO     CHAR(3) not null,
+  JOB_CODE    VARCHAR2(5) not null,
+  JOB_GRADE   NUMBER(4,2) not null,
+  JOB_COUNTRY VARCHAR2(15) not null,
+  SALARY      NUMBER(15,2) not null,
+  FULL_NAME   VARCHAR2(35)
+);
+</tt></pre>
+<p>
+If you wish to experiment with unloading data from this table, you can use
+<tt>populate_employee_table.sql</tt> file (supplied with these examples) to insert some records into the table.
+There is also Oracle specific file <tt>populate_employee_table.ora</tt>.
+</p>
+<!-- DB Unload -->
+<h3>DBUnload example</h3>
+<p>
+DBUnload component can be used for extracting data from database. It allows a SQL query to
+be specified and run against database. The result set produced by DB is then sent by the
+component to output port - and gets propagated to other processing nodes. It uses
+JDBC to communicate with DB.<br>
+You may wonder why to use CloverETL for processing data which is already in DB. It should
+be faster to perform any processing within DB itself. Well, it is not always true.<br>
+DBUnload component (as all other DB related components) needs to know which JDBC driver to use,
+what is the DB connection string and under what user name it should connect to database.
+These parameters can be provided directly to component (one by one) or special config
+file can be created from which component is able to read required info.<br>
+Following is an example of config file which can be used to connect to Borland Interbase DB:<br>
+</p>
+<hr><pre><tt>
+dbDriver=interbase.interclient.Driver
+dbURL=jdbc:interbase://localhost/home/projects/interbase/examples/database/employee.gdb
+user=SYSDBA
+password=masterkey
+</tt></pre><hr>
+<p>
+I hope that the parameters (their names) are self-explanatory. If not, read some JDBC related
+documentation.<br>
+In this example, the DBUnload component connects to <i>employee</i> database and unloads all
+records from <b>employee</b> table. It then stores the records in <tt>employees.list.out</tt> file.
+</p>
+<p>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBUnload.grf" target="_blank">graphDBUnload.grf</a></tt><br>
+</p>
+<!-- DB Load -->
+<h3>DBLoad example</h3>
+<p>
+DBLoad component does the opposite to DBUnload, it populates database table with data processed
+by CloverETL framework. Similarly to DBUnload, it requires some JDBC related parameters to be
+supplied. In order to be able to run this example, you have to create a DB table with the name
+<tt>EMPLOYEE_TMP</tt> and structure similar to <tt>EMPLOYEE</tt> table presented above. 
+</p>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBLoad.grf" target="_blank">graphDBLoad.grf</a></tt><br>
+</p>
+<hr>
+</body>
+</html>

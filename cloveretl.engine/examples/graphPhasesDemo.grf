@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingPhases">
+<!-- This graph illustrates usage of several components in different phases.
+First, all components from phase 0 are run, then the execution continues
+with phase 1.
+Data which crossess phase boundary is automatically buffered so the data 
+producing node can finish its work and the data consuming node can later
+start reading the data. 
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="SORT" type="SORT" sortKey="ShipName;ShipVia"/>
+<Node id="COPY" type="SIMPLE_COPY"/>
+<Edge id="EDG1" fromNode="INPUT:0" toNode="SORT:0" metadata="InMetadata"/>
+<Edge id="BUFF" fromNode="SORT:0" toNode="COPY:0" metadata="InMetadata"/> 
+</Phase>
+<Phase number="1">
+<Node id="MERGE" type="MERGE" mergeKey="ShipName;ShipVia"/>
+<Edge id="EDG2" fromNode="COPY:0" toNode="MERGE:0" metadata="InMetadata"/>
+<Edge id="EDG3" fromNode="COPY:1" toNode="MERGE:1" metadata="InMetadata"/>
+<Edge id="EDG4" fromNode="COPY:2" toNode="MERGE:2" metadata="InMetadata"/>
+<Edge id="EDG5" fromNode="MERGE:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+<Phase number="2">
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.phases.merged"/>
+</Phase>
+</Graph>

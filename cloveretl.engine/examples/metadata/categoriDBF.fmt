@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="CATEGORI_DBF" type="fixed" dataOffset="161" recordSize="55" charset="US-ASCII">
+	<Field name="_DELETED_" type="string" size="1" nullable="true" />
+	<Field name="CATEGORYID" type="numeric" size="19" nullable="true" />
+	<Field name="CATEGORYNA" type="string" size="15" nullable="true" />
+	<Field name="DESCRIPTIO" type="string" size="10" nullable="true" />
+	<Field name="PICTURE" type="string" size="10" nullable="true" />
+</Record>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Automatically generated from database null -->
+<Record name="EMPLOYEE" type="delimited">
+	<Field name="EMP_NO" type="numeric" delimiter="," format="#"/>
+	<Field name="FIRST_NAME" type="string" delimiter="," />
+	<Field name="LAST_NAME" type="string" delimiter="," />
+	<Field name="PHONE_EXT" type="string" nullable="yes" delimiter="," />
+	<Field name="HIRE_DATE" type="date" delimiter="," format="dd/MM/yyyy" />
+	<Field name="DEPT_NO" type="string" delimiter="," />
+	<Field name="JOB_CODE" type="string" delimiter="," />
+	<Field name="JOB_GRADE" type="numeric" delimiter="," />
+	<Field name="JOB_COUNTRY" type="string" delimiter="," />
+	<Field name="SALARY" type="numeric" delimiter="," />
+	<Field name="FULL_NAME" type="string" nullable="yes" delimiter="\n" />
+</Record>
