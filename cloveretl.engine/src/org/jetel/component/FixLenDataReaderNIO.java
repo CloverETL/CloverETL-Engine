@@ -199,8 +199,24 @@ public class FixLenDataReaderNIO extends Node {
 			org.w3c.dom.Node charset = attribs.getNamedItem("charset");
 			String id = attribs.getNamedItem("id").getNodeValue();
 			String fileURL = attribs.getNamedItem("fileURL").getNodeValue();
-			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
-			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
+
+			// commented by Steven -- String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
+			// added by steven
+			org.w3c.dom.Node dataPolicyNode = attribs.getNamedItem("DataPolicy");
+			String aDataPolicy = null;
+			if (dataPolicyNode != null)
+				aDataPolicy = dataPolicyNode.getNodeValue();
+            // end of addition
+
+			// commented by Steven -- String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
+
+			// added by Steven
+			org.w3c.dom.Node oneRecordPerLineNode = attribs.getNamedItem("OneRecordPerLine");
+			String aOneRecordPerLine = null;
+			if (oneRecordPerLineNode != null)
+				aOneRecordPerLine = oneRecordPerLineNode.getNodeValue();
+			// end of addition
+
 			if ((id != null) && (fileURL != null)) {
 				if (charset != null) {
 					aFixLenDataReaderNIO = new FixLenDataReaderNIO(id, fileURL, charset.getNodeValue());
@@ -215,7 +231,11 @@ public class FixLenDataReaderNIO extends Node {
 					}
 				}
 				// sets the default policy
-				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
+				// commented by Steven -- aFixLenDataReaderNIO.setOneRecordPerLinePolicy(false);
+				// added by Steven
+				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(true);
+				// end of addition
+
 				if (aDataPolicy != null) {
 					aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
 				}
