@@ -2,6 +2,30 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-1
+---------
+New features:
++ created ExtFilter component which somehow resembles "old" Filter
+with several enhancements (supports logical operators AND,OR,NOT,
+braces, etc.)
++ created org.jetel.interpreter package - currently, code
+supporting ExtFilter is there. This should become base
+for Clover's internal transformation language interpreter.
+
+Changes:
++ refactored code, namely created separate packages
+for data Parsers (org.jetel.data.parser) and Formatters (org.jetel.data.formatter).
++ created new package org.jetel.data.lookup - base for consolidating
+lookup tables support (old lookup tables have been put there). New
+interface LookupTable has been created.
++ updated compareTo() methods for all data objects (NumericDataField,
+StringDataField, etc.) to support comparison with various object types.
++ FixLenDataParser2 has been updated to support line separators (when fix-len
+record is delimited by new-line character(s))
++ components FixLenDataReaderNIO,FixLenDataWriterNIO have been enhanced
+to allow specifying of which character(s) is used to separate
+record on line - if required.
+
 REL 1-1-0
 ---------
 New features:
