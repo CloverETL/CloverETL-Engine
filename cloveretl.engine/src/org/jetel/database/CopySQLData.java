@@ -1,20 +1,22 @@
 /*
- *  jETeL/Clover - Java based ETL application framework.
- *  Copyright (C) 2002  David Pavlis
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 package org.jetel.database;
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -148,8 +150,8 @@ public abstract class CopySQLData {
 		int i = 0;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
-							record.getMetadata().getFieldType(i),
-							record, i, i);
+					record.getMetadata().getFieldType(i),
+					record, i, i);
 			i++;
 		}
 
@@ -174,8 +176,8 @@ public abstract class CopySQLData {
 
 		while (iterator.hasNext()) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
-							record.getMetadata().getFieldType(i),
-							record, i, i);
+					record.getMetadata().getFieldType(i),
+					record, i, i);
 			i++;
 		}
 		return transMap;
@@ -208,12 +210,12 @@ public abstract class CopySQLData {
 			jdbcType = ((Integer) iterator.next()).shortValue();
 			// from index is index of specified cloverField in the Clover record
 			fromIndex = record.getMetadata().getFieldPosition(cloverFields[i]);
-			jetelFieldType=record.getMetadata().getFieldType(fromIndex);
+			jetelFieldType = record.getMetadata().getFieldType(fromIndex);
 			if (fromIndex == -1) {
 				throw new JetelException(" Field \"" + cloverFields[i] + "\" does not exist in DataRecord !");
 			}
 			// we copy from Clover's field to JDBC - toIndex/fromIndex is switched here
-			transMap[i++] = createCopyObject(jdbcType,jetelFieldType, record, toIndex, fromIndex);
+			transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record, toIndex, fromIndex);
 			toIndex++;// we go one by one - order defined by insert/update statement
 
 		}
@@ -319,8 +321,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			dateValue.setTime(((Date) field.getValue()).getTime());
-			pStatement.setDate(fieldSQL, dateValue);
+			if (!field.isNull()) {
+				dateValue.setTime(((DateDataField) field).getDate().getTime());
+				pStatement.setDate(fieldSQL, dateValue);
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
+			}
 		}
 	}
 
@@ -372,7 +378,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
+			if (!field.isNull()) {
+				pStatement.setDouble(fieldSQL, ((NumericDataField) field).getDouble());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.NUMERIC);
+			}
+
 		}
 	}
 
@@ -424,7 +435,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setInt(fieldSQL, ((IntegerDataField) field).getInt());
+			if (!field.isNull()) {
+				pStatement.setInt(fieldSQL, ((IntegerDataField) field).getInt());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.INTEGER);
+			}
+
 		}
 	}
 
@@ -459,7 +475,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			field.fromString(resultSet.getString(fieldSQL));
+			String fieldVal = resultSet.getString(fieldSQL);
+			if (resultSet.wasNull()) {
+				field.fromString(null);
+			} else {
+				field.fromString(fieldVal);
+			}
 		}
 
 
@@ -525,8 +546,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			timeValue.setTime(((java.util.Date) field.getValue()).getTime());
-			pStatement.setTimestamp(fieldSQL, timeValue);
+			if (!field.isNull()) {
+				timeValue.setTime(((DateDataField) field).getDate().getTime());
+				pStatement.setTimestamp(fieldSQL, timeValue);
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.TIMESTAMP);
+			}
 		}
 	}
 

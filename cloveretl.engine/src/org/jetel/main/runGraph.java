@@ -18,6 +18,7 @@
 package org.jetel.main;
 
 import java.io.*;
+import java.util.Properties;
 import org.jetel.graph.*;
 
 /**
@@ -25,9 +26,13 @@ import org.jetel.graph.*;
  *  The graph layout is read from specified XML file and the whole transformation is executed.<br>
  *  <tt><pre>
  *  Program parameters:
- *  -v		be verbose - print even graph layout
- *  -log <i>logfile</i>	send output messages to specified logfile instead of stdout
- *  <i>filename</i>	name of the file containing graph's layout in XML (this must be the last parameter passed)  
+ *  <table>
+ *  <tr><td nowrap>-v</td><td>be verbose - print even graph layout</td></tr>
+ *  <tr><td nowrap>-log</td><i>logfile</i><td>send output messages to specified logfile instead of stdout</td></tr>
+ *  <tr><td nowrap>-D:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
+ *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
+ *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
+ *  </table>
  *  </pre></tt>
  * @author      dpavlis
  * @since	2003/09/09
@@ -35,12 +40,11 @@ import org.jetel.graph.*;
  */
 public class runGraph {
 
-	/**  Description of the Field */
 	private final static String VERBOSE_SWITCH = "-v";
-	/**  Description of the Field */
 	private final static String LOG_SWITCH = "-log";
-
-
+	private final static String PROPERTY_FILE_SWITCH = "-cfg";
+	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -49,11 +53,14 @@ public class runGraph {
 	public static void main(String args[]) {
 		boolean verbose = false;
 		String logFilename = null;
+		String propertyFilename;
 		OutputStream log = null;
+		Properties properties=new Properties();
 
+		System.out.println("***  CloverETL framework/transformation graph runner, (c) 2002-04 D.Pavlis, released under GNU Public Licence  ***\n");
 		if (args.length < 1) {
-			System.err.println("Usage: runGraph [-v(erbose) -log <filename>] <graph definition file>");
-			System.exit(1);
+			printHelp();
+			System.exit(-1);
 		}
 		// process command line arguments
 		for (int i = 0; i < args.length; i++) {
@@ -64,10 +71,23 @@ public class runGraph {
 				i++;
 				logFilename = args[i];
 			}
+			if (args[i].startsWith(PROPERTY_FILE_SWITCH)){
+				i++;
+				try {
+					InputStream inStream = new BufferedInputStream(new FileInputStream(args[i]));
+					properties.load(inStream);
+				} catch (IOException ex) {
+					System.err.println(ex.getMessage());
+					System.exit(-1);
+				}
+			}
+			if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
+				String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
+				properties.setProperty(nameValue[0],nameValue[1]);
+			}
 		}
 
 		FileInputStream in;
-		System.out.println("***  CloverETL framework, (c) 2002-03 D.Pavlis, released under GNU Public Licence  ***\n");
 		System.out.println("Graph definition file: " + args[args.length - 1]);
 
 		try {
@@ -83,6 +103,7 @@ public class runGraph {
 
 		TransformationGraphXMLReaderWriter graphReader = TransformationGraphXMLReaderWriter.getReference();
 		TransformationGraph graph = TransformationGraph.getReference();
+		graph.loadGraphProperties(properties);
 
 		if (!graphReader.read(graph, in)) {
 			System.err.println("Error in reading graph from XML !");
@@ -101,10 +122,21 @@ public class runGraph {
 
 		if (!graph.run()) {// start all Nodes (each node is one thread)
 			System.out.println("Failed starting graph !");
+			System.exit(-1);
 		} else {
 			System.out.println("Execution of graph finished !");
+			System.exit(0);
 		}
 
+	}
+	
+	private static void printHelp(){
+		System.out.println("Usage: runGraph [-(v|log|cfg|P:)] <graph definition file>");
+		System.out.println("Options:");
+		System.out.println("-v\t\t\tbe verbose - print even graph layout");
+		System.out.println("-log <logfile>\t\tsend output messages to specified logfile instead of stdout");
+		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
+		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
 	}
 
 }
