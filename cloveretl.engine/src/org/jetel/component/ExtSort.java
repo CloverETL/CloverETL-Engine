@@ -76,7 +76,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <pre>&lt;Node id="SORT_CUSTOMER" type="EXT_SORT" sortKey="Name:Address" sortOrder="A"/&gt;</pre>
  *
  * @author      dpavlis
- * @since       February 15, 2005
+ * @since       April 4, 2002
  * @revision    $Revision$
  */
 public class ExtSort extends Node {
@@ -354,10 +354,7 @@ public class ExtSort extends Node {
                     targetTape.put(recordBuffer);
                     // read in next record from tape from which we read last
                     // record
-                    recordBuffer.clear();
-                    if (tapeCarousel.getTape(index).get(recordBuffer)) {
-                        sourceRecords[index].deserialize(recordBuffer);
-                    } else {
+                    if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
                         sourceRecordsFlags[index] = false;
                     }
                     yield();
@@ -404,10 +401,7 @@ public class ExtSort extends Node {
             }
             // write record to out port
             writeRecordBroadcast(sourceRecords[index]);
-            recordBuffer.clear();
-            if (tapeCarousel.getTape(index).get(recordBuffer)) {
-                sourceRecords[index].deserialize(recordBuffer);
-            } else {
+            if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
                 sourceRecordsFlags[index] = false;
             }
             yield();
@@ -430,9 +424,7 @@ public class ExtSort extends Node {
             throws IOException {
         for (int i = 0; i < tapeCarousel.numTapes(); i++) {
             DataRecordTape tape = tapeCarousel.getTape(i);
-            recordBuffer.clear();
-            if (tape.get(recordBuffer)) {
-                sourceRecords[i].deserialize(recordBuffer);
+            if (tape.get(sourceRecords[i])) {
                 sourceRecordsFlags[i] = true;
             } else {
                 sourceRecordsFlags[i] = false;
