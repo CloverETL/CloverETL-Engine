@@ -53,6 +53,23 @@ public class CodeField extends DataField {
 		this.aDataField = aDataField;
 	}
 
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    return new CodeField(metadata,aDataField);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    if (fromField instanceof CodeField){
+	        this.setValue(fromField.getValue());
+	    }
+	}
 	/**
 	 * This method calculates the value of the field.
 	 * @param inputDataRecords - an array of records from all
