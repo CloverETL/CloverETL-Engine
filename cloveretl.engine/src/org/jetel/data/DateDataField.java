@@ -114,7 +114,11 @@ public class DateDataField extends DataField {
 			return;
 		}
 		if ( _value instanceof Date ) {
-			value = new Date(((Date) _value).getTime());
+			if (value==null){
+				value = new Date(((Date) _value).getTime());
+			}else{
+				value.setTime(((Date) _value).getTime());
+			}
 			super.setNull(false);
 		} else {
 			if(this.metadata.isNullable()) {
