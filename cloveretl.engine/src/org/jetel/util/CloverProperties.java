@@ -15,6 +15,7 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public final class CloverProperties {
 	public final static String CLASS_DIRECTORY = "BIN";
+	public final static String USER_JAVA_PACKAGE_NAME = "org.jetel.userclasses";
 	
 	private static String[] getTypeNameList={"String","Date","Numeric","Integer"};
 	
