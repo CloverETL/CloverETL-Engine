@@ -58,7 +58,7 @@ public class ComponentXMLAttributes {
 		try {
 			return attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException(key);
+			throw new NotFoundException("Attribute "+key+" not found!");
 		}
 	}
 
@@ -74,7 +74,7 @@ public class ComponentXMLAttributes {
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException(key);
+			throw new NotFoundException("Attribute "+key+" not found!");
 		}
 		return Integer.parseInt(value);
 	}
@@ -91,7 +91,7 @@ public class ComponentXMLAttributes {
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException(key);
+			throw new NotFoundException("Attribute "+key+" not found!");
 		}
 		return value.matches("^[tTyY].*");
 	}
@@ -108,7 +108,7 @@ public class ComponentXMLAttributes {
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
-			throw new NotFoundException(key);
+			throw new NotFoundException("Attribute "+key+" not found!");
 		}
 		return Double.parseDouble(value);
 	}
