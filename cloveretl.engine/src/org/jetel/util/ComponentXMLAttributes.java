@@ -93,7 +93,7 @@ public class ComponentXMLAttributes {
 		} catch (Exception ex) {
 			throw new NotFoundException(key);
 		}
-		return value.matches("^[tTyY]");
+		return value.matches("^[tTyY].*");
 	}
 
 
