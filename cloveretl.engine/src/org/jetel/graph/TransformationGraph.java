@@ -79,6 +79,8 @@ public final class TransformationGraph {
 
 	static PrintStream log = System.out;// default info messages to stdout
 
+	private WatchDog watchDog;
+
 
 	/**
 	 *Constructor for the TransformationGraph object
@@ -140,7 +142,6 @@ public final class TransformationGraph {
 	 * @since     April 2, 2002
 	 */
 	public boolean run() {
-		WatchDog watchDog;
 		long timestamp = System.currentTimeMillis();
 		watchDog = new WatchDog(this, phasesArray, log, Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
 
@@ -153,12 +154,12 @@ public final class TransformationGraph {
 			return false;
 		}
 		log.print("[Clover] WatchDog thread finished - total execution time: ");
-		log.print((System.currentTimeMillis()-timestamp)/1000);
+		log.print((System.currentTimeMillis() - timestamp) / 1000);
 		log.println(" (sec)");
-		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK){
+		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
 			log.println("[Clover] Graph execution finished successfully");
 			return true;
-		}else{
+		} else {
 			log.println("[Clover] !!! Graph execution finished with errors !!!");
 			return false;
 		}
@@ -169,22 +170,12 @@ public final class TransformationGraph {
 	/**
 	 * An operation that aborts execution of graph
 	 *
-	 * @param  out  OutputStream - if defined, info messages are printed there
 	 * @since       April 2, 2002
 	 */
-	public void abort(OutputStream out) {
-
-	}
-
-
-	/**
-	 *  An operation that ends execution of graph
-	 *
-	 * @param  out  OutputStream - if defined, info messages are printed there
-	 * @since       April 10, 2002
-	 */
-	public void end(OutputStream out) {
-
+	public void abort() {
+		if (watchDog != null) {
+			watchDog.abort();
+		}
 	}
 
 
@@ -196,6 +187,10 @@ public final class TransformationGraph {
 	 * @since       April 10, 2002
 	 */
 	public boolean init(OutputStream out) {
+		if (out != null) {
+			log = new PrintStream(out);
+		}
+
 		Iterator iterator;
 		int i = 0;
 		phasesArray = new Phase[phases.size()];
@@ -228,7 +223,6 @@ public final class TransformationGraph {
 	 *
 	 * @param  phase  The phase reference
 	 * @since         August 3, 2003
-	 * 
 	 */
 	public void addPhase(Phase phase) {
 		phases.add(phase);
@@ -241,7 +235,7 @@ public final class TransformationGraph {
 	/**
 	 *  Adds a feature to the Node attribute of the TransformationGraph object
 	 *
-	 * @param  node  The feature to be added to the Node attribute
+	 * @param  node   The feature to be added to the Node attribute
 	 * @deprecated
 	 */
 	public void addNode(Node node) {
@@ -379,7 +373,6 @@ public final class TransformationGraph {
 	 * called after init()
 	 */
 	public void dumpGraphConfiguration() {
-		PrintStream log = System.out;
 		Iterator iterator;
 		Node node;
 		Edge edge;
@@ -393,12 +386,12 @@ public final class TransformationGraph {
 				log.println("\t" + node.getID() + " : " + node.getName() + " phase: " + node.getPhase());
 			}
 			log.println("\t... edges ...");
-			iterator=phasesArray[i].getEdges().iterator();
-			while(iterator.hasNext()){
-			edge=(Edge)iterator.next();
-			log.print("\t"+edge.getID()+" type: ");
-			log.println(edge.getType()==edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
-		}
+			iterator = phasesArray[i].getEdges().iterator();
+			while (iterator.hasNext()) {
+				edge = (Edge) iterator.next();
+				log.print("\t" + edge.getID() + " type: ");
+				log.println(edge.getType() == edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
+			}
 			log.println("--- end phase ---");
 		}
 		log.println("*** END OF GRAPH LIST ***");
