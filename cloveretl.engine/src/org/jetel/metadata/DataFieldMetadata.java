@@ -124,6 +124,32 @@ public class DataFieldMetadata {
 		this.fieldType = _type;
 	}
 
+	/**
+	 *  Constructor for default(String) delimited type of field
+	 *
+	 * @param  _name       Name of the field
+	 * @param  _delimiter  String to be used as a delimiter for this field
+	 * @since
+	 */
+	public DataFieldMetadata(String _name, String _delimiter) {
+		this.name = new String(_name);
+		this.delimiter = new String(_delimiter);
+		this.fieldType = STRING_FIELD;
+	}
+
+	/**
+	 *  Constructor for default(String) fixLength type of field
+	 *
+	 * @param  _name   Name of the field
+	 * @param  _type   Description of Parameter
+	 * @param  size    Description of Parameter
+	 * @since
+	 */
+	public DataFieldMetadata(String _name, short size) {
+		this.name = new String(_name);
+		this.size = size;
+		this.fieldType = STRING_FIELD;
+	}
 
 	/**
 	 *  Constructor for fixLength type of field
@@ -138,7 +164,6 @@ public class DataFieldMetadata {
 		this.size = size;
 		this.fieldType = _type;
 	}
-
 
 	/**
 	 *  Sets name of the field
@@ -220,6 +245,14 @@ public class DataFieldMetadata {
 
 
 	/**
+	 *  Sets the maximum field size (used only when dealing with fixed-size type of record)
+	 * @param s
+	 */
+	public void setSize(short s) {
+		size = s;
+	}
+
+	/**
 	 *  An operation that does ...
 	 *
 	 * @return    The Delimiter value
@@ -228,7 +261,6 @@ public class DataFieldMetadata {
 	public String getDelimiter() {
 		return delimiter;
 	}
-
 
 	/**
 	 *  Gets Format string specifying pattern which will be used when
