@@ -113,7 +113,7 @@ public class Merge extends Node {
 	 *@param  from   Description of the Parameter
 	 *@return        The firstOpen value
 	 */
-	private int getFirstOpen(boolean[] isEOF, int from) {
+	private int getNextOpen(boolean[] isEOF, int from) {
 		for (int i = from; i < isEOF.length; i++) {
 			if (!isEOF[i]) {
 				return i;
@@ -136,20 +136,16 @@ public class Merge extends Node {
 		int lowest;
 		int compareTo;
 
-		if ((lowest = getFirstOpen(isEOF, 0)) == -1) {
+		if ((lowest = getNextOpen(isEOF, 0)) == -1) {
 			return -1;
 		}
-		if ((compareTo = getFirstOpen(isEOF, lowest + 1)) == -1) {
-			return lowest;
-		}
+		compareTo = getNextOpen(isEOF, lowest + 1);
 
 		while (compareTo < isEOF.length && compareTo != -1) {
-			if (comparisonKey.compare(inputRecords[lowest], inputRecords[compareTo]) == -1) {
-				//lowest is lowest, no need to change
-			} else {
-				lowest = compareTo;
-			}
-			compareTo = getFirstOpen(isEOF, compareTo + 1);
+			if (comparisonKey.compare(inputRecords[lowest], inputRecords[compareTo]) == 1) {
+				lowest = compareTo; // we have new lowest
+			} 
+			compareTo = getNextOpen(isEOF, compareTo + 1);
 		}
 
 		return lowest;
@@ -197,14 +193,15 @@ public class Merge extends Node {
 		int numActive; 	// counter of still active ports - those without EOF status
 		int readFromPort;
 		int index;
-		boolean[] isEOF = new boolean[getInPorts().size()];
-		for (int i = 0; i < isEOF.length; i++) {
-			isEOF[i] = false;
-		}
+		
 		//get array of all input ports defined/connected - use collection Collection - getInPorts();
 		inPorts = (InputPort[])getInPorts().toArray(new InputPort[0]);
 		//create array holding incoming records
 		inputRecords=new DataRecord[inPorts.length];
+		boolean[] isEOF = new boolean[inPorts.length];
+		for (int i = 0; i < isEOF.length; i++) {
+			isEOF[i] = false;
+		}
 
 		// initialize array of data records (for each input port one)	
 		for (int i = 0; i < inPorts.length; i++) {
@@ -231,22 +228,24 @@ public class Merge extends Node {
 		// read and merge data from it
 		while (runIt && numActive > 0) {
 			index = getLowestRecIndex(inputRecords, isEOF);
-			try {
-				outPort.writeRecord(inputRecords[index]);
-				inputRecords[index] = inPorts[index].readRecord(inputRecords[index]);
-				if (inputRecords[index] == null) {
-					numActive--;
-					isEOF[index] = true;
+			if (index!=-1){
+				try {
+					outPort.writeRecord(inputRecords[index]);
+					inputRecords[index] = inPorts[index].readRecord(inputRecords[index]);
+					if (inputRecords[index] == null) {
+						numActive--;
+						isEOF[index] = true;
+					}
+				} catch (IOException ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_ERROR;
+					closeAllOutputPorts();
+					return;
+				} catch (Exception ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_FATAL_ERROR;
+					return;
 				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
 			}
 		}
 		setEOF(WRITE_TO_PORT);
