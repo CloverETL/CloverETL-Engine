@@ -27,11 +27,14 @@ import org.xml.sax.helpers.*;
 import org.xml.sax.SAXParseException;
 import java.text.MessageFormat;
 import org.jetel.util.StringUtils;
-
+import java.util.Properties;
 import java.util.logging.Logger;
 
 /**
- * Helper class for reading/writing DataRecordMetadata (record structure) from/to XML format
+ * Helper class for reading/writing DataRecordMetadata (record structure) from/to XML format<br>
+ *
+ * <i>Note: If for record or some field Node are defined more attributes than those recognized,
+ * they are transferred to Java Properties object and assigned to either record or field.</i> 
  *
  *  The XML DTD describing the internal structure is as follows:
  *  <pre>
@@ -48,7 +51,7 @@ import java.util.logging.Logger;
  *		delimiter NMTOKEN #IMPLIED ","
  *		size NMTOKEN #IMPLIED "0"
  *		format CDATA #IMPLIED 
- *      nullable NMTOKEN #IMPLIED "true"
+ *      	nullable NMTOKEN #IMPLIED "true"
  *		default CDATA #IMPLIED &gt;
  *  </pre>
  *
@@ -201,7 +204,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					out.print("format=\""+field.getFormatStr()+"\" ");
 				}
 				if (field.getDefaultValue()!=null){
-					out.print("default=\""+field.getFormatStr()+"\" ");
+					out.print("default=\""+field.getDefaultValue()+"\" ");
 				}
 				out.print("nullable=\""+(new Boolean(field.isNullable())).toString()+"\" ");
 				if (field.getCodeStr()!=null){
@@ -224,76 +227,105 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private DataRecordMetadata parseRecordMetadata(Document document) throws DOMException{
 		org.w3c.dom.NamedNodeMap attributes;
 		DataRecordMetadata recordMetadata;
-		String recordName;
-		String recordType;
+		String recordName=null;
+		String recordType=null;
+		String itemName;
+		String itemValue;
 		String nullableValue;
+		Properties recordProperties=new Properties();
 		// get RECORD ---------------------------------------------
 		attributes = document.getElementsByTagName(RECORD_ELEMENT).item(0).getAttributes();
 		
-		try{
-			recordName = attributes.getNamedItem("name").getNodeValue();
-			recordType = attributes.getNamedItem("type").getNodeValue();
-		}catch(NullPointerException ex){
+		for(int i=0;i<attributes.getLength();i++){
+			itemName=attributes.item(i).getNodeName();
+			itemValue=attributes.item(i).getNodeValue();
+			if (itemName.equalsIgnoreCase("name")){
+				recordName=itemValue;
+			}else if(itemName.equalsIgnoreCase("type")){
+				recordType=itemValue;
+			}else{
+				recordProperties.setProperty(itemName,itemValue);
+			}
+		}
+		
+		if (recordType==null || recordType==null){
 			throw new DOMException(DOMException.NOT_FOUND_ERR,"Attribute \"name\" or \"type\" not defined within Record !");
 		}
 		
 		recordMetadata = new DataRecordMetadata(recordName, recordType.equalsIgnoreCase("fixed") ?
 					DataRecordMetadata.FIXEDLEN_RECORD :
 					DataRecordMetadata.DELIMITED_RECORD);
-				
+		recordMetadata.setRecordProperties(recordProperties);
+
 		// get FIELDs ---------------------------------------------
 		NodeList fieldElements = document.getElementsByTagName(FIELD_ELEMENT);
 		for (int i = 0; i < fieldElements.getLength(); i++) {
 			attributes = fieldElements.item(i).getAttributes();
 			DataFieldMetadata field;
-			String format;
-			String defaultValue;
-			String name;
-			char fieldType;
+			String format=null;
+			String defaultValue=null;
+			String name=null;
+			String size=null;
+			String delimiter=null;
+			String nullable=null;
+			char fieldType=' ';
+			Properties fieldProperties=null;
 			
-			try{
-				fieldType = getFieldType(attributes.getNamedItem("type").getNodeValue());
-				name = attributes.getNamedItem("name").getNodeValue();
-			}catch(NullPointerException ex){
+			for(int j=0;j<attributes.getLength();j++){
+				itemName=attributes.item(j).getNodeName();
+				itemValue=attributes.item(j).getNodeValue();
+				if (itemName.equalsIgnoreCase("type")){
+					fieldType = getFieldType(itemValue);
+				}else if(itemName.equalsIgnoreCase("name")){
+					name = itemValue;
+				}else if(itemName.equalsIgnoreCase("size")){
+					size = itemValue;
+				}else if(itemName.equalsIgnoreCase("delimiter")){
+					delimiter = itemValue;
+				}else if(itemName.equalsIgnoreCase("format")){
+					format = itemValue;
+				}else if(itemName.equalsIgnoreCase("default")){
+					defaultValue = itemValue;
+				}else if(itemName.equalsIgnoreCase("nullable")){
+					nullable = itemValue;
+				}else{
+					if(fieldProperties==null){
+						fieldProperties=new Properties();
+					}
+					fieldProperties.setProperty(itemName,itemValue);
+				}
+			}
+			
+			if ((fieldType==' ') || (name==null)){
 				throw new DOMException(DOMException.NOT_FOUND_ERR,"Attribute \"name\" or \"type\" not defined for field #"+i);
 			}
 
 			// create FixLength field or Delimited base on Record Type
-			try{
-				if (recordMetadata.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
-					field = new DataFieldMetadata(name, fieldType, getFieldSize(attributes.getNamedItem("size").getNodeValue()));
-				} else {
-					field = new DataFieldMetadata(name, fieldType, 
-					StringUtils.stringToSpecChar(attributes.getNamedItem("delimiter").getNodeValue()));
+			if (recordMetadata.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
+				if (size==null){
+					throw new DOMException(DOMException.NOT_FOUND_ERR,"Attribute \"size\" not defined for field #"+i);
 				}
-			}catch(NullPointerException ex){
-				throw new DOMException(DOMException.NOT_FOUND_ERR,"Attribute \"size\" or \"delimiter\" not defined for field #"+i);
+				field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
+			} else {
+				if (delimiter==null){
+					throw new DOMException(DOMException.NOT_FOUND_ERR,"Attribute \"delimiter\" not defined for field #"+i);
+				}
+				field = new DataFieldMetadata(name, fieldType,StringUtils.stringToSpecChar(delimiter));
 			}
+			// set properties
+			field.setFieldProperties(fieldProperties);
 			
 			// set format string if defined
-			try{
-				if ((format = attributes.getNamedItem("format").getNodeValue()) != null) {
-					field.setFormatStr(format);
-				}
-			}catch(NullPointerException ex){
+			if (format  != null) {
+				field.setFormatStr(format);
 			}
-			
-			try{
-				if ((defaultValue = attributes.getNamedItem("default").getNodeValue()) != null) {
-					field.setDefaultValue(defaultValue);
-				}
-			}catch(NullPointerException ex){
+			if (defaultValue  != null) {
+				field.setDefaultValue(defaultValue);
 			}
 			
 			// set nullable if defined
-			try{
-				if ((nullableValue = attributes.getNamedItem("nullable").getNodeValue()) != null) {
-					if(nullableValue.equalsIgnoreCase("TRUE") || nullableValue.equalsIgnoreCase("YES"))
-						field.setNullable(true);
-					else
-						field.setNullable(false);
-				}
-			}catch(NullPointerException ex){
+			if (nullable != null) {
+				field.setNullable(nullable.matches("^[tTyY].*"));
 			}
 
 			NodeList fieldCodeElements = fieldElements.item(i).getChildNodes();
@@ -377,90 +409,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	}
 
 
-//	/**
-//	 *  Error handler to report errors and warnings<br>
-//	 *  <i>This code has beed taken from Crimson examples ;-)</i>
-//	 *
-//	 * @author     dpavlis
-//	 * @since    October 9, 2002
-//	 */
-//	private static class MyErrorHandler implements ErrorHandler {
-//		/**
-//		 * Error handler output goes here
-//		 *
-//		 * @since    October 9, 2002
-//		 */
-//		private PrintStream out;
-//
-//
-//		/**
-//		 *Constructor for the MyErrorHandler object
-//		 *
-//		 * @param  out  Description of Parameter
-//		 * @since       October 9, 2002
-//		 */
-//		MyErrorHandler(PrintStream out) {
-//			this.out = out;
-//		}
-//
-//
-//		/**
-//		 *  Description of the Method
-//		 *
-//		 * @param  spe               Description of Parameter
-//		 * @exception  SAXException  Description of Exception
-//		 * @since                    October 9, 2002
-//		 */
-//		public void warning(SAXParseException spe) throws SAXException {
-//			out.println("Warning: " + getParseExceptionInfo(spe));
-//		}
-//
-//
-//		/**
-//		 *  Description of the Method
-//		 *
-//		 * @param  spe               Description of Parameter
-//		 * @exception  SAXException  Description of Exception
-//		 * @since                    October 9, 2002
-//		 */
-//		public void error(SAXParseException spe) throws SAXException {
-//			String message = "Error: " + getParseExceptionInfo(spe);
-//			throw new SAXException(message);
-//		}
-//
-//
-//		/**
-//		 *  Description of the Method
-//		 *
-//		 * @param  spe               Description of Parameter
-//		 * @exception  SAXException  Description of Exception
-//		 * @since                    October 9, 2002
-//		 */
-//		public void fatalError(SAXParseException spe) throws SAXException {
-//			String message = "Fatal Error: " + getParseExceptionInfo(spe);
-//			throw new SAXException(message);
-//		}
-//
-//
-//		/**
-//		 * Returns a string describing parse exception details
-//		 *
-//		 * @param  spe  Description of Parameter
-//		 * @return      The ParseExceptionInfo value
-//		 * @since       October 9, 2002
-//		 */
-//		private String getParseExceptionInfo(SAXParseException spe) {
-//			String systemId = spe.getSystemId();
-//			if (systemId == null) {
-//				systemId = "null";
-//			}
-//			String info = "URI=" + systemId +
-//					" Line=" + spe.getLineNumber() +
-//					": " + spe.getMessage();
-//			return info;
-//		}
-//	}
-//
+
 }
 /*
  *  end class DataRecordMetadataXMLReaderWriter

@@ -19,6 +19,8 @@
 
 package org.jetel.metadata;
 
+import java.util.Properties;
+
 /**
  *  A class that represents metadata describing one particular data field.<br>
  *  Handles encoding of characters.
@@ -78,6 +80,8 @@ public class DataFieldMetadata {
 	 */
 	private String codeStr;
 
+	private Properties fieldProperties;
+	
 	// Attributes
 
 	/**  Description of the Field */
@@ -119,6 +123,7 @@ public class DataFieldMetadata {
 		this.name = new String(_name);
 		this.delimiter = new String(_delimiter);
 		this.fieldType = _type;
+		this.fieldProperties=null;
 	}
 
 
@@ -133,6 +138,7 @@ public class DataFieldMetadata {
 		this.name = new String(_name);
 		this.delimiter = new String(_delimiter);
 		this.fieldType = STRING_FIELD;
+		this.fieldProperties=null;
 	}
 
 
@@ -147,6 +153,7 @@ public class DataFieldMetadata {
 		this.name = new String(_name);
 		this.size = size;
 		this.fieldType = STRING_FIELD;
+		this.fieldProperties=null;
 	}
 
 
@@ -162,6 +169,7 @@ public class DataFieldMetadata {
 		this.name = new String(_name);
 		this.size = size;
 		this.fieldType = _type;
+		this.fieldProperties=null;
 	}
 
 
@@ -338,6 +346,20 @@ public class DataFieldMetadata {
 		return codeStr;
 	}
 
+	public Properties getFieldProperties() {
+		return fieldProperties;
+	}
+
+
+	/**
+	 *  Sets the recordProperties attribute of the DataRecordMetadata object
+	 *
+	 * @param  properties  The new recordProperties value
+	 */
+	public void setFieldProperties(Properties properties) {
+		fieldProperties = properties;
+	}
+	
 }
 /*
  *  end class DataFieldMetadata
