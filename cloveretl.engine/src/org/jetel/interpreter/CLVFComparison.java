@@ -20,7 +20,7 @@ public class CLVFComparison extends SimpleNode implements FilterExpParserConstan
 
   public void interpret()
 	{
-		
+  	
 		int cmpResult;
 		boolean lValue=false; 
 		
@@ -28,12 +28,9 @@ public class CLVFComparison extends SimpleNode implements FilterExpParserConstan
 		if (cmpType==REGEX_EQUAL){
 			jjtGetChild(0).interpret();
 			StringDataField field1=(StringDataField)stack.pop();
-			System.out.println(field1);
 			jjtGetChild(1).interpret();
 			Matcher regex=(Matcher)stack.pop();
-			System.out.println(regex);
 			regex.reset(field1.getCharSequence());
-			
 			if(regex.matches()){
 				lValue=true;
 			}else{
@@ -44,8 +41,8 @@ public class CLVFComparison extends SimpleNode implements FilterExpParserConstan
 			jjtGetChild(0).interpret();
 			DataField field1=(DataField)stack.pop();
 			jjtGetChild(1).interpret();
-			DataField field2=(DataField)stack.pop();
-			cmpResult=field1.compareTo(field2);
+			Object literal=stack.pop();
+			cmpResult=field1.compareTo(literal);
 			
 			switch (cmpType) {
 			case EQUAL:

@@ -2,15 +2,16 @@
 
 package org.jetel.interpreter;
 
-import org.jetel.data.DataField;
-import org.jetel.data.DataFieldFactory;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.data.Defaults;
 
 public class CLVFLiteral extends SimpleNode implements FilterExpParserTreeConstants {
 
   String valueImage; 
-  DataField value;
+  Object value;
   
   public CLVFLiteral(int id) {
     super(id);
@@ -21,28 +22,33 @@ public class CLVFLiteral extends SimpleNode implements FilterExpParserTreeConsta
   }
 
   
-  void init(DataFieldMetadata dataFieldMeta) throws ParseException{
+  void init(DataFieldMetadata dataFieldMeta) throws org.jetel.interpreter.ParseException{
   	switch(dataFieldMeta.getType()){
   		case DataFieldMetadata.NUMERIC_FIELD:
+  			value= Double.valueOf(valueImage);
+  		break;
   		case DataFieldMetadata.STRING_FIELD:
+  			value=valueImage;
+  		break;
   		case DataFieldMetadata.INTEGER_FIELD:
-  				value=DataFieldFactory.createDataField(
-  		  			new DataFieldMetadata("", dataFieldMeta.getType(), (short)0));
-  				value.fromString(valueImage);
-  			break;
+  			value= Integer.valueOf(valueImage);
+  		break;
   		case DataFieldMetadata.DATE_FIELD:
   			// do we have date & time or only date value
-  			DataFieldMetadata metadata=new DataFieldMetadata("", dataFieldMeta.getType(), (short)0);
+  			DateFormat dateFormat;
   			if (valueImage.length()>10){
-  				metadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
+  				dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
   			}else{
-  				metadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
+  				dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
   			}
-  			value=DataFieldFactory.createDataField(metadata);
-  			value.fromString(valueImage);
+  			try{
+  				value=dateFormat.parse(valueImage); 		
+  			}catch(java.text.ParseException ex){
+  				throw new org.jetel.interpreter.ParseException("Unrecognized date value: "+valueImage);
+  			}
   			break;
   		default:
-  			throw new ParseException("Can't handle datatype of field "+dataFieldMeta.getName());
+  			throw new org.jetel.interpreter.ParseException("Can't handle datatype of field "+dataFieldMeta.getName());
   	}
   }
   
