@@ -102,6 +102,21 @@ public class SequenceField extends DataField {
 	}
 
 
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    return new SequenceField(metadata,value,increment);
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    this.setValue(fromField.getValue());
+	}
 	/**
 	 *  Sets the value of the field
 	 *
