@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Record name="Orders" type="delimited">
+	<Field name="OrderID" type="numeric" delimiter="|" format="#" />
+	<Field name="CustomerID" type="string" delimiter="|"/>
+	<Field name="EmployeeID" type="numeric" delimiter="|" format="#" />
+	<Field name="EmployeeID2" type="numeric" delimiter="|" format="#" />
+	<Field name="LastName" type="string" delimiter="\n"/>
+</Record>
