@@ -34,10 +34,12 @@ import org.jetel.graph.Node;
 public class ComponentFactory {
 
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
+	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { org.w3c.dom.Node.class };
 	private final static Map componentMap = new HashMap();
 	
 	static{
 		// register known components
+		// parameters <component type>,<full class name including package>
 		registerComponent(SimpleCopy.COMPONENT_TYPE,"org.jetel.component.SimpleCopy");
 		registerComponent(Concatenate.COMPONENT_TYPE,"org.jetel.component.Concatenate");
 		registerComponent(DelimitedDataReader.COMPONENT_TYPE,"org.jetel.component.DelimitedDataReader");
@@ -65,7 +67,9 @@ public class ComponentFactory {
 	}
 	
 	/**
-	 *  Method for creating various types of Components based on component name & XML parameter definition.
+	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
+	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+	 *  This way new components can be added withou modifying ComponentFactory code.
 	 *  
 	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
 	 * @param  xmlNode        XML element containing appropriate Node parameters
@@ -93,9 +97,8 @@ public class ComponentFactory {
 			}
 			try{
 				Object[] args={nodeXML};
-				//new org.w3c.dom.Node().getClass()
-				Class[] parameters = {Class.forName("org.w3c.dom.Node")};
-				method=tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, parameters);
+				//Class.forName("org.w3c.dom.Node")
+				method=tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 				//return newNode.fromXML(nodeXML);
 				return (org.jetel.graph.Node)method.invoke(null,args);
 			}catch(Exception ex){
