@@ -32,9 +32,11 @@ import org.jetel.exception.NotFoundException;
 public class ComponentXMLAttributes {
 
 	private NamedNodeMap attributes;
+	private org.w3c.dom.Node nodeXML;
+
 	//private Map    childNodes;
 
-	
+
 	/**
 	 *  Constructor for the ComponentXMLAttributes object
 	 *
@@ -42,16 +44,7 @@ public class ComponentXMLAttributes {
 	 */
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
 		attributes = nodeXML.getAttributes();
-		
-		/*
-		NodeList childern=nodeXML.getChildNodes();
-		childNodes=new HashMap();
-		for(int i=0;i<childern.getLength();i++){
-			childNodes.put(childern.item(i), );
-		}
-		check how is CDATA or TEXT present
-		
-		*/ 
+		this.nodeXML = nodeXML;
 	}
 
 
@@ -61,7 +54,7 @@ public class ComponentXMLAttributes {
 	 *@param  key  Description of the Parameter
 	 *@return      The string value
 	 */
-	String getString(String key) {
+	public String getString(String key) {
 		try {
 			return attributes.getNamedItem(key).getNodeValue();
 		} catch (Exception ex) {
@@ -76,7 +69,7 @@ public class ComponentXMLAttributes {
 	 *@param  key  Description of the Parameter
 	 *@return      The integer value
 	 */
-	int getInteger(String key) {
+	public int getInteger(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
@@ -93,7 +86,7 @@ public class ComponentXMLAttributes {
 	 *@param  key  Description of the Parameter
 	 *@return      The boolean value
 	 */
-	boolean getBoolean(String key) {
+	public boolean getBoolean(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
@@ -110,7 +103,7 @@ public class ComponentXMLAttributes {
 	 *@param  key  Description of the Parameter
 	 *@return      The double value
 	 */
-	double getDouble(String key) {
+	public double getDouble(String key) {
 		String value;
 		try {
 			value = attributes.getNamedItem(key).getNodeValue();
@@ -127,13 +120,65 @@ public class ComponentXMLAttributes {
 	 *@param  key  Description of the Parameter
 	 *@return      Description of the Return Value
 	 */
-	boolean exists(String key) {
+	public boolean exists(String key) {
 		if (attributes.getNamedItem(key) != null) {
 			return true;
 		} else {
 			return false;
 		}
 	}
+
+
+	/**
+	 *  Returns first TEXT_NODE child under specified XML Node
+	 *
+	 *@param  nodeXML  Description of the Parameter
+	 *@return          The TEXT_NODE value (String) if any exist or null
+	 */
+	public String getText(org.w3c.dom.Node nodeXML) {
+		org.w3c.dom.Node childNode;
+		org.w3c.dom.NodeList list;
+		if (nodeXML.hasChildNodes()) {
+			list = nodeXML.getChildNodes();
+			for (int i = 0; i < list.getLength(); i++) {
+				childNode = list.item(i);
+				if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+					return childNode.getNodeValue();
+				}
+			}
+		}
+		return null;
+	}
+
+
+	/**
+	 *  Searches for specific child node name under specified XML Node
+	 *
+	 *@param  nodeXML        Description of the Parameter
+	 *@param  childNodeName  Description of the Parameter
+	 *@return                childNode if exist under specified name or null
+	 */
+	public org.w3c.dom.Node getChildNode(org.w3c.dom.Node nodeXML, String childNodeName) {
+		org.w3c.dom.Node childNode;
+		org.w3c.dom.NodeList list;
+		if (nodeXML.hasChildNodes()) {
+			list = nodeXML.getChildNodes();
+			for (int i = 0; i < list.getLength(); i++) {
+				childNode = list.item(i);
+				if (childNodeName.equals(childNode.getNodeName())) {
+					return childNode;
+				} else {
+					childNode = getChildNode(childNode, childNodeName);
+					if (childNode != null) {
+						return childNode;
+					}
+				}
+
+			}
+		}
+		return null;
+	}
+
 }
 /*
  *  End class StringUtils
