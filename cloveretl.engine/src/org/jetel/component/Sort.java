@@ -107,17 +107,6 @@ public class Sort extends Node {
 
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
-	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
 	 * @since    April 4, 2002
@@ -256,5 +245,14 @@ public class Sort extends Node {
 		return sort;
 	}
 
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
+	public boolean checkConfig() {
+		return true;
+	}
 }
 
