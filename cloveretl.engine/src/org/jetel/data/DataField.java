@@ -65,6 +65,19 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
+	 * Creates deep copy of existing field. 
+	 * 
+	 * @return new Field (exact copy of current field)
+	 */
+	public abstract DataField duplicate();
+	
+	/**
+	 * Sets current field's value from DataField passed as argument
+	 * @param fieldFrom DataField from which to get the value
+	 */
+	public abstract void copyFrom(DataField fieldFrom);
+	
+	/**
 	 *  An operation that sets value of the data field.
 	 *
 	 * @param  _value  The new Value value

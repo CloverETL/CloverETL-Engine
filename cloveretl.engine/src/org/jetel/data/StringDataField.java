@@ -30,7 +30,11 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- *  A class that represents String type data field
+ *  A class that represents String type data field.<br>
+ *  It can hold String of arbitrary length, however due
+ *  to use of short value as length specifier when serializing/
+ * deserializing value to/from ByteBuffer, the maximum length
+ * is limited to 32762 characters (Short.MAX_VALUE);
  *
  * @author      D.Pavlis
  * @since       March 27, 2002
@@ -49,7 +53,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since
 	 */
 	private final static int INITIAL_STRING_BUFFER_CAPACITY = 32;
-	private final static int STRING_LENGTH_INDICATOR_SIZE = 4;
+	private final static int STRING_LENGTH_INDICATOR_SIZE = 2; // sizeof(short)
 
 	// Associations
 
@@ -84,6 +88,42 @@ public class StringDataField extends DataField implements CharSequence{
 	}
 
 
+	/**
+	 * Private constructor used internally when clonning
+	 * 
+	 * @param _metadata
+	 * @param _value
+	 */
+	private StringDataField(DataFieldMetadata _metadata, StringBuffer _value){
+	    super(_metadata);
+	    this.value=new StringBuffer(_value.length());
+	    this.value.append(_value);
+	}
+	
+	
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    StringDataField newField=new StringDataField(metadata,value);
+	    newField.setNull(this.isNull());
+	    return newField;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fieldFrom){
+	    if (fieldFrom instanceof StringDataField ){
+	        if (!fieldFrom.isNull){
+	            this.value.setLength(0);
+	            this.value.append(((StringDataField)fieldFrom).value);
+	        }
+	        setNull(fieldFrom.isNull);
+	    }
+	}
+	
 	/**
 	 *  Sets the Value attribute of the StringDataField object
 	 *
@@ -245,16 +285,12 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void serialize(ByteBuffer buffer) {
 		int length = value.length();
+		buffer.putShort((short)length);
+
 		int counter = 0;
-		buffer.putInt(length);
 		while (counter < length) {
 			buffer.putChar(value.charAt(counter++));
 		}
-		/*
-		 *  byte byteArray[]=value.getBytes();
-		 *  buffer.putInt(byteArray.length);
-		 *  buffer.put(byteArray);
-		 */
 	}
 
 
@@ -265,18 +301,19 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		int length = buffer.getInt();
-		//StringBuffer strBuf = new StringBuffer(length);
-		int counter = 0;
+		int length = buffer.getShort();
+		
+		// empty value - so we can store new string
 		value.setLength(0);
 
 		if (length == 0) {
 			setNull(true);
 		} else {
-			while (counter < length) {
-				value.append(buffer.getChar());
-				counter++;
-			}
+		    int counter=0;
+		    while(counter<length){
+		        value.append(buffer.getChar());
+		        counter++;
+		    }
 			setNull(false);
 		}
 	}
@@ -293,17 +330,28 @@ public class StringDataField extends DataField implements CharSequence{
 		//StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
 		CharSequence data;
 		
-		if (obj == null){
-			return false;
-		}
 		if (obj instanceof StringDataField){
 			data = (CharSequence)((StringDataField) obj).getValue();
 		}else if (obj instanceof CharSequence){
 			data = (CharSequence)obj;
 		}else{
-			throw new RuntimeException("Object is NOT a String or CharSequence: "+obj);
+			return false;
 		}
 		
+        //
+        //  sboden changes: getValue() returns null when a string is empty. So
+        //  when comparing this StringDataField to a one which has an empty string
+        //  data would be empty and cause a NullPointerException below.
+        //
+        if (isNull() != ((StringDataField)obj).isNull()) {
+            return false;
+        }
+
+        if (isNull() && ((StringDataField)obj).isNull()) {
+            return true;
+        }
+		//  sboden: end of changes
+
 		if (value.length() != data.length()) {
 			return false;
 		}
@@ -330,10 +378,6 @@ public class StringDataField extends DataField implements CharSequence{
 			throw new RuntimeException("Object is NOT a String or CharSequence: "+obj);
 		}
 		CharSequence strObj= (CharSequence)obj;
-
-		if (strObj == null) {
-			return 1;// ?? shall we raise an exception ??
-		}
 
 		int valueLenght = value.length();
 		int strObjLenght = strObj.length();

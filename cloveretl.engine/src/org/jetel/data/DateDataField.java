@@ -99,7 +99,9 @@ public class DateDataField extends DataField {
 			dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT,locale);
 			dateFormat.setLenient(false);
 		}
-		parsePosition = new ParsePosition(0);
+		if (dateFormat!=null){
+		    parsePosition = new ParsePosition(0);
+		}
 	}
 
 
@@ -115,7 +117,44 @@ public class DateDataField extends DataField {
 		setValue(_value);
 	}
 
+	/**
+	 * Private constructor to be used internally when clonning object.
+	 * Optimized for performance. Many checks waved.
+	 * 
+	 * @param _metadata
+	 * @param _value
+	 * @param _dateFormat
+	 */
+	private DateDataField(DataFieldMetadata _metadata, Date _value, DateFormat _dateFormat){
+	    super(_metadata);
+	    setValue(_value);
+	    this.dateFormat=_dateFormat;
+	    this.parsePosition= (_dateFormat!=null) ? new ParsePosition(0) : null;
+	}
+	
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    DateDataField newField=new DateDataField(metadata,value,dateFormat);
+	    newField.setNull(isNull());
+	    return newField;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    if (fromField instanceof DateDataField){
+	        if (!fromField.isNull){
+	            this.value.setTime(((DateDataField)fromField).value.getTime());
+	        }
+	        setNull(fromField.isNull);
+	    }
+	}
+	
 	/**
 	 *  Sets the date represented by DateDataField object
 	 *

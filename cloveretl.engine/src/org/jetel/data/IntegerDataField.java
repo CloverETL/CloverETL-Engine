@@ -70,8 +70,31 @@ public class IntegerDataField extends DataField {
 		super(_metadata);
 		setValue(value);
 	}
+	
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    IntegerDataField newField= new IntegerDataField(metadata,value);
+	    newField.setNull(isNull());
+	    return newField;
+	}
 
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    if (fromField instanceof IntegerDataField){
+	        if (!fromField.isNull){
+	            this.value=((IntegerDataField)fromField).value;
+	        }
+	        setNull(fromField.isNull);
+	    }
+	}
+	
 	/**
 	 *  Sets the value of the field
 	 *

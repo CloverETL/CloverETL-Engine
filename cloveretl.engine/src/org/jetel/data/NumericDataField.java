@@ -91,7 +91,9 @@ public class NumericDataField extends DataField {
 		 }else if (locale!=null) {
 				numberFormat = DecimalFormat.getInstance(locale);
 		}
-		parsePosition = new ParsePosition(0);
+		if (numberFormat!=null){
+		    parsePosition = new ParsePosition(0);
+		}
 		
 	}
 
@@ -109,6 +111,43 @@ public class NumericDataField extends DataField {
 	}
 
 
+	/**
+	 * Private constructor to be used internally when clonning object.
+	 * Optimized for performance. Many checks waved.
+	 * @param _metadata
+	 * @param value
+	 * @param numberFormat
+	 */
+	private NumericDataField(DataFieldMetadata _metadata,double value,NumberFormat numberFormat){
+	    super(_metadata);
+	    this.value=value;
+	    this.numberFormat=numberFormat;
+	    this.parsePosition= (numberFormat !=null) ? new ParsePosition(0) : null; 
+	 }
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copy()
+	 */
+	public DataField duplicate(){
+	    NumericDataField newField=new NumericDataField(metadata,value,numberFormat);
+	    newField.setNull(isNull());
+	    return newField;
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+	 */
+	public void copyFrom(DataField fromField){
+	    if (fromField instanceof NumericDataField){
+	        if (!fromField.isNull){
+	            this.value=((NumericDataField)fromField).value;
+	        }
+	        setNull(fromField.isNull);
+	    }
+	}
+	
 	/**
 	 *  Sets the value of the field
 	 *
