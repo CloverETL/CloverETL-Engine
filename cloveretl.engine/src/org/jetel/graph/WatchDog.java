@@ -131,7 +131,7 @@ class WatchDog extends Thread {
 			if (leafNodes.isEmpty()) {
 				phase.setPhaseMemUtilization(phaseMemUtilizationMax);
 				phase.setPhaseExecTime((int)(System.currentTimeMillis() - startTimestamp));
-				log.print("[WatchDog] Execution of phase ["+phase.getPhaseNum()+"] sucessfully finished - elapsed time(sec): ");
+				log.print("[WatchDog] Execution of phase ["+phase.getPhaseNum()+"] successfully finished - elapsed time(sec): ");
 				log.println(phase.getPhaseExecTime() / 1000);
 				printProcessingStatus(phase.getNodes().iterator(),phase.getPhaseNum());
 				return true;
