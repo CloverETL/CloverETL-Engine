@@ -23,7 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.SQLDataParser;
+import org.jetel.data.parser.SQLDataParser;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
