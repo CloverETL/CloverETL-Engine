@@ -148,4 +148,20 @@ public class ClassBuilder {
 		return null;
 	}
 
+	public void setInputFieldRefs(HashMap inputFieldRefs) {
+		this.inputFieldRefs = inputFieldRefs;
+	}
+
+	public HashMap getInputFieldRefs() {
+		return inputFieldRefs;
+	}
+
+	public void setRecordFieldRefs(HashMap recordFieldRefs) {
+		this.recordFieldRefs = recordFieldRefs;
+	}
+
+	public HashMap getRecordFieldRefs() {
+		return recordFieldRefs;
+	}
+
 }

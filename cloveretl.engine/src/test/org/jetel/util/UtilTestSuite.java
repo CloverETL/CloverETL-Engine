@@ -22,7 +22,7 @@ package test.org.jetel.util;
 import junit.framework.*;
 
 /**
- * @author maciorowski
+ * @author Wes Maciorowski
  * @version 1.0
  *
  */
@@ -35,6 +35,7 @@ public class UtilTestSuite extends TestSuite {
 
 		suite.addTest(new TestSuite(test.org.jetel.util.StringUtilsTest.class));
 		suite.addTest(new TestSuite(test.org.jetel.util.ClassBuilderTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.util.CodeParserTest.class));
 		suite.addTest(new TestSuite(test.org.jetel.util.CompileTest.class));
 		suite.addTest(new TestSuite(test.org.jetel.util.CreateJavaObjectTest.class));
 		return suite;
