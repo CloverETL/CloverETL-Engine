@@ -177,8 +177,7 @@ public static Node fromXML(org.w3c.dom.Node nodeXML) {
  * @param handler
  */
 private void addBDFHandler(BadDataFormatExceptionHandler handler) {
-	// TODO Auto-generated method stub
-	
+	parser.addBDFHandler(handler);
 }
 	
 
