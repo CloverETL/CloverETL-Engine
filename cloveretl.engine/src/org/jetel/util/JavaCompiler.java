@@ -35,6 +35,7 @@ public class JavaCompiler {
 	private final static String compilerExecutable = "javac";
 
 	private String srcFile;
+	private String errFile;
 	private String destDir;
 	private String fileSeparator;
 	private String className;
@@ -91,9 +92,10 @@ public class JavaCompiler {
 	public int compile() {
 		int status = 0;
 		if (needsRecompile() || forceCompile) {
+			errFile=destDir+fileSeparator+ className + ".err";
 			if (useJavac) {
 				String[] args = new String[]{compilerExecutable, "-deprecation","-d", destDir, srcFile,
-						"-Xstdout", destDir+fileSeparator+ className + ".err"};
+						"-Xstdout", errFile};
 				Runtime runtime = Runtime.getRuntime();
 				try {
 					status = runtime.exec(args).waitFor();
@@ -105,7 +107,7 @@ public class JavaCompiler {
 
 			} else {
 				String[] args = new String[]{"-deprecation","-d", destDir, srcFile,
-						"-Xstdout", destDir+fileSeparator+ className + ".err"};
+						"-Xstdout", errFile};
 				status = com.sun.tools.javac.Main.compile(args);
 
 			}
@@ -141,6 +143,10 @@ public class JavaCompiler {
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
+	}
+	
+	public String getErrFile(){
+		return errFile;
 	}
 
 	/**

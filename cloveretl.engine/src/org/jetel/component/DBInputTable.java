@@ -20,7 +20,6 @@
 package org.jetel.component;
 
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.SQLDataParser;
@@ -117,7 +116,7 @@ public class DBInputTable extends Node {
 		}
 
 		// try to open file & initialize data parser
-		parser.open(TransformationGraph.getReference().getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
+		parser.open(this.graph.getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
 	}
 
 
@@ -141,40 +140,25 @@ public class DBInputTable extends Node {
 	public void run() {
 
 		// we need to create data record - take the metadata from first output port
-
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
-
 		record.init();
-
 		parser.initSQLDataMap(record);
 
 		try {
-
 			// till it reaches end of data or it is stopped from outside
-
 			while (((record = parser.getNext(record)) != null) && runIt) {
-
 				//broadcast the record to all connected Edges
-
 				writeRecordBroadcast(record);
-
 			}
 
 		} catch (IOException ex) {
-
 			resultMsg = ex.getMessage();
-
 			resultCode = Node.RESULT_ERROR;
-
 			closeAllOutputPorts();
-
 			return;
 		} catch (Exception ex) {
-
-			resultMsg = ex.getMessage();
-
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
-
 			return;
 		}
 
@@ -235,6 +219,10 @@ public class DBInputTable extends Node {
 	/**  Description of the Method */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 
 }

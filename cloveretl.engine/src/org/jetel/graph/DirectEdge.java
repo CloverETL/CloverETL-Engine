@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.util.Fifo;
 
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
@@ -234,7 +233,7 @@ public class DirectEdge extends EdgeBase {
 	}
 
 	public boolean hasData(){
-		return ( recordBuffer.full.isEmpty() ? false : true);
+		return ( recordBuffer.readPointer!=recordBuffer.writePointer ? false : true);
 	}
 
 	/**
@@ -245,9 +244,11 @@ public class DirectEdge extends EdgeBase {
 	 */
 	class EdgeRecordBuffer {
 		ByteBuffer buffers[];
-		Fifo free;
-		Fifo full;
+		int readPointer;
+		int writePointer;
+		int size;
 		boolean isOpen;
+		boolean sw;
 
 
 		/**
@@ -260,17 +261,17 @@ public class DirectEdge extends EdgeBase {
 		EdgeRecordBuffer(int numBuffers, int bufferSize) {
 			// create buffers
 			buffers = new ByteBuffer[numBuffers];
-			free = new Fifo(numBuffers);
-			full = new Fifo(numBuffers);
+			readPointer=0;
+			writePointer=0;
+			size=numBuffers;
 			for (int i = 0; i < numBuffers; i++) {
 				buffers[i] = ByteBuffer.allocateDirect(bufferSize);
 				if (buffers[i] == null) {
 					throw new RuntimeException("Failed buffer allocation");
 				}
-				free.add(buffers[i]);
 			}
-			isOpen = true;
-			// the buffer is implicitly open - can be read/written
+			isOpen = true; // the buffer is implicitly open - can be read/written
+			sw=false;
 		}
 
 
@@ -281,7 +282,11 @@ public class DirectEdge extends EdgeBase {
 		 * @since          June 5, 2002
 		 */
 		synchronized void setFree(ByteBuffer buffer) {
-			free.add(buffer);
+			readPointer++;
+			if (readPointer==size){
+				readPointer=0;
+				sw=false;
+			}
 			notify();
 		}
 
@@ -293,7 +298,11 @@ public class DirectEdge extends EdgeBase {
 		 * @since          June 5, 2002
 		 */
 		synchronized void setFull(ByteBuffer buffer) {
-			full.add(buffer);
+			writePointer++;
+			if (writePointer==size){
+				writePointer=0;
+				sw=true;
+			}
 			notify();
 		}
 
@@ -318,18 +327,18 @@ public class DirectEdge extends EdgeBase {
 		 */
 		synchronized ByteBuffer getFreeBuffer() throws InterruptedException {
 			// if already closed - return null - EnfOfData
-			if ((!isOpen) && (free.isEmpty())) {
+			if ((!isOpen) && (sw && readPointer==writePointer)) {
 				return null;
 			}
-			while (free.isEmpty()) {
+			while (sw && writePointer==readPointer) {
 				// while empty, wait
 				wait();
 				// if still empty & is closed - no more data
-				if ((!isOpen) && (free.isEmpty())) {
+				if ((!isOpen) && (sw && readPointer==writePointer)) {
 					return null;
 				}
 			}
-			return (ByteBuffer) free.get();
+			return buffers[writePointer];
 		}
 
 
@@ -342,17 +351,17 @@ public class DirectEdge extends EdgeBase {
 		 */
 		synchronized ByteBuffer getFullBuffer() throws InterruptedException {
 			// already closed ?
-			if ((!isOpen) && (full.isEmpty())) {
+			if ((!isOpen) && (!sw && readPointer==writePointer)) {
 				return null;
 			}
-			while (full.isEmpty()) {
+			while (!sw && readPointer==writePointer) {
 				// wait till something shows up
 				wait();
-				if ((!isOpen) && (full.isEmpty())) {
+				if ((!isOpen) && (!sw && readPointer==writePointer)) {
 					return null;
 				}
 			}
-			return (ByteBuffer) full.get();
+			return buffers[readPointer];
 		}
 
 

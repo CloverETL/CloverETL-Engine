@@ -129,14 +129,12 @@ public class FixLenDataWriterNIO extends Node {
 					formatter.write(record);
 				}
 			} catch (IOException ex) {
-				System.err.println("Writer IOException !");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
 			} catch (Exception ex) {
-				System.err.println("Writer Exception !");
-				resultMsg = ex.getMessage();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -260,6 +258,10 @@ public class FixLenDataWriterNIO extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

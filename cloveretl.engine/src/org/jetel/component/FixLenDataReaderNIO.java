@@ -64,8 +64,9 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
- *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
- *  <tr><td><b>SkipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each field should be skipped.</td>
+ *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is FALSE.</td>
+ *  <tr><td><b>SkipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each field should be skipped. Defailt value is TRUE.<br>
+ *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
  *  <tr><td><b>LineSeparatorSize</b><br><i>optional</i></td><td> sets the size/length of line delimiter. It is 1 for "\n" - UNIX style
  *   and 2 for "\n\r" - DOS/Windows style. Can be set to any value and is added
  *   to total record length.<br>It is automatically determined from system properties. This method overrides the default value.<br>
@@ -144,7 +145,7 @@ public class FixLenDataReaderNIO extends Node {
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
@@ -266,6 +267,10 @@ public class FixLenDataReaderNIO extends Node {
 	/**  Description of the Method */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

@@ -278,7 +278,7 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 	 */
 	public void saveData() {
 		aFileFormatDataModel.fileName = jLabel2.getText();
-		aFileFormatDataModel.recordMeta.setName(jLabel2.getText());
+		//aFileFormatDataModel.recordMeta.setName(jLabel2.getText());
 		if(DelimitedRadioButton.isSelected()){
 			aFileFormatDataModel.recordMeta.setRecType(DataRecordMetadata.DELIMITED_RECORD);
 		} else {

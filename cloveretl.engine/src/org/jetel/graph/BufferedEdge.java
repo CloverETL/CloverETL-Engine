@@ -150,13 +150,19 @@ public class BufferedEdge extends EdgeBase {
 		ByteBuffer tmpBuffer;
 		recordBuffer.clear();
 		tmpBuffer = fileRecordBuffer.shift(recordBuffer);
+		if (tmpBuffer==null){
+			wait();
+			tmpBuffer = fileRecordBuffer.shift(recordBuffer);
+		}
 		recordBuffer.flip();
 		if (tmpBuffer != null) {
 			record.deserialize(recordBuffer);
+			notify();
 			return record;
 		} else {
 			isOpen = false;
 			fileRecordBuffer.close(); //force deletion of tmp file (shoud be done automatically but it isn't)
+			notify();
 			return null;
 		}
 
@@ -173,17 +179,20 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public synchronized boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		boolean result;
 		if (!isOpen) {
 			return false;
 		} else {
 			if (fileRecordBuffer.shift(record) == null) {
+				wait();
+			if (fileRecordBuffer.shift(record) == null){
 				isOpen = false;
 				fileRecordBuffer.close();//force deletion of tmp file (shoud be done automatically but it isn't)
+				notify();
 				return false;
-			} else {
-				return true;
 			}
+			}
+				notify();
+				return true;
 		}
 	}
 
@@ -202,6 +211,7 @@ public class BufferedEdge extends EdgeBase {
 		recordBuffer.flip();
 		fileRecordBuffer.push(recordBuffer);
 		recordCounter++;// one more record written
+		notify();
 	}
 
 
@@ -216,6 +226,7 @@ public class BufferedEdge extends EdgeBase {
 	public synchronized void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
 		fileRecordBuffer.push(record);
 		recordCounter++;
+		notify();
 	}
 
 

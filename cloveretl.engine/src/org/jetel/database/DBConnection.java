@@ -128,53 +128,63 @@ public class DBConnection {
 			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
 		} catch (ClassNotFoundException ex) {
 			// let's try to load in any addition .jar library (if specified)
-			String jdbcDriverLibrary = config.getProperty(JDBC_DRIVER_LIBRARY_NAME);
+			String jdbcDriverLibrary = config
+					.getProperty(JDBC_DRIVER_LIBRARY_NAME);
 			if (jdbcDriverLibrary != null) {
 				String urlString = "file:" + jdbcDriverLibrary;
 				URL[] myURLs;
 				try {
-					myURLs = new URL[]{new URL(urlString)};
+					myURLs = new URL[] { new URL(urlString) };
 					URLClassLoader classLoader = new URLClassLoader(myURLs);
-					dbDriver = (Driver) Class.forName(dbDriverName, true, classLoader).newInstance();
+					dbDriver = (Driver) Class.forName(dbDriverName, true,
+							classLoader).newInstance();
 				} catch (MalformedURLException ex1) {
-					throw new RuntimeException("Malformed URL: "+ex1.getMessage());
+					throw new RuntimeException("Malformed URL: "
+							+ ex1.getMessage());
 				} catch (ClassNotFoundException ex1) {
 					throw new RuntimeException("Can not find class: " + ex1);
 				} catch (Exception ex1) {
-					throw new RuntimeException("General exception: "+ex1.getMessage());
+					throw new RuntimeException("General exception: "
+							+ ex1.getMessage());
 				}
 			} else {
-				throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+				throw new RuntimeException("Can't load DB driver :"
+						+ ex.getMessage());
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+			throw new RuntimeException("Can't load DB driver :"
+					+ ex.getMessage());
 		}
 		try {
 			dbConnection = dbDriver.connect(dbURL, this.config);
 		} catch (SQLException ex) {
-			throw new RuntimeException("Can't connect to DB :" + ex.getMessage());
+			throw new RuntimeException("Can't connect to DB :"
+					+ ex.getMessage());
 		}
 		if (dbConnection == null) {
-			throw new RuntimeException("Not suitable driver for specified DB URL : " + dbDriver + " ; " + dbURL);
+			throw new RuntimeException(
+					"Not suitable driver for specified DB URL : " + dbDriver
+							+ " ; " + dbURL);
 		}
 		// try to set Transaction isolation level, it it was specified
-		if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)){
+		if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
 			int trLevel;
-			String isolationLevel=config.getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
-			if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")){
-				trLevel=Connection.TRANSACTION_READ_UNCOMMITTED;
-			}else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")){
-				trLevel=Connection.TRANSACTION_READ_COMMITTED;
-			}else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")){
-					trLevel=Connection.TRANSACTION_REPEATABLE_READ;
-			}else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")){
-						trLevel=Connection.TRANSACTION_SERIALIZABLE;
-			}else {
-							trLevel=Connection.TRANSACTION_NONE;
-						}
-			try{
+			String isolationLevel = config
+					.getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
+			if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
+				trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+			} else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
+				trLevel = Connection.TRANSACTION_READ_COMMITTED;
+			} else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
+				trLevel = Connection.TRANSACTION_REPEATABLE_READ;
+			} else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
+				trLevel = Connection.TRANSACTION_SERIALIZABLE;
+			} else {
+				trLevel = Connection.TRANSACTION_NONE;
+			}
+			try {
 				dbConnection.setTransactionIsolation(trLevel);
-			}catch(SQLException ex){
+			} catch (SQLException ex) {
 				// we do nothing, if anything goes wrong, we just
 				// leave whatever was the default
 			}

@@ -41,6 +41,7 @@ public final class Defaults {
 	public final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 	public final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
+	public final static String DEFAULT_LOCALE_STR_DELIMITER_REGEX = "\\.";
 
 	/**
 	 *  Defaults regarding DataRecord structure/manipulation

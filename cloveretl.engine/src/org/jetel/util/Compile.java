@@ -37,6 +37,7 @@ public class Compile {
 	private String srcFile;
 	private String destDir;
 	private String fileSeparator;
+	private String errFilename;
 	private boolean forceCompile;
 	private boolean compiled;
 	private boolean useExecutable = false;
@@ -95,11 +96,20 @@ public class Compile {
 			throw new RuntimeException(ex.getMessage());
 		}
 		
-		
+		// just try that we can reach compiler
+		try{
+			Class.forName(compilerClassname);
+		}catch(ClassNotFoundException ex){
+			useExecutable=true;
+			System.out.print("..can't locate class "+compilerClassname+" - will use external javac");
+		}
+			
+			
 		if (forceCompile || needsRecompile()) {
+			errFilename=destDir + source.getName() + ".err";
 			if (useExecutable) {
 				String[] args = new String[]{compilerExecutable, "-d", destDir, srcFile,
-						"-Xstdout", destDir + source.getName() + ".err"};
+						"-Xstdout", errFilename };
 				Runtime runtime = Runtime.getRuntime();
 				try{
 					status = runtime.exec(args).waitFor();
@@ -109,7 +119,7 @@ public class Compile {
 
 			} else {
 				String[] args = new String[]{"-d", destDir, srcFile,
-						"-Xstdout", destDir + source.getName() + ".err"};
+						"-Xstdout", errFilename};
 
 				status = com.sun.tools.javac.Main.compile(args);
 
@@ -132,7 +142,17 @@ public class Compile {
 		return destDir;
 	}
 
-
+	/**
+	 * Method which returns complete path to
+	 * file containing error output of Javac
+	 * 
+	 * @return path to error output file
+	 */
+	public String getErrFilename(){
+		return errFilename;
+	}
+	
+	
 	/**
 	 *  Description of the Method
 	 *

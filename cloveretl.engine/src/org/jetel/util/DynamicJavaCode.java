@@ -84,7 +84,10 @@ public class DynamicJavaCode {
 	private void compile(){
 		Compile compiler=new Compile(fileName);
 		if (compiler.compile()!=0){
-			throw new RuntimeException("Error(s) when compiling: "+fileName); 
+			StringBuffer errMessage=new StringBuffer("Error(s) when compiling: ");
+			errMessage.append(fileName).append("\n");
+			errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFilename());
+			throw new RuntimeException(errMessage.toString()); 
 		}
 	}
 	

@@ -96,7 +96,7 @@ TOKEN: {
 
 /* Field Identifiers */
 TOKEN: {
-  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])+ >
+  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])* >
 }
 
 /* Parenthesis */
@@ -685,6 +685,7 @@ void BuildInFunction()       : {}
 /*@egen*/
 	|ConcatNode()
 	|DateAddNode()
+	|DateDiffNode()
 	|"today" "("/*@bgen(jjtree) #TodayNode( 0) */
                      {
                        CLVFTodayNode jjtn006 = new CLVFTodayNode(this, JJTTODAYNODE);
@@ -942,4 +943,38 @@ void DateAddNode() :
 /*@egen*/
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" > }
+void DateDiffNode() :
+{/*@bgen(jjtree) DateDiffNode */
+  CLVFDateDiffNode jjtn000 = new CLVFDateDiffNode(this, JJTDATEDIFFNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+/*@egen*/ Token t;}
+{/*@bgen(jjtree) DateDiffNode */
+        try {
+/*@egen*/
+	"datediff" "(" AdditiveExpression() "," AdditiveExpression() "," 
+			t=<DATE_FIELD_LITERAL> { jjtn000.setCalendarField(t.image); }
+	")"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+        }
+/*@egen*/
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "sec" > }

@@ -222,6 +222,7 @@ public final class TransformationGraph {
 			return false;
 		}
 		TransformationGraphAnalyzer.distributeNodes2Phases(phasesArray, nodesArray, edges);
+		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodes);
 		// remove reference of nodes and edges from graph - it is now
 		// held by phases
 		deleteEdges();
@@ -430,7 +431,7 @@ public final class TransformationGraph {
 			while (iterator.hasNext()) {
 				edge = (Edge) iterator.next();
 				log.print("\t" + edge.getID() + " type: ");
-				log.println(edge.getType() == edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
+				log.println(edge.getType() == Edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
 			}
 			log.println("--- end phase ---");
 		}

@@ -25,12 +25,13 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import javax.xml.parsers.*;
 import org.xml.sax.SAXParseException;
-import org.jetel.util.FileUtils;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.metadata.DataRecordMetadataJDBCStub;
+import org.jetel.metadata.MetadataFactory;
 import org.jetel.component.ComponentFactory;
 import org.jetel.database.DBConnection;
-import org.jetel.util.PropertyRefResolver;
+import org.jetel.exception.NotFoundException;
+import org.jetel.util.ComponentXMLAttributes;
 import java.util.logging.Logger;
 
 /**
@@ -48,7 +49,10 @@ import java.util.logging.Logger;
  * &lt;!ELEMENT Metadata (#PCDATA)&gt;
  * &lt;!ATTLIST Metadata
  *           	id ID #REQUIRED
- *		fileURL CDATA #REQUIRED &gt;
+ * 				type CDATA #REQUIRED
+ *				fileURL CDATA 
+ *				sqlQuery CDATA 
+ *				dbConnection CDATA &gt;
  *
  * &lt;!ELEMENT DBConnection (#PCDATA)&gt;
  * &lt;!ATTLIST DBConnection
@@ -108,6 +112,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String METADATA_ELEMENT = "Metadata";
 	private final static String PHASE_ELEMENT = "Phase";
 	private final static String DBCONNECTION_ELEMENT = "DBConnection";
+	private final static String METADATA_RECORD_ELEMENT = "Record";
 
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -191,9 +196,17 @@ public class TransformationGraphXMLReaderWriter {
 			// process document
 			// get graph name
 			NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-			org.w3c.dom.NamedNodeMap grfAttributes = graphElement.item(0).getAttributes();
-			graph.setName(grfAttributes.getNamedItem("name").getNodeValue());
+			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0));
+			try{
+				graph.setName(grfAttributes.getString("name"));
+			}catch(NotFoundException ex){
+				throw new RuntimeException("Attribute at Graph node is missing - "+ex.getMessage());
+			}
 
+			// handle all defined DB connections
+			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
+			instantiateDBConnections(dbConnectionElements, graph);
+			
 			//create metadata
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
 			instantiateMetadata(metadataElements, metadata);
@@ -203,14 +216,9 @@ public class TransformationGraphXMLReaderWriter {
 
 			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
 			instantiateEdges(edgeElements, edges, metadata, allNodes);
-
-			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
-			instantiateDBConnections(dbConnectionElements, graph);
-
 		}
 		catch (Exception ex) {
-			ex.printStackTrace(System.err);
-			return false;
+			throw new RuntimeException(ex);
 		}
 		// register all PHASEs, NODEs & EDGEs within transformation graph;
 		colIterator = phases.iterator();
@@ -240,34 +248,44 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since                    May 24, 2002
 	 */
 	private void instantiateMetadata(NodeList metadataElements, Map metadata) throws IOException {
-		org.w3c.dom.NamedNodeMap attributes;
 		String metadataID;
-		String fileURL;
-		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter();
-		DataRecordMetadata recordMetadata;
-		PropertyRefResolver refResolver=new PropertyRefResolver();
+		String fileURL=null;
+		Object recordMetadata;
+		//PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.getLength(); i++) {
-			attributes = metadataElements.item(i).getAttributes();
-
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.item(i));
+			try{
 			// process metadata element attributes "id" & "fileURL"
-			metadataID = attributes.getNamedItem("id").getNodeValue();
-			fileURL = refResolver.resolveRef(attributes.getNamedItem("fileURL").getNodeValue());
-
-			if ((metadataID != null) && (fileURL != null)) {
-					recordMetadata=metadataXMLRW.read(
-						new BufferedInputStream(new FileInputStream(FileUtils.getFullPath(fileURL))));
+			metadataID = attributes.getString("id");
+			
+			// process metadata from file
+			if (attributes.exists("fileURL")){
+				fileURL = attributes.getString("fileURL");
+				 recordMetadata=MetadataFactory.fromFile(fileURL);
 					if (recordMetadata==null){
 						logger.severe("Error when reading/parsing record metadata definition file: "+fileURL);
 						throw new RuntimeException("Can't parse metadata: "+metadataID);
-					}else{
-						if (metadata.put(metadataID, recordMetadata)!=null){
-							throw new RuntimeException("Metadata "+metadataID+" already defined - duplicate ID detected!");
-						}
 					}
-			} else {
-				throw new RuntimeException("Attributes missing");
+			}// metadata from analyzing DB table (JDBC) - will be resolved
+			// later during Edge init - just put stub now.
+			else if (attributes.exists("sqlQuery")){
+				DBConnection dbConnection=TransformationGraph.getReference().getDBConnection(attributes.getString("dbConnection"));
+				if (dbConnection==null){
+					throw new RuntimeException("Can't find DBConnection "+attributes.getString("dbConnection"));
+				}
+				recordMetadata=new DataRecordMetadataJDBCStub(dbConnection,attributes.getString("sqlQuery"));
+			} // probably metadata inserted directly into graph
+			else {
+				recordMetadata=MetadataFactory.fromXML(attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
+			}
+			}catch(NotFoundException ex){
+				throw new RuntimeException("Metadata - Attributes missing "+ex.getMessage());
+			}
+			// register metadata object with Transformation graph
+			if (metadata.put(metadataID, recordMetadata)!=null){
+				throw new RuntimeException("Metadata "+metadataID+" already defined - duplicate ID detected!");
 			}
 		}
 		// we successfully instantiated all metadata
@@ -275,22 +293,22 @@ public class TransformationGraphXMLReaderWriter {
 
 	
 	private void instantiatePhases(NodeList phaseElements, List phases,Map allNodes) {
-		org.w3c.dom.NamedNodeMap attributes;
 		org.jetel.graph.Phase phase;
-		String phaseNum;
+		int phaseNum;
 		NodeList nodeElements;
 		
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < phaseElements.getLength(); i++) {
-			attributes = phaseElements.item(i).getAttributes();
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(phaseElements.item(i));
 			// process Phase element attribute "number"
-			phaseNum = attributes.getNamedItem("number").getNodeValue();
-
-			if (phaseNum != null){
-				phase=new Phase(Integer.parseInt(phaseNum));
-				phases.add(phase);
-			} else {
-				throw new RuntimeException("Attribute \"number\" missing for phase");
+			try{
+			phaseNum = attributes.getInteger("number");
+			phase=new Phase(phaseNum);
+			phases.add(phase);
+			}catch(NotFoundException ex) {
+				throw new RuntimeException("Attribute is missing for phase -"+ex.getMessage());
+			}catch(NumberFormatException ex1){
+				throw new RuntimeException("Phase attribute number is not a valid integer !");
 			}
 			// get all nodes defined in this phase and instantiate them
 			// we expect that all childern of phase are Nodes
@@ -308,40 +326,40 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateNodes(int phaseNum,NodeList nodeElements, Map nodes) {
-		org.w3c.dom.NamedNodeMap attributes;
+	private void instantiateNodes(int phaseNum, NodeList nodeElements, Map nodes) {
 		org.jetel.graph.Node graphNode;
 		String nodeType;
-		String nodeID;
-		
+		String nodeID="";
+
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < nodeElements.getLength(); i++) {
-			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i).getNodeName())!=0){
+			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i)
+					.getNodeName()) != 0) {
 				continue;
 			}
-			attributes = nodeElements.item(i).getAttributes();
-			
-			// process Node element attributes "id" & "type"
-			nodeID = attributes.getNamedItem("id").getNodeValue();
-			nodeType = attributes.getNamedItem("type").getNodeValue();
-			
-			if ((nodeID != null) && (nodeType != null)) {
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(
+					nodeElements.item(i));
 
-				
-				graphNode = ComponentFactory.createComponent(nodeType, nodeElements.item(i));
+			// process Node element attributes "id" & "type"
+			try {
+				nodeID = attributes.getString("id");
+				nodeType = attributes.getString("type");
+				graphNode = ComponentFactory.createComponent(nodeType,
+						nodeElements.item(i));
 				graphNode.setPhase(phaseNum);
 				if (graphNode != null) {
-					if (nodes.put(nodeID, graphNode)!=null){
-						throw new RuntimeException("Duplicate NodeID detected: "+nodeID);
+					if (nodes.put(nodeID, graphNode) != null) {
+						throw new RuntimeException(
+								"Duplicate NodeID detected: " + nodeID);
 					}
 				} else {
-					throw new RuntimeException("Error when creating Component type :" + nodeType);
+					throw new RuntimeException(
+							"Error when creating Component type :" + nodeType);
 				}
-
-			} else {
-				throw new RuntimeException("Attribute missing");
+			} catch (NotFoundException ex) {
+				throw new RuntimeException("Attribute at Node "+nodeID+" is missing - "
+						+ ex.getMessage());
 			}
-
 		}
 	}
 
@@ -357,7 +375,6 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since                May 24, 2002
 	 */
 	private void instantiateEdges(NodeList edgeElements, Map edges, Map metadata, Map nodes) {
-		org.w3c.dom.NamedNodeMap attributes;
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
@@ -365,32 +382,35 @@ public class TransformationGraphXMLReaderWriter {
 		String[] specNodePort;
 		int fromPort;
 		int toPort;
-		DataRecordMetadata edgeMetadata;
 		org.jetel.graph.Edge graphEdge;
 		org.jetel.graph.Node graphNode;
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
-			attributes = edgeElements.item(i).getAttributes();
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(edgeElements.item(i));
 
 			// process edge element attributes "id" & "fileURL"
 			try{
-			edgeID = attributes.getNamedItem("id").getNodeValue();
-			edgeMetadataID = attributes.getNamedItem("metadata").getNodeValue();
-			fromNodeAttr = attributes.getNamedItem("fromNode").getNodeValue();
-			toNodeAttr = attributes.getNamedItem("toNode").getNodeValue();
-			}catch(Exception ex){
-				throw new RuntimeException("Attribute missing at edge "+edgeID+" (one of id,metadata,fromNode,toNode)!");
+			edgeID = attributes.getString("id");
+			edgeMetadataID = attributes.getString("metadata");
+			fromNodeAttr = attributes.getString("fromNode");
+			toNodeAttr = attributes.getString("toNode");
+			}catch(NotFoundException ex){
+				throw new RuntimeException("Attribute missing at edge "+edgeID+" - "+ex.getMessage());
 			}
 
-			
-
-			edgeMetadata = (DataRecordMetadata) metadata.get(edgeMetadataID);
-			if (edgeMetadata == null) {
+			Object metadataObj=metadata.get(edgeMetadataID);
+			if (metadataObj == null) {
 				throw new RuntimeException("Can't find metadata ID: " + edgeMetadataID);
 			}
-			
-			graphEdge = new Edge(edgeID, edgeMetadata);
+			// do we have real metadata or stub only ??
+			if (metadataObj instanceof DataRecordMetadata){
+				// real
+				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj);
+			}else{ 
+				// stub
+				graphEdge = new Edge(edgeID, (DataRecordMetadataJDBCStub) metadataObj, null);
+			}
 			if (edges.put(edgeID, graphEdge)!=null){
 				throw new RuntimeException("Duplicate EdgeID detected: "+edgeID);
 			}
@@ -439,13 +459,16 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since                        October 1, 2002
 	 */
 	private void instantiateDBConnections(NodeList dbConnectionElements, TransformationGraph graph) {
-		String connectionID;
 		DBConnection dbConnection;
 		for (int i = 0; i < dbConnectionElements.getLength(); i++) {
-			connectionID = dbConnectionElements.item(i).getAttributes().getNamedItem("id").getNodeValue();
-			dbConnection = DBConnection.fromXML(dbConnectionElements.item(i));
-			if (dbConnection != null && connectionID != null) {
-				graph.addDBConnection(connectionID, dbConnection);
+			ComponentXMLAttributes attributes=new ComponentXMLAttributes(dbConnectionElements.item(i));
+			try{
+				dbConnection = DBConnection.fromXML(dbConnectionElements.item(i));
+			if (dbConnection != null) {
+				graph.addDBConnection(attributes.getString("id"), dbConnection);
+			}
+			}catch(NotFoundException ex1){
+				throw new RuntimeException("Attribute is missing at DBConnection -"+ex1.getMessage());
 			}
 		}
 	}

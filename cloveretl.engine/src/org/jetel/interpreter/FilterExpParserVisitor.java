@@ -28,4 +28,5 @@ public interface FilterExpParserVisitor
   public Object visit(CLVFRegexLiteral node, Object data);
   public Object visit(CLVFConcatNode node, Object data);
   public Object visit(CLVFDateAddNode node, Object data);
+  public Object visit(CLVFDateDiffNode node, Object data);
 }

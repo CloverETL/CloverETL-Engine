@@ -50,7 +50,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * [1] - (optional) rejected records </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>It can filter on text, date, integer, numeric
- * fields with comparison <code>[>, <, =, =<, >=, !=]</code><br>
+ * fields with comparison <code>[>, <, ==, =<, >=, !=]</code><br>
  * Text fields can also be compared to a
  * Java regexp. using ~ (tilda) character <br>
  * A filter can be made of different parts separated by a ";".<br> 
@@ -133,7 +133,7 @@ public class Filter extends Node {
 				closeAllOutputPorts();
 				return;
 			}catch(Exception ex){
-				resultMsg=ex.getMessage();
+				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -191,7 +191,6 @@ public class Filter extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		Filter filter;
 		String filterExpression;
-		String [] filterParts;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		
 
@@ -211,6 +210,10 @@ public class Filter extends Node {
 	/**  Description of the Method */
     public boolean checkConfig() {
 		return true;
+	}
+    
+    public String getType(){
+		return COMPONENT_TYPE;
 	}
 
 }

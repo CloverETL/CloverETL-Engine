@@ -325,7 +325,7 @@ public class HashJoin extends Node {
 				closeAllOutputPorts();
 				return;
 			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -458,5 +458,8 @@ public class HashJoin extends Node {
 		return true;
 	}
 
+	public String getType(){
+		return COMPONENT_TYPE;
+	}
 }
 

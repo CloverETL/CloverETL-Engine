@@ -181,7 +181,6 @@ public class Merge extends Node {
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 
 		int numActive;// counter of still active ports - those without EOF status
-		int readFromPort;
 		int index;
 
 		//get array of all input ports defined/connected - use collection Collection - getInPorts();
@@ -208,7 +207,7 @@ public class Merge extends Node {
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
@@ -254,7 +253,6 @@ public class Merge extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		Class tClass;
 		// test that we have at least one input port and one output
 		if (inPorts.size() < 2) {
 			throw new ComponentNotReadyException("At least two input ports have to be defined!");
@@ -310,6 +308,10 @@ public class Merge extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 
 }

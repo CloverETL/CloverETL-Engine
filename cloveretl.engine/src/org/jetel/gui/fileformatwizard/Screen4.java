@@ -132,7 +132,7 @@ public class Screen4 extends JPanel implements  FormInterface
 			aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane2.getText().getBytes()));
 			if( aDataRecordMetadata != null) {
 				try {
-					aReader.write(aDataRecordMetadata,new FileOutputStream(file));
+					DataRecordMetadataXMLReaderWriter.write(aDataRecordMetadata,new FileOutputStream(file));
 					System.exit(0);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -150,7 +150,7 @@ public class Screen4 extends JPanel implements  FormInterface
 		aDataRecordMetadata= aFileFormatDataModel.recordMeta;
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		DataRecordMetadataXMLReaderWriter aWriter = new DataRecordMetadataXMLReaderWriter();
-		aWriter.write(aDataRecordMetadata,baos);
+		DataRecordMetadataXMLReaderWriter.write(aDataRecordMetadata,baos);
 		jTextPane2.setText(baos.toString());
 	}
 	

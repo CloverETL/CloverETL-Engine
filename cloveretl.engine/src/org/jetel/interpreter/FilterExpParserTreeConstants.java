@@ -28,6 +28,7 @@ public interface FilterExpParserTreeConstants
   public int JJTREGEXLITERAL = 21;
   public int JJTCONCATNODE = 22;
   public int JJTDATEADDNODE = 23;
+  public int JJTDATEDIFFNODE = 24;
 
 
   public String[] jjtNodeName = {
@@ -55,5 +56,6 @@ public interface FilterExpParserTreeConstants
     "RegexLiteral",
     "ConcatNode",
     "DateAddNode",
+    "DateDiffNode",
   };
 }

@@ -29,7 +29,7 @@ import org.jetel.graph.*;
  *  <table>
  *  <tr><td nowrap>-v</td><td>be verbose - print even graph layout</td></tr>
  *  <tr><td nowrap>-log</td><i>logfile</i><td>send output messages to specified logfile instead of stdout</td></tr>
- *  <tr><td nowrap>-D:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
+ *  <tr><td nowrap>-P:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
  *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
@@ -105,30 +105,50 @@ public class runGraph {
 		TransformationGraph graph = TransformationGraph.getReference();
 		graph.loadGraphProperties(properties);
 
-		if (!graphReader.read(graph, in)) {
-			System.err.println("Error in reading graph from XML !");
-			System.exit(-1);
-		}
+		try {
+			if (!graphReader.read(graph, in)) {
+				System.err.println("Error in reading graph from XML !");
+				System.exit(-1);
+			}
 
-		if (!graph.init(log)) {
-			System.err.println("Graph initialization failed !");
-			System.exit(-1);
-		}
+			if (!graph.init(log)) {
+				System.err.println("Graph initialization failed !");
+				System.exit(-1);
+			}
 
-		if (verbose) {
-			//this can be called only after graph.init()
-			TransformationGraph.getReference().dumpGraphConfiguration();
+			if (verbose) {
+				//this can be called only after graph.init()
+				TransformationGraph.getReference().dumpGraphConfiguration();
+			}
+		} catch (RuntimeException ex) {
+			System.err.println("!!! Fatal error during graph initialization  !!!");
+			System.err.println(ex.getCause().getMessage());
+			if (verbose) {
+				ex.printStackTrace();
+			}
+			System.exit(-1);
 		}
 
 		//	start all Nodes (each node is one thread)
-		if (!graph.run()) {
+		boolean finishedOK = false;
+		try {
+			finishedOK = graph.run();
+		} catch (RuntimeException ex) {
+			System.err.println("!!! Fatal error during graph run !!!");
+			System.err.println(ex.getCause().getMessage());
+			if (verbose) {
+				ex.printStackTrace();
+			}
+			System.exit(-1);
+		}
+		if (finishedOK) {
+			// everything O.K.
+			System.out.println("Execution of graph finished !");
+			System.exit(0);
+		} else {
 			// something FAILED !!
 			System.err.println("Failed starting graph !");
 			System.exit(-1);
-		} else {
-			// everything O.K. 
-			System.out.println("Execution of graph finished !");
-			System.exit(0);
 		}
 
 	}

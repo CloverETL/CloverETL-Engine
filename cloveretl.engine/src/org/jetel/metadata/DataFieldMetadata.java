@@ -76,6 +76,14 @@ public class DataFieldMetadata {
 
 	private Properties fieldProperties;
 	
+	/**
+	 * Locale string. Both language and country can be specified - if both
+	 * are specified then language string & country string have to be
+	 * delimited by "." (dot) -> e.g. "en.UK" , "fr.CA".
+	 * If only language should be specified, then use language
+	 * code according to ISO639 -> e.g. "en" , "de". 
+	 * @see	java.util.Locale
+	 */
 	private String localeStr;
 
 	// Attributes

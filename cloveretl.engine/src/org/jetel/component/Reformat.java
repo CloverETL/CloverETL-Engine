@@ -184,7 +184,7 @@ public class Reformat extends Node {
 				closeAllOutputPorts();
 				return;
 			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode = Node.RESULT_FATAL_ERROR;
 				//closeAllOutputPorts();
 				return;
@@ -304,5 +304,8 @@ public class Reformat extends Node {
 		return true;
 	}
 
+	public String getType(){
+		return COMPONENT_TYPE;
+	}
 }
 

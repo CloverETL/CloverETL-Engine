@@ -509,6 +509,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 45:
     case 46:
     case 47:
+    case 48:
       PrimaryExpression();
       break;
     default:
@@ -595,6 +596,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 45:
     case 46:
     case 47:
+    case 48:
       BuildInFunction();
       break;
     case FIELD_ID:
@@ -698,6 +700,9 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
       break;
     case 47:
       DateAddNode();
+      break;
+    case 48:
+      DateDiffNode();
       break;
     case 44:
       jj_consume_token(44);
@@ -934,6 +939,42 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     }
   }
 
+  final public void DateDiffNode() throws ParseException {
+ /*@bgen(jjtree) DateDiffNode */
+  CLVFDateDiffNode jjtn000 = new CLVFDateDiffNode(this, JJTDATEDIFFNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);Token t;
+    try {
+      jj_consume_token(48);
+      jj_consume_token(OPEN_PAR);
+      AdditiveExpression();
+      jj_consume_token(39);
+      AdditiveExpression();
+      jj_consume_token(39);
+      t = jj_consume_token(DATE_FIELD_LITERAL);
+                                                 jjtn000.setCalendarField(t.image);
+      jj_consume_token(CLOSE_PAR);
+    } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            {if (true) throw (RuntimeException)jjte000;}
+          }
+          if (jjte000 instanceof ParseException) {
+            {if (true) throw (ParseException)jjte000;}
+          }
+          {if (true) throw (Error)jjte000;}
+    } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+          }
+    }
+  }
+
   final private boolean jj_2_1(int xla) {
     jj_la = xla; jj_lastpos = jj_scanpos = token;
     try { return !jj_3_1(); }
@@ -941,19 +982,75 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     finally { jj_save(0, xla); }
   }
 
+  final private boolean jj_3R_41() {
+    if (jj_3R_42()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_35() {
+    if (jj_scan_token(47)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_40() {
+    if (jj_3R_41()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_34() {
+    if (jj_scan_token(46)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_39() {
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_16() {
+    if (jj_scan_token(FIELD_ID)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_38() {
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_22() {
+    if (jj_scan_token(DATETIME_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_21() {
+    if (jj_scan_token(DATE_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_37() {
+    if (jj_3R_38()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_20() {
+    if (jj_scan_token(STRING_LITERAL)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_19() {
     if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_32() {
-    if (jj_3R_35()) return true;
+  final private boolean jj_3R_33() {
+    if (jj_3R_37()) return true;
     return false;
   }
 
-  final private boolean jj_3R_31() {
-    if (jj_scan_token(45)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
+  final private boolean jj_3R_18() {
+    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
     return false;
   }
 
@@ -976,36 +1073,41 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_18() {
-    if (jj_scan_token(FLOATING_POINT_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_34() {
-    if (jj_scan_token(47)) return true;
+  final private boolean jj_3R_32() {
+    if (jj_scan_token(45)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_30() {
+  final private boolean jj_3R_31() {
     if (jj_scan_token(44)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
+  final private boolean jj_3R_30() {
+    if (jj_3R_36()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_29() {
-    if (jj_3R_34()) return true;
+    if (jj_3R_35()) return true;
     return false;
   }
 
   final private boolean jj_3R_28() {
-    if (jj_3R_33()) return true;
+    if (jj_3R_34()) return true;
     return false;
   }
 
   final private boolean jj_3R_27() {
     if (jj_scan_token(43)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_17() {
+    if (jj_3R_33()) return true;
     return false;
   }
 
@@ -1021,19 +1123,15 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_17() {
-    if (jj_3R_32()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_24() {
     if (jj_scan_token(40)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_38() {
-    if (jj_3R_39()) return true;
+  final private boolean jj_3R_23() {
+    if (jj_scan_token(38)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
@@ -1056,7 +1154,9 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     jj_scanpos = xsp;
     if (jj_3R_30()) {
     jj_scanpos = xsp;
-    if (jj_3R_31()) return true;
+    if (jj_3R_31()) {
+    jj_scanpos = xsp;
+    if (jj_3R_32()) return true;
     }
     }
     }
@@ -1065,18 +1165,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     }
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_23() {
-    if (jj_scan_token(38)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_33() {
-    if (jj_scan_token(46)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
+    }
     return false;
   }
 
@@ -1096,13 +1185,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_42() {
+  final private boolean jj_3R_44() {
     if (jj_scan_token(NOT)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_10() {
-    if (jj_3R_14()) return true;
     return false;
   }
 
@@ -1122,67 +1206,38 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
+  final private boolean jj_3R_10() {
+    if (jj_3R_14()) return true;
+    return false;
+  }
+
   final private boolean jj_3_1() {
     if (jj_scan_token(MINUS)) return true;
     if (jj_3R_9()) return true;
     return false;
   }
 
-  final private boolean jj_3R_37() {
-    if (jj_3R_38()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
+  final private boolean jj_3R_43() {
     if (jj_3R_9()) return true;
     return false;
   }
 
-  final private boolean jj_3R_40() {
+  final private boolean jj_3R_42() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_41()) {
+    if (jj_3R_43()) {
     jj_scanpos = xsp;
     if (jj_3_1()) {
     jj_scanpos = xsp;
-    if (jj_3R_42()) return true;
+    if (jj_3R_44()) return true;
     }
     }
-    return false;
-  }
-
-  final private boolean jj_3R_16() {
-    if (jj_scan_token(FIELD_ID)) return true;
     return false;
   }
 
   final private boolean jj_3R_36() {
-    if (jj_3R_37()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_22() {
-    if (jj_scan_token(DATETIME_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_21() {
-    if (jj_scan_token(DATE_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_35() {
-    if (jj_3R_36()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_39() {
-    if (jj_3R_40()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_20() {
-    if (jj_scan_token(STRING_LITERAL)) return true;
+    if (jj_scan_token(48)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
@@ -1206,7 +1261,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
       jj_la1_0 = new int[] {0x0,0x40,0x80,0x600000,0x600000,0xf800000,0xf800000,0x60000000,0x60000000,0x80000000,0x80000000,0x194200,0x100,0x194200,0x0,0x194200,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x3,0xff4c,0x0,0xff4c,0xff40,0x0,0x80,};
+      jj_la1_1 = new int[] {0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x3,0x1ff4c,0x0,0x1ff4c,0x1ff40,0x0,0x80,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1380,8 +1435,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[49];
-    for (int i = 0; i < 49; i++) {
+    boolean[] la1tokens = new boolean[50];
+    for (int i = 0; i < 50; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -1400,7 +1455,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
         }
       }
     }
-    for (int i = 0; i < 49; i++) {
+    for (int i = 0; i < 50; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;

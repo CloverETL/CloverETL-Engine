@@ -120,7 +120,6 @@ public class Dedup extends Node {
 		boolean isFirst = true;
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
-		DataRecord inRecord;
 		records[0].init();
 		records[1].init();
 		current = 1;
@@ -156,7 +155,7 @@ public class Dedup extends Node {
 				closeAllOutputPorts();
 				return;
 			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode = Node.RESULT_FATAL_ERROR;
 				//closeAllOutputPorts();
 				return;
@@ -226,6 +225,10 @@ public class Dedup extends Node {
 	/**  Description of the Method */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

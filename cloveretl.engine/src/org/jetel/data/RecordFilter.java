@@ -81,7 +81,7 @@ public class RecordFilter {
 	public void init(DataRecordMetadata recordMetadata) {
 		String filterField;
 		String filterValueStr;
-		this.metadata = metadata;
+		this.metadata = recordMetadata;
 		String[] filterParts = filterExpression.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		filterSpecs = new FilterItem[filterParts.length];
 		Map fieldNames = recordMetadata.getFieldNames();
@@ -171,7 +171,6 @@ public class RecordFilter {
 	 * @return         Description of the Return Value
 	 */
 	public boolean accepts(DataRecord record) {
-		int fieldNo;
 		int cmpResult;
 		DataField field2Compare;
 
