@@ -20,6 +20,7 @@ package org.jetel.data;
 import java.util.*;
 import java.io.*;
 
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -102,7 +103,12 @@ public class SimpleLookupTable {
 	public void init() throws JetelException {
 		DataRecord record;
 		key.init();
-		dataParser.open(inData, metadata);
+		try {
+			dataParser.open(inData, metadata);
+		} catch (ComponentNotReadyException e) {
+			e.printStackTrace();
+			throw new JetelException(e.getMessage());
+		}
 		// populate the lookupTable (Map) with data
 		while ((record = dataParser.getNext()) != null) {
 			lookupTable.put(key.getKeyString(record), record);
