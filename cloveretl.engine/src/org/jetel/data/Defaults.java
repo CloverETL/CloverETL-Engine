@@ -104,7 +104,7 @@ public final class Defaults {
 		 *  When attribute can contain multiple values delimited, this regex
 		 *  specifies which are the valid delimiters.
 		 */
-		public final static String KEY_FIELDS_DELIMITER_REGEX = "[:;|]";
+		 public final static String KEY_FIELDS_DELIMITER_REGEX = "\\s*[:;|]\\s*"; 
 	}
 
 
@@ -133,7 +133,7 @@ public final class Defaults {
 		 * @since    July 30, 2002
 		 */
 		
-		public final static int WATCHDOG_SLEEP_INTERVAL = 200;  	
+		public final static int WATCHDOG_SLEEP_INTERVAL = 500;  	
 		/**
 		 *  how often is watchdog reporting about graph progress
 		 *
