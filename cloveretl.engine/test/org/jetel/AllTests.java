@@ -24,6 +24,7 @@ package test.org.jetel;
  * @version 1.0
  *
  */
+import test.org.jetel.data.DataTestSuite;
 import test.org.jetel.metadata.MetadataTestSuite;
 import test.org.jetel.util.UtilTestSuite;
 
@@ -41,6 +42,7 @@ public class AllTests {
 
 		suite.addTest(UtilTestSuite.suite());
 		suite.addTest(MetadataTestSuite.suite());
+		suite.addTest(DataTestSuite.suite());
 		
 		return suite;
 	}
