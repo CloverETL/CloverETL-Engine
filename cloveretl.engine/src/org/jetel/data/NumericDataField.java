@@ -109,7 +109,7 @@ public class NumericDataField extends DataField {
 				value = Double.NaN;
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -120,7 +120,7 @@ public class NumericDataField extends DataField {
 				value = Double.NaN;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString());
 		}
 	}
 
@@ -264,7 +264,7 @@ public class NumericDataField extends DataField {
 				value = Double.NaN;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			return;
 		} else {
 			try {
@@ -277,7 +277,7 @@ public class NumericDataField extends DataField {
 			} catch (Exception ex) {
 //				logger.info("Error when parsing string: " + valueStr);
 //				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
-				throw new BadDataFormatException("Parsing string: " + valueStr);
+				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr);
 			}
 		}
 	}

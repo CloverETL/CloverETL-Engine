@@ -84,7 +84,7 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -96,7 +96,7 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString());
 		}
 	}
 
@@ -227,14 +227,14 @@ public class IntegerDataField extends DataField {
 				value = Integer.MIN_VALUE;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			return;
 		} else {
 			try {
 				value = Integer.parseInt(valueStr);
 			} catch (Exception ex) {
 //				logger.info("Error when parsing string: " + valueStr);
-				throw new BadDataFormatException("Parsing string: " + valueStr);
+				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr);
 			}
 		}
 	}
