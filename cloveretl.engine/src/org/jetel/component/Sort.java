@@ -22,6 +22,7 @@ import java.nio.ByteBuffer;
 import java.nio.BufferOverflowException;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
+import org.jetel.data.SortDataRecordInternalNew;
 import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -73,10 +74,12 @@ public class Sort extends Node {
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
+	private SortDataRecordInternalNew newSorter;
 	private SortDataRecordInternal sorter;
 	private boolean sortOrderAscending;
 	private String[] sortKeys;
 	private ByteBuffer recordBuffer;
+	private boolean lexicalSort;
 
 
 	/**
@@ -90,6 +93,7 @@ public class Sort extends Node {
 		super(id);
 		this.sortOrderAscending = sortOrder;
 		this.sortKeys = sortKeys;
+		this.lexicalSort=false;
 	}
 
 
@@ -103,6 +107,7 @@ public class Sort extends Node {
 		super(id);
 		this.sortOrderAscending = true;// default ascending
 		this.sortKeys = sortKeys;
+		this.lexicalSort=false;
 	}
 
 
@@ -115,12 +120,18 @@ public class Sort extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-
-		while (inRecord != null && runIt) {
+		//InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
+		boolean isData = true;
+		
+		while (inRecord!=null && runIt) {
 			try {
+				recordBuffer.clear();
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
-				if (inRecord != null) {
-					sorter.put(inRecord);
+				if (inRecord!=null) {
+					if (lexicalSort)
+						sorter.put(inRecord);
+					else
+						newSorter.put(inRecord);
 				}
 			} catch (BufferOverflowException ex) {
 				resultMsg = "Buffer Overflow";
@@ -141,7 +152,10 @@ public class Sort extends Node {
 		}
 		// sort the records now
 		try {
-			sorter.sort();
+			if(lexicalSort)
+				sorter.sort();
+			else
+				newSorter.sort();
 		} catch (Exception ex) {
 			resultMsg = "Error when sorting: " + ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
@@ -151,20 +165,39 @@ public class Sort extends Node {
 		// we read directly into buffer so we don't waste time with deserialization of record
 		// it will happen if needed on the other side
 		recordBuffer.clear();
-		while (sorter.getNext(recordBuffer) && runIt) {
-			try {
-				writeRecordBroadcastDirect(recordBuffer);
-				recordBuffer.clear();
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				//closeAllOutputPorts();
-				return;
+		if (lexicalSort){
+			while (sorter.getNext(recordBuffer) && runIt) {
+				try {
+					writeRecordBroadcastDirect(recordBuffer);
+					recordBuffer.clear();
+				} catch (IOException ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_ERROR;
+					closeAllOutputPorts();
+					return;
+				} catch (Exception ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_FATAL_ERROR;
+					//closeAllOutputPorts();
+					return;
+				}
+			}
+		}else{
+			while (newSorter.getNext(recordBuffer) && runIt) {
+				try {
+					writeRecordBroadcastDirect(recordBuffer);
+					recordBuffer.clear();
+				} catch (IOException ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_ERROR;
+					closeAllOutputPorts();
+					return;
+				} catch (Exception ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_FATAL_ERROR;
+					//closeAllOutputPorts();
+					return;
+				}
 			}
 		}
 		broadcastEOF();
@@ -186,6 +219,10 @@ public class Sort extends Node {
 		sortOrderAscending = ascending;
 	}
 
+	public void setLexicalSort(boolean lexical){
+		lexicalSort=lexical;
+	}
+	
 
 	/**
 	 *  Description of the Method
@@ -205,8 +242,15 @@ public class Sort extends Node {
 			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
 					Defaults.Record.MAX_RECORD_SIZE);
 		}
-
-		sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+		
+		// do we want to sort lexically ? it is faster but won't properly sort numbers,dates
+		if (lexicalSort){
+			sorter = new SortDataRecordInternal(
+			getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+		}else{
+			newSorter = new SortDataRecordInternalNew(
+			getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+		}
 	}
 
 
@@ -237,6 +281,9 @@ public class Sort extends Node {
 					xattribs.getString("sortKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			if (xattribs.exists("sortOrder")) {
 				sort.setSortOrderAscending(xattribs.getString("sortOrder").matches("^[Aa].*"));
+			}
+			if (xattribs.exists("lexicalSort")) {
+				sort.setLexicalSort(xattribs.getBoolean("lexicalSort"));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
