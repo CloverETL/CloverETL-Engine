@@ -500,7 +500,15 @@ public abstract class CopySQLData {
 		 *@since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setTimestamp(fieldSQL, new Timestamp(((java.util.Date) field.getValue()).getTime()));
+			if (field.getValue()==null)
+                        {
+                              pStatement.setNull(fieldSQL,java.sql.Types.TIMESTAMP);
+			}
+			else
+			{
+                               pStatement.setTimestamp(fieldSQL, new
+					Timestamp(((java.util.Date) field.getValue()).getTime()));
+			}
 		}
 	}
 
