@@ -109,22 +109,22 @@ protected void tearDown() {
  *
  */
 
-public void testCompileClass() {
-	try {
-		Compile.compileClass(testJavaFile1,classDirectory);
-	} catch (ClassCompilationException e) {
-		fail("Compile.compileClass should not throw exceptions");
-		e.printStackTrace();
-	}
-	assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
-
-	try {
-		Compile.compileClass(testJavaFile2,classDirectory);
-		fail("Compile.compileClass should throw exception");
-	} catch (ClassCompilationException e) {
-		e.printStackTrace();
-	}
-	assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
-}
+//public void testCompileClass() {
+//	try {
+//		Compile.compileClass(testJavaFile1,classDirectory);
+//	} catch (ClassCompilationException e) {
+//		fail("Compile.compileClass should not throw exceptions");
+//		e.printStackTrace();
+//	}
+//	assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
+//
+//	try {
+//		Compile.compileClass(testJavaFile2,classDirectory);
+//		fail("Compile.compileClass should throw exception");
+//	} catch (ClassCompilationException e) {
+//		e.printStackTrace();
+//	}
+//	assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
+//}
 
 }

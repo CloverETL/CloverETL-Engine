@@ -28,8 +28,8 @@ import java.io.IOException;
 
 import java.nio.channels.Channels;
 import org.jetel.data.DataRecord;
-import org.jetel.data.FixLenDataFormatter;
-import org.jetel.data.SQLDataParser;
+import org.jetel.data.formatter.FixLenDataFormatter;
+import org.jetel.data.parser.SQLDataParser;
 import org.jetel.data.Defaults;
 
 import org.jetel.database.DBConnection;

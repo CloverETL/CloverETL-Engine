@@ -25,7 +25,7 @@ import java.io.FileNotFoundException;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParserNIO;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
