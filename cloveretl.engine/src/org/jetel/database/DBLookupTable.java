@@ -47,7 +47,7 @@ public class DBLookupTable {
 	private CopySQLData[] keyTransMap;
 	private DataRecord dataRecord;
 	private DataRecord keyDataRecord = null;
-
+  private List dbFieldTypes;
 
 	/**
 	 *  Constructor for the DBLookupTable object.<br>
@@ -60,7 +60,8 @@ public class DBLookupTable {
 	 *@param  dbConnection   Description of the Parameter
 	 *@since                 May 2, 2002
 	 */
-	public DBLookupTable(DBConnection dbConnection, DataRecord keyDataRecord, String[] keys, String sqlQuery) {
+  public DBLookupTable(DBConnection dbConnection, DataRecord keyDataRecord,
+                       String[] keys, String sqlQuery) {
 		this.dbConnection = dbConnection;
 		this.sqlQuery = sqlQuery;
 		this.keyDataRecord = keyDataRecord;
@@ -68,7 +69,6 @@ public class DBLookupTable {
 		key.init();
 		keyFields = key.getKeyFields();
 	}
-
 
 	/**
 	 *  Constructor for the DBLookupTable object
@@ -79,7 +79,9 @@ public class DBLookupTable {
 	 *@param  keys              Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
 	 */
-	public DBLookupTable(DBConnection dbConnection, DataRecordMetadata dbRecordMetadata, DataRecord keyDataRecord, String[] keys, String sqlQuery) {
+  public DBLookupTable(DBConnection dbConnection,
+                       DataRecordMetadata dbRecordMetadata,
+                       DataRecord keyDataRecord, String[] keys, String sqlQuery) {
 		this.dbConnection = dbConnection;
 		this.sqlQuery = sqlQuery;
 		this.keyDataRecord = keyDataRecord;
@@ -88,7 +90,6 @@ public class DBLookupTable {
 		key.init();
 		keyFields = key.getKeyFields();
 	}
-
 
 	/**
 	 *  Constructor for the DBLookupTable object
@@ -102,20 +103,22 @@ public class DBLookupTable {
 		this.sqlQuery = sqlQuery;
 	}
 
-
 	/**
 	 *  Constructor for the DBLookupTable object
 	 *
 	 *@param  dbConnection      Description of the Parameter
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
+   *@param dbFieldTypes      List containing the types of the final record
 	 */
-	public DBLookupTable(DBConnection dbConnection, DataRecordMetadata dbRecordMetadata, String sqlQuery) {
+  public DBLookupTable(DBConnection dbConnection,
+                       DataRecordMetadata dbRecordMetadata, String sqlQuery,
+                       List dbFieldTypes) {
 		this.dbConnection = dbConnection;
 		this.metadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
+    this.dbFieldTypes = dbFieldTypes;
 	}
-
 
 	/**
 	 *  Gets the metadata attribute of the DBLookupTable object.<br>
@@ -127,7 +130,6 @@ public class DBLookupTable {
 		return metadata;
 	}
 
-
 	/**
 	 *  Looks-up data based on speficied key.<br>
 	 *  The key value is taken from data record
@@ -138,7 +140,8 @@ public class DBLookupTable {
 	 */
 	public DataRecord get() throws JetelException {
 		if (keyDataRecord == null) {
-			throw new JetelException("Wrong constructor used. No metadata defined for record used as a key!");
+      throw new JetelException(
+          "Wrong constructor used. No metadata defined for record used as a key!");
 		}
 		try {
 			pStatement.clearParameters();
@@ -148,12 +151,12 @@ public class DBLookupTable {
 			//execute query
 			resultSet = pStatement.executeQuery();
 			fetch();
-		} catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
 			throw new JetelException(ex.getMessage());
 		}
 		return dataRecord;
 	}
-
 
 	/**
 	 *  Looks-up record/data based on specified array of parameters
@@ -176,13 +179,12 @@ public class DBLookupTable {
 			if (!fetch()) {
 				return null;
 			}
-		} catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
 			throw new JetelException(ex.getMessage());
 		}
 		return dataRecord;
 	}
-
-
 
 	/**
 	 *  Looks-up data based on specified key-string
@@ -202,12 +204,12 @@ public class DBLookupTable {
 			if (!fetch()) {
 				return null;
 			}
-		} catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
 			throw new JetelException(ex.getMessage());
 		}
 		return dataRecord;
 	}
-
 
 	/**
 	 *  Executes query and returns data record (statement must be initialized with
@@ -228,7 +230,6 @@ public class DBLookupTable {
 		return true;
 	}
 
-
 	/**
 	 *  Returns the next found record if previous get() method succeeded.<br>
 	 *  If no more records, returns NULL
@@ -240,14 +241,15 @@ public class DBLookupTable {
 		try {
 			if (!fetch()) {
 				return null;
-			} else {
+      }
+      else {
 				return dataRecord;
 			}
-		} catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
 			throw new JetelException(ex.getMessage());
 		}
 	}
-
 
 	/**
 	 *  Initializtaion of lookup table - loading all data into it.
@@ -261,37 +263,57 @@ public class DBLookupTable {
 			dbConnection.connect();
 			pStatement = dbConnection.prepareStatement(sqlQuery);
 
-		} catch (SQLException ex) {
-			throw new JetelException("Can't establish DB connection: " + ex.getMessage());
+    }
+    catch (SQLException ex) {
+      throw new JetelException("Can't establish DB connection: " +
+                               ex.getMessage());
 		}
 		// obtain metadata info if needed
 		if (metadata == null) {
 			try {
 				metadata = SQLUtil.dbMetadata2jetel(pStatement.getMetaData());
-			} catch (SQLException ex) {
-				throw new JetelException("Can't automatically obtain metadata (use other constructor): " + ex.getMessage());
+      }
+      catch (SQLException ex) {
+        throw new JetelException(
+            "Can't automatically obtain metadata (use other constructor): " +
+            ex.getMessage());
 			}
 		}
 		// create data record
 		dataRecord = new DataRecord(metadata);
 		dataRecord.init();
+
 		// create trans map
-		try{
-			transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(pStatement.getMetaData()), metadata, dataRecord);
-		}catch (SQLException ex) {
-				throw new JetelException("Can't automatically obtain metadata (use other constructor): " + ex.getMessage());
+    if (dbFieldTypes!=null) {
+
+      transMap = CopySQLData.sql2JetelTransMap(dbFieldTypes, metadata, dataRecord);
+
+    } else {
+
+      try {
+        transMap = CopySQLData.sql2JetelTransMap(SQLUtil.getFieldTypes(pStatement.
+            getMetaData()), metadata, dataRecord);
+      }
+      catch (SQLException ex) {
+        throw new JetelException(
+            "Can't automatically obtain metadata (use other constructor): " +
+            ex.getMessage());
 			}
+
+    }
+
 		// create keyTransMap if key data record defined (passed)	
 		if (keyDataRecord != null) {
-			try{
-				keyTransMap = CopySQLData.jetel2sqlTransMap(SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
+      try {
+        keyTransMap = CopySQLData.jetel2sqlTransMap(SQLUtil.getFieldTypes(
+            pStatement.getParameterMetaData()),
 						keyDataRecord);
-			} catch (SQLException ex) {
-				keyTransMap=null;
+      }
+      catch (SQLException ex) {
+        keyTransMap = null;
 			}
 		}
 	}
-
 
 	/**
 	 *  Deallocates resources
@@ -299,9 +321,9 @@ public class DBLookupTable {
 	public void close() {
 		try {
 			pStatement.close();
-		} catch (SQLException ex) {
+    }
+    catch (SQLException ex) {
 			throw new RuntimeException(ex.getMessage());
 		}
 	}
 }
-
