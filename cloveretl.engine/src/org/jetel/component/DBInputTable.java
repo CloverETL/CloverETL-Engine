@@ -58,7 +58,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"DB_INTPUT_TABLE"</td></tr>
+ *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sqlQuery</b></td><td>query to be sent to database</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
@@ -66,7 +66,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  </table>  
  *
  *  <h4>Example:</h4> 
- *  <pre>&lt;Node id="INPUT" type="DB_INTPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="select * from employee_z"/&gt;</pre>
+ *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="select * from employee_z"/&gt;</pre>
  * 
  * @author     dpavlis
  * @since    September 27, 2002
@@ -80,7 +80,7 @@ public class DBInputTable extends Node {
 	private String dbConnectionName;
 	private String sqlQuery;
 
-	public final static String COMPONENT_TYPE = "DB_INTPUT_TABLE";
+	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
 
 
