@@ -290,14 +290,25 @@ public class StringDataField extends DataField {
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		// THIS DOES NOT WORK !!!! --->return value.toString().equals(((StringDataField) obj).getValue());
-		StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
-
-		if (strObj == null || value.length() != strObj.length()) {
+		//StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
+		CharSequence data;
+		
+		if (obj == null){
+			return false;
+		}
+		if (obj instanceof StringDataField){
+			data = (CharSequence)((StringDataField) obj).getValue();
+		}else if (obj instanceof CharSequence){
+			data = (CharSequence)obj;
+		}else{
+			throw new RuntimeException("Object is NOT a String or CharSequence: "+obj);
+		}
+		
+		if (value.length() != data.length()) {
 			return false;
 		}
 		for (int i = 0; i < value.length(); i++) {
-			if (value.charAt(i) != strObj.charAt(i)) {
+			if (value.charAt(i) != data.charAt(i)) {
 				return false;
 			}
 		}
@@ -344,6 +355,17 @@ public class StringDataField extends DataField {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode(){
+		int hash=5381;
+		for (int i=0;i<value.length();i++){
+			hash = ((hash << 5) + hash) + value.charAt(i); 
+		}
+		return (hash & 0x7FFFFFFF);
+	}
+	
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer

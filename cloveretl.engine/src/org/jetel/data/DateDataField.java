@@ -339,6 +339,10 @@ public class DateDataField extends DataField {
 		return value.compareTo(obj);
 	}
 	
+	public int hashCode(){
+		return value.hashCode();
+	}
+	
 	/**
 	 *  Gets the size attribute of the IntegerDataField object
 	 *

@@ -391,13 +391,15 @@ public class NumericDataField extends DataField {
 	 *@return          Description of the Return Value
 	 */
 	public int compareTo(double compVal) {
-		if (value > compVal) {
-			return 1;
-		} else if (value < compVal) {
-			return -1;
-		} else {
-			return 0;
-		}
+		return Double.compare(value,compVal);
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode(){
+		long v=Double.doubleToLongBits(value);
+		return (int)(v^(v>>>32));
 	}
 
 	/**

@@ -299,6 +299,17 @@ public class ByteDataField extends DataField {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode(){
+		int hash=5381;
+		for (int i=0;i<value.length;i++){
+			hash = ((hash << 5) + hash) + value[i]; 
+		}
+		return (hash & 0x7FFFFFFF);
+	}
+	
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer
