@@ -47,7 +47,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
 import org.jetel.gui.component.FormInterface;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CloverProperties;
 
 public class Screen3 extends JPanel implements FormInterface {
   private GridBagLayout gridBagLayout1 = new GridBagLayout();
@@ -81,7 +83,7 @@ public class Screen3 extends JPanel implements FormInterface {
   	
     try
     {
-		String[] petStrings = { "Numeric", "String", "Integer", "Date", "Byte" };
+		String[] petStrings = CloverProperties.getTypeNameList();
 		jComboBox1 = new JComboBox(petStrings);
 		loadData();
 		jbInit();
@@ -214,16 +216,28 @@ public class Screen3 extends JPanel implements FormInterface {
 			if (lsm.isSelectionEmpty()) {
 				selectedCol = -1;
 				jTextField1.setText("");
+				jTextField1.setEnabled(false);
+				jCheckBox1.setEnabled(false);
+				jComboBox1.setEnabled(false);
 				jLabel7.setText("Nothing");
 				System.out.println("No columns are selected.");
 			} else {
 				selectedCol = lsm.getMinSelectionIndex();
 				System.out.println("Column " + selectedCol
 								   + " is now selected.");
-				jLabel7.setText(jTable1.getColumnName(selectedCol));
-				jTextField1.setText(jTable1.getColumnName(selectedCol));
-				jCheckBox1.setSelected( aDataRecordMetadata.getField(jTable1.getColumnName(selectedCol)).isNullable());
-				//jComboBox1.setSelectedItem(aDataRecordMetadata.getField(jTable1.getColumnName(selectedCol)).getType());
+				jTextField1.setEnabled(true);
+				jCheckBox1.setEnabled(true);
+				jComboBox1.setEnabled(true);
+				String colName = jTable1.getColumnName(selectedCol);
+				if (colName != null) {
+					jLabel7.setText(colName);
+					jTextField1.setText(colName);
+					DataFieldMetadata aField = aDataRecordMetadata.getField(jTable1.getColumnName(selectedCol));
+					if (aField != null) {
+						jCheckBox1.setSelected( aField.isNullable() );
+						jComboBox1.setSelectedItem( CloverProperties.getTypeName( aField.getType()) );
+					}
+				}
 			}
 		}
 	});
@@ -266,7 +280,7 @@ private void jComboBox1_actionPerformed(ActionEvent e)
 {
 	System.out.println("ActionEvent e " + jComboBox1.getSelectedItem());
 	if(selectedCol!= -1) { //reset values only if something is selected
-		//aDataRecordMetadata.getField(selectedCol).setType((String)jComboBox1.getSelectedItem());
+		aDataRecordMetadata.getField(selectedCol).setType(CloverProperties.getTypeOfName((String)jComboBox1.getSelectedItem()));
 	}
 }
 

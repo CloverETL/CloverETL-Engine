@@ -129,6 +129,7 @@ public class FileFormatDispatcher {
 					getAFileFormatWizard().addScreen(aScreen2f, Integer.toString(currentPhase));
 				}
 				startPhase(aFormInterface[currentPhase]);
+				getAFileFormatWizard().middleFrameUI();
 				break;
 			case  SCREEN3_PARSE_DELIM:
 				break;
@@ -139,6 +140,7 @@ public class FileFormatDispatcher {
 					getAFileFormatWizard().addScreen(aScreen3, Integer.toString(currentPhase));
 				}
 				startPhase(aFormInterface[currentPhase]);
+			getAFileFormatWizard().middleFrameUI();
 				break;
 			case  SCREEN5_EDIT_DEL_ATT:
 				if(aFormInterface[currentPhase] == null) {
@@ -147,6 +149,7 @@ public class FileFormatDispatcher {
 					getAFileFormatWizard().addScreen(aScreen2d, Integer.toString(currentPhase));
 				}
 				startPhase(aFormInterface[currentPhase]);
+				getAFileFormatWizard().middleFrameUI();
 				break;
 			case  SCREEN6_EDIT_XML:
 				if(aFormInterface[currentPhase] == null) {

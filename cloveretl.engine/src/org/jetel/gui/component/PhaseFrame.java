@@ -341,13 +341,16 @@ public abstract class PhaseFrame extends JFrame {
     public void firstFrameUI() {
         navigationPanel.remove(btn_prev);
 		navigationPanel.remove(btn_finish);
-		btn_next.setEnabled(false);
+		//btn_finish.setEnabled(false);
 		navigationPanel.revalidate();
     }
 
 	public void middleFrameUI() {
 		navigationPanel.add(btn_prev);
-		btn_next.setEnabled(false);
+		navigationPanel.add(btn_next);
+		btn_next.setEnabled(true);
+		btn_prev.setEnabled(true);
+		navigationPanel.remove(btn_finish);
 		navigationPanel.revalidate();
 	}
     
@@ -359,10 +362,11 @@ public abstract class PhaseFrame extends JFrame {
     public void finalFrameUI() {
         // remove all buttons we are concerned with
         navigationPanel.remove(btn_next);
-        navigationPanel.add(btn_prev);
+        //navigationPanel.add(btn_prev);
         navigationPanel.add(btn_finish);
+		btn_finish.setEnabled(true);
         
-        btn_next = null;    // next button not used in final frame
+        //btn_next = null;    // next button not used in final frame
         navigationPanel.revalidate();
         getRootPane().setDefaultButton(btn_finish);
     }

@@ -202,7 +202,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getDefaultValue()!=null){
 					out.print("default=\""+field.getFormatStr()+"\" ");
 				}
-				out.print("default=\""+(new Boolean(field.isNullable())).toString()+"\" ");
+				out.print("nullable=\""+(new Boolean(field.isNullable())).toString()+"\" ");
 				out.println("/>");
 
 			}
