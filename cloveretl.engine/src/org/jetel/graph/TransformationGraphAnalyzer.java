@@ -82,12 +82,13 @@ public class TransformationGraphAnalyzer {
 		Set set1 = new HashSet();
 		Set set2 = new HashSet();
 		Set tmpSet = new HashSet(nodes.size());
+		Map nodesEncountered=new HashMap(nodes.size());
 		Set actualSet;
 		Set enumerationOfNodes = new LinkedHashSet(nodes.size());
 		int totalNodesEncountered = 0;
 		Node node;
 		Iterator iterator;
-
+		
 		// initial populating of set1 - with root Nodes only
 		iterator = nodes.iterator();
 		while (iterator.hasNext()) {
@@ -96,34 +97,28 @@ public class TransformationGraphAnalyzer {
 				set1.add(node);
 			}
 		}
-
+		
 		if (set1.isEmpty()) {
 			logger.severe("No root Nodes detected! There must be at least one root node defined." +
 					" (Root node is	node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
 
+		int nRootNodes=set1.size();
+		// populate hash of all nodes with #of input ports (for detecting loops in graph) multiplied by
+		// number of root nodes.
+		// the algorithm is simple/stupid. It expects that each node can be visited only
+		// so many times as there are edges going to node multiplied by number of root nodes
+		// basically, from each root node, there is some path through graph
+		// 
+		for(Iterator i=nodes.iterator();i.hasNext();){
+			node=(Node)i.next();
+			nodesEncountered.put(node,new Integer(node.getInPorts().size()*nRootNodes));	
+		}
+		
 		actualSet = set1;
 		// initialize - actualSet is set1 for the very first run
 		while (!actualSet.isEmpty()) {
-			totalNodesEncountered += actualSet.size();
-			// if there is some Node from actualSet already in the "global" list, it will
-			// be removed which indicates circular reference
-			tmpSet.clear();
-			tmpSet.addAll(enumerationOfNodes);
-			if (enumerationOfNodes.removeAll(actualSet)) {
-				logger.severe("Circular reference found in graph !");
-				tmpSet.retainAll(actualSet);
-				dumpNodesReferences(tmpSet.iterator());
-				throw new GraphConfigurationException("Circular reference found!");
-			}
-			// did we process already more nodes than we have in total ??
-			// that indicates we have circular graph - this should normally not happen as previous
-			// test should catch it
-			if (totalNodesEncountered > nodes.size()) {
-				logger.severe("Circular reference found in graph !");
-				throw new GraphConfigurationException("Circular reference found in graph !");
-			}
 			// add individual nodes from set
 			enumerationOfNodes.addAll(actualSet);
 
@@ -135,18 +130,25 @@ public class TransformationGraphAnalyzer {
 				findNodesSuccessors(set2, set1);
 				actualSet = set1;
 			}
+		/* following piece of code doesn't work well ;-)	
+			for(iterator=actualSet.iterator();iterator.hasNext();){
+				node=(Node)iterator.next();
+				Integer count=(Integer)nodesEncountered.get(node);
+				if (count.intValue()<=0){
+					logger.severe("Circular reference found in graph ! Suspicious node: "+node.getID());
+					dumpNodesReferences(actualSet.iterator());
+					throw new GraphConfigurationException("Circular reference found in graph !");
+				}else{
+					nodesEncountered.put(node,new Integer(count.intValue()-1));
+				}
+			}*/
+			
 		}
-		// finally, create array (sorted by components appearance in graph)
-		Node[] nodeArray = new Node[enumerationOfNodes.size()];
-		Iterator enumIterator = enumerationOfNodes.iterator();
-		int index = 0;
-		while (enumIterator.hasNext()) {
-			nodeArray[index++] = (Node) enumIterator.next();
-		}
-		return nodeArray;
+		// returning nodes ordered by their appearance in the graph -> not really guratanteed that it
+		// works for all configurations, but should be sufficient
+		
+		return (Node[]) enumerationOfNodes.toArray(new Node[0]);
 	}
-
-
 
 
 	/**
