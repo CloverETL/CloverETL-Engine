@@ -1,22 +1,22 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ *
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
+ *
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 // FILE: c:/projects/jetel/org/jetel/data/DataRecord.java
 
 package org.jetel.data;
@@ -79,7 +79,6 @@ public class DataRecord implements Serializable {
 	/**
 	 *  Set fields by copying the fields from the record passed as argument.
 	 *
-	 *
 	 * @param  _record  Record from which fields are copied
 	 * @since
 	 */
@@ -110,7 +109,6 @@ public class DataRecord implements Serializable {
 			}
 		}
 	}
-
 
 
 
@@ -318,6 +316,19 @@ public class DataRecord implements Serializable {
 			str.append("\n");
 		}
 		return str.toString();
+	}
+
+
+	/**
+	 *  Gets the actual size of record (in bytes).<br>
+	 *  <i>How many bytes are required for record serialization</i>
+	 *
+	 * @return    The size value
+	 */
+	public int getSizeSerialized() {
+		int size=0;
+		for (int i = 0; i < fields.length; size+=fields[i++].getSize());
+		return size;
 	}
 }
 /*

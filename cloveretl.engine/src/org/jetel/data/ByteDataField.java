@@ -45,8 +45,10 @@ public class ByteDataField extends DataField {
 	 *@since    October 29, 2002
 	 */
 	protected byte[] value;
-
+	private static final int ARRAY_LENGTH_INDICATOR_SIZE=4;
+	
 	private final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
+	
 
 
 	/**
@@ -295,6 +297,16 @@ public class ByteDataField extends DataField {
 		} else {
 			return -1;
 		}
+	}
+	
+	/**
+	 *  Gets the size attribute of the IntegerDataField object
+	 *
+	 * @return    The size value
+	 * @see	      org.jetel.data.DataField
+	 */
+	public int getSizeSerialized() {
+		return value.length+ARRAY_LENGTH_INDICATOR_SIZE;
 	}
 
 }

@@ -41,7 +41,7 @@ import org.jetel.metadata.DataFieldMetadata;
 public class StringDataField extends DataField {
 
 	private StringBuffer value;
-
+	
 	// Attributes
 	/**
 	 *  An attribute that represents ...
@@ -49,7 +49,7 @@ public class StringDataField extends DataField {
 	 * @since
 	 */
 	private final static int INITIAL_STRING_BUFFER_CAPACITY = 32;
-
+	private final static int STRING_LENGTH_INDICATOR_SIZE = 4;
 
 	// Associations
 
@@ -339,6 +339,17 @@ public class StringDataField extends DataField {
 		}
 	}
 
+	/**
+	 *  Gets the size attribute of the IntegerDataField object
+	 *
+	 * @return    The size value
+	 * @see	      org.jetel.data.DataField
+	 */
+	public int getSizeSerialized() {
+		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
+		// size of length indicator (basically int variable)
+		return value.length()*2+STRING_LENGTH_INDICATOR_SIZE;
+	}
 }
 /*
  *  end class StringDataField
