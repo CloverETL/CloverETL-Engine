@@ -147,25 +147,11 @@ public abstract class CopySQLData {
 		CopySQLData[] transMap = new CopySQLData[metadata.getNumFields()];
 		int i = 0;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
-			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(), record, i, i);
+			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
+							record.getMetadata().getFieldType(i),
+							record, i, i);
 			i++;
 		}
-
-//		for (int i = 0; i < metadata.getNumFields(); i++) {
-//			switch (metadata.getField(i).getType()) {
-//				case DataFieldMetadata.STRING_FIELD:
-//					transMap[i] = new CopyString(record, i, i);
-//					break;
-//				case DataFieldMetadata.NUMERIC_FIELD:
-//					transMap[i] = new CopyNumeric(record, i, i);
-//					break;
-//				case DataFieldMetadata.INTEGER_FIELD:
-//					transMap[i] = new CopyInteger(record, i, i);
-//					break;
-//				case DataFieldMetadata.DATE_FIELD:
-//					transMap[i] = new CopyDate(record, i, i);
-//					break;
-//			}
 
 		return transMap;
 	}
@@ -187,7 +173,9 @@ public abstract class CopySQLData {
 		ListIterator iterator = fieldTypes.listIterator();
 
 		while (iterator.hasNext()) {
-			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(), record, i, i);
+			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
+							record.getMetadata().getFieldType(i),
+							record, i, i);
 			i++;
 		}
 		return transMap;
@@ -195,7 +183,8 @@ public abstract class CopySQLData {
 
 
 	/**
-	 *  Description of the Method
+	 *  Creates translation array for copying data from Jetel record into Database
+	 *  record. It allows only certain (specified) Clover fields to be considered
 	 *
 	 * @param  fieldTypes          Description of the Parameter
 	 * @param  record              Description of the Parameter
@@ -210,6 +199,7 @@ public abstract class CopySQLData {
 		int fromIndex = 0;
 		int toIndex = 0;
 		short jdbcType;
+		char jetelFieldType;
 
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		ListIterator iterator = fieldTypes.listIterator();
@@ -218,11 +208,12 @@ public abstract class CopySQLData {
 			jdbcType = ((Integer) iterator.next()).shortValue();
 			// from index is index of specified cloverField in the Clover record
 			fromIndex = record.getMetadata().getFieldPosition(cloverFields[i]);
+			jetelFieldType=record.getMetadata().getFieldType(fromIndex);
 			if (fromIndex == -1) {
 				throw new JetelException(" Field \"" + cloverFields[i] + "\" does not exist in DataRecord !");
 			}
 			// we copy from Clover's field to JDBC - toIndex/fromIndex is switched here
-			transMap[i++] = createCopyObject(jdbcType, record, toIndex,fromIndex);
+			transMap[i++] = createCopyObject(jdbcType,jetelFieldType, record, toIndex, fromIndex);
 			toIndex++;// we go one by one - order defined by insert/update statement
 
 		}
@@ -231,16 +222,16 @@ public abstract class CopySQLData {
 
 
 	/**
-	 *  Description of the Method
+	 *  Creates copy object - bridge between JDBC data types and Clover data types
 	 *
-	 * @param  SQLType    Description of the Parameter
-	 * @param  record     Description of the Parameter
-	 * @param  fromIndex  Description of the Parameter
-	 * @param  toIndex    Description of the Parameter
-	 * @return            Description of the Return Value
+	 * @param  SQLType         Description of the Parameter
+	 * @param  jetelFieldType  Description of the Parameter
+	 * @param  record          Description of the Parameter
+	 * @param  fromIndex       Description of the Parameter
+	 * @param  toIndex         Description of the Parameter
+	 * @return                 Description of the Return Value
 	 */
-	private static CopySQLData createCopyObject(int SQLType, DataRecord record, int fromIndex, int toIndex) {
-		char jetelFieldType = record.getMetadata().getFieldType(fromIndex);
+	private static CopySQLData createCopyObject(int SQLType, char jetelFieldType, DataRecord record, int fromIndex, int toIndex) {
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
