@@ -1,20 +1,22 @@
 /*
- *  jETeL/Clover - Java based ETL application framework.
- *  Copyright (C) 2002  David Pavlis
- *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- */
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 package org.jetel.database;
 
 import java.io.*;
@@ -63,8 +65,8 @@ import java.util.Properties;
 public class AnalyzeDB {
 
 	private final static int BUFFER_SIZE = 255;
-	private final static String VERSION = "1.0";
-	private final static String LAST_UPDATED = "2003/11/16";  
+	private final static String VERSION = "1.1";
+	private final static String LAST_UPDATED = "2004/05/17";  
 	private final static String DEFAULT_DELIMITER = ",";
 	private final static String DEFAULT_XML_ENCODING="UTF-8";
 
@@ -292,7 +294,7 @@ public class AnalyzeDB {
 	 * @since    September 25, 2002
 	 */
 	private static void printInfo() {
-		System.out.println("*** Jetel AnalyzeDB (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-03 D.Pavlis, released under GNU Public Licence ***\n");
+		System.out.println("*** Jetel AnalyzeDB (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-04 D.Pavlis, released under GNU Lesser General Public license ***\n");
 		System.out.println("Usage:");
 		System.out.println("-dbDriver   JDBC driver to use");
 		System.out.println("-dbURL      Database name (URL)");
