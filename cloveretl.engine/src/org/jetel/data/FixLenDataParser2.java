@@ -132,11 +132,7 @@ public class FixLenDataParser2 implements DataParser {
 		// populate all data fields
 		try {
 			while (fieldCounter < metadata.getNumFields()) {
-				//try {
 				populateField(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
-				//} catch (BadDataFormatException ex) {
-				//	handlerBDFE.populateFieldFailure(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
-				//}
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
@@ -183,7 +179,7 @@ public class FixLenDataParser2 implements DataParser {
 		if(handlerBDFE != null ) {  //use handler only if configured
 			while(handlerBDFE.isThrowException()) {
 				handlerBDFE.handleException(record);
-				record.init();
+				//record.init();  redundant
 				record = parseNext(record);
 			}
 		}
