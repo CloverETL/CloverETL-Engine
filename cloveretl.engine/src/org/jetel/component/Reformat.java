@@ -168,10 +168,10 @@ public class Reformat extends Node {
 		inRecord[0].init();
 		outRecord[0].init();
 
-		while (inRecord != null && runIt) {
+		while (inRecord[0] != null && runIt) {
 			try {
 				inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
-				if (inRecord != null) {
+				if (inRecord[0] != null) {
 					if (!transformation.transform(inRecord, outRecord)) {
 						throw new RuntimeException(transformation.getMessage());
 					}
