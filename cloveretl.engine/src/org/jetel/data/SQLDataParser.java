@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jetel.database.CopySQLData;
+import org.jetel.database.SQLUtil;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
@@ -115,7 +116,10 @@ public class SQLDataParser implements DataParser {
 	 */
 
 	public DataRecord getNext() throws JetelException {
-		outRecord.init();
+		if (outRecord==null){
+			outRecord = new DataRecord(metadata);
+			outRecord.init();
+		}
 
 		return getNext(outRecord);
 	}
@@ -170,15 +174,19 @@ public class SQLDataParser implements DataParser {
 		}
 	}
 
-public void initSQLDataMap(DataRecord record){
-	transMap = CopySQLData.sql2JetelTransMap( metadata, record);
-}
+	public void initSQLDataMap(DataRecord record){
+		try{
+			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
+		}catch (Exception ex) {
+			ex.printStackTrace();
+			throw new RuntimeException(ex.getMessage());
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
 	 */
 	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		//outRecord = new DataRecord(_metadata);
 		metadata = _metadata;
 		fieldCount = _metadata.getNumFields();
 		int i;
@@ -190,11 +198,23 @@ public void initSQLDataMap(DataRecord record){
 			throw new ComponentNotReadyException("Can't find DBConnection ID: "+dbConnectionName);
 		}
 		try {
-			dbConnection.connect();
+			// connection is created up front
+			//dbConnection.connect();
 			statement = dbConnection.getStatement();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ComponentNotReadyException(e.getMessage());
+		}
+		try {
 			// following calls are not always supported (as it seems)
-			//statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-			//statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
+			// if error occures, we just ignore it
+			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
+			statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
+		
+		} catch (SQLException e) {
+			//System.out.println("Warning: "+e.getMessage());
+		}	
+		try{
 			resultSet = statement.executeQuery(sqlQuery);
 		} catch (SQLException e) {
 			e.printStackTrace();
