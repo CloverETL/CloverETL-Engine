@@ -28,7 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
- *  <h3>Simple Copy Component</h3>
+ *  <h3>Filter Component</h3>
  *
  * <!-- All records not rejected by the filter are copied from input port:0 onto all connected output ports (multiplies number of records by number of defined
  * output ports -->
@@ -46,7 +46,18 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>At least one connected output port.</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td></tr>
+ * <td>It can filter on text, date, integer, numeric
+ * fields with comparison <code>[>, <, =, =<, >=, !=]</code><br>
+ * Text fields can also be compared to a
+ * Java regexp. using ~ (tilda) character <br>
+ * A filter can be made of different parts separated by a ";".<br> 
+ * If one of the parts is verified, the record pases the
+ * filter (it's an OR combination of the parts, and AND can be achieved by
+ * several filters).
+ * Date format used for comparison is the same as defined for the field which
+ * is used for filtration.  
+ *
+ * </td></tr>
  * </table>
  *  <br>  
  *  <table border="1">
@@ -55,7 +66,12 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>id</b></td>
  *  <td>component identification</td>
  *  </tr>
- *  </table>  
+ *  <tr><td><b>filterExpression</b></td><td>Expression used for filtering records. <i>See above.</i></td></tr>
+ *  </table>
+ * 
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="HireDate&amp;lt;1993-12-31"/&gt;</pre>
+ *  <pre>&lt;Node id="FILTEREMPL1" type="FILTER" filterExpression="Name~^A.*;Age>25"/&gt;</pre>
  *
  * @author     rbauduin
  * @since    July 23, 2003
@@ -79,17 +95,6 @@ public class Filter extends Node {
 		super(id);
 		
 	}
-
-	/**
-	 *  Gets the Type attribute of the Filter object
-	 *
-	 * @return    The Type value
-	 * @since     July 23, 2002
-	 */
- //   public String getType() {
- //   	return COMPONENT_TYPE;
- //   }
-
 
 	/**
 	 *  Main processing method for the Filter object
@@ -143,6 +148,12 @@ public class Filter extends Node {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}else if (outPorts.size()<1){
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
+		}
+		
+		if (recordFilter!=null){
+			recordFilter.init(getInputPort(READ_FROM_PORT).getMetadata());
+		}else{
+			throw new ComponentNotReadyException("RecordFilter class not defined !"); 
 		}
 	}
 	
