@@ -34,26 +34,27 @@ import org.jetel.util.Compile;
  *  When we need to send record through the EDGE, we just serialize it (it isn't
  *  standard version of serializing)
  *
- *@author     D.Pavlis
- *@created    18. kvìten 2003
- *@since      March 26, 2002
- *@see        org.jetel.metadata.DataRecordMetadata
+ * @author      D.Pavlis
+ * @since       March 26, 2002
+ * @revision    $Revision$
+ * @created     18. kvìten 2003
+ * @see         org.jetel.metadata.DataRecordMetadata
  */
 public class DataRecord implements Serializable {
 
 	/**
-	 *@since
+	 * @since
 	 */
 	private transient String codeClassName;
 
 	/**
-	 *@since
+	 * @since
 	 */
 	private DataField fields[];
 
 	// Associations
 	/**
-	 *@since
+	 * @since
 	 */
 	private transient DataRecordMetadata metadata;
 
@@ -61,8 +62,8 @@ public class DataRecord implements Serializable {
 	/**
 	 *  An attribute that represents ...
 	 *
-	 *@param  _metadata  Description of Parameter
-	 *@since
+	 * @param  _metadata  Description of Parameter
+	 * @since
 	 */
 
 	// Operations
@@ -75,57 +76,48 @@ public class DataRecord implements Serializable {
 
 	/**
 	 *  Set fields by copying the fields from the record passed as argument.
-	 *  
-	 *@param  _record  Record from which fields are copied
-	 *@since
+	 *
+	 *
+	 * @param  _record  Record from which fields are copied
+	 * @since
 	 */
 
-    public void copyFieldsByPosition(DataRecord _record) {
-        DataRecordMetadata sourceMetadata = _record.getMetadata();
-        DataFieldMetadata fieldMetadata;
-        DataField sourceField;
-        DataField targetField;
-        int sourceLength = sourceMetadata.getNumFields();
-        int targetLength = this.metadata.getNumFields();
-        int copyLength;
-        if (sourceLength<targetLength)
-        {
-            copyLength = sourceLength;
-        }
-        else
-        {
-            copyLength = targetLength;
-        }
+	public void copyFieldsByPosition(DataRecord _record) {
+		DataRecordMetadata sourceMetadata = _record.getMetadata();
+		DataFieldMetadata fieldMetadata;
+		DataField sourceField;
+		DataField targetField;
+		int sourceLength = sourceMetadata.getNumFields();
+		int targetLength = this.metadata.getNumFields();
+		int copyLength;
+		if (sourceLength < targetLength) {
+			copyLength = sourceLength;
+		} else {
+			copyLength = targetLength;
+		}
 
-        for (int i=0;i<copyLength;i++)
-        {
+		for (int i = 0; i < copyLength; i++) {
 
-            fieldMetadata = metadata.getField(i);
-            sourceField=_record.getField(i);
-            targetField= this.getField(i);
-            if(sourceField.getType()==targetField.getType())
-            {
-                targetField.setValue(sourceField.getValue());
-            }
-            else
-            {
-                targetField.setToDefaultValue();
-            }
-        }
-    }
+			fieldMetadata = metadata.getField(i);
+			sourceField = _record.getField(i);
+			targetField = this.getField(i);
+			if (sourceField.getType() == targetField.getType()) {
+				targetField.setValue(sourceField.getValue());
+			} else {
+				targetField.setToDefaultValue();
+			}
+		}
+	}
 
 
 
 
-
-
-	
 
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  _fieldNum  Description of Parameter
-	 *@since
+	 * @param  _fieldNum  Description of Parameter
+	 * @since
 	 */
 	public void delField(int _fieldNum) {
 		try {
@@ -134,11 +126,12 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  buffer  Description of Parameter
-	 *@since          April 23, 2002
+	 * @param  buffer  Description of Parameter
+	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		for (int i = 0; i < fields.length; i++) {
@@ -146,12 +139,13 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  obj  Description of Parameter
-	 *@return      Description of the Returned Value
-	 *@since       April 23, 2002
+	 * @param  obj  Description of Parameter
+	 * @return      Description of the Returned Value
+	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
 		/*
@@ -170,16 +164,23 @@ public class DataRecord implements Serializable {
 		return true;
 	}
 
+
+	/**
+	 *  Gets the codeClassName attribute of the DataRecord object
+	 *
+	 * @return    The codeClassName value
+	 */
 	public String getCodeClassName() {
 		return codeClassName;
 	}
 
+
 	/**
 	 *  An operation that does ...
 	 *
-	 *@param  _fieldNum  Description of Parameter
-	 *@return            The Field value
-	 *@since
+	 * @param  _fieldNum  Description of Parameter
+	 * @return            The Field value
+	 * @since
 	 */
 	public DataField getField(int _fieldNum) {
 		try {
@@ -189,12 +190,13 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
 	/**
 	 *  An operation that does ...
 	 *
-	 *@param  _name  Description of Parameter
-	 *@return        The Field value
-	 *@since
+	 * @param  _name  Description of Parameter
+	 * @return        The Field value
+	 * @since
 	 */
 	public DataField getField(String _name) {
 		try {
@@ -204,30 +206,33 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
 	/**
 	 *  An attribute that represents ... An operation that does ...
 	 *
-	 *@return    The Metadata value
-	 *@since
+	 * @return    The Metadata value
+	 * @since
 	 */
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
 
+
 	/**
 	 *  An operation that does ...
 	 *
-	 *@return    The NumFields value
-	 *@since
+	 * @return    The NumFields value
+	 * @since
 	 */
 	public int getNumFields() {
 		return metadata.getNumFields();
 	}
 
+
 	/**
 	 *  Description of the Method
 	 *
-	 *@since    April 5, 2002
+	 * @since    April 5, 2002
 	 */
 	public void init() {
 		DataFieldMetadata fieldMetadata;
@@ -235,66 +240,18 @@ public class DataRecord implements Serializable {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
 			fields[i] =
-				DataFieldFactory.createDataField(
+					DataFieldFactory.createDataField(
 					fieldMetadata.getType(),
 					fieldMetadata);
 		}
 	}
 
-	/**
-	 *  This initialization method should be used preferably as
-	 * it supports code property functionality.
-	 *
-	 *@since    April 5, 2002
-	 */
-	public void init(DataRecordMetadata[] arrayDataRecordMetadata) {
-		DataFieldMetadata fieldMetadata;
-		ClassBuilder aClassBuilder = null;
-		String tmpCode = null;
-		int[][] sequencedDependencies = null;
-		// create appropriate data fields based on metadata supplied
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldMetadata = metadata.getField(i);
-
-			//if there is no code fields then we do not have to worry
-			//about setting up [record][field] mapping and compiling
-			tmpCode = fieldMetadata.getCodeStr();
-			if (tmpCode != null) {
-				if (aClassBuilder == null) {
-					aClassBuilder =
-						new ClassBuilder(this, arrayDataRecordMetadata);
-				}
-				sequencedDependencies = aClassBuilder.constructMethod(fieldMetadata);
-				// does tmpCode contain refs to this and/or other fields
-
-				fields[i] =
-					DataFieldFactory.createDataField(
-						fieldMetadata.getType(),
-						fieldMetadata,
-						aClassBuilder.getMethodName(fieldMetadata.getName()),
-						sequencedDependencies);
-			} else {
-				fields[i] =
-					DataFieldFactory.createDataField(
-						fieldMetadata.getType(),
-						fieldMetadata);
-			}
-		}
-		setCodeClassName(aClassBuilder.getClassName());
-		try {
-			Compile.compileClass(aClassBuilder.getClassName(),CloverProperties.CLASS_DIRECTORY);
-		} catch (ClassCompilationException e) {
-			e.printStackTrace();
-			throw new RuntimeException(
-				aClassBuilder.getClassName() + "  " + e.getMessage());
-		}
-	}
 
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  buffer  Description of Parameter
-	 *@since          April 23, 2002
+	 * @param  buffer  Description of Parameter
+	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
 		for (int i = 0; i < fields.length; i++) {
@@ -302,19 +259,27 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
+	/**
+	 *  Sets the codeClassName attribute of the DataRecord object
+	 *
+	 * @param  codeClassName  The new codeClassName value
+	 */
 	public void setCodeClassName(String codeClassName) {
 		this.codeClassName = codeClassName;
 	}
 
+
 	/**
 	 *  Sets the Metadata attribute of the DataRecord object
 	 *
-	 *@param  metadata  The new Metadata value
-	 *@since            April 5, 2002
+	 * @param  metadata  The new Metadata value
+	 * @since            April 5, 2002
 	 */
 	public void setMetadata(DataRecordMetadata metadata) {
 		this.metadata = metadata;
 	}
+
 
 	/**
 	 *  An operation that sets value of all data fields to their default value.
@@ -325,21 +290,23 @@ public class DataRecord implements Serializable {
 		}
 	}
 
+
 	/**
 	 *  An operation that sets value of the selected data field to its default
 	 *  value.
 	 *
-	 *@param  _fieldNum  The new toDefaultValue value
+	 * @param  _fieldNum  The new toDefaultValue value
 	 */
 	public void setToDefaultValue(int _fieldNum) {
 		fields[_fieldNum].setToDefaultValue();
 	}
 
+
 	/**
 	 *  Creates textual representation of record's content based on values of individual
 	 *  fields
 	 *
-	 *@return    Description of the Return Value
+	 * @return    Description of the Return Value
 	 */
 	public String toString() {
 		StringBuffer str = new StringBuffer();
@@ -354,3 +321,4 @@ public class DataRecord implements Serializable {
 /*
  *  end class DataRecord
  */
+
