@@ -53,6 +53,7 @@ public class runGraph {
 
 		if (args.length < 1) {
 			System.err.println("Usage: runGraph [-v(erbose) -log <filename>] <graph definition file>");
+			System.exit(1);
 		}
 		// process command line arguments
 		for (int i = 0; i < args.length; i++) {
