@@ -23,9 +23,10 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  *  This class serves the role of DataRecord to recordKey(String value) mapper.
  *
- *@author     dpavlis
- *@created    January 26, 2003
- *@since      May 2, 2002
+ * @author      dpavlis
+ * @since       May 2, 2002
+ * @revision    $Revision$
+ * @created     January 26, 2003
  */
 public class RecordKey {
 
@@ -41,9 +42,9 @@ public class RecordKey {
 	/**
 	 *  Constructor for the RecordKey object
 	 *
-	 *@param  keyFieldNames  Description of Parameter
-	 *@param  metadata       Description of Parameter
-	 *@since                 May 2, 2002
+	 * @param  keyFieldNames  Description of Parameter
+	 * @param  metadata       Description of Parameter
+	 * @since                 May 2, 2002
 	 */
 	public RecordKey(String keyFieldNames[], DataRecordMetadata metadata) {
 		this.metadata = metadata;
@@ -52,13 +53,12 @@ public class RecordKey {
 
 	// end init
 
-
 	/**
 	 *  Assembles String key from current record's fields
 	 *
-	 *@param  record  Description of Parameter
-	 *@return         The KeyString value
-	 *@since          May 2, 2002
+	 * @param  record  Description of Parameter
+	 * @return         The KeyString value
+	 * @since          May 2, 2002
 	 */
 	public String getKeyString(DataRecord record) {
 		keyStr.setLength(0);
@@ -74,7 +74,7 @@ public class RecordKey {
 	/**
 	 *  Performs initialization of internal data structures
 	 *
-	 *@since    May 2, 2002
+	 * @since    May 2, 2002
 	 */
 	public void init() {
 
@@ -96,7 +96,7 @@ public class RecordKey {
 	/**
 	 *  Gets the keyFields attribute of the RecordKey object
 	 *
-	 *@return    The keyFields value
+	 * @return    The keyFields value
 	 */
 	public int[] getKeyFields() {
 		return keyFields;
@@ -116,9 +116,9 @@ public class RecordKey {
 	/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)
 	 *
-	 *@param  record1  Description of the Parameter
-	 *@param  record2  Description of the Parameter
-	 *@return          -1 ; 0 ; 1
+	 * @param  record1  Description of the Parameter
+	 * @param  record2  Description of the Parameter
+	 * @return          -1 ; 0 ; 1
 	 */
 	public int compare(DataRecord record1, DataRecord record2) {
 		int compResult;
@@ -138,14 +138,14 @@ public class RecordKey {
 
 
 	/**
-	 *  Compares two records (can have different layout) based on defined key-fields 
+	 *  Compares two records (can have different layout) based on defined key-fields
 	 *  and returns (-1;0;1) if (< ; = ; >).<br>
 	 *  The particular fields to be compared have to be of the same type !
 	 *
-	 *@param  secondKey  RecordKey defined for the second record
-	 *@param  record1    First record
-	 *@param  record2    Second record
-	 *@return            -1 ; 0 ; 1
+	 * @param  secondKey  RecordKey defined for the second record
+	 * @param  record1    First record
+	 * @param  record2    Second record
+	 * @return            -1 ; 0 ; 1
 	 */
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
 		int compResult;
@@ -162,6 +162,28 @@ public class RecordKey {
 		return 0;
 		// seem to be the same
 	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  record1  Description of the Parameter
+	 * @param  record2  Description of the Parameter
+	 * @return          Description of the Return Value
+	 */
+	public boolean equals(DataRecord record1, DataRecord record2) {
+		if (record1.getMetadata() != record2.getMetadata()) {
+			throw new RuntimeException("Can't compare - records have different metadata associated." +
+					" Possibly different structure");
+		}
+		for (int i = 0; i < keyFields.length; i++) {
+			if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 }
 // end RecordKey
 
