@@ -31,6 +31,7 @@ import javax.swing.JTextPane;
 
 import org.jetel.gui.component.FormInterface;
 import org.jetel.gui.component.RulerPanel;
+import org.jetel.util.QSortAlgorithm;
 
 import java.awt.SystemColor;
 import java.awt.event.WindowAdapter;
@@ -164,11 +165,22 @@ public class Screen2f extends JPanel implements  FormInterface
 		int oldPos = 0;
 		int newPos = 0;
 		Object[] objects = aRulerPanel.getPointList();
+		int[] tmpFieldPos = new int[objects.length];
+		for(int i=0; i < objects.length ; i++ ) {
+			tmpFieldPos[i] = ((Integer)objects[i]).intValue();
+		}
+		try {
+			QSortAlgorithm.sort(tmpFieldPos);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 		short[] fieldWidths = new short[objects.length+1];
 		
-		for(int i=0; i < objects.length ; i++ ) {
-			newPos = ((Integer)objects[i]).intValue();
-			fieldWidths[i]=(short)(newPos - oldPos);
+		for(int i=0; i < tmpFieldPos.length ; i++ ) {
+			newPos = tmpFieldPos[i] -1;
+			fieldWidths[i]=(short)(newPos - oldPos );
 			oldPos = newPos;
 		}
 		String[] tmp = getLinesFromFile();				

@@ -297,29 +297,23 @@ public class DataRecordMetadata {
 	public void bulkLoadFieldSizes(short[] fieldWidths) {
 		DataFieldMetadata aField = null;
 		int fieldsNumber = fields.size();
-		int oldPos = 0;
-		int newPos = 0;
 		
 		//if no fields then create default fields with sizes as in objects
 		if( fieldsNumber == 0) {
 			for(int i=0; i < fieldWidths.length ; i++ ) {
-				newPos = fieldWidths[i];
-				addField(new DataFieldMetadata("Field"+Integer.toString(i),(short)(newPos - oldPos)));
-				oldPos = newPos;				
+				addField(new DataFieldMetadata("Field"+Integer.toString(i),fieldWidths[i]));
 			}
 		} else {
 			//fields exist
 			for(int i=0; i < fieldWidths.length ; i++ ) {
-				newPos = fieldWidths[i];
 				if( i < fieldsNumber ) {
 					// adjust the sizes
 					aField = getField(i);
-					aField.setSize( (short)(newPos - oldPos) );
+					aField.setSize( fieldWidths[i]);
 				} else {
 					// insert new fileds, if any
-					addField(new DataFieldMetadata("Field"+Integer.toString(i),(short)(newPos - oldPos) ));				
+					addField(new DataFieldMetadata("Field"+Integer.toString(i),fieldWidths[i] ));				
 				}
-				oldPos = newPos;				
 			}
 			if( fieldsNumber > fieldWidths.length ) {
 				// remove deleted fields, if any

@@ -70,7 +70,7 @@ public class Screen3 extends JPanel implements FormInterface {
   private FileFormatDispatcher aDispatcher;
   private FileFormatDataModel aFileFormatDataModel;
   private DataRecordMetadata aDataRecordMetadata;
-	
+  private String[] columnNames = null;	
   private int selectedCol = -1;
   
   public Screen3(FileFormatDispatcher aDispatcher, FileFormatDataModel aFileFormatDataModel)
@@ -109,7 +109,6 @@ public class Screen3 extends JPanel implements FormInterface {
 		{"Angela", "Lih",
 		 "Teaching high school", new Integer(4), new Boolean(false)}
 	};
-	String[] columnNames = null;
 	
 	columnNames = new String[5];
 	columnNames[0]="First Name";
@@ -253,6 +252,7 @@ private void jTextField1_focusLost(FocusEvent e)
 	System.out.println("FocusEvent e " + " "+ jTextField1.getText());
 	if(selectedCol!= -1) { //reset values only if something is selected
 		aDataRecordMetadata.getField(selectedCol).setName(jTextField1.getText());
+		columnNames[selectedCol]=jTextField1.getText();
 		TableColumnModel aModel= jTable1.getColumnModel();
 		TableColumn aTableColumn = aModel.getColumn(selectedCol);
 		aTableColumn.setHeaderValue(jTextField1.getText());
@@ -265,19 +265,21 @@ private void jTextField1_focusLost(FocusEvent e)
 	 */
 	public void loadData() {
 		aDataRecordMetadata = aFileFormatDataModel.recordMeta;
-		String[] columnNames = new String[aDataRecordMetadata.getNumFields()];
+		columnNames = new String[aDataRecordMetadata.getNumFields()];
 		for( int i = 0 ; i < columnNames.length ; i++) {
 			columnNames[i] = aDataRecordMetadata.getField(i).getName();
 		}
 		
 		Object[][] data = new Object[aFileFormatDataModel.linesFromFile.length ][columnNames.length];
-		int fieldSize = 0;
+		int fieldSize =  0;
 		int fieldStart = 0;
+		int fieldEnd = 0;
 		for( int i = 0 ; i < columnNames.length ; i++) {
 			fieldSize = aDataRecordMetadata.getField(i).getSize();
+			fieldEnd = fieldEnd + fieldSize;
 			for(int j=0 ; j<aFileFormatDataModel.linesFromFile.length ; j++) {
 				if(aFileFormatDataModel.linesFromFile[j] != null ) {
-					data[j][i] = aFileFormatDataModel.linesFromFile[j].substring(fieldStart, fieldSize);
+					data[j][i] = aFileFormatDataModel.linesFromFile[j].substring(fieldStart, fieldEnd);
 				}
 			}
 			fieldStart = fieldStart + fieldSize;
