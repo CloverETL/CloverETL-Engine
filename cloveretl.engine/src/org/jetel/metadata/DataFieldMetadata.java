@@ -38,26 +38,18 @@ public class DataFieldMetadata {
 
 	/**
 	 *  Name of the field
-	 *
-	 * @since
 	 */
 	private String name;
 	/**
 	 *  Delimiter of the field (could be empty if field belongs to fixLength record)
-	 *
-	 * @since
 	 */
 	private String delimiter = null;
 	/**
 	 *  Format of Number, Date, DateTime or empty if not applicable
-	 *
-	 * @since
 	 */
 	private String formatStr;
 	/**
 	 *  Length of the field (in bytes) if the field belongs to fixLength record.
-	 *
-	 * @since
 	 */
 	private short size = 0;
 
@@ -65,8 +57,6 @@ public class DataFieldMetadata {
 
 	/**
 	 *  Fields can assume null value by default.
-	 *
-	 * @since
 	 */
 	private boolean nullable = true;
 
@@ -85,6 +75,8 @@ public class DataFieldMetadata {
 	private String codeStr;
 
 	private Properties fieldProperties;
+	
+	private String localeStr;
 
 	// Attributes
 
@@ -132,6 +124,7 @@ public class DataFieldMetadata {
 		this.delimiter = _delimiter;
 		this.fieldType = _type;
 		this.fieldProperties = null;
+		this.localeStr=null;
 	}
 
 
@@ -150,6 +143,7 @@ public class DataFieldMetadata {
 		this.delimiter = _delimiter;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
+		this.localeStr=null;
 	}
 
 
@@ -168,6 +162,7 @@ public class DataFieldMetadata {
 		this.size = size;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
+		this.localeStr=null;
 	}
 
 
@@ -187,6 +182,7 @@ public class DataFieldMetadata {
 		this.size = size;
 		this.fieldType = _type;
 		this.fieldProperties = null;
+		this.localeStr=null;
 	}
 
 
@@ -226,6 +222,20 @@ public class DataFieldMetadata {
 	}
 
 
+	/**
+	 * @return Returns the localeStr.
+	 */
+	public String getLocaleStr() {
+		return localeStr;
+	}
+	/**
+	 * Sets the localeStr.<br> Formatters/Parsers
+	 * are generated based on this field's value.
+	 * @param localeStr The locale code. (eg. "en", "fr",..).
+	 */
+	public void setLocaleStr(String localeStr) {
+		this.localeStr = localeStr;
+	}
 	/**
 	 *  Sets the DefaultValue defined for this field
 	 *
@@ -368,7 +378,12 @@ public class DataFieldMetadata {
 
 
 	/**
-	 *  Gets the fieldProperties attribute of the DataFieldMetadata object
+	 *  Gets the fieldProperties attribute of the DataFieldMetadata object.<br>
+	 *  These properties are automatically filled-in when parsing XML (.fmt) file
+	 * containing data record metadata. Any attribute not directly recognized by Clover
+	 * is stored within properties object.<br>
+	 * Example:
+	 * <pre>&lt;Field name="Field1" type="numeric" delimiter=";" myOwn1="1" myOwn2="xyz" /&gt;</pre>
 	 *
 	 * @return    The fieldProperties value
 	 */
