@@ -47,7 +47,8 @@ public class HashKey {
 
 
 	/**
-	 *  Description of the Method
+	 *  Calculates hashCode for hashkey - based on
+	 * fields values which compose hashkey
 	 *
 	 * @return    Description of the Return Value
 	 */
@@ -55,7 +56,7 @@ public class HashKey {
 		int hash = 0;
 		int[] keyFields = recKey.getKeyFields();
 		for (int i = 0; i < keyFields.length; i++) {
-			hash += record.getField(keyFields[i]).getValue().hashCode();
+			hash += record.getField(keyFields[i]).hashCode();
 		}
 		return hash;
 	}
@@ -137,6 +138,15 @@ public class HashKey {
 	 */
 	public void setRecordKey(RecordKey key) {
 		this.recKey = key;
+	}
+	
+	public String toString(){
+		StringBuffer strBuf=new StringBuffer();
+		int[] keyFields = recKey.getKeyFields();
+		for (int i = 0; i < keyFields.length; i++) {
+			strBuf.append("§").append(record.getField(keyFields[i]).getValue()).append("§");
+		}
+		return strBuf.toString();
 	}
 }
 

@@ -375,6 +375,10 @@ public class IntegerDataField extends DataField {
 		return FIELD_SIZE_BYTES;
 	}
 
+	public int hashCode(){
+		return value;
+	}
+	
 }
 /*
  *  end class IntegerDataField
