@@ -19,6 +19,8 @@
 
 package org.jetel.interpreter;
 
+import java.util.Arrays;
+
 /**
  * @author dpavlis
  * @since  9.8.2004
@@ -48,15 +50,21 @@ public class Stack {
 	}
 
 	public final void clear(){
+		Arrays.fill(stack,null);
 		top=-1;
 	}
 	
 	public final void push(Object obj){
+		if (top>=stack.length){
+			throw new RuntimeException("Exceeded Interpreter stack depth !!!");
+		}
 		stack[++top]=obj;
 	}
 	
 	public final Object pop(){
-		return stack[top--];
+		Object obj=stack[top];
+		stack[top--]=null;
+		return obj;
 	}
 	
 	public final void set(Object obj){

@@ -95,5 +95,9 @@ public class SimpleNode implements Node {
     for (i = 0; i < k; i++)
        jjtGetChild(i).init(); 
   }
+  
+  public Stack getStack(){
+  	return stack;
+  }
 }
 
