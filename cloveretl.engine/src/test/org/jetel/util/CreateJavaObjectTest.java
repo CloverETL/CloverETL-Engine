@@ -66,11 +66,11 @@ protected void setUp() {
 		}
 	 }
 
-	try {
-		Compile.compileClass(testJavaFile1,classDirectory);
-	} catch (ClassCompilationException e) {
-		e.printStackTrace();
-	}
+//	try {
+//		Compile.compileClass(testJavaFile1,classDirectory);
+//	} catch (ClassCompilationException e) {
+//		e.printStackTrace();
+//	}
 
 
 	tmp = new StringBuffer();
@@ -98,11 +98,11 @@ protected void setUp() {
 		}
 	 }
 
-	try {
-		Compile.compileClass(testJavaFile2,classDirectory);
-	} catch (ClassCompilationException e) {
-		e.printStackTrace();
-	}
+//	try {
+//		//Compile.compileClass(testJavaFile2,classDirectory);
+//	} catch (ClassCompilationException e) {
+//		e.printStackTrace();
+//	}
 
 }
 
