@@ -19,7 +19,11 @@
 */
 package org.jetel.component;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.File;
+
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.SQLDataParser;
@@ -62,12 +66,18 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sqlQuery</b></td><td>query to be sent to database</td>
+ *  <tr><td><b>url</b></td><td>url location of the query</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  </tr>
  *  </table>
  *
+ *  <br>sqlQuery and url are mutually exclusive.  url is the primary and if found the sqlQuery will not be used.<br>
+ *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="select * from employee_z"/&gt;</pre>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" url="c:/temp/test.sql"/&gt;</pre>
  *
  *
  * @author      dpavlis
@@ -186,25 +196,41 @@ public class DBInputTable extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-		DBInputTable aDBInputTable = null;
+	public static Node fromXML(org.w3c.dom.Node nodeXML) 
+        {
+            ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+            DBInputTable aDBInputTable = null;
 
-		try {
-			aDBInputTable = new DBInputTable(xattribs.getString("id"),
-					xattribs.getString("dbConnection"),
-					xattribs.getString("sqlQuery"));
-			if (xattribs.exists("DataPolicy")) {
-				aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-						xattribs.getString("DataPolicy")));
+            try 
+            {
+                String query = null;
+                if (xattribs.exists("url"))
+                {
+                    query = fromFile(xattribs.getString("url"));
+                }
+                else if (xattribs.exists("sqlQuery"))
+                {
+                    query = xattribs.getString("sqlQuery");
+                }
 
-			}
-		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
-			return null;
-		}
+                aDBInputTable = new DBInputTable(xattribs.getString("id"),
+                        xattribs.getString("dbConnection"),
+                        query);
 
-		return aDBInputTable;
+                if (xattribs.exists("DataPolicy")) 
+                {
+                    aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+                                                xattribs.getString("DataPolicy")));
+                }
+            } 
+            catch (Exception ex) 
+            {
+                System.err.println(ex.getMessage());
+                ex.printStackTrace();
+                return null;
+            }
+
+            return aDBInputTable;
 	}
 
 
@@ -225,5 +251,37 @@ public class DBInputTable extends Node {
 		return COMPONENT_TYPE;
 	}
 
-}
+    /**
+     * fromFile will allow the etl process to use a file to store the SQL statement
+     * @param fileURL the string value that represents the location of the file
+     * @return String the SQL Statement pulled from the file
+     * @throws IOException when there are problems working with the file.
+     */
+    public static String fromFile(String fileURL) throws IOException 
+    {
+        String query = null;
 
+        try
+        {
+            File           file           = new File(fileURL);
+            FileReader     fileReader     = new FileReader(file);
+            
+            BufferedReader bufferedReader = new BufferedReader(fileReader);
+            
+            StringBuffer sb = new StringBuffer();
+            String line;
+            while ((line = bufferedReader.readLine()) != null)
+            {
+                sb.append(line);
+                sb.append("\n");
+            }
+            query = sb.toString();
+        }
+        catch(IOException ex)
+        {
+            ex.printStackTrace();
+            throw new RuntimeException("Can't get metadata file " + fileURL + " - " + ex.getClass().getName() + " : " + ex.getMessage());
+        }
+        return query;
+    }
+}
