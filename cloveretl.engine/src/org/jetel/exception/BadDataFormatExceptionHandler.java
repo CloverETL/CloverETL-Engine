@@ -41,9 +41,10 @@ public class BadDataFormatExceptionHandler {
 	 * It implements the behavior of the handles.
 	 */
 	public void handleException(DataRecord record) {
-		if(isThrowException())
+		if(isThrowException()) {
+			throwException = false;
 			throw new BadDataFormatException();
-			
+		}
 	}
 	
 	/**
