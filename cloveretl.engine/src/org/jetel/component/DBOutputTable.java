@@ -20,6 +20,7 @@ package org.jetel.component;
 import java.io.*;
 import java.sql.*;
 import java.util.List;
+import java.util.logging.*;
 import org.jetel.graph.*;
 import org.jetel.database.*;
 import org.jetel.data.DataRecord;
@@ -93,6 +94,7 @@ public class DBOutputTable extends Node {
 	private final static int READ_FROM_PORT = 0;
 	private final static int RECORDS_IN_COMMIT = 100;
 
+	static Logger logger = Logger.getLogger("org.jetel");
 
 	/**
 	 *  Constructor for the DBInputTable object
@@ -208,6 +210,7 @@ public class DBOutputTable extends Node {
 			try {
 				dbConnection.getConnection().setAutoCommit(false);
 			} catch (SQLException ex) {
+				logger.warning("Can't disable AutoCommit mode for DB: "+dbConnection+" > possible slower execution...");
 			}
 
 			/*
