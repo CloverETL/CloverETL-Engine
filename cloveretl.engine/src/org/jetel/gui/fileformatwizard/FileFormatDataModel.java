@@ -32,6 +32,7 @@ implements Cloneable {
 	public String[] linesFromFile = new String[5];
 	public boolean isFileDelimited = false;
 	public boolean oneRecordPerLine = true;
+	public boolean firstLineFieldNames = false;
 
 	public short[] recordSizes;
 

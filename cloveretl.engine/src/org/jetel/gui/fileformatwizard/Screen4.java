@@ -81,9 +81,23 @@ public class Screen4 extends JPanel implements  FormInterface
 	//loadData();
   }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
-	 */
+  /**
+   * Typically, data is retrieved from the frame's UI
+   * objects and tested for validity. If there are any
+   * problems, often <code>badDataAlert</code> is used
+   * to communicate it to the user.
+   * <p>
+   * If all of the data is valid, this should return null
+   * so that the caller can proceed (usually by storing
+   * the result somewhere and destroying the frame.)
+   * Naturally, error message should be returned if there is
+   * any invalid data.
+   * <p>
+   * @return <code>null</code> if the data in the dialog is acceptable,
+   * <code>String message</code> if the data fails to meet validation criteria.
+   *
+   * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
+   */
 	public String validateData() {
 		//parse the document
 		DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
@@ -94,14 +108,21 @@ public class Screen4 extends JPanel implements  FormInterface
 		return null;
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * Normally, if the data is valid (see {@link #validateData validateData},)
+	 * This is then called to store the data before the dialog is
+	 * destroyed.
+	 * <p>
+	 *
 	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
 	 */
 	public void saveData() {
 		aFileFormatDataModel.recordMeta = aDataRecordMetadata;
 	}
 	
-	/* (non-Javadoc)
+	/**
+	 * Used to populate the form with data.
+	 * <p>
 	 * @see org.jetel.gui.component.FormInterface#loadData()
 	 */
 	public void loadData() {
