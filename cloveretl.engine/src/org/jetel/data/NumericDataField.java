@@ -1,0 +1,376 @@
+/*
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+package org.jetel.data;
+import java.util.Locale;
+import java.text.DecimalFormat;
+import java.text.ParsePosition;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharacterCodingException;
+
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.metadata.DataFieldMetadata;
+
+import java.util.logging.Logger;
+
+/**
+ *  A class that represents decimal number field (double precision)
+ *
+ *@author     D.Pavlis
+ *@created    January 26, 2003
+ *@since      March 27, 2002
+ *@see        org.jetel.metadata.DataFieldMetadata
+ */
+public class NumericDataField extends DataField {
+
+	private double value;
+	private DecimalFormat numberFormat;
+	private ParsePosition parsePosition;
+
+	// Attributes
+	/**
+	 *  An attribute that represents ...
+	 *
+	 *@since
+	 */
+
+	static Logger logger = Logger.getLogger("org.jetel.data");
+
+	private static Locale DEFAULT_LOCALE = Locale.US;
+
+
+	/**
+	 *  Constructor for the NumericDataField object
+	 *
+	 *@param  _metadata  Metadata describing field
+	 *@since             March 28, 2002
+	 */
+	public NumericDataField(DataFieldMetadata _metadata) {
+		super(_metadata);
+		String formatString;
+		formatString = _metadata.getFormatStr();
+		if ((formatString != null) && (formatString.length() != 0)) {
+			numberFormat = new DecimalFormat(formatString);
+			//numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(DEFAULT_LOCALE));
+		} else {
+			numberFormat = null;
+		}
+		parsePosition = new ParsePosition(0);
+		setNull(true);
+	}
+
+
+	/**
+	 *  Constructor for the NumericDataField object
+	 *
+	 *@param  _metadata  Metadata describing field
+	 *@param  value      Value to assign to field
+	 *@since             March 28, 2002
+	 */
+	public NumericDataField(DataFieldMetadata _metadata, double value) {
+		super(_metadata);
+		this.value = value;
+		String formatString;
+		formatString = _metadata.getFormatStr();
+		if ((formatString != null) && (formatString.length() != 0)) {
+			numberFormat = new DecimalFormat(formatString);
+		} else {
+			numberFormat = null;
+		}
+		parsePosition = new ParsePosition(0);
+	}
+
+
+	/**
+	 *  Sets the value of the field
+	 *
+	 *@param  _value  The new Value value
+	 *@since          March 28, 2002
+	 */
+	public void setValue(Object _value) {
+		if (_value == null) {
+			setNull(true);
+			return;
+		}
+		if (_value instanceof Double) {
+			value = ((Double) _value).doubleValue();
+		} else {
+			throw new BadDataFormatException("not Double");
+		}
+	}
+
+
+	/**
+	 *  Sets the value of the field
+	 *
+	 *@param  value  The new Double value
+	 *@since         August 19, 2002
+	 */
+	public void setValue(double value) {
+		this.value = value;
+	}
+
+
+	/**
+	 *  Sets the value of the field
+	 *
+	 *@param  value  The new Int value
+	 *@since         August 19, 2002
+	 */
+	public void setValue(int value) {
+		this.value = value;
+	}
+
+
+	/**
+	 *  Sets the Null value indicator
+	 *
+	 *@param  isNull  The new Null value
+	 *@since          October 29, 2002
+	 */
+	public void setNull(boolean isNull) {
+		super.setNull(isNull);
+		if (isNull) {
+			value = Double.NaN;
+		}
+	}
+
+
+	// Associations
+
+	// Operations
+
+	/**
+	 *  Gets the Metadata attribute of the NumericDataField object
+	 *
+	 *@return    The Metadata value
+	 *@since     October 31, 2002
+	 */
+	public DataFieldMetadata getMetadata() {
+		return super.getMetadata();
+	}
+
+
+	/**
+	 *  Gets the Field Type
+	 *
+	 *@return    The Type value
+	 *@since     March 28, 2002
+	 */
+	public char getType() {
+		return DataFieldMetadata.NUMERIC_FIELD;
+	}
+
+
+	/**
+	 *  Gets the decimal value represented by this object (as Decimal object)
+	 *
+	 *@return    The Value value
+	 *@since     March 28, 2002
+	 */
+	public Object getValue() {
+		return new Double(value);
+	}
+
+
+	/**
+	 *  Gets the decimal value represented by this object as double primitive
+	 *
+	 *@return    The Double value
+	 *@since     August 19, 2002
+	 */
+	public double getDouble() {
+		return value;
+	}
+
+
+	/**
+	 *  Gets the numeric value represented by this object casted to int primitive
+	 *
+	 *@return    The Int value
+	 *@since     August 19, 2002
+	 */
+	public int getInt() {
+		return (int) value;
+	}
+
+
+	/**
+	 *  Gets the Null value indicator
+	 *
+	 *@return    The Null value
+	 *@since     October 29, 2002
+	 */
+	public boolean isNull() {
+		return super.isNull();
+	}
+
+
+	/**
+	 *  Formats internal decimal value into string representation
+	 *
+	 *@return    Description of the Returned Value
+	 *@since     March 28, 2002
+	 */
+	public String toString() {
+		if (numberFormat != null) {
+			return numberFormat.format(value);
+		} else {
+			return Double.toString(value);
+		}
+	}
+
+
+	/**
+	 *  Parses decimal value from its string representation
+	 *
+	 *@param  valueStr  Description of Parameter
+	 *@since            March 28, 2002
+	 */
+	public void fromString(String valueStr) {
+		if ((valueStr != null) && (valueStr.trim().length() > 0)) {
+			try {
+				if (numberFormat != null) {
+					parsePosition.setIndex(0);
+					value = numberFormat.parse(valueStr, parsePosition).doubleValue();
+				} else {
+					value = Double.parseDouble(valueStr);
+				}
+			} catch (Exception ex) {
+				logger.info("Error when parsing string: " + valueStr);
+				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
+				throw new BadDataFormatException("Parsing string: " + valueStr);
+			}
+		} else {
+			value = Double.NaN;
+			super.setNull(true);
+			// NULL value assigned (hmm, not really null)
+		}
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  dataBuffer                    Description of Parameter
+	 *@param  decoder                       Description of Parameter
+	 *@exception  CharacterCodingException  Description of Exception
+	 *@since                                October 31, 2002
+	 */
+	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
+		fromString(decoder.decode(dataBuffer).toString());
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  dataBuffer                    Description of Parameter
+	 *@param  encoder                       Description of Parameter
+	 *@exception  CharacterCodingException  Description of Exception
+	 *@since                                October 31, 2002
+	 */
+	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
+		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+	}
+
+
+	/**
+	 *  Performs serialization of the internal value into ByteBuffer (used when
+	 *  moving data records between components).
+	 *
+	 *@param  buffer  Description of Parameter
+	 *@since          April 23, 2002
+	 */
+	public void serialize(ByteBuffer buffer) {
+		buffer.putDouble(value);
+	}
+
+
+	/**
+	 *  Performs deserialization of data
+	 *
+	 *@param  buffer  Description of Parameter
+	 *@since          April 23, 2002
+	 */
+	public void deserialize(ByteBuffer buffer) {
+		value = buffer.getDouble();
+		setNull(Double.isNaN(value));
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  obj  Description of Parameter
+	 *@return      Description of the Returned Value
+	 *@since       April 23, 2002
+	 */
+	public boolean equals(Object obj) {
+		Double numValue = new Double(this.value);
+
+		if (numValue.equals((((NumericDataField) obj).getValue()))) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+
+	/**
+	 *  Compares this object with the specified object for order.
+	 *
+	 *@param  obj  Description of the Parameter
+	 *@return      Description of the Return Value
+	 */
+	public int compareTo(Object obj) {
+		double compInt = ((NumericDataField) obj).getDouble();
+
+		if (value > compInt) {
+			return 1;
+		} else if (value < compInt) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
+
+
+	/**
+	 *  Compares this object with the specified object for order.
+	 *
+	 *@param  compVal  Description of the Parameter
+	 *@return          Description of the Return Value
+	 */
+	public int compareTo(double compVal) {
+		if (value > compVal) {
+			return 1;
+		} else if (value < compVal) {
+			return -1;
+		} else {
+			return 0;
+		}
+	}
+
+}
+/*
+ *  end class NumericDataField
+ */
+
