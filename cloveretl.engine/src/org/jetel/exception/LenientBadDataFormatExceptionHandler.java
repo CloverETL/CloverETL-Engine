@@ -19,6 +19,9 @@
 
 package org.jetel.exception;
 
+import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataRecordMetadata;
+
 /**
  * @author maciorowski
  *
@@ -26,4 +29,32 @@ package org.jetel.exception;
 public class LenientBadDataFormatExceptionHandler
 	extends BadDataFormatExceptionHandler {
 
+		/**
+		 * It implements the behavior of the handles.
+		 */
+		public void handleException() {
+		}
+
+		/**
+		 * Since BadDataFormatExceptionHandler is handling 'strict' data policy,
+		 * there is no need to implement this method as any BadDataFormatException
+		 * aborts further procesing.
+		 */
+		public void reset() {}
+	
+		/**
+		 * @param record
+		 * @param fieldCounter
+		 * @param string
+		 */
+		public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+			DataRecordMetadata metadata = null;
+			try {
+				metadata = record.getMetadata();
+				record.getField(fieldCounter).fromString( metadata.getField(fieldCounter).getDefaultValue() );
+			} catch (Exception ex) {
+				// here, the only reason to fail is bad DefaultValue
+				throw new RuntimeException(metadata.getField(fieldCounter).getName() + " has incorrect default value("+metadata.getField(fieldCounter).getDefaultValue()+")!  You are using lenient data policy which requires default values.");
+			}
+		}
 }

@@ -208,7 +208,7 @@ public class IntegerDataField extends DataField {
 	 *@since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if ((valueStr != null) && (valueStr.trim().length() > 0)) {
+		if ( valueStr != null ) {
 			try {
 				value = Integer.parseInt(valueStr);
 			} catch (Exception ex) {

@@ -3,6 +3,5 @@
 	<Field name="Sales" type="numeric" delimiter=";" nullable="no"/> 
 	<Field name="PLANT_NAME" type="string" delimiter=";" nullable="no"/> 
 	<Field name="ID" type="integer" delimiter=";"" nullable="no"/> 
-	<Field name="EXP_DT" type="string" delimiter="\n" nullable="no" /> 
+	<Field name="EXP_DT" type="date" delimiter="\n" format="MM/dd/yy" nullable="no"/> 
 </Record>
-</xml>

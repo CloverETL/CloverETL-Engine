@@ -24,32 +24,40 @@ import org.jetel.data.DataRecord;
 /**
  * This is a base class for handling exceptions caused by misformatted or 
  * incorrect data.  It implements the default behavior associated with 
- * DataPolicy parameter set to 'Strict'.
+ * DataPolicy parameter set to 'Strict'.  It aborts processing when 
+ * BadDataFormatException is thrown.
  * 
  * @author maciorowski
  *
  */
 public class BadDataFormatExceptionHandler {
-
-public void handleException() {
-	throw new BadDataFormatException();
-}
-
-/**
- * 
- */
-public void reset() {
-	// TODO Auto-generated method stub
+	public final static String STRICT = "strict";
+	public final static String CONTROLLED = "controlled";
+	public final static String LENIENT = "lenient";
 	
-}
-
-/**
- * @param record
- * @param fieldCounter
- * @param string
- */
-public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
-	// TODO Auto-generated method stub
+	private boolean throwException = false;
 	
-}
+	/**
+	 * It implements the behavior of the handles.
+	 */
+	public void handleException() {
+		if(throwException)
+			throw new BadDataFormatException();
+	}
+
+	/**
+	 * Since BadDataFormatExceptionHandler is handling 'strict' data policy,
+	 * there is no need to implement this method as any BadDataFormatException
+	 * aborts further procesing.
+	 */
+	public void reset() {}
+	
+	/**
+	 * @param record
+	 * @param fieldCounter
+	 * @param string
+	 */
+	public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+		throwException = true;
+	}
 }
