@@ -36,7 +36,13 @@ import org.jetel.metadata.DataRecordMetadata;
 public class DataRecordTransform implements RecordTransform {
 
 	private String transformName;
-	private String errorMessage;
+	/**
+	 * Use <code>errorMessage</code> to report details of problems
+	 * which occured within transform method.<br>
+	 * Ideally, within catch() section assign meaningful message to
+	 * errorMessage field.
+	 */
+	protected String errorMessage;
 
 
 	/**
