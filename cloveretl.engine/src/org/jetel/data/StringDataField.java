@@ -87,7 +87,7 @@ public class StringDataField extends DataField {
 	 *@param  value  The new value value
 	 *@since         April 23, 2002
 	 */
-	public void setValue(Object value) {
+	public void setValue(Object value) throws BadDataFormatException {
 		this.value.setLength(0);
 		if (value == null || ((value instanceof String) && value.equals(""))) {
 			if(this.metadata.isNullable()) {

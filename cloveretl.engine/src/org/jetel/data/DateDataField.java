@@ -103,7 +103,7 @@ public class DateDataField extends DataField {
 	 *@param  _value  The new Value value
 	 *@since          April 23, 2002
 	 */
-	public void setValue(Object _value) {
+	public void setValue(Object _value) throws BadDataFormatException {
 		if(_value==null) {
 			if(this.metadata.isNullable()) {
 				value = null;
