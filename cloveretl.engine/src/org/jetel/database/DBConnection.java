@@ -44,7 +44,14 @@ import org.w3c.dom.NamedNodeMap;
  *  <tr><td><b>password</b><br><i>optional</i></td><td>password to use when connecting to DB</td></tr>
  *  <tr><td><b>driverLibrary</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *  to search for class containing JDBC driver specified in <tt>dbDriver<tt> parameter.</td></tr>
- *  </table>
+ * <tr><td><b>transactionIsolation</b><br><i>optional</i></td><td>Allows specifying certain transaction isolation level. 
+ * Following are the valid options:<br><ul>
+ * <li>READ_UNCOMMITTED</li>
+ * <li>READ_COMMITTED</li>
+ * <li>REPEATABLE_READ</li>
+ * <li>SERIALIZABLE</li>
+ * </ul><i>Note: If not specified, then the driver's default is used.</i></td></tr> 
+ * </table>
  *  <h4>Example:</h4>
  *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
  *
@@ -62,7 +69,7 @@ public class DBConnection {
 	Properties config;
 
 	private final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
-
+	public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
 
 	/**
 	 *  Constructor for the DBConnection object
@@ -102,7 +109,20 @@ public class DBConnection {
 	}
 
 
-	/**  Description of the Method */
+	
+	/**
+	 * Method which connects to database and if successful, sets various
+	 * connection parameters. If as a property "transactionIsolation" is defined, then
+	 * following options are allowed:<br>
+	 * <ul>
+	 * <li>READ_UNCOMMITTED</li>
+	 * <li>READ_COMMITTED</li>
+	 * <li>REPEATABLE_READ</li>
+	 * <li>SERIALIZABLE</li>
+	 * </ul>
+	 * 
+	 * @see java.sql.Connection#setTransactionIsolation(int)
+	 */
 	public void connect() {
 		try {
 			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
@@ -136,6 +156,28 @@ public class DBConnection {
 		}
 		if (dbConnection == null) {
 			throw new RuntimeException("Not suitable driver for specified DB URL : " + dbDriver + " ; " + dbURL);
+		}
+		// try to set Transaction isolation level, it it was specified
+		if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)){
+			int trLevel;
+			String isolationLevel=config.getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
+			if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")){
+				trLevel=Connection.TRANSACTION_READ_UNCOMMITTED;
+			}else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")){
+				trLevel=Connection.TRANSACTION_READ_COMMITTED;
+			}else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")){
+					trLevel=Connection.TRANSACTION_REPEATABLE_READ;
+			}else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")){
+						trLevel=Connection.TRANSACTION_SERIALIZABLE;
+			}else {
+							trLevel=Connection.TRANSACTION_NONE;
+						}
+			try{
+				dbConnection.setTransactionIsolation(trLevel);
+			}catch(SQLException ex){
+				// we do nothing, if anything goes wrong, we just
+				// leave whatever was the default
+			}
 		}
 	}
 
