@@ -60,8 +60,9 @@ public class AnalyzeDB {
 
 	private final static int BUFFER_SIZE = 255;
 	private final static String VERSION = "1.0";
-	private final static String LAST_UPDATED = "2002/09/25 at 16:36";  
+	private final static String LAST_UPDATED = "2003/10/17 at 16:36";  
 	private final static String DEFAULT_DELIMITER = ",";
+	private final static String DEFAULT_XML_ENCODING="UTF-8";
 
 	private static Driver driver;
 	private static String delimiter;
@@ -179,9 +180,15 @@ public class AnalyzeDB {
 	private static void doAnalyze(Properties config) throws IOException, SQLException {
 		PrintStream print;
 		Connection connection;
+		boolean utf8Encoding=false;
 		// initialization of PrintStream
 		if (filename != null) {
-			print = new PrintStream(new FileOutputStream(filename));
+			try{
+				print = new PrintStream(new FileOutputStream(filename),true,DEFAULT_XML_ENCODING);
+				utf8Encoding=true;
+			}catch(UnsupportedEncodingException ex){
+				print = new PrintStream(new FileOutputStream(filename));
+			}
 		} else {
 			print = System.out;
 		}
@@ -208,8 +215,10 @@ public class AnalyzeDB {
 		ResultSet resultSet = connection.createStatement().executeQuery(query);
 		ResultSetMetaData metadata = resultSet.getMetaData();
 
-		// here we print XML description of data
-		print.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		// here we print XML description of data 
+		print.print("<?xml version=\"1.0\"");
+		if (utf8Encoding) print.println(" encoding=\""+DEFAULT_XML_ENCODING+"\" ?>");
+		else print.println("?>");
 		print.println("<!-- Automatically generated from database " + connection.getCatalog() + " -->");
 		print.println("<Record name=\"" + metadata.getTableName(1) + "\" type=\"delimited\">");
 
