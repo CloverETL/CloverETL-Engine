@@ -69,6 +69,12 @@ import org.xml.sax.helpers.*;
  *   &lt;/Record&gt;
  *  </pre>
  *
+ *  If you specify your own attributes, they will be accessible
+ *  through getFieldProperties() method of DataFieldMetadata class.<br> 
+ *  Example:
+ *  <pre>
+ *  &lt;Field name="Field1" type="numeric" delimiter=";" mySpec1="1" mySpec2="xyz"/&gt;
+ *  </pre>
  * @author     D.Pavlis
  * @since    May 6, 2002
  * @see        javax.xml.parsers
@@ -223,6 +229,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getDefaultValue()!=null){
 					out.print("default=\""+field.getDefaultValue()+"\" ");
 				}
+				if (field.getLocaleStr()!=null){
+					out.print("locale=\""+field.getLocaleStr()+"\" ");
+				}
 				out.print("nullable=\""+(new Boolean(field.isNullable())).toString()+"\" ");
 				
 				// output field properties - if anything defined
@@ -296,6 +305,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String size=null;
 			String delimiter=null;
 			String nullable=null;
+			String localeStr=null;
 			char fieldType=' ';
 			Properties fieldProperties=null;
 			
@@ -316,6 +326,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					defaultValue = itemValue;
 				}else if(itemName.equalsIgnoreCase("nullable")){
 					nullable = itemValue;
+				}else if(itemName.equalsIgnoreCase("locale")){
+					localeStr = itemValue;
 				}else{
 					if(fieldProperties==null){
 						fieldProperties=new Properties();
@@ -355,7 +367,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			if (nullable != null) {
 				field.setNullable(nullable.matches("^[tTyY].*"));
 			}
-
+			// set localeStr if defined
+			if (localeStr!=null){
+				field.setLocaleStr(localeStr);
+			}
+				
 			NodeList fieldCodeElements = fieldElements.item(i).getChildNodes();
 			if( fieldCodeElements != null ) {
 				for(int l = 0; l < fieldCodeElements.getLength() ; l++) {
