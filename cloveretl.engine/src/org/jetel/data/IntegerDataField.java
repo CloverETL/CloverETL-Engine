@@ -56,7 +56,6 @@ public class IntegerDataField extends DataField {
 	 */
 	public IntegerDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
-		setNull(true);
 	}
 
 
@@ -81,14 +80,23 @@ public class IntegerDataField extends DataField {
 	 */
 	public void setValue(Object _value) {
 		if (_value == null) {
-			setNull(true);
+			if(this.metadata.isNullable()) {
+				value = Integer.MIN_VALUE;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			}
 			return;
 		}
 		if (_value instanceof Integer) {
 			value = ((Integer) _value).intValue();
 			setNull(false);
 		} else {
-			throw new BadDataFormatException("not Integer");
+			if(this.metadata.isNullable()) {
+				value = Integer.MIN_VALUE;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
 		}
 	}
 
@@ -164,6 +172,9 @@ public class IntegerDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public Object getValue() {
+		if( Integer.MIN_VALUE==value ) {
+			return null;
+		}
 		return new Integer(value);
 	}
 
@@ -197,6 +208,9 @@ public class IntegerDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public String toString() {
+		if( Integer.MIN_VALUE==value ) {
+			return "";
+		}
 		return Integer.toString(value);
 	}
 
@@ -208,17 +222,20 @@ public class IntegerDataField extends DataField {
 	 *@since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if ( valueStr != null ) {
+		if(valueStr == null || valueStr.equals("")) {
+			if(this.metadata.isNullable()) {
+				value = Integer.MIN_VALUE;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			return;
+		} else {
 			try {
 				value = Integer.parseInt(valueStr);
 			} catch (Exception ex) {
 //				logger.info("Error when parsing string: " + valueStr);
 				throw new BadDataFormatException("Parsing string: " + valueStr);
 			}
-		} else {
-			value = Integer.MIN_VALUE;
-			super.setNull(true);
-			// NULL value assigned (hmm, not really null)
 		}
 	}
 
@@ -287,11 +304,7 @@ public class IntegerDataField extends DataField {
 	public boolean equals(Object obj) {
 		Integer numValue = new Integer(this.value);
 
-		if (numValue.equals((((IntegerDataField) obj).getValue()))) {
-			return true;
-		} else {
-			return false;
-		}
+		return (numValue.equals((((IntegerDataField) obj).getValue())));
 	}
 
 

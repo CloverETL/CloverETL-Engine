@@ -232,7 +232,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		assertEquals(1,recCount);  //may need to be revised
+		assertEquals(2,recCount);  //may need to be revised
 		//depending how we implement nullable property
 	}
 
@@ -256,11 +256,14 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			while((record=aParser2.getNext(record))!=null){
 				if(recCount==0) {
 					assertEquals(record.getField(0).toString(),"0.0");
-					assertEquals(record.getField(2).toString(),"5");
+					assertEquals(record.getField(2).toString(),"");
+					assertEquals(null,record.getField(2).getValue());
 				} else if(recCount==1) {
-					assertEquals(record.getField(1).toString(),"No Name");
+					assertEquals(record.getField(1).toString(),"");
+					assertEquals(null,record.getField(1).getValue());
 				} else if(recCount==2) {
-					assertEquals(record.getField(3).toString(),"01/01/00");
+					assertEquals(record.getField(3).toString(),"");
+					assertEquals(null,record.getField(3).getValue());
 				}
 				recCount++;
 			}
