@@ -22,6 +22,7 @@ package test.org.jetel.data;
 import java.nio.ByteBuffer;
 
 import org.jetel.data.StringDataField;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -85,6 +86,73 @@ public void test_1_StringDataField() {
 		assertFalse(aStringDataField3.isNull());
 	}
 
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.setValue(Object _value)
+	 *
+	 */
+	public void test_setValue() {
+		aStringDataField1.setValue("abcd");
+		assertEquals("setValue(Object value) failed", "abcd",aStringDataField1.getValue());
+		assertFalse(aStringDataField1.isNull());
+
+		try {
+			aStringDataField2.setValue(null);
+			fail("aDateDataField2 is not nullable - BadDataFormatException should be thrown");
+		} catch(BadDataFormatException e){}
+
+		try {
+			aStringDataField1.setValue(null);
+			assertTrue(aStringDataField1.isNull());
+		} catch(BadDataFormatException e){
+			fail("aDateDataField1 is nullable - BadDataFormatException should not be thrown");
+		}
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.getValue()
+	 *
+	 */
+	public void test_getValue() {
+		aStringDataField1.setValue("abcd");
+		assertEquals("getValue() failed",aStringDataField1.getValue(), "abcd");
+
+		aStringDataField1.setValue(null);
+		assertEquals(null, aStringDataField1.getValue());
+
+	}
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.toString()
+	 *
+	 */
+	public void test_toString() {
+		aStringDataField1.setValue("04/10/2003");
+		assertEquals("toString() failed", "04/10/2003",aStringDataField1.toString());
+
+		aStringDataField1.setValue(null);
+		assertEquals("", aStringDataField1.toString());
+	}
+
+
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.fromString(String valueStr)
+	 *
+	 */
+	public void test_fromString() {
+		aStringDataField1.fromString("07/10/1996");
+		assertEquals(aStringDataField1.toString(),"07/10/1996");
+	
+		aStringDataField1.fromString(null);
+		assertTrue(aStringDataField1.isNull());
+	
+		aStringDataField1.fromString("");
+		assertTrue(aStringDataField1.isNull());
+		
+		try {
+			aStringDataField2.fromString("");
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e){	}
+	
+	}
 
 
 /**

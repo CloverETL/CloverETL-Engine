@@ -91,7 +91,6 @@ public class StringDataField extends DataField {
 		this.value.setLength(0);
 		if (value == null || ((value instanceof String) && value.equals(""))) {
 			if(this.metadata.isNullable()) {
-				value = null;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
@@ -119,7 +118,12 @@ public class StringDataField extends DataField {
 			}
 			setNull(false);
 		} else {
-			setNull(true);
+			if(this.metadata.isNullable()) {
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			}
+			return;
 		}
 	}
 
@@ -156,7 +160,7 @@ public class StringDataField extends DataField {
 	 *@since     April 23, 2002
 	 */
 	public Object getValue() {
-		return value;
+		return ( value.length() == 0 ? null:value.toString() );
 	}
 
 
@@ -215,12 +219,6 @@ public class StringDataField extends DataField {
 	 *@since         April 23, 2002
 	 */
 	public void fromString(String value) {
-		/*
-		 *  if(this.value.capacity()<value.length()){
-		 *  this.value.ensureCapacity(value.length());
-		 *  }
-		 *  this.value.replace(0,this.value.length(),value);
-		 */
 		setValue(value);
 	}
 
@@ -278,17 +276,18 @@ public class StringDataField extends DataField {
 	 *@since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		StringBuffer strObj=(StringBuffer)((StringDataField) obj).getValue();
-		
-		if (value.length()!=strObj.length()) {
-			return false;
-		}
-		for(int i=0;i<value.length();i++){
-			if (value.charAt(i)!=strObj.charAt(i)){
-				return false;
-			}
-		}
-		return true;
+		return value.toString().equals(((StringDataField) obj).getValue());
+//		StringBuffer strObj=(StringBuffer)((StringDataField) obj).getValue();
+//		
+//		if (value.length()!=strObj.length()) {
+//			return false;
+//		}
+//		for(int i=0;i<value.length();i++){
+//			if (value.charAt(i)!=strObj.charAt(i)){
+//				return false;
+//			}
+//		}
+//		return true;
 	}
 
 
@@ -299,25 +298,26 @@ public class StringDataField extends DataField {
 	 *@return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
-		int valueLenght = value.length();
-		int strObjLenght = strObj.length();
-		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
-		for (int i = 0; i < compLength; i++) {
-			if (value.charAt(i) > strObj.charAt(i)) {
-				return 1;
-			} else if (value.charAt(i) < strObj.charAt(i)) {
-				return -1;
-			}
-		}
-		// strings seem to be the same (so far), decide according to the length
-		if (valueLenght == strObjLenght) {
-			return 0;
-		} else if (valueLenght > strObjLenght) {
-			return 1;
-		} else {
-			return -1;
-		}
+		return value.toString().compareTo(((StringDataField) obj).getValue());
+//		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
+//		int valueLenght = value.length();
+//		int strObjLenght = strObj.length();
+//		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
+//		for (int i = 0; i < compLength; i++) {
+//			if (value.charAt(i) > strObj.charAt(i)) {
+//				return 1;
+//			} else if (value.charAt(i) < strObj.charAt(i)) {
+//				return -1;
+//			}
+//		}
+//		// strings seem to be the same (so far), decide according to the length
+//		if (valueLenght == strObjLenght) {
+//			return 0;
+//		} else if (valueLenght > strObjLenght) {
+//			return 1;
+//		} else {
+//			return -1;
+//		}
 	}
 }
 /*
