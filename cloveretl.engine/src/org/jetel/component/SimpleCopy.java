@@ -26,6 +26,7 @@ import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Simple Copy Component</h3>
@@ -161,15 +162,14 @@ public class SimpleCopy extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			if (id!=null){
-				return new SimpleCopy(id);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new SimpleCopy(xattribs.getString("id"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 
 }

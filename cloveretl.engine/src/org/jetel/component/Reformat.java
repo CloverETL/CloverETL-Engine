@@ -24,6 +24,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Reformat Component</h3>
@@ -197,16 +198,15 @@ public class Reformat extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String className=attribs.getNamedItem("transformClass").getNodeValue();
-			if (id!=null){
-				return new Reformat(id,className);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new Reformat(xattribs.getString("id"),
+				xattribs.getString("transformClass"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 	
 }
