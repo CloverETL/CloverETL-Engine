@@ -96,17 +96,6 @@ public class DelimitedDataWriterNIO extends Node {
 
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
-	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
 	 * @since    April 4, 2002
@@ -177,7 +166,7 @@ public class DelimitedDataWriterNIO extends Node {
 		return null;
 	}
 
-
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -226,6 +215,10 @@ public class DelimitedDataWriterNIO extends Node {
 	 */
 	private void setOneRecordPerLinePolicy(boolean b) {
 		formatter.setOneRecordPerLinePolicy(b);
+	}
+	
+	public boolean checkConfig(){
+		return true;
 	}
 	
 }

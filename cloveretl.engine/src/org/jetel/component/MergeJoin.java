@@ -43,7 +43,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *      Component:
  *    </th>
  *    <tr><td>
- *        <h4><i>Name:</i> </h4></td><td>SortedJoin</td>
+ *        <h4><i>Name:</i> </h4></td><td>MergeJoin</td>
  *    </tr>
  *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
  *    </tr>
@@ -76,7 +76,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>
  *  <table border="1">
  *    <th>XML attributes:</th>
- *    <tr><td><b>type</b></td><td>"SORTED_JOIN"</td></tr>
+ *    <tr><td><b>type</b></td><td>"MERGE_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
@@ -85,16 +85,15 @@ import org.jetel.util.ComponentXMLAttributes;
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="SORTED_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *
- *@author     dpavlis
- *@created    4. June 2003
- *@since      April 4, 2002
+ * @author      dpavlis
+ * @since       April 4, 2002
+ * @revision    $Revision$
+ * @created     4. June 2003
  */
-public class SortedJoin extends Node {
+public class MergeJoin extends Node {
 
-	/**
-	 *  Description of the Field
-	 */
-	public final static String COMPONENT_TYPE = "SORTED_JOIN";
+	/**  Description of the Field */
+	public final static String COMPONENT_TYPE = "MERGE_JOIN";
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int DRIVER_ON_PORT = 0;
@@ -121,16 +120,17 @@ public class SortedJoin extends Node {
 	private FileRecordBuffer recordBuffer;
 
 	// for passing data records into transform function
-	private final static DataRecord[] inRecords=new DataRecord[2];
+	private final static DataRecord[] inRecords = new DataRecord[2];
+
 
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
-	 *@param  id              id of component
-	 *@param  joinKeys        field names composing key
-	 *@param  transformClass  class (name) to be used for transforming data
+	 * @param  id              id of component
+	 * @param  joinKeys        field names composing key
+	 * @param  transformClass  class (name) to be used for transforming data
 	 */
-	public SortedJoin(String id, String[] joinKeys, String transformClass) {
+	public MergeJoin(String id, String[] joinKeys, String transformClass) {
 		super(id);
 		this.joinKeys = joinKeys;
 		this.transformClassName = transformClass;
@@ -142,12 +142,12 @@ public class SortedJoin extends Node {
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
-	 *@param  id              id of component
-	 *@param  joinKeys        field names composing key
-	 *@param  transformClass  class (name) to be used for transforming data
-	 *@param  leftOuterJoin   indicates, whether to perform left outer join
+	 * @param  id              id of component
+	 * @param  joinKeys        field names composing key
+	 * @param  transformClass  class (name) to be used for transforming data
+	 * @param  leftOuterJoin   indicates, whether to perform left outer join
 	 */
-	public SortedJoin(String id, String[] joinKeys, RecordTransform transformClass, boolean leftOuterJoin) {
+	public MergeJoin(String id, String[] joinKeys, RecordTransform transformClass, boolean leftOuterJoin) {
 		super(id);
 		this.joinKeys = joinKeys;
 		this.transformation = transformClass;
@@ -156,20 +156,9 @@ public class SortedJoin extends Node {
 
 
 	/**
-	 *  Gets the Type attribute of the SimpleCopy object
-	 *
-	 *@return    The Type value
-	 *@since     April 4, 2002
-	 */
-	public String getType() {
-		return COMPONENT_TYPE;
-	}
-
-
-	/**
 	 *  Sets on/off leftOuterJoin indicator
 	 *
-	 *@param  outerJoin  The new leftOuterJoin value
+	 * @param  outerJoin  The new leftOuterJoin value
 	 */
 	public void setLeftOuterJoin(boolean outerJoin) {
 		leftOuterJoin = outerJoin;
@@ -181,7 +170,7 @@ public class SortedJoin extends Node {
 	 *  Can be used if slave record has different names
 	 *  for fields composing the key
 	 *
-	 *@param  slaveKeys  The new slaveOverrideKey value
+	 * @param  slaveKeys  The new slaveOverrideKey value
 	 */
 	public void setSlaveOverrideKey(String[] slaveKeys) {
 		this.slaveOverrideKeys = slaveKeys;
@@ -191,13 +180,13 @@ public class SortedJoin extends Node {
 	/**
 	 *  Populates record buffer with all slave records having the same key
 	 *
-	 *@param  port                      Description of the Parameter
-	 *@param  nextRecord                Description of the Parameter
-	 *@param  key                       Description of the Parameter
-	 *@param  currRecord                Description of the Parameter
-	 *@exception  IOException           Description of the Exception
-	 *@exception  InterruptedException  Description of the Exception
-	 *@exception  JetelException        Description of the Exception
+	 * @param  port                      Description of the Parameter
+	 * @param  nextRecord                Description of the Parameter
+	 * @param  key                       Description of the Parameter
+	 * @param  currRecord                Description of the Parameter
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 * @exception  JetelException        Description of the Exception
 	 */
 	private void fillRecordBuffer(InputPort port, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
 			 throws IOException, InterruptedException, JetelException {
@@ -232,13 +221,13 @@ public class SortedJoin extends Node {
 	/**
 	 *  Finds corresponding slave record for current driver (if there is some)
 	 *
-	 *@param  driver                    Description of the Parameter
-	 *@param  slave                     Description of the Parameter
-	 *@param  slavePort                 Description of the Parameter
-	 *@param  key                       Description of the Parameter
-	 *@return                           The correspondingRecord value
-	 *@exception  IOException           Description of the Exception
-	 *@exception  InterruptedException  Description of the Exception
+	 * @param  driver                    Description of the Parameter
+	 * @param  slave                     Description of the Parameter
+	 * @param  slavePort                 Description of the Parameter
+	 * @param  key                       Description of the Parameter
+	 * @return                           The correspondingRecord value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
 	 */
 	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey key[])
 			 throws IOException, InterruptedException {
@@ -263,20 +252,20 @@ public class SortedJoin extends Node {
 	 *  Outputs all combinations of current driver record and all slaves with the
 	 *  same key
 	 *
-	 *@param  driver                    Description of the Parameter
-	 *@param  slave                     Description of the Parameter
-	 *@param  out                       Description of the Parameter
-	 *@param  port                      Description of the Parameter
-	 *@return                           Description of the Return Value
-	 *@exception  IOException           Description of the Exception
-	 *@exception  InterruptedException  Description of the Exception
+	 * @param  driver                    Description of the Parameter
+	 * @param  slave                     Description of the Parameter
+	 * @param  out                       Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
 	 */
 	private boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
 			 throws IOException, InterruptedException {
 		recordBuffer.rewind();
 		dataBuffer.clear();
-		inRecords[0]=driver;
-		inRecords[1]=slave;
+		inRecords[0] = driver;
+		inRecords[1] = slave;
 
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
@@ -297,17 +286,17 @@ public class SortedJoin extends Node {
 	 *  If there is no corresponding slave record and is defined outer join, then
 	 *  output driver only.
 	 *
-	 *@param  driver                    Description of the Parameter
-	 *@param  out                       Description of the Parameter
-	 *@param  port                      Description of the Parameter
-	 *@return                           Description of the Return Value
-	 *@exception  IOException           Description of the Exception
-	 *@exception  InterruptedException  Description of the Exception
+	 * @param  driver                    Description of the Parameter
+	 * @param  out                       Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
 	 */
 	private boolean flushDriverOnly(DataRecord driver, DataRecord out, OutputPort port)
 			 throws IOException, InterruptedException {
-		inRecords[0]=driver;
-		inRecords[1]=null;
+		inRecords[0] = driver;
+		inRecords[1] = null;
 
 		if (!transformation.transform(inRecords, out)) {
 			resultMsg = transformation.getMessage();
@@ -321,9 +310,9 @@ public class SortedJoin extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  metadata  Description of the Parameter
-	 *@param  count     Description of the Parameter
-	 *@return           Description of the Return Value
+	 * @param  metadata  Description of the Parameter
+	 * @param  count     Description of the Parameter
+	 * @return           Description of the Return Value
 	 */
 	private DataRecord[] allocateRecords(DataRecordMetadata metadata, int count) {
 		DataRecord[] data = new DataRecord[count];
@@ -340,7 +329,7 @@ public class SortedJoin extends Node {
 	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
-	 *@since    April 4, 2002
+	 * @since    April 4, 2002
 	 */
 	public void run() {
 		boolean isDriverDifferent;
@@ -444,8 +433,8 @@ public class SortedJoin extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@exception  ComponentNotReadyException  Description of the Exception
-	 *@since                                  April 4, 2002
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		Class tClass;
@@ -501,8 +490,8 @@ public class SortedJoin extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@return    Description of the Returned Value
-	 *@since     May 21, 2002
+	 * @return    Description of the Returned Value
+	 * @since     May 21, 2002
 	 */
 	public org.w3c.dom.Node toXML() {
 		// TODO
@@ -513,16 +502,16 @@ public class SortedJoin extends Node {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  nodeXML  Description of Parameter
-	 *@return          Description of the Returned Value
-	 *@since           May 21, 2002
+	 * @param  nodeXML  Description of Parameter
+	 * @return          Description of the Returned Value
+	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-		SortedJoin join;
+		MergeJoin join;
 
 		try {
-			join = new SortedJoin(xattribs.getString("id"),
+			join = new MergeJoin(xattribs.getString("id"),
 					xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString("transformClass"));
 			if (xattribs.exists("slaveOverrideKey")) {
@@ -540,5 +529,10 @@ public class SortedJoin extends Node {
 		}
 	}
 
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
+	}
 }
 

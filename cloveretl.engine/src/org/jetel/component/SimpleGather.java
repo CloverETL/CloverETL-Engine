@@ -1,21 +1,20 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002  David Pavlis
-*
-*    This program is free software; you can redistribute it and/or modify
-*    it under the terms of the GNU General Public License as published by
-*    the Free Software Foundation; either version 2 of the License, or
-*    (at your option) any later version.
-*    This program is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-*    GNU General Public License for more details.
-*
-*    You should have received a copy of the GNU General Public License
-*    along with this program; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*/
-
+ *  jETeL/Clover - Java based ETL application framework.
+ *  Copyright (C) 2002  David Pavlis
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
 package org.jetel.component;
 import java.util.*;
 import java.io.*;
@@ -28,7 +27,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <h3>Simple Gather Component</h3>
  *
  * <!-- All records from all input ports are gathered and copied onto output port [0] -->
- * 
+ *
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
@@ -47,37 +46,35 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
- *  <br>  
+ *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"SIMPLE_GATHER"</td></tr>
  *  <tr><td><b>id</b></td>
  *  <td>component identification</td>
  *  </tr>
- *  </table>  
+ *  </table>
  *
- * @author     dpavlis
- * @since    April 4, 2002
+ * @author      dpavlis
+ * @since       April 4, 2002
+ * @revision    $Revision$
  */
 public class SimpleGather extends Node {
 
-	public static final String COMPONENT_TYPE="SIMPLE_GATHER";
-	
-	private static final int WRITE_TO_PORT=0;
-	
-	public SimpleGather(String id){
-		super(id);
-		
-	}
+	/**  Description of the Field */
+	public final static String COMPONENT_TYPE = "SIMPLE_GATHER";
+
+	private final static int WRITE_TO_PORT = 0;
+
 
 	/**
-	 *  Gets the Type attribute of the SimpleGather object
+	 *Constructor for the SimpleGather object
 	 *
-	 * @return    The Type value
-	 * @since     April 4, 2002
+	 * @param  id  Description of the Parameter
 	 */
-	public String getType() {
-		return COMPONENT_TYPE;
+	public SimpleGather(String id) {
+		super(id);
+
 	}
 
 
@@ -87,45 +84,52 @@ public class SimpleGather extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
+		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 		InputPort inPort;
-		/* we need to keep track of all input ports - it they contain data or
-		signalized that they are empty.*/
-		int numActive,readFromPort;
-		boolean[] isEOF=new boolean[getInPorts().size()];
-		for(int i=0;i<isEOF.length;i++){
-			isEOF[i]=false;
+		/*
+		 *  we need to keep track of all input ports - it they contain data or
+		 *  signalized that they are empty.
+		 */
+		int numActive;
+		/*
+		 *  we need to keep track of all input ports - it they contain data or
+		 *  signalized that they are empty.
+		 */
+		int readFromPort;
+		boolean[] isEOF = new boolean[getInPorts().size()];
+		for (int i = 0; i < isEOF.length; i++) {
+			isEOF[i] = false;
 		}
-		Collection inputPorts=getInPorts();
+		Collection inputPorts = getInPorts();
 		Iterator iterator;
-		numActive=inputPorts.size();	// counter of still active ports - those without EOF status
+		numActive = inputPorts.size();// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
-		DataRecord record=new DataRecord(outPort.getMetadata());
+		DataRecord record = new DataRecord(outPort.getMetadata());
 		DataRecord inRecord;
 		record.init();
-			
-		while(runIt && numActive>0){
-			iterator=inputPorts.iterator();
-			readFromPort=0;
-			while(runIt && iterator.hasNext()){
-				inPort=(InputPort)iterator.next();
-				if (!isEOF[readFromPort]){
-					try{
-						inRecord=inPort.readRecord(record);
-						if (inRecord!=null){
+
+		while (runIt && numActive > 0) {
+			iterator = inputPorts.iterator();
+			readFromPort = 0;
+			while (runIt && iterator.hasNext()) {
+				inPort = (InputPort) iterator.next();
+				if (!isEOF[readFromPort]) {
+					try {
+						inRecord = inPort.readRecord(record);
+						if (inRecord != null) {
 							outPort.writeRecord(inRecord);
-						}else{
-							isEOF[readFromPort]=true;
+						} else {
+							isEOF[readFromPort] = true;
 							numActive--;
 						}
-					}catch(IOException ex){
-						resultMsg=ex.getMessage();
-						resultCode=Node.RESULT_ERROR;
+					} catch (IOException ex) {
+						resultMsg = ex.getMessage();
+						resultCode = Node.RESULT_ERROR;
 						closeAllOutputPorts();
 						return;
-					}catch(Exception ex){
-						resultMsg=ex.getMessage();
-						resultCode=Node.RESULT_FATAL_ERROR;
+					} catch (Exception ex) {
+						resultMsg = ex.getMessage();
+						resultCode = Node.RESULT_FATAL_ERROR;
 						return;
 					}
 				}
@@ -133,22 +137,27 @@ public class SimpleGather extends Node {
 			}
 		}
 		setEOF(WRITE_TO_PORT);
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}	
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
+	}
 
 
 	/**
 	 *  Description of the Method
 	 *
-	 * @since    April 4, 2002
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one input port and one output
-		if (inPorts.size()<1){
-			throw new ComponentNotReadyException(getID()+" at least one input port has to be defined!");
-		}else if (outPorts.size()<1){
-			throw new ComponentNotReadyException(getID()+" at least one output port has to be defined!");
+		if (inPorts.size() < 1) {
+			throw new ComponentNotReadyException(getID() + " at least one input port has to be defined!");
+		} else if (outPorts.size() < 1) {
+			throw new ComponentNotReadyException(getID() + " at least one output port has to be defined!");
 		}
 	}
 
@@ -173,14 +182,20 @@ public class SimpleGather extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 
-		try{
+		try {
 			return new SimpleGather(xattribs.getString("id"));
-		}catch(Exception ex){
+		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
+	}
+
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
 	}
 }
 
