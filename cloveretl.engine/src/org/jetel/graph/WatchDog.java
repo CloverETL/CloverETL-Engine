@@ -95,6 +95,7 @@ class WatchDog extends Thread {
 		log.println(" max available memory for JVM "+javaRuntime.freeMemory()/1000+" kB");
 		for(int i=0;i<phases.length;i++){
 			if (!runPhase(phases[i])){
+				watchDogStatus=WATCH_DOG_STATUS_ERROR;
 				log.println("[WatchDog] !!! Phase finished with error - stopping graph run !!!");
 				return;
 			}
@@ -290,7 +291,11 @@ class WatchDog extends Thread {
 		currentPhase=phase;
 		List leafNodes=new LinkedList();
 		phase.check();
-		phase.init(log);
+		// init phase
+		if (!phase.init(log)){
+			// something went wrong !
+			return false;
+		}
 		log.println("[WatchDog] Starting up all nodes in phase ["+phase.getPhaseNum()+"]");
 		startUpNodes(phase.getNodes().iterator(),leafNodes);
 		log.println("[WatchDog] Sucessfully started all nodes in phase!");
