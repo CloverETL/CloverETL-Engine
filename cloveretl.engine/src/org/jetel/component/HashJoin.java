@@ -295,7 +295,7 @@ public class HashJoin extends Node {
 		DataRecordMetadata slaveRecordMetadata = inSlavePort.getMetadata();
 		DataRecord driverRecord;
 		DataRecord slaveRecord;
-		DataRecord outRecord;
+		DataRecord outRecord[];
 
 		hashMap = new HashMap(hashTableInitialCapacity);
 		if (hashMap == null) {
@@ -317,6 +317,7 @@ public class HashJoin extends Node {
 					// we have finished reading SLAVE records
 					break;
 				}
+				yield();
 
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -339,8 +340,8 @@ public class HashJoin extends Node {
 		// record from SLAVE records set.
 		driverRecord = new DataRecord(inDriverPort.getMetadata());
 		driverRecord.init();
-		outRecord = new DataRecord(outPort.getMetadata());
-		outRecord.init();
+		outRecord = {new DataRecord(outPort.getMetadata())};
+		outRecord[0].init();
 		HashKey driverHashKey = new HashKey(driverKey, driverRecord);
 		inRecords[0] = driverRecord;
 		//inRecords[1] - assigned individually for every slave record
@@ -363,6 +364,7 @@ public class HashJoin extends Node {
 						outPort.writeRecord(outRecord);
 					}
 				}
+				yield();
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;

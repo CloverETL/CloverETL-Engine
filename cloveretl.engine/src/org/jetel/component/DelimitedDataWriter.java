@@ -22,7 +22,7 @@ import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DelimitedDataFormatter;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
 

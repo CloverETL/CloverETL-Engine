@@ -18,11 +18,13 @@
 *
 */
 package org.jetel.component;
-import java.util.*;
-import java.io.*;
-import org.jetel.graph.*;
+
+import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -102,20 +104,18 @@ public class SimpleGather extends Node {
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
-		Collection inputPorts = getInPorts();
-		Iterator iterator;
-		numActive = inputPorts.size();// counter of still active ports - those without EOF status
+		InputPort inputPorts[]= (InputPort[])getInPorts().toArray();
+		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
 		DataRecord record = new DataRecord(outPort.getMetadata());
 		DataRecord inRecord;
 		record.init();
 
 		while (runIt && numActive > 0) {
-			iterator = inputPorts.iterator();
 			readFromPort = 0;
-			while (runIt && iterator.hasNext()) {
-				inPort = (InputPort) iterator.next();
-				if (!isEOF[readFromPort]) {
+			while (runIt) {
+				inPort = inputPorts[readFromPort];
+				if (!isEOF[readFromPort]&&(inPort.hasData())) {
 					try {
 						inRecord = inPort.readRecord(record);
 						if (inRecord != null) {
@@ -134,6 +134,7 @@ public class SimpleGather extends Node {
 						resultCode = Node.RESULT_FATAL_ERROR;
 						return;
 					}
+					yield();
 				}
 				readFromPort++;
 			}

@@ -23,7 +23,6 @@ package org.jetel.component;
 import java.io.*;
 import java.nio.ByteBuffer;
 import org.jetel.graph.*;
-import org.jetel.data.Defaults;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordFilter;
 import org.jetel.exception.ComponentNotReadyException;
@@ -138,7 +137,7 @@ public class Filter extends Node {
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
-			
+			yield();
 		}
 		broadcastEOF();
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";

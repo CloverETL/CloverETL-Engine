@@ -18,13 +18,15 @@
 *
 */
 package org.jetel.component;
-import java.io.*;
-import org.w3c.dom.NamedNodeMap;
-import org.jetel.graph.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DataFormatter;
-import org.jetel.data.FixLenDataFormatter;
+import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -71,7 +73,7 @@ import org.jetel.util.ComponentXMLAttributes;
 public class FixLenDataWriterNIO extends Node {
 	private String fileURL;
 	private boolean appendData;
-	private DataFormatter formatter;
+	private Formatter formatter;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER_NIO";

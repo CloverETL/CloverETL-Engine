@@ -21,9 +21,9 @@ package org.jetel.component;
 
 import java.io.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 
@@ -64,6 +64,43 @@ import org.jetel.util.DynamicJavaCode;
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="REF" type="REFORMAT" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *  <br>
+ *  Example with transformation code embedded into graph:<br>
+ *  <pre>
+ * &lt;Node id="REF" type="REFORMAT"&gt;
+ * import org.jetel.component.DataRecordTransform;
+ * import org.jetel.metadata.DataRecordMetadata;
+ * import org.jetel.data.*;
+ *
+ * public class reformatOrders extends DataRecordTransform{
+ *   DataRecord source,target;
+ *   int counter;
+ *   String message;
+ *	
+ *	public boolean transform(DataRecord[] _source, DataRecord[] _target){
+ *	  source=_source[0]; target=_target[0];
+ *	 	StringBuffer strBuf=new StringBuffer(80);
+ *		try{
+ *			// mapping among source + target fields
+ *			// some fields get assigned directly from source fields, some
+ *			// are assigned from internall variables
+ *			SetVal.setInt(target,&quot;OrderKey&quot;,counter);
+ *			SetVal.setInt(target,&quot;OrderID&quot;,GetVal.getInt(source,&quot;OrderID&quot;));
+ *			SetVal.setString(target,&quot;CustomerID&quot;,GetVal.getString(source,&quot;CustomerID&quot;));
+ *			SetVal.setValue(target,&quot;OrderDate&quot;,GetVal.getDate(source,&quot;OrderDate&quot;));
+ *			SetVal.setString(target,&quot;ShippedDate&quot;,&quot;02.02.1999&quot;);
+ *			SetVal.setInt(target,&quot;ShipVia&quot;,GetVal.getInt(source,&quot;ShipVia&quot;));
+ *			SetVal.setString(target,&quot;ShipTo&quot;,"unknown");
+ *		}catch(Exception ex){
+ *			message=ex.getMessage()+&quot; -&gt;occured with record :&quot;+counter;
+ *			throw new RuntimeException(message);
+ *		}
+ *		counter++;
+ *			return true;
+ *	}
+ * }
+ * &lt;/Node&gt;
+ * </pre>
  *
  * @author      dpavlis
  * @since       April 4, 2002
@@ -126,21 +163,22 @@ public class Reformat extends Node {
 	public void run() {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
-		DataRecord outRecord = new DataRecord(outPort.getMetadata());
-		inRecord.init();
-		outRecord.init();
+		DataRecord inRecord[] = {new DataRecord(inPort.getMetadata())};
+		DataRecord outRecord[] = { new DataRecord(outPort.getMetadata())};
+		inRecord[0].init();
+		outRecord[0].init();
 
 		while (inRecord != null && runIt) {
 			try {
-				inRecord = readRecord(READ_FROM_PORT, inRecord);
+				inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
 				if (inRecord != null) {
 					if (!transformation.transform(inRecord, outRecord)) {
 						resultMsg = transformation.getMessage();
 						break;
 					}
-					writeRecord(WRITE_TO_PORT, outRecord);
+					writeRecord(WRITE_TO_PORT, outRecord[0]);
 				}
+				yield();
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
@@ -207,7 +245,9 @@ public class Reformat extends Node {
 
 		}
 		// init transformation
-		if (!transformation.init(getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata())) {
+		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata()};
+		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
+		if (!transformation.init(inMetadata,outMetadata)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 	}

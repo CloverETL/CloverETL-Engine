@@ -23,7 +23,7 @@ import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParserNIO;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -66,7 +66,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * @author      dpavlis
  * @since       April 4, 2002
  * @revision    $Revision$
- * @see         org.jetel.data.DelimitedDataParser
+ * @see         org.jetel.data.parser.DelimitedDataParser
  */
 public class DelimitedDataReaderNIO extends Node {
 
