@@ -19,12 +19,26 @@ package org.jetel.database;
 import java.io.*;
 import java.sql.*;
 import java.util.Properties;
-import org.w3c.dom.NamedNodeMap;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  CloverETL's class for connecting to databases.<br>
  *  It practically wraps around JDBC's Connection class and adds some useful
  *  methods.
+ *
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>id</b></td><td>connection identification</td>
+ *  <tr><td><b>dbConfig</b><i>optional</i></td><td>filename of the config file from which to take connection parameters<br>
+ *  If used, then all other attributes are ignored.</td></tr>
+ *  <tr><td><b>dbDriver</b></td><td>name of the JDBC driver</td></tr>
+ *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
+ *  <tr><td><b>user</b><br><i>optional</i></td><td>username to use when connecting to DB</td></tr>
+ *  <tr><td><b>password</b><br><i>optional</i></td><td>password to use when connecting to DB</td></tr>
+ *  </table>  
+ *
+ *  <h4>Example:</h4>  
+ *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"/&gt;</pre>
  *
  *@author     dpavlis
  *@created    January 15, 2003
@@ -154,33 +168,34 @@ public class DBConnection {
 	 *@return          Description of the Return Value
 	 */
 	public static DBConnection fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs = nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 
-		if (attribs != null) {
+		try{
 			// do we have dbConfig parameter specified ??
-			if (attribs.getNamedItem("dbConfig")!=null){
-				return new DBConnection(attribs.getNamedItem("dbConfig").getNodeValue());
+			if (xattribs.exists("dbConfig")){
+				return new DBConnection(xattribs.getString("dbConfig"));
 			}else{
-			// all parameters has to be taken from attributes
-				String dbDriver = attribs.getNamedItem("dbDriver").getNodeValue();
-				String dbURL = attribs.getNamedItem("dbURL").getNodeValue();
-				String user;
-				String password;
-				try {
-					user = attribs.getNamedItem("user").getNodeValue();
-					password = attribs.getNamedItem("password").getNodeValue();
-				} catch (NullPointerException ex) {
-					user = null;
-					password = null;
-				}
-				if (dbDriver != null && dbURL != null) {
-					return new DBConnection(dbDriver, dbURL, user, password);
-				} else {
-					return null;
-				}
+			
+			String dbDriver = xattribs.getString("dbDriver");
+			String dbURL = xattribs.getString("dbURL");
+			String user=null;
+			String password=null;
+				
+			if (xattribs.exists("user")){
+				user = xattribs.getString("user");
 			}
+			if (xattribs.exists("password")){
+				user = xattribs.getString("password");
+			}
+			
+			return new DBConnection(dbDriver, dbURL, user, password);
+			}
+				
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
+		
 	}
 }
 
