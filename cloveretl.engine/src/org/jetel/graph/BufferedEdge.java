@@ -25,9 +25,13 @@ import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 
 /**
- * A class that represents DirectEdge - data connection between two NODEs.<br>
- * This Edge is in-memory buffered for better performance, however the buffer is limited in number of records
- * it can keep.
+ * A class that represents BufferedEdge - data connection between two NODEs in different Phases.<br>
+ * This Edge is in-memory & on disk buffered. It performs a bridge between two Phases of transformation
+ * graph.<br>
+ * Normal operation is that Node1 starts writing to this Edge. When finished, next Phase (and next Node2) 
+ * is started.  Node2 starts reading from this Edge. Although in generall writing & reading can be mixed,
+ * it was not meant to work in this way and thus not optimized to perform it efficiently.
+ *
  *
  * @author      D.Pavlis
  * @since       April 2, 2002
