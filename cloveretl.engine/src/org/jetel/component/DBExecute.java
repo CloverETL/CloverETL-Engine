@@ -58,6 +58,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
  * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
  * <i>Works only if database supports transactions.</i></td></tr>
+ *  <tr><td><b>printStatements</b><br><i>optional</i></td><td>Specifies whether SQL commands are outputted to stdout. Default - No</td></tr>
  *  <tr><td>&lt;SQLCode&gt;<br><i><small>!!XML tag!!</small></i></td><td>This tag allows for specifying more than one statement. See example below.</td></tr>
  *  </table>
  *
@@ -88,6 +89,7 @@ public class DBExecute extends Node {
 	private String dbConnectionName;
 	private String[] dbSQL;
 	private boolean oneTransaction = false;
+	private boolean printStatements = false;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
@@ -168,6 +170,9 @@ public class DBExecute extends Node {
 		oneTransaction = transaction;
 	}
 
+	public void setPrintStatements(boolean printStatements){
+		this.printStatements=printStatements;
+	}
 
 	/**
 	 *  Main processing method for the DBInputTable object
@@ -196,7 +201,10 @@ public class DBExecute extends Node {
 				if (dbSQL[i].trim().length() == 0) {
 					continue;
 				}
-				System.out.println(dbSQL[i]);
+				// shall we print what is sent to DB ?
+				if (printStatements){
+					System.out.println(dbSQL[i]);
+				}
 				sqlStatement.executeUpdate(dbSQL[i]);
 				// shall we commit each statemetn ?
 				if (!oneTransaction) {
@@ -283,6 +291,10 @@ public class DBExecute extends Node {
 			executeSQL.setTransaction(xattribs.getBoolean("inTransaction"));
 		}
 
+		if (xattribs.exists("printStatements")) {
+			executeSQL.setPrintStatements(xattribs.getBoolean("printStatements"));
+		}
+		
 		return executeSQL;
 	}
 
