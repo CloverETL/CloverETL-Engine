@@ -21,7 +21,6 @@ package org.jetel.data;
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.charset.Charset;
@@ -30,6 +29,7 @@ import java.nio.charset.CoderResult;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -85,7 +85,7 @@ public class FixLenDataParser2 implements DataParser {
 	 *@param  _metadata  Metadata describing the structure of data
 	 *@since             March 27, 2002
 	 */
-	public void open(InputStream in, DataRecordMetadata _metadata) {
+	public void open(Object in, DataRecordMetadata _metadata) {
 		CoderResult result;
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
@@ -215,11 +215,16 @@ public class FixLenDataParser2 implements DataParser {
 	 * @exception  IOException  Description of Exception
 	 * @since                   August 21, 2002
 	 */
-	public DataRecord getNext() throws IOException {
+	public DataRecord getNext() throws JetelException {
 		// create a new data record
 		DataRecord record = new DataRecord(metadata);
 		record.init();
-		return parseNext(record);
+		try {
+			return parseNext(record);
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new JetelException(e.getMessage());
+		}
 	}
 
 	/**
