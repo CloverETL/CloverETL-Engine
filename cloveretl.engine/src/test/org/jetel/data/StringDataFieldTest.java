@@ -43,12 +43,14 @@ protected void setUp() {
 	aStringDataField1 = new StringDataField(fixedFieldMeta1,"boo");
 	
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'S',(short)3);
+	fixedFieldMeta2.setNullable(false);
 	aStringDataField2 = new StringDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field3",'S',";");
 	aStringDataField3 = new StringDataField(delimFieldMeta1,"Boo3");
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field4",'S',",");
+	delimFieldMeta2.setNullable(false);
 	aStringDataField4 = new StringDataField(delimFieldMeta2);
 
 }
@@ -70,7 +72,6 @@ protected void tearDown() {
 public void test_1_StringDataField() {
 	assertNotNull(aStringDataField2);
 	assertNotNull(aStringDataField4);
-	assertTrue(aStringDataField4.isNull());
 	}
 
 

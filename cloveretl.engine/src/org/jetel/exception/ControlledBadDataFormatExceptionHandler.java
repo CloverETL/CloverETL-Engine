@@ -19,11 +19,39 @@
 
 package org.jetel.exception;
 
+import org.jetel.data.DataRecord;
+
 /**
+ * ControlledBadDataFormatExceptionHandler logs the entire record 
+ * whose parsing caused BadDataFormatException.
+ * 
+ * Currently, it is only a framework that implements the correct behavior.
+ * The actual logging mechanism needs to be added.
+ * 
  * @author maciorowski
  *
  */
 public class ControlledBadDataFormatExceptionHandler
 	extends BadDataFormatExceptionHandler {
+
+		/**
+		 * It logs the bad record info and returns nu
+		 */
+		public void handleException(DataRecord record) {
+			//log record
+			//TODO actual logging functionality
+			//reset Handler
+			setThrowException(false);
+		}
+
+		/**
+		 * @param record
+		 * @param fieldCounter
+		 * @param string
+		 */
+		public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+			//TODO save fieldCounter,incorrect data string for subsequent logging 
+			setThrowException(true);
+		}
 
 }

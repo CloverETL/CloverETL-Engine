@@ -220,9 +220,11 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		BadDataFormatExceptionHandler aHandler =  
 				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
 		aParser2.addBDFHandler(aHandler);
-		//TODO controlled functionality tests
+		int recCount = 0;
 		try{
-			while((record=aParser2.getNext(record))!=null){}
+			while((record=aParser2.getNext(record))!=null){
+				recCount++;
+			}
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
@@ -230,6 +232,8 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
+		assertEquals(1,recCount);  //may need to be revised
+		//depending how we implement nullable property
 	}
 
 	/**

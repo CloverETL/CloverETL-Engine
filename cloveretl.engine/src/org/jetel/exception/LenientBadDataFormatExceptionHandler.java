@@ -30,18 +30,11 @@ public class LenientBadDataFormatExceptionHandler
 	extends BadDataFormatExceptionHandler {
 
 		/**
-		 * It implements the behavior of the handles.
+		 * It does nothing as all action in this handler happens in populateFieldFailure.
 		 */
-		public void handleException() {
+		public void handleException(DataRecord record) {
 		}
 
-		/**
-		 * Since BadDataFormatExceptionHandler is handling 'strict' data policy,
-		 * there is no need to implement this method as any BadDataFormatException
-		 * aborts further procesing.
-		 */
-		public void reset() {}
-	
 		/**
 		 * @param record
 		 * @param fieldCounter

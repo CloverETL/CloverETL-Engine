@@ -72,7 +72,6 @@ public class DateDataField extends DataField {
 			dateFormat = null;
 		}
 		parsePosition = new ParsePosition(0);
-		setNull(true);
 	}
 
 
@@ -105,16 +104,28 @@ public class DateDataField extends DataField {
 	 *@since          April 23, 2002
 	 */
 	public void setValue(Object _value) {
-		if ((_value != null) && (_value instanceof Date)) {
+		if(_value==null) {
+			if(this.metadata.isNullable()) {
+				value = null;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			}
+			return;
+		}
+		if ( _value instanceof Date ) {
 			value = new Date(((Date) _value).getTime());
-			setNull(false);
+			super.setNull(false);
 		} else {
-			value = null;
-			setNull(true);
+			if(this.metadata.isNullable()) {
+				value = null;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
 		}
 	}
 
-
+	
 	/**
 	 *  Gets the date represented by DateDataField object
 	 *
@@ -134,7 +145,7 @@ public class DateDataField extends DataField {
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (isNull) {
-			value = null;
+			setValue(null);
 		}
 	}
 
@@ -203,23 +214,25 @@ public class DateDataField extends DataField {
 	 *@since             April 23, 2002
 	 */
 	public void fromString(String _valueStr) {
-		try {
 		parsePosition.setIndex(0);
-		if(_valueStr==null) {
-			setNull(true);
+		if(_valueStr == null || _valueStr.equals("")) {
+			if(this.metadata.isNullable()) {
+				value = null;
+				super.setNull(true);
+			} else
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
 			return;
 		}
-		if (dateFormat != null) {
-			value = dateFormat.parse(_valueStr); //, parsePosition);
-		} else {
-			value = SimpleDateFormat.getDateInstance().parse(_valueStr);
-		}
-		setNull(false);
-		
+		try {
+			if (dateFormat != null) {
+				value = dateFormat.parse(_valueStr); //, parsePosition);
+			} else {
+				value = SimpleDateFormat.getDateInstance().parse(_valueStr);
+			}
+			super.setNull(false);
 		 }catch (ParseException e) {
-		  //System.err.println(e.getMessage());
-		  setNull(true);
-		  throw new BadDataFormatException("not Date");
+			super.setNull(true);
+		  	throw new BadDataFormatException("not Date");
 		 }
 		 
 	}
@@ -270,11 +283,7 @@ public class DateDataField extends DataField {
 	 *@since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		if (this.value.equals((((DateDataField) obj).getValue()))) {
-			return true;
-		} else {
-			return false;
-		}
+		return (this.value.equals((((DateDataField) obj).getValue())));
 	}
 
 

@@ -23,6 +23,8 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharacterCodingException;
+
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -63,7 +65,6 @@ public class StringDataField extends DataField {
 		} else {
 			value = new StringBuffer(_metadata.getSize());
 		}
-		setNull(true);
 	}
 
 
@@ -88,12 +89,17 @@ public class StringDataField extends DataField {
 	 */
 	public void setValue(Object value) {
 		this.value.setLength(0);
-		if (value == null) {
-			setNull(true);
+		if (value == null || ((value instanceof String) && value.equals(""))) {
+			if(this.metadata.isNullable()) {
+				value = null;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+			}
 			return;
 		}
 
-		setNull(false);
+		super.setNull(false);
 		this.value.append(value);
 	}
 
@@ -107,7 +113,7 @@ public class StringDataField extends DataField {
 	 */
 	public void setValue(CharSequence seq) {
 		value.setLength(0);
-		if(seq != null) {
+		if(seq != null  && seq.length() > 0) {
 			for (int i = 0; i < seq.length(); i++) {
 				value.append(seq.charAt(i));
 			}

@@ -28,24 +28,18 @@ import test.org.jetel.data.DataTestSuite;
 import test.org.jetel.exception.ExceptionTestSuite;
 import test.org.jetel.metadata.MetadataTestSuite;
 import test.org.jetel.util.UtilTestSuite;
-
 import junit.framework.*;
-
 /**
  * TestSuite that runs all the sample tests
  *
  */
 public class AllTests {
-
 	public static Test suite() {
-
 		TestSuite suite = new TestSuite();
-
 		suite.addTest(UtilTestSuite.suite());
 		suite.addTest(MetadataTestSuite.suite());
 		suite.addTest(ExceptionTestSuite.suite());
 		suite.addTest(DataTestSuite.suite());
-		
 		return suite;
 	}
 

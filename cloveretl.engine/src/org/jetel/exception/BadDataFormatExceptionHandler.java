@@ -40,17 +40,11 @@ public class BadDataFormatExceptionHandler {
 	/**
 	 * It implements the behavior of the handles.
 	 */
-	public void handleException() {
-		if(throwException)
+	public void handleException(DataRecord record) {
+		if(isThrowException())
 			throw new BadDataFormatException();
+			
 	}
-
-	/**
-	 * Since BadDataFormatExceptionHandler is handling 'strict' data policy,
-	 * there is no need to implement this method as any BadDataFormatException
-	 * aborts further procesing.
-	 */
-	public void reset() {}
 	
 	/**
 	 * @param record
@@ -58,6 +52,14 @@ public class BadDataFormatExceptionHandler {
 	 * @param string
 	 */
 	public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
-		throwException = true;
+		setThrowException(true);
+	}
+
+	protected void setThrowException(boolean throwException) {
+		this.throwException = throwException;
+	}
+
+	public boolean isThrowException() {
+		return throwException;
 	}
 }

@@ -56,6 +56,13 @@ public class DataFieldMetadata {
 
 	private char fieldType = ' ';
 
+	/**
+	 *  Fields can assume null value by default.
+	 *
+	 * @since
+	 */
+	private boolean nullable = true;
+	
 	private String defaultValueStr;
 
 	// Attributes
@@ -243,6 +250,14 @@ public class DataFieldMetadata {
 	 */
 	public String getDefaultValue() {
 		return defaultValueStr;
+	}
+
+	public void setNullable(boolean nullable) {
+		this.nullable = nullable;
+	}
+
+	public boolean isNullable() {
+		return nullable;
 	}
 
 }

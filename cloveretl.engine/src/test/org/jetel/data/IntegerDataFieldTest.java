@@ -42,12 +42,14 @@ protected void setUp() {
 	anIntegerDataField1 = new IntegerDataField(fixedFieldMeta1,5);
 	
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'i',(short)3);
+	fixedFieldMeta2.setNullable(false);
 	anIntegerDataField2 = new IntegerDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
 	anIntegerDataField3 = new IntegerDataField(delimFieldMeta1,5);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
+	delimFieldMeta2.setNullable(false);
 	anIntegerDataField4 = new IntegerDataField(delimFieldMeta2);
 }
 
