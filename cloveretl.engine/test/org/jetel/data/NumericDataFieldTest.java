@@ -41,19 +41,94 @@ protected void tearDown() {
 }
 
 
+/**
+ *  Test for @link org.jetel.data.NumericDataField.NumericDataField(DataFieldMetadata _metadata)
+ *
+ */
+public void test_1_NumericDataField() {
+	}
 
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.NumericDataField(DataFieldMetadata _metadata, double value)
+	 *
+	 */
+	public void test_2_NumericDataField() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.setValue(Object _value)
+	 *                 org.jetel.data.NumericDataField.setValue(double value)
+	 *                 org.jetel.data.NumericDataField.setValue(int value)
+	 */
+	public void test_setValue() {
+	}
+
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.getValue()
+	 *
+	 */
+	public void test_getValue() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.toString()
+	 *
+	 */
+	public void test_toString() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException
+	 *
+	 */
+	public void test_fromByteBuffer() {
+	}
+
+	/**
+	 *  Test for @link org.jetel.data.NumericDataField.toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException
+	 *
+	 */
+	public void test_toByteBuffer() {
+	}
 
 
 /**
-
- *  Test for @link org.jetel.metadata.DataRecordMetadata.getField(int _fieldNum)
-
+ *  Test for @link org.jetel.data.NumericDataField.fromString(String valueStr)
  *
+ */
+public void test_fromString() {
+}
 
+
+/**
+ *  Test for @link org.jetel.data.NumericDataField.deserialize(ByteBuffer buffer)
+ *           @link org.jetel.data.NumericDataField.serialize(ByteBuffer buffer)
+ *
  */
 
-public void test_1_getField() {
+public void test_serialize() {
+}
 
+/**
+ *  Test for @link org.jetel.data.NumericDataField.equals(Object obj)
+ *
+ */
+public void test_equals() {
+}
 
-	}
+/**
+ *  Test for @link org.jetel.data.NumericDataField.compareTo(Object obj)
+ *
+ */
+public void test_1_compareTo() {
+}
+/**
+ *  Test for @link org.jetel.data.NumericDataField.compareTo(double compVal)
+ *
+ */
+public void test_2_compareTo() {
+}
+
 }
