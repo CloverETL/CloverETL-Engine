@@ -23,6 +23,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.database.*;
+import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -71,6 +73,7 @@ import org.jetel.exception.ComponentNotReadyException;
  * @revision   $Revision$
  */
 public class DBInputTable extends Node {
+	private BadDataFormatExceptionHandler handlerBDFE;
 
 	private DBConnection dbConnection;
 	private String dbConnectionName;
@@ -143,7 +146,7 @@ public class DBInputTable extends Node {
 	 * @since     September 27, 2002
 	 */
 	public org.w3c.dom.Node toXML() {
-		// TODO
+		// TODO implement toXML()
 		return null;
 	}
 
@@ -165,14 +168,29 @@ public class DBInputTable extends Node {
 		// run sql query
 		try {
 			resultSet = statement.executeQuery(sqlQuery);
-
-			while (resultSet.next() && runIt) {
-				for (i = 0; i < transMap.length; i++) {
-					transMap[i].sql2jetel(resultSet);
+			if(handlerBDFE != null ) {  //use handler only if configured
+				while (resultSet.next() && runIt) {
+					for (i = 0; i < transMap.length; i++) {
+						transMap[i].sql2jetel(resultSet);
+					}
+					
+					if(handlerBDFE.isThrowException()) {
+						handlerBDFE.handleException(outRecord);
+					} else {
+						// send the record through output port
+						writeRecord(WRITE_TO_PORT, outRecord);
+					}
 				}
-				// send the record through output port
-				writeRecord(WRITE_TO_PORT, outRecord);
+			} else {
+				while (resultSet.next() && runIt) {
+					for (i = 0; i < transMap.length; i++) {
+						transMap[i].sql2jetel(resultSet);
+					}
+					// send the record through output port
+					writeRecord(WRITE_TO_PORT, outRecord);
+				}
 			}
+
 		}
 		catch (IOException ex) {
 			resultMsg = ex.getMessage();
@@ -226,16 +244,30 @@ public class DBInputTable extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		NamedNodeMap attribs = nodeXML.getAttributes();
+		DBInputTable aDBInputTable = null;
 
 		if (attribs != null) {
 			String id = attribs.getNamedItem("id").getNodeValue();
 			String sqlQuery = attribs.getNamedItem("sqlQuery").getNodeValue();
 			String dbConnectionName = attribs.getNamedItem("dbConnection").getNodeValue();
+			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
 			if (id != null && sqlQuery != null && dbConnectionName != null) {
-				return new DBInputTable(id, dbConnectionName, sqlQuery);
+				aDBInputTable = new DBInputTable(id, dbConnectionName, sqlQuery);
+
+				if(aDataPolicy != null) {
+					aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
+				}
 			}
 		}
-		return null;
+		return aDBInputTable;
+	}
+
+
+	/**
+	 * @param handler
+	 */
+	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		handlerBDFE = handler;
 	}
 
 }

@@ -133,7 +133,7 @@ public class DelimitedDataParserNIO implements DataParser {
 		if(handlerBDFE != null ) {  //use handler only if configured
 			while(handlerBDFE.isThrowException()) {
 				handlerBDFE.handleException(record);
-				record.init();
+				//record.init();   //redundant
 				record = parseNext(record);
 			}
 		}
