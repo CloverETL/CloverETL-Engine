@@ -55,12 +55,21 @@ public class SQLUtil {
 	 *@see                      java.sql.DatabaseMetaData
 	 */
 	public static List getFieldTypes(DatabaseMetaData metadata, String tableName) throws SQLException {
-		ResultSet rs = metadata.getColumns(null, null, tableName, null);
+		String[] tableSpec=new String[] {null, tableName.toUpperCase()};
+		if (tableName.indexOf(".")!=-1){
+			tableSpec=tableName.toUpperCase().split("\\.",2);
+		}
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
 		List fieldTypes = new LinkedList();
+		int counter=0;
 		while (rs.next()) {
 			// get DATA TYPE - fifth column in result set from Database metadata
 			fieldTypes.add(new Integer(rs.getInt(5)));
 		}
+		if (fieldTypes.size()==0){
+			throw new RuntimeException("No metadata obtained for table: "+tableName);
+		}
+		
 		return fieldTypes;
 	}
 
@@ -75,7 +84,12 @@ public class SQLUtil {
 	 *@exception  SQLException  Description of the Exception
 	 */
 	public static List getFieldTypes(DatabaseMetaData metadata, String tableName, String[] dbFields) throws SQLException {
-		ResultSet rs = metadata.getColumns(null, null, tableName, null);
+		String[] tableSpec=new String[] {null, tableName.toUpperCase()};
+		// if schema defined in table name, extract schema & table name into separate fields
+		if (tableName.indexOf(".")!=-1){
+			tableSpec=tableName.toUpperCase().split("\\.",2);
+		}
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
 		Map dbFieldsMap = new HashMap();
 		List fieldTypes = new LinkedList();
 		Integer dataType;
@@ -83,11 +97,13 @@ public class SQLUtil {
 		while (rs.next()) {
 			// FIELD NAME - fourth columnt in resutl set
 			// get DATA TYPE - fifth column in result set from Database metadata
-			dbFieldsMap.put(rs.getString(4),new Integer(rs.getInt(5)));
+			dbFieldsMap.put(rs.getString(4).toUpperCase(),new Integer(rs.getInt(5)));
 		}
-
+		if (dbFieldsMap.size()==0){
+			throw new RuntimeException("No metadata obtained for table: "+tableName);
+		}
 		for (int i = 0; i < dbFields.length; i++) {
-			dataType=(Integer)dbFieldsMap.get(dbFields[i]);
+			dataType=(Integer)dbFieldsMap.get(dbFields[i].toUpperCase());
 			if (dataType==null){
 				throw new SQLException("Field \""+dbFields[i]+"\" does not exists in table \""+tableName+"\"");
 			}
@@ -185,15 +201,15 @@ public class SQLUtil {
 	 */
 	public static String assembleInsertSQLStatement(DataRecordMetadata metadata, String tableName) {
 		StringBuffer strBuf = new StringBuffer();
-		StringBuffer strBuf2 = new StringBuffer();
+		//StringBuffer strBuf2 = new StringBuffer();
 
 		strBuf.append(" values(");
 		for (int i = 0; i < metadata.getNumFields(); i++) {
-			strBuf2.append(metadata.getField(i).getName());
+			//strBuf2.append(metadata.getField(i).getName());
 			strBuf.append("?");
 			if (i < metadata.getNumFields() - 1) {
 				strBuf.append(",");
-				strBuf2.append(",");
+				//strBuf2.append(",");
 			}
 		}
 		//strBuf.insert(0, strBuf2.toString());

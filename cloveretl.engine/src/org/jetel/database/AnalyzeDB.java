@@ -60,7 +60,7 @@ public class AnalyzeDB {
 
 	private final static int BUFFER_SIZE = 255;
 	private final static String VERSION = "1.0";
-	private final static String LAST_UPDATED = "2003/10/17 at 16:36";  
+	private final static String LAST_UPDATED = "2003/11/16";  
 	private final static String DEFAULT_DELIMITER = ",";
 	private final static String DEFAULT_XML_ENCODING="UTF-8";
 
@@ -187,6 +187,7 @@ public class AnalyzeDB {
 				print = new PrintStream(new FileOutputStream(filename),true,DEFAULT_XML_ENCODING);
 				utf8Encoding=true;
 			}catch(UnsupportedEncodingException ex){
+				System.out.println("Error:"+ex.getMessage());
 				print = new PrintStream(new FileOutputStream(filename));
 			}
 		} else {
@@ -293,7 +294,7 @@ public class AnalyzeDB {
 	 * @since    September 25, 2002
 	 */
 	private static void printInfo() {
-		System.out.println("Jetel AnalyzeDB (" + VERSION + ") created on "+LAST_UPDATED+"\n");
+		System.out.println("*** Jetel AnalyzeDB (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-03 D.Pavlis, released under GNU Public Licence ***\n");
 		System.out.println("Usage:");
 		System.out.println("-dbDriver   JDBC driver to use");
 		System.out.println("-dbURL      Database name (URL)");
@@ -306,7 +307,9 @@ public class AnalyzeDB {
 		System.out.println("-q          *SQL query on command line");
 		System.out.println("-info       *Displays list of driver's properties");
 		System.out.println("\nParameters marked [*] are optional. Either -f or -q parameter must be present.");
-		System.out.println("If -config option is specified, mandatory parameters are loaded from property file.\n");
+		System.out.println("If -config option is specified, mandatory parameters are loaded from property file.");
+		System.out.println("When output is directed to file (-o option used), UTF-8 encoding is used - this should");
+		System.out.println("be the preffered way as some format characters can't be represented as pure ASCII.\n");
 	}
 
 	private static void printDriverProperty(Properties config) throws SQLException{

@@ -231,6 +231,7 @@ public abstract class CopySQLData {
 	 *@return            Description of the Return Value
 	 */
 	private static CopySQLData createCopyObject(int SQLType, DataRecord record, int fromIndex, int toIndex) {
+		char jetelFieldType=record.getMetadata().getFieldType(fromIndex);
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -245,7 +246,14 @@ public abstract class CopySQLData {
 			case Types.FLOAT:
 			case Types.NUMERIC:
 			case Types.REAL:
-				return new CopyNumeric(record, fromIndex, toIndex);
+				// fix for copying when target is numeric and
+				// clover source is integer - no precision can be
+				// lost so we can use CopyInteger
+				if (jetelFieldType==DataFieldMetadata.INTEGER_FIELD){
+					return new CopyInteger(record, fromIndex, toIndex);
+				}else{
+					return new CopyNumeric(record, fromIndex, toIndex);
+				}
 			case Types.DATE:
 			case Types.TIME:
 				return new CopyDate(record, fromIndex, toIndex);
