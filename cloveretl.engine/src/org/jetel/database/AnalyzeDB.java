@@ -276,10 +276,13 @@ public class AnalyzeDB {
 			strBuf.append(delimiter);
 		}
 		strBuf.append("\"");
-		// FORMAT (in case of currency)
-		if (metadata.isCurrency(fieldNo)) {
-			strBuf.append(" format=\"¤#.#\"");
-		}
+		/*
+		*  this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
+		* // FORMAT (in case of currency)
+		* if (metadata.isCurrency(fieldNo)) {
+		*	strBuf.append(" format=\"¤#.#\"");
+		* }
+		*/
 
 		// end
 		strBuf.append(" />");
