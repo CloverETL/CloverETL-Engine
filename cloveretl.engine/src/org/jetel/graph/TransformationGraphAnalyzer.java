@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.Stack;
 
 import java.util.logging.Logger;
-import org.jetel.data.Defaults;
 import org.jetel.exception.GraphConfigurationException;
 /*
  *  import org.apache.log4j.Logger;
@@ -97,11 +96,10 @@ public class TransformationGraphAnalyzer {
 		while (iterator.hasNext()) {
 			nodesStack.clear();
 			nodesStack.push(new AnalyzedNode((Node) iterator.next()));
-			if (!inspectPath(nodesStack)) {
+			if (!inspectCircularReference(nodesStack)) {
 				throw new GraphConfigurationException("Circular reference found in graph !");
 			}
 		}
-
 		// enumerate all nodes
 
 		actualSet = set1;
@@ -126,7 +124,38 @@ public class TransformationGraphAnalyzer {
 		return (Node[]) enumerationOfNodes.toArray(new Node[0]);
 	}
 
-
+	
+	/**
+	 * Method which analyzes the need of forcing buffered edge in case
+	 * when one component feeds through multiple output ports other components
+	 * and dead-lock could occure. See inspectMultipleFeeds() method.
+	 * 
+	 * @param nodes
+	 */
+	public static void analyzeMultipleFeeds(List nodes){
+		Stack nodesStack = new Stack();
+		List nodesToAnalyze = new LinkedList();
+		Node node;
+		Iterator iterator;
+		
+		// set up initial list of nodes to analyze
+		// ontly those with 2 or more input ports need inspection
+		iterator = nodes.iterator();
+		while (iterator.hasNext()) {
+			node = (Node) iterator.next();
+			if (node.getInPorts().size()>1 ) {
+				nodesToAnalyze.add(node);
+			}
+		}
+		//	DETECTING buffering needs
+		iterator = nodesToAnalyze.iterator();
+		while (iterator.hasNext()) {
+			nodesStack.clear();
+			nodesStack.push(new AnalyzedNode((Node) iterator.next()));
+			inspectMultipleFeeds(nodesStack);
+		}
+	}
+	
 	/**
 	 *  Tests whether there is no loop/cycle in path from root node to leaf node
 	 *  This test must be run for each root note to ensure that the whole graph is free of cycles
@@ -135,12 +164,12 @@ public class TransformationGraphAnalyzer {
 	 * @param  nodesStack  Stack with one elemen - root node from which to start analyzing
 	 * @return             true if path has no loops, otherwise false
 	 */
-	private static boolean inspectPath(Stack nodesStack) {
+	private static boolean inspectCircularReference(Stack nodesStack) {
 		OutputPort port;
 		Node nextNode;
 		Set nodesEncountered = new HashSet();
 		while (!nodesStack.empty()) {
-			port = ((AnalyzedNode) nodesStack.peek()).getNextPort();
+			port = ((AnalyzedNode) nodesStack.peek()).getNextOutPort();
 			if (port == null) {
 				// this node has no more ports (offsprings)
 				// we have to remove it from already visited nodes
@@ -159,6 +188,49 @@ public class TransformationGraphAnalyzer {
 			}
 		}
 		return true;
+	}
+
+	/**
+	 * Method which checks components which concentrate more than one input for potential deadlocks.<br>
+	 * If, for example, join component merges data from two flows which both originate at the same 
+	 * node (e.g. data reader) then deadlock situation can occure when the join waits for data reader to send next
+	 * record on one port and the reader waits for join to consume record on the other port.<br>
+	 * If such situation is found, all input ports (Edges) of join has to be buffered. 
+	 * 
+	 * @param nodesStack
+	 * @return
+	 */
+	private static void inspectMultipleFeeds(Stack nodesStack) {
+		InputPort port;
+		Node prevNode;
+		Set nodesEncountered = new HashSet();
+		Node startNode=((AnalyzedNode) nodesStack.peek()).getNode();
+		while (!nodesStack.empty()) {
+			port = ((AnalyzedNode) nodesStack.peek()).getNextInPort();
+			if (port == null) {
+				// this node has no more input ports
+				// we have to remove it from already visited nodes as the is the end of road.
+				nodesStack.pop();
+			} else {
+				prevNode = port.getWriter();
+				if (prevNode != null) {
+					// have we seen this node before ? if yes, then we need to buffer start node (its
+					// input ports
+					if (!nodesEncountered.add(prevNode.getID())) {
+						for (int i=0;i<startNode.getInPorts().size();i++){
+							//TODO: potential problem if port is not backed by EDGE - this should not happen
+							Object edge=startNode.getInputPort(i);
+							assert edge instanceof Edge : "Port not backed by Edge object !";
+							((Edge)edge).setType(Edge.EDGE_TYPE_BUFFERED);
+							// DEBUG
+							System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
+							//logger.info(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
+						}
+					}
+					nodesStack.push(new AnalyzedNode(prevNode));// put this node on top
+				}
+			}
+		}
 	}
 
 
@@ -298,7 +370,8 @@ public class TransformationGraphAnalyzer {
 	 */
 	private static class AnalyzedNode {
 		Node node;
-		int analyzedPort;
+		int analyzedOutPort;
+		int analyzedInPort;
 
 
 		/**
@@ -308,7 +381,8 @@ public class TransformationGraphAnalyzer {
 		 */
 		AnalyzedNode(Node node) {
 			this.node = node;
-			analyzedPort = 0;
+			analyzedOutPort = 0;
+			analyzedInPort = 0;
 		}
 
 
@@ -317,14 +391,21 @@ public class TransformationGraphAnalyzer {
 		 *
 		 * @return    The nextPort value
 		 */
-		OutputPort getNextPort() {
-			if (analyzedPort >= node.getOutPorts().size()) {
+		OutputPort getNextOutPort() {
+			if (analyzedOutPort >= node.getOutPorts().size()) {
 				return null;
 			} else {
-				return node.getOutputPort(analyzedPort++);
+				return node.getOutputPort(analyzedOutPort++);
 			}
 		}
 
+		InputPort getNextInPort() {
+			if (analyzedInPort >= node.getInPorts().size()) {
+				return null;
+			} else {
+				return node.getInputPort(analyzedInPort++);
+			}
+		}
 
 		/**
 		 *  Gets the node attribute of the AnalyzedNode object

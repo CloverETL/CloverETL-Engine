@@ -200,7 +200,6 @@ public class SQLUtil {
 		}
 		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
 		List fieldTypes = new LinkedList();
-		int counter = 0;
 		while (rs.next()) {
 			// get DATA TYPE - fifth column in result set from Database metadata
 			fieldTypes.add(new Integer(rs.getInt(5)));

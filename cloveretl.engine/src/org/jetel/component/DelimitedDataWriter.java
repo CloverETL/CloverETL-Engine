@@ -19,7 +19,6 @@
 */
 package org.jetel.component;
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
@@ -211,6 +210,10 @@ public class DelimitedDataWriter extends Node {
 	/**  Description of the Method */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

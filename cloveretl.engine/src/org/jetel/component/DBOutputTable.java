@@ -49,7 +49,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td></td></tr>
+ * <td>[0]- records rejected by database<br><i>optional</i></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -109,10 +109,12 @@ public class DBOutputTable extends Node {
 	private int recordsInCommit;
 	private boolean useBatch;
 
+	private int countError;
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
 	private final static int READ_FROM_PORT = 0;
+	private final static int WRITE_REJECTED_TO_PORT = 0;
 	private final static int RECORDS_IN_COMMIT = 100;
 	private final static int RECORDS_IN_BATCH = 25;
 
@@ -192,7 +194,7 @@ public class DBOutputTable extends Node {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
 		// get dbConnection from graph
-		dbConnection = TransformationGraph.getReference().getDBConnection(dbConnectionName);
+		dbConnection = this.graph.getDBConnection(dbConnectionName);
 		if (dbConnection == null) {
 			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
 		}
@@ -237,6 +239,7 @@ public class DBOutputTable extends Node {
 	 */
 	public void run() {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
+		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		CopySQLData[] transMap;
 		int i;
@@ -245,7 +248,8 @@ public class DBOutputTable extends Node {
 		int batchCount = 0;
 		List dbFieldTypes;
 		String sql;
-
+		String errMsg;
+		
 		inRecord.init();
 		try {
 			// first check that what we require is supported
@@ -298,17 +302,28 @@ public class DBOutputTable extends Node {
 				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
 			}
 
+			/*
+			 * MAIN PROCESSING LOOP
+			 */
+			countError=0; // no of erroneous records
 			while (inRecord != null && runIt) {
 				inRecord = readRecord(READ_FROM_PORT, inRecord);
 				if (inRecord != null) {
 					for (i = 0; i < transMap.length; i++) {
 						transMap[i].jetel2sql(preparedStatement);
 					}
-					
-					
 					/* BATCH MODE */
 					if (useBatch){
-						preparedStatement.addBatch();
+						try{
+							preparedStatement.addBatch();
+						}catch(SQLException ex){
+							if (rejectedPort!=null){
+								rejectedPort.writeRecord(inRecord);
+								countError++;;
+							}else{
+								throw new SQLException("Error when batch inserting record: "+ex.getMessage());
+							}
+						}
 						if (batchCount++ % RECORDS_IN_BATCH == 0) {
 							try {
 								preparedStatement.executeBatch();
@@ -320,9 +335,20 @@ public class DBOutputTable extends Node {
 						}
 					/* NORMAL MODE */
 					}else{
-						result = preparedStatement.executeUpdate();
-						if (result != 1) {
-							throw new SQLException("Error when inserting record");
+						try {
+							errMsg=null;
+							result = preparedStatement.executeUpdate();
+						}catch(SQLException ex){
+							errMsg=ex.getMessage();
+							result = -1;
+						}
+						if (result != 1){
+							if (rejectedPort!=null){
+								rejectedPort.writeRecord(inRecord);
+								countError++;
+							}else{
+								throw new SQLException("Error when inserting record: "+errMsg);
+							}
 						}
 						preparedStatement.clearParameters();
 					}
@@ -360,7 +386,7 @@ public class DBOutputTable extends Node {
 			closeAllOutputPorts();
 		} catch (Exception ex) {
 			ex.printStackTrace();
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 		} finally {
@@ -455,5 +481,8 @@ public class DBOutputTable extends Node {
 		return true;
 	}
 
+	public String getType(){
+		return COMPONENT_TYPE;
+	}
 }
 

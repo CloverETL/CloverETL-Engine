@@ -20,7 +20,6 @@
 package org.jetel.component;
 
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParserNIO;
@@ -124,14 +123,12 @@ public class DelimitedDataReaderNIO extends Node {
 				writeRecordBroadcast(record);
 			}
 		} catch (IOException ex) {
-			System.err.println("Error: "+ex);
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			System.err.println("Fatal: "+ex);
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
@@ -230,6 +227,10 @@ public class DelimitedDataReaderNIO extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

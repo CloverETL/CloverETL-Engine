@@ -191,7 +191,6 @@ public class SQLDataParser implements Parser {
 	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		metadata = _metadata;
 		fieldCount = _metadata.getNumFields();
-		int i;
 
 		//outRecord.init();
 		// get dbConnection from graph

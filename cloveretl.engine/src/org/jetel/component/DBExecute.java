@@ -19,11 +19,8 @@
 */
 package org.jetel.component;
 
-import java.io.*;
 import java.sql.*;
 import java.util.logging.*;
-import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
@@ -144,7 +141,7 @@ public class DBExecute extends Node {
 		//	throw new ComponentNotReadyException("This is independent component. No INPUT or OUTPUT connectins may exist !");
 		//}
 		// get dbConnection from graph
-		dbConnection = TransformationGraph.getReference().getDBConnection(dbConnectionName);
+		dbConnection = this.graph.getDBConnection(dbConnectionName);
 		if (dbConnection == null) {
 			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
 		}
@@ -226,7 +223,7 @@ public class DBExecute extends Node {
 		} catch (Exception ex) {
 			performRollback();
 			ex.printStackTrace();
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 			return;
@@ -308,6 +305,10 @@ public class DBExecute extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 
 }

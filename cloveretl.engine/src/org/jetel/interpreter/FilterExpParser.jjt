@@ -97,7 +97,7 @@ TOKEN: {
 
 /* Field Identifiers */
 TOKEN: {
-  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])+ >
+  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])* >
 }
 
 /* Parenthesis */
@@ -221,6 +221,7 @@ void BuildInFunction() #void : {}
 	|"length" "(" AdditiveExpression() ")" #LengthNode(1)
 	|ConcatNode()
 	|DateAddNode()
+	|DateDiffNode()
 	|"today" "(" ")" #TodayNode(0)
 	|"isnull" "(" IDExp() ")" #IsNullNode(1)
 }
@@ -274,4 +275,12 @@ void DateAddNode() :
 	")"
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" > }
+void DateDiffNode() :
+{ Token t;}
+{
+	"datediff" "(" AdditiveExpression() "," AdditiveExpression() "," 
+			t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); }
+	")"
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "sec" > }

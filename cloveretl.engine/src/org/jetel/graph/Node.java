@@ -163,9 +163,7 @@ public abstract class Node extends Thread {
 	 *@return    The Type value
 	 *@since     April 4, 2002
 	 */
-	public static String getType() {
-		return null;
-	}
+	public abstract String getType();
 
 
 	/**

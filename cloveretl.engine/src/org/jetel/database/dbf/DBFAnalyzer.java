@@ -153,7 +153,6 @@ public class DBFAnalyzer {
 			System.err.println(ex.getMessage());
 			System.exit(-1);
 		}
-		DataRecordMetadataXMLReaderWriter writer=new DataRecordMetadataXMLReaderWriter();
 		try{
 			OutputStream outstream;
 			if (args.length<2){
@@ -161,7 +160,7 @@ public class DBFAnalyzer {
 			}else{
 				outstream=new BufferedOutputStream(new FileOutputStream(args[1]));
 			}
-			writer.write(dbf.getCloverMetadata(), outstream);
+			DataRecordMetadataXMLReaderWriter.write(dbf.getCloverMetadata(), outstream);
 		}catch(IOException ex){
 			System.err.println(ex.getMessage());
 			System.exit(-1);

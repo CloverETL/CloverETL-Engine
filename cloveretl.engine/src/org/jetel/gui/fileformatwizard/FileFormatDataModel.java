@@ -36,7 +36,7 @@ implements Cloneable {
 
 	public short[] recordSizes;
 
-	public DataRecordMetadata recordMeta = new DataRecordMetadata("No Name");
+	public DataRecordMetadata recordMeta = new DataRecordMetadata("No_Name");
 	
     
 	/** Create shallow clone of this object. */

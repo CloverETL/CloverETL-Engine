@@ -427,8 +427,6 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 	}
 	
 	public Object visit(CLVFTodayNode node, Object data){
-		node.jjtGetChild(0).jjtAccept(this, data);
-		
 		java.util.Date today=Calendar.getInstance().getTime();
 		stack.push(today);  
 		
@@ -525,6 +523,69 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		
 		return data;
 	}
+	
+	
+	public Object visit(CLVFDateDiffNode node, Object data) {
+		Object date1, date2;
+
+		node.jjtGetChild(0).jjtAccept(this, data);
+		date1 = stack.pop();
+
+		if (date1 instanceof DateDataField) {
+			date1 = ((DateDataField) date1).getValue();
+		}
+
+		node.jjtGetChild(1).jjtAccept(this, data);
+		date2 = stack.pop();
+		if (date2 instanceof DateDataField) {
+			date2 = ((DateDataField) date2).getValue();
+		}
+
+		if (date1 instanceof Date && date2 instanceof Date) {
+			long diffSec = (((Date) date1).getTime() - ((Date) date2).getTime()) / 1000;
+			int diff = 0;
+			switch (node.calendarField) {
+			case Calendar.SECOND:
+				// we have the difference in seconds
+				diff = (int) diffSec;
+				break;
+			case Calendar.DAY_OF_MONTH:
+				// how many days is the difference
+				diff = (int) diffSec / 86400;
+				break;
+			case Calendar.WEEK_OF_YEAR:
+				// how many weeks
+				diff = (int) diffSec / 604800;
+				break;
+			case Calendar.MONTH:
+				node.start.setTime((Date) date1);
+				node.end.setTime((Date) date2);
+				diff = (node.start.get(Calendar.MONTH) + node.start
+						.get(Calendar.YEAR) * 12)
+						- (node.end.get(Calendar.MONTH) + node.end
+								.get(Calendar.YEAR) * 12);
+				break;
+			case Calendar.YEAR:
+				node.start.setTime((Date) date1);
+				node.end.setTime((Date) date2);
+				diff = node.start.get(node.calendarField)
+						- node.end.get(node.calendarField);
+				break;
+			default:
+				Object arguments[] = { new Integer(node.calendarField) };
+				throw new InterpreterRuntimeException(arguments,
+						"datediff - wrong difference unit");
+			}
+			stack.push(new Integer(diff));
+		} else {
+			Object arguments[] = { date1, date2 };
+			throw new InterpreterRuntimeException(arguments,
+					"datediff - no Date expression");
+		}
+
+		return data;
+	}
+	
 	
 	public Object visit(CLVFMinusNode node, Object data){
 		node.jjtGetChild(0).jjtAccept(this, data);

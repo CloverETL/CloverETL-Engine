@@ -123,7 +123,6 @@ public class Sort extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		//InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
-		boolean isData = true;
 		
 		while (inRecord!=null && runIt) {
 			try {
@@ -177,7 +176,7 @@ public class Sort extends Node {
 					closeAllOutputPorts();
 					return;
 				} catch (Exception ex) {
-					resultMsg = ex.getMessage();
+					resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 					resultCode = Node.RESULT_FATAL_ERROR;
 					//closeAllOutputPorts();
 					return;
@@ -301,6 +300,10 @@ public class Sort extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

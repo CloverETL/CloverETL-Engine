@@ -53,6 +53,7 @@ public class DataRecordMetadata {
 
 	private String name;
 	private char recType;
+	private String localeStr;
 
 	private Properties recordProperties;
 
@@ -72,15 +73,8 @@ public class DataRecordMetadata {
 	 * @since         May 2, 2002
 	 */
 	public DataRecordMetadata(String _name, char _type) {
-		if (!StringUtils.isValidObjectName(_name)){
-			throw new InvalidGraphObjectNameException(_name,"RECORD");
-		}
-		this.name = _name;
+		this(_name);
 		this.recType = _type;
-		this.fields = new ArrayList();
-		fieldNames = new HashMap();
-		fieldTypes = new HashMap();
-		recordProperties = null;
 	}
 
 
@@ -99,6 +93,7 @@ public class DataRecordMetadata {
 		fieldNames = new HashMap();
 		fieldTypes = new HashMap();
 		recordProperties = null;
+		localeStr=null;
 	}
 
 
@@ -127,6 +122,18 @@ public class DataRecordMetadata {
 	}
 
 
+	/**
+	 * @return Returns the localeStr.
+	 */
+	public String getLocaleStr() {
+		return localeStr;
+	}
+	/**
+	 * @param localeStr The localeStr to set.
+	 */
+	public void setLocaleStr(String localeStr) {
+		this.localeStr = localeStr;
+	}
 	/**
 	 *  An operation that returns number of Data Fields within Data Record
 	 *

@@ -135,6 +135,9 @@ public class Phase implements Comparable {
 		}
 
 		// iterate through all edges and initialize them
+		if (log != null) {
+			log.print(" initializing edges: ");
+		}
 		while (edgeIterator.hasNext()) {
 			try {
 				edge = (Edge) edgeIterator.next();

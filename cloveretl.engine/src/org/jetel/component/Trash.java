@@ -146,7 +146,7 @@ public class Trash extends Node {
 				closeAllOutputPorts();
 				return;
 			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -236,6 +236,10 @@ public class Trash extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 

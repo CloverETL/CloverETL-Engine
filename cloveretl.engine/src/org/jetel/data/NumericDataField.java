@@ -19,6 +19,7 @@
 */
 package org.jetel.data;
 import java.util.Locale;
+import java.text.NumberFormat;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParsePosition;
@@ -43,10 +44,9 @@ import org.jetel.metadata.DataFieldMetadata;
 public class NumericDataField extends DataField {
 
 	private double value;
-	private DecimalFormat numberFormat;
+	private NumberFormat numberFormat;
 	private ParsePosition parsePosition;
-	private Locale locale;
-	
+
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	// Attributes
 	/**
@@ -63,6 +63,7 @@ public class NumericDataField extends DataField {
 	 */
 	public NumericDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
+		Locale locale;
 		// handle locale
 		if (_metadata.getLocaleStr()!=null){
 			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
@@ -71,16 +72,24 @@ public class NumericDataField extends DataField {
 			}else{
 				locale=new Locale(localeLC[0]);
 			}
+			// probably wrong locale string defined
+			if (locale==null){
+				throw new RuntimeException("Can't create Locale based on "+_metadata.getLocaleStr());
+			}
 		}else{
-			locale=Locale.getDefault();
+			locale=null;
 		}
 		// handle formatString
 		String formatString;
 		formatString = _metadata.getFormatStr();
-		if ((formatString != null) && (formatString.length() != 0)) {
-			numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
-		} else {
-			numberFormat = null;
+		 if ((formatString != null) && (formatString.length() != 0)) {
+		 	if (locale!=null){
+				numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
+		 	}else{
+		 		numberFormat = new DecimalFormat(formatString);
+			}
+		 }else if (locale!=null) {
+				numberFormat = DecimalFormat.getInstance(locale);
 		}
 		parsePosition = new ParsePosition(0);
 		

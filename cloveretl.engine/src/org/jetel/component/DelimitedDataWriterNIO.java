@@ -20,7 +20,6 @@
 
 package org.jetel.component;
 import java.io.*;
-import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
@@ -114,15 +113,13 @@ public class DelimitedDataWriterNIO extends Node {
 				}
 			}
 			catch (IOException ex) {
-				System.err.println("Writer IOException !");
 				resultMsg=ex.getMessage();
 				resultCode=Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
 			}
 			catch (Exception ex) {
-				System.err.println("Writer Exception !");
-				resultMsg=ex.getMessage();
+				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -221,6 +218,10 @@ public class DelimitedDataWriterNIO extends Node {
 	
 	public boolean checkConfig(){
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 	
 }

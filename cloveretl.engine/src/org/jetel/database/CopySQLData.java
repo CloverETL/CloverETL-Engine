@@ -18,17 +18,14 @@
 *
 */
 package org.jetel.database;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.HashSet;
 
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Set;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
@@ -146,6 +143,14 @@ public abstract class CopySQLData {
 	 * @since              September 26, 2002
 	 */
 	public static CopySQLData[] sql2JetelTransMap(List fieldTypes, DataRecordMetadata metadata, DataRecord record) {
+		/* test that both sides have at least the same number of fields, less
+		 * fields on DB side is O.K. (some of Clover fields won't get assigned value).
+		 */
+		if (fieldTypes.size()>metadata.getNumFields()){
+			throw new RuntimeException("CloverETL data record "+metadata.getName()+
+					" contains less fields than source JDBC record !");
+		}
+		
 		CopySQLData[] transMap = new CopySQLData[metadata.getNumFields()];
 		int i = 0;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
@@ -171,9 +176,16 @@ public abstract class CopySQLData {
 	 */
 	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes, DataRecord record) throws SQLException {
 		int i = 0;
+		/* test that both sides have at least the same number of fields, less
+		 * fields on DB side is O.K. (some of Clover fields won't be assigned to JDBC).
+		 */
+		if (fieldTypes.size()>record.getMetadata().getNumFields()){
+			throw new RuntimeException("CloverETL data record "+record.getMetadata().getName()+
+					" contains less fields than target JDBC record !");
+		}
 		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		ListIterator iterator = fieldTypes.listIterator();
-
+		
 		while (iterator.hasNext()) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
 					record.getMetadata().getFieldType(i),
@@ -266,10 +278,13 @@ public abstract class CopySQLData {
 				if (jetelFieldType == DataFieldMetadata.STRING_FIELD) {
 					return new CopyBoolean(record, fromIndex, toIndex);
 				}
-			case Types.OTHER:// When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
-				return new CopyString(record, fromIndex, toIndex);
+			// when Types.OTHER or unknown, try to copy it as STRING
+			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
 			default:
-				throw new RuntimeException("SQL data type not supported: " + SQLType);
+			//case Types.OTHER:// When other, try to copy it as STRING - should work for NCHAR/NVARCHAR
+				return new CopyString(record, fromIndex, toIndex);
+			//default:
+			//	throw new RuntimeException("SQL data type not supported: " + SQLType);
 		}
 	}
 

@@ -20,8 +20,12 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.sql.SQLException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataJDBCStub;
+import org.jetel.metadata.MetadataFactory;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.util.StringUtils;
@@ -48,7 +52,8 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	protected Node writer;
 
 	protected DataRecordMetadata metadata;
-
+	protected DataRecordMetadataJDBCStub metadataStub;
+	
 	private int edgeType;
 
 	private EdgeBase edge;
@@ -76,6 +81,11 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 		reader = writer = null;
 		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
 		edge = null;
+	}
+	
+	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata){
+		this(id,metadata);
+		this.metadataStub=metadataStub;
 	}
 
 
@@ -184,6 +194,16 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @since                   April 2, 2002
 	 */
 	public void init() throws IOException {
+		/* if metadata is null and we have metadata stub, try to
+		 * load metadata from JDBC
+		 */
+		if (metadata==null){
+			try{
+				metadata=MetadataFactory.fromJDBC(metadataStub);
+			}catch(SQLException ex){
+				throw new IOException(ex.getMessage());
+			}
+		}
 		if (edge == null) {
 			if (edgeType == EDGE_TYPE_BUFFERED) {
 				edge = new BufferedEdge(this);

@@ -26,7 +26,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
 
@@ -172,7 +171,7 @@ public class CheckForeignKey extends Node {
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			resultMsg = ex.getMessage();
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
@@ -257,6 +256,10 @@ public class CheckForeignKey extends Node {
 	 */
 	public boolean checkConfig() {
 		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 
 }

@@ -78,6 +78,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <li>isnull( <field reference> )
  * <li>concat( ..str expression.., ..str expression.. , ...... )
  * <li>dateadd( ..date expression.., ..amount.. , year|month|day )
+ * <li>datediff( ..date expression.., ..date expression.. , year|month|day|sec )
  * </ul> 
  * </td></tr>
  * </table>
@@ -170,7 +171,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				closeAllOutputPorts();
 				return;
 			}catch(Exception ex){
-				resultMsg=ex.getMessage();
+				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
@@ -256,6 +257,10 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void setFilterExpression(String filterExpression) {
 		this.filterExpression = filterExpression;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
 	}
 }
 
