@@ -26,7 +26,10 @@ import java.nio.ByteBuffer;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.data.DataRecord;
+import org.jetel.util.StringUtils;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.InvalidGraphObjectNameException;
+
 
 /**
  *  A class that represents atomic transformation task. It is a base class for
@@ -90,7 +93,10 @@ public abstract class Node extends Thread {
 	 */
 	public Node(String id) {
 		super(id);
-		this.id = new String(id);
+		if (!StringUtils.isValidObjectName(id)){
+			throw new InvalidGraphObjectNameException(id,"NODE");
+		}
+		this.id = id;
 		outPorts = new TreeMap();
 		inPorts = new TreeMap();
 		logPort = null;
