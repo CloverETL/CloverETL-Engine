@@ -245,7 +245,7 @@ public class NumericDataField extends DataField {
 	 *@since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if ((valueStr != null) && (valueStr.trim().length() > 0)) {
+		if ( valueStr != null ) {
 			try {
 				if (numberFormat != null) {
 					parsePosition.setIndex(0);
@@ -254,8 +254,8 @@ public class NumericDataField extends DataField {
 					value = Double.parseDouble(valueStr);
 				}
 			} catch (Exception ex) {
-				logger.info("Error when parsing string: " + valueStr);
-				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
+//				logger.info("Error when parsing string: " + valueStr);
+//				logger.info("Field's number format: " + (numberFormat == null ? "" : numberFormat.toPattern()));
 				throw new BadDataFormatException("Parsing string: " + valueStr);
 			}
 		} else {
