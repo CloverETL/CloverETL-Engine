@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingDB2">
+<!--
+This graph illustrates how to run hand-written SQL/DML against DB. Parameters (question-marks) are
+substituted by input fields (in order they are listed in cloverFields). Also target parameter types
+are devised from input field types - this may cause some problems when trying to map incompatible data types.
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
+<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="employees.list.dat" />
+<Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="InterbaseDB" dbTable="employee_tmp" 
+	cloverFields="FIRST_NAME;LAST_NAME" 
+	sqlQuery="insert into employee_tmp (FIRST_NAME,LAST_NAME,HIRE_DATE,EMP_NO) values (?,?,sysdate,123)" />
+	
+<Edge id="INEDGE2" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

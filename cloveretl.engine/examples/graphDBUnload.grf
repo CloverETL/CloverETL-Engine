@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="TestingDB2">
+<Graph name="Testing DB Unload">
 <Global>
 <Metadata id="InMetadata" fileURL="employeeDB.fmt"/>
 <DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/> 

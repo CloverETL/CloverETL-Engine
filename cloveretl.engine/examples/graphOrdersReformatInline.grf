@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Reformat">
+<!--
+This example illustrates usage of Reformat component with transformation
+code (class) inlined (saved with the graph itself). The source code
+is automatically compiled at runtime.
+For successfull compilation, tools.jar library must be part of CLASSPATH.
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersRef.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="REF" type="REFORMAT" />
+import org.jetel.component.RecordTransform;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.data.*;
+
+
+public class reformatOrders implements RecordTransform{
+
+	String message;
+	int counter=0;
+	int field=0;
+
+	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
+		return true;
+	}
+	public boolean init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata targetMetadata){
+		return true;
+	}
+	
+	public boolean transform(DataRecord source, DataRecord target){
+		StringBuffer strBuf=new StringBuffer(80);
+		try{
+			// let's concatenate shipping address into one long string
+			strBuf.append(GetVal.getString(source,"ShipName")).append(';');
+			strBuf.append(GetVal.getString(source,"ShipAddress")).append(';');
+			strBuf.append(GetVal.getString(source,"ShipCity")).append(';');
+			strBuf.append(GetVal.getString(source,"ShipCountry"));
+			// mapping among source & target fields
+			// some fields get assigned directly from source fields, some
+			// are assigned from internall variables
+			SetVal.setInt(target,"OrderKey",counter);
+			SetVal.setInt(target,"OrderID",GetVal.getInt(source,"OrderID"));
+			SetVal.setString(target,"CustomerID",GetVal.getString(source,"CustomerID"));
+			SetVal.setValue(target,"OrderDate",GetVal.getDate(source,"OrderDate"));
+			SetVal.setString(target,"ShippedDate","02.02.1999");
+			SetVal.setInt(target,"ShipVia",GetVal.getInt(source,"ShipVia"));
+			SetVal.setString(target,"ShipTo",strBuf.toString());
+		}catch(Exception ex){
+			message=ex.getMessage()+" ->occured with record :"+counter;
+			throw new RuntimeException(message);
+		}
+		counter++;
+			return true;
+	}
+	
+	public boolean transform(DataRecord[] source, DataRecord target){
+		return true;
+	}
+
+	public String getMessage(){
+		return message;
+	}
+}
+</Node>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.dat.out"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="REF:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="REF:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
