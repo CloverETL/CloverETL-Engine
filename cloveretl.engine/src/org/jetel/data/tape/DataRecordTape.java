@@ -30,6 +30,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.DataRecord;
 
 
 /**
@@ -295,6 +296,22 @@ public class DataRecordTape {
 	}
 	
 	/**
+	 * Stores data record in current/active chunk.
+	 * 
+	 * @param data
+	 * @return
+	 * @throws IOException
+	 */
+	public boolean put(DataRecord data) throws IOException{
+	    try{
+	        currentDataChunk.put(data);
+	    }catch(NullPointerException ex){
+	        throw new RuntimeException("No DataChunk has been created !");
+	    }
+	    return true;
+	}
+	
+	/**
 	 * Fills buffer passed as an argument with data read from current data chunk.
 	 * Must not be mixed with put() method calls, otherwise the result is not guaranteed.<br>
 	 * The normal way of using this method is:<br>
@@ -312,6 +329,20 @@ public class DataRecordTape {
 	    }
 	}
 	
+	/**
+	 * Reads data record from current chunk
+	 * 
+	 * @param data
+	 * @return
+	 * @throws IOException
+	 */
+	public boolean get(DataRecord data) throws IOException{
+	    if (currentDataChunk!=null){
+	        return currentDataChunk.get(data);
+	    }else{
+	        return false;
+	    }
+	}
 
 	/* Returns String containing short summary of chunks stored on tape.
 	 * 
@@ -411,10 +442,6 @@ public class DataRecordTape {
 		 void put(ByteBuffer data) throws IOException {
 			int recordSize = data.remaining();
 			
-			if(recordSize<1 || recordSize>400){
-			    throw new RuntimeException("*** wrong recordSize when putting ****");
-			}
-			
 			// check that internal buffer has enough space
 			if ((recordSize + LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
 					flushBuffer();
@@ -431,6 +458,30 @@ public class DataRecordTape {
 			nRecords++;
 		}
 
+		 /**
+		  * Stores one data record into buffer / file.
+		  * 
+		 * @param data	DataRecord to be stored
+		 * @throws IOException
+		 */
+		void put(DataRecord data) throws IOException {
+				int recordSize = data.getSizeSerialized();
+				
+				// check that internal buffer has enough space
+				if ((recordSize + LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
+						flushBuffer();
+					}
+				
+				try {
+					dataBuffer.putInt(recordSize);
+					data.serialize(dataBuffer);
+				} catch (BufferOverflowException ex) {
+					throw new RuntimeException("Input Buffer is not big enough to accomodate data record !");
+				}
+				
+				length+=(recordSize+ LEN_SIZE_SPECIFIER);
+				nRecords++;
+			}
 
 		/**
 		 *  Returns next record from the buffer - FIFO order.
@@ -456,14 +507,6 @@ public class DataRecordTape {
 				}
 			recordSize = dataBuffer.getInt();
 			position+=LEN_SIZE_SPECIFIER;
-			//debug
-			if (recordSize<1 || recordSize>400){
-			    System.err.println("Error in size:" +recordSize);
-			    System.err.println("Position new/old : "+tmpFileChannel.position()+"/"+position);
-			    System.err.println("records/read : "+nRecords+"/"+recordsRead);
-			    System.err.println("Lenght of chunk: "+length);
-			}
-			//debug
 			
 			//	check that internal buffer has enough data to read data record
 			if ((recordSize) > dataBuffer.remaining()){
@@ -480,7 +523,39 @@ public class DataRecordTape {
 			return true;
 		}
 
-		
+		 /**
+		  * Returns next record from the buffer - FIFO order.
+		 * @param data	DataRecord into which load the data
+		 * @return
+		 * @throws IOException
+		 */
+		boolean get(DataRecord data) throws IOException {
+				int recordSize;
+				if(!canRead){
+					throw new RuntimeException("Buffer has not been rewind !");
+				}
+				
+				if (recordsRead>=nRecords){
+				    return false;
+				}
+				//	check that internal buffer has enough data to read data size
+				if ((LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
+						reloadBuffer();
+					}
+				recordSize = dataBuffer.getInt();
+				position+=LEN_SIZE_SPECIFIER;
+				
+				//	check that internal buffer has enough data to read data record
+				if ((recordSize) > dataBuffer.remaining()){
+						reloadBuffer();
+				}
+				data.deserialize(dataBuffer);
+				
+				position+=recordSize;
+				recordsRead++;
+				return true;
+			}
+		 
 		/**
 		 *  Flushes in memory buffer into TMP file
 		 *
