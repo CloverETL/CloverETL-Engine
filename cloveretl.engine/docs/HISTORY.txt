@@ -1,0 +1,8 @@
+*******************************************************************************
+                                 HISTORY
+*******************************************************************************
+
+2002-12-03
++ Added code for sorting records. So far all the sorting happens in memory. The external sort will follow.
++ Extended DataParser (DelimitedDataParserNIO) to handle multiple characters delimiters (the default limit is 32)
++ Minor inprovement into TransformationGraph$WatchDog to properly report which component caused exception
