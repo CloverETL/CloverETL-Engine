@@ -174,7 +174,8 @@ public class DBFDataParser implements Parser {
             record.getField(fieldNum).fromString(data.toString());
         } catch (BadDataFormatException bdfe) {
             if (handlerBDFE != null) { //use handler only if configured
-                handlerBDFE.populateFieldFailure(record, fieldNum, data
+                handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(),
+                        data, recordCounter, fieldNum), record, fieldNum, data
                         .toString());
             } else {
                 throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
