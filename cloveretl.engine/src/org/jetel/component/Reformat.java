@@ -22,6 +22,7 @@ import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.data.Defaults;
 
 /**
  *  <h3>Reformat Component</h3>
@@ -74,6 +75,8 @@ public class Reformat extends Node {
 	private final static int READ_FROM_PORT = 0;
 
 	private String transformClassName;
+	private String sourceCode;
+	private String[] sourceCodeImports;
 
 	private RecordTransform transformation = null;
 
@@ -101,6 +104,11 @@ public class Reformat extends Node {
 		this.transformation = transformClass;
 	}
 
+	public Reformat(String id, String sourceCode,String[] sourceCodeImports) {
+		super(id);
+		this.sourceCode=sourceCode;
+		this.sourceCodeImports=sourceCodeImports;
+	}
 
 	/**
 	 *  Main processing method for the SimpleCopy object
@@ -206,10 +214,27 @@ public class Reformat extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-
+		ComponentXMLAttributes xattribsChild;
+		String importClassStr[]=null;
+		org.w3c.dom.Node childNode;
+		
 		try {
-			return new Reformat(xattribs.getString("id"),
+			//if transform class defined (as an attribute) use it first
+			if (xattribs.exists("transformClass")){
+				return new Reformat(xattribs.getString("id"),
 					xattribs.getString("transformClass"));
+			}else{
+				// do we have child node wich Java source code ?
+				childNode=xattribs.getChildNode(nodeXML,"SourceCode");
+				if (childNode==null){
+					throw new RuntimeException("Can't find <SourceCode> node !");
+				}
+				 xattribsChild=new ComponentXMLAttributes(childNode);
+				 if (xattribsChild.exists("importClass")){
+					 importClassStr=xattribsChild.getString("importClass").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				 }
+				 return new Reformat(xattribs.getString("id"),xattribsChild.getText(childNode),importClassStr);
+			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;

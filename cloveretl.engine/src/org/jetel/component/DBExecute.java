@@ -20,11 +20,11 @@ package org.jetel.component;
 import java.io.*;
 import java.sql.*;
 import java.util.logging.*;
-import org.jetel.graph.*;
-import org.jetel.database.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -38,7 +38,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>This component executes specified command (SQL/DML) against specified DB</td></tr>
+ * <td>This component executes specified command(s) (SQL/DML) against specified DB</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -52,12 +52,28 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>type</b></td><td>"DB_EXECUTE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>dbSQL</b></td><td>SQL/DML/DDL statement which has to be executed on database</td>
+ *  <tr><td><b>dbSQL</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database.
+ *  If several statements should be executed, separate them by [;] (semicolon). They will be executed one by one.</td>
  *  </tr>
+ *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
+ * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
+ * <i>Works only if database supports transactions.</i></td></tr>
+ *  <tr><td>&lt;SQLCode&gt;<br><i><small>!!XML tag!!</small></i></td><td>This tag allows for specifying more than one statement. See example below.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" dbSQL="drop table employee_z"/&gt;</pre>
+ *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" inTransaction="Y"/&gt;
+ *  &lt;SQLCode&gt;
+ *	create table testTab (
+ *		name varchar(20)
+ *	);
+ *
+ *	insert into testTab ('nobody');
+ *	insert into testTab ('somebody'); 
+ *  &lt;/SQLCode&gt;
+ *  &lt;/Node&gt;
+ *  </pre>
  *  <br>
  *
  * @author      dpavlis
@@ -70,28 +86,48 @@ public class DBExecute extends Node {
 
 	private DBConnection dbConnection;
 	private String dbConnectionName;
-	private String dbSQL;
-	
+	private String[] dbSQL;
+	private boolean oneTransaction = false;
+
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
-	
+	private final static String SQL_STATEMENT_DELIMITER = ";";
+
 	static Logger logger = Logger.getLogger("org.jetel");
+
 
 	/**
 	 *  Constructor for the DBExecute object
 	 *
 	 * @param  id                Description of Parameter
 	 * @param  dbConnectionName  Description of Parameter
-	 * @param  dbTableName       Description of the Parameter
+	 * @param  dbSQL             Description of the Parameter
 	 * @since                    September 27, 2002
 	 */
 	public DBExecute(String id, String dbConnectionName, String dbSQL) {
+		super(id);
+		this.dbConnectionName = dbConnectionName;
+		this.dbSQL = new String[]{dbSQL};
+		// default
+
+	}
+
+
+	/**
+	 *Constructor for the DBExecute object
+	 *
+	 * @param  id                Description of the Parameter
+	 * @param  dbConnectionName  Description of the Parameter
+	 * @param  dbSQL             Description of the Parameter
+	 */
+	public DBExecute(String id, String dbConnectionName, String[] dbSQL) {
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.dbSQL = dbSQL;
 		// default
 
 	}
+
 
 	/**
 	 *  Description of the Method
@@ -110,6 +146,7 @@ public class DBExecute extends Node {
 		}
 	}
 
+
 	/**
 	 *  Description of the Method
 	 *
@@ -123,38 +160,82 @@ public class DBExecute extends Node {
 
 
 	/**
+	 *  Sets the transaction attribute of the DBExecute object
+	 *
+	 * @param  transaction  The new transaction value
+	 */
+	public void setTransaction(boolean transaction) {
+		oneTransaction = transaction;
+	}
+
+
+	/**
 	 *  Main processing method for the DBInputTable object
 	 *
 	 * @since    September 27, 2002
 	 */
 	public void run() {
 		Statement sqlStatement;
-		
+		// this does not work for some drivers
+		try {
+			dbConnection.getConnection().setAutoCommit(false);
+		} catch (SQLException ex) {
+			if (oneTransaction) {
+				logger.severe("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+				return;
+			}
+		}
+
 		try {
 			// let's create statement
 			sqlStatement = dbConnection.getStatement();
-			sqlStatement.executeUpdate(dbSQL);
+			for (int i = 0; i < dbSQL.length; i++) {
+				// empty strings are skipped
+				if (dbSQL[i].trim().length() == 0) {
+					continue;
+				}
+				System.out.println(dbSQL[i]);
+				sqlStatement.executeUpdate(dbSQL[i]);
+				// shall we commit each statemetn ?
+				if (!oneTransaction) {
+					dbConnection.getConnection().commit();
+				}
+			}
+			// let's commit what remains
 			dbConnection.getConnection().commit();
 			sqlStatement.close();
-			
+
 		} catch (SQLException ex) {
+			performRollback();
 			logger.severe(ex.getMessage());
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			return;
 		} catch (Exception ex) {
+			performRollback();
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 			return;
-		} 
+		}
 		if (runIt) {
 			resultMsg = "OK";
 		} else {
 			resultMsg = "STOPPED";
 		}
 		resultCode = Node.RESULT_OK;
+	}
+
+
+	/**  Description of the Method */
+	private void performRollback() {
+		try {
+			dbConnection.getConnection().rollback();
+		} catch (Exception ex) {
+		}
 	}
 
 
@@ -167,22 +248,50 @@ public class DBExecute extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-		DBExecute outputTable;
+		org.w3c.dom.Node childNode;
+		ComponentXMLAttributes xattribsChild;
+		DBExecute executeSQL;
 
-		try {
-			outputTable = new DBExecute(xattribs.getString("id"),
-					xattribs.getString("dbConnection"),
-					xattribs.getString("dbSQL"));
+		if (xattribs.exists("dbSQL")) {
+			try {
+				executeSQL = new DBExecute(xattribs.getString("id"),
+						xattribs.getString("dbConnection"),
+						xattribs.getString("dbSQL"));
 
-			return outputTable;
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE+" : "+ex.getMessage());
-			return null;
+			} catch (Exception ex) {
+				System.err.println(COMPONENT_TYPE + " : " + ex.getMessage());
+				return null;
+			}
+		} else {//we try to get it from child text node
+			try {
+				childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+				if (childNode == null) {
+					throw new RuntimeException("Can't find <SQLCode> node !");
+				}
+				xattribsChild = new ComponentXMLAttributes(childNode);
+				executeSQL = new DBExecute(xattribs.getString("id"),
+						xattribs.getString("dbConnection"),
+						xattribsChild.getText(childNode).split(SQL_STATEMENT_DELIMITER));
+
+			} catch (Exception ex) {
+				System.err.println(COMPONENT_TYPE + " : " + ex.getMessage());
+				return null;
+			}
+
 		}
+		if (xattribs.exists("inTransaction")) {
+			executeSQL.setTransaction(xattribs.getBoolean("inTransaction"));
+		}
+
+		return executeSQL;
 	}
 
 
-	/**  Description of the Method */
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Return Value
+	 */
 	public boolean checkConfig() {
 		return true;
 	}
