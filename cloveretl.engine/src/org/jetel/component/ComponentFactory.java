@@ -67,6 +67,7 @@ public class ComponentFactory {
 		registerComponent(CheckForeignKey.COMPONENT_TYPE,"org.jetel.component.CheckForeignKey");
 		registerComponent(DBFDataReader.COMPONENT_TYPE,"org.jetel.component.DBFDataReader");
 		registerComponent(ExtFilter.COMPONENT_TYPE,"org.jetel.component.ExtFilter");
+		registerComponent(ExtSort.COMPONENT_TYPE,"org.jetel.component.ExtSort");
 	}
 	
 	
