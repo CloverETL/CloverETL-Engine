@@ -25,24 +25,26 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.database.DBConnection;
 import org.jetel.util.StringUtils;
 import org.jetel.data.Defaults;
+import org.jetel.exception.GraphConfigurationException;
 
 import java.util.logging.Logger;
 /*
-import org.apache.log4j.Logger;
-import org.apache.log4j.BasicConfigurator;
-*/
+ *  import org.apache.log4j.Logger;
+ *  import org.apache.log4j.BasicConfigurator;
+ */
 /**
  * A class that represents Transformation Graph - all the Nodes and connecting Edges
  *
- * @author     D.Pavlis
- * @since    April 2, 2002
- * @see        OtherClasses
+ * @author      D.Pavlis
+ * @since       April 2, 2002
+ * @revision    $Revision$
+ * @see         OtherClasses
  */
- 
- /*
- 	TODO: enumerateNodes called too many times. The result should be preserved somewhere. It is
-	not a big problem now, but with increasing complexity of graph, the time needed to complete
-	this task will grow. However, it affects only initialization phase.
+
+/*
+ *  TODO: enumerateNodes called too many times. The result should be preserved somewhere. It is
+ *  not a big problem now, but with increasing complexity of graph, the time needed to complete
+ *  this task will grow. However, it affects only initialization phase.
  */
 public final class TransformationGraph {
 
@@ -52,7 +54,12 @@ public final class TransformationGraph {
 	/**
 	 * @since    April 2, 2002
 	 */
+	private List phases;
+
 	private List nodes;
+
+	private Node[] nodesArray;
+	private Phase[] phasesArray;
 	/**
 	 * @since    April 2, 2002
 	 */
@@ -60,15 +67,18 @@ public final class TransformationGraph {
 
 	private Map dbConnections;
 
+	private Map lookupTables;
+
 	private String name;
+
+	private Phase currentPhase;
 
 	private static TransformationGraph graph = new TransformationGraph("");
 
-	static Logger logger=Logger.getLogger("org.jetel");
+	static Logger logger = Logger.getLogger("org.jetel");
 
-	static PrintStream log=System.out; // default info messages to stdout
-	
-	// Operations
+	static PrintStream log = System.out;// default info messages to stdout
+
 
 	/**
 	 *Constructor for the TransformationGraph object
@@ -78,11 +88,14 @@ public final class TransformationGraph {
 	 */
 	private TransformationGraph(String _name) {
 		this.name = new String(_name);
-		nodes = new ArrayList();
-		edges = new ArrayList();
+		phases = new LinkedList();
+		nodes = new LinkedList();
+		edges = new LinkedList();
 		dbConnections = new HashMap();
+		lookupTables = new HashMap();
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
+		currentPhase = null;
 	}
 
 
@@ -116,97 +129,39 @@ public final class TransformationGraph {
 	 * @since        October 1, 2002
 	 */
 	public DBConnection getDBConnection(String name) {
-		return (DBConnection)dbConnections.get(name);
+		return (DBConnection) dbConnections.get(name);
 	}
 
 
 	/**
 	 * An operation that starts execution of graph
 	 *
-	 * @param  out  OutputStream - if defined, info messages are printed there
-	 * @return      True if all nodes successfully started, otherwise False
-	 * @since       April 2, 2002
+	 * @return    True if all nodes successfully started, otherwise False
+	 * @since     April 2, 2002
 	 */
 	public boolean run() {
 		WatchDog watchDog;
-		
-		watchDog = new WatchDog(log, Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
-		
+		long timestamp = System.currentTimeMillis();
+		watchDog = new WatchDog(this, phasesArray, log, Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+
 		log.println("[Clover] starting WatchDog thread ...");
 		watchDog.start();
 		try {
 			watchDog.join();
-		}
-		catch (InterruptedException ex) {
+		} catch (InterruptedException ex) {
 			logger.severe(ex.getMessage());
 			return false;
 		}
-		log.println("[Clover] WatchDog thread finished");
-		return watchDog.getStatus() == 0 ? true : false;
-	}
-
-
-
-	/**
-	 *  Returns linked list of all Nodes. The order of Nodes listed is such that
-	 *  any parent Node is guaranteed to be listed befor child Node.
-	 *  The circular references between nodes should be detected.
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     July 29, 2002
-	 */
-	public Iterator enumerateNodes() {
-		Set set1 = new HashSet();
-		Set set2 = new HashSet();
-		Set actualSet;
-		Set enumerationOfNodes = new LinkedHashSet();
-		int totalNodesEncountered = 0;
-		Node node;
-		Iterator iterator;
-
-		// initial populating of set1 - with root Nodes only
-		iterator = nodes.iterator();
-		while (iterator.hasNext()) {
-			node = (Node) iterator.next();
-			if (node.isRoot()) {
-				set1.add(node);
-			}
+		log.print("[Clover] WatchDog thread finished - total execution time: ");
+		log.print((System.currentTimeMillis()-timestamp)/1000);
+		log.println(" (sec)");
+		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK){
+			log.println("[Clover] Graph execution finished successfully");
+			return true;
+		}else{
+			log.println("[Clover] !!! Graph execution finished with errors !!!");
+			return false;
 		}
-
-		if (set1.isEmpty()) {
-			logger.severe("No root Nodes detected!");
-			throw new RuntimeException();
-		}
-
-		actualSet = set1;
-		// initialize - actualSet is set1 for the very first run
-		while (!actualSet.isEmpty()) {
-			totalNodesEncountered += actualSet.size();
-			// if there is some Node from actualSet already in the "global" list, it will
-			// be removed which indicates circular reference
-			if (enumerationOfNodes.removeAll(actualSet)) {
-				logger.severe("Circular reference found in graph !");
-				throw new RuntimeException();
-			}
-			// did we process already more nodes than we have in total ??
-			// that indicates we have circular graph
-			if (totalNodesEncountered > nodes.size()) {
-				logger.severe("Circular reference found in graph !");
-				throw new RuntimeException();
-			}
-			// add individual nodes from set
-			enumerationOfNodes.addAll(actualSet);
-
-			// find successors , switch actualSet
-			if (actualSet == set1) {
-				findNodesSuccessors(set1, set2);
-				actualSet = set2;
-			} else {
-				findNodesSuccessors(set2, set1);
-				actualSet = set1;
-			}
-		}
-		return enumerationOfNodes.iterator();
 	}
 
 
@@ -234,85 +189,87 @@ public final class TransformationGraph {
 
 
 	/**
-	 *  Description of the Method
+	 *  initializes graph (must be called prior attemting to run graph)
 	 *
 	 * @param  out  OutputStream - if defined, info messages are printed thereDescription of Parameter
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       April 10, 2002
 	 */
 	public boolean init(OutputStream out) {
-		Iterator nodeIterator;
-		ListIterator edgeIterator = edges.listIterator();
-		Iterator dbConnectionIterator=dbConnections.values().iterator();
-		Node node;
-		Edge edge;
-		// if the output stream is specified, create logging possibility information
-		if (out != null) {
-			log = new PrintStream(out);
+		Iterator iterator;
+		int i = 0;
+		phasesArray = new Phase[phases.size()];
+		iterator = phases.iterator();
+		while (iterator.hasNext()) {
+			phasesArray[i++] = (Phase) iterator.next();
 		}
-		// iterate through all dbConnection(s) and initialize them - try to connect to db
-		while(dbConnectionIterator.hasNext()){
-			try{
-				((DBConnection)dbConnectionIterator.next()).connect();
-			}catch(Exception ex){
-				logger.severe("Can't connect to database: "+ex.getMessage());
-				return false;
-			}
-		}
-		// iterate through all nodes and initialize them
 		try {
-			nodeIterator = enumerateNodes();
-		}
-		catch (RuntimeException ex) {
+			nodesArray = TransformationGraphAnalyzer.enumerateNodes(nodes);
+		} catch (GraphConfigurationException ex) {
 			logger.severe(ex.getMessage());
 			return false;
 		}
-		while (nodeIterator.hasNext()) {
-			try {
-				node = (Node) nodeIterator.next();
-				node.init();
-			}
-			catch (ComponentNotReadyException ex) {
-				logger.severe(ex.getMessage());
-				return false;
-			}
-			// if logger exists, print some out information
-			if (log != null) {
-				log.print("[Clover] Initialized node: ");
-				log.println(node.getID());
-			}
-		}
-		// iterate through all edges and initialize them
-		while (edgeIterator.hasNext()) {
-			try {
-				edge = (Edge) edgeIterator.next();
-				edge.init();
-			}
-			catch (IOException ex) {
-				ex.printStackTrace();
-				return false;
-			}
-			// if logger exists, print some out information
-			if (log != null) {
-				log.print("[Clover] Initialized edge: ");
-				log.println(edge.getID());
-			}
-		}
-		return true;
+		TransformationGraphAnalyzer.distributeNodes2Phases(phasesArray, nodesArray, edges);
+		// remove reference of nodes and edges from graph - it is now
+		// held by phases
+		deleteEdges();
+		deleteNodes();
+		nodesArray = null;// delete references to nodes (only phases contain them)
+		// sort phases (the array containing phases) so we
+		// can next execute them in proper order (by WatchDog)
+		Arrays.sort(phasesArray);
 		// initialized OK
+		return true;
 	}
 
 
 	/**
-	 * An operation that registers Node within current graph
+	 * An operation that registers Phase within current graph
+	 *
+	 * @param  phase  The phase reference
+	 * @since         August 3, 2003
+	 * 
+	 */
+	public void addPhase(Phase phase) {
+		phases.add(phase);
+		phase.setGraph(this);
+		currentPhase = phase;
+		// assign this graph referenco to Phase
+	}
+
+
+	/**
+	 *  Adds a feature to the Node attribute of the TransformationGraph object
 	 *
 	 * @param  node  The feature to be added to the Node attribute
-	 * @since        April 2, 2002
+	 * @deprecated
 	 */
 	public void addNode(Node node) {
 		nodes.add(node);
 		node.setGraph(this);
-		// assign this graph referenco to Node
+		if (currentPhase == null) {
+			addPhase(new Phase(0));// default phase (at least one must be created) - number is 0)
+		}
+		node.setPhase(currentPhase.getPhaseNum());
+	}
+
+
+	/**
+	 *  Adds a feature to the Node attribute of the TransformationGraph object
+	 *
+	 * @param  node   The feature to be added to the Node attribute
+	 * @param  phase  The feature to be added to the Node attribute
+	 */
+	public void addNode(Node node, int phase) {
+		nodes.add(node);
+		node.setGraph(this);
+		node.setPhase(phase);
+	}
+
+
+	/**  Description of the Method */
+	public void deleteNodes() {
+		nodes.clear();
 	}
 
 
@@ -344,8 +301,26 @@ public final class TransformationGraph {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public void deleteNodes() {
-		nodes.clear();
+	public void deletePhases() {
+		phases.clear();
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  phaseNo  Description of the Parameter
+	 * @return          Description of the Return Value
+	 */
+	public boolean deletePhase(int phaseNo) {
+		Iterator iterator = phases.iterator();
+		while (iterator.hasNext()) {
+			if (((Phase) (iterator.next())).getPhaseNum() == phaseNo) {
+				iterator.remove();
+				return true;
+			}
+		}
+		return false;
 	}
 
 
@@ -362,6 +337,17 @@ public final class TransformationGraph {
 
 
 	/**
+	 *  Adds a feature to the LookupTable attribute of the TransformationGraph object
+	 *
+	 * @param  name         The feature to be added to the LookupTable attribute
+	 * @param  lookupTable  The feature to be added to the LookupTable attribute
+	 */
+	public void addLookupTable(String name, Object lookupTable) {
+		lookupTables.put(name, lookupTable);
+	}
+
+
+	/**
 	 *  Removes all DBConnection objects from Map
 	 *
 	 * @since    October 1, 2002
@@ -371,32 +357,9 @@ public final class TransformationGraph {
 	}
 
 
-	/**
-	 *  Finds all the successors of Nodes from source Set
-	 *
-	 * @param  source       Set of source Nodes
-	 * @param  destination  Set of all immediate successors of Nodes from <source> set
-	 * @since               April 18, 2002
-	 */
-	protected void findNodesSuccessors(Set source, Set destination) {
-		Iterator nodeIterator = source.iterator();
-		Iterator portIterator;
-		OutputPort outPort;
-		// remove all previous items from dest.
-		destination.clear();
-		// iterate through all source nodes
-		while (nodeIterator.hasNext()) {
-			portIterator = ((Node) nodeIterator.next()).getOutPorts().iterator();
-			// iterate through all output ports
-			// some other node is perhaps connected to these ports
-			while (portIterator.hasNext()) {
-				outPort = (OutputPort) portIterator.next();
-				// is some Node reading data produced by our source node ?
-				if (outPort.getReader() != null) {
-					destination.add(outPort.getReader());
-				}
-			}
-		}
+	/**  Description of the Method */
+	public void deleteLookupTables() {
+		lookupTables.clear();
 	}
 
 
@@ -412,218 +375,33 @@ public final class TransformationGraph {
 
 
 	/**
-	 *  Description of the Class
-	 *
-	 * @author     dpavlis
-	 * @since    July 29, 2002
+	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be
+	 * called after init()
 	 */
-	class WatchDog extends Thread {
-
-		PrintStream log;
-		int trackingInterval;
-		int watchDogStatus;
-
-		/**
-		 *Constructor for the WatchDog object
-		 *
-		 * @since    July 29, 2002
-		 */
-		WatchDog() {
-			super("WatchDog");
-			log = System.out;
-			trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
-			setDaemon(true);
-		}
-
-
-		/**
-		 *Constructor for the WatchDog object
-		 *
-		 * @param  out       Description of Parameter
-		 * @param  tracking  Description of Parameter
-		 * @since            July 29, 2002
-		 */
-		WatchDog(PrintStream out, int tracking) {
-			super("WatchDog");
-			log = out;
-			trackingInterval = tracking;
-			setDaemon(true);
-		}
-
-
-		/**
-		 * Execute transformation - start-up all Nodes & watch them running
-		 *
-		 * @since    July 29, 2002
-		 */
-		public void run() {
-			List leafNodesList = new LinkedList();
-			List orderedNodes = new LinkedList(); // nodes in order the are in graph
-			ListIterator leafNodesIterator;
-			ListIterator nodesIterator;
-			Node node;
-			int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
-			long lastTimestamp;
-			long currentTimestamp;
-			long startTimestamp;
-
-			// first, start-up all Nodes & build list of leaf nodes
-			log.println("[WatchDog] Thread started.");
-			startUpNodes(enumerateNodes(), leafNodesList, orderedNodes);
-
-			startTimestamp = lastTimestamp = System.currentTimeMillis();
-			// entering the loop awaiting completion of work by all leaf nodes
-			while (true) {
-				if (leafNodesList.isEmpty()) {
-					watchDogStatus = 0;
-					log.print("[WatchDog] Execution sucessfully finished - elapsed time(sec): ");
-					log.println((System.currentTimeMillis() - startTimestamp) / 1000);
-					printProcessingStatus(orderedNodes.listIterator());
-					return;
-					// nothing else to do
-				}
-				leafNodesIterator = leafNodesList.listIterator();
-				while (leafNodesIterator.hasNext()) {
-					node = (Node) leafNodesIterator.next();
-					// is this Node still alive - ? doing something
-					if (!node.isAlive()) {
-						leafNodesIterator.remove();
-					}
-				}
-				// check that no Node finished with some fatal error
-				if ((ticker--) == 0) {
-					ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
-					nodesIterator = orderedNodes.listIterator();
-					while (nodesIterator.hasNext()) {
-						node = (Node) nodesIterator.next();
-						if ((!node.isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
-							log.println("[WatchDog] !!! Fatal Error !!! - graph execution is aborting");
-							logger.severe("Node " + node.getID() + " finished with fatal error: "+node.getResultMsg());
-							abort();
-							printProcessingStatus(orderedNodes.listIterator());
-							return;
-						}
-					}
-				}
-				// Display processing status, if it is time
-				currentTimestamp = System.currentTimeMillis();
-				if ((currentTimestamp - lastTimestamp) >= Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL) {
-					printProcessingStatus(orderedNodes.listIterator());
-					lastTimestamp = currentTimestamp;
-				}
-				// rest for some time
-				try {
-					sleep(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL);
-				}
-				catch (InterruptedException ex) {
-					watchDogStatus = -1;
-					return;
-				}
-			}
-
-		}
-
-
-		/**
-		 *  Gets the Status of the WatchDog
-		 *
-		 * @return    0 if successful, -1 otherwise
-		 * @since     July 30, 2002
-		 */
-		int getStatus() {
-			return watchDogStatus;
-		}
-
-
-		/**
-		 *  Outputs basic LOG information about graph processing
-		 *
-		 * @param  iterator  Description of Parameter
-		 * @since            July 30, 2002
-		 */
-		void printProcessingStatus(ListIterator iterator) {
-			int i;
-			int recCount;
-			Node node;
-			StringBuffer stringBuf;
-			stringBuf = new StringBuffer(90);
-			log.println("----------------------------** Start of tracking Log **--------------------------");
-			log.print("Time: ");
-			// France is here just to get 24hour time format
-			log.println(DateFormat.getDateTimeInstance(DateFormat.SHORT,DateFormat.MEDIUM,Locale.FRANCE).
-					format(Calendar.getInstance().getTime()));
-			log.println("Node                        Status         Port                          #Records");
-			log.println("---------------------------------------------------------------------------------");
+	public void dumpGraphConfiguration() {
+		PrintStream log = System.out;
+		Iterator iterator;
+		Node node;
+		Edge edge;
+		log.println("*** TRANSFORMATION GRAPH CONFIGURATION ***\n");
+		for (int i = 0; i < phasesArray.length; i++) {
+			log.println("--- Phase [" + phasesArray[i].getPhaseNum() + "] ---");
+			log.println("\t... nodes ...");
+			iterator = phasesArray[i].getNodes().iterator();
 			while (iterator.hasNext()) {
 				node = (Node) iterator.next();
-				Object nodeInfo[]={node.getID(),node.getStatus()};
-				int nodeSizes[]={-28,-15};
-				log.println(StringUtils.formatString(nodeInfo,nodeSizes));
-				//in ports
-				i=0;
-				while((recCount=node.getRecordCount(Node.INPUT_PORT,i))!=-1) {
-					Object portInfo[]={"In:",Integer.toString(i),Integer.toString(recCount)};
-					int portSizes[]={47,-2,32};
-					log.println(StringUtils.formatString(portInfo,portSizes));
-					i++;
-				}
-				//out ports
-				i=0;
-				while((recCount=node.getRecordCount(Node.OUTPUT_PORT,i))!=-1) {
-					Object portInfo[]={"Out:",Integer.toString(i),Integer.toString(recCount)};
-					int portSizes[]={47,-2,32};
-					log.println(StringUtils.formatString(portInfo,portSizes));
-					i++;
-				}
+				log.println("\t" + node.getID() + " : " + node.getName() + " phase: " + node.getPhase());
 			}
-			log.println("---------------------------------** End of Log **--------------------------------");
-			log.flush();
+			log.println("\t... edges ...");
+			iterator=phasesArray[i].getEdges().iterator();
+			while(iterator.hasNext()){
+			edge=(Edge)iterator.next();
+			log.print("\t"+edge.getID()+" type: ");
+			log.println(edge.getType()==edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
 		}
-
-
-		/**
-		 *Constructor for the abort object
-		 *
-		 * @since    July 29, 2002
-		 */
-		void abort() {
-			ListIterator iterator = nodes.listIterator();
-			Node node;
-
-			// iterate through all the nodes and start them
-			while (iterator.hasNext()) {
-				node = (Node) iterator.next();
-				node.abort();
-				log.print("[WatchDog] Interrupted node: ");
-				log.println(node.getID());
-				log.flush();
-			}
+			log.println("--- end phase ---");
 		}
-
-
-		/**
-		 *  Description of the Method
-		 *
-		 * @param  nodesIterator  Description of Parameter
-		 * @param  leafNodesList  Description of Parameter
-		 * @since                 July 31, 2002
-		 */
-		private void startUpNodes(Iterator nodesIterator, List leafNodesList, List orderedNodes) {
-			Node node;
-			log.println("[WatchDog] Starting up all Nodes:");
-			while (nodesIterator.hasNext()) {
-				node = (Node) nodesIterator.next();
-				orderedNodes.add(node);
-				node.start();
-				if (node.isLeaf()) {
-					leafNodesList.add(node);
-				}
-				log.print("[WatchDog] started node: ");
-				log.println(node.getID());
-				log.flush();
-			}
-			log.println("[WatchDog] Sucessfully started All Nodes !");
-		}
+		log.println("*** END OF GRAPH LIST ***");
 	}
 
 }
