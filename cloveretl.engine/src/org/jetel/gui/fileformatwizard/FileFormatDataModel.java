@@ -27,6 +27,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class FileFormatDataModel 
 implements Cloneable {
+	public String fieldDelimiters = null;
 	public String fileName = null;
 	public String[] linesFromFile = new String[5];
 	public boolean isFileDelimited = false;

@@ -86,6 +86,7 @@ public class Screen2f extends JPanel implements  FormInterface
     jLabel1.setFont(new Font("Dialog", 1, 11));
     jLabel2.setText("Specify Fields");
     jTextPane1.setText("Here goes screen help text.");
+	jTextPane1.setEditable(false);
     jTextPane1.setBackground(SystemColor.control);
     
 	//loadData();
@@ -196,4 +197,11 @@ if(aFileFormatDataModel.oneRecordPerLine) {
 		aFileFormatDataModel.recordMeta.bulkLoadFieldSizes(fieldWidths);
 	}
 
+	/**
+	 * Used to expose access to data model.
+	 * @see org.jetel.gui.component.FormInterface#getFileFormatDataModel()
+	 */
+	public FileFormatDataModel getFileFormatDataModel() {
+		return aFileFormatDataModel;
+	}
 }

@@ -121,7 +121,7 @@ public class Screen1 extends JPanel implements FormInterface
    OneRecordPerLineRadioButton.setText("There is only one record per line.");
    ManyRecordPerLineRadioButton.setText("All records are on one line.");
    jLabel6.setText(" ");
-
+   jTextPane1.setEditable(false);
    jLabel5.setText("Select File");
    jLabel5.setAlignmentY((float)0.0);
    jLabel5.setAlignmentX((float)0.5);
@@ -266,6 +266,14 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 		aFileFormatDataModel.isFileDelimited = DelimitedRadioButton.isSelected();
 		aFileFormatDataModel.linesFromFile = linesFromFile;
 		aFileFormatDataModel.oneRecordPerLine=OneRecordPerLineRadioButton.isSelected();
+	}
+
+	/**
+	 * Used to expose access to data model.
+	 * @see org.jetel.gui.component.FormInterface#getFileFormatDataModel()
+	 */
+	public FileFormatDataModel getFileFormatDataModel() {
+		return aFileFormatDataModel;
 	}
 
 }

@@ -97,11 +97,11 @@ public class Screen3 extends JPanel implements FormInterface {
     jLabel2.setText("Specify Field Attributes");
     jTextPane1.setText("You can edit field attributes by clicking on the table and selecting a column that corresponds to field you want to change.  Now you can change field name and any other attributes that are displayed.\n\nPlease note that all attributes are saved automatically.  There is no 'Cancel' button.");
     jTextPane1.setBackground(SystemColor.control);
+	jTextPane1.setEditable(false);
     jPanel2.setLayout(gridBagLayout2);
     jLabel3.setText("Field Name");
     jLabel4.setText("Data Type");
     jTextField1.setText("Nothing");
-    //jCheckBox1.setText("Is Nullable?");
     
 	jLabel6.setText("Nullable?");
 	//jPanel3.setBackground(new Color(73, 66, 236));
@@ -311,4 +311,11 @@ private void jTextField1_focusLost(FocusEvent e)
 		
 	}
 
+	/**
+	 * Used to expose access to data model.
+	 * @see org.jetel.gui.component.FormInterface#getFileFormatDataModel()
+	 */
+	public FileFormatDataModel getFileFormatDataModel() {
+		return aFileFormatDataModel;
+	}
 }

@@ -71,6 +71,7 @@ public class Screen4 extends JPanel implements  FormInterface
     jLabel1.setFont(new Font("Dialog", 1, 11));
 	jTextPane1.setText("You can edit record information and any changes you make will be imported back into the wizard.\n\nPlease note that there is no 'Undo' button.");
 	jTextPane1.setBackground(SystemColor.control);
+	jTextPane1.setEditable(false);
     jLabel2.setText(" Preview Final XML");
 	JScrollPane scrollPane = new JScrollPane(jTextPane2);
     this.add(jLabel1, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5, 5, 5, 5), 0, 0));
@@ -80,36 +81,42 @@ public class Screen4 extends JPanel implements  FormInterface
 	//loadData();
   }
 
-/* (non-Javadoc)
- * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
- */
-public String validateData() {
-	// TODO Auto-generated method stub
-	//parse the document
-	DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
-	aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane2.getText().getBytes()));
-	if( aDataRecordMetadata == null) {
-		return "Errors Parsing Record elements!";
+	/* (non-Javadoc)
+	 * @see org.jetel.gui.component.PhasedPanelInterface#validateData()
+	 */
+	public String validateData() {
+		//parse the document
+		DataRecordMetadataXMLReaderWriter aReader = new DataRecordMetadataXMLReaderWriter();
+		aDataRecordMetadata = aReader.read(new ByteArrayInputStream(jTextPane2.getText().getBytes()));
+		if( aDataRecordMetadata == null) {
+			return "Errors Parsing Record elements!";
+		}
+		return null;
 	}
-	return null;
-}
-
-/* (non-Javadoc)
- * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
- */
-public void saveData() {
-	aFileFormatDataModel.recordMeta = aDataRecordMetadata;
-}
-
-/* (non-Javadoc)
- * @see org.jetel.gui.component.FormInterface#loadData()
- */
-public void loadData() {
-	// TODO Auto-generated method stub
-	aDataRecordMetadata= aFileFormatDataModel.recordMeta;
-	ByteArrayOutputStream baos = new ByteArrayOutputStream();
-	DataRecordMetadataXMLReaderWriter aWriter = new DataRecordMetadataXMLReaderWriter();
-	aWriter.write(aDataRecordMetadata,baos);
-	jTextPane2.setText(baos.toString());
-}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.gui.component.PhasedPanelInterface#saveData()
+	 */
+	public void saveData() {
+		aFileFormatDataModel.recordMeta = aDataRecordMetadata;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.gui.component.FormInterface#loadData()
+	 */
+	public void loadData() {
+		aDataRecordMetadata= aFileFormatDataModel.recordMeta;
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		DataRecordMetadataXMLReaderWriter aWriter = new DataRecordMetadataXMLReaderWriter();
+		aWriter.write(aDataRecordMetadata,baos);
+		jTextPane2.setText(baos.toString());
+	}
+	
+	/**
+	 * Used to expose access to data model.
+	 * @see org.jetel.gui.component.FormInterface#getFileFormatDataModel()
+	 */
+	public FileFormatDataModel getFileFormatDataModel() {
+		return aFileFormatDataModel;
+	}
 }

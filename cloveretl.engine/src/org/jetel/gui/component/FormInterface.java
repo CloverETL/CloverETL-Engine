@@ -19,6 +19,8 @@
 
 package org.jetel.gui.component;
 
+import org.jetel.gui.fileformatwizard.FileFormatDataModel;
+
 
 public interface  FormInterface {
     
@@ -54,4 +56,11 @@ public interface  FormInterface {
 	 * <p>
 	 */
 	  public void loadData();
+	  
+	  
+	/**
+	 * Used to expose access to data model.
+	 * <p>
+	 */
+	  public FileFormatDataModel getFileFormatDataModel();
 }
