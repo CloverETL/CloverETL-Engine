@@ -65,6 +65,7 @@ protected void tearDown() {
 public void test_1_IntegerDataField() {
 	assertNotNull(anIntegerDataField2);
 	assertNotNull(anIntegerDataField4);
+	assertTrue(anIntegerDataField4.isNull());
 	}
 
 
@@ -75,6 +76,7 @@ public void test_1_IntegerDataField() {
 	public void test_2_IntegerDataField() {
 		assertNotNull(anIntegerDataField1);
 		assertNotNull(anIntegerDataField3);
+		assertFalse(anIntegerDataField3.isNull());
 	}
 
 	/**
