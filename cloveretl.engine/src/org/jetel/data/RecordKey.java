@@ -22,6 +22,7 @@ package org.jetel.data;
 import java.util.*;
 import org.jetel.metadata.DataRecordMetadata;
 
+import java.util.Arrays;
 /**
  *  This class serves the role of DataRecord to recordKey(String value) mapper.
  *
@@ -186,6 +187,37 @@ public class RecordKey {
 		return true;
 	}
 
+    /**
+     * toString method: creates a String representation of the object
+     * @return the String representation
+     */
+    public String toString() {
+        StringBuffer buffer = new StringBuffer();
+        buffer.append("RecordKey[");
+        if (keyFields == null) {
+            buffer.append("keyFields = ").append("null");
+        } else {
+            buffer.append("keyFields = ").append("[");
+            for (int i = 0; i < keyFields.length; i++) {
+                if (i != 0) {
+                    buffer.append(", ");
+                }
+                buffer.append(keyFields[i]);
+            }
+            buffer.append("]");
+        }
+        buffer.append(", metadata = ").append(metadata.toString());
+        if (keyFieldNames == null) {
+            buffer.append(", keyFieldNames = ").append("null");
+        } else {
+            buffer.append(", keyFieldNames = ").append(Arrays.asList(keyFieldNames).toString());
+        }
+        buffer.append(", KEY_ITEMS_DELIMITER = ").append(KEY_ITEMS_DELIMITER);
+        buffer.append(", DEFAULT_KEY_LENGTH = ").append(DEFAULT_KEY_LENGTH);
+        buffer.append(", keyStr = ").append(keyStr);
+        buffer.append("]");
+        return buffer.toString();
+    }
 }
 // end RecordKey
 
