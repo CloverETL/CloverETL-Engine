@@ -234,6 +234,16 @@ public class DataFieldMetadata {
 
 
 	/**
+	 *  Sets the Type attribute of the DataFieldMetadata object
+	 *
+	 * @return    The Type value
+	 * @since     October 30, 2002
+	 */
+	public void setType(char c) {
+		fieldType = c;
+	}
+
+	/**
 	 *  Returns the specified maximum field size (used only when dealing with fixed-size type of record)
 	 *
 	 * @return    The Length value

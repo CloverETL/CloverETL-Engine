@@ -30,6 +30,7 @@ import javax.swing.JTable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
@@ -80,7 +81,7 @@ public class Screen3 extends JPanel implements FormInterface {
   	
     try
     {
-		String[] petStrings = { "Bird", "Cat", "Dog", "Rabbit", "Pig" };
+		String[] petStrings = { "Numeric", "String", "Integer", "Date", "Byte" };
 		jComboBox1 = new JComboBox(petStrings);
 		loadData();
 		jbInit();
@@ -194,11 +195,20 @@ public class Screen3 extends JPanel implements FormInterface {
 	jTable1.setColumnSelectionAllowed(true);
 	//jTable1.setCellSelectionEnabled(false);
 	jTable1.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+	jTable1.addMouseListener(new java.awt.event.MouseAdapter()
+	  {
+		public void mouseClicked(MouseEvent e)
+		{
+		  jTable1_mouseClicked(e);
+		}
+	  });
+
 	ListSelectionModel colSM = jTable1.getColumnModel().getSelectionModel();
 	colSM.addListSelectionListener(new ListSelectionListener() {
 		public void valueChanged(ListSelectionEvent e) {
 			//Ignore extra messages.
 			if (e.getValueIsAdjusting()) return;
+			System.out.println("ListSelectionEvent " + e.getFirstIndex());
 
 			ListSelectionModel lsm = (ListSelectionModel)e.getSource();
 			if (lsm.isSelectionEmpty()) {
@@ -212,6 +222,8 @@ public class Screen3 extends JPanel implements FormInterface {
 								   + " is now selected.");
 				jLabel7.setText(jTable1.getColumnName(selectedCol));
 				jTextField1.setText(jTable1.getColumnName(selectedCol));
+				jCheckBox1.setSelected( aDataRecordMetadata.getField(jTable1.getColumnName(selectedCol)).isNullable());
+				//jComboBox1.setSelectedItem(aDataRecordMetadata.getField(jTable1.getColumnName(selectedCol)).getType());
 			}
 		}
 	});
@@ -236,15 +248,26 @@ public class Screen3 extends JPanel implements FormInterface {
 	jPanel2.add(jPanel3, new GridBagConstraints(0, 0, 3, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0));
   }
 
+  private void jTable1_mouseClicked(MouseEvent e)
+  {
+  	System.out.println("jTable1_mouseClicked " + e.getX() + " " + e.getY());
+  }
+
 private void jCheckBox1_actionPerformed(ActionEvent e)
 {
 	Object source = e.getSource();
 	System.out.println("ActionEvent e " + jCheckBox1.isSelected());
+	if(selectedCol!= -1) { //reset values only if something is selected
+		aDataRecordMetadata.getField(selectedCol).setNullable(jCheckBox1.isSelected());
+	}
 }
 
 private void jComboBox1_actionPerformed(ActionEvent e)
 {
 	System.out.println("ActionEvent e " + jComboBox1.getSelectedItem());
+	if(selectedCol!= -1) { //reset values only if something is selected
+		//aDataRecordMetadata.getField(selectedCol).setType((String)jComboBox1.getSelectedItem());
+	}
 }
 
 private void jTextField1_focusLost(FocusEvent e)
