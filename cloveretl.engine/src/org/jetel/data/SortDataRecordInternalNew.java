@@ -92,12 +92,9 @@ public class SortDataRecordInternalNew {
 	 *@param  record  Description of the Parameter
 	 */
 	public void put(DataRecord record) {
-		dataBuffer.clear();
-		record.serialize(dataBuffer);
-		dataBuffer.flip();
 		DataRecord newRecord=new DataRecord(metadata);
 		newRecord.init();
-		newRecord.deserialize(dataBuffer);
+		newRecord.copyFieldsByPosition(record);
 		keyList.add(newRecord);
 		recCounter++;
 	}
@@ -137,10 +134,7 @@ public class SortDataRecordInternalNew {
 		if ((sortOrderAscending && (readPos >= recCounter)) || (readPos < 0)) {
 			return null;
 		}
-		dataBuffer.clear();
-		recordArray[readPos].serialize(dataBuffer);
-		dataBuffer.flip();
-		record.deserialize(dataBuffer);
+		record.copyFieldsByPosition(recordArray[readPos]);
 		if (sortOrderAscending) {
 			readPos++;
 		} else {
@@ -160,10 +154,7 @@ public class SortDataRecordInternalNew {
 		if ((sortOrderAscending && (readPos >= recCounter)) || (readPos < 0)) {
 			return false;
 		}
-		dataBuffer.clear();
-		recordArray[readPos].serialize(dataBuffer);
-		dataBuffer.flip();
-		recordData.put(dataBuffer);
+		recordArray[readPos].serialize(recordData);
 		recordData.flip();
 		
 		if (sortOrderAscending) {
