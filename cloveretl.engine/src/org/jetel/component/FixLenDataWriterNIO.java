@@ -23,6 +23,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DataFormatter;
 import org.jetel.data.FixLenDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>FixLenDataWriter Component</h3>
@@ -51,9 +52,9 @@ import org.jetel.exception.ComponentNotReadyException;
  *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_WRITER_NIO"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
- *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
- *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
- *  <tr><td><b>OneRecordPerLine</b></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
+ *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
+ *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
  *  </tr>
  *  </table>
  *
@@ -191,31 +192,33 @@ public class FixLenDataWriterNIO extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
-		NamedNodeMap attribs = nodeXML.getAttributes();
-
-		if (attribs != null) {
-			String id = attribs.getNamedItem("id").getNodeValue();
-			String fileURL = attribs.getNamedItem("fileURL").getNodeValue();
-			String append = attribs.getNamedItem("append").getNodeValue();
-			org.w3c.dom.Node charset = attribs.getNamedItem("charset");
-			String aOneRecordPerLine = attribs.getNamedItem("OneRecordPerLine").getNodeValue();
-			if ((id != null) && (fileURL != null)) {
-				if (charset != null) {
-					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id, fileURL, charset.getNodeValue(), Boolean.valueOf(append).booleanValue());
-				} else {
-					aFixLenDataWriterNIO = new FixLenDataWriterNIO(id, fileURL, Boolean.valueOf(append).booleanValue());
-				}
-				if (aOneRecordPerLine != null) {
-					if (aOneRecordPerLine.equalsIgnoreCase("true") || aOneRecordPerLine.equalsIgnoreCase("yes")) {
-						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(true);
-					} else {
-						aFixLenDataWriterNIO.setOneRecordPerLinePolicy(false);
-					}
-				}
-				// sets the default policy
-				aFixLenDataWriterNIO.setOneRecordPerLinePolicy(false);
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		final boolean _ONE_REC_PER_LINE_=false;
+		final boolean _APPEND_=false;
+		
+		
+		try{
+		
+			if (xattribs.exists("charset")){
+				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
+						xattribs.getString("id"), 
+						xattribs.getString("fileURL"),
+						xattribs.getString("charset"),
+						xattribs.getBoolean("append",_APPEND_));
+			}else{
+				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
+						xattribs.getString("id"), 
+						xattribs.getString("fileURL"),
+						xattribs.getBoolean("append",_APPEND_));
 			}
+			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine",_ONE_REC_PER_LINE_));
+		
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
+		
+		
 		return aFixLenDataWriterNIO;
 	}
 

@@ -59,11 +59,11 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"FIXED_DATA_READER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_READER_NIO"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
- *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
- *  <tr><td><b>OneRecordPerLine</b></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
+ *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
  *  </tr>
  *  </table>
  *
@@ -79,7 +79,7 @@ import org.jetel.util.ComponentXMLAttributes;
 public class FixLenDataReaderNIO extends Node {
 
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "FIXED_DATA_READER_NIO";
+	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER_NIO";
 
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
