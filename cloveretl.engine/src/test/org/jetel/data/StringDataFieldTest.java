@@ -97,14 +97,14 @@ public void test_1_StringDataField() {
 
 		try {
 			aStringDataField2.setValue(null);
-			fail("aDateDataField2 is not nullable - BadDataFormatException should be thrown");
+			fail("aStringDataField2 is not nullable - BadDataFormatException should be thrown");
 		} catch(BadDataFormatException e){}
 
 		try {
 			aStringDataField1.setValue(null);
 			assertTrue(aStringDataField1.isNull());
 		} catch(BadDataFormatException e){
-			fail("aDateDataField1 is nullable - BadDataFormatException should not be thrown");
+			fail("aStringDataField1 is nullable - BadDataFormatException should not be thrown");
 		}
 	}
 
