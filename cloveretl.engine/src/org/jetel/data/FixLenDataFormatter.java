@@ -20,6 +20,7 @@ import java.nio.*;
 import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
+import java.util.Arrays;
 import org.jetel.metadata.*;
 
 /**
@@ -85,7 +86,8 @@ public class FixLenDataFormatter implements DataFormatter {
 	private void initFieldFiller() {
 		// populate fieldFiller so it can be used later when need occures
 		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
-		for (int i = 0; i < fillerArray.length; fillerArray[i++] = DEFAULT_FILLER_CHAR);
+		Arrays.fill(fillerArray,DEFAULT_FILLER_CHAR);
+
 		try {
 			fieldFiller = encoder.encode(CharBuffer.wrap(fillerArray));
 		} catch (Exception ex) {
@@ -125,24 +127,23 @@ public class FixLenDataFormatter implements DataFormatter {
 	 *@exception  IOException  Description of the Exception
 	 */
 	public void write(DataRecord record) throws IOException {
-		String fieldVal;
 		int size;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldVal = record.getField(i).toString();
+			
 			if (fieldLengths[i] > dataBuffer.remaining()) {
 				flushBuffer();
 			}
 			fieldBuffer.clear();
 			record.getField(i).toByteBuffer(fieldBuffer, encoder);
 			size = fieldBuffer.position();
-			if (size >= fieldLengths[i]) {
-				fieldBuffer.limit(size);
-			} else {
+			if (size < fieldLengths[i]) {
 				fieldFiller.rewind();
-				fieldFiller.limit(fieldLengths[i] - size);
+				fieldFiller.limit(fieldLengths[i]-size);
 				fieldBuffer.put(fieldFiller);
+				
 			}
 			fieldBuffer.flip();
+			fieldBuffer.limit(fieldLengths[i]);
 			dataBuffer.put(fieldBuffer);
 		}
 		if(oneRecordPerLinePolicy){
