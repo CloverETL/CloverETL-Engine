@@ -89,7 +89,7 @@ public class StringDataField extends DataField {
 	 */
 	public void setValue(Object value) throws BadDataFormatException {
 		this.value.setLength(0);
-		if (value == null || ((value instanceof String) && value.equals(""))) {
+		if (value == null || ((value instanceof StringBuffer) && (((StringBuffer)value).length()==0))) {
 			if(this.metadata.isNullable()) {
 				super.setNull(true);
 			} else {
@@ -160,7 +160,7 @@ public class StringDataField extends DataField {
 	 *@since     April 23, 2002
 	 */
 	public Object getValue() {
-		return ( value.length() == 0 ? null:value.toString() );
+		return ( value.length() == 0 ? null: value );
 	}
 
 
@@ -276,18 +276,18 @@ public class StringDataField extends DataField {
 	 *@since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		return value.toString().equals(((StringDataField) obj).getValue());
-//		StringBuffer strObj=(StringBuffer)((StringDataField) obj).getValue();
-//		
-//		if (value.length()!=strObj.length()) {
-//			return false;
-//		}
-//		for(int i=0;i<value.length();i++){
-//			if (value.charAt(i)!=strObj.charAt(i)){
-//				return false;
-//			}
-//		}
-//		return true;
+		// THIS DOES NOT WORK !!!! --->return value.toString().equals(((StringDataField) obj).getValue());
+		StringBuffer strObj=(StringBuffer)((StringDataField) obj).getValue();
+		
+		if (strObj==null || value.length()!=strObj.length()) {
+			return false;
+		}
+		for(int i=0;i<value.length();i++){
+			if (value.charAt(i)!=strObj.charAt(i)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -298,26 +298,31 @@ public class StringDataField extends DataField {
 	 *@return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		return value.toString().compareTo(((StringDataField) obj).getValue());
-//		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
-//		int valueLenght = value.length();
-//		int strObjLenght = strObj.length();
-//		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
-//		for (int i = 0; i < compLength; i++) {
-//			if (value.charAt(i) > strObj.charAt(i)) {
-//				return 1;
-//			} else if (value.charAt(i) < strObj.charAt(i)) {
-//				return -1;
-//			}
-//		}
-//		// strings seem to be the same (so far), decide according to the length
-//		if (valueLenght == strObjLenght) {
-//			return 0;
-//		} else if (valueLenght > strObjLenght) {
-//			return 1;
-//		} else {
-//			return -1;
-//		}
+		//THIS DOES NOT WORK !!!! -> return value.toString().compareTo(((StringDataField) obj).getValue());
+		
+		StringBuffer strObj = (StringBuffer)((StringDataField)obj).getValue();
+		if (strObj==null){
+			return 1; // ?? shall we raise an exception ??
+		}
+		
+		int valueLenght = value.length();
+		int strObjLenght = strObj.length();
+		int compLength = (valueLenght < strObjLenght ? valueLenght : strObjLenght);
+		for (int i = 0; i < compLength; i++) {
+			if (value.charAt(i) > strObj.charAt(i)) {
+				return 1;
+			} else if (value.charAt(i) < strObj.charAt(i)) {
+				return -1;
+			}
+		}
+		// strings seem to be the same (so far), decide according to the length
+		if (valueLenght == strObjLenght) {
+			return 0;
+		} else if (valueLenght > strObjLenght) {
+			return 1;
+		} else {
+			return -1;
+		}
 	}
 
 }
