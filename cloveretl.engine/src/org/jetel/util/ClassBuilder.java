@@ -19,9 +19,11 @@
  */
 package org.jetel.util;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.jetel.data.DataRecord;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -33,11 +35,24 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public class ClassBuilder {
-	/** used to store position of record and field tuples*/
-	HashMap inputFieldRefs = null;
-	/** used to store position of record and field tuples*/
-	HashMap recordFieldRefs = null;
+	/** used to store position of input record and field tuples*/
+	private HashMap inputFieldRefs = null;
+	/** used to store position of fields in the processed record.  It may become important if there
+	 * are any references to other fields in the same record.
+	 */
+	private HashMap recordFieldRefs = null;
+	
+	/** used to store the name of the Java class */
+	private String recordClassName = null;
 
+	/** used to store the name of the Java class */
+	private String recordPackageName = null;
+	
+	/** used to store methods of the Java class */
+	ArrayList javaMethodList = null;
+	
+	
+	
 	/**
 	 * Constructor.  It is used to create info for class name and constructor
 	 * @param record
@@ -65,25 +80,63 @@ public class ClassBuilder {
 				
 			}
 		}
+
+		recordFieldRefs = new HashMap();
+		for(int i = 0; i < record.getNumFields() ; i++ ) {
+			bufRecord.setLength(0);
+			bufRecord.append('[').append(arrayDataRecordMetadata[i].getName()).append(']');
+			bufRecord.append('.');
+			bufRecord.append('[').append(arrayDataRecordMetadata[i].getField(i).getName()).append(']');
+			bufField.setLength(0);
+			bufField.append('[').append(arrayDataRecordMetadata[i].getField(i).getName()).append(']');
+				
+			rec_field_poz = new int[1];
+			rec_field_poz[0] = i;
+				
+			recordFieldRefs.put( bufRecord.toString(), rec_field_poz);
+			recordFieldRefs.put( bufField.toString(), rec_field_poz);
+		}
 		
-		// TODO Auto-generated constructor stub
+		// let's assume that record names are well behaved and can be used as the names
+		// for Java classes
+		recordClassName = record.getMetadata().getName();
+		
+		recordPackageName = CloverProperties.USER_JAVA_PACKAGE_NAME;
+		
+		javaMethodList = new ArrayList();
 	}
 
 	/**
 	 * @param tmpCode
 	 * @return
 	 */
-	public int[][] constructMethod(String tmpCode) {
-		// TODO Auto-generated method stub
-		return null;
+	public int[][] constructMethod(DataFieldMetadata fieldMetadata) {
+		int[][] inputRecordFieldDependencies = null;
+		int[] intraRecordFieldDependencies = null;
+		
+		String tmpCode = fieldMetadata.getCodeStr();
+		if(tmpCode != null) {
+			CodeParser aCodeParser = new CodeParser(inputFieldRefs,recordFieldRefs);
+			aCodeParser.parse();
+			inputRecordFieldDependencies = aCodeParser.getInputRecordFieldDependencies();
+			intraRecordFieldDependencies = aCodeParser.getIntraRecordFieldDependencies();
+		}
+
+		return inputRecordFieldDependencies;
 	}
 
 	/**
 	 * 
 	 */
 	public String getClassName() {
-		// TODO Auto-generated method stub
-		return null;
+		return recordClassName;
+	}
+
+	/**
+	 * 
+	 */
+	public String getFullyQualifiedClassName() {
+		return recordPackageName + "." + recordClassName;
 	}
 
 	/**

@@ -215,7 +215,7 @@ public class DataRecord implements Serializable {
 					aClassBuilder =
 						new ClassBuilder(this, arrayDataRecordMetadata);
 				}
-				sequencedDependencies = aClassBuilder.constructMethod(tmpCode);
+				sequencedDependencies = aClassBuilder.constructMethod(fieldMetadata);
 				// does tmpCode contain refs to this and/or other fields
 
 				fields[i] =
