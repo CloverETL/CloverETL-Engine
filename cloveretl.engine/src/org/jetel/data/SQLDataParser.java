@@ -236,8 +236,7 @@ public class SQLDataParser implements DataParser {
 		catch (SQLException ex) {
 			ex.printStackTrace();
 		}
-//	}
-			}
+	}
 
 
 
