@@ -320,6 +320,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 		buffer.put(record);
 		buffer.flip();
 		recordBuffer.setFull(buffer);
+		record.rewind();
 		recordCounter++;
 	}
 
