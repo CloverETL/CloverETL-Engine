@@ -145,7 +145,24 @@ public class DataRecord implements Serializable {
 		}
 	}
 
-
+	/**
+	 *  An operation that sets value of all data fields to their default value.
+	 *
+	 */
+	public void setToDefaultValue() {
+		for (int i = 0; i < fields.length; i++) {
+			fields[i].setToDefaultValue();
+		}
+	}
+	
+	/**
+	 *  An operation that sets value of the selected data field to its default value.
+	 * 
+	 */
+	public void setToDefaultValue(int _fieldNum) {
+			fields[_fieldNum].setToDefaultValue();
+	}
+	
 	/**
 	 *  Description of the Method
 	 *

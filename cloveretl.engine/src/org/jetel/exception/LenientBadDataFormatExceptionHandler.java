@@ -41,13 +41,6 @@ public class LenientBadDataFormatExceptionHandler
 		 * @param string
 		 */
 		public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
-			DataRecordMetadata metadata = null;
-			try {
-				metadata = record.getMetadata();
-				record.getField(fieldCounter).fromString( metadata.getField(fieldCounter).getDefaultValue() );
-			} catch (Exception ex) {
-				// here, the only reason to fail is bad DefaultValue
-				throw new RuntimeException(metadata.getField(fieldCounter).getName() + " has incorrect default value("+metadata.getField(fieldCounter).getDefaultValue()+")!  You are using lenient data policy which requires default values.");
-			}
+			record.getField(fieldCounter).setToDefaultValue();
 		}
 }

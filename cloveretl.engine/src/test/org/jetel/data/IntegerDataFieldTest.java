@@ -46,6 +46,7 @@ protected void setUp() {
 	anIntegerDataField2 = new IntegerDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
+	delimFieldMeta1.setDefaultValue("333333");
 	anIntegerDataField3 = new IntegerDataField(delimFieldMeta1,5);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
@@ -138,103 +139,119 @@ public void test_1_IntegerDataField() {
 		assertEquals("", anIntegerDataField1.toString());
 	}
 
-/**
- *  Test for @link org.jetel.data.IntegerDataField.fromString(String valueStr)
- *
- */
-public void test_fromString() {
-	anIntegerDataField1.fromString("123");
-	assertEquals(anIntegerDataField1.getInt(),123);
-	
-	
-	anIntegerDataField1.fromString(null);
-	assertTrue(anIntegerDataField1.isNull());
-	assertEquals("", anIntegerDataField1.toString());
-	
-	anIntegerDataField1.fromString("");
-	assertTrue(anIntegerDataField1.isNull());
-	assertEquals("", anIntegerDataField1.toString());
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.fromString(String valueStr)
+	 *
+	 */
+	public void test_fromString() {
+		anIntegerDataField1.fromString("123");
+		assertEquals(anIntegerDataField1.getInt(),123);
 		
-	try {
-		anIntegerDataField2.fromString("");
-		fail("Should raise an BadDataFormatException");
-	} catch (BadDataFormatException e){	}
-
-	try {
-		anIntegerDataField1.fromString("123.234");
-		fail("Should raise an BadDataFormatException");
-	} catch (BadDataFormatException e){	}
-}
-
-
-/**
- *  Test for @link org.jetel.data.IntegerDataField.deserialize(ByteBuffer buffer)
- *           @link org.jetel.data.IntegerDataField.serialize(ByteBuffer buffer)
- *
- */
-
-public void test_serialize() {
-	ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		
+		anIntegerDataField1.fromString(null);
+		assertTrue(anIntegerDataField1.isNull());
+		assertEquals("", anIntegerDataField1.toString());
+		
+		anIntegerDataField1.fromString("");
+		assertTrue(anIntegerDataField1.isNull());
+		assertEquals("", anIntegerDataField1.toString());
+			
+		try {
+			anIntegerDataField2.fromString("");
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e){	}
 	
-	anIntegerDataField1.setValue(123);
-	anIntegerDataField1.serialize(buffer);
-	buffer.rewind();
-	anIntegerDataField4.deserialize(buffer);
-	assertEquals(anIntegerDataField4.getInt(),123);
-	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
-	assertEquals(anIntegerDataField4,anIntegerDataField1);
+		try {
+			anIntegerDataField1.fromString("123.234");
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e){	}
+	}
 	
-	buffer.rewind();
-	anIntegerDataField1.setNull(true);
-	anIntegerDataField1.serialize(buffer);
-	buffer.rewind();
-	anIntegerDataField4.deserialize(buffer);
-	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
-
-	buffer.rewind();
-	anIntegerDataField1.setValue(null);
-	anIntegerDataField1.serialize(buffer);
-	buffer.rewind();
-	anIntegerDataField4.deserialize(buffer);
-	assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
-
-
-	buffer.rewind();
-	anIntegerDataField1.fromString("");
-	anIntegerDataField1.serialize(buffer);
-	buffer.rewind();
-	anIntegerDataField4.deserialize(buffer);
-	assertEquals(anIntegerDataField4.getValue(),anIntegerDataField1.getValue());
-	buffer = null;
-}
-
-/**
- *  Test for @link org.jetel.data.IntegerDataField.equals(Object obj)
- *
- */
-public void test_equals() {
-	anIntegerDataField4.setValue(5);
-	assertTrue(anIntegerDataField1.equals(anIntegerDataField4));
 	
-	anIntegerDataField4.setValue(7);
-	assertFalse(anIntegerDataField1.equals(anIntegerDataField4));
-}
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.deserialize(ByteBuffer buffer)
+	 *           @link org.jetel.data.IntegerDataField.serialize(ByteBuffer buffer)
+	 *
+	 */
+	
+	public void test_serialize() {
+		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		
+		anIntegerDataField1.setValue(123);
+		anIntegerDataField1.serialize(buffer);
+		buffer.rewind();
+		anIntegerDataField4.deserialize(buffer);
+		assertEquals(anIntegerDataField4.getInt(),123);
+		assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+		assertEquals(anIntegerDataField4,anIntegerDataField1);
+		
+		buffer.rewind();
+		anIntegerDataField1.setNull(true);
+		anIntegerDataField1.serialize(buffer);
+		buffer.rewind();
+		anIntegerDataField4.deserialize(buffer);
+		assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+	
+		buffer.rewind();
+		anIntegerDataField1.setValue(null);
+		anIntegerDataField1.serialize(buffer);
+		buffer.rewind();
+		anIntegerDataField4.deserialize(buffer);
+		assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
+	
+	
+		buffer.rewind();
+		anIntegerDataField1.fromString("");
+		anIntegerDataField1.serialize(buffer);
+		buffer.rewind();
+		anIntegerDataField4.deserialize(buffer);
+		assertEquals(anIntegerDataField4.getValue(),anIntegerDataField1.getValue());
+		buffer = null;
+	}
+	
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.equals(Object obj)
+	 *
+	 */
+	public void test_equals() {
+		anIntegerDataField4.setValue(5);
+		assertTrue(anIntegerDataField1.equals(anIntegerDataField4));
+		
+		anIntegerDataField4.setValue(7);
+		assertFalse(anIntegerDataField1.equals(anIntegerDataField4));
+	}
+	
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.compareTo(Object obj)
+	 *
+	 */
+	public void test_1_compareTo() {
+		anIntegerDataField4.setValue(5);
+		assertEquals(anIntegerDataField1.compareTo(anIntegerDataField4),0);
+	}
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.compareTo(int compInt)
+	 *
+	 */
+	public void test_2_compareTo() {
+		assertEquals(anIntegerDataField1.compareTo(5),0);
+	}
 
-/**
- *  Test for @link org.jetel.data.IntegerDataField.compareTo(Object obj)
- *
- */
-public void test_1_compareTo() {
-	anIntegerDataField4.setValue(5);
-	assertEquals(anIntegerDataField1.compareTo(anIntegerDataField4),0);
-}
-/**
- *  Test for @link org.jetel.data.IntegerDataField.compareTo(int compInt)
- *
- */
-public void test_2_compareTo() {
-	assertEquals(anIntegerDataField1.compareTo(5),0);
-}
 
-
+	/**
+	 *  Test for @link org.jetel.data.IntegerDataField.setToDefaultValue()
+	 *
+	 */
+	public void test_setToDefaultValue() {
+		anIntegerDataField3.setToDefaultValue();
+		assertEquals("333333",anIntegerDataField3.toString());
+				
+		try {
+			anIntegerDataField4.setToDefaultValue();
+			fail("Field4 is not nullable and is being set to null!");
+		} catch (java.lang.RuntimeException re) {}
+		
+		anIntegerDataField1.setToDefaultValue();
+		assertEquals("",anIntegerDataField1.toString());
+	}
 }

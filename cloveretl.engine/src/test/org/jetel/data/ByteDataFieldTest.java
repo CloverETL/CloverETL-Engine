@@ -142,4 +142,20 @@ protected void tearDown() {
 	 */
 	public void test_compareTo() {
 	}
+	/**
+	 *  Test for @link org.jetel.data.ByteDataField.setToDefaultValue()
+	 *
+	 */
+	public void test_setToDefaultValue() {
+//		anIntegerDataField3.setToDefaultValue();
+//		assertEquals("333333",anIntegerDataField3.toString());
+//				
+//		try {
+//			anIntegerDataField4.setToDefaultValue();
+//			fail("Field4 is not nullable and is being set to null!");
+//		} catch (java.lang.RuntimeException re) {}
+//		
+//		anIntegerDataField1.setToDefaultValue();
+//		assertEquals("",anIntegerDataField1.toString());
+	}
 }

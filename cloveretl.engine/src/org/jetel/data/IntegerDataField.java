@@ -342,6 +342,7 @@ public class IntegerDataField extends DataField {
 			return 0;
 		}
 	}
+
 }
 /*
  *  end class IntegerDataField
