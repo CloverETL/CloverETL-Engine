@@ -29,6 +29,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -47,6 +49,8 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class FixLenDataParser2 implements DataParser {
 	
+	private BadDataFormatExceptionHandler handlerBDFE;
+
 	private ByteBuffer dataBuffer;
 	private ByteBuffer fieldBuffer;
 	private DataRecordMetadata metadata;
@@ -55,7 +59,6 @@ public class FixLenDataParser2 implements DataParser {
 	private int recordLength;
 	private BufferedReader reader = null;
 	private CharsetDecoder decoder;
-	
 	/**
 	 *Constructor for the FixLenDataParser object
 	 *
@@ -125,6 +128,7 @@ public class FixLenDataParser2 implements DataParser {
 
 		String line = null;
 		line = reader.readLine();
+		handlerBDFE.reset();
 		while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
 			line = reader.readLine();
 		}
@@ -141,14 +145,19 @@ public class FixLenDataParser2 implements DataParser {
 		// populate all data fields
 		try {
 			while (fieldCounter < metadata.getNumFields()) {
+				try {
 				populateField(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
+				} catch (BadDataFormatException ex) {
+					handlerBDFE.populateFieldFailure(record, fieldCounter, line.substring(posCounter,posCounter+fieldLengths[fieldCounter]).trim());
+				}
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldCounter));
-		}
 
+			throw new RuntimeException(ex.getMessage());
+		}
+		handlerBDFE.handleException();
 		return record;
 	}
 
@@ -186,7 +195,6 @@ public class FixLenDataParser2 implements DataParser {
 	public DataRecord getNext(DataRecord record) throws IOException {
 		return parseNext(record);
 	}
-
 	/**
 	 *  Description of the Method
 	 *
@@ -198,6 +206,9 @@ public class FixLenDataParser2 implements DataParser {
 	protected void populateField(DataRecord record, int fieldNum, String data) {
 		try {
 			record.getField(fieldNum).fromString( data );
+
+		} catch (BadDataFormatException bdfe) {
+			handlerBDFE.handleException();
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}
@@ -231,6 +242,15 @@ public class FixLenDataParser2 implements DataParser {
 				ex.printStackTrace();
 			}
 		}
+	}
+
+
+
+	/**
+	 * @param handler
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		this.handlerBDFE = handler;
 	}
 
 }

@@ -19,6 +19,8 @@
 
 package org.jetel.exception;
 
+import org.jetel.data.DataRecord;
+
 /**
  * This is a base class for handling exceptions caused by misformatted or 
  * incorrect data.  It implements the default behavior associated with 
@@ -31,5 +33,23 @@ public class BadDataFormatExceptionHandler {
 
 public void handleException() {
 	throw new BadDataFormatException();
+}
+
+/**
+ * 
+ */
+public void reset() {
+	// TODO Auto-generated method stub
+	
+}
+
+/**
+ * @param record
+ * @param fieldCounter
+ * @param string
+ */
+public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+	// TODO Auto-generated method stub
+	
 }
 }
