@@ -28,9 +28,10 @@ import org.jetel.metadata.DataFieldMetadata;
 /**
  *  A class that represents data field (its value).
  *
- * @author     David Pavlis
- * @since      March 26, 2002
- * @see        OtherClasses
+ * @author      David Pavlis
+ * @since       March 26, 2002
+ * @revision    $Revision$
+ * @see         OtherClasses
  */
 public abstract class DataField implements Serializable, Comparable {
 
@@ -73,21 +74,22 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 *  An operation that sets value of the data field to default value.
 	 *
+	 * @exception  BadDataFormatException  Description of the Exception
 	 */
 	public void setToDefaultValue() throws BadDataFormatException {
 		try {
-			fromString( metadata.getDefaultValue());
+			fromString(metadata.getDefaultValue());
 		} catch (Exception ex) {
 			String tmp = metadata.getDefaultValue();
-			if(tmp==null || tmp.equals("")) {
-				if(metadata.isNullable()) {
+			if (tmp == null || tmp.equals("")) {
+				if (metadata.isNullable()) {
 					throw new BadDataFormatException(ex.getMessage());
 				} else {
 					throw new BadDataFormatException(metadata.getName() + " is not nullable and is being set to null!");
 				}
 			} else {
 				// here, the only reason to fail is bad DefaultValue
-				throw new BadDataFormatException(metadata.getName() + " has incorrect default value("+metadata.getDefaultValue()+")!");
+				throw new BadDataFormatException(metadata.getName() + " has incorrect default value(" + metadata.getDefaultValue() + ")!");
 			}
 		}
 	}
@@ -167,9 +169,10 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 *  Get the field's value from ByteBuffer
 	 *
-	 * @param  data     Buffer containing data to be read in
-	 * @param  decoder  Charset decoder which could be used to decode characters
-	 * @since           October 31, 2002
+	 * @param  decoder                       Charset decoder which could be used to decode characters
+	 * @param  dataBuffer                    Description of the Parameter
+	 * @exception  CharacterCodingException  Description of the Exception
+	 * @since                                October 31, 2002
 	 */
 	public abstract void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException;
 
@@ -177,9 +180,10 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 *  Encode the field's value into ByteBuffer
 	 *
-	 * @param  data     Buffer into which write the field's data
-	 * @param  encoder  Charset encoder which could be used to encode characters
-	 * @since           October 31, 2002
+	 * @param  encoder                       Charset encoder which could be used to encode characters
+	 * @param  dataBuffer                    Description of the Parameter
+	 * @exception  CharacterCodingException  Description of the Exception
+	 * @since                                October 31, 2002
 	 */
 	public abstract void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 
@@ -210,7 +214,16 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @since       September 16, 2002
 	 */
 	public abstract boolean equals(Object obj);
-	
+
+
+	/**
+	 *  Compares two fields and returs -1,0,1 depending on result of comparison.
+	 *
+	 * @param  obj  Description of the Parameter
+	 * @return      Description of the Return Value
+	 */
+	public abstract int compareTo(Object obj);
+
 }
 /*
  *  end class DataField
