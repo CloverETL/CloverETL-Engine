@@ -65,6 +65,7 @@ public class ComponentFactory {
 		registerComponent(DBExecute.COMPONENT_TYPE,"org.jetel.component.DBExecute");
 		registerComponent(HashJoin.COMPONENT_TYPE,"org.jetel.component.HashJoin");
 		registerComponent(CheckForeignKey.COMPONENT_TYPE,"org.jetel.component.CheckForeignKey");
+		registerComponent(DBFDataReader.COMPONENT_TYPE,"org.jetel.component.DBFDataReader");
 	}
 	
 	
