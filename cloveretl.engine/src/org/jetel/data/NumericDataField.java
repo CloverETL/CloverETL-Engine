@@ -20,6 +20,7 @@
 package org.jetel.data;
 import java.util.Locale;
 import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.text.ParsePosition;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -44,6 +45,7 @@ public class NumericDataField extends DataField {
 	private double value;
 	private DecimalFormat numberFormat;
 	private ParsePosition parsePosition;
+	private Locale locale;
 	
 	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	// Attributes
@@ -53,9 +55,6 @@ public class NumericDataField extends DataField {
 	 *@since
 	 */
 
-	private static Locale DEFAULT_LOCALE = Locale.US;
-
-
 	/**
 	 *  Constructor for the NumericDataField object
 	 *
@@ -64,15 +63,27 @@ public class NumericDataField extends DataField {
 	 */
 	public NumericDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
+		// handle locale
+		if (_metadata.getLocaleStr()!=null){
+			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+			if (localeLC.length>1){
+				locale=new Locale(localeLC[0],localeLC[1]);
+			}else{
+				locale=new Locale(localeLC[0]);
+			}
+		}else{
+			locale=Locale.getDefault();
+		}
+		// handle formatString
 		String formatString;
 		formatString = _metadata.getFormatStr();
 		if ((formatString != null) && (formatString.length() != 0)) {
-			numberFormat = new DecimalFormat(formatString);
-			//numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(DEFAULT_LOCALE));
+			numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
 		} else {
 			numberFormat = null;
 		}
 		parsePosition = new ParsePosition(0);
+		
 	}
 
 
@@ -84,16 +95,8 @@ public class NumericDataField extends DataField {
 	 *@since             March 28, 2002
 	 */
 	public NumericDataField(DataFieldMetadata _metadata, double value) {
-		super(_metadata);
+		this(_metadata);
 		this.value = value;
-		String formatString;
-		formatString = _metadata.getFormatStr();
-		if ((formatString != null) && (formatString.length() != 0)) {
-			numberFormat = new DecimalFormat(formatString);
-		} else {
-			numberFormat = null;
-		}
-		parsePosition = new ParsePosition(0);
 	}
 
 
