@@ -205,6 +205,9 @@ public class SQLDataParser implements DataParser {
 			e.printStackTrace();
 			throw new ComponentNotReadyException(e.getMessage());
 		}
+/*		
+		// !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
+		// this needs some detecting of supported features first (may-be which version of JDBC is implemented or so
 		try {
 			// following calls are not always supported (as it seems)
 			// if error occures, we just ignore it
@@ -213,7 +216,8 @@ public class SQLDataParser implements DataParser {
 		
 		} catch (SQLException e) {
 			//System.out.println("Warning: "+e.getMessage());
-		}	
+		}
+*/
 		try{
 			resultSet = statement.executeQuery(sqlQuery);
 		} catch (SQLException e) {
