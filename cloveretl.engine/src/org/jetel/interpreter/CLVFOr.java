@@ -17,7 +17,7 @@ public class CLVFOr extends SimpleNode {
 
      if (((Boolean)(stack.pop())).booleanValue())
      {
-        stack.push(new Boolean(true));
+        stack.push(Stack.TRUE_VAL);
         return;
      }
 
@@ -25,10 +25,10 @@ public class CLVFOr extends SimpleNode {
 
      if (((Boolean)stack.pop()).booleanValue())
      {
-        stack.push(new Boolean(true));
+        stack.push(Stack.TRUE_VAL);
 
      }else{
-     	stack.push(new Boolean(false));
+     	stack.push(Stack.FALSE_VAL);
      }
   }
 

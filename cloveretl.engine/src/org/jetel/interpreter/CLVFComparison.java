@@ -26,7 +26,6 @@ public class CLVFComparison extends SimpleNode implements FilterExpParserConstan
 		
 		// special handling for Regular expression
 		if (cmpType==REGEX_EQUAL){
-			System.out.println("COmparing regular expression");
 			jjtGetChild(0).interpret();
 			StringDataField field1=(StringDataField)stack.pop();
 			System.out.println(field1);
@@ -84,7 +83,7 @@ public class CLVFComparison extends SimpleNode implements FilterExpParserConstan
 				throw new RuntimeException("Unsupported cmparison operator !");
 			}
 		}
-		stack.push(new Boolean(lValue));
+		stack.push(lValue ? Stack.TRUE_VAL : Stack.FALSE_VAL);
 	}
   
   public void init(){
