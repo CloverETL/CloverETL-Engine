@@ -212,7 +212,7 @@ public class IntegerDataField extends DataField {
 			try {
 				value = Integer.parseInt(valueStr);
 			} catch (Exception ex) {
-				logger.info("Error when parsing string: " + valueStr);
+//				logger.info("Error when parsing string: " + valueStr);
 				throw new BadDataFormatException("Parsing string: " + valueStr);
 			}
 		} else {

@@ -217,10 +217,10 @@ public class DateDataField extends DataField {
 		setNull(false);
 		
 		 }catch (ParseException e) {
-		  System.err.println(e.getMessage());
+		  //System.err.println(e.getMessage());
 		  setNull(true);
 		  throw new BadDataFormatException("not Date");
-		   }
+		 }
 		 
 	}
 
