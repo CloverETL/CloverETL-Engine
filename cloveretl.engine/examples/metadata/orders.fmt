@@ -2,7 +2,7 @@
 <Record name="Orders" type="delimited">
 	<Field name="OrderID" type="numeric" delimiter="|" format="#" />
 	<Field name="CustomerID" type="string" delimiter="|"/>
-	<Field name="EmployeeID" type="numeric" delimiter="|" format="#" />
+	<Field name="EmployeeID" type="string" delimiter="|"  />
 	<Field name="OrderDate" type="date" delimiter="|" format="dd.MM.yyyy" />
 	<Field name="RequiredDate" type="date" delimiter="|" format="dd.MM.yyyy" />
 	<Field name="ShippedDate" type="date" delimiter="|" format="dd.MM.yyyy" />

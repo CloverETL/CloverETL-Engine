@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet href="graph.xsl" type="text/xsl"?>
 <Graph name="Testing Filter">
 <!-- This graph demonstrates functionality of Filter component. 
 It can filter on text, date, integer, numeric

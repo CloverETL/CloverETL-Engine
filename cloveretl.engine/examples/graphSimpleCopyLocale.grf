@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Simple Copy">
+<!-- This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is
+duplicated onto all connected output ports.
+It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose
+is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)
+
+Metadata in this graph is embedded directly to graph instead of external file.
+Output metadata is the same as input except that for BirthDate and HireDate, locale
+property is defined. It allows to specify language or language.Country locale
+which is used when formatting output.
+In this example, date info on input is expected to be in dd/MM/yyyy format, wherease
+on output it should follow US/UK standard -> (usually defined as MM/dd/YYYY).
+-->
+<Global>
+<Metadata id="InMetadata">
+<Record name="Employees" type="delimited">
+	<Field name="EmployeeID" type="string" delimiter=";" />
+	<Field name="LastName" type="string" delimiter=";" format="#" />
+	<Field name="FirstName" type="string" delimiter=";"/>
+	<Field name="Title" type="string" delimiter=";"/>
+	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
+	<Field name="BirthDate" type="date" delimiter=";" format="dd/MM/yyyy" />
+	<Field name="HireDate" type="date" delimiter=";" format="dd/MM/yyyy" />
+	<Field name="Address" type="string" delimiter=";"/>
+	<Field name="City" type="string" delimiter=";"/>
+	<Field name="Region" type="string" delimiter=";"/>
+	<Field name="PostalCode" type="string" delimiter=";"/>
+	<Field name="Country" type="string" delimiter=";"/>
+	<Field name="Phone" type="string" delimiter=";"/>
+	<Field name="Extension" type="string" delimiter=";"/>
+	<Field name="Photo" type="string" delimiter=";"/>
+	<Field name="Memo" type="string" delimiter=";"/>
+	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+</Record>
+</Metadata>
+<Metadata id="OutMetadata">
+<Record name="Employees" type="delimited">
+	<Field name="EmployeeID" type="string" delimiter=";" />
+	<Field name="LastName" type="string" delimiter=";" format="#" />
+	<Field name="FirstName" type="string" delimiter=";"/>
+	<Field name="Title" type="string" delimiter=";"/>
+	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
+	<Field name="BirthDate" type="date" delimiter=";" locale="en.US" />
+	<Field name="HireDate" type="date" delimiter=";" locale="en.UK" />
+	<Field name="Address" type="string" delimiter=";"/>
+	<Field name="City" type="string" delimiter=";"/>
+	<Field name="Region" type="string" delimiter=";"/>
+	<Field name="PostalCode" type="string" delimiter=";"/>
+	<Field name="Country" type="string" delimiter=";"/>
+	<Field name="Phone" type="string" delimiter=";"/>
+	<Field name="Extension" type="string" delimiter=";"/>
+	<Field name="Photo" type="string" delimiter=";"/>
+	<Field name="Memo" type="string" delimiter=";"/>
+	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+</Record>
+</Metadata>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="BROADCAST" type="SIMPLE_COPY"/>
+<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees_locale.dat"  DataPolicy="Strict" />
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="OUTPUT1:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="View Data">
+<!-- This graph is a simple utility which demonstrates usage of parameters. It allows viewing content
+of particular data file (in delimited format). It reads in data and stores them in "debug" format
+under name Debug_output_<inputfilename>
+
+Execution: java org.jetel.main.runGraph -P:data=<data file> -P:meta=<metadata file> graphViewData.grf
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/${meta}"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/${data}"  DataPolicy="Strict" />
+<Node id="BROADCAST" type="SIMPLE_COPY"/>
+<Node id="TRASH1" type="TRASH" debugFilename="Debug_output_${data}"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="TRASH1:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

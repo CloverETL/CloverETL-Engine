@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Filter">
+<!-- This graph shows some more functionality of EXT_FILTER component
+Filters all employees younger than 41  years. The current age is 
+calculated as today's date minus date of birth.
+
+Notice that instead of classical comparison operators ==,!=, ...etc... one
+can use their textual abbreviations .eq. .ne. .lt. .gt. ...etc...
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="FILTEREMPL1" type="EXT_FILTER">
+datediff(today(),$BirthDate,year).lt.41
+</Node>
+<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees.filtered_1.dat"  append="false" />
+<!-- Edges  -->
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="FILTEREMPL1:0" metadata="InMetadata"/>
+<Edge id="OUTEREDGE1" fromNode="FILTEREMPL1:0" toNode="OUTPUT1:0" metadata="InMetadata"/>
+</Phase>
+</Graph>

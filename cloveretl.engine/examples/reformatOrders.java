@@ -17,55 +17,42 @@
 */
 
 
-import org.jetel.component.RecordTransform;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
 
-public class reformatOrders implements RecordTransform{
+public class reformatOrders extends DataRecordTransform{
 
-	String message;
 	int counter=0;
 	int field=0;
 
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	public boolean init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata targetMetadata){
-		return true;
-	}
-	
-	public boolean transform(DataRecord source, DataRecord target){
+	public boolean transform(DataRecord[] source, DataRecord[] target){
 		StringBuffer strBuf=new StringBuffer(80);
+		if (source[0]==null){
+		   System.err.println("NULL source[0]");
+		}
 		try{
 			// let's concatenate shipping address into one long string
-			strBuf.append(GetVal.getString(source,"ShipName")).append(';');
-			strBuf.append(GetVal.getString(source,"ShipAddress")).append(';');
-			strBuf.append(GetVal.getString(source,"ShipCity")).append(';');
-			strBuf.append(GetVal.getString(source,"ShipCountry"));
+			strBuf.append(GetVal.getString(source[0],"ShipName")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipAddress")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCity")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCountry"));
 			// mapping among source & target fields
 			// some fields get assigned directly from source fields, some
 			// are assigned from internall variables
-			SetVal.setInt(target,"OrderKey",counter);
-			SetVal.setInt(target,"OrderID",GetVal.getInt(source,"OrderID"));
-			SetVal.setString(target,"CustomerID",GetVal.getString(source,"CustomerID"));
-			SetVal.setValue(target,"OrderDate",GetVal.getDate(source,"OrderDate"));
-			SetVal.setString(target,"ShippedDate","02.02.1999");
-			SetVal.setInt(target,"ShipVia",GetVal.getInt(source,"ShipVia"));
-			SetVal.setString(target,"ShipTo",strBuf.toString());
+			SetVal.setInt(target[0],"OrderKey",counter);
+			SetVal.setInt(target[0],"OrderID",GetVal.getInt(source[0],"OrderID"));
+			SetVal.setString(target[0],"CustomerID",GetVal.getString(source[0],"CustomerID"));
+			SetVal.setValue(target[0],"OrderDate",GetVal.getDate(source[0],"OrderDate"));
+			SetVal.setString(target[0],"ShippedDate","02.02.1999");
+			SetVal.setInt(target[0],"ShipVia",GetVal.getInt(source[0],"ShipVia"));
+			SetVal.setString(target[0],"ShipTo",strBuf.toString());
 		}catch(Exception ex){
-			message=ex.getMessage()+" ->occured with record :"+counter;
-			throw new RuntimeException(message);
+		  ex.printStackTrace();
+			errorMessage=ex.getMessage()+" ->occured with record :"+counter;
+			return false;
 		}
 		counter++;
 			return true;
-	}
-	
-	public boolean transform(DataRecord[] source, DataRecord target){
-		return true;
-	}
-
-	public String getMessage(){
-		return message;
 	}
 }
