@@ -46,204 +46,6 @@ public class SQLUtil {
 	private final static String END_RECORD_DELIMITER = "\n";
 
 
-	/**
-	 *  Gets the FieldTypes of fields present in specified DB table
-	 *
-	 * @param  metadata          Description of Parameter
-	 * @param  tableName         name of the table for which to get metadata (field names, types)
-	 * @return                   list of  JDBC FieldTypes
-	 * @exception  SQLException  Description of Exception
-	 * @since                    October 4, 2002
-	 * @see                      java.sql.DatabaseMetaData
-	 */
-	public static List getFieldTypes(DatabaseMetaData metadata, String tableName) throws SQLException {
-		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
-		if (tableName.indexOf(".") != -1) {
-			tableSpec = tableName.toUpperCase().split("\\.", 2);
-		}
-		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
-		List fieldTypes = new LinkedList();
-		int counter = 0;
-		while (rs.next()) {
-			// get DATA TYPE - fifth column in result set from Database metadata
-			fieldTypes.add(new Integer(rs.getInt(5)));
-		}
-		if (fieldTypes.size() == 0) {
-			//throw new RuntimeException("No metadata obtained for table: " + tableName);
-			//Warn !
-			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
-			// WE HAVE SOME PATCH, but ...
-			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
-			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
-				fieldTypes.add(new Integer(fieldsMetadata.getColumnType(i + 1)));
-			}
-		}
-
-		return fieldTypes;
-	}
-
-
-	/**
-	 *  Gets the FieldTypes of fields (enumerated in dbFields) present in specified DB table
-	 *
-	 * @param  metadata          Description of the Parameter
-	 * @param  tableName         name of the table for which to get metadata (field names, types)
-	 * @param  dbFields          array of field names
-	 * @return                   list of  JDBC FieldTypes
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public static List getFieldTypes(DatabaseMetaData metadata, String tableName, String[] dbFields) throws SQLException {
-		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
-		// if schema defined in table name, extract schema & table name into separate fields
-		if (tableName.indexOf(".") != -1) {
-			tableSpec = tableName.toUpperCase().split("\\.", 2);
-		}
-		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
-		Map dbFieldsMap = new HashMap();
-		List fieldTypes = new LinkedList();
-		Integer dataType;
-
-		while (rs.next()) {
-			// FIELD NAME - fourth columnt in resutl set
-			// get DATA TYPE - fifth column in result set from Database metadata
-			dbFieldsMap.put(rs.getString(4).toUpperCase(), new Integer(rs.getInt(5)));
-		}
-		if (dbFieldsMap.size() == 0) {
-			//throw new RuntimeException("No metadata obtained for table: " + tableName);
-			//Warn !
-			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
-			// WE HAVE SOME PATCH, but ...
-			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
-			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
-				dbFieldsMap.put(fieldsMetadata.getColumnName(i + 1).toUpperCase(),
-						new Integer(fieldsMetadata.getColumnType(i + 1)));
-			}
-		}
-		for (int i = 0; i < dbFields.length; i++) {
-			dataType = (Integer) dbFieldsMap.get(dbFields[i].toUpperCase());
-			if (dataType == null) {
-				throw new SQLException("Field \"" + dbFields[i] + "\" does not exists in table \"" + tableName + "\"");
-			}
-			fieldTypes.add(dataType);
-		}
-		return fieldTypes;
-	}
-
-
-	/**
-	 *  Gets the tableFieldsMetadata attribute of the SQLUtil class
-	 *
-	 * @param  con               Description of the Parameter
-	 * @param  tableName         Description of the Parameter
-	 * @return                   The tableFieldsMetadata value
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public static ResultSetMetaData getTableFieldsMetadata(Connection con, String tableName) throws SQLException {
-		String queryStr="select * from " + tableName + " where 1=0 ";
-		
-		ResultSet rs = con.createStatement().executeQuery(queryStr);
-		return rs.getMetaData();
-	}
-
-
-	/**
-	 *  Gets the fieldTypes attribute of the SQLUtil class
-	 *
-	 * @param  metadata          Description of the Parameter
-	 * @return                   The fieldTypes value
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public static List getFieldTypes(ParameterMetaData metadata) throws SQLException {
-		List fieldTypes = new LinkedList();
-		for (int i = 1; i <= metadata.getParameterCount(); i++) {
-			fieldTypes.add(new Integer(metadata.getParameterType(i)));
-		}
-		return fieldTypes;
-	}
-
-
-	/**
-	 *  Gets the fieldTypes attribute of the SQLUtil class
-	 *
-	 * @param  metadata          Description of the Parameter
-	 * @return                   The fieldTypes value
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public static List getFieldTypes(ResultSetMetaData metadata) throws SQLException {
-		List fieldTypes = new LinkedList();
-		for (int i = 1; i <= metadata.getColumnCount(); i++) {
-			fieldTypes.add(new Integer(metadata.getColumnType(i)));
-		}
-		return fieldTypes;
-	}
-
-
-	/**
-	 *  Converts SQL data type into Jetel data type
-	 *
-	 * @param  sqlType  JDBC SQL data type
-	 * @return          corresponding Jetel data type
-	 * @since           September 25, 2002
-	 */
-	public static char sqlType2jetel(int sqlType) {
-		switch (sqlType) {
-			case Types.INTEGER:
-			case Types.SMALLINT:
-			case Types.TINYINT:
-				return DataFieldMetadata.INTEGER_FIELD;
-			case Types.BIGINT:
-			case Types.DECIMAL:
-			case Types.DOUBLE:
-			case Types.FLOAT:
-			case Types.NUMERIC:
-			case Types.REAL:
-				return DataFieldMetadata.NUMERIC_FIELD;
-			//------------------
-			case Types.CHAR:
-			case Types.LONGVARCHAR:
-			case Types.VARCHAR:
-			case Types.OTHER:
-				return DataFieldMetadata.STRING_FIELD;
-			//------------------
-			case Types.DATE:
-			case Types.TIME:
-			case Types.TIMESTAMP:
-				return DataFieldMetadata.DATE_FIELD;
-			//-----------------
-			// proximity assignment
-			case Types.BOOLEAN:
-			case Types.BIT:
-				return DataFieldMetadata.STRING_FIELD;
-			default:
-				System.out.println("Unknown SQL type is: " + sqlType);
-				return (char) -1;
-			// unknown or not possible to translate
-		}
-	}
-
-
-	/**
-	 *  Converts Jetel/Clover datatype into String
-	 *
-	 * @param  fieldType  Jetel datatype
-	 * @return            Corresponding string name
-	 */
-	public static String jetelType2Str(char fieldType) {
-		switch (fieldType) {
-			case DataFieldMetadata.NUMERIC_FIELD:
-				return "numeric";
-			case DataFieldMetadata.INTEGER_FIELD:
-				return "integer";
-			case DataFieldMetadata.STRING_FIELD:
-				return "string";
-			case DataFieldMetadata.DATE_FIELD:
-				return "date";
-			default:
-				throw new RuntimeException("Unsupported data type " + fieldType);
-		}
-	}
-
-
 
 	/**
 	 *  Creates SQL insert statement based on metadata describing data flow and
@@ -352,30 +154,6 @@ public class SQLUtil {
 
 
 	/**
-	 *  Converts Jetel data type into SQL data type
-	 *
-	 * @param  jetelType
-	 * @return            corresponding Jetel data type
-	 * @since             September 25, 2002
-	 */
-	public static int jetelType2sql(int jetelType) {
-		switch (jetelType) {
-			case DataFieldMetadata.INTEGER_FIELD:
-				return Types.INTEGER;
-			case DataFieldMetadata.NUMERIC_FIELD:
-				return Types.NUMERIC;
-			case DataFieldMetadata.STRING_FIELD:
-				return Types.VARCHAR;
-			case DataFieldMetadata.DATE_FIELD:
-				return Types.DATE;
-			default:
-				return -1;
-			// unknown or not possible to translate
-		}
-	}
-
-
-	/**
 	 *  For specified table returns names of individual fileds
 	 *
 	 * @param  conn       database connection
@@ -400,6 +178,250 @@ public class SQLUtil {
 			e.printStackTrace();
 		}
 		return out;
+	}
+
+
+	/**
+	 *  Gets the FieldTypes of fields present in specified DB table
+	 *
+	 * @param  metadata          Description of Parameter
+	 * @param  tableName         name of the table for which to get metadata (field names, types)
+	 * @return                   list of  JDBC FieldTypes
+	 * @exception  SQLException  Description of Exception
+	 * @since                    October 4, 2002
+	 * @see                      java.sql.DatabaseMetaData
+	 */
+	public static List getFieldTypes(DatabaseMetaData metadata, String tableName) throws SQLException {
+		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
+		if (tableName.indexOf(".") != -1) {
+			tableSpec = tableName.toUpperCase().split("\\.", 2);
+		}
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
+		List fieldTypes = new LinkedList();
+		int counter = 0;
+		while (rs.next()) {
+			// get DATA TYPE - fifth column in result set from Database metadata
+			fieldTypes.add(new Integer(rs.getInt(5)));
+		}
+		if (fieldTypes.size() == 0) {
+			//throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//Warn !
+			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
+			// WE HAVE SOME PATCH, but ...
+			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
+			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
+				fieldTypes.add(new Integer(fieldsMetadata.getColumnType(i + 1)));
+			}
+		}
+
+		return fieldTypes;
+	}
+
+
+	/**
+	 *  Gets the FieldTypes of fields (enumerated in dbFields) present in specified DB table
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @param  tableName         name of the table for which to get metadata (field names, types)
+	 * @param  dbFields          array of field names
+	 * @return                   list of  JDBC FieldTypes
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(DatabaseMetaData metadata, String tableName, String[] dbFields) throws SQLException {
+		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
+		// if schema defined in table name, extract schema & table name into separate fields
+		if (tableName.indexOf(".") != -1) {
+			tableSpec = tableName.toUpperCase().split("\\.", 2);
+		}
+		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
+		Map dbFieldsMap = new HashMap();
+		List fieldTypes = new LinkedList();
+		Integer dataType;
+
+		while (rs.next()) {
+			// FIELD NAME - fourth columnt in resutl set
+			// get DATA TYPE - fifth column in result set from Database metadata
+			dbFieldsMap.put(rs.getString(4).toUpperCase(), new Integer(rs.getInt(5)));
+		}
+		if (dbFieldsMap.size() == 0) {
+			//throw new RuntimeException("No metadata obtained for table: " + tableName);
+			//Warn !
+			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
+			// WE HAVE SOME PATCH, but ...
+			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
+			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
+				dbFieldsMap.put(fieldsMetadata.getColumnName(i + 1).toUpperCase(),
+						new Integer(fieldsMetadata.getColumnType(i + 1)));
+			}
+		}
+		for (int i = 0; i < dbFields.length; i++) {
+			dataType = (Integer) dbFieldsMap.get(dbFields[i].toUpperCase());
+			if (dataType == null) {
+				throw new SQLException("Field \"" + dbFields[i] + "\" does not exists in table \"" + tableName + "\"");
+			}
+			fieldTypes.add(dataType);
+		}
+		return fieldTypes;
+	}
+
+
+	/**
+	 *  Gets the fieldTypes attribute of the SQLUtil class
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(ParameterMetaData metadata) throws SQLException {
+		List fieldTypes = new LinkedList();
+		for (int i = 1; i <= metadata.getParameterCount(); i++) {
+			fieldTypes.add(new Integer(metadata.getParameterType(i)));
+		}
+		return fieldTypes;
+	}
+
+
+	/**
+	 *  Gets the fieldTypes attribute of the SQLUtil class
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(ResultSetMetaData metadata) throws SQLException {
+		List fieldTypes = new LinkedList();
+		for (int i = 1; i <= metadata.getColumnCount(); i++) {
+			fieldTypes.add(new Integer(metadata.getColumnType(i)));
+		}
+		return fieldTypes;
+	}
+
+
+	/**
+	 *  Gets the fieldTypes attribute of the SQLUtil class
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @param  cloverFields      Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) throws SQLException {
+		List fieldTypes = new LinkedList();
+		DataFieldMetadata fieldMeta;
+		for (int i = 0; i < cloverFields.length; i++) {
+			if ((fieldMeta = metadata.getField(cloverFields[0])) != null) {
+				fieldTypes.add(new Integer(jetelType2sql(fieldMeta.getType())));
+			} else {
+				throw new RuntimeException("Field name [" + cloverFields[i] + "] not found in " + metadata.getName());
+			}
+		}
+		return fieldTypes;
+	}
+
+
+	/**
+	 *  Gets the tableFieldsMetadata attribute of the SQLUtil class
+	 *
+	 * @param  con               Description of the Parameter
+	 * @param  tableName         Description of the Parameter
+	 * @return                   The tableFieldsMetadata value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static ResultSetMetaData getTableFieldsMetadata(Connection con, String tableName) throws SQLException {
+		String queryStr = "select * from " + tableName + " where 1=0 ";
+
+		ResultSet rs = con.createStatement().executeQuery(queryStr);
+		return rs.getMetaData();
+	}
+
+
+	/**
+	 *  Converts Jetel/Clover datatype into String
+	 *
+	 * @param  fieldType  Jetel datatype
+	 * @return            Corresponding string name
+	 */
+	public static String jetelType2Str(char fieldType) {
+		switch (fieldType) {
+			case DataFieldMetadata.NUMERIC_FIELD:
+				return "numeric";
+			case DataFieldMetadata.INTEGER_FIELD:
+				return "integer";
+			case DataFieldMetadata.STRING_FIELD:
+				return "string";
+			case DataFieldMetadata.DATE_FIELD:
+				return "date";
+			default:
+				throw new RuntimeException("Unsupported data type " + fieldType);
+		}
+	}
+
+
+	/**
+	 *  Converts Jetel data type into SQL data type
+	 *
+	 * @param  jetelType
+	 * @return            corresponding Jetel data type
+	 * @since             September 25, 2002
+	 */
+	public static int jetelType2sql(char jetelType) {
+		switch (jetelType) {
+			case DataFieldMetadata.INTEGER_FIELD:
+				return Types.INTEGER;
+			case DataFieldMetadata.NUMERIC_FIELD:
+				return Types.NUMERIC;
+			case DataFieldMetadata.STRING_FIELD:
+				return Types.VARCHAR;
+			case DataFieldMetadata.DATE_FIELD:
+				return Types.DATE;
+			default:
+				return -1;
+			// unknown or not possible to translate
+		}
+	}
+
+
+	/**
+	 *  Converts SQL data type into Jetel data type
+	 *
+	 * @param  sqlType  JDBC SQL data type
+	 * @return          corresponding Jetel data type
+	 * @since           September 25, 2002
+	 */
+	public static char sqlType2jetel(int sqlType) {
+		switch (sqlType) {
+			case Types.INTEGER:
+			case Types.SMALLINT:
+			case Types.TINYINT:
+				return DataFieldMetadata.INTEGER_FIELD;
+			case Types.BIGINT:
+			case Types.DECIMAL:
+			case Types.DOUBLE:
+			case Types.FLOAT:
+			case Types.NUMERIC:
+			case Types.REAL:
+				return DataFieldMetadata.NUMERIC_FIELD;
+			//------------------
+			case Types.CHAR:
+			case Types.LONGVARCHAR:
+			case Types.VARCHAR:
+			case Types.OTHER:
+				return DataFieldMetadata.STRING_FIELD;
+			//------------------
+			case Types.DATE:
+			case Types.TIME:
+			case Types.TIMESTAMP:
+				return DataFieldMetadata.DATE_FIELD;
+			//-----------------
+			// proximity assignment
+			case Types.BOOLEAN:
+			case Types.BIT:
+				return DataFieldMetadata.STRING_FIELD;
+			default:
+				System.out.println("Unknown SQL type is: " + sqlType);
+				return (char) -1;
+			// unknown or not possible to translate
+		}
 	}
 
 }
