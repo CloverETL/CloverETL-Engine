@@ -30,6 +30,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.component.ComponentFactory;
 import org.jetel.database.DBConnection;
+import org.jetel.util.PropertyRefResolver;
 import java.util.logging.Logger;
 
 /**
@@ -244,6 +245,7 @@ public class TransformationGraphXMLReaderWriter {
 		String fileURL;
 		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter();
 		DataRecordMetadata recordMetadata;
+		PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.getLength(); i++) {
@@ -251,7 +253,7 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process metadata element attributes "id" & "fileURL"
 			metadataID = attributes.getNamedItem("id").getNodeValue();
-			fileURL = attributes.getNamedItem("fileURL").getNodeValue();
+			fileURL = refResolver.resolveRef(attributes.getNamedItem("fileURL").getNodeValue());
 
 			if ((metadataID != null) && (fileURL != null)) {
 					recordMetadata=metadataXMLRW.read(
