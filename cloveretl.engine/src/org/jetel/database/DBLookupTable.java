@@ -276,14 +276,15 @@ public class DBLookupTable {
 		dataRecord = new DataRecord(metadata);
 		dataRecord.init();
 		// create trans map
-		try {
-			transMap = CopySQLData.sql2JetelTransMap(metadata, dataRecord);
-			if (keyDataRecord != null) {
+		transMap = CopySQLData.sql2JetelTransMap(metadata, dataRecord);
+		// create keyTransMap if key data record defined (passed)	
+		if (keyDataRecord != null) {
+			try{
 				keyTransMap = CopySQLData.jetel2sqlTransMap(SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
 						keyDataRecord);
+			} catch (SQLException ex) {
+				keyTransMap=null;
 			}
-		} catch (SQLException ex) {
-			throw new JetelException("Can't create TransMap object: " + ex.getMessage());
 		}
 	}
 
