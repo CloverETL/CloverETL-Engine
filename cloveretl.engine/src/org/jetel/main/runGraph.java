@@ -87,7 +87,7 @@ public class runGraph {
 			}
 		}
 
-		FileInputStream in;
+		FileInputStream in=null;
 		System.out.println("Graph definition file: " + args[args.length - 1]);
 
 		try {
@@ -97,8 +97,8 @@ public class runGraph {
 				System.out.println("\nSending output messages to file: " + logFilename);
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
+			System.err.println("File not found: "+e.getMessage());
+			System.exit(-1);
 		}
 
 		TransformationGraphXMLReaderWriter graphReader = TransformationGraphXMLReaderWriter.getReference();
@@ -107,12 +107,12 @@ public class runGraph {
 
 		if (!graphReader.read(graph, in)) {
 			System.err.println("Error in reading graph from XML !");
-			return;
+			System.exit(-1);
 		}
 
 		if (!graph.init(log)) {
 			System.err.println("Graph initialization failed !");
-			return;
+			System.exit(-1);
 		}
 
 		if (verbose) {
@@ -120,10 +120,13 @@ public class runGraph {
 			TransformationGraph.getReference().dumpGraphConfiguration();
 		}
 
-		if (!graph.run()) {// start all Nodes (each node is one thread)
-			System.out.println("Failed starting graph !");
+		//	start all Nodes (each node is one thread)
+		if (!graph.run()) {
+			// something FAILED !!
+			System.err.println("Failed starting graph !");
 			System.exit(-1);
 		} else {
+			// everything O.K. 
 			System.out.println("Execution of graph finished !");
 			System.exit(0);
 		}
