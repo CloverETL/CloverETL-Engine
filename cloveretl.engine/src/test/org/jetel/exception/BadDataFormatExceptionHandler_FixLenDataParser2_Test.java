@@ -23,7 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.FixLenDataParser2;
+import org.jetel.data.Parser1;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
@@ -37,8 +37,8 @@ import junit.framework.TestCase;
  *
  */
 public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCase {
-	private FixLenDataParser2 aFixLenDataParser2 = null;
-	private FixLenDataParser2 aParser2 = null;
+	private Parser1 aFixLenDataParser2 = null;
+	private Parser1 aParser2 = null;
 	private DataRecord record;
 	private FileInputStream in = null;
 	private FileInputStream in2 = null;
@@ -56,9 +56,9 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			e.printStackTrace();
 		}
 	
-		aParser2 = new FixLenDataParser2();
+		aParser2 = new Parser1();
 
-		aFixLenDataParser2 = new FixLenDataParser2();
+		aFixLenDataParser2 = new Parser1();
 		record = new DataRecord(metadata);
 		record.init();
 	}

@@ -20,6 +20,7 @@
 
 package org.jetel.data;
 
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -50,7 +51,7 @@ public interface DataParser {
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 27, 2002
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata);
+	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException;
 
 
 	/**

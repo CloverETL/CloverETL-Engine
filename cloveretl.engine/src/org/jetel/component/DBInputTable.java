@@ -96,7 +96,7 @@ public class DBInputTable extends Node {
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
 
-		parser=new SQLDataParser(sqlQuery);
+		parser=new SQLDataParser(dbConnectionName, sqlQuery);
 	}
 
 
@@ -159,7 +159,7 @@ public class DBInputTable extends Node {
 
 			// till it reaches end of data or it is stopped from outside
 
-			while(((record=parser.getNext(record))!=null)&&runIt){
+			while(((record=parser.getNext(record))!=null) && runIt){
 
 				//broadcast the record to all connected Edges
 

@@ -21,6 +21,8 @@ package org.jetel.data;
 import java.nio.*;
 import java.nio.charset.*;
 import java.io.Serializable;
+
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -72,20 +74,20 @@ public abstract class DataField implements Serializable, Comparable {
 	 *  An operation that sets value of the data field to default value.
 	 *
 	 */
-	public void setToDefaultValue() {
+	public void setToDefaultValue() throws BadDataFormatException {
 		try {
 			fromString( metadata.getDefaultValue());
 		} catch (Exception ex) {
 			String tmp = metadata.getDefaultValue();
 			if(tmp==null || tmp.equals("")) {
 				if(metadata.isNullable()) {
-					throw new RuntimeException(ex.getMessage());
+					throw new BadDataFormatException(ex.getMessage());
 				} else {
-					throw new RuntimeException(metadata.getName() + " is not nullable and is being set to null!");
+					throw new BadDataFormatException(metadata.getName() + " is not nullable and is being set to null!");
 				}
 			} else {
 				// here, the only reason to fail is bad DefaultValue
-				throw new RuntimeException(metadata.getName() + " has incorrect default value("+metadata.getDefaultValue()+")!");
+				throw new BadDataFormatException(metadata.getName() + " has incorrect default value("+metadata.getDefaultValue()+")!");
 			}
 		}
 	}

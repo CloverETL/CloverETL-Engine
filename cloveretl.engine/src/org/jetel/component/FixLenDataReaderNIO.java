@@ -28,7 +28,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.FixLenDataParser2;
+import org.jetel.data.Parser1;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -49,18 +49,18 @@ public static final String COMPONENT_TYPE="FIXED_DATA_READER_NIO";
 private static final int OUTPUT_PORT=0;
 private String fileURL;
 	
-private FixLenDataParser2 parser;
+private Parser1 parser;
 	
 public FixLenDataReaderNIO(String id,String fileURL){
 	super(id);
 	this.fileURL=fileURL;
-	parser=new FixLenDataParser2();
+	parser=new Parser1();
 }
 	
 public FixLenDataReaderNIO(String id,String fileURL,String charset){
 	super(id);
 	this.fileURL=fileURL;
-	parser=new FixLenDataParser2(charset);
+	parser=new Parser1(charset);
 }
 	
 /**

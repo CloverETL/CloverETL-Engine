@@ -19,9 +19,11 @@
 
 package org.jetel.data;
 
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.jetel.database.CopySQLData;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
@@ -39,17 +41,21 @@ public class SQLDataParser implements DataParser {
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private DataRecordMetadata metadata;
 	private int recordCounter;
+	private int fieldCount;
 
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String sqlQuery;
 	private Statement statement;
 
+	private ResultSet resultSet = null;
+	private CopySQLData[] transMap;
+
 	/**
 	 * @param sqlQuery
 	 */
-	public SQLDataParser(String sqlQuery) {
-		
+	public SQLDataParser(String dbConnectionName,String sqlQuery) {
+		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
 	}
 
@@ -77,32 +83,26 @@ public class SQLDataParser implements DataParser {
 		return record;
 	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  record    Description of Parameter
-	 *@param  fieldNum  Description of Parameter
-	 *@param  data      Description of Parameter
-	 *@since            March 28, 2002
-	 */
 
-	protected void populateField(DataRecord record, int fieldNum, String data) {
 
-		try {
-			record.getField(fieldNum).fromString( data );
-
-		} catch (BadDataFormatException bdfe) {
-			if(handlerBDFE != null ) {  //use handler only if configured
-			handlerBDFE.populateFieldFailure(record,fieldNum,data);
-			} else {
-				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
-			}
-		} catch (Exception ex) {
-			throw new RuntimeException(ex.getMessage());
+		/**
+		 *  Assembles error message when exception occures during parsing
+		 *
+		 * @param  exceptionMessage  message from exception getMessage() call
+		 * @param  recNo             recordNumber
+		 * @param  fieldNo           fieldNumber
+		 * @return                   error message
+		 * @since                    September 19, 2002
+		 */
+		private String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
+			StringBuffer message = new StringBuffer();
+			message.append(exceptionMessage);
+			message.append(" when parsing record #");
+			message.append(recordCounter);
+			message.append(" field ");
+			message.append(metadata.getField(fieldNo).getName());
+			return message.toString();
 		}
-
-	}
-
 
 
 	/**
@@ -120,7 +120,7 @@ public class SQLDataParser implements DataParser {
 		record.init();
 
 		try {
-			return parseNext(record);
+			return getNext(record);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new JetelException(e.getMessage());
@@ -132,44 +132,71 @@ public class SQLDataParser implements DataParser {
 	 * @param record
 	 * @return
 	 */
-	private DataRecord parseNext(DataRecord record) {
-//
-//		ResultSet resultSet = null;
-//		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-//		DataRecord outRecord = new DataRecord(outPort.getMetadata());
-//		CopySQLData[] transMap;
-//		int i;
-//
-//		outRecord.init();
-//		transMap = CopySQLData.sql2JetelTransMap(outPort.getMetadata(), outRecord);
-//		// run sql query
-//		try {
-//			resultSet = statement.executeQuery(sqlQuery);
-///				while (resultSet.next() && runIt) {
-//					for (i = 0; i < transMap.length; i++) {
-//						transMap[i].sql2jetel(resultSet);
-//					}
-//					// send the record through output port
-//					writeRecord(WRITE_TO_PORT, outRecord);
-//				}
-//
-//		}
-		return null;
+	private DataRecord parseNext(DataRecord record) throws SQLException {
+		if(resultSet.next() == false)
+			return null;
+			
+			for (int i = 1; i <= fieldCount; i++) {
+				populateField(record, i);
+			}
+		
+		return record;
 	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 *@param  record    Description of Parameter
+	 *@param  fieldNum  Description of Parameter
+	 *@param  data      Description of Parameter
+	 *@since            March 28, 2002
+	 */
+
+	protected void populateField(DataRecord record, int fieldNum) {
+		String data = null;
+		
+		try {
+			//transMap[fieldNum].sql2jetel(resultSet);
+			data = resultSet.getString(fieldNum);
+			record.getField(fieldNum-1).fromString( data );
+
+		} catch (BadDataFormatException bdfe) {
+			if(handlerBDFE != null ) {  //use handler only if configured
+			handlerBDFE.populateFieldFailure(record,fieldNum-1,data);
+			} else {
+				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
+			}
+		} catch (Exception ex) {
+			throw new RuntimeException(ex.getMessage());
+		}
+	}
+
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata) {
+	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
+		DataRecord outRecord = new DataRecord(_metadata);
+		fieldCount = _metadata.getNumFields();
+		int i;
+
+		outRecord.init();
 		// get dbConnection from graph
 		dbConnection= (DBConnection) inputDataSource;
 		if (dbConnection==null){
 			throw new ComponentNotReadyException("Can't find DBConnection ID: "+dbConnectionName);
 		}
-		statement = dbConnection.getStatement();
-		// following calls are not always supported (as it seems)
-		//statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-		//statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
+		try {
+			dbConnection.connect();
+			statement = dbConnection.getStatement();
+			// following calls are not always supported (as it seems)
+			//statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
+			//statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
+			resultSet = statement.executeQuery(sqlQuery);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw new ComponentNotReadyException(e.getMessage());
+		}
 		
 	}
 
