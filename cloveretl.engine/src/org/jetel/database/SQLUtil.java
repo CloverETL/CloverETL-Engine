@@ -15,7 +15,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package org.jetel.database;
 
 import java.sql.Types;
@@ -34,9 +33,10 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  *  Various utilities for working with Databases
  *
- *@author     dpavlis
- *@created    January 24, 2003
- *@since      September 25, 2002
+ * @author      dpavlis
+ * @since       September 25, 2002
+ * @revision    $Revision$
+ * @created     January 24, 2003
  */
 public class SQLUtil {
 
@@ -47,29 +47,29 @@ public class SQLUtil {
 	/**
 	 *  Gets the FieldTypes of fields present in specified DB table
 	 *
-	 *@param  metadata          Description of Parameter
-	 *@param  tableName         name of the table for which to get metadata (field names, types)
-	 *@return                   list of  JDBC FieldTypes
-	 *@exception  SQLException  Description of Exception
-	 *@since                    October 4, 2002
-	 *@see                      java.sql.DatabaseMetaData
+	 * @param  metadata          Description of Parameter
+	 * @param  tableName         name of the table for which to get metadata (field names, types)
+	 * @return                   list of  JDBC FieldTypes
+	 * @exception  SQLException  Description of Exception
+	 * @since                    October 4, 2002
+	 * @see                      java.sql.DatabaseMetaData
 	 */
 	public static List getFieldTypes(DatabaseMetaData metadata, String tableName) throws SQLException {
-		String[] tableSpec=new String[] {null, tableName.toUpperCase()};
-		if (tableName.indexOf(".")!=-1){
-			tableSpec=tableName.toUpperCase().split("\\.",2);
+		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
+		if (tableName.indexOf(".") != -1) {
+			tableSpec = tableName.toUpperCase().split("\\.", 2);
 		}
 		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
 		List fieldTypes = new LinkedList();
-		int counter=0;
+		int counter = 0;
 		while (rs.next()) {
 			// get DATA TYPE - fifth column in result set from Database metadata
 			fieldTypes.add(new Integer(rs.getInt(5)));
 		}
-		if (fieldTypes.size()==0){
-			throw new RuntimeException("No metadata obtained for table: "+tableName);
+		if (fieldTypes.size() == 0) {
+			throw new RuntimeException("No metadata obtained for table: " + tableName);
 		}
-		
+
 		return fieldTypes;
 	}
 
@@ -77,17 +77,17 @@ public class SQLUtil {
 	/**
 	 *  Gets the FieldTypes of fields (enumerated in dbFields) present in specified DB table
 	 *
-	 *@param  metadata          Description of the Parameter
-	 *@param  tableName         name of the table for which to get metadata (field names, types)
-	 *@param  dbFields          array of field names
-	 *@return                   list of  JDBC FieldTypes
-	 *@exception  SQLException  Description of the Exception
+	 * @param  metadata          Description of the Parameter
+	 * @param  tableName         name of the table for which to get metadata (field names, types)
+	 * @param  dbFields          array of field names
+	 * @return                   list of  JDBC FieldTypes
+	 * @exception  SQLException  Description of the Exception
 	 */
 	public static List getFieldTypes(DatabaseMetaData metadata, String tableName, String[] dbFields) throws SQLException {
-		String[] tableSpec=new String[] {null, tableName.toUpperCase()};
+		String[] tableSpec = new String[]{null, tableName.toUpperCase()};
 		// if schema defined in table name, extract schema & table name into separate fields
-		if (tableName.indexOf(".")!=-1){
-			tableSpec=tableName.toUpperCase().split("\\.",2);
+		if (tableName.indexOf(".") != -1) {
+			tableSpec = tableName.toUpperCase().split("\\.", 2);
 		}
 		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], null);
 		Map dbFieldsMap = new HashMap();
@@ -97,15 +97,15 @@ public class SQLUtil {
 		while (rs.next()) {
 			// FIELD NAME - fourth columnt in resutl set
 			// get DATA TYPE - fifth column in result set from Database metadata
-			dbFieldsMap.put(rs.getString(4).toUpperCase(),new Integer(rs.getInt(5)));
+			dbFieldsMap.put(rs.getString(4).toUpperCase(), new Integer(rs.getInt(5)));
 		}
-		if (dbFieldsMap.size()==0){
-			throw new RuntimeException("No metadata obtained for table: "+tableName);
+		if (dbFieldsMap.size() == 0) {
+			throw new RuntimeException("No metadata obtained for table: " + tableName);
 		}
 		for (int i = 0; i < dbFields.length; i++) {
-			dataType=(Integer)dbFieldsMap.get(dbFields[i].toUpperCase());
-			if (dataType==null){
-				throw new SQLException("Field \""+dbFields[i]+"\" does not exists in table \""+tableName+"\"");
+			dataType = (Integer) dbFieldsMap.get(dbFields[i].toUpperCase());
+			if (dataType == null) {
+				throw new SQLException("Field \"" + dbFields[i] + "\" does not exists in table \"" + tableName + "\"");
 			}
 			fieldTypes.add(dataType);
 		}
@@ -116,9 +116,9 @@ public class SQLUtil {
 	/**
 	 *  Gets the fieldTypes attribute of the SQLUtil class
 	 *
-	 *@param  metadata          Description of the Parameter
-	 *@return                   The fieldTypes value
-	 *@exception  SQLException  Description of the Exception
+	 * @param  metadata          Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
 	 */
 	public static List getFieldTypes(ParameterMetaData metadata) throws SQLException {
 		List fieldTypes = new LinkedList();
@@ -130,11 +130,27 @@ public class SQLUtil {
 
 
 	/**
+	 *  Gets the fieldTypes attribute of the SQLUtil class
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(ResultSetMetaData metadata) throws SQLException {
+		List fieldTypes = new LinkedList();
+		for (int i = 1; i <= metadata.getColumnCount(); i++) {
+			fieldTypes.add(new Integer(metadata.getColumnType(i)));
+		}
+		return fieldTypes;
+	}
+
+
+	/**
 	 *  Converts SQL data type into Jetel data type
 	 *
-	 *@param  sqlType  JDBC SQL data type
-	 *@return          corresponding Jetel data type
-	 *@since           September 25, 2002
+	 * @param  sqlType  JDBC SQL data type
+	 * @return          corresponding Jetel data type
+	 * @since           September 25, 2002
 	 */
 	public static char sqlType2jetel(int sqlType) {
 		switch (sqlType) {
@@ -160,7 +176,13 @@ public class SQLUtil {
 			case Types.TIME:
 			case Types.TIMESTAMP:
 				return DataFieldMetadata.DATE_FIELD;
+			//-----------------
+			// proximity assignment
+			case Types.BOOLEAN:
+			case Types.BIT:
+				return DataFieldMetadata.STRING_FIELD;
 			default:
+				System.out.println("Unknown SQL type is: " + sqlType);
 				return (char) -1;
 			// unknown or not possible to translate
 		}
@@ -170,8 +192,8 @@ public class SQLUtil {
 	/**
 	 *  Converts Jetel/Clover datatype into String
 	 *
-	 *@param  fieldType  Jetel datatype
-	 *@return            Corresponding string name
+	 * @param  fieldType  Jetel datatype
+	 * @return            Corresponding string name
 	 */
 	public static String jetelType2Str(char fieldType) {
 		switch (fieldType) {
@@ -194,10 +216,10 @@ public class SQLUtil {
 	 *  Creates SQL insert statement based on metadata describing data flow and
 	 *  supplied table name
 	 *
-	 *@param  metadata   Metadata describing data flow from which to feed database
-	 *@param  tableName  Table name into which insert data
-	 *@return            string containing SQL insert statement
-	 *@since             October 2, 2002
+	 * @param  metadata   Metadata describing data flow from which to feed database
+	 * @param  tableName  Table name into which insert data
+	 * @return            string containing SQL insert statement
+	 * @since             October 2, 2002
 	 */
 	public static String assembleInsertSQLStatement(DataRecordMetadata metadata, String tableName) {
 		StringBuffer strBuf = new StringBuffer();
@@ -225,9 +247,9 @@ public class SQLUtil {
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  tableName  Description of the Parameter
-	 *@param  dbFields   Description of the Parameter
-	 *@return            Description of the Return Value
+	 * @param  tableName  Description of the Parameter
+	 * @param  dbFields   Description of the Parameter
+	 * @return            Description of the Return Value
 	 */
 	public static String assembleInsertSQLStatement(String tableName, String[] dbFields) {
 		StringBuffer strBuf = new StringBuffer("insert into ");
@@ -256,11 +278,11 @@ public class SQLUtil {
 	/**
 	 *  Converts SQL metadata into Clover's DataRecordMetadata
 	 *
-	 *@param  dbMetadata        SQL ResultSet metadata describing which columns are
+	 * @param  dbMetadata        SQL ResultSet metadata describing which columns are
 	 *      returned by query
-	 *@return                   DataRecordMetadata which correspond to the SQL
+	 * @return                   DataRecordMetadata which correspond to the SQL
 	 *      ResultSet
-	 *@exception  SQLException  Description of the Exception
+	 * @exception  SQLException  Description of the Exception
 	 */
 	public static DataRecordMetadata dbMetadata2jetel(ResultSetMetaData dbMetadata) throws SQLException {
 		DataFieldMetadata fieldMetadata;
@@ -284,38 +306,40 @@ public class SQLUtil {
 			if (dbMetadata.isNullable(i) == ResultSetMetaData.columnNullable) {
 				fieldMetadata.setNullable(true);
 			}
-			/* this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
-			if (dbMetadata.isCurrency(i)) {
-				fieldMetadata.setFormatStr("¤#.#");
-			}
-			*/
+			/*
+			 *  this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
+			 *  if (dbMetadata.isCurrency(i)) {
+			 *  fieldMetadata.setFormatStr("¤#.#");
+			 *  }
+			 */
 			jetelMetadata.addField(fieldMetadata);
 		}
 		return jetelMetadata;
 	}
-	
- 	/**
- 	 *  Converts Jetel data type into SQL data type
- 	 *
- 	 *@param  jetelType  
- 	 *@return          corresponding Jetel data type
- 	 *@since           September 25, 2002
- 	 */
- 	public static int jetelType2sql(int jetelType) {
- 		switch (jetelType) {
- 						case DataFieldMetadata.INTEGER_FIELD:
- 							return  Types.INTEGER;
- 						case DataFieldMetadata.NUMERIC_FIELD:
- 							return Types.NUMERIC;
- 						case DataFieldMetadata.STRING_FIELD:
- 							return Types.VARCHAR;
- 						case DataFieldMetadata.DATE_FIELD:
- 							return Types.DATE;
- 						default:
- 							return -1;
- 						// unknown or not possible to translate
- 		}
- 	}
- 
+
+
+	/**
+	 *  Converts Jetel data type into SQL data type
+	 *
+	 * @param  jetelType
+	 * @return            corresponding Jetel data type
+	 * @since             September 25, 2002
+	 */
+	public static int jetelType2sql(int jetelType) {
+		switch (jetelType) {
+			case DataFieldMetadata.INTEGER_FIELD:
+				return Types.INTEGER;
+			case DataFieldMetadata.NUMERIC_FIELD:
+				return Types.NUMERIC;
+			case DataFieldMetadata.STRING_FIELD:
+				return Types.VARCHAR;
+			case DataFieldMetadata.DATE_FIELD:
+				return Types.DATE;
+			default:
+				return -1;
+			// unknown or not possible to translate
+		}
+	}
+
 }
 
