@@ -341,11 +341,11 @@ public class NumericDataField extends DataField {
 	 *@return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		double compInt = ((NumericDataField) obj).getDouble();
-
-		if (value > compInt) {
+		double compDouble = ((NumericDataField) obj).getDouble();
+		
+		if (value > compDouble) {
 			return 1;
-		} else if (value < compInt) {
+		} else if (value < compDouble) {
 			return -1;
 		} else {
 			return 0;
