@@ -477,6 +477,9 @@ public abstract class CopySQLData {
 	 *@since      October 7, 2002
 	 */
 	static class CopyTimestamp extends CopySQLData {
+		
+		Timestamp timeValue;
+		
 		/**
 		 *  Constructor for the CopyTimestamp object
 		 *
@@ -487,6 +490,8 @@ public abstract class CopySQLData {
 		 */
 		CopyTimestamp(DataRecord record, int fieldSQL, int fieldJetel) {
 			super(record, fieldSQL, fieldJetel);
+			timeValue=new Timestamp(0);
+			timeValue.setNanos(0); // we don't count with nanos! 
 		}
 
 
@@ -510,7 +515,8 @@ public abstract class CopySQLData {
 		 *@since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setTimestamp(fieldSQL, new Timestamp(((java.util.Date) field.getValue()).getTime()));
+			timeValue.setTime(((java.util.Date) field.getValue()).getTime());
+			pStatement.setTimestamp(fieldSQL, timeValue);
 		}
 	}
 	
