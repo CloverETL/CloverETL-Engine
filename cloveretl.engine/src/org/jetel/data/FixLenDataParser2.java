@@ -101,11 +101,12 @@ public class FixLenDataParser2 implements DataParser {
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
 		reader = ((FileInputStream) in).getChannel();
+		recordLength=0;
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldLengths[i] = metadata.getField(i).getSize();
-			recordLength = recordLength + fieldLengths[i];
+			recordLength += fieldLengths[i];
 		}
 		decoder.reset();
 		// reset CharsetDecoder
@@ -113,6 +114,7 @@ public class FixLenDataParser2 implements DataParser {
 		// reset record counter
 //		charBuffer.clear();
 //		dataBuffer.clear();
+
 	}
 	/**
 	 *  An operation that does ...
@@ -126,24 +128,27 @@ public class FixLenDataParser2 implements DataParser {
 	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int posCounter = 0;
-		boolean isDataAvailable = false;
-		try {
-			isDataAvailable = readRecord();
-
-			if( !isDataAvailable )  {  //end of file been reached
-				reader.close();
-				return null;
+		boolean isDataAvailable;
+		int remaining=charBuffer.remaining();
+				
+		if (charBuffer.remaining() < recordLength){
+			// need to get some data
+			try {
+				isDataAvailable = readRecord();
+				if (!isDataAvailable){
+					reader.close();
+					if (remaining > 0){
+						//- incomplete record - do something
+						throw new RuntimeException("Incomplete record at the end of the stream");
+					}
+					return null; // end of data stream 
+				}
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new JetelException(e.getMessage());
 			}
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw new JetelException(e.getMessage());
 		}
 
-		// check if we have enough data in buffer to satisfy reading
-		if (charBuffer.remaining() < recordLength) {
-			//- incomplete record - do something
-			throw new RuntimeException("Incomplete record");
-		}
 		// process the line 
 		// populate all data fields
 		try {
@@ -186,6 +191,7 @@ public class FixLenDataParser2 implements DataParser {
 			throw new RuntimeException(ex.getMessage());
 		}
 
+		recordCounter++;
 		return record;
 	}
 
@@ -198,27 +204,26 @@ public class FixLenDataParser2 implements DataParser {
 	private boolean readRecord() throws IOException {
 		CoderResult decodingResult;
 		int size;
-		// check if we have enough data in buffer to satisfy reading
-		if (charBuffer.remaining() < recordLength) {
-			if(charBuffer.remaining()>0) {
-				charBuffer.compact();
-				dataBuffer.limit(dataBuffer.capacity()-charBuffer.limit());
-			} else {
-				charBuffer.clear();
-			}
-			size = reader.read(dataBuffer);
-			//System.out.println( "Read: " + size);
-			dataBuffer.flip();
-
-			// if no more data 
-			if ( size == 0 ) {
-				return false;
-			}
-
-			decodingResult=decoder.decode(dataBuffer,charBuffer,true);
-			charBuffer.flip();
-
+		int remaining=charBuffer.remaining();
+		
+		dataBuffer.clear();
+		if(remaining>0) {
+			charBuffer.compact();
+			dataBuffer.limit(dataBuffer.capacity()-remaining);
+		} else {
+			charBuffer.clear();
 		}
+		size = reader.read(dataBuffer);
+		//System.out.println( "Read: " + size);
+		dataBuffer.flip();
+
+		// if no more data 
+		if ( size <= 0 ) {
+			return false;
+		}
+
+		decodingResult=decoder.decode(dataBuffer,charBuffer,true);
+		charBuffer.flip();
 		
 		// check if \r or \n ; if yes discard
 		charBuffer.mark();
