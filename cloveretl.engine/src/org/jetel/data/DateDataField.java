@@ -111,7 +111,6 @@ public class DateDataField extends DataField {
 		} else {
 			value = null;
 			setNull(true);
-			//TODO parse String throw new BadDataFormatException("not Date");
 		}
 	}
 

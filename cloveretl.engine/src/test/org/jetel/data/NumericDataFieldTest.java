@@ -132,10 +132,8 @@ public void test_fromString() {
 	aNumericDataField1.fromString("123");
 	assertEquals(aNumericDataField1.getInt(),123);
 
-	aNumericDataField1.fromString("");
-	assertTrue(aNumericDataField1.isNull());
-	
 	try {
+		aNumericDataField1.fromString("");
 		aNumericDataField1.fromString("r123.43");
 		fail("Should raise an BadDataFormatException");
 	} catch (BadDataFormatException e){	}

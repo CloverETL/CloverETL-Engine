@@ -18,7 +18,6 @@
 // FILE: c:/projects/jetel/org/jetel/data/FixLenDataParser2.java
 
 package org.jetel.data;
-
 import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -208,7 +207,7 @@ public class FixLenDataParser2 implements DataParser {
 			record.getField(fieldNum).fromString( data );
 
 		} catch (BadDataFormatException bdfe) {
-			handlerBDFE.handleException();
+			handlerBDFE.populateFieldFailure(record,fieldNum,data);
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), recordCounter, fieldNum));
 		}

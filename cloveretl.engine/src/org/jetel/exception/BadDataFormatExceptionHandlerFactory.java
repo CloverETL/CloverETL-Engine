@@ -26,11 +26,11 @@ package org.jetel.exception;
 public class BadDataFormatExceptionHandlerFactory {
 
 public static BadDataFormatExceptionHandler getHandler(String aDataPolicy) {
-	if(aDataPolicy.equalsIgnoreCase("strict")) {
+	if(aDataPolicy.equalsIgnoreCase(BadDataFormatExceptionHandler.STRICT)) {
 		return new BadDataFormatExceptionHandler();
-	} else if(aDataPolicy.equalsIgnoreCase("controlled")) {
+	} else if(aDataPolicy.equalsIgnoreCase(BadDataFormatExceptionHandler.CONTROLLED)) {
 		return new ControlledBadDataFormatExceptionHandler();
-	} else if(aDataPolicy.equalsIgnoreCase("lenient")) {
+	} else if(aDataPolicy.equalsIgnoreCase(BadDataFormatExceptionHandler.LENIENT)) {
 		return new LenientBadDataFormatExceptionHandler();
 	}
 

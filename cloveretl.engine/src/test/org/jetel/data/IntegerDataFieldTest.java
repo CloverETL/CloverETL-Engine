@@ -125,11 +125,9 @@ public void test_1_IntegerDataField() {
 public void test_fromString() {
 	anIntegerDataField1.fromString("123");
 	assertEquals(anIntegerDataField1.getInt(),123);
-
-	anIntegerDataField1.fromString("");
-	assertTrue(anIntegerDataField1.isNull());
 	
 	try {
+		anIntegerDataField1.fromString("");
 		anIntegerDataField1.fromString("123.234");
 		fail("Should raise an BadDataFormatException");
 	} catch (BadDataFormatException e){	}

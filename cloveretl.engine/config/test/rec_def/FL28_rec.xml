@@ -5,4 +5,3 @@
 	<Field name="ID" type="integer" size="6" nullable="no"/> 
 	<Field name="EXP_DT" type="string" size="8" nullable="no"/> 
 </Record>
-</xml>

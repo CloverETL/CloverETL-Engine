@@ -16,19 +16,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-
 package test.org.jetel.metadata;
-
 import junit.framework.Test;
 import junit.framework.TestSuite;
-
 /**
  * @author maciorowski
  * @version 1.0
  *
  */
 public class MetadataTestSuite  extends TestSuite  {
-
 public static Test suite() {
 	TestSuite suite= new TestSuite("All org.jetel.metadata Tests");
 	suite.addTest(new TestSuite(test.org.jetel.metadata.DataRecordMetadataTest.class));
@@ -37,4 +33,5 @@ public static Test suite() {
 	
 public static void main (String[] args) {
 	junit.textui.TestRunner.run(suite());
-}}
+	}
+}
