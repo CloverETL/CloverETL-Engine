@@ -62,6 +62,7 @@ public class ComponentFactory {
 		registerComponent(Filter.COMPONENT_TYPE,"org.jetel.component.Filter");
 		registerComponent(DBExecute.COMPONENT_TYPE,"org.jetel.component.DBExecute");
 		registerComponent(HashJoin.COMPONENT_TYPE,"org.jetel.component.HashJoin");
+		registerComponent(CheckForeignKey.COMPONENT_TYPE,"org.jetel.component.CheckForeignKey");
 	}
 	
 	
