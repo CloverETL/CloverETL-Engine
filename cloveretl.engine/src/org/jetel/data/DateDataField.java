@@ -109,7 +109,7 @@ public class DateDataField extends DataField {
 				value = null;
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+ " field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -121,7 +121,7 @@ public class DateDataField extends DataField {
 				value = null;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set with this object - " +_value.toString());
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString());
 		}
 	}
 
@@ -220,7 +220,7 @@ public class DateDataField extends DataField {
 				value = null;
 				super.setNull(true);
 			} else
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			return;
 		}
 		try {

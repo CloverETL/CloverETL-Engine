@@ -93,7 +93,7 @@ public class StringDataField extends DataField {
 			if(this.metadata.isNullable()) {
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -121,7 +121,7 @@ public class StringDataField extends DataField {
 			if(this.metadata.isNullable()) {
 				super.setNull(true);
 			} else {
-				throw new BadDataFormatException("This field can not be set to null!(nullable=false)");
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
