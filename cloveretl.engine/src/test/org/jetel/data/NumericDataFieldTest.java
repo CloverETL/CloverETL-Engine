@@ -44,12 +44,14 @@ protected void setUp() {
 	aNumericDataField1 = new NumericDataField(fixedFieldMeta1,65.5);
 	
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'i',(short)3);
+	fixedFieldMeta2.setNullable(false);
 	aNumericDataField2 = new NumericDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
 	aNumericDataField3 = new NumericDataField(delimFieldMeta1,5.55);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
+	delimFieldMeta2.setNullable(false);
 	aNumericDataField4 = new NumericDataField(delimFieldMeta2);
 
 }

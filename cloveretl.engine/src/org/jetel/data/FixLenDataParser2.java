@@ -47,9 +47,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @revision    $Revision$
  */
 public class FixLenDataParser2 implements DataParser {
-	
 	private BadDataFormatExceptionHandler handlerBDFE;
-
 	private ByteBuffer dataBuffer;
 	private ByteBuffer fieldBuffer;
 	private DataRecordMetadata metadata;
@@ -65,11 +63,9 @@ public class FixLenDataParser2 implements DataParser {
 	 */
 	public FixLenDataParser2() {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 	}
-
 	/**
 	 *Constructor for the FixLenDataParser object
 	 *
@@ -79,12 +75,9 @@ public class FixLenDataParser2 implements DataParser {
 	public FixLenDataParser2(String charsetDecoder) {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		//fieldStringBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(charsetDecoder).newDecoder();
-		
 	}
-	
 	/**
 	 *  An operation that opens/initializes parser.
 	 *
@@ -96,10 +89,8 @@ public class FixLenDataParser2 implements DataParser {
 		CoderResult result;
 		DataFieldMetadata fieldMetadata;
 		this.metadata = _metadata;
-
         reader = 
 			new BufferedReader(Channels.newReader( ((FileInputStream) in).getChannel(), Defaults.DataParser.DEFAULT_CHARSET_DECODER ) );
-
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
@@ -110,7 +101,6 @@ public class FixLenDataParser2 implements DataParser {
 		// reset CharsetDecoder
 		recordCounter = 0;
 		// reset record counter
-
 	}
 	/**
 	 *  An operation that does ...
@@ -124,10 +114,8 @@ public class FixLenDataParser2 implements DataParser {
 	private DataRecord parseNext(DataRecord record) throws IOException {
 		int fieldCounter = 0;
 		int posCounter = 0;
-
 		String line = null;
 		line = reader.readLine();
-		handlerBDFE.reset();
 		while(line != null && line.trim().equalsIgnoreCase("")) {	//skip blank lines
 			line = reader.readLine();
 		}
@@ -156,7 +144,7 @@ public class FixLenDataParser2 implements DataParser {
 
 			throw new RuntimeException(ex.getMessage());
 		}
-		handlerBDFE.handleException();
+
 		return record;
 	}
 
@@ -180,7 +168,6 @@ public class FixLenDataParser2 implements DataParser {
 		return message.toString();
 	}
 
-
 	/**
 	 *  Returs next data record parsed from input stream or NULL if no more data
 	 *  available The specified DataRecord's fields are altered to contain new
@@ -192,7 +179,13 @@ public class FixLenDataParser2 implements DataParser {
 	 *@since                   May 2, 2002
 	 */
 	public DataRecord getNext(DataRecord record) throws IOException {
-		return parseNext(record);
+		record = parseNext(record);
+		while(handlerBDFE.isThrowException()) {
+			handlerBDFE.handleException(record);
+			record.init();
+			record = parseNext(record);
+		}
+		return record;
 	}
 	/**
 	 *  Description of the Method

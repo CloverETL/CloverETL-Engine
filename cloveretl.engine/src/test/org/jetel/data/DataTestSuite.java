@@ -28,27 +28,22 @@ import junit.framework.TestSuite;
  */
 public class DataTestSuite  extends TestSuite  {
 
-
-
-public static Test suite() {
-
-	TestSuite suite= new TestSuite("All org.jetel.data Tests");
-
-	suite.addTest(new TestSuite(test.org.jetel.data.ByteDataFieldTest.class));
-	suite.addTest(new TestSuite(test.org.jetel.data.DateDataFieldTest.class));
-	suite.addTest(new TestSuite(test.org.jetel.data.IntegerDataFieldTest.class));
-	suite.addTest(new TestSuite(test.org.jetel.data.NumericDataFieldTest.class));
-	suite.addTest(new TestSuite(test.org.jetel.data.StringDataFieldTest.class));
-
-	return suite;
-
-}
-
+	public static Test suite() {
 	
+		TestSuite suite= new TestSuite("All org.jetel.data Tests");
+	
+		suite.addTest(new TestSuite(test.org.jetel.data.ByteDataFieldTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.data.DateDataFieldTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.data.IntegerDataFieldTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.data.NumericDataFieldTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.data.StringDataFieldTest.class));
+		suite.addTest(new TestSuite(test.org.jetel.data.FixLenDataParser2Test.class));
+	
+		return suite;
+	
+	}
 
-public static void main (String[] args) {
-
-	junit.textui.TestRunner.run(suite());
-
-}
+	public static void main (String[] args) {
+		junit.textui.TestRunner.run(suite());
+	}
 }

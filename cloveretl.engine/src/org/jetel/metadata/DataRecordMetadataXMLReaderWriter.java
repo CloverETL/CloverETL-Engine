@@ -48,6 +48,7 @@ import java.util.logging.Logger;
  *		delimiter NMTOKEN #IMPLIED ","
  *		size NMTOKEN #IMPLIED "0"
  *		format CDATA #IMPLIED 
+ *      nullable NMTOKEN #IMPLIED "true"
  *		default CDATA #IMPLIED &gt;
  *  </pre>
  *
@@ -201,6 +202,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getDefaultValue()!=null){
 					out.print("default=\""+field.getFormatStr()+"\" ");
 				}
+				out.print("default=\""+(new Boolean(field.isNullable())).toString()+"\" ");
 				out.println("/>");
 
 			}
@@ -215,6 +217,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		DataRecordMetadata recordMetadata;
 		String recordName;
 		String recordType;
+		String nullableValue;
 		// get RECORD ---------------------------------------------
 		attributes = document.getElementsByTagName(RECORD_ELEMENT).item(0).getAttributes();
 		
@@ -273,6 +276,17 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			}catch(NullPointerException ex){
 			}
 			
+			// set nullable if defined
+			try{
+				if ((nullableValue = attributes.getNamedItem("nullable").getNodeValue()) != null) {
+					if(nullableValue.equalsIgnoreCase("TRUE") || nullableValue.equalsIgnoreCase("YES"))
+						field.setNullable(true);
+					else
+						field.setNullable(false);
+				}
+			}catch(NullPointerException ex){
+			}
+
 			recordMetadata.addField(field);
 		}
 		return recordMetadata;
