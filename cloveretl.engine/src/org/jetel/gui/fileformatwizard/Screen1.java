@@ -58,8 +58,11 @@ public class Screen1 extends JPanel implements FormInterface
 	 private JLabel jLabel4 = new JLabel();
 	 private JRadioButton FixedWidthRadioButton = new JRadioButton();
 	 private JRadioButton DelimitedRadioButton = new JRadioButton();
+	 private JRadioButton OneRecordPerLineRadioButton = new JRadioButton();
+	 private JRadioButton ManyRecordPerLineRadioButton = new JRadioButton();
 	 private JPanel jPanel1 = new JPanel();
 	 private JLabel jLabel5 = new JLabel();
+	 private JLabel jLabel6 = new JLabel();
 	 
 	 private FileFormatDispatcher aDispatcher;
 	 private FileFormatDataModel aFileFormatParameters;
@@ -115,6 +118,10 @@ public class Screen1 extends JPanel implements FormInterface
    jLabel4.setFont(new Font("Dialog", 1, 11));
    FixedWidthRadioButton.setText("Fixed Width - Fields are aligned in columns with optional spaces " + "between them.");
    DelimitedRadioButton.setText("Delimited     - Characters such as tab, comma separate fields.");
+   OneRecordPerLineRadioButton.setText("There is only one record per line.");
+   ManyRecordPerLineRadioButton.setText("All records are on one line.");
+   jLabel6.setText(" ");
+
    jLabel5.setText("Select File");
    jLabel5.setAlignmentY((float)0.0);
    jLabel5.setAlignmentX((float)0.5);
@@ -129,13 +136,22 @@ public class Screen1 extends JPanel implements FormInterface
    this.add(jLabel4, new GridBagConstraints(0, 4, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0));
    this.add(FixedWidthRadioButton, new GridBagConstraints(0, 5, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
    this.add(DelimitedRadioButton, new GridBagConstraints(0, 6, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 10, 0, 0), 0, 0));
-   this.add(jPanel1, new GridBagConstraints(1, 7, 2, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
+   this.add(jLabel6, new GridBagConstraints(0, 7, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 5, 0, 0), 0, 0));
+   this.add(OneRecordPerLineRadioButton, new GridBagConstraints(0, 8, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 10, 0, 0), 0, 0));
+   this.add(ManyRecordPerLineRadioButton, new GridBagConstraints(0, 9, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.VERTICAL, new Insets(0, 10, 0, 0), 0, 0));
+   this.add(jPanel1, new GridBagConstraints(1, 10, 2, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 0, 0, 0), 0, 0));
    this.add(jLabel5, new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(5, 5, 5, 5), 0, 0));
 
    // Group the radio buttons.
    ButtonGroup group = new ButtonGroup();
    group.add(FixedWidthRadioButton);
    group.add(DelimitedRadioButton);
+
+   ButtonGroup group2 = new ButtonGroup();
+   group2.add(OneRecordPerLineRadioButton);
+   group2.add(ManyRecordPerLineRadioButton);
+   
+   ManyRecordPerLineRadioButton.setEnabled(false);
   }
   
   public void setPreviewFileNameLabel(String previewFileNameLabel) {
@@ -209,6 +225,8 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 			jLabel2.setText("(No File Selected)");
 			jTextPane1.setText("");
 		   }
+		   
+		OneRecordPerLineRadioButton.setSelected(true);
 	}
 
 	/* (non-Javadoc)
@@ -233,6 +251,12 @@ private void FileChooserButton_actionPerformed(ActionEvent e)
 		} else {
 			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
 		}
+//		if(ManyRecordPerLineRadioButton.isSelected()){
+//			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+//		} else {
+//			aFileFormatParameters.recordMeta.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
+//		}
+		
 		aFileFormatParameters.isFileDelimited = DelimitedRadioButton.isSelected();
 		aFileFormatParameters.linesFromFile = linesFromFile;
 	}
