@@ -27,7 +27,7 @@ package org.jetel.data;
 public final class Defaults {
 
 	/**
-	 *  when buffering IO, what is the default size of buffer
+	 *  when buffering IO, what is the default size of the buffer
 	 */
 	public final static int DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768;
 
@@ -41,7 +41,9 @@ public final class Defaults {
 	public final static class Record {
 
 		/**
-		 *  Determines max size of record (serialized) in bytes
+		 *  Determines max size of record (serialized) in bytes.<br>
+		 *  If you are getting BufferOverflow, increase the limit here. This
+		 *  affects the memory footprint !!!
 		 */
 		public final static int MAX_RECORD_SIZE = 8192;
 	}
@@ -56,12 +58,13 @@ public final class Defaults {
 	public final static class DataParser {
 
 		/**
-		 *  max length of field's value representation (bytes or characters)
+		 *  max length of field's value representation (bytes or characters).<br>
+		 *  If your records contain long fields (usually text-memos), increase the limit here.
 		 */
 		public final static int FIELD_BUFFER_LENGTH = 512;
 
 		/**
-		 *  default decoder to be used if no specified
+		 *  default character-decoder to be used if not specified
 		 */
 		public final static String DEFAULT_CHARSET_DECODER = "ISO-8859-1";
 	}
@@ -76,11 +79,12 @@ public final class Defaults {
 	public final static class DataFormatter {
 
 		/**
-		 *  default encoder to be used
+		 *  default character-encoder to be used
 		 */
 		public final static String DEFAULT_CHARSET_ENCODER = "ISO-8859-1";
 		/**
-		 *  max length of field's value representation (bytes or characters)
+		 *  max length of field's value representation (bytes or characters).<br>
+		 *  If your records contain long fields (usually text-memos), increase the limit here.
 		 */
 		public final static int FIELD_BUFFER_LENGTH = 512;
 
@@ -95,7 +99,10 @@ public final class Defaults {
 	 */
 	public final static class Component {
 		/**
-		 *  Description of the Field
+		 *  This regular expression is used by various components when parsing
+		 *  parameters out of XML attributes.<br>
+		 *  When attribute can contain multiple values delimited, this regex
+		 *  specifies which are the valid delimiters.
 		 */
 		public final static String KEY_FIELDS_DELIMITER_REGEX = "[:;|]";
 	}
@@ -120,7 +127,13 @@ public final class Defaults {
 	}
 	
 	public final static class WatchDog{
-		public final static int WATCHDOG_SLEEP_INTERVAL = 200;  	//milliseconds
+		/**
+		 *  how long watchdog thread sleeps (milliseconds) between each awakening.
+		 *
+		 * @since    July 30, 2002
+		 */
+		
+		public final static int WATCHDOG_SLEEP_INTERVAL = 200;  	
 		/**
 		 *  how often is watchdog reporting about graph progress
 		 *
@@ -130,7 +143,9 @@ public final class Defaults {
 
 		/**
 		 *  One tick is one awakening of watch dog. Sleep interval * number_of_ticks
-		 *  determines how often is checked status of each component.
+		 *  determines how often is checked status of each component.<br>
+		 *  If watchdog determines that there was an error in some component, the whole
+		 *  graph processing is aborted.
 		 *
 		 * @since    October 1, 2002
 		 */
