@@ -52,9 +52,9 @@ public class FileFormatDispatcher {
 	/** Message used to indicate completion of all phases. Value is less than zero. */
 	public static final int MSG_FINISH = -125;
     
-	/** Message used to indicate completion of all phases. Value is less than zero. */
+	/** A constant used to indicate the position of FIXED_PATH screens in wizardPaths. Value is zero. */
 	public static final int FIXED_PATH = 0;
-	/** Message used to indicate completion of all phases. Value is less than zero. */
+	/** A constant used to indicate the position of DELIMITED_PATH screens in wizardPaths. Value is one. */
 	public static final int DELIMITED_PATH = 1;
 
 	/**
@@ -132,6 +132,13 @@ public class FileFormatDispatcher {
 				getAFileFormatWizard().middleFrameUI();
 				break;
 			case  SCREEN3_PARSE_DELIM:
+				if(aFormInterface[currentPhase] == null) {
+					Screen2d aScreen2d = new Screen2d(this, getParameters());
+					aFormInterface[currentPhase] = aScreen2d;
+					getAFileFormatWizard().addScreen(aScreen2d, Integer.toString(currentPhase));
+				}
+				startPhase(aFormInterface[currentPhase]);
+				getAFileFormatWizard().middleFrameUI();
 				break;
 			case  SCREEN4_EDIT_FIX_ATT:
 				if(aFormInterface[currentPhase] == null) {
@@ -199,8 +206,6 @@ public class FileFormatDispatcher {
 				} else {
 					currentPhase = 0;
 				}
-				// push stage onto stack so next frame's Previous button works
-//				frameStack.add(new Integer(currentPhase));
 				break;
 			case MSG_NEXT:
 				currentStep++;
@@ -209,15 +214,6 @@ public class FileFormatDispatcher {
 			case MSG_PREV:
 				currentStep--;
 				currentPhase = wizardPaths[currentPath][currentStep];
-//				if (frameStack.size() == 1) {
-//					System.out.println("Error: Popped too much off the stack!");
-//					break;
-//				}
-				// grab previous frame id from the stack
-//				Integer prevPhase = (Integer)frameStack.get(frameStack.size() - 2);
-//				frameStack.remove(frameStack.size() - 1);  // remove frame we just came from
-//				frameStack.remove(frameStack.size() - 1);  // remove frame we are going to
-//				currentPhase = prevPhase.intValue();
 				break;
 			case MSG_SKIP:
 				if (null != data && data instanceof Integer) {
@@ -332,16 +328,10 @@ public class FileFormatDispatcher {
 	}
     
 	/**
-	 * Simply removes currentPhaseFrame from the desktop and disposes
-	 * of it.
+	 * Do nothing as it gets hidden but may be used again via previous button.
 	 * @see #currentPhaseFrame
 	 */
 	private void destroyCurrentPhaseFrame() {
-//		if (null != getCurrentPhaseFrame()) {
-//			//desktopPane.remove(getCurrentPhaseFrame());
-//			//currentPhaseFrame.dispose();
-//			setCurrentPhaseFrame(null);
-//		}
 	}
 
 	public void setAFileFormatWizard(FileFormatWizard aFileFormatWizard) {
@@ -361,10 +351,19 @@ public class FileFormatDispatcher {
 	}
 
 	/**
-	 * @return
+	 * Returns the currently visible panel
+	 * @return currently visible panel
 	 */
 	public FormInterface getCurrentPhaseFrame() {
 		return aFormInterface[currentPhase];
+	}
+
+	/**
+	 * Allows setting the current Path through wizardPaths array.
+	 * @param i
+	 */
+	public void setCurrentPath(int i) {
+		currentPath = i;
 	}
     
 }

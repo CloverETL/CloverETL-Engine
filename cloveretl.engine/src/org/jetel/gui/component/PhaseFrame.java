@@ -22,6 +22,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.border.*;
 
+import org.jetel.gui.fileformatwizard.FileFormatDataModel;
 import org.jetel.gui.fileformatwizard.FileFormatDispatcher;
 
 /**
@@ -190,7 +191,12 @@ public abstract class PhaseFrame extends JFrame {
             return;
         }
 		currentPhaseFrame.saveData();
-        
+		FileFormatDataModel aFileFormatDataModel = currentPhaseFrame.getFileFormatDataModel();
+		if(aFileFormatDataModel.isFileDelimited) {
+			getDispatcher().setCurrentPath(FileFormatDispatcher.DELIMITED_PATH);
+		} else {
+			getDispatcher().setCurrentPath(FileFormatDispatcher.FIXED_PATH);
+		}
         getDispatcher().phasedProcessHandler(FileFormatDispatcher.MSG_NEXT, null);
 		repaint();
     }
