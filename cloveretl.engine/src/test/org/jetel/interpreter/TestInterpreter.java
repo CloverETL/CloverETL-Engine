@@ -67,7 +67,7 @@ public class TestInterpreter extends TestCase {
 	}
 	
 	public void test_1_expression() {
-		String expStr="$Age>=135 or $Age<200 and $Age>0";
+		String expStr="$Age>=135 or $Age<200 and $Age>0 or $Name==\"HELLO\"";
 		
 		try {
 			  FilterExpParser parser = new FilterExpParser(record,
@@ -90,5 +90,32 @@ public class TestInterpreter extends TestCase {
 		    	e.printStackTrace();
 		    }
 		}
+	
+	public void test_2_expression() {
+		String expStr="datediff(today(),2003-10-1,year)";
+		try {
+			  FilterExpParser parser = new FilterExpParser(record,
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      System.out.println(executor.getResult());
+		      
+		      
+		      parseTree.dump("");
+		      
+		    } catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+		
+	}
+		
 	
 }
