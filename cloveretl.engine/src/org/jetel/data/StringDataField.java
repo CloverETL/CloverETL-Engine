@@ -308,13 +308,18 @@ public class StringDataField extends DataField {
 	/**
 	 *  Compares this object with the specified object for order.
 	 *
-	 * @param  obj  Description of the Parameter
-	 * @return      Description of the Return Value
+	 * @param  obj  Any object implementing CharSequence interface
+	 * @return      Description -1;0;1 based on comparison result
 	 */
 	public int compareTo(Object obj) {
-		//THIS DOES NOT WORK !!!! -> return value.toString().compareTo(((StringDataField) obj).getValue());
 
-		StringBuffer strObj = (StringBuffer) ((StringDataField) obj).getValue();
+		if (obj instanceof StringDataField){
+			obj = ((StringDataField)obj).getCharSequence();
+		}else if (!(obj instanceof CharSequence)){
+			throw new RuntimeException("Object is NOT a String or CharSequence: "+obj);
+		}
+		CharSequence strObj= (CharSequence)obj;
+
 		if (strObj == null) {
 			return 1;// ?? shall we raise an exception ??
 		}

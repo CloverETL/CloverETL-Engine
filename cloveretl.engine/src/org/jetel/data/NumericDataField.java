@@ -373,15 +373,14 @@ public class NumericDataField extends DataField {
 	 *@return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		double compDouble = ((NumericDataField) obj).getDouble();
 		
-		if (value > compDouble) {
-			return 1;
-		} else if (value < compDouble) {
-			return -1;
-		} else {
-			return 0;
-		}
+		if (obj instanceof NumericDataField){
+			return compareTo(((NumericDataField) obj).getDouble());
+		}else if (obj instanceof Double){
+			return compareTo(((Double)obj).doubleValue());
+		}else if (obj instanceof Integer){
+			return compareTo(((Integer)obj).doubleValue());
+		}else throw new RuntimeException("Object does not represent a numeric value: "+obj);
 	}
 
 

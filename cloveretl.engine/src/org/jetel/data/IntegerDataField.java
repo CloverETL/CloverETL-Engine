@@ -337,15 +337,14 @@ public class IntegerDataField extends DataField {
 	 * @return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		int compInt = ((IntegerDataField) obj).getInt();
-
-		if (value > compInt) {
-			return 1;
-		} else if (value < compInt) {
-			return -1;
-		} else {
-			return 0;
-		}
+		
+		if (obj instanceof IntegerDataField){
+			return compareTo(((IntegerDataField) obj).getInt());
+		}else if (obj instanceof Integer){
+			return compareTo(((Integer)obj).intValue());
+		}else if (obj instanceof Double){
+			return compareTo(((Double)obj).intValue());
+		}else throw new RuntimeException("Object does not represent a numeric value: "+obj);
 	}
 
 
@@ -364,8 +363,7 @@ public class IntegerDataField extends DataField {
 			return 0;
 		}
 	}
-
-
+	
 	/**
 	 *  Returns how many bytes will be occupied when this field with current
 	 *  value is serialized into ByteBuffer
