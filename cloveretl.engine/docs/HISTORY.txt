@@ -2,6 +2,15 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-2
+---------
+New features:
++ extended ExtFilter - org.jetel.interpreter has been
+extended, it now supports arithmetic operations and
+has several built-in functions.
+
+Changes:
++ added several new "macros" to org.jetel.data.GetVal
 
 REL 1-1-1
 ---------
