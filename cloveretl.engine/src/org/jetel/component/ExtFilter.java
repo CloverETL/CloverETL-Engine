@@ -213,7 +213,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 			}
 			return filter;
 		}catch(Exception ex){
-			System.err.println(ex.getMessage());
+			System.err.println(nodeXML.getNodeName()+" : "+ex.getMessage());
 			return null;
 		}
 	}
