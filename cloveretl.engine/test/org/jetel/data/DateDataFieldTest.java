@@ -19,6 +19,14 @@
 
 package test.org.jetel.data;
 
+import java.nio.ByteBuffer;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import org.jetel.data.DateDataField;
+import org.jetel.metadata.DataFieldMetadata;
+
 import junit.framework.TestCase;
 
 /**
@@ -26,18 +34,42 @@ import junit.framework.TestCase;
  *
  */
 public class DateDataFieldTest extends TestCase {
+	private DateDataField aDateDataField1 = null;
+	private DateDataField aDateDataField2 = null;
+	private DateDataField aDateDataField3 = null;
+	private DateDataField aDateDataField4 = null;
 
 	
 
 protected void setUp() { 
+	Calendar calendar = new GregorianCalendar(2003,4,10);
+	Date trialTime1 = null;
+	trialTime1 = calendar.getTime(); 
+	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'D',(short)3);
+	aDateDataField1 = new DateDataField(fixedFieldMeta1, trialTime1);
+	
+	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'D',(short)3);
+	aDateDataField2 = new DateDataField(fixedFieldMeta2);
+
+	calendar = new GregorianCalendar(2002,6,10);
+	trialTime1 = null;
+	trialTime1 = calendar.getTime(); 
+	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");
+	aDateDataField3 = new DateDataField(delimFieldMeta1,trialTime1);
+	
+	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'D',",");
+	aDateDataField4 = new DateDataField(delimFieldMeta2);
+
 
 }
 
 
 
 protected void tearDown() {
-
-
+	aDateDataField1 = null;
+	aDateDataField2 = null;
+	aDateDataField3 = null;
+	aDateDataField4 = null;
 }
 
 
@@ -46,6 +78,9 @@ protected void tearDown() {
  *
  */
 public void test_1_DateDataField() {
+	assertNotNull(aDateDataField2);
+	assertNotNull(aDateDataField4);
+	assertTrue(aDateDataField4.isNull());
 	}
 
 
@@ -54,6 +89,9 @@ public void test_1_DateDataField() {
 	 *
 	 */
 	public void test_2_DateDataField() {
+		assertNotNull(aDateDataField1);
+		assertNotNull(aDateDataField3);
+		assertFalse(aDateDataField1.isNull());
 	}
 
 	/**
@@ -78,20 +116,6 @@ public void test_1_DateDataField() {
 	public void test_toString() {
 	}
 
-	/**
-	 *  Test for @link org.jetel.data.DateDataField.fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException
-	 *
-	 */
-	public void test_fromByteBuffer() {
-	}
-
-	/**
-	 *  Test for @link org.jetel.data.DateDataField.toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException
-	 *
-	 */
-	public void test_toByteBuffer() {
-	}
-
 
 /**
  *  Test for @link org.jetel.data.DateDataField.fromString(String valueStr)
@@ -108,6 +132,33 @@ public void test_fromString() {
  */
 
 public void test_serialize() {
+	ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+	
+	Calendar calendar = new GregorianCalendar(2003,4,10);
+	Date trialTime1 = null;
+	trialTime1 = calendar.getTime(); 
+	aDateDataField1.setValue(trialTime1);
+	aDateDataField1.serialize(buffer);
+	buffer.rewind();
+	aDateDataField4.deserialize(buffer);
+	assertEquals(aDateDataField4.toString(),"04/10/2003");
+	assertEquals(aDateDataField4.isNull(),aDateDataField1.isNull());
+	assertEquals(aDateDataField4,aDateDataField1);
+	
+	buffer.rewind();
+	aDateDataField1.setNull(true);
+	aDateDataField1.serialize(buffer);
+	buffer.rewind();
+	aDateDataField4.deserialize(buffer);
+	assertEquals(aDateDataField4.isNull(),aDateDataField1.isNull());
+
+	buffer.rewind();
+	aDateDataField1.setValue(null);
+	aDateDataField1.serialize(buffer);
+	buffer.rewind();
+	aDateDataField4.deserialize(buffer);
+	assertEquals(aDateDataField4.isNull(),aDateDataField1.isNull());
+	buffer = null;
 }
 
 /**
@@ -115,6 +166,18 @@ public void test_serialize() {
  *
  */
 public void test_equals() {
+	Calendar calendar = new GregorianCalendar(2003,4,10);
+	Date trialTime1 = null;
+	trialTime1 = calendar.getTime(); 
+	aDateDataField1.setValue(trialTime1);
+	aDateDataField4.setValue(trialTime1);
+	assertTrue(aDateDataField1.equals(aDateDataField4));
+	
+	Calendar calendar2 = new GregorianCalendar(2003,6,10);
+	Date trialTime2 = null;
+	trialTime2 = calendar2.getTime(); 
+	aDateDataField4.setValue(trialTime2);
+	assertFalse(aDateDataField1.equals(aDateDataField4));
 }
 
 /**
@@ -122,6 +185,12 @@ public void test_equals() {
  *
  */
 public void test_compareTo() {
+	Calendar calendar = new GregorianCalendar(2003,4,10);
+	Date trialTime1 = null;
+	trialTime1 = calendar.getTime(); 
+	aDateDataField1.setValue(trialTime1);
+	aDateDataField4.setValue(trialTime1);
+	assertEquals(aDateDataField1.compareTo(aDateDataField4.getValue()),0);
 }
 
 }
