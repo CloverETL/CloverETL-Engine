@@ -23,6 +23,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  * <h3>Concatenate Component</h3>
@@ -182,15 +183,14 @@ public class Concatenate extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			if (id!=null){
-				return new Concatenate(id);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new Concatenate(xattribs.getString("id"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 }
 

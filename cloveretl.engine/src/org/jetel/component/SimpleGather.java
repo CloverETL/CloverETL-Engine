@@ -23,6 +23,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  <h3>Simple Gather Component</h3>
@@ -173,15 +174,14 @@ public class SimpleGather extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			if (id!=null){
-				return new SimpleGather(id);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new SimpleGather(xattribs.getString("id"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 }
 

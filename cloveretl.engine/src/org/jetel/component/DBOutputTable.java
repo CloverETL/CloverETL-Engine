@@ -24,6 +24,7 @@ import org.jetel.graph.*;
 import org.jetel.database.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 
 /**
@@ -228,17 +229,16 @@ public class DBOutputTable extends Node {
 	 * @since           September 27, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs = nodeXML.getAttributes();
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 
-		if (attribs != null) {
-			String id = attribs.getNamedItem("id").getNodeValue();
-			String dbTable = attribs.getNamedItem("dbTable").getNodeValue();
-			String dbConnectionName = attribs.getNamedItem("dbConnection").getNodeValue();
-			if (id != null && dbTable != null && dbConnectionName != null) {
-				return new DBOutputTable(id, dbConnectionName, dbTable);
-			}
+		try{
+			return new DBOutputTable(xattribs.getString("id"),
+				xattribs.getString("dbConnection"),
+				xattribs.getString("dbTable"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 
 }

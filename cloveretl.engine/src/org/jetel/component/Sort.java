@@ -28,7 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
-
+import org.jetel.util.ComponentXMLAttributes;
 /**
   *  <h3>Sort Component</h3>
  *
@@ -206,20 +206,17 @@ public class Sort extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		boolean ascending=true;	// default sort order
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String keyStr=attribs.getNamedItem("sortKey").getNodeValue();
-			if (attribs.getNamedItem("sortOrder")!=null){
-				ascending= attribs.getNamedItem("sortOrder").getNodeValue().matches("^[Aa].*");
-			}
-			if (id!=null && keyStr!=null){
-				return new Sort(id,keyStr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),ascending);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new Sort(xattribs.getString("id"),
+				xattribs.getString("sortKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+				xattribs.getString("sortOrder").matches("^[Aa].*"));
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
+		
 	}
 	
 }

@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
   *  <h3>Dedup Component</h3>
@@ -197,20 +198,16 @@ public class Dedup extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs=nodeXML.getAttributes();
-		boolean keepFirst=true;	// as a default keep first from group
-		
-		if (attribs!=null){
-			String id=attribs.getNamedItem("id").getNodeValue();
-			String keyStr=attribs.getNamedItem("dedupKey").getNodeValue();
-			if (attribs.getNamedItem("keep")!=null){
-				keepFirst= attribs.getNamedItem("keep").getNodeValue().matches("^[Ff].*");
-			}
-			if (id!=null && keyStr!=null){
-				return new Dedup(id,keyStr.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),keepFirst);
-			}
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+
+		try{
+			return new Dedup(xattribs.getString("id"),
+					xattribs.getString("dedupKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					xattribs.getString("keep").matches("^[Ff].*")) ;
+		}catch(Exception ex){
+			System.err.println(ex.getMessage());
+			return null;
 		}
-		return null;
 	}
 	
 }
