@@ -42,12 +42,13 @@ public class StringDataFieldTest  extends TestCase {
 protected void setUp() { 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'S',(short)3);
 	aStringDataField1 = new StringDataField(fixedFieldMeta1,"boo");
-	
+
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'S',(short)3);
 	fixedFieldMeta2.setNullable(false);
 	aStringDataField2 = new StringDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field3",'S',";");
+	delimFieldMeta1.setDefaultValue("really default");
 	aStringDataField3 = new StringDataField(delimFieldMeta1,"Boo3");
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field4",'S',",");
@@ -155,60 +156,76 @@ public void test_1_StringDataField() {
 	}
 
 
-/**
- *  Test for @link org.jetel.data.StringDataField.deserialize(ByteBuffer buffer)
- *           @link org.jetel.data.StringDataField.serialize(ByteBuffer buffer)
- *
- */
-
-public void test_serialize() {
-	ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.deserialize(ByteBuffer buffer)
+	 *           @link org.jetel.data.StringDataField.serialize(ByteBuffer buffer)
+	 *
+	 */
 	
-	aStringDataField1.setValue("adasdad");
-	aStringDataField1.serialize(buffer);
-	buffer.rewind();
-	aStringDataField4.deserialize(buffer);
-	assertEquals(aStringDataField4.toString(),"adasdad");
-	assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
-	assertEquals(aStringDataField4,aStringDataField1);
+	public void test_serialize() {
+		ByteBuffer buffer = ByteBuffer.allocateDirect(100);
+		
+		aStringDataField1.setValue("adasdad");
+		aStringDataField1.serialize(buffer);
+		buffer.rewind();
+		aStringDataField4.deserialize(buffer);
+		assertEquals(aStringDataField4.toString(),"adasdad");
+		assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
+		assertEquals(aStringDataField4,aStringDataField1);
+		
+		buffer.rewind();
+		aStringDataField1.setNull(true);
+		aStringDataField1.serialize(buffer);
+		buffer.rewind();
+		aStringDataField4.deserialize(buffer);
+		assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
 	
-	buffer.rewind();
-	aStringDataField1.setNull(true);
-	aStringDataField1.serialize(buffer);
-	buffer.rewind();
-	aStringDataField4.deserialize(buffer);
-	assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
-
-	buffer.rewind();
-	aStringDataField1.setValue(null);
-	aStringDataField1.serialize(buffer);
-	buffer.rewind();
-	aStringDataField4.deserialize(buffer);
-	assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
-	buffer = null;
-}
-
-/**
- *  Test for @link org.jetel.data.StringDataField.equals(Object obj)
- *
- */
-public void test_equals() {
-	aStringDataField1.setValue("5.23423");
-	aStringDataField4.setValue("5.23423");
-	assertTrue(aStringDataField1.equals(aStringDataField4));
+		buffer.rewind();
+		aStringDataField1.setValue(null);
+		aStringDataField1.serialize(buffer);
+		buffer.rewind();
+		aStringDataField4.deserialize(buffer);
+		assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
+		buffer = null;
+	}
 	
-	aStringDataField4.setValue("7");
-	assertFalse(aStringDataField1.equals(aStringDataField4));
-}
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.equals(Object obj)
+	 *
+	 */
+	public void test_equals() {
+		aStringDataField1.setValue("5.23423");
+		aStringDataField4.setValue("5.23423");
+		assertTrue(aStringDataField1.equals(aStringDataField4));
+		
+		aStringDataField4.setValue("7");
+		assertFalse(aStringDataField1.equals(aStringDataField4));
+	}
+	
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.compareTo(Object obj)
+	 *
+	 */
+	public void test_compareTo() {
+		aStringDataField1.setValue("5.654");
+		aStringDataField4.setValue("5.654");
+		assertEquals(aStringDataField1.compareTo(aStringDataField4),0);
+	}
 
-/**
- *  Test for @link org.jetel.data.StringDataField.compareTo(Object obj)
- *
- */
-public void test_compareTo() {
-	aStringDataField1.setValue("5.654");
-	aStringDataField4.setValue("5.654");
-	assertEquals(aStringDataField1.compareTo(aStringDataField4),0);
-}
+	/**
+	 *  Test for @link org.jetel.data.StringDataField.setToDefaultValue()
+	 *
+	 */
+	public void test_setToDefaultValue() {
+		aStringDataField3.setToDefaultValue();
+		assertEquals("really default",aStringDataField3.toString());
+		
+		try {
+			aStringDataField4.setToDefaultValue();
+			fail("Field4 is not nullable and is being set to null!");
+		} catch (java.lang.RuntimeException re) {}
 
+		aStringDataField1.setToDefaultValue();
+		assertEquals("",aStringDataField1.toString());
+	}
 }

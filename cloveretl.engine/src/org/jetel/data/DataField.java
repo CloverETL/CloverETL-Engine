@@ -69,6 +69,29 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
+	 *  An operation that sets value of the data field to default value.
+	 *
+	 */
+	public void setToDefaultValue() {
+		try {
+			fromString( metadata.getDefaultValue());
+		} catch (Exception ex) {
+			String tmp = metadata.getDefaultValue();
+			if(tmp==null || tmp.equals("")) {
+				if(metadata.isNullable()) {
+					throw new RuntimeException(ex.getMessage());
+				} else {
+					throw new RuntimeException(metadata.getName() + " is not nullable and is being set to null!");
+				}
+			} else {
+				// here, the only reason to fail is bad DefaultValue
+				throw new RuntimeException(metadata.getName() + " has incorrect default value("+metadata.getDefaultValue()+")!");
+			}
+		}
+	}
+
+
+	/**
 	 *  Sets the Null value indicator
 	 *
 	 * @param  isNull  The new Null value

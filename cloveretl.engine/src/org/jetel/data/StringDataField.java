@@ -319,6 +319,7 @@ public class StringDataField extends DataField {
 //			return -1;
 //		}
 	}
+
 }
 /*
  *  end class StringDataField

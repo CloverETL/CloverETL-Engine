@@ -60,6 +60,7 @@ protected void setUp() {
 	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");
 	delimFieldMeta1.setFormatStr("MM/dd/yyyy");
+	delimFieldMeta1.setDefaultValue("03/31/2100");
 	aDateDataField3 = new DateDataField(delimFieldMeta1,trialTime1);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'D',",");
@@ -245,4 +246,21 @@ public void test_1_DateDataField() {
 		assertEquals(aDateDataField1.compareTo(aDateDataField4.getValue()),0);
 	}
 
+
+	/**
+	 *  Test for @link org.jetel.data.DateDataField.setToDefaultValue()
+	 *
+	 */
+	public void test_setToDefaultValue() {
+		aDateDataField3.setToDefaultValue();
+		assertEquals("03/31/2100",aDateDataField3.toString());
+			
+		try {
+			aDateDataField4.setToDefaultValue();
+			fail("Field4 is not nullable and is being set to null!");
+		} catch (java.lang.RuntimeException re) {}
+	
+		aDateDataField1.setToDefaultValue();
+		assertEquals("",aDateDataField1.toString());
+	}
 }
