@@ -59,13 +59,18 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td>
- *  <tr><td><b>dbFields<br><i>optional</i></b></td><td>delimited list of target table's fields to be populated</td>
+ *  <!--><tr><td><b>skipList<br><i>optional</i></b></td><td>delimited list of target table's field indices to be skipped (not populated)</td><!-->
+ *  <tr><td><b>dbFields<br><i>optional</i></b></td><td>delimited list of target table's fields to be populated<br>
+ *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
  *  </tr>
  *  </table>  
  *
  *  <h4>Example:</h4>  
  *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z"/&gt;</pre>
+ *  <br>
+ *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" dbTable="employee_z" dbFields="f_name;l_name;phone"/&gt;</pre>
+ *  <br><i>This example shows how to populate only selected fields within target DB table. It can be used for skipping target fields which
+ *  are automatically populated by DB (such as autoincremented fields)</i>
  * @author     dpavlis
  * @since    September 27, 2002
  * @see		org.jetel.database.AnalyzeDB
