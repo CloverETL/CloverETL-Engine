@@ -139,10 +139,9 @@ public class SQLUtil {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public static ResultSetMetaData getTableFieldsMetadata(Connection con, String tableName) throws SQLException {
-		StringBuffer queryStr = new StringBuffer("select * from ");
-		queryStr.append(tableName);
-
-		ResultSet rs = con.createStatement().executeQuery(queryStr.toString());
+		String queryStr="select * from " + tableName + " where 1=0 ";
+		
+		ResultSet rs = con.createStatement().executeQuery(queryStr);
 		return rs.getMetaData();
 	}
 
