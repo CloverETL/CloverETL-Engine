@@ -25,6 +25,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.regex.*;
 import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import org.jetel.exception.*;
 
 /**
@@ -60,8 +61,9 @@ public class DynamicJavaCode {
 	private void saveSrc(){
 		long checkSumFile;
 		fileName=srcPath+fileSeparator+className+".java";
-		Adler32 checkSumSrc=new Adler32();
-		checkSumSrc.update(srcCode.getBytes());
+		Checksum checkSumSrc=new Adler32();
+		byte[] stringBytes=srcCode.getBytes();
+		checkSumSrc.update(stringBytes,0,stringBytes.length);
 		// try to get checksum of already (may be) saved src)
 		checkSumFile=FileUtils.calculateFileCheckSum(fileName);
 		
