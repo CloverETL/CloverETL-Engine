@@ -25,6 +25,7 @@ import java.net.URLClassLoader;
 import java.sql.*;
 import java.util.Properties;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.PropertyRefResolver;
 import org.w3c.dom.NamedNodeMap;
 
 /**
@@ -224,6 +225,10 @@ public class DBConnection {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		NamedNodeMap attributes = nodeXML.getAttributes();
 		DBConnection con;
+		// for resolving reference in additional parameters
+		// this should be changed in the future when ComponentXMLAttributes
+		// is enhanced to support iterating through attributes
+		PropertyRefResolver refResolver=new PropertyRefResolver();
 
 		try {
 			// do we have dbConfig parameter specified ??
@@ -241,7 +246,7 @@ public class DBConnection {
 				// assign rest of attributes/parameters to connection properties so
 				// it can be retrieved by DB JDBC driver
 				for (int i = 0; i < attributes.getLength(); i++) {
-					con.setProperty(attributes.item(i).getNodeName(), attributes.item(i).getNodeValue());
+					con.setProperty(attributes.item(i).getNodeName(), refResolver.resolveRef(attributes.item(i).getNodeValue()));
 				}
 
 				return con;
