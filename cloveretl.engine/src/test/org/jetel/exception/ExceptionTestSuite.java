@@ -31,6 +31,8 @@ public class ExceptionTestSuite   extends TestSuite  {
 public static Test suite() {
 	TestSuite suite= new TestSuite("All org.jetel.exception Tests");
 	suite.addTest(new TestSuite(test.org.jetel.exception.BadDataFormatExceptionHandler_FixLenDataParser2_Test.class));
+	suite.addTest(new TestSuite(test.org.jetel.exception.BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test.class));
+	
 	return suite;
 }
 

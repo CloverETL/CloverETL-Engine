@@ -40,11 +40,11 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	private FixLenDataParser2 aFixLenDataParser2 = null;
 	private FixLenDataParser2 aParser2 = null;
 	private DataRecord record;
+	private FileInputStream in = null;
+	private FileInputStream in2 = null;
+	private DataRecordMetadata metadata = null;
 	
 	protected void setUp() { 
-		FileInputStream in = null;
-		FileInputStream in2 = null;
-		DataRecordMetadata metadata = null;
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 		try {
@@ -57,10 +57,8 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		}
 	
 		aParser2 = new FixLenDataParser2();
-		aParser2.open(in2,metadata);
 
 		aFixLenDataParser2 = new FixLenDataParser2();
-		aFixLenDataParser2.open(in,metadata);
 		record = new DataRecord(metadata);
 		record.init();
 	}
@@ -68,18 +66,49 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	protected void tearDown() {
 		aFixLenDataParser2.close();
 		aFixLenDataParser2 = null;
-		record  = null;
-	}
 
+		aParser2.close();
+		aParser2 = null;
+		record  = null;
+		
+		metadata = null;
+		in = null;
+		in2 = null;
+	}
+	
 	/**
-	 *  Test for @link FixLenDataParser2 configured with strict
-	 *  BadDataFormatExceptionHandler for a well formatted data source.
-	 *
+	 *  Test for @link for a well formatted data source.
+	 *  No handler
 	 */
 	
-	public void test_FixLenDataParser2_strict_good() {
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
+	public void test_goodFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+
+		// test no handler ------------------------------------
+		aFixLenDataParser2.open(in,metadata);
+		try{
+			while((record=aFixLenDataParser2.getNext(record))!=null){}
+		} catch (BadDataFormatException e){	
+			fail("Should not raise an BadDataFormatException");
+			e.printStackTrace();
+		} catch (Exception ee){
+			fail("Should not throw Exception");
+			ee.printStackTrace();
+		}
+		aFixLenDataParser2.close();
+
+	}
+	
+	/**
+	 *  Test for @link for a well formatted data source.
+	 *  strict handler
+	 */
+	
+	public void test_strict_goodFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+		// test strict handler ------------------------------------
+		aFixLenDataParser2.open(in,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
 		aFixLenDataParser2.addBDFHandler(aHandler);
 		try{
 			while((record=aFixLenDataParser2.getNext(record))!=null){}
@@ -90,17 +119,20 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
+		aFixLenDataParser2.close();
+		 
 	}
 	
 	/**
-	 *  Test for @link FixLenDataParser2 configured with controlled
-	 *  BadDataFormatExceptionHandler for a well formatted data source.
-	 *
+	 *  Test for @link for a well formatted data source.
+	 *  controlled handler
 	 */
 	
-	public void test_FixLenDataParser2_controlled_good() {
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
+	public void test_controlled_goodFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+		// test controlled handler ------------------------------------
+		aFixLenDataParser2.open(in,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
 		aFixLenDataParser2.addBDFHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
@@ -127,24 +159,29 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 				}
 				recCount++;
 			}
-			assertEquals(3,recCount);		} catch (BadDataFormatException e){	
+			assertEquals(3,recCount);		
+			
+		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
 		} catch (Exception ee){
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-	}
+		aFixLenDataParser2.close();
 
+	}
+	
 	/**
-	 *  Test for @link FixLenDataParser2 configured with lenient
-	 *  BadDataFormatExceptionHandler for a well formatted data source.
-	 *
+	 *  Test for @link for a well formatted data source.
+	 *  lenient handler
 	 */
 	
-	public void test_FixLenDataParser2_lenient_good() {
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
+	public void test_lenient_goodFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+		// test lenient handler ------------------------------------
+		aFixLenDataParser2.open(in,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
 		aFixLenDataParser2.addBDFHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
@@ -183,42 +220,72 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	
 
 	/**
-	 *  Test for @link FixLenDataParser2 configured with strict
-	 *  BadDataFormatExceptionHandler for a data source with poorly formatted fields.
-	 *
+	 *  Test for a data source with poorly formatted fields.
+	 *  No handler.
 	 */
 	
-	public void test_FixLenDataParser2_strict_bad() {
+	public void test_badFile() {
+		BadDataFormatExceptionHandler aHandler = null;
 		boolean failed = false;
-		
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
+		// test no handler ------------------------------------
+		aParser2.open(in2,metadata);
+		try{
+			while((record=aParser2.getNext(record))!=null){
+				fail("Should throw Exception");
+			}
+		} catch (BadDataFormatException e){	
+			fail("Should not raise an BadDataFormatException");
+			e.printStackTrace();
+		} catch (RuntimeException re) {
+			failed = true;
+		} catch (Exception ee){
+			ee.printStackTrace();
+		}
+		aParser2.close();
+		if(!failed)
+			fail("Should raise an RuntimeException");
+	}
+	
+
+	/**
+	 *  Test for a data source with poorly formatted fields.
+	 *  No handler.
+	 */
+	
+	public void test_strict_badFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+
+		// test strict handler ------------------------------------
+		aParser2.open(in2,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
 		aParser2.addBDFHandler(aHandler);
 		int recCount = 0;
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				recCount++;
 			}
+			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	
-			failed = true;
 		} catch (Exception ee){
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		if(!failed)
-			fail("Should raise an BadDataFormatException");
 		assertEquals(0,recCount);
+		aParser2.close();
 	}
 	
+
 	/**
-	 *  Test for @link FixLenDataParser2 configured with controlled
-	 *  BadDataFormatExceptionHandler for  a data source with poorly formatted fields.
-	 *
+	 *  Test for a data source with poorly formatted fields.
+	 *  controlled handler.
 	 */
 	
-	public void test_FixLenDataParser2_controlled_bad() {
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
+	public void test_controlled_badFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+
+		// test controlled handler ------------------------------------
+		aParser2.open(in2,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
 		aParser2.addBDFHandler(aHandler);
 		int recCount = 0;
 		try{
@@ -234,17 +301,21 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		}
 		assertEquals(2,recCount);  //may need to be revised
 		//depending how we implement nullable property
+		aParser2.close();
+
 	}
+	
 
 	/**
-	 *  Test for @link FixLenDataParser2 configured with lenient
-	 *  BadDataFormatExceptionHandler for a data source with poorly formatted fields.
-	 *
+	 *  Test for a data source with poorly formatted fields.
+	 *  lenient handler.
 	 */
 	
-	public void test_FixLenDataParser2_lenient_bad() {
-		BadDataFormatExceptionHandler aHandler =  
-				BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
+	public void test_lenient_badFile() {
+		BadDataFormatExceptionHandler aHandler = null;
+		// test lenient handler ------------------------------------
+		aParser2.open(in2,metadata);
+		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
 		aParser2.addBDFHandler(aHandler);
 		int recCount = 0;
 		
@@ -255,15 +326,14 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				if(recCount==0) {
-					assertEquals(record.getField(0).toString(),"0.0");
-					assertEquals(record.getField(2).toString(),"");
+					assertEquals("0.0",record.getField(0).toString());
+					assertEquals("",record.getField(2).toString());
 					assertEquals(null,record.getField(2).getValue());
 				} else if(recCount==1) {
-					assertEquals(record.getField(1).toString(),"");
+					assertEquals("",record.getField(1).toString());
 					assertEquals(null,record.getField(1).getValue());
 				} else if(recCount==2) {
-					assertEquals(record.getField(3).toString(),"");
-					assertEquals(null,record.getField(3).getValue());
+					assertEquals("",record.getField(3).toString());
 				}
 				recCount++;
 			}

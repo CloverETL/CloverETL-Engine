@@ -18,12 +18,13 @@
 
 package org.jetel.component;
 
-import java.util.*;
 import java.io.*;
 import org.w3c.dom.NamedNodeMap;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DelimitedDataParserNIO;
+import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -171,22 +172,34 @@ public class DelimitedDataReaderNIO extends Node {
 	 * @since           May 21, 2002
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
+		DelimitedDataReaderNIO aDelimitedDataReaderNIO = null;
 		NamedNodeMap attribs=nodeXML.getAttributes();
 		if (attribs!=null){
 			org.w3c.dom.Node charset=attribs.getNamedItem("charset");
 			String id=attribs.getNamedItem("id").getNodeValue();
 			String fileURL=attribs.getNamedItem("fileURL").getNodeValue();
+			String aDataPolicy = attribs.getNamedItem("DataPolicy").getNodeValue();
 
 			if ((id!=null) && (fileURL!=null)){
 				if (charset!=null){
-					return new DelimitedDataReaderNIO(id,fileURL,charset.getNodeValue());
+					aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(id,fileURL,charset.getNodeValue());
 				}else{
-					return new DelimitedDataReaderNIO(id,fileURL);
+					aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(id,fileURL);
 				}
+				if(aDataPolicy != null) {
+					aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(aDataPolicy));
+				}
+				
 			}
 		}
-		return null;
+		return aDelimitedDataReaderNIO;
 	}
 	
+	/**
+	 * @param handler
+	 */
+	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		parser.addBDFHandler(handler);
+	}
 }
 
