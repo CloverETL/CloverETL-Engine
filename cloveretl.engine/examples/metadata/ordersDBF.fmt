@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record name="ORDERS_DBF" type="fixed" dataOffset="481" recordSize="265" charset="US-ASCII">
+	<Field name="_DELETED_" type="string" size="1" nullable="true" />
+	<Field name="ORDERID" type="numeric" size="20" nullable="true" />
+	<Field name="CUSTOMERID" type="string" size="5" nullable="true" />
+	<Field name="EMPLOYEEID" type="numeric" size="20" nullable="true" />
+	<Field name="ORDERDATE" type="date" size="8" format="yyyyMMdd" nullable="true" />
+	<Field name="REQUIREDDA" type="date" size="8" format="yyyyMMdd" nullable="true" />
+	<Field name="SHIPPEDDAT" type="string" size="8" format="yyyyMMdd" nullable="true" default="19000101" />
+	<Field name="SHIPVIA" type="numeric" size="20" nullable="true" />
+	<Field name="FREIGHT" type="numeric" size="20" nullable="true" />
+	<Field name="SHIPNAME" type="string" size="40" nullable="true" />
+	<Field name="SHIPADDRES" type="string" size="60" nullable="true" />
+	<Field name="SHIPCITY" type="string" size="15" nullable="true" />
+	<Field name="SHIPREGION" type="string" size="15" nullable="true" />
+	<Field name="SHIPPOSTAL" type="string" size="10" nullable="true" />
+	<Field name="SHIPCOUNTR" type="string" size="15" nullable="true" />
+</Record>

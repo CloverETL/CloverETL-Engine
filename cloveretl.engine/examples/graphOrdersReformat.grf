@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Reformat">
+<!--
+This example illustrates usage of Reformat component. Source data contains
+info about orders customers made.
+We add artifitial key - OrderKey which is a sequence of integers. We also
+combine individual fields of ship-to-address (address,city,country) into
+one single field.
+The ShippedDate is set to constant- 02.02.1999
+
+Reformat component calls "reformatOrders" class which  implements RecordTransform
+interface (required by Reformat component).
+The directory in which recormatOrders class exists must be part of the Java classpath -
+see "-cp" option used below.
+
+Executing :
+java -cp "cloverETL.rel-1-0-7.zip;./" org.jetel.main.runGraph graphOrders.grf
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersRef.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="REF" type="REFORMAT" transformClass="reformatOrders"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.dat.out"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="REF:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="REF:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
