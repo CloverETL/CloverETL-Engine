@@ -2,6 +2,31 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-1-5
+----------
+New features:
++Partition component - partition data using one of following algorithms -
+(Round-Robin,Hash,Range)
++DataTransformation has been updated
++extra XML attributes defined for components performing reformats (Reformat, HasJoin, MergeJoin)
+are now passed into transformation function as properties - can be used for parameterizing
+transformation functions
+
+
+Changes:
++enhanced MERGE_JOIN component to support full outer join.
++introduced code which detect potential deadlocks between components in graph and changes
+direct-edge to buffered-edge.
++transformation graph now registeres all DataRecord metadata defined (by their IDs) and offers
+later retrieval of such metadata - good when using lookups which require metadata.
++SQLDataParser supports (again) setting of fetch size, also improved reporting of possible
+parsing errors
++changed definition of LookupTable interface, also updated SimpleLookupTable & DBLookupTable
+
+REL 1-1-4
+------------
+The same functionality as 1-1-4pre1.
+
 REL 1-1-4pre1
 -------------
 New features:
