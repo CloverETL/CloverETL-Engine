@@ -94,8 +94,12 @@ public class PropertyRefResolver {
 	
 	public String resolveRef(String value){
 		StringBuffer strBuf = new StringBuffer(value);
-		resolveRef(strBuf);
+		resolveRef2(strBuf);
 		return strBuf.toString();	
+	}
+	
+	public boolean resolveRef(StringBuffer value){
+	    return resolveRef2(value);
 	}
 	
 	/**
@@ -106,7 +110,7 @@ public class PropertyRefResolver {
 	 * global properties - > reference is in form ${<i>..property_name..</i>}
 	 * @return true if at least one reference to global property was found and resolved
 	 */
-	private boolean resolveRef(StringBuffer value) {
+	private boolean resolveRef2(StringBuffer value) {
 		String reference;
 		String resolvedReference;
 		boolean found=false;
