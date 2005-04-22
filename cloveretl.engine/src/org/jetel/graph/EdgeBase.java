@@ -36,7 +36,7 @@ import org.jetel.data.DataRecord;
  */
 public abstract class EdgeBase {
 
-	private Edge proxy;
+	protected Edge proxy;
 
 
 	/**

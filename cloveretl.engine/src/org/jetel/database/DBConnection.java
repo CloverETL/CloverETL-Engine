@@ -124,6 +124,13 @@ public class DBConnection {
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
 	public void connect() {
+	    if (dbConnection!=null){
+	        try{
+	            if (!dbConnection.isClosed()) return;
+	        }catch(SQLException ex){
+	            // do nothing - connection is probably invalid, create a new one - continue execution
+	        }
+	    }
 		try {
 			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
 		} catch (ClassNotFoundException ex) {

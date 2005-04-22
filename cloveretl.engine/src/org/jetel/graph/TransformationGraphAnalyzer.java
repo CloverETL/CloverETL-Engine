@@ -48,7 +48,7 @@ import org.jetel.exception.GraphConfigurationException;
 
 public class TransformationGraphAnalyzer {
 
-	static Logger logger = Logger.getLogger("org.jetel");
+	static Logger logger = Logger.getLogger("TransformationGraphAnalyzer");
 
 	static PrintStream log = System.out;// default info messages to stdout
 
@@ -176,7 +176,7 @@ public class TransformationGraphAnalyzer {
 				nodesEncountered.remove(((AnalyzedNode) nodesStack.pop()).getNode().getID());
 			} else {
 				nextNode = port.getReader();
-				//debug ! System.out.println("-"+nextNode.getID());
+				//DEBUG ! System.out.println("-"+nextNode.getID());
 				if (nextNode != null) {
 					// have we seen this node before ? if yes, then it is a loop
 					if (!nodesEncountered.add(nextNode.getID())) {
@@ -223,8 +223,8 @@ public class TransformationGraphAnalyzer {
 							//assert edge instanceof Edge : "Port not backed by Edge object !";
 							((Edge)edge).setType(Edge.EDGE_TYPE_BUFFERED);
 							// DEBUG
-							System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
-							//logger.info(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
+							//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
+							logger.info(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
 						}
 					}
 					nodesStack.push(new AnalyzedNode(prevNode));// put this node on top
@@ -281,15 +281,17 @@ public class TransformationGraphAnalyzer {
 	 * @param  problemNode  Description of the Parameter
 	 */
 	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
-		System.out.println("Dump of references between nodes:");
-		System.out.println("Detected loop when encountered node " + problemNode.getID());
-		System.out.println("Chain of references:");
-		while (iterator.hasNext()) {
-			System.out.print(((AnalyzedNode) iterator.next()).getNode().getID());
-			System.out.print(" -> ");
+	    logger.severe("Dump of references between nodes:");
+	    logger.severe("Detected loop when encountered node " + problemNode.getID());
+	    logger.severe("Chain of references:");
+		StringBuffer buffer=new StringBuffer(64);
+	    while (iterator.hasNext()) {
+			buffer.append(((AnalyzedNode) iterator.next()).getNode().getID());
+			buffer.append(" -> ");
 
 		}
-		System.out.println(problemNode.getID());
+		buffer.append(problemNode.getID());
+		logger.severe(buffer.toString());
 	}
 
 
@@ -350,7 +352,7 @@ public class TransformationGraphAnalyzer {
 			if (readerPhase != edge.getWriter().getPhase()) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
-				edge.setType(Edge.EDGE_TYPE_BUFFERED);
+				edge.setType(Edge.EDGE_TYPE_PHASE_CONNECTION);
 				// because at the end of each phase, edges from that phase
 				// are destroyed (their references), we need to preserve
 				// references for those, which span two phases

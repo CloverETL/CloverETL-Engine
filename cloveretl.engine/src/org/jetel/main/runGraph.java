@@ -31,6 +31,7 @@ import org.jetel.graph.*;
  *  <tr><td nowrap>-log</td><i>logfile</i><td>send output messages to specified logfile instead of stdout</td></tr>
  *  <tr><td nowrap>-P:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
  *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
+ *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -40,10 +41,12 @@ import org.jetel.graph.*;
  */
 public class runGraph {
 
+	private final static String RUN_GRAPH_VERSION="1.6";
 	private final static String VERBOSE_SWITCH = "-v";
 	private final static String LOG_SWITCH = "-log";
 	private final static String PROPERTY_FILE_SWITCH = "-cfg";
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
+	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	
 	/**
 	 *  Description of the Method
@@ -56,8 +59,9 @@ public class runGraph {
 		String propertyFilename;
 		OutputStream log = null;
 		Properties properties=new Properties();
+		int trackingInterval=-1;
 
-		System.out.println("***  CloverETL framework/transformation graph runner, (c) 2002-04 D.Pavlis, released under GNU Public Licence  ***\n");
+		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-04 D.Pavlis, released under GNU Public License  ***\n");
 		if (args.length < 1) {
 			printHelp();
 			System.exit(-1);
@@ -66,11 +70,11 @@ public class runGraph {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith(VERBOSE_SWITCH)) {
 				verbose = true;
-			}
+			}else
 			if (args[i].startsWith(LOG_SWITCH)) {
 				i++;
 				logFilename = args[i];
-			}
+			}else
 			if (args[i].startsWith(PROPERTY_FILE_SWITCH)){
 				i++;
 				try {
@@ -80,10 +84,18 @@ public class runGraph {
 					System.err.println(ex.getMessage());
 					System.exit(-1);
 				}
-			}
+			}else
 			if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
 				String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
 				properties.setProperty(nameValue[0],nameValue[1]);
+			}else
+			if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
+					i++;
+					trackingInterval = Integer.parseInt(args[i]);
+			}else
+			if (args[i].startsWith("-")) {
+					System.err.println("Unknown option: "+args[i]);
+					System.exit(-1);
 			}
 		}
 
@@ -128,7 +140,11 @@ public class runGraph {
 			}
 			System.exit(-1);
 		}
-
+		// set tracking interval
+		if(trackingInterval!=-1){
+			graph.setTrackingInterval(trackingInterval*1000);
+		}
+		
 		//	start all Nodes (each node is one thread)
 		boolean finishedOK = false;
 		try {
@@ -160,6 +176,7 @@ public class runGraph {
 		System.out.println("-log <logfile>\t\tsend output messages to specified logfile instead of stdout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
+		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
 	}
 
 }

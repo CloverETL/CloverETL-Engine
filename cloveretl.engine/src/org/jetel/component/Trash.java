@@ -150,7 +150,7 @@ public class Trash extends Node {
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
-
+			yield();
 		}
 		broadcastEOF();
 		if (runIt) {

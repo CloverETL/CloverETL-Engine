@@ -74,6 +74,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  database. Questionmarks [?] in the query text are placeholders which are filled with values from input fields specified in <b>cloverFields</b>
  *  attribute. If you use this option/parameter, cloverFields must be specified as well - it determines which input fields will
  *  be used/mapped onto target fields</td></tr>
+ *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -94,7 +95,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
- * @created     22. èervenec 2003
+ * @created     22. ï¿½ervenec 2003
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBOutputTable extends Node {
@@ -107,6 +108,7 @@ public class DBOutputTable extends Node {
 	private String[] dbFields;
 	private String sqlQuery;
 	private int recordsInCommit;
+	private int maxErrors;
 	private boolean useBatch;
 
 	private int countError;
@@ -117,6 +119,7 @@ public class DBOutputTable extends Node {
 	private final static int WRITE_REJECTED_TO_PORT = 0;
 	private final static int RECORDS_IN_COMMIT = 100;
 	private final static int RECORDS_IN_BATCH = 25;
+	private final static int MAX_ALLOWED_ERRORS = 0;
 
 	static Logger logger = Logger.getLogger("org.jetel");
 
@@ -124,33 +127,41 @@ public class DBOutputTable extends Node {
 	/**
 	 *  Constructor for the DBInputTable object
 	 *
-	 * @param  id                Description of Parameter
-	 * @param  dbConnectionName  Description of Parameter
-	 * @param  dbTableName       Description of the Parameter
+	 * @param  id                Unique ID of component
+	 * @param  dbConnectionName  Name of Clover's database connection to be used for communicationg with DB
+	 * @param  dbTableName       Name of target DB table to be populated with data
 	 * @since                    September 27, 2002
 	 */
 	public DBOutputTable(String id, String dbConnectionName, String dbTableName) {
-		super(id);
-		this.dbConnectionName = dbConnectionName;
+		this(id,dbConnectionName);
 		this.dbTableName = dbTableName;
-		cloverFields = null;
-		dbFields = null;
-		recordsInCommit = RECORDS_IN_COMMIT;
-		useBatch=false;
-		// default
-
 	}
 
+	/**
+	 * Constructor for the DBInputTable object
+	 * @param id				Unique ID of component
+	 * @param dbConnectionName	Name of Clover's database connection to be used for communicationg with DB
+	 * @param sqlQuery			SQL query to be executed against DB - can be any DML command (INSERT, UPDATE, DELETE)
+	 * @param cloverFields		Array of Clover field names (the input data) which should substitute DML command parameters (i.e. "?")
+	 */
 	public DBOutputTable(String id, String dbConnectionName, String sqlQuery, String[] cloverFields) {
+		this(id,dbConnectionName);
+		this.cloverFields = cloverFields;
+
+	}
+	
+	/**
+	 * Constructor for the DBInputTable object
+	 */
+	DBOutputTable(String id, String dbConnectionName){
 		super(id);
 		this.dbConnectionName = dbConnectionName;
 		this.dbTableName = null;
-		this.sqlQuery=sqlQuery;
-		this.cloverFields = cloverFields;
+		cloverFields = null;
+		dbFields = null;
 		recordsInCommit = RECORDS_IN_COMMIT;
+		maxErrors=MAX_ALLOWED_ERRORS;
 		useBatch=false;
-		// default
-
 	}
 	
 	/**
@@ -242,10 +253,7 @@ public class DBOutputTable extends Node {
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		CopySQLData[] transMap;
-		int i;
 		int result = 0;
-		int recCount = 0;
-		int batchCount = 0;
 		List dbFieldTypes;
 		String sql;
 		String errMsg;
@@ -271,8 +279,8 @@ public class DBOutputTable extends Node {
 				if ((dbFields!=null)&&(dbTableName!=null)){
 					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
 				}else{
-				// we have to assume that Clover fields types correspond
-				// to taget DB table fields types
+					// we have to assume that Clover fields types correspond
+					// to taget DB table fields types
 					dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
 				}	
 			}else{
@@ -287,94 +295,41 @@ public class DBOutputTable extends Node {
 				}
 			}
 			preparedStatement = dbConnection.prepareStatement(sql);
-
-			// this does not work for some drivers
-			try {
-				dbConnection.getConnection().setAutoCommit(false);
-			} catch (SQLException ex) {
-				logger.warning("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
-			}
-
+		} catch (SQLException ex) {
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
+			broadcastEOF();
+			return;
+		}
+		// this does not work for some drivers
+		try {
+			dbConnection.getConnection().setAutoCommit(false);
+		} catch (SQLException ex) {
+			logger.warning("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
+		}
+		
+		try{
 			// do we have cloverFields list defined ? (which fields from input record to consider)
 			if (cloverFields != null) {
 				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, cloverFields);
 			} else {
 				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
 			}
-
-			/*
-			 * MAIN PROCESSING LOOP
-			 */
-			countError=0; // no of erroneous records
-			while (inRecord != null && runIt) {
-				inRecord = readRecord(READ_FROM_PORT, inRecord);
-				if (inRecord != null) {
-					for (i = 0; i < transMap.length; i++) {
-						transMap[i].jetel2sql(preparedStatement);
-					}
-					/* BATCH MODE */
-					if (useBatch){
-						try{
-							preparedStatement.addBatch();
-						}catch(SQLException ex){
-							if (rejectedPort!=null){
-								rejectedPort.writeRecord(inRecord);
-								countError++;;
-							}else{
-								throw new SQLException("Error when batch inserting record: "+ex.getMessage());
-							}
-						}
-						if (batchCount++ % RECORDS_IN_BATCH == 0) {
-							try {
-								preparedStatement.executeBatch();
-								preparedStatement.clearBatch();
-							} catch (BatchUpdateException ex) {
-								throw new SQLException("Batch error:"+ex.getMessage());
-							}
-							batchCount = 0;
-						}
-					/* NORMAL MODE */
-					}else{
-						try {
-							errMsg=null;
-							result = preparedStatement.executeUpdate();
-						}catch(SQLException ex){
-							errMsg=ex.getMessage();
-							result = -1;
-						}
-						if (result != 1){
-							if (rejectedPort!=null){
-								rejectedPort.writeRecord(inRecord);
-								countError++;
-							}else{
-								throw new SQLException("Error when inserting record: "+errMsg);
-							}
-						}
-						preparedStatement.clearParameters();
-					}
-				}
-				if (recCount++ % recordsInCommit == 0) {
-					if (useBatch && batchCount!=0){
-						try {
-							preparedStatement.executeBatch();
-							preparedStatement.clearBatch();
-						} catch (BatchUpdateException ex) {
-							throw new SQLException("Batch error:"+ex.getMessage());
-						}
-						batchCount = 0;
-					}
-					dbConnection.getConnection().commit();
-				}
-			}
-			// end of records stream - final commits;
+		} catch (Exception ex) {
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			broadcastEOF();
+			return;
+		}
+		/*
+		 * Run main processing loop
+		 */
+		try{
 			if (useBatch){
-				try{
-					preparedStatement.executeBatch();
-				}catch (BatchUpdateException ex) {
-					throw new SQLException("Batch error:"+ex.getMessage());
-				}
+				runInBatchMode(inPort,rejectedPort,inRecord,transMap);
+			}else{
+				runInNormalMode(inPort,rejectedPort,inRecord,transMap);
 			}
-			dbConnection.getConnection().commit();
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
@@ -390,28 +345,122 @@ public class DBOutputTable extends Node {
 			resultCode = Node.RESULT_FATAL_ERROR;
 			//closeAllOutputPorts();
 		} finally {
-			try {
-				broadcastEOF();
-				if (preparedStatement != null) {
+			broadcastEOF();
+			if (preparedStatement != null) {
+				try{
 					preparedStatement.close();
+				} catch (SQLException ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_ERROR;
 				}
-				if (resultMsg == null) {
-					if (runIt) {
-						resultMsg = "OK";
-					} else {
-						resultMsg = "STOPPED";
-					}
-					resultCode = Node.RESULT_OK;
+			}
+			if (resultMsg == null) {
+				if (runIt) {
+					resultMsg = "OK";
+				} else {
+					resultMsg = "STOPPED";
 				}
-			} catch (SQLException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.RESULT_OK;
 			}
 		}
 		return;
 	}
+	
+
+	private void runInNormalMode(InputPort inPort,OutputPort rejectedPort,
+			DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
+		int i;
+		int recCount = 0;
+		int countError=0;
+		while (inRecord != null && runIt) {
+			inRecord = readRecord(READ_FROM_PORT, inRecord);
+			if (inRecord != null) {
+				for (i = 0; i < transMap.length; i++) {
+					transMap[i].jetel2sql(preparedStatement);
+				}
+				
+				try {
+					preparedStatement.executeUpdate();
+				}catch(SQLException ex){
+					countError++;
+					if (rejectedPort!=null){
+						rejectedPort.writeRecord(inRecord);
+					}
+					if (countError>maxErrors){
+						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
+					}
+				}
+				preparedStatement.clearParameters();
+				if (recCount++ % recordsInCommit == 0) {
+					dbConnection.getConnection().commit();
+				}
+			}
+			yield();
+		}
+		// end of records stream - final commits;
+		dbConnection.getConnection().commit();
+	}
 
 
+	private void runInBatchMode(InputPort inPort,OutputPort rejectedPort,
+			DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
+		int i;
+		int batchCount=0;
+		int recCount = 0;
+		int countError=0;
+		while (inRecord != null && runIt) {
+			inRecord = readRecord(READ_FROM_PORT, inRecord);
+			if (inRecord != null) {
+				for (i = 0; i < transMap.length; i++) {
+					transMap[i].jetel2sql(preparedStatement);
+				}
+				try{
+					preparedStatement.addBatch();
+				}catch(SQLException ex){
+					countError++;;
+					if (rejectedPort!=null){
+						rejectedPort.writeRecord(inRecord);
+					}
+					if (countError>maxErrors){
+						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
+					}
+				}
+			}
+			// shall we commit ?
+			if (batchCount++ % RECORDS_IN_BATCH == 0) {
+				try {
+					preparedStatement.executeBatch();
+					preparedStatement.clearBatch();
+				} catch (BatchUpdateException ex) {
+					throw new SQLException("Batch error:"+ex.getMessage());
+				}
+				batchCount = 0;
+			}
+			if (recCount++ % recordsInCommit == 0) {
+				if (batchCount!=0){
+					try {
+						preparedStatement.executeBatch();
+						preparedStatement.clearBatch();
+					} catch (BatchUpdateException ex) {
+						throw new SQLException("Batch error:"+ex.getMessage());
+					}
+					batchCount = 0;
+				}
+				dbConnection.getConnection().commit();
+			}
+			yield();
+		}
+		
+		try{
+			preparedStatement.executeBatch();
+		}catch (BatchUpdateException ex) {
+			throw new SQLException("Batch error:"+ex.getMessage());
+		}
+		dbConnection.getConnection().commit();
+		
+	}
+	
+	
 	/**
 	 *  Description of the Method
 	 *
@@ -463,6 +512,10 @@ public class DBOutputTable extends Node {
 				outputTable.setUseBatch(xattribs.getBoolean("batchMode"));
 			}
 			
+			if (xattribs.exists("maxErrors")){
+				outputTable.setMaxErrors(xattribs.getInteger("maxErrors"));
+			}
+			
 			return outputTable;
 			
 		} catch (Exception ex) {
@@ -483,6 +536,13 @@ public class DBOutputTable extends Node {
 
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+	
+	/**
+	 * @param maxErrors Maximum number of tolerated SQL errors during component run. Default: 0 (zero)
+	 */
+	public void setMaxErrors(int maxErrors) {
+		this.maxErrors = maxErrors;
 	}
 }
 

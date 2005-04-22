@@ -55,7 +55,7 @@ public class RecordKey {
 	/**
 	 *  Constructor for the RecordKey object
 	 *
-	 * @param  keyFieldNames  names of individual fields composing key
+	 * @param  keyFieldNames  names of individual fields composing the key
 	 * @param  metadata       metadata describing structure of DataRecord for which the key is built
 	 * @since                 May 2, 2002
 	 */
@@ -64,6 +64,15 @@ public class RecordKey {
 		this.keyFieldNames = keyFieldNames;
 	}
 
+	/**
+	 * @param keyFields indices of fields composing the key
+	 * @param metadata metadata describing structure of DataRecord for which the key is built
+	 */
+	public RecordKey(int keyFields[], DataRecordMetadata metadata) {
+		this.metadata = metadata;
+		this.keyFields = keyFields;
+	}
+	
 	// end init
 
 	/**
@@ -95,17 +104,26 @@ public class RecordKey {
 	 */
 	public void init() {
 
-		Integer position;
-		keyFields = new int[keyFieldNames.length];
-		Map fields = metadata.getFieldNames();
+	    if (keyFields == null) {
+            Integer position;
+            keyFields = new int[keyFieldNames.length];
+            Map fields = metadata.getFieldNames();
 
-		for (int i = 0; i < keyFieldNames.length; i++) {
-			if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {
-				keyFields[i] = position.intValue();
-			} else {
-				throw new RuntimeException("Field name specified as a key doesn't exist: " + keyFieldNames[i]);
-			}
-		}
+            for (int i = 0; i < keyFieldNames.length; i++) {
+                if ((position = (Integer) fields.get(keyFieldNames[i])) != null) {
+                    keyFields[i] = position.intValue();
+                } else {
+                    throw new RuntimeException(
+                            "Field name specified as a key doesn't exist: "
+                                    + keyFieldNames[i]);
+                }
+            }
+        }else if (keyFieldNames==null){
+            keyFieldNames=new String[keyFields.length];
+            for (int i=0;i<keyFields.length;i++){
+                keyFieldNames[i]=metadata.getField(keyFields[i]).getName();
+            }
+        }
 	}
 
 

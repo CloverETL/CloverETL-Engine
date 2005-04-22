@@ -121,6 +121,7 @@ public class DelimitedDataReaderNIO extends Node {
 			while (((record = parser.getNext(record)) != null) && runIt) {
 				//broadcast the record to all connected Edges
 				writeRecordBroadcast(record);
+				yield();
 			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();

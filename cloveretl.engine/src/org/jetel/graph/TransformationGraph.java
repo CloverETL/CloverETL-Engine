@@ -20,13 +20,26 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
-import java.io.*;
-import java.util.*;
-
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.logging.Logger;
+
 import org.jetel.data.Defaults;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.metadata.DataRecordMetadata;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -53,6 +66,8 @@ public final class TransformationGraph {
 	private Map dbConnections;
 
 	private Map lookupTables;
+	
+	private Map dataRecordMetadata;
 
 	private String name;
 
@@ -67,6 +82,8 @@ public final class TransformationGraph {
 	private WatchDog watchDog;
 
 	private Properties graphProperties;
+	
+	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 
 
 	/**
@@ -82,6 +99,7 @@ public final class TransformationGraph {
 		edges = new LinkedList();
 		dbConnections = new HashMap();
 		lookupTables = new HashMap();
+		dataRecordMetadata = new HashMap();
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
 		currentPhase = null;
@@ -114,7 +132,7 @@ public final class TransformationGraph {
 	/**
 	 *  Gets the DBConnection object asssociated with the name provided
 	 *
-	 * @param  name  Description of Parameter
+	 * @param  name  The DBConnection name under which the connection was registered.
 	 * @return       The DBConnection object (if found) or null
 	 * @since        October 1, 2002
 	 */
@@ -122,7 +140,58 @@ public final class TransformationGraph {
 		return (DBConnection) dbConnections.get(name);
 	}
 
+	/**
+	 * Gets the Iterator which can be used to go through all DBConnection objects
+	 * (their names) registered with graph.<br>
+	 * 
+	 * @return	Iterator with DBConnections names
+	 * @see		getDBConnection
+	 */
+	public Iterator getDBConnections(){
+	    return dbConnections.keySet().iterator();
+	}
+	
+	
+	/**
+	 * Gets the LookupTable object asssociated with the name provided
+	 * 
+	 * @param name The LookupTable name under which the connection was registered.
+	 * @return The LookupTable object (if found) or null
+	 */
+	public LookupTable getLookupTable(String name){
+	    return (LookupTable)lookupTables.get(name);
+	}
 
+	/**
+	 * Gets the Iterator which can be used to go through all DBConnection objects
+	 * (their names) registered with graph.<br>
+	 * 
+	 * @return Iterator with LookupTables names
+	 */
+	public Iterator getLookupTables(){
+	    return lookupTables.keySet().iterator();
+	}
+	
+	/**
+	 * Gets the dataRecordMetadata registered under given name (ID)
+	 * 
+	 * @param name name (the ID) under which dataRecordMetadata has been registered with graph
+	 * @return
+	 */
+	public DataRecordMetadata getDataRecordMetadata(String name){
+	    return (DataRecordMetadata)dataRecordMetadata.get(name);
+	}
+	
+	/**
+	 * Gets the Iterator which can be used to go through all DataRecordMetadata objects
+	 * (their names) registered with graph.<br>
+	 * 
+	 * @return Iterator with Metadata names (IDs)
+	 */
+	public Iterator getDataRecordMetadata(){
+	    return dataRecordMetadata.keySet().iterator();
+	}
+	
 	/**
 	 * @return Returns the Phases array.
 	 */
@@ -137,7 +206,7 @@ public final class TransformationGraph {
 	 */
 	public boolean run() {
 		long timestamp = System.currentTimeMillis();
-		watchDog = new WatchDog(this, phasesArray, log, Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL);
+		watchDog = new WatchDog(this, phasesArray, log, trackingInterval);
 
 		log.println("[Clover] starting WatchDog thread ...");
 		watchDog.start();
@@ -249,6 +318,15 @@ public final class TransformationGraph {
 			try {
 				dbCon = (DBConnection) iterator.next();
 				dbCon.close();
+			} catch (Exception ex) {
+				log.println(ex.getMessage());
+			}
+		}
+		// free all lookup tables
+		iterator = lookupTables.values().iterator();
+		while (iterator.hasNext()) {
+			try {
+				((LookupTable)iterator.next()).close();
 			} catch (Exception ex) {
 				log.println(ex.getMessage());
 			}
@@ -371,16 +449,34 @@ public final class TransformationGraph {
 
 
 	/**
-	 *  Adds a feature to the LookupTable attribute of the TransformationGraph object
+	 * Registers lookup table within TransformationGraph. It can be later
+	 * retrieved by calling getLookupTable().
 	 *
-	 * @param  name         The feature to be added to the LookupTable attribute
-	 * @param  lookupTable  The feature to be added to the LookupTable attribute
+	 * @param  lookupTable  The lookup table object to be registered
 	 */
-	public void addLookupTable(String name, Object lookupTable) {
-		lookupTables.put(name, lookupTable);
+	public void addLookupTable(LookupTable lookupTable) {
+		lookupTables.put(lookupTable.getName(), lookupTable);
 	}
 
-
+	/**
+	 * Registers lookup table within TransformationGraph. It can be later
+	 * retrieved by calling getLookupTable().
+	 *
+	 * @param  lookupTable  The lookup table object to be registered
+	 */
+	public void addDataRecordMetadata(String name, DataRecordMetadata metadata) {
+		this.dataRecordMetadata.put(name, metadata);
+	}
+	
+	/**
+	 * Bulk registration of metadata objects. Mainly used by TransformationGraphXMLReaderWriter
+	 * 
+	 * @param metadata	Map object containing metadata IDs and metadata objects
+	 */
+	public void addDataRecordMetadata(Map metadata){
+	    dataRecordMetadata.putAll(metadata);
+	}
+	
 	/**
 	 *  Removes all DBConnection objects from Map
 	 *
@@ -396,7 +492,14 @@ public final class TransformationGraph {
 		lookupTables.clear();
 	}
 
-
+	/**
+	 *  Removes all metadata registrations. However, the metadata
+	 * objects may still survive as all Edges contain reference to them
+	 */
+	public void deleteDataRecordMetadata(){
+	    dataRecordMetadata.clear();
+	}
+	
 
 	/**
 	 *  Gets the reference to the TransformationGraph class
@@ -504,6 +607,12 @@ public final class TransformationGraph {
 		}else{
 			return -1;
 		}
+	}
+	/**
+	 * @param trackingInterval Sets the tracking interval. How often is the processing status printed  (in milliseconds).
+	 */
+	public void setTrackingInterval(int trackingInterval) {
+		this.trackingInterval = trackingInterval;
 	}
 }
 /*

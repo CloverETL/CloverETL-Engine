@@ -38,7 +38,7 @@ import org.jetel.exception.InvalidGraphObjectNameException;
  * @author      D.Pavlis
  * @since       August 3, 2003
  * @see         org.jetel.graph.DirectEdge
- * @see         org.jetel.graph.BufferedEdge
+ * @see         org.jetel.graph.PhaseConnectionEdge
  * @see        org.jetel.graph.InputPort
  * @see        org.jetel.graph.OutputPort
  * @revision   $Revision$
@@ -62,6 +62,8 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	public final static int EDGE_TYPE_DIRECT = 0;
 	/**  Proxy represents Buffered Edge */
 	public final static int EDGE_TYPE_BUFFERED = 1;
+	/** Proxy represents Edge connecting two different phases */
+	public final static int EDGE_TYPE_PHASE_CONNECTION = 2;
 
 
 	/**
@@ -198,6 +200,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 		 * load metadata from JDBC
 		 */
 		if (metadata==null){
+			if (metadataStub==null){
+				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getID());
+			}
 			try{
 				metadata=MetadataFactory.fromJDBC(metadataStub);
 			}catch(SQLException ex){
@@ -206,7 +211,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 		}
 		if (edge == null) {
 			if (edgeType == EDGE_TYPE_BUFFERED) {
-				edge = new BufferedEdge(this);
+			    edge = new BufferedEdge(this);
+			} else if (edgeType == EDGE_TYPE_PHASE_CONNECTION ){
+			    edge = new PhaseConnectionEdge(this);
 			} else {
 				edge = new DirectEdge(this);
 			}

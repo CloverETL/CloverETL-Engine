@@ -59,7 +59,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"SORT"</td></tr>
+ *  <tr><td><b>type</b></td><td>"EXT_SORT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sortKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
  *  <tr><td><b>sortOrder</b><br><i>optional</i></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td>

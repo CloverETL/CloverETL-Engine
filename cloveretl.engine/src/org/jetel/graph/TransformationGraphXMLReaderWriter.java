@@ -235,6 +235,9 @@ public class TransformationGraphXMLReaderWriter {
 			graph.addEdge((org.jetel.graph.Edge) colIterator.next());
 		}
 
+		// register metadata (DataRecordMetadata) within transformation graph
+		graph.addDataRecordMetadata(metadata);
+		
 		return true;
 	}
 
