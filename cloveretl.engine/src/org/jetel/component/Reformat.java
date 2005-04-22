@@ -20,6 +20,8 @@
 package org.jetel.component;
 
 import java.io.*;
+import java.util.Properties;
+
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
@@ -60,10 +62,13 @@ import org.jetel.util.DynamicJavaCode;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td>
  *  </tr>
+ *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
+ * class in Properties object - as a key->value pair. There is no limit to how many optional
+ * attributes can be used.</td>
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node id="REF" type="REFORMAT" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *  <pre>&lt;Node id="REF" type="REFORMAT" transformClass="org.jetel.test.reformatOrders" param1="123" param2="XYZ"/&gt;</pre>
  *  <br>
  *  Example with transformation code embedded into graph:<br>
  *  <pre>
@@ -90,7 +95,7 @@ import org.jetel.util.DynamicJavaCode;
  *			SetVal.setValue(target,&quot;OrderDate&quot;,GetVal.getDate(source,&quot;OrderDate&quot;));
  *			SetVal.setString(target,&quot;ShippedDate&quot;,&quot;02.02.1999&quot;);
  *			SetVal.setInt(target,&quot;ShipVia&quot;,GetVal.getInt(source,&quot;ShipVia&quot;));
- *			SetVal.setString(target,&quot;ShipTo&quot;,"unknown");
+ *			SetVal.setString(target,&quot;ShipTo&quot;,parameters.getProperty("param2","unknown");
  *		}catch(Exception ex){
  *			message=ex.getMessage()+&quot; -&gt;occured with record :&quot;+counter;
  *			throw new RuntimeException(message);
@@ -101,6 +106,14 @@ import org.jetel.util.DynamicJavaCode;
  * }
  * &lt;/Node&gt;
  * </pre>
+ * <hr>
+ * <i><b>Note:</b> DataRecord and in turn its individual fields retain their last assigned value till
+ * explicitly changed ba calling <code>setValue()</code>, <code>fromString()</code> or other method.<br>
+ * Values are not reset to defaults or NULLs between individual calls to <code>transform()</code> method. It is
+ * programmer's responsibility to secure assignment of proper values each time the <code>transform()</code> method
+ * is called.</i>
+ * <hr>
+ * <br> 
  *
  * @author      dpavlis
  * @since       April 4, 2002
@@ -118,6 +131,7 @@ public class Reformat extends Node {
 	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
 
+	private Properties transformationParameters=null;
 
 	/**
 	 *Constructor for the Reformat object
@@ -245,12 +259,19 @@ public class Reformat extends Node {
 		// init transformation
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata()};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-		if (!transformation.init(inMetadata,outMetadata)) {
+		if (!transformation.init(transformationParameters,inMetadata,outMetadata)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 	}
 
-
+	
+    /**
+     * @param transformationParameters The transformationParameters to set.
+     */
+    public void setTransformationParameters(Properties transformationParameters) {
+        this.transformationParameters = transformationParameters;
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -273,11 +294,12 @@ public class Reformat extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		DynamicJavaCode dynaTransCode;
+		Reformat reformat;
 
 		try {
 			//if transform class defined (as an attribute) use it first
 			if (xattribs.exists("transformClass")) {
-				return new Reformat(xattribs.getString("id"),
+				reformat= new Reformat(xattribs.getString("id"),
 						xattribs.getString("transformClass"));
 			} else {
 				// do we have child node wich Java source code ?
@@ -285,12 +307,15 @@ public class Reformat extends Node {
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
-				return new Reformat(xattribs.getString("id"), dynaTransCode);
+				reformat = new Reformat(xattribs.getString("id"), dynaTransCode);
 			}
+			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{"transformClass"}));
+			
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
+		return reformat;
 	}
 
 

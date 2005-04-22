@@ -24,7 +24,6 @@ import java.util.*;
 
 import java.util.logging.Logger;
 import org.jetel.data.Defaults;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.StringUtils;
 
 /**
@@ -101,6 +100,9 @@ class WatchDog extends Thread {
 		log.println("[WatchDog] Thread started.");
 		log.print("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)");
 		log.println(" max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
+		// renice - lower the priority
+		setPriority(Thread.MIN_PRIORITY);
+		
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
 			if (!runPhase(phases[currentPhaseNum])) {
 				watchDogStatus = WATCH_DOG_STATUS_ERROR;
@@ -185,7 +187,7 @@ class WatchDog extends Thread {
 			}
 			// Display processing status, if it is time
 			currentTimestamp = System.currentTimeMillis();
-			if ((currentTimestamp - lastTimestamp) >= Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL) {
+			if ((currentTimestamp - lastTimestamp) >= trackingInterval) {
 				printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
 				lastTimestamp = currentTimestamp;
 			}
@@ -349,6 +351,20 @@ class WatchDog extends Thread {
 	 */
 	public int getCurrentPhaseNum() {
 		return currentPhaseNum;
+	}
+	
+	/**
+	 * @return Returns the trackingInterval - how frequently is the status printed (in ms).
+	 */
+	public int getTrackingInterval() {
+		return trackingInterval;
+	}
+	
+	/**
+	 * @param trackingInterval How frequently print the processing status (in ms).
+	 */
+	public void setTrackingInterval(int trackingInterval) {
+		this.trackingInterval = trackingInterval;
 	}
 }
 

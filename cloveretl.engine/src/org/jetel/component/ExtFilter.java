@@ -145,7 +145,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 		boolean isData=true;
 		FilterExpParserExecutor executor=new FilterExpParserExecutor();
 	      
-		
 		while(isData && runIt){
 			try{
 				record=inPort.readRecord(record);

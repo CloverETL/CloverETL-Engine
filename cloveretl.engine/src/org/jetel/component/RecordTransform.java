@@ -19,11 +19,13 @@
 */
 package org.jetel.component;
 
+import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- *  Interface used by all components performing some sort of Reformat operation
+ *  Interface used by all components performing some sort of reformat operation -
+ * Reformat, Join, etc. 
  *
  *@author      dpavlis
  *@created     February 4, 2003
@@ -36,13 +38,12 @@ public interface RecordTransform {
 	 *  Initializes reformat class/function. This method is called only once at the
 	 * beginning of transformation process. Any object allocation/initialization should
 	 * happen here.
-	 *  This method is mostly for joining data
 	 *
 	 *@param  sourcesMetadata  Metadata describing source data records [array]
 	 *@param  targetMetadata   Metadata describing target data record
 	 *@return                  True if OK, otherwise False
 	 */
-	public boolean init(DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata);
+	public boolean init(Properties parameters,DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata);
 
 
 	/**
@@ -51,7 +52,9 @@ public interface RecordTransform {
 	 * records.<br>
 	 * For example in simple reformat situation, for one input record, one
 	 * output record has to be generated. Thus for each incoming record, this
-	 * method is called by Reformat component.
+	 * method is called by Reformat component.<br>
+	 * The number of source records (sources[]) and target records (target[])
+	 * depends on particular component configuration. Can be 1:1 , N:1 or N:M.
 	 *
 	 *@param  sources  Source DataRecords
 	 *@param  target   Target DataRecord
@@ -76,13 +79,14 @@ public interface RecordTransform {
 	 * that something outside happened.<br>
 	 * For example in aggregation component key changed.
 	 * 
+	 * @param signalObject	particular data object - depends on concrete implementation
 	 */
-	public void signal();
+	public void signal(Object signalObject);
 	
 	
 	/**
 	 * Method which can be used for getting intermediate results out
-	 * of transformation.
+	 * of transformation. May or may not be implemented.
 	 * 
 	 * @return
 	 */

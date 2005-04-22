@@ -24,6 +24,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Properties;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
@@ -91,12 +93,35 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming joined data</td></tr>
+ *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
+ *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
+ * below</i></td></tr>
  *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *	  
+ *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false"&gt;
+ *import org.jetel.component.DataRecordTransform;
+ *import org.jetel.data.*;
+ * 
+ *public class reformatJoinTest extends DataRecordTransform{
  *
+ *	public boolean transform(DataRecord[] source, DataRecord[] target){
+ *		
+ *		target[0].getField(0).setValue(source[0].getField(0).getValue());
+ *		target[0].getField(1).setValue(source[0].getField(1).getValue());
+ *		target[0].getField(2).setValue(source[0].getField(2).getValue());
+ *		if (source[1]!=null){
+ *			target[0].getField(3).setValue(source[1].getField(0).getValue());
+ *			target[0].getField(4).setValue(source[1].getField(1).getValue());
+ *		}
+ *		return true;
+ *	}
+ *}
+ *
+ *&lt;/Node&gt;</pre>
+ *	  
  * @author      dpavlis
  * @since       March 09, 2004
  * @revision    $Revision$
@@ -128,6 +153,8 @@ public class HashJoin extends Node {
 
 	private Map hashMap;
 	private int hashTableInitialCapacity;
+	
+	private Properties transformationParameters;
 
 
 	/**
@@ -269,12 +296,18 @@ public class HashJoin extends Node {
 			inMetadata[counter++] = ((InputPort) i.next()).getMetadata();
 		}
 		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
-		if (!transformation.init(inMetadata, null)) {
+		if (!transformation.init(transformationParameters,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 	}
 
 
+    /**
+     * @param transformationParameters The transformationParameters to set.
+     */
+    public void setTransformationParameters(Properties transformationParameters) {
+        this.transformationParameters = transformationParameters;
+    }
 	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
@@ -425,6 +458,9 @@ public class HashJoin extends Node {
 			if (xattribs.exists("hashTableSize")) {
 				join.setHashTableInitialCapacity(xattribs.getInteger("hashTableSize"));
 			}
+			join.setTransformationParameters(xattribs.attributes2Properties(
+			                new String[]{"transformClass","hashTableSize"}));
+			
 			return join;
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

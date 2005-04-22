@@ -17,6 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
+
 // FILE: c:/projects/jetel/org/jetel/graph/Edge.java
 
 package org.jetel.graph;
@@ -24,83 +25,78 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.FileRecordBuffer;
 
 /**
- * A class that represents BufferedEdge - data connection between two NODEs in different Phases.<br>
- * This Edge is in-memory & on disk buffered. It performs a bridge between two Phases of transformation
- * graph.<br>
- * Normal operation is that Node1 starts writing to this Edge. When finished, next Phase (and next Node2) 
- * is started.  Node2 starts reading from this Edge. Although in generall writing & reading can be mixed,
- * it was not meant to work in this way and thus not optimized to perform it efficiently.
+ * A class that represents DirectEdge - data connection between two NODEs.<br>
+ * This Edge is in-memory buffered for better performance, however the buffer is limited in number of records
+ * it can keep - the size is determined by INTERNAL_BUFFERS_NUM constant.
  *
- *
- * @author      D.Pavlis
- * @since       April 2, 2002
- * @revision    $Revision$
- * @see         org.jetel.graph.InputPort
- * @see         org.jetel.graph.OutputPort
+ * @author     D.Pavlis
+ * @see        org.jetel.graph.InputPort
+ * @see        org.jetel.graph.OutputPort
+ * @revision   $Revision$
  */
 public class BufferedEdge extends EdgeBase {
 
-	private FileRecordBuffer fileRecordBuffer;
-	private int recordCounter;
-	private boolean isOpen;// indicates whether we can read from it.
-	private boolean wasInitialized;
-
-	private ByteBuffer recordBuffer;
+    private final static int DEFAULT_INTERNAL_DATA_BUFFER_SIZE = Defaults.Record.MAX_RECORD_SIZE*10;
+	private final static int BUFFER_COMPACT_LIMIT_PERCENT = 85;
+	
+	protected int recordCounter;
+	
+	// data buffer which keeps data records written by
+	// producer
+	private ByteBuffer dataBuffer;
+	
+	// internal counter - how many records are currently in buffer
+	private volatile int noRecs;
+	// from which position in the buffer we should do next read
+	private int readPosition;
+	
+	protected boolean isOpen;
+	
+	// if this position is reached
+	// while reading data,  we compact data buffer
+	private int compactLimitPosition;
+	
 	/**
-	 *  Number of internal buffers for storing records
-	 *
-	 * @since    April 11, 2002
+	 * Comment for <code>deadlockTick</code>
+	 * Deadlock detector. Gets increased each time watchdog
+	 * checks this Edge. Each compleded write or record operation
+	 * resets it. If counting reaches certain maximum, it is a signal
+	 * that this edge is probably in deadlock state.
 	 */
-	private final static int INTERNAL_BUFFERS_NUM = 4;
+	private volatile int deadlockTick;
+	
+	// used internally when when reading data from buffer
+	private DataRecord dataRecord;
 
-	private final static int SIZE_OF_DATA_BUFFER = Defaults.Record.MAX_RECORD_SIZE * 32;
-
-
-	/**
-	 *Constructor for the Edge object
-	 *
-	 * @param  proxy     Description of the Parameter
-	 * @since            April 2, 2002
-	 */
+	private int internalBufferSize;
+	
+	
+	
 	public BufferedEdge(Edge proxy) {
-		super(proxy);
-		fileRecordBuffer = new FileRecordBuffer(null, SIZE_OF_DATA_BUFFER);
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		isOpen = true;
-		wasInitialized = false;
+	    this(proxy,DEFAULT_INTERNAL_DATA_BUFFER_SIZE);
 	}
 
-
 	/**
-	 *Constructor for the BufferedEdge object
-	 *
-	 * @param  proxy        Description of the Parameter
-	 * @param  tmpFilename  Description of the Parameter
+	 * Constructor for the Edge object
+	 * 
+	 * @param proxy Edge proxy
+	 * @param internalBufferSize	how much space allocate for internal buffer which is
+	 * used for storing/buffering data records
 	 */
-	public BufferedEdge(Edge proxy, String tmpFilename) {
-		super(proxy);
-		fileRecordBuffer = new FileRecordBuffer(tmpFilename, SIZE_OF_DATA_BUFFER);
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		isOpen = true;
-		wasInitialized = false;
+	public BufferedEdge(Edge proxy,int internalBufferSize) {
+	    super(proxy);
+	    this.internalBufferSize=internalBufferSize;
 	}
-
-
-
-	/**
-	 *  Gets the number of records passed through this port IN
-	 *
-	 * @return    The RecordCounterIn value
-	 * @since     April 18, 2002
-	 */
+	
+	
 	public int getRecordCounter() {
 		return recordCounter;
 	}
 
 
+	
 	/**
 	 *  Gets the Open attribute of the Edge object
 	 *
@@ -121,17 +117,33 @@ public class BufferedEdge extends EdgeBase {
 	public void init() throws IOException {
 		// initialize & open the data pipe
 		// we are ready to supply data
-		// there are two attemps to initialize this edge
-		// first by phase of the writer, then by phase of the reader, we initilize only once
-		if (!wasInitialized) {
-			recordCounter = 0;
-			fileRecordBuffer.clear();// for safety-sake
-			wasInitialized = true;
-		}
+	    dataBuffer=ByteBuffer.allocateDirect(internalBufferSize);
+	    compactLimitPosition=(dataBuffer.capacity()*BUFFER_COMPACT_LIMIT_PERCENT)/100;
+		dataRecord=new DataRecord(proxy.metadata);
+	    dataRecord.init();
+		recordCounter = 0;
+		noRecs=readPosition=0;
+		deadlockTick = 0;
+		isOpen=true;
 	}
 
 
+	/**
+	 * Increase deadlockTic counter by one.
+	 */
+	public void tick(){
+	    deadlockTick++;
+	}
 
+	/**
+	 * Get status of deadlockTic counter;
+	 * 
+	 * @return	deadlockTic counter
+	 */
+	public int getTick(){
+	    return deadlockTick;
+	}
+	
 	// Operations
 	/**
 	 * An operation that does read one DataRecord from Edge
@@ -144,28 +156,26 @@ public class BufferedEdge extends EdgeBase {
 	 */
 
 	public synchronized DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-		if (!isOpen) {
-			return null;
+	    if (!isOpen && noRecs==0){
+		    return null;
 		}
-		ByteBuffer tmpBuffer;
-		recordBuffer.clear();
-		tmpBuffer = fileRecordBuffer.shift(recordBuffer);
-		if (tmpBuffer==null){
-			wait();
-			tmpBuffer = fileRecordBuffer.shift(recordBuffer);
+	    
+		while(noRecs==0){
+		    wait();
+		    if (!isOpen && noRecs==0){
+			    return null;
+			}
 		}
-		recordBuffer.flip();
-		if (tmpBuffer != null) {
-			record.deserialize(recordBuffer);
-			notify();
-			return record;
-		} else {
-			isOpen = false;
-			fileRecordBuffer.close(); //force deletion of tmp file (shoud be done automatically but it isn't)
-			notify();
-			return null;
-		}
-
+		int tmpPosition=dataBuffer.position();
+		dataBuffer.position(readPosition);
+		record.deserialize(dataBuffer);
+		readPosition=dataBuffer.position();
+		dataBuffer.position(tmpPosition);
+		noRecs--;
+		packBuffer();
+		deadlockTick=0;
+		notify();
+		return record;
 	}
 
 
@@ -179,21 +189,28 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public synchronized boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		if (!isOpen) {
-			return false;
-		} else {
-			if (fileRecordBuffer.shift(record) == null) {
-				wait();
-			if (fileRecordBuffer.shift(record) == null){
-				isOpen = false;
-				fileRecordBuffer.close();//force deletion of tmp file (shoud be done automatically but it isn't)
-				notify();
-				return false;
-			}
-			}
-				notify();
-				return true;
+		if (!isOpen && noRecs==0){
+		    return false;
 		}
+	    
+		while(noRecs==0){
+		    wait();
+		    if (!isOpen && noRecs==0){
+			    return false;
+			}
+		}
+		int tmpPosition=dataBuffer.position();
+		dataBuffer.position(readPosition);
+		dataRecord.deserialize(dataBuffer);
+		readPosition=dataBuffer.position();
+		dataBuffer.position(tmpPosition);
+		dataRecord.serialize(record);
+		record.flip();
+		noRecs--;
+		packBuffer();
+		deadlockTick=0;
+		notify();
+		return true;
 	}
 
 
@@ -206,12 +223,15 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            April 2, 2002
 	 */
 	public synchronized void writeRecord(DataRecord record) throws IOException, InterruptedException {
-		recordBuffer.clear();
-		record.serialize(recordBuffer);
-		recordBuffer.flip();
-		fileRecordBuffer.push(recordBuffer);
-		recordCounter++;// one more record written
-		notify();
+	    int size=record.getSizeSerialized();
+	    while (size>dataBuffer.remaining()){
+	        wait();
+		}
+	    record.serialize(dataBuffer);
+	    deadlockTick=0;
+	    recordCounter++;
+	    noRecs++;
+	    notify();
 	}
 
 
@@ -224,8 +244,41 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public synchronized void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		fileRecordBuffer.push(record);
-		recordCounter++;
+		int size=record.remaining();
+	    while (size>dataBuffer.remaining()){
+	        wait();
+		}
+	    dataBuffer.put(record);
+	    deadlockTick=0;
+	    recordCounter++;
+	    noRecs++;
+	    notify();
+	}
+
+
+	private final void packBuffer(){
+	    int position=dataBuffer.position();
+	    
+	    if (dataBuffer.remaining()==0 || readPosition==position){
+	        dataBuffer.clear();
+	        readPosition=0;
+	    }else if (readPosition>=compactLimitPosition){
+	        int diff=position-readPosition;
+	        dataBuffer.position(readPosition);
+	        dataBuffer.compact();
+	        dataBuffer.position(diff);
+	        readPosition=0;
+	    }
+	}
+	
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @since    April 2, 2002
+	 */
+	public synchronized void open() {
+		isOpen=true;
 		notify();
 	}
 
@@ -235,26 +288,24 @@ public class BufferedEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public void open() {
-		isOpen = true;
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void close() {
-		// not used but could indicate, that no more records
-		// will be written
+	public synchronized void close() {
+		isOpen=false;
+		notify();
 	}
 
 	public boolean hasData(){
-		return (fileRecordBuffer.isEmpty() ? false : true);
+		return (noRecs!=0);
 	}
+
+    /**
+     * @param internalBufferSize The internalBufferSize to set.
+     */
+    public void setInternalBufferSize(int internalBufferSize) {
+        if (internalBufferSize>DEFAULT_INTERNAL_DATA_BUFFER_SIZE)
+            this.internalBufferSize = internalBufferSize;
+    }
 }
 /*
- *  end class BufferedEdge
+ *  end class DirectEdge
  */
 

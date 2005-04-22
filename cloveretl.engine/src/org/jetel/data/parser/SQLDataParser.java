@@ -39,7 +39,7 @@ import org.jetel.metadata.DataRecordMetadata;
  *
  */
 public class SQLDataParser implements Parser {
-	private final static int SQL_FETCH_SIZE_ROWS = 100;
+	private final static int SQL_FETCH_SIZE_ROWS = 20;
 
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private DataRecordMetadata metadata;
@@ -61,6 +61,7 @@ public class SQLDataParser implements Parser {
 	public SQLDataParser(String dbConnectionName,String sqlQuery) {
 		this.dbConnectionName = dbConnectionName;
 		this.sqlQuery = sqlQuery;
+		this.recordCounter = 1;
 	}
 
 
@@ -144,6 +145,7 @@ public class SQLDataParser implements Parser {
 				populateField(record, i);
 			}
 		
+        recordCounter++;
 		return record;
 	}
 
@@ -166,8 +168,7 @@ public class SQLDataParser implements Parser {
 
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), 
-				        						record,fieldNum-1,bdfe.getOffendingFormat());
+				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum-1,bdfe.getOffendingFormat());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
@@ -207,7 +208,7 @@ public class SQLDataParser implements Parser {
 			e.printStackTrace();
 			throw new ComponentNotReadyException(e.getMessage());
 		}
-/*		
+		
 		// !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
 		// this needs some detecting of supported features first (may-be which version of JDBC is implemented or so
 		try {
@@ -216,10 +217,10 @@ public class SQLDataParser implements Parser {
 			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
 			statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
 		
-		} catch (SQLException e) {
-			//System.out.println("Warning: "+e.getMessage());
+		} catch (Exception e) {
+			System.out.println("Warning: "+e.getMessage());
 		}
-*/
+		
 		try{
 			resultSet = statement.executeQuery(sqlQuery);
 		} catch (SQLException e) {

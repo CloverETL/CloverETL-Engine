@@ -19,7 +19,11 @@
 */
 package org.jetel.component;
 
+import java.util.Properties;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.database.DBConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -33,9 +37,9 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created     November 1, 2003
  */
 
-public class DataRecordTransform implements RecordTransform {
+public abstract class DataRecordTransform implements RecordTransform {
 
-	private String transformName;
+	protected String transformName;
 	/**
 	 * Use <code>errorMessage</code> to report details of problems
 	 * which occured within transform method.<br>
@@ -43,6 +47,10 @@ public class DataRecordTransform implements RecordTransform {
 	 * errorMessage field.
 	 */
 	protected String errorMessage;
+	
+	protected Properties parameters;
+	protected DataRecordMetadata[] sourceMetadata;
+	protected DataRecordMetadata[] targetMetadata;
 
 
 	/**
@@ -64,58 +72,57 @@ public class DataRecordTransform implements RecordTransform {
 	/**
 	 *  Performs any necessary initialization before transform() method is called
 	 *
-	 * @param  sourceRecordsMetadata  Array of metadata objects describing source data records
-	 * @param  targetRecordsMetadata  Array of metadata objects describing source data records
+	 * @param  sourceMetadata  Array of metadata objects describing source data records
+	 * @param  targetMetadata  Array of metadata objects describing source data records
 	 * @return                        True if successfull, otherwise False
 	 */
-	public boolean init(DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata) {
-		return true;
+	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata) {
+		this.parameters=parameters;
+		this.sourceMetadata=sourceRecordsMetadata;
+		this.targetMetadata=targetRecordsMetadata;
+	    return init();
 	}
 
-	
 	/**
-	 *  Initializes reformat class/function. This method is called only once at the
-	 * beginning of transforming process. Any object allocation/initialization should
-	 * happen here.
-	 *
-	 *@param  sourceMetadata  Metadata describing source data record
-	 *@param  targetMetadata  Metadata describing target data record
-	 *@return                 True if OK, otherwise False
-	 *@since                  April 18, 2002
+	 * Method to be overriden by user. It is called by init(Properties,DataRecordMetadata[],DataRecordMetadata[])
+	 * method when all standard initialization is performed.<br>
+	 * This implementation is just skeleton. User should provide its own.
+	 * 
+	 * @return	true if user's initialization was performed successfully
 	 */
-	public boolean init(DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata){
-		DataRecordMetadata in[]= {sourceMetadata};
-		DataRecordMetadata out[]= {targetMetadata};
-		return init(in,out);
+	public boolean init(){
+	    return true;
 	}
-
-	
 	
 	/**
 	 *  Transforms source data records into target data records. Derived class should perform
 	 *  this functionality.<br> This basic version only copies content of inputRecord into 
 	 * outputRecord field by field. See DataRecord.copyFieldsByPosition() method.
 	 *
-	 * @param  sourceRecords  Description of the Parameter
-	 * @param  targetRecords  Description of the Parameter
+	 * @param  sourceRecords  input data records (an array)
+	 * @param  targetRecords  output data records (an array)
 	 * @return                True if transformation was successfull, otherwise False
 	 * @see		org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
-	public boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords){
-		for (int i = 0; i < inputRecords.length; i++) {
+	public abstract boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords);
+	
+
+	/**
+	 * This default transformation only copies content of inputRecords into 
+	 * outputRecords field by field. See DataRecord.copyFieldsByPosition() method.
+	 *
+	 * 
+	 * @param inputRecords	input data records (an array)
+	 * @param outputRecords output data records (an array)
+	 * @return true if successful
+	 */
+	protected boolean defaultTransform(DataRecord[] inputRecords, DataRecord[] outputRecords){
+	    for (int i = 0; i < inputRecords.length; i++) {
 			outputRecords[i].copyFieldsByPosition(inputRecords[i]);
 		}
 		return true;
-	
 	}
 
-
-	public boolean transform(DataRecord source, DataRecord target){
-		DataRecord in[]={source};
-		DataRecord out[]={target};
-		return transform(in,out);
-	}
-	
 	/**
 	 *  Returns description of error if one of the methods failed
 	 *
@@ -128,8 +135,9 @@ public class DataRecordTransform implements RecordTransform {
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordTransform#signal()
+	 * In this implementation does nothing.
 	 */
-	public void signal(){
+	public void signal(Object signalObject){
 		
 	}
 	
@@ -141,6 +149,41 @@ public class DataRecordTransform implements RecordTransform {
 		return null;
 	}
 	
+	/**
+	 * Returns DBConnection object registered with transformation
+	 * graph under specified name (ID).
+	 * 
+	 * @param id ID of DBConnection under which it was registered with graph. It
+	 * translates to ID if graph is loaded from XML
+	 * @return DBConnection object if found, otherwise NULL
+	 */
+	public final DBConnection getDBConnection(String id){
+	    return TransformationGraph.getReference().getDBConnection(id);
+	}
+	
+	/**
+	 * Returns DataRecordMetadata object registered with transformation
+	 * graph under specified name (ID).
+	 * 
+	 * @param id ID of DataRecordMetadata under which it was registered with graph. It
+	 * translates to ID if graph is loaded from XML
+	 * @return DataRecordMetadata object if found, otherwise NULL
+	 */
+	public final DataRecordMetadata getDataRecordMetadata(String id){
+	    return TransformationGraph.getReference().getDataRecordMetadata(id);
+	}
+	
+	/**
+	 * Returns LookupTable object registered with transformation
+	 * graph under specified name (ID).
+	 * 
+	 * @param id ID of LookupTable under which it was registered with graph. It
+	 * translates to ID if graph is loaded from XML
+	 * @return LookupTable object if found, otherwise NULL
+	 */
+	public final LookupTable getLookupTable(String id){
+	    return TransformationGraph.getReference().getLookupTable(id);
+	}
 
 }
 

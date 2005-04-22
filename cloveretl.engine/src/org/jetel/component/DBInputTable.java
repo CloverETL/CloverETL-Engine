@@ -19,10 +19,13 @@
 */
 package org.jetel.component;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
@@ -65,8 +68,8 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>sqlQuery</b></td><td>query to be sent to database</td>
- *  <tr><td><b>url</b></td><td>url location of the query</td>
+ *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by utl</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  </tr>
  *  </table>
@@ -206,7 +209,7 @@ public class DBInputTable extends Node {
                 String query = null;
                 if (xattribs.exists("url"))
                 {
-                    query = fromFile(xattribs.getString("url"));
+                    query = xattribs. fromFile(xattribs.getString("url"));
                 }
                 else if (xattribs.exists("sqlQuery"))
                 {
@@ -260,28 +263,39 @@ public class DBInputTable extends Node {
     public static String fromFile(String fileURL) throws IOException 
     {
         String query = null;
-
+        URL url;
+		try{
+			url = new URL(fileURL); 
+		}catch(MalformedURLException e){
+			// try to patch the url
+			try {
+				url=new URL("file:"+fileURL);
+			}catch(MalformedURLException ex){
+				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
+			}
+		}
+        
         try
         {
-            File           file           = new File(fileURL);
-            FileReader     fileReader     = new FileReader(file);
+            StringBuffer sb = new StringBuffer(512);
+            char[] charBuf=new char[64];
+            BufferedInputStream in=new BufferedInputStream(url.openStream()))
+            int readNum;
             
-            BufferedReader bufferedReader = new BufferedReader(fileReader);
-            
-            StringBuffer sb = new StringBuffer();
-            String line;
-            while ((line = bufferedReader.readLine()) != null)
+            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1)
             {
-                sb.append(line);
-                sb.append("\n");
+                sb.append(charBuf,0,readNum);
             }
-            query = sb.toString();
+            
+            PropertyRefResolver refResolver=new PropertyRefResolver(properties);
+                        
+            refResolver.resolveRef(sb);
         }
         catch(IOException ex)
         {
             ex.printStackTrace();
-            throw new RuntimeException("Can't get metadata file " + fileURL + " - " + ex.getClass().getName() + " : " + ex.getMessage());
+            throw new RuntimeException("Can't get SQL command from file " + fileURL + " - " + ex.getClass().getName() + " : " + ex.getMessage());
         }
-        return query;
+        return sb.toString();
     }
 }

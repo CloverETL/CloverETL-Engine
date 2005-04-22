@@ -56,9 +56,9 @@ public class HashKey {
 		int hash = 0;
 		int[] keyFields = recKey.getKeyFields();
 		for (int i = 0; i < keyFields.length; i++) {
-			hash += record.getField(keyFields[i]).hashCode();
+			hash = hash + record.getField(keyFields[i]).hashCode();
 		}
-		return hash;
+		return (hash & 0x7FFFFFFF);
 	}
 
 

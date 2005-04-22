@@ -20,6 +20,7 @@
 package org.jetel.data;
 
 import java.util.Comparator;
+import java.util.Arrays;
 
 /**
  *  This class compares two records of the same structure 
@@ -64,10 +65,11 @@ public class RecordComparator implements Comparator{
 		int compResult;
 		DataRecord record1=(DataRecord)o1;
 		DataRecord record2=(DataRecord)o2;
-		if (record1.getMetadata() != record2.getMetadata()) {
-			throw new RuntimeException("Can't compare - records have different metadata associated." +
-					" Possibly different structure");
-		}
+		/* by D.Pavlis following check has been "relaxed" to speed up processing.
+		 * if (record1.getMetadata() != record2.getMetadata()) {
+		*	throw new RuntimeException("Can't compare - records have different metadata associated." +
+		*			" Possibly different structure");
+		}*/
 		for (int i = 0; i < keyFields.length; i++) {
 			compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
 			if (compResult != 0) {
@@ -103,6 +105,17 @@ public class RecordComparator implements Comparator{
 		}
 		return 0;
 		// seem to be the same
+	}
+	
+	/* (non-Javadoc) Implemented to satisfy Comparator interface
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj){
+		if (obj instanceof RecordComparator){
+			return Arrays.equals(this.keyFields,((RecordComparator)obj).getKeyFields()); 
+		}else{
+			return false;
+		}
 	}
 }
 // end RecordKey

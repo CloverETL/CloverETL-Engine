@@ -137,6 +137,22 @@ public final class Defaults {
 		// all together up to 990 MB
 	}
 	
+	/**
+	 * Defaults for lookup tables
+	 * 
+	 * @author david
+	 * @since  25.3.2005
+	 *
+	 */
+	public final static class Lookup {
+	    
+	    /**
+	     * Initial size of lookup table (SimpleLookup)
+	     */
+	    public final static int LOOKUP_INITIAL_CAPACITY = 512;
+	    
+	}
+	
 	public final static class WatchDog{
 		/**
 		 *  how long watchdog thread sleeps (milliseconds) between each awakening.

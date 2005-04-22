@@ -86,9 +86,9 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Description of the Method
+	 *  Standard constructor.
 	 *
-	 *@param  id  Description of Parameter
+	 *@param  id  Unique ID of the Node
 	 *@since      April 4, 2002
 	 */
 	public Node(String id) {
@@ -107,7 +107,9 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Sets the Graph attribute of the Node object
+	 *  Assigns reference to Graph object which holds this Node. The reference
+	 * can be used by Node (subclass/Component) to access various data object
+	 * stored within graph.
 	 *
 	 *@param  graph  The new Graph value
 	 *@since         April 5, 2002
@@ -118,7 +120,8 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Sets the EOF attribute of the Node object
+	 *  Sets the EOF for particular output port. EOF indicates that no more data
+	 * will be sent throught the output port.
 	 *
 	 *@param  portNum  The new EOF value
 	 *@since           April 18, 2002
@@ -158,7 +161,8 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Gets the Type attribute of the Node object
+	 *  Returns the type of this Node (subclasses/Components should override
+	 * this method to return appropriate type).
 	 *
 	 *@return    The Type value
 	 *@since     April 4, 2002
@@ -167,7 +171,7 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Gets the ID attribute of the Node object
+	 *  Returns the unique ID of this Node
 	 *
 	 *@return    The ID value
 	 *@since     April 2, 2002
@@ -178,9 +182,10 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Gets the Leaf attribute of the Node object
+	 *  Returns True if this Node is Leaf Node - i.e. only consumes data (has only
+	 * input ports connected to it)
 	 *
-	 *@return    The Leaf value
+	 *@return    True if Node is a Leaf
 	 *@since     April 4, 2002
 	 */
 	public boolean isLeaf() {
@@ -191,6 +196,13 @@ public abstract class Node extends Thread {
 		}
 	}
 	
+	/**
+	 * Returns True if this Node is Phase Leaf Node - i.e. only consumes data within
+	 * phase it belongs to (has only input ports connected or any connected output ports
+	 * connects this Node with Node in different phase)
+	 * 
+	 * @return True if this Node is Phase Leaf
+	 */
 	public boolean isPhaseLeaf(){
 		Iterator iterator=getOutPorts().iterator();
 		while(iterator.hasNext()){
@@ -202,9 +214,10 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Gets the Root attribute of the Node object
+	 *  Returns True if this node is Root Node - i.e. it produces data (has only output ports
+	 * connected to id).
 	 *
-	 *@return    The Root value
+	 *@return    True if Node is a Root
 	 *@since     April 4, 2002
 	 */
 	public boolean isRoot() {
@@ -238,8 +251,14 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Check the Node configuration - defined input&output ports and if all parameters defined are meaningful.<br>
-	 *  
+	 *  Check the Node configuration.<br>
+	 *  This method is called for each graph node before the graph is executed. This method should
+	 * verify that all required parameters are set and the Node/Component may be run.<br>
+	 * The order in which Node is brought to life is:<ol>
+	 * <li>checkConfig()</li>
+	 * <li>initialize()</li>
+	 * <li>run()</li>
+	 * </ol> 
 	 *
 	 *@return    True if Node configuration is OK, otherwise False
 	 */
@@ -360,6 +379,7 @@ public abstract class Node extends Thread {
 	 *@since    April 4, 2002
 	 */
 	public void abort() {
+		runIt = false;
 		if (resultCode==RESULT_RUNNING){
 			resultCode = RESULT_ABORTED;
 			interrupt();

@@ -57,7 +57,9 @@ import org.jetel.util.DynamicJavaCode;
  *	sent to transformation class.<br>
  *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
  *	It skips driver records for which there is no corresponding slave - unless outer
- *	join is specified, when only driver record is passed to <i>transform<i> method.
+ *	join (<code>leftOuterJoin</code> option) is specified, when only driver record is passed to <i>transform</i> method.<br>
+ *  If full outer join (<code>fullOuterJoin</code> option) is enabled, then <i>transform</i> is called even if no corresponding
+ * driver record is found for particular slave.
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -82,11 +84,33 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming joined data</td></tr>
- *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false</td></tr>
+ *   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
+ *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
+ * below</i></td></tr>
+ *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
+ * 	  <tr><td><b>fullOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false"&gt;
+ *import org.jetel.component.DataRecordTransform;
+ *import org.jetel.data.*;
+ * 
+ *public class reformatJoinTest extends DataRecordTransform{
  *
+ *	public boolean transform(DataRecord[] source, DataRecord[] target){
+ *		
+ *		target[0].getField(0).setValue(source[0].getField(0).getValue());
+ *		target[0].getField(1).setValue(source[0].getField(1).getValue());
+ *		target[0].getField(2).setValue(source[0].getField(2).getValue());
+ *		if (source[1]!=null){
+ *			target[0].getField(3).setValue(source[1].getField(0).getValue());
+ *			target[0].getField(4).setValue(source[1].getField(1).getValue());
+ *		}
+ *		return true;
+ *	}
+ *}
+ *
+ *&lt;/Node&gt;</pre>
  * @author      dpavlis
  * @since       April 4, 2002
  * @revision    $Revision$
@@ -111,6 +135,7 @@ public class MergeJoin extends Node {
 	private DynamicJavaCode dynamicTransformation = null;
 
 	private boolean leftOuterJoin = false;
+	private boolean fullOuterJoin = false;
 
 	private String[] joinKeys;
 	private String[] slaveOverrideKeys = null;
@@ -124,7 +149,8 @@ public class MergeJoin extends Node {
 	private final static DataRecord[] inRecords = new DataRecord[2];
 	private DataRecord[] outRecords=new DataRecord[2];
 
-
+	private Properties transformationParameters;
+	
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
@@ -173,6 +199,19 @@ public class MergeJoin extends Node {
 		leftOuterJoin = outerJoin;
 	}
 
+	/**
+	 *  Sets on/off fullOuterJoin indicator
+	 *
+	 * @param  outerJoin  The new leftOuterJoin value
+	 */
+	public void setFullOuterJoin(boolean outerJoin) {
+		fullOuterJoin = outerJoin;
+		// if full outer then left as well
+		// (it is set only to relax checking for both left & full outer)
+		if (fullOuterJoin){
+		    leftOuterJoin=true;
+		}
+	}
 
 	/**
 	 *  Sets specific key (string) for slave records<br>
@@ -244,7 +283,11 @@ public class MergeJoin extends Node {
 		while (slave != null) {
 			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave)) {
 				case 1:
+				    if (fullOuterJoin){
+				        return 1;
+				    }else{
 					slave = slavePort.readRecord(slave);
+				    }
 					break;
 				case 0:
 					return 0;
@@ -293,7 +336,7 @@ public class MergeJoin extends Node {
 
 
 	/**
-	 *  If there is no corresponding slave record and is defined outer join, then
+	 *  If there is no corresponding slave record and is defined left outer join, then
 	 *  output driver only.
 	 *
 	 * @param  driver                    Description of the Parameter
@@ -317,6 +360,30 @@ public class MergeJoin extends Node {
 		return true;
 	}
 
+	/**
+	 *  If there is no corresponding driver record and is defined full outer join, then
+	 *  output slave only.
+	 *
+	 * @param  driver                    Description of the Parameter
+	 * @param  out                       Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 */
+	private boolean flushSlaveOnly(DataRecord slave, DataRecord out, OutputPort port)
+	throws IOException, InterruptedException {
+	    inRecords[0] = null;
+	    inRecords[1] = slave;
+	    outRecords[0]= out;
+	    
+	    if (!transformation.transform(inRecords, outRecords)) {
+	        resultMsg = transformation.getMessage();
+	        return false;
+	    }
+	    port.writeRecord(out);
+	    return true;
+	}
 
 	/**
 	 *  Description of the Method
@@ -392,8 +459,14 @@ public class MergeJoin extends Node {
 							isDriverDifferent = false;
 							break;
 						case 1:
-							// should not happen !!
-							throw new RuntimeException(getType() + " - program internal error !");
+							// looks like full outer join is defined
+						    if (fullOuterJoin){
+						        flushSlaveOnly(slaveRecords[CURRENT], outRecord, outPort);
+						        slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
+						        continue;
+						    }else{ // should not happen if no outer join
+						        throw new RuntimeException(getType() + " - program internal error !");
+						    }
 					}
 				}
 				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], outRecord, outPort);
@@ -417,8 +490,15 @@ public class MergeJoin extends Node {
 				tmpRec = driverRecords[CURRENT];
 				driverRecords[CURRENT] = driverRecords[TEMPORARY];
 				driverRecords[TEMPORARY] = tmpRec;
+				yield();
 			}
-			yield();
+			// if full outer join defined and there are some slave records left, flush them
+			if (fullOuterJoin) {
+			    	while(slaveRecords[CURRENT]!=null){
+			    	    flushSlaveOnly(slaveRecords[CURRENT], outRecord, outPort);
+			    	    slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
+			    	}
+			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
@@ -500,13 +580,19 @@ public class MergeJoin extends Node {
 			inMetadata[counter++] = ((InputPort) i.next()).getMetadata();
 		}
 		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
-		if (!transformation.init(inMetadata, null)) {
+		if (!transformation.init(transformationParameters,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
 
+    /**
+     * @param transformationParameters The transformationParameters to set.
+     */
+    public void setTransformationParameters(Properties transformationParameters) {
+        this.transformationParameters = transformationParameters;
+    }
 	/**
 	 *  Description of the Method
 	 *
@@ -554,6 +640,12 @@ public class MergeJoin extends Node {
 			if (xattribs.exists("leftOuterJoin")) {
 				join.setLeftOuterJoin(xattribs.getBoolean("leftOuterJoin"));
 			}
+			if (xattribs.exists("fullOuterJoin")) {
+				join.setFullOuterJoin(xattribs.getBoolean("fullOuterJoin"));
+			}
+			join.setTransformationParameters(xattribs.attributes2Properties(
+	                new String[]{"transformClass"}));
+			
 			return join;
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

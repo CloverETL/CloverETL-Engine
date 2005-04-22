@@ -17,13 +17,10 @@
 */
 
 package org.jetel.test;
-import java.io.*;
-import java.sql.SQLException;
-import org.jetel.metadata.*;
-import org.jetel.data.*;
-import org.jetel.graph.*;
-import org.jetel.component.*;
-import org.jetel.database.*;
+import org.jetel.data.DataRecord;
+import org.jetel.database.DBConnection;
+import org.jetel.database.DBLookupTable;
+import org.jetel.metadata.DataRecordMetadata;
 
 public class testDBLookup{
 
@@ -68,7 +65,7 @@ public class testDBLookup{
 		*/
 		
 		// we initialize lookup
-		lookup.init();
+		lookup.init(null);
 		//try to lookup based on specified parameter
 		//following version of get() method is valid for queries with one parameter only
 		//in case you have more (as with the example shown above), use array of objects (strings, integers, etc.) and

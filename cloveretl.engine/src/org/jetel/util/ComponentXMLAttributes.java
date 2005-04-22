@@ -18,9 +18,12 @@
 *
 */
 package org.jetel.util;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
+
 import org.jetel.exception.NotFoundException;
 import org.w3c.dom.NamedNodeMap;
 /**
@@ -238,7 +241,7 @@ public class ComponentXMLAttributes {
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-					return childNode.getNodeValue();
+					return refResolver.resolveRef(childNode.getNodeValue());
 				}
 			}
 		}
@@ -298,6 +301,33 @@ public class ComponentXMLAttributes {
 		return (org.w3c.dom.Node[]) childNodesList.toArray(new org.w3c.dom.Node[0]);
 	}
 
+	
+	/**
+	 * Converts XML Node's attributes to Properties object - hash of key-value pairs.
+	 * Can omit/exclude certain attributes based on specified array of Strings - attribute
+	 * names.
+	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
+	 * @return Properties object with pairs [attribute name]-[attribute value]
+	 */
+	public Properties attributes2Properties(String[] exclude){
+	    Properties properties=new Properties();
+	    Set exception=new HashSet();
+	    String name;
+	    
+	    if (exclude!=null){
+	        for (int i=0;i<exclude.length;i++){
+	            exception.add(exclude[i]);
+	        }
+	    }
+	    for (int i=0; i<attributes.getLength();i++){
+	        name=attributes.item(i).getLocalName();
+	        if (!exception.contains(name)){
+	            properties.setProperty(name,
+	                    refResolver.resolveRef(attributes.item(i).getNodeValue()));
+	        }
+	    }
+	    return properties;
+	}
 
 }
 /*
