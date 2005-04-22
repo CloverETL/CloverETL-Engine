@@ -19,22 +19,22 @@
 */
 package org.jetel.component;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Properties;
 
-import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.SQLDataParser;
-import org.jetel.database.*;
+import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.PropertyRefResolver;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -209,7 +209,7 @@ public class DBInputTable extends Node {
                 String query = null;
                 if (xattribs.exists("url"))
                 {
-                    query = xattribs. fromFile(xattribs.getString("url"));
+                    query = fromFile(xattribs.getString("url"),xattribs.attributes2Properties(null));
                 }
                 else if (xattribs.exists("sqlQuery"))
                 {
@@ -260,7 +260,7 @@ public class DBInputTable extends Node {
      * @return String the SQL Statement pulled from the file
      * @throws IOException when there are problems working with the file.
      */
-    public static String fromFile(String fileURL) throws IOException 
+    public static String fromFile(String fileURL,Properties properties) throws IOException 
     {
         String query = null;
         URL url;
@@ -274,12 +274,13 @@ public class DBInputTable extends Node {
 				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
 			}
 		}
+
+		StringBuffer sb = new StringBuffer(512);
         
-        try
+		try
         {
-            StringBuffer sb = new StringBuffer(512);
             char[] charBuf=new char[64];
-            BufferedInputStream in=new BufferedInputStream(url.openStream()))
+            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
             int readNum;
             
             while ((readNum=in.read(charBuf,0,charBuf.length)) != -1)
