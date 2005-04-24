@@ -19,8 +19,12 @@
 */
 package org.jetel.util;
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 /**
@@ -70,6 +74,45 @@ public class FileUtils {
 		return checksum.getValue();
 	}
 
+	/**
+	 * Reads file specified by URL. The content is returned as String
+	 * @param fileURL URL specifying the location of file from which to read
+	 * @return
+	 */
+	public static String getStringFromURL(String fileURL){
+	    String string = null;
+        URL url;
+		try{
+			url = new URL(fileURL); 
+		}catch(MalformedURLException e){
+			// try to patch the url
+			try {
+				url=new URL("file:"+fileURL);
+			}catch(MalformedURLException ex){
+				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
+			}
+		}
+
+		StringBuffer sb = new StringBuffer(512);
+        
+		try
+        {
+            char[] charBuf=new char[64];
+            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
+            int readNum;
+            
+            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1)
+            {
+                sb.append(charBuf,0,readNum);
+            }
+        }
+        catch(IOException ex)
+        {
+            throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
+        }
+        return sb.toString();
+	}
+	
 }
 
 /*
