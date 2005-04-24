@@ -75,6 +75,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  attribute. If you use this option/parameter, cloverFields must be specified as well - it determines which input fields will
  *  be used/mapped onto target fields</td></tr>
  *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error.</td></tr>
+ * <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -91,7 +92,13 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>
  *   <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" sqlQuery="insert into myemployee2 (FIRST_NAME,LAST_NAME,DATE,ID) values (?,?,sysdate,123)"
  *	   cloverFields="FirstName;LastName"/&gt;</pre>
- *
+ *  <br>
+ * <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" cloverFields="FirstName;LastName"&gt;
+ *  &lt;SQLCode&gt;
+ *	insert into myemployee2 (FIRST_NAME,LAST_NAME,DATE,ID) values (?,?,sysdate,123)
+ *  &lt;/SQLCode&gt;
+ *  &lt;/Node&gt;</pre>
+ * <br>
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
@@ -470,6 +477,8 @@ public class DBOutputTable extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribsChild;
+		org.w3c.dom.Node childNode;
 		DBOutputTable outputTable;
 
 		try {
@@ -477,31 +486,35 @@ public class DBOutputTable extends Node {
 			if (xattribs.exists("sqlQuery")) {
 					outputTable = new DBOutputTable(xattribs.getString("id"),
 					xattribs.getString("dbConnection"),
-					xattribs.getString("sqlQuery"),
-					xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-					
-					if (xattribs.exists("dbFields")) {
-						outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-					}
-					
-					if (xattribs.exists("dbTable")) {
-						outputTable.setDBTableName(xattribs.getString("dbTable"));
-					}
+					xattribs.getString("sqlQuery"),	null);
 				
-			}else{
-				// standard - old fashion way
-				
+			}else if(xattribs.exists("dbTable")){
 				outputTable = new DBOutputTable(xattribs.getString("id"),
 						xattribs.getString("dbConnection"),
 						xattribs.getString("dbTable"));
-	
-				if (xattribs.exists("dbFields")) {
-					outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
-	
-				if (xattribs.exists("cloverFields")) {
-					outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-				}
+				
+			}else{
+			    childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+                if (childNode == null) {
+                    throw new RuntimeException("Can't find <SQLCode> node !");
+                }
+                xattribsChild = new ComponentXMLAttributes(childNode);
+                outputTable = new DBOutputTable(xattribs.getString("id"),
+    					xattribs.getString("dbConnection"),
+    					xattribsChild.getText(childNode),
+    					null);
+			}
+			
+			if (xattribs.exists("dbFields")) {
+				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
+			
+			if (xattribs.exists("dbTable")) {
+				outputTable.setDBTableName(xattribs.getString("dbTable"));
+			}
+			
+			if (xattribs.exists("cloverFields")) {
+				outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			
 			if (xattribs.exists("commit")) {
