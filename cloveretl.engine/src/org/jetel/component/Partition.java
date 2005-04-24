@@ -30,10 +30,10 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
- *  <h3>Partition Component</h3> <!-- Merges data records from two input ports onto
- *  one output. It preserves sorted order (as specified by the merge key)
- *  The structure of records in all merged data flows must be the same - it implies
- *  that all input ports share the same metadata -->
+ *  <h3>Partition Component</h3> <!-- Partitions input data into
+ * set of partitions (each connected output port becomes one partition.
+ * Data is partitioned using different algorithms. Three (RoundRobin,Hash,Rage) are
+ * implemented -->
  *
  * <table border="1">
  * <th>Component:</th>
@@ -93,15 +93,17 @@ public class Partition extends Node {
 	private RecordKey partitionKey;
 	private HashKey hashKey;
 
+	//	 instantiate proper partitioning function
+	private PartitionFunction partitionFce;
 
 	/**
-	 *  Constructor for the Merge object
+	 *  Constructor for the Partition object
 	 *
 	 * @param  id         Description of the Parameter
-	 * @param  mergeKeys  Description of the Parameter
 	 */
 	public Partition(String id) {
 		super(id);
+		partitionFce=null;
 	}
 
 
@@ -116,6 +118,14 @@ public class Partition extends Node {
 	    this.partitionRanges=partitionRanges;
 	}
     
+	/**
+	 * Method which can be used to set custom partitioning function
+	 * 
+	 * @param fce class implementing PartitionFunction interface
+	 */
+	public void setPartitionFunction(PartitionFunction fce){
+	    this.partitionFce=fce;
+	}
 
 	/**
 	 *  Main processing method for the SimpleCopy object
@@ -133,24 +143,11 @@ public class Partition extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 
-		// instantiate proper partitioning function
-		PartitionFunction partitionFce;
-		
-		if (partitionKey!=null){
-		    if (partitionRanges!=null){
-		        partitionFce=new RangePartition(outPorts.length,partitionKey,inRecord,partitionRanges);
-		    }else{
-		        partitionFce=new HashPartition(outPorts.length,partitionKey,inRecord);
-		    }
-		}else{
-		    partitionFce=new RoundRobinPartition(outPorts.length); 
-		}
-		
 		while (inRecord!=null && runIt ) {
 		    try{
 		        inRecord=inPort.readRecord(inRecord);
 		        if (inRecord!=null){
-		            outPorts[partitionFce.getOutputPort()].writeRecord(inRecord);
+		            outPorts[partitionFce.getOutputPort(inRecord)].writeRecord(inRecord);
 		        }
 		    } catch (IOException ex) {
 		        resultMsg = ex.getMessage();
@@ -196,6 +193,18 @@ public class Partition extends Node {
 		        throw new ComponentNotReadyException(e.getMessage());
 		    }
 		}
+		if (partitionFce==null){
+		    if (partitionKey!=null){
+			    if (partitionRanges!=null){
+			        partitionFce=new RangePartition(partitionRanges);
+			    }else{
+			        partitionFce=new HashPartition();
+			    }
+			}else{
+			    partitionFce=new RoundRobinPartition(); 
+			}
+		}
+		partitionFce.init(outPorts.size(),partitionKey);
 	}
 
 
@@ -253,20 +262,6 @@ public class Partition extends Node {
 
 	
 	
-	/**
-	 * Simple interface for partition functions
-	 * @author david
-	 * @since  1.3.2005
-	 *
-	 */
-	interface PartitionFunction{
-	    /**
-	     * @return port number which should be used for sending
-	     * data out.
-	     */
-	    int getOutputPort();
-	    
-	}
 	
 	
 	/**
@@ -280,12 +275,15 @@ public class Partition extends Node {
 	    int last;
 	    int numPorts;
 	    
-	    RoundRobinPartition(int numPorts){
-	        this.numPorts=numPorts;
+	    RoundRobinPartition(){
+	    }
+	    
+	    public void init(int numPartitions,RecordKey partitionKey){
+	        this.numPorts=numPartitions;
 	        this.last=-1;
 	    }
 	    
-	    public int getOutputPort(){
+	    public int getOutputPort(DataRecord record){
 	        last=(last+1)%numPorts;
 	        return last;
 	    }
@@ -305,15 +303,18 @@ public class Partition extends Node {
 	    int numPorts;
 	    HashKey hashKey;
 	    
-	    HashPartition(int numPorts,RecordKey recordKey,DataRecord record){
-	        this.numPorts=numPorts;
-	        hashKey=new HashKey(recordKey,record);
+	    HashPartition(){
 	    }
 	    
-	    public int getOutputPort(){
+	    public void init(int numPartitions, RecordKey partitionKey){
+	        this.numPorts=numPartitions;
+	        hashKey=new HashKey(partitionKey,null);
+	    }
+	    
+	    public int getOutputPort(DataRecord record){
+	        hashKey.setDataRecord(record);
 	        int hash=hashKey.hashCode(); 
 	        int value=(hash)&0x0FF;//// take only last 8 bits
-	        
 	        return value%numPorts;
 	    }
 	}
@@ -331,19 +332,24 @@ public class Partition extends Node {
 	    DataRecord record;
 	    DataField[] boundaries;
 	    int[] keyFields;
+	    String[] boundariesStr;
 	    
-	    RangePartition(int numPorts,RecordKey recordKey,DataRecord record,String[] boundariesStr){
-	        this.numPorts=numPorts;
-	        this.record=record;
+	    RangePartition(String[] boundariesStr){
+	        this.boundariesStr=boundariesStr;
+	    }
+	    
+	    public void init(int numPartitions, RecordKey partitionKey){
+	        this.numPorts=numPartitions;
+	        keyFields=partitionKey.getKeyFields();
 	        boundaries = new DataField[boundariesStr.length];
-	        keyFields=recordKey.getKeyFields();
 	        for (int i=0;i<boundaries.length;i++){
 	            boundaries[i]=record.getField(keyFields[0]).duplicate();
 	            boundaries[i].fromString(boundariesStr[i]);
 	        }
+
 	    }
 	    
-	    public int getOutputPort(){
+	    public int getOutputPort(DataRecord record){
 	        for(int i=0;i<numPorts && i<boundaries.length;i++){
 	            // current boundary is upper limit inclusive
 	            if (record.getField(keyFields[0]).compareTo(boundaries[i])<=0){
