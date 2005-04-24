@@ -71,7 +71,7 @@ import org.jetel.util.PropertyRefResolver;
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by utl</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  </tr>
+ *  <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
  *  <br>sqlQuery and url are mutually exclusive.  url is the primary and if found the sqlQuery will not be used.<br>
@@ -81,7 +81,14 @@ import org.jetel.util.PropertyRefResolver;
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" url="c:/temp/test.sql"/&gt;</pre>
- *
+ *	
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="NorthwindDB" &gt;
+ *  &lt;SQLCode&gt;
+ *	select * from employee_z
+ *  &lt;/SQLCode&gt;
+ *  &lt;/Node&gt;
+ *  </pre>
  *
  * @author      dpavlis
  * @since       September 27, 2002
@@ -202,7 +209,9 @@ public class DBInputTable extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) 
         {
             ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+            ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
+            org.w3c.dom.Node childNode;
 
             try 
             {
@@ -214,6 +223,16 @@ public class DBInputTable extends Node {
                 else if (xattribs.exists("sqlQuery"))
                 {
                     query = xattribs.getString("sqlQuery");
+                }else{
+                    
+                    childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+                    if (childNode == null) {
+                        throw new RuntimeException("Can't find <SQLCode> node !");
+                    }
+                    xattribsChild = new ComponentXMLAttributes(childNode);
+                    query=xattribsChild.getText(childNode);
+
+        			
                 }
 
                 aDBInputTable = new DBInputTable(xattribs.getString("id"),

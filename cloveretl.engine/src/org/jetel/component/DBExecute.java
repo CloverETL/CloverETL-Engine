@@ -63,7 +63,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" dbSQL="drop table employee_z"/&gt;</pre>
- *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" inTransaction="Y"/&gt;
+ *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" inTransaction="Y"&gt;
  *  &lt;SQLCode&gt;
  *	create table testTab (
  *		name varchar(20)
