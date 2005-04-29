@@ -65,7 +65,7 @@ public class testDBLookup{
 		*/
 		
 		// we initialize lookup
-		lookup.init(null);
+		lookup.init();
 		//try to lookup based on specified parameter
 		//following version of get() method is valid for queries with one parameter only
 		//in case you have more (as with the example shown above), use array of objects (strings, integers, etc.) and
