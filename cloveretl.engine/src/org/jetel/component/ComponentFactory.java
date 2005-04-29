@@ -69,6 +69,7 @@ public class ComponentFactory {
 		registerComponent(ExtFilter.COMPONENT_TYPE,"org.jetel.component.ExtFilter");
 		registerComponent(ExtSort.COMPONENT_TYPE,"org.jetel.component.ExtSort");
 		registerComponent(Partition.COMPONENT_TYPE,"org.jetel.component.Partition");
+		registerComponent(DataIntersection.COMPONENT_TYPE,"org.jetel.component.DataIntersection");
 	}
 	
 	
