@@ -18,19 +18,26 @@
 
 package org.jetel.test;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.IOException;
+
 import org.jetel.component.DataRecordTransform;
-import org.jetel.metadata.*;
-import org.jetel.data.*;
+import org.jetel.data.DataRecord;
+import org.jetel.data.GetVal;
+import org.jetel.data.RecordKey;
+import org.jetel.data.SetVal;
 import org.jetel.data.lookup.SimpleLookupTable;
 import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.Parser;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 
 public class testOrdersLookupReformat extends DataRecordTransform{
 		int counter=0;
 		SimpleLookupTable lookup;
-		//String[] keys={"EmployeeID"};
 		RecordKey key;
 	
 	public boolean init(DataRecordMetadata sourceMetadata[], DataRecordMetadata targetMetadata[]){
@@ -40,8 +47,9 @@ public class testOrdersLookupReformat extends DataRecordTransform{
 		
 		try{
 			lookupMetadata=metadataReader.read(new FileInputStream("employees.fmt"));
-			lookup=new SimpleLookupTable(lookupMetadata,lookupKey, 
-						new DelimitedDataParserNIO(), new FileInputStream("employees.dat"));
+			Parser parser=new DelimitedDataParserNIO();
+			parser.open(new FileInputStream("employees.dat"),lookupMetadata);
+			lookup=new SimpleLookupTable(lookupMetadata,lookupKey,parser );
 			try {
 				lookup.init();
 			} catch (JetelException e) {
@@ -51,29 +59,33 @@ public class testOrdersLookupReformat extends DataRecordTransform{
 		}catch(IOException ex){
 			ex.printStackTrace();
 			return false;
+		}catch(ComponentNotReadyException ex){
+		    ex.printStackTrace();
+		    return false;
 		}
 		
 		String sourceDataKey[]={"EmployeeID"};
 		key = new RecordKey(sourceDataKey, sourceMetadata[0]);
 		key.init();
+		lookup.setLookupKey(key);
 		
 		return true;
 		
 	}
 	
 
-	public boolean transform(DataRecord source, DataRecord target){
-		DataRecord lookupRec=lookup.get(key.getKeyString(source));
+	public boolean transform(DataRecord source[], DataRecord target[]){
+		DataRecord lookupRec=lookup.get(source[0]);
 		String employeeName=(lookupRec!=null)? GetVal.getString(lookupRec,"LastName")+" "+GetVal.getString(lookupRec,"FirstName")
 					: "null";
 		try{
-		SetVal.setInt(target,"OrderID",GetVal.getInt(source,"OrderID"));
-		SetVal.setString(target,"CustomerID",GetVal.getString(source,"CustomerID"));
-		SetVal.setValue(target,"OrderDate",GetVal.getDate(source,"OrderDate"));
-		SetVal.setString(target,"ShippedDate","02.02.1999");
-		SetVal.setInt(target,"ShipVia",GetVal.getInt(source,"ShipVia"));
-		SetVal.setString(target,"ShipCountry",GetVal.getString(source,"ShipCountry"));
-		SetVal.setString(target,"EmployeeName",employeeName);
+		SetVal.setInt(target[0],"OrderID",GetVal.getInt(source[0],"OrderID"));
+		SetVal.setString(target[0],"CustomerID",GetVal.getString(source[0],"CustomerID"));
+		SetVal.setValue(target[0],"OrderDate",GetVal.getDate(source[0],"OrderDate"));
+		SetVal.setString(target[0],"ShippedDate","02.02.1999");
+		SetVal.setInt(target[0],"ShipVia",GetVal.getInt(source[0],"ShipVia"));
+		SetVal.setString(target[0],"ShipCountry",GetVal.getString(source[0],"ShipCountry"));
+		SetVal.setString(target[0],"EmployeeName",employeeName);
 		}catch(Exception ex){
 			System.err.println("Exception occured at "+counter+" msg:"+ex.getMessage());
 			throw new RuntimeException(ex.getMessage());
