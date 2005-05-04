@@ -28,7 +28,6 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 
@@ -53,7 +52,7 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
  * Finds intersection of data flows (sets) <b>A (in-port0)</b> and <b>B (in-port1)</b> 
- * based on specified key. Both inputs must be sorted according to specified key. DataRecords only in flow <b>A</b>
+ * based on specified key. Both inputs <u><b>must be sorted</b></u> according to specified key. DataRecords only in flow <b>A</b>
  * are sent out through <b>out-port[0]</b>.
  * DataRecords in both <b>A&amp;B</b> are sent to specified <b>transformation</b> function and the result is 
  * sent through <b>out-port[1]</b>.
@@ -62,8 +61,8 @@ import org.jetel.util.DynamicJavaCode;
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
  *    <td>
- *        [0] - records from set A<br>
- *	  [1] - records from set B<br>
+ *        [0] - records from set A - <i>sorted according to specified key</i><br>
+ *	  [1] - records from set B - <i>sorted according to specified key</i><br>
  *    </td></tr>
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
@@ -83,6 +82,7 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><b>type</b></td><td>"DATA_INTERSECTION"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input; field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *	   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming paired data (A&amp;B)<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * 		below</i></td></tr>
@@ -92,17 +92,13 @@ import org.jetel.util.DynamicJavaCode;
  *import org.jetel.component.DataRecordTransform;
  *import org.jetel.data.*;
  * 
- *public class reformatJoinTest extends DataRecordTransform{
+ *public class intersectionTest extends DataRecordTransform{
  *
  *	public boolean transform(DataRecord[] source, DataRecord[] target){
  *		
  *		target[0].getField(0).setValue(source[0].getField(0).getValue());
  *		target[0].getField(1).setValue(source[0].getField(1).getValue());
- *		target[0].getField(2).setValue(source[0].getField(2).getValue());
- *		if (source[1]!=null){
- *			target[0].getField(3).setValue(source[1].getField(0).getValue());
- *			target[0].getField(4).setValue(source[1].getField(1).getValue());
- *		}
+ *		target[0].getField(2).setValue(source[1].getField(2).getValue());
  *		return true;
  *	}
  *}
@@ -309,74 +305,51 @@ public class DataIntersection extends Node {
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
 
 		//initialize input records driver & slave
-		DataRecord[] driverRecords = allocateRecords(driverPort.getMetadata(), 2);
-		DataRecord[] slaveRecords = allocateRecords(slavePort.getMetadata(), 2);
-
+		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
+		driverRecord.init();
+		DataRecord slaveRecord = new DataRecord(slavePort.getMetadata());
+		slaveRecord.init();
+		
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
 
-		// tmp record for switching contents
-		DataRecord tmpRec;
-
-		//for the first time (as initialization), we expect that records are different
-		isDriverDifferent = true;
-
 		try {
 			// first initial load of records
-			driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-			slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
-			while (runIt && driverRecords[CURRENT] != null) {
-				if (isDriverDifferent) {
-					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords[CURRENT], slavePort, recordKeys)) {
+			driverRecord = driverPort.readRecord(driverRecord);
+			slaveRecord = slavePort.readRecord(slaveRecord);
+			// main processing loop
+			while (runIt && driverRecord != null && slaveRecord!=null) {
+					switch (recordKeys[DRIVER_ON_PORT].compare(recordKeys[SLAVE_ON_PORT], driverRecord, slaveRecord)) {
 						case -1:
 							// driver lower
 							// no corresponding slave
-							flushDriverOnly(driverRecords[CURRENT],outPortA);
-							driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-							isDriverDifferent = true;
-							continue;
+							flushDriverOnly(driverRecord,outPortA);
+							driverRecord = driverPort.readRecord(driverRecord);
+							break;
 						case 0:
-							// match
-						    flushCombinations(driverRecords[CURRENT],slaveRecords[CURRENT],outRecord,outPortAB);
-							// switch temporary --> current
-							tmpRec = slaveRecords[CURRENT];
-							slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
-							slaveRecords[TEMPORARY] = tmpRec;
-							isDriverDifferent = false;
+							// match - perform transformation
+						    flushCombinations(driverRecord,slaveRecord,outRecord,outPortAB);
+						    //	load in new driver & slave
+						    driverRecord = driverPort.readRecord(driverRecord);
+							slaveRecord = slavePort.readRecord(slaveRecord);
 							break;
 						case 1:
-							// looks like full outer join is defined
-						    flushSlaveOnly(slaveRecords[CURRENT], outPortB);
-						    slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
-						    continue;
+							// slave lover - no corresponding master
+						    flushSlaveOnly(slaveRecord, outPortB);
+						    slaveRecord=slavePort.readRecord(slaveRecord);
+						    break;
 					}
 				}
-				// get next driver
-
-				driverRecords[TEMPORARY] = driverPort.readRecord(driverRecords[TEMPORARY]);
-				if (driverRecords[TEMPORARY] != null) {
-					// different driver record ??
-					switch (recordKeys[DRIVER_ON_PORT].compare(driverRecords[CURRENT], driverRecords[TEMPORARY])) {
-						case 0:
-							break;
-						case -1:
-							// detected change;
-							isDriverDifferent = true;
-							break;
-						case 1:
-							throw new JetelException("Driver record out of order : "+getID());
-					}
-				}
-				// switch temporary --> current
-				tmpRec = driverRecords[CURRENT];
-				driverRecords[CURRENT] = driverRecords[TEMPORARY];
-				driverRecords[TEMPORARY] = tmpRec;
-				yield();
-			}
-	    	while(slaveRecords[CURRENT]!=null){
-	    	    flushSlaveOnly(slaveRecords[CURRENT], outPortB);
-	    	    slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
+			//flush remaining driver records
+			while(driverRecord!=null){
+	    	    flushDriverOnly(driverRecord, outPortA);
+	    	    driverRecord=driverPort.readRecord(driverRecord);
+	    	}
+			// flush remaining slave records
+			while(slaveRecord!=null){
+	    	    flushSlaveOnly(slaveRecord, outPortB);
+	    	    slaveRecord=slavePort.readRecord(slaveRecord);
 	    	}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
