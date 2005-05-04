@@ -83,7 +83,8 @@ import org.jetel.util.DynamicJavaCode;
  *    <tr><td><b>type</b></td><td>"MERGE_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input;
+ * field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
