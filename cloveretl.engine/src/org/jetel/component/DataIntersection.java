@@ -37,7 +37,7 @@ import org.jetel.util.DynamicJavaCode;
  * must be sorted according to specified key. DataRecords only in flow A
  * are sent out through out-port0. DataRecords in both A & B are sent to
  * specified transformation function and the result is sent through out-port1.
- * DataRecords present only in flow B are sent through out-port2.
+ * DataRecords present only in flow B are sent through out-port2.-->
  * 
  *  <table border="1">
  *
