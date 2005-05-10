@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Partition data">
+<!-- This graph demonstrates functionality of Partition component.
+This component can be used to split input data flow into several 
+(based on number of connected output ports) output data flows according
+to specified key or range -->
+<Global>
+<Metadata id="InMetadata">
+<Record name="Employees" type="delimited">
+	<Field name="EmployeeID" type="string" delimiter=";" />
+	<Field name="LastName" type="string" delimiter=";" format="#" />
+	<Field name="FirstName" type="string" delimiter=";"/>
+	<Field name="Title" type="string" delimiter=";"/>
+	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
+	<Field name="BirthDate" type="date" delimiter=";" format="dd/MM/yyyy" />
+	<Field name="HireDate" type="date" delimiter=";" format="dd/MM/yyyy" />
+	<Field name="Address" type="string" delimiter=";"/>
+	<Field name="City" type="string" delimiter=";"/>
+	<Field name="Region" type="string" delimiter=";"/>
+	<Field name="PostalCode" type="string" delimiter=";"/>
+	<Field name="Country" type="string" delimiter=";"/>
+	<Field name="Phone" type="string" delimiter=";"/>
+	<Field name="Extension" type="string" delimiter=";"/>
+	<Field name="Photo" type="string" delimiter=";"/>
+	<Field name="Memo" type="string" delimiter=";"/>
+	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+</Record>
+</Metadata>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="PARTITION" type="org.jetel.component.Partition" partitionKey="EmployeeID" ranges="3;5"/>
+<Node id="TRASH1" type="TRASH" />
+<Node id="TRASH2" type="TRASH"/>
+<Node id="TRASH3" type="TRASH"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="PARTITION:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE1" fromNode="PARTITION:0" toNode="TRASH1:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE2" fromNode="PARTITION:1" toNode="TRASH2:0" metadata="InMetadata"/>
+<Edge id="INNEREDGE3" fromNode="PARTITION:2" toNode="TRASH3:0" metadata="InMetadata"/>
+</Phase>
+</Graph>
