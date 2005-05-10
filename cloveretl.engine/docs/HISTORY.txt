@@ -7,7 +7,8 @@ REL 1-1-5
 New features:
 +Partition component - partition data using one of following algorithms -
 (Round-Robin,Hash,Range)
-+DataTransformation has been updated
++DataIntersect component - joins two data flows (A & B) and outputs records only
+in A to port 0, records both in A&B to port 1 and records in B only to port 2.
 +extra XML attributes defined for components performing reformats (Reformat, HasJoin, MergeJoin)
 are now passed into transformation function as properties - can be used for parameterizing
 transformation functions
@@ -22,6 +23,8 @@ later retrieval of such metadata - good when using lookups which require metadat
 +SQLDataParser supports (again) setting of fetch size, also improved reporting of possible
 parsing errors
 +changed definition of LookupTable interface, also updated SimpleLookupTable & DBLookupTable
++changed RecordTransform interface
++DataRecordTransform helper class has been updated to reflect changes in RecordTransform interface
 
 REL 1-1-4
 ------------
