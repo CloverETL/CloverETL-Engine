@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Intersect Data">
+<!-- This graph demonstrates functionality of DATA_INTERSECT component - performs 
+joining of two sorted (based on specified key) data flows (A and B) and outputs:
+- to port 0 records found only in flow A
+- to port 1 records found in A &amp; B
+- to port 2 records found only in flow B  
+
+Records both in flow A &amp; B should be unique.-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+</Global>
+<Phase number="0">
+<!-- List of nodes which we will use for transformation -->
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees2.dat"  DataPolicy="Strict" />
+<Node id="INPUT2" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees3.dat"  DataPolicy="Strict" />
+<Node id="INTERSECT" type="DATA_INTERSECTION" joinKey="EmployeeID">
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+
+public class intersectData extends DataRecordTransform{
+
+        public boolean transform(DataRecord[] source, DataRecord[] target){
+
+                target[0].getField(0).setValue(source[0].getField(0).getValue());
+        	target[0].getField(1).setValue(source[1].getField(1).getValue());
+                target[0].getField(2).setValue(source[0].getField(2).getValue());
+                target[0].getField(3).setValue(source[1].getField(3).getValue());
+                
+		return true;
+        }
+}
+
+</Node>
+<Node id="WRITER1" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_1_data.out"/>
+<Node id="WRITER3" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_2_data.out"/>
+<Node id="WRITER2" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_1_2_data.out"/>
+<!-- Edges connecting nodes -->
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="INTERSECT:0" metadata="InMetadata"/>
+<Edge id="INEDGE2" fromNode="INPUT2:0" toNode="INTERSECT:1" metadata="InMetadata"/>
+<Edge id="OUTEDGE1" fromNode="INTERSECT:0" toNode="WRITER1:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE2" fromNode="INTERSECT:1" toNode="WRITER2:0" metadata="OutMetadata"/>
+<Edge id="OUTEDGE3" fromNode="INTERSECT:2" toNode="WRITER3:0" metadata="InMetadata"/>
+</Phase>
+</Graph>
