@@ -3,6 +3,10 @@
 *******************************************************************************
 
 REL 1-1-5
+---------
+The same as 1-1-5pre
+
+REL 1-1-5pre
 ----------
 New features:
 +Partition component - partition data using one of following algorithms -
