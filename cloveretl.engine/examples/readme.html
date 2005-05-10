@@ -361,5 +361,26 @@ Executing:<br>
 <tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBLoad.grf" target="_blank">graphDBLoad.grf</a></tt><br>
 </p>
 <hr>
+<!-- Partition -->
+<h3>Partition data example</h3>
+<p>
+Partition component offers various ways of splitting input data flow into several output
+flows. The exact number of output flows depends on how many output ports are connected.<br>
+There are currently three partition algorithms implemented:
+<ul>
+<li><b>Round-Robin</b> - first record goes into first port, second into second...etc. When 
+the last port was used, it starts again with the first one.</li>
+<li><b>Hash</b> - based on specified key, a hash value is calculated and based
+on it the output port is selected. It should be secured that for two different
+records with same keys, the exact same output port is selected.</li>
+<li><b>Range</b> - based on specified key and range array, records are sent
+to output port based on value present in key-field. It is very similar to
+CASE operator, with ranges defined by their upper boundary (inclusive).</li>
+</ul>
+</p>
+Executing:<br>
+<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphPartition.grf" target="_blank">graphPartition.grf</a></tt><br>
+</p>
+<hr>
 </body>
 </html>
