@@ -28,43 +28,44 @@ import java.util.Properties;
 
 public class reformatTest extends DataRecordTransform{
 
-        LookupTable mylookup;
+	LookupTable mylookup;
 
-        public boolean init(){
+	public boolean init(){
+		
+	Parser parser=new DelimitedDataParserNIO();
+		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
+		try{	
+		parser.open(new FileInputStream("data/employees.dat"), lookupMetadata);
+	    String[] lookupKeyStr={"EmployeeID"};
+		mylookup = new SimpleLookupTable(lookupMetadata, lookupKeyStr ,parser);
+		// create key 
+		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
+		key.init();
+		mylookup.init();
+		mylookup.setLookupKey(key);
+		}catch(Exception ex){
+			ex.printStackTrace();
+			return false;
+		}
+		return true;
+	}
 
-        		Parser parser=new DelimitedDataParserNIO();
-                DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
-                try{
-                	parser.open(new FileInputStream("data/employees.dat"), lookupMetadata);
-            		String[] lookupKeyStr={"EmployeeID"};
-                	mylookup = new SimpleLookupTable(lookupMetadata, lookupKeyStr ,parser);
-	                // create key
-    	            RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
-        	        key.init();
-            	    mylookup.init(key);
-                }catch(Exception ex){
-                        ex.printStackTrace();
-                        return false;
-                }
-                return true;
-        }
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+	        
 
-        public boolean transform(DataRecord[] source, DataRecord[] target){
+		DataRecord employee; 
+		employee=mylookup.get(source[0]);
+		
+		if (employee==null) return false; // skip this one
+		
+		target[0].getField(0).setValue(source[0].getField(0).getValue());
+  		target[0].getField(1).setValue(source[0].getField(1).getValue());
+		target[0].getField(2).setValue(source[0].getField(2).getValue());
+		target[0].getField(3).setValue(employee.getField(0).getValue());
+		target[0].getField(4).setValue(employee.getField(1).getValue());
 
-
-                DataRecord employee;
-                employee=mylookup.get(source[0]);
-
-                if (employee==null) return false; // skip this one
-
-                target[0].getField(0).setValue(source[0].getField(0).getValue());
-                target[0].getField(1).setValue(source[0].getField(1).getValue());
-                target[0].getField(2).setValue(source[0].getField(2).getValue());
-                target[0].getField(3).setValue(employee.getField(0).getValue());
-                target[0].getField(4).setValue(employee.getField(1).getValue());
-
-                return true;
-        }
+		return true;
+	}
 }
 
 </Node>
