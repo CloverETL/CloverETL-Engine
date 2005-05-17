@@ -25,6 +25,7 @@ import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 
 /**
  *  <h3>DatabaseExecute Component</h3>
@@ -54,6 +55,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>dbSQL</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database.
  *  If several statements should be executed, separate them by [;] (semicolon). They will be executed one by one.</td>
  *  </tr>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url</td>
  *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
  * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
  * <i>Works only if database supports transactions.</i></td></tr>
@@ -258,34 +260,30 @@ public class DBExecute extends Node {
 		org.w3c.dom.Node childNode;
 		ComponentXMLAttributes xattribsChild;
 		DBExecute executeSQL;
-
-		if (xattribs.exists("dbSQL")) {
-			try {
-				executeSQL = new DBExecute(xattribs.getString("id"),
-						xattribs.getString("dbConnection"),
-						xattribs.getString("dbSQL"));
-
-			} catch (Exception ex) {
-				System.err.println(COMPONENT_TYPE + " : " + ex.getMessage());
-				return null;
-			}
-		} else {//we try to get it from child text node
-			try {
+		String query=null;	
+		
+		try {
+		    if (xattribs.exists("dbSQL")) {
+			    query=xattribs.getString("dbSQL");
+			}else if (xattribs.exists("url")){
+			    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url")));
+			}else {//we try to get it from child text node
 				childNode = xattribs.getChildNode(nodeXML, "SQLCode");
 				if (childNode == null) {
 					throw new RuntimeException("Can't find <SQLCode> node !");
 				}
 				xattribsChild = new ComponentXMLAttributes(childNode);
-				executeSQL = new DBExecute(xattribs.getString("id"),
+				query=xattribsChild.getText(childNode);
+			}   
+			executeSQL = new DBExecute(xattribs.getString("id"),
 						xattribs.getString("dbConnection"),
-						xattribsChild.getText(childNode).split(SQL_STATEMENT_DELIMITER));
+						query.split(SQL_STATEMENT_DELIMITER));
 
 			} catch (Exception ex) {
 				System.err.println(COMPONENT_TYPE + " : " + ex.getMessage());
 				return null;
 			}
 
-		}
 		if (xattribs.exists("inTransaction")) {
 			executeSQL.setTransaction(xattribs.getBoolean("inTransaction"));
 		}

@@ -203,6 +203,8 @@ public class Reformat extends Node {
 				return;
 			}
 		}
+		// signal end of record stream to transformation function
+		transformation.finished();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
