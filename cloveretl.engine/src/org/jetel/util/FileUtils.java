@@ -93,11 +93,11 @@ public class FileUtils {
 			}
 		}
 
-		StringBuffer sb = new StringBuffer(512);
+		StringBuffer sb = new StringBuffer(2048);
         
 		try
         {
-            char[] charBuf=new char[64];
+            char[] charBuf=new char[256];
             BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
             int readNum;
             
