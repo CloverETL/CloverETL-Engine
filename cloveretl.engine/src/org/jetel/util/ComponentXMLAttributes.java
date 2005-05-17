@@ -329,6 +329,18 @@ public class ComponentXMLAttributes {
 	    return properties;
 	}
 
+	
+	/**
+	 * Replaces references to parameters in string with parameters' values.
+	 * 
+	 * @param input string in which references to parameters should be resolved 
+	 * (substituted with parameters' values)
+	 * @return String with references resolved.
+	 */
+	public String resloveReferences(String input){
+	    return refResolver.resolveRef(input);
+	}
+	
 }
 /*
  *  End class StringUtils
