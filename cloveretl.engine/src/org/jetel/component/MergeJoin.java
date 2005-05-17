@@ -511,7 +511,8 @@ public class MergeJoin extends Node {
 			//closeAllOutputPorts();
 			return;
 		}
-
+		// signal end of records stream to transformation function
+		transformation.finished();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";

@@ -149,6 +149,14 @@ public abstract class DataRecordTransform implements RecordTransform {
 		return null;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordTransform#finished()
+	 */
+	public void finished(){
+	    
+	}
+	
 	/**
 	 * Returns DBConnection object registered with transformation
 	 * graph under specified name (ID).

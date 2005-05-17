@@ -396,6 +396,8 @@ public class HashJoin extends Node {
 				return;
 			}
 		}
+		// signal end of records stream
+		transformation.finished();
 		setEOF(WRITE_TO_PORT);
 		if (runIt) {
 			resultMsg = "OK";

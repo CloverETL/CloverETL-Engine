@@ -25,7 +25,10 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  Interface used by all components performing some sort of reformat operation -
- * Reformat, Join, etc. 
+ * Reformat, Join, etc.<br>
+ * For most transformations, it is better to start with subclassing DataRecordTransform
+ * class which provides default implementation for most methods prescribed by
+ * this interface.
  *
  *@author      dpavlis
  *@created     February 4, 2003
@@ -91,6 +94,13 @@ public interface RecordTransform {
 	 * @return
 	 */
 	public Object getSemiResult();
+	
+	/**
+	 * Method called at the end of transformation process. No more
+	 * records will be processed. The implementing class should release
+	 * any resource reserved during init() or runtime at this point. 
+	 */
+	public void finished();
 	
 }
 

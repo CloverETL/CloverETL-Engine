@@ -362,7 +362,8 @@ public class DataIntersection extends Node {
 			//closeAllOutputPorts();
 			return;
 		}
-
+		// signal end of records stream to transformation function
+		transformation.finished();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
