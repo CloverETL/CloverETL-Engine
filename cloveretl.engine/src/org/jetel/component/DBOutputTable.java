@@ -29,6 +29,7 @@ import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 
 /**
  *  <h3>DatabaseOutputTable Component</h3>
@@ -74,7 +75,9 @@ import org.jetel.util.ComponentXMLAttributes;
  *  database. Questionmarks [?] in the query text are placeholders which are filled with values from input fields specified in <b>cloverFields</b>
  *  attribute. If you use this option/parameter, cloverFields must be specified as well - it determines which input fields will
  *  be used/mapped onto target fields</td></tr>
- *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error.</td></tr>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url. The same as
+ *  for <i>sqlQuery</i> holds for this parameter.</td>
+ *   <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error.</td></tr>
  * <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
@@ -487,7 +490,12 @@ public class DBOutputTable extends Node {
 					outputTable = new DBOutputTable(xattribs.getString("id"),
 					xattribs.getString("dbConnection"),
 					xattribs.getString("sqlQuery"),	null);
-				
+			}else if(xattribs.exists("url")){
+				outputTable = new DBOutputTable(xattribs.getString("id"),
+						xattribs.getString("dbConnection"),
+						xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url"))),	
+						null);
+			    
 			}else if(xattribs.exists("dbTable")){
 				outputTable = new DBOutputTable(xattribs.getString("id"),
 						xattribs.getString("dbConnection"),

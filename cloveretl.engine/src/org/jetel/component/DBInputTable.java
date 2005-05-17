@@ -19,12 +19,7 @@
 */
 package org.jetel.component;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Properties;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.SQLDataParser;
@@ -34,7 +29,7 @@ import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.PropertyRefResolver;
+import org.jetel.util.FileUtils;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -69,7 +64,7 @@ import org.jetel.util.PropertyRefResolver;
  *  <tr><td><b>type</b></td><td>"DB_INPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
- *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by utl</td>
+ *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by url</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
@@ -218,10 +213,8 @@ public class DBInputTable extends Node {
                 String query = null;
                 if (xattribs.exists("url"))
                 {
-                    query = fromFile(xattribs.getString("url"),xattribs.attributes2Properties(null));
-                }
-                else if (xattribs.exists("sqlQuery"))
-                {
+                   query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url")));
+                }else if (xattribs.exists("sqlQuery")){
                     query = xattribs.getString("sqlQuery");
                 }else{
                     
@@ -273,49 +266,4 @@ public class DBInputTable extends Node {
 		return COMPONENT_TYPE;
 	}
 
-    /**
-     * fromFile will allow the etl process to use a file to store the SQL statement
-     * @param fileURL the string value that represents the location of the file
-     * @return String the SQL Statement pulled from the file
-     * @throws IOException when there are problems working with the file.
-     */
-    public static String fromFile(String fileURL,Properties properties) throws IOException 
-    {
-        String query = null;
-        URL url;
-		try{
-			url = new URL(fileURL); 
-		}catch(MalformedURLException e){
-			// try to patch the url
-			try {
-				url=new URL("file:"+fileURL);
-			}catch(MalformedURLException ex){
-				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
-			}
-		}
-
-		StringBuffer sb = new StringBuffer(512);
-        
-		try
-        {
-            char[] charBuf=new char[64];
-            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
-            int readNum;
-            
-            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1)
-            {
-                sb.append(charBuf,0,readNum);
-            }
-            
-            PropertyRefResolver refResolver=new PropertyRefResolver(properties);
-                        
-            refResolver.resolveRef(sb);
-        }
-        catch(IOException ex)
-        {
-            ex.printStackTrace();
-            throw new RuntimeException("Can't get SQL command from file " + fileURL + " - " + ex.getClass().getName() + " : " + ex.getMessage());
-        }
-        return sb.toString();
-    }
-}
+ }
