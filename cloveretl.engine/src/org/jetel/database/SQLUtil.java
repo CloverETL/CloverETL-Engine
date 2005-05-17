@@ -310,7 +310,7 @@ public class SQLUtil {
 		List fieldTypes = new LinkedList();
 		DataFieldMetadata fieldMeta;
 		for (int i = 0; i < cloverFields.length; i++) {
-			if ((fieldMeta = metadata.getField(cloverFields[0])) != null) {
+			if ((fieldMeta = metadata.getField(cloverFields[i])) != null) {
 				fieldTypes.add(new Integer(jetelType2sql(fieldMeta.getType())));
 			} else {
 				throw new RuntimeException("Field name [" + cloverFields[i] + "] not found in " + metadata.getName());
