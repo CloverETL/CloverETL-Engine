@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+
 import javax.xml.parsers.*;
 import org.xml.sax.SAXParseException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -44,7 +45,13 @@ import java.util.logging.Logger;
  * &lt;!ATTLIST Graph
  *		name ID #REQUIRED &gt;
  *
- * &lt;!ELEMENT Global (Metadata+, DBConnection*)&gt;
+ * &lt;!ELEMENT Global (Property*, Metadata+, DBConnection*)&gt;
+ *
+ * &lt;!ELEMENT Property (#PCDATA)&gt;
+ * &lt;!ATTLIST Property
+ *           	name CDATA
+ * 				value CDATA
+ *				fileURL CDATA&gt;
  *
  * &lt;!ELEMENT Metadata (#PCDATA)&gt;
  * &lt;!ATTLIST Metadata
@@ -57,10 +64,10 @@ import java.util.logging.Logger;
  * &lt;!ELEMENT DBConnection (#PCDATA)&gt;
  * &lt;!ATTLIST DBConnection
  *           	id ID #REQUIRED
- *		dbDriver CDATA #REQUIRED
- *		dbURL CDATA #REQUIRED
- *		user CDATA
- *		password CDATA &gt;
+ *				dbDriver CDATA #REQUIRED
+ *				dbURL CDATA #REQUIRED
+ *				user CDATA
+ *				password CDATA &gt;
  *
  * &lt;!ELEMENT Phase (Node+ , Edge+)&gt;
  * &lt;!ATTLIST Phase
@@ -113,6 +120,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String PHASE_ELEMENT = "Phase";
 	private final static String DBCONNECTION_ELEMENT = "DBConnection";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
+	private final static String PROPERTY_ELEMENT = "Property";
 
 	private final static int ALLOCATE_MAP_SIZE=64;
 	/**
@@ -203,6 +211,10 @@ public class TransformationGraphXMLReaderWriter {
 				throw new RuntimeException("Attribute at Graph node is missing - "+ex.getMessage());
 			}
 
+			// handle all defined Properties
+			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
+			instantiateProperties(PropertyElements, graph);
+			
 			// handle all defined DB connections
 			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
 			instantiateDBConnections(dbConnectionElements, graph);
@@ -477,6 +489,33 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 
+	private void instantiateProperties(NodeList propertyElements, TransformationGraph graph) throws IOException {
+	    
+	    // loop through all property elements & create appropriate properties
+	    for (int i = 0; i < propertyElements.getLength(); i++) {
+	        ComponentXMLAttributes attributes = new ComponentXMLAttributes(propertyElements.item(i));
+	        try{
+	            // process property from file
+	            if (attributes.exists("fileURL")){
+	                String fileURL = attributes.getString("fileURL");
+	                graph.loadGraphProperties(fileURL);
+	                
+	            }else if (attributes.exists("name")){
+	                graph.getGraphProperties().setProperty(attributes.getString("name"),
+	                        attributes.resloveReferences(attributes.getString("value")));
+	            }else{
+	                throw new RuntimeException("Invalid property definition :"+propertyElements.item(i));
+	            }
+	        }catch(NotFoundException ex){
+	            throw new RuntimeException("Property - Attributes missing "+ex.getMessage());
+	        }
+	        
+	    }
+	    // we successfully instantiated all properties
+	}
+
+	
+	
 	/**
 	 *  Gets the reference to GraphXMLReaderWriter static object
 	 *
