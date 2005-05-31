@@ -205,5 +205,9 @@ public class SimpleLookupTable implements LookupTable {
 	public int getNumFound(){
 	    return numFound;
 	}
+	
+	public int getSize(){
+	    return lookupTable.size();
+	}
 }
 
