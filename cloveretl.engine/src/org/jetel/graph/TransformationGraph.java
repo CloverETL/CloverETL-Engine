@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -568,12 +570,23 @@ public final class TransformationGraph {
 	 *
 	 * @param  filename  Description of the Parameter
 	 */
-	public void loadGraphProperties(String filename) {
+	public void loadGraphProperties(String fileURL) {
 		if (graphProperties == null) {
 			graphProperties = new Properties();
 		}
+		URL url=null;
+        try{
+            url = new URL(fileURL); 
+        }catch(MalformedURLException e){
+            // try to patch the url
+            try {
+                url=new URL("file:"+fileURL);
+            }catch(MalformedURLException ex){
+                logger.severe("Wrong URL/filename of file specified: "+fileURL);
+            }
+        }
 		try {
-			InputStream inStream = new BufferedInputStream(new FileInputStream(filename));
+		    InputStream inStream = new BufferedInputStream(url.openStream());
 			graphProperties.load(inStream);
 		} catch (IOException ex) {
 			logger.severe(ex.getMessage());
