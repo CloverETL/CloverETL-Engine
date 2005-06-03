@@ -373,7 +373,7 @@ public class DateDataField extends DataField {
 	 */
 	public int compareTo(Object obj) {
 		if (obj instanceof Date){
-			return value.compareTo(obj);
+			return value.compareTo((Date) obj);
 		}else if (obj instanceof DateDataField){
 			return value.compareTo(((DateDataField) obj).getDate());
 		}else throw new RuntimeException("Object does not represent a Date value: "+obj);
