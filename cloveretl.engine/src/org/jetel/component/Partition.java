@@ -196,7 +196,9 @@ public class Partition extends Node {
 		if (partitionFce==null){
 		    if (partitionKey!=null){
 			    if (partitionRanges!=null){
-			        partitionFce=new RangePartition(partitionRanges);
+			        DataRecord record=new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
+			        record.init();
+			        partitionFce=new RangePartition(partitionRanges,record);
 			    }else{
 			        partitionFce=new HashPartition();
 			    }
@@ -334,8 +336,14 @@ public class Partition extends Node {
 	    int[] keyFields;
 	    String[] boundariesStr;
 	    
-	    RangePartition(String[] boundariesStr){
+	    /**
+	     * @param boundariesStr array of strings containing definitions of ranges boundaries
+	     * @param record	DataRecord with the same structure as the one which will be used
+	     * for determining output port.
+	     */
+	    RangePartition(String[] boundariesStr,DataRecord record){
 	        this.boundariesStr=boundariesStr;
+	        this.record=record;
 	    }
 	    
 	    public void init(int numPartitions, RecordKey partitionKey){
