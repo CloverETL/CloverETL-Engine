@@ -22,6 +22,8 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -104,6 +106,8 @@ public class ExtSort extends Node {
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
+	
+	static Log logger = LogFactory.getLog(ExtSort.class);
 
 	/**
      * Constructor for the Sort object
@@ -378,14 +382,16 @@ public class ExtSort extends Node {
         targetCarousel.free();
 
         // DEBUG START
-//        System.out.println("*** Merged data: ***");
-//        System.out.println("****** FINAL TAPE CAROUSEL REVIEW ***********");
-//
-//        DataRecordTape tape = tapeCarousel.getFirstTape();
-//        while (tape != null) {
-//            System.out.println(tape);
-//            tape = tapeCarousel.getNextTape();
-//        }
+        if (logger.isDebugEnabled()) {
+		    logger.debug("*** Merged data: ***");
+		    logger.debug("****** FINAL TAPE CAROUSEL REVIEW ***********");
+		
+		    DataRecordTape tape = tapeCarousel.getFirstTape();
+		    while (tape != null) {
+		    	logger.debug(tape);
+		        tape = tapeCarousel.getNextTape();
+		    }
+        }
         // DEBUG END
         
         /* 

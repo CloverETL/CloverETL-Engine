@@ -23,6 +23,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.database.SQLUtil;
+
 /**
  * @author Wes Maciorowski
  *
@@ -30,17 +34,20 @@ import java.lang.reflect.Method;
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
 public class CreateJavaObject{
+	
+	static Log logger = LogFactory.getLog(CreateJavaObject.class);
+	
    public static Object createObject(String className) {
 	   Object object = null;
 	   try {
 		   Class classDefinition = Class.forName(className);
 		   object = classDefinition.newInstance();
 	   } catch (InstantiationException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   } catch (IllegalAccessException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   } catch (ClassNotFoundException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   }
 	   return object;
 	}
@@ -58,20 +65,20 @@ public class CreateJavaObject{
 		Class aClass = Class.forName(className);
 		constructor =  aClass.getConstructor(parameterTypes);
 		object = constructor.newInstance(arguments);
-		System.out.println ("Object: " + object.toString());
+		logger.info("Object: " + object.toString());
 		return object;
 	  } catch (InstantiationException e) {
-		  System.out.println(e);
+		  logger.error(e);
 	  } catch (IllegalAccessException e) {
-		  System.out.println(e);
+		  logger.error(e);
 	  } catch (IllegalArgumentException e) {
-		  System.out.println(e);
+		  logger.error(e);
 	  } catch (InvocationTargetException e) {
-		  System.out.println(e);
+		  logger.error(e);
 	  } catch (ClassNotFoundException e) {
-		  e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+		  logger.error(e);
 	  } catch (NoSuchMethodException e) {
-		  e.printStackTrace();  //To change body of catch statement use Options | File Templates.
+		  logger.error(e);
 	  }
 	  return object;
    }
@@ -114,11 +121,11 @@ public class CreateJavaObject{
 				result = someMethod.invoke(actOnObject, null);
 			}
 	   } catch (NoSuchMethodException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   } catch (IllegalAccessException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   } catch (InvocationTargetException e) {
-		   System.out.println(e);
+		   logger.error(e);
 	   }
 	   return result;
 	}

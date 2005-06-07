@@ -22,6 +22,10 @@ import com.sun.tools.javac.Main;
 
 import java.io.File;
 import java.io.IOException;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.database.SQLUtil;
 import org.jetel.exception.*;
 
 /**
@@ -42,6 +46,7 @@ public class Compile {
 	private boolean compiled;
 	private boolean useExecutable = false;
 
+	static Log logger = LogFactory.getLog(Compile.class);
 
 	/**
 	 *Constructor for the JavaCompiler object
@@ -101,7 +106,7 @@ public class Compile {
 			Class.forName(compilerClassname);
 		}catch(ClassNotFoundException ex){
 			useExecutable=true;
-			System.out.print("..can't locate class "+compilerClassname+" - will use external javac");
+			logger.warn("..can't locate class "+compilerClassname+" - will use external javac");
 		}
 			
 			

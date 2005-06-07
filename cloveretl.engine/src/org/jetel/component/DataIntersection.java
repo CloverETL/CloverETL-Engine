@@ -22,6 +22,9 @@ package org.jetel.component;
 import java.util.*;
 import java.io.*;
 import java.nio.ByteBuffer;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -145,6 +148,8 @@ public class DataIntersection extends Node {
 	private DataRecord[] outRecords=new DataRecord[2];
 
 	private Properties transformationParameters;
+	
+	static Log logger = LogFactory.getLog(DataIntersection.class);
 	
 	/**
 	 *  Constructor for the SortedJoin object
@@ -413,7 +418,7 @@ public class DataIntersection extends Node {
 					throw new ComponentNotReadyException(ex.getMessage());
 				}
 			} else {
-				System.out.print(" (compiling dynamic source) ");
+				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
 				Object transObject = dynamicTransformation.instantiate();
 				if (transObject instanceof RecordTransform) {

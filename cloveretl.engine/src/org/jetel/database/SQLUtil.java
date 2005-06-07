@@ -31,6 +31,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -47,7 +50,7 @@ public class SQLUtil {
 	private final static String DEFAULT_DELIMITER = ";";
 	private final static String END_RECORD_DELIMITER = "\n";
 
-
+	static Log logger = LogFactory.getLog(SQLUtil.class);
 
 	/**
 	 *  Creates SQL insert statement based on metadata describing data flow and
@@ -76,7 +79,9 @@ public class SQLUtil {
 		strBuf.insert(0, tableName);
 		strBuf.insert(0, "insert into ");
 		strBuf.append(")");
-		//debug: System.out.println(strBuf.toString());
+		if (logger.isDebugEnabled()) {
+			logger.debug(strBuf.toString());
+		}
 		return strBuf.toString();
 	}
 
@@ -207,7 +212,7 @@ public class SQLUtil {
 		if (fieldTypes.size() == 0) {
 			//throw new RuntimeException("No metadata obtained for table: " + tableName);
 			//Warn !
-			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
+			logger.warn("No metadata obtained for table: \"" + tableName + "\", using workaround ...");
 			// WE HAVE SOME PATCH, but ...
 			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
 			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
@@ -247,7 +252,7 @@ public class SQLUtil {
 		if (dbFieldsMap.size() == 0) {
 			//throw new RuntimeException("No metadata obtained for table: " + tableName);
 			//Warn !
-			System.out.println("Warning: No metadata obtained for table: \"" + tableName + "\", using workaround ...");
+			logger.warn("No metadata obtained for table: \"" + tableName + "\", using workaround ...");
 			// WE HAVE SOME PATCH, but ...
 			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
 			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
@@ -419,7 +424,7 @@ public class SQLUtil {
 			case Types.BIT:
 				return DataFieldMetadata.STRING_FIELD;
 			default:
-				System.out.println("Unknown SQL type is: " + sqlType);
+				logger.warn("Unknown SQL type is: " + sqlType);
 				return (char) -1;
 			// unknown or not possible to translate
 		}

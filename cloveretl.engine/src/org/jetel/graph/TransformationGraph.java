@@ -35,8 +35,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Logger;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.DBConnection;
@@ -77,7 +78,7 @@ public final class TransformationGraph {
 
 	private static TransformationGraph graph = new TransformationGraph("");
 
-	static Logger logger = Logger.getLogger("org.jetel");
+	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	static PrintStream log = System.out;// default info messages to stdout
 
@@ -215,7 +216,7 @@ public final class TransformationGraph {
 		try {
 			watchDog.join();
 		} catch (InterruptedException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			return false;
 		}
 		log.print("[Clover] WatchDog thread finished - total execution time: ");
@@ -275,7 +276,7 @@ public final class TransformationGraph {
 				log.println(" ... OK");
 			} catch (Exception ex) {
 				log.println(" ... !!! ERROR !!!");
-				logger.severe("Can't connect to database: " + ex.getMessage());
+				logger.fatal("Can't connect to database: " + ex.getMessage());
 				return false;
 			}
 		}
@@ -289,7 +290,7 @@ public final class TransformationGraph {
 		try {
 			nodesArray = TransformationGraphAnalyzer.enumerateNodes(nodes);
 		} catch (GraphConfigurationException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			return false;
 		}
 		TransformationGraphAnalyzer.distributeNodes2Phases(phasesArray, nodesArray, edges);
@@ -582,14 +583,14 @@ public final class TransformationGraph {
             try {
                 url=new URL("file:"+fileURL);
             }catch(MalformedURLException ex){
-                logger.severe("Wrong URL/filename of file specified: "+fileURL);
+                logger.fatal("Wrong URL/filename of file specified: "+fileURL);
             }
         }
 		try {
 		    InputStream inStream = new BufferedInputStream(url.openStream());
 			graphProperties.load(inStream);
 		} catch (IOException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 		}
 	}
 

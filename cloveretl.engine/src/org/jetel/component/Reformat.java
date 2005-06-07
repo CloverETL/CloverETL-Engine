@@ -22,6 +22,8 @@ package org.jetel.component;
 import java.io.*;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
@@ -132,6 +134,8 @@ public class Reformat extends Node {
 	private RecordTransform transformation = null;
 
 	private Properties transformationParameters=null;
+	
+	static Log logger = LogFactory.getLog(Reformat.class);
 
 	/**
 	 *Constructor for the Reformat object
@@ -246,7 +250,7 @@ public class Reformat extends Node {
 					throw new ComponentNotReadyException(ex.getMessage());
 				}
 			} else {
-				System.out.print(" (compiling dynamic source) ");
+				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
 				Object transObject = dynamicTransformCode.instantiate();
 				if (transObject instanceof RecordTransform) {

@@ -26,6 +26,8 @@ import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.*;
 import org.xml.sax.SAXParseException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataJDBCStub;
 import org.jetel.metadata.MetadataFactory;
@@ -33,7 +35,6 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.NotFoundException;
 import org.jetel.util.ComponentXMLAttributes;
-import java.util.logging.Logger;
 
 /**
  *  Helper class which reads transformation graph definition from XML data
@@ -138,7 +139,7 @@ public class TransformationGraphXMLReaderWriter {
 	
 	private static TransformationGraphXMLReaderWriter graphXMLReaderWriter = new TransformationGraphXMLReaderWriter();
 
-	private static Logger logger = Logger.getLogger("org.jetel.graph");
+	private static Log logger = LogFactory.getLog(TransformationGraphXMLReaderWriter.class);
 	
 	/**
 	 *Constructor for the TransformationGraphXMLReaderWriter object
@@ -280,7 +281,7 @@ public class TransformationGraphXMLReaderWriter {
 				fileURL = attributes.getString("fileURL");
 				 recordMetadata=MetadataFactory.fromFile(fileURL);
 					if (recordMetadata==null){
-						logger.severe("Error when reading/parsing record metadata definition file: "+fileURL);
+						logger.fatal("Error when reading/parsing record metadata definition file: "+fileURL);
 						throw new RuntimeException("Can't parse metadata: "+metadataID);
 					}
 			}// metadata from analyzing DB table (JDBC) - will be resolved

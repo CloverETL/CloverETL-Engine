@@ -26,6 +26,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
@@ -156,6 +158,7 @@ public class HashJoin extends Node {
 	
 	private Properties transformationParameters;
 
+	static Log logger = LogFactory.getLog(HashJoin.class);
 
 	/**
 	 *Constructor for the HashJoin object
@@ -276,7 +279,7 @@ public class HashJoin extends Node {
 					throw new ComponentNotReadyException(ex.getMessage());
 				}
 			} else {
-				System.out.print(" (compiling dynamic source) ");
+				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
 				Object transObject = dynamicTransformation.instantiate();
 				if (transObject instanceof RecordTransform) {
@@ -349,13 +352,15 @@ public class HashJoin extends Node {
 			}
 		}
 		//XDEBUG START
-		//		for (Iterator i=hashMap.values().iterator();i.hasNext();){
-		//			System.out.println("> "+i.next());
-		//		}
-		//		System.out.println("***KEYS***");
-		//		for (Iterator i=hashMap.keySet().iterator();i.hasNext();){
-		//			System.out.println("> "+i.next());
-		//		}
+		if (logger.isDebugEnabled()) {
+			for (Iterator i = hashMap.values().iterator(); i.hasNext();) {
+				logger.debug("> " + i.next());
+			}
+			logger.debug("***KEYS***");
+			for (Iterator i = hashMap.keySet().iterator(); i.hasNext();) {
+				logger.debug("> " + i.next());
+			}
+		}
 		//XDEBUG END
 
 		// now read all records from DRIVER port and try to look up corresponding

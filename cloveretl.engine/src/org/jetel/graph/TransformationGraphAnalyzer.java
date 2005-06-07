@@ -31,7 +31,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
-import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.GraphConfigurationException;
 /*
  *  import org.apache.log4j.Logger;
@@ -48,7 +49,7 @@ import org.jetel.exception.GraphConfigurationException;
 
 public class TransformationGraphAnalyzer {
 
-	static Logger logger = Logger.getLogger("TransformationGraphAnalyzer");
+	static Log logger = LogFactory.getLog(TransformationGraphAnalyzer.class);
 
 	static PrintStream log = System.out;// default info messages to stdout
 
@@ -83,7 +84,7 @@ public class TransformationGraphAnalyzer {
 		}
 
 		if (set1.isEmpty()) {
-			logger.severe("No root Nodes detected! There must be at least one root node defined." +
+			logger.fatal("No root Nodes detected! There must be at least one root node defined." +
 					" (Root node is	node with output ports defined only.)");
 			throw new GraphConfigurationException("No root node!");
 		}
@@ -262,7 +263,7 @@ public class TransformationGraphAnalyzer {
 				nextNode = outPort.getReader();
 				if (nextNode != null) {
 					if (currentNode.getPhase() > nextNode.getPhase()) {
-						logger.severe("Wrong phase order between components: " +
+						logger.fatal("Wrong phase order between components: " +
 								currentNode.getID() + " phase: " + currentNode.getPhase() + " and " +
 								nextNode.getID() + " phase: " + nextNode.getPhase());
 						throw new GraphConfigurationException("Wrong phase order !");
@@ -281,9 +282,9 @@ public class TransformationGraphAnalyzer {
 	 * @param  problemNode  Description of the Parameter
 	 */
 	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
-	    logger.severe("Dump of references between nodes:");
-	    logger.severe("Detected loop when encountered node " + problemNode.getID());
-	    logger.severe("Chain of references:");
+	    logger.fatal("Dump of references between nodes:");
+	    logger.fatal("Detected loop when encountered node " + problemNode.getID());
+	    logger.fatal("Chain of references:");
 		StringBuffer buffer=new StringBuffer(64);
 	    while (iterator.hasNext()) {
 			buffer.append(((AnalyzedNode) iterator.next()).getNode().getID());
@@ -291,7 +292,7 @@ public class TransformationGraphAnalyzer {
 
 		}
 		buffer.append(problemNode.getID());
-		logger.severe(buffer.toString());
+		logger.fatal(buffer.toString());
 	}
 
 
@@ -317,7 +318,7 @@ public class TransformationGraphAnalyzer {
 		for (int i = 0; i < phases.length; i++) {
 			if (phaseMap.put(new Integer(phases[i].getPhaseNum()), phases[i]) != null) {
 				// we have two phases with the same number - wrong !!
-				logger.severe("Phase number not unique: " + phases[i].getPhaseNum());
+				logger.fatal("Phase number not unique: " + phases[i].getPhaseNum());
 				throw new RuntimeException("Phase number not unique: " + phases[i].getPhaseNum());
 			}
 		}

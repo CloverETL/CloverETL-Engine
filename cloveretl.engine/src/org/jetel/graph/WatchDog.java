@@ -22,7 +22,8 @@ import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 
-import java.util.logging.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.util.StringUtils;
 
@@ -54,7 +55,7 @@ class WatchDog extends Thread {
 	/**  Description of the Field */
 	public final static int WATCH_DOG_STATUS_FINISHED_OK = 2;
 
-	static Logger logger = Logger.getLogger("org.jetel");
+	static Log logger = LogFactory.getLog(WatchDog.class);
 
 
 	/**
@@ -177,7 +178,7 @@ class WatchDog extends Thread {
 					node = (Node) nodesIterator.next();
 					if ((!node.isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
 						log.println("[WatchDog] !!! Fatal Error !!! - graph execution is aborting");
-						logger.severe("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
+						logger.fatal("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
 						watchDogStatus = WATCH_DOG_STATUS_ERROR;
 						abort();
 						printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
