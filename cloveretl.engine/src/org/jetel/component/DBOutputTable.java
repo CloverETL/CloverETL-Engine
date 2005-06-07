@@ -73,6 +73,9 @@ import org.jetel.util.FileUtils;
  *  <tr><td><b>batchMode</b><br><i>optional</i></td><td>[Yes/No] determines whether to use batch mode for sending statemetns to DB, DEFAULT is No.<br>
  *  <i>Note:If your database/JDBC driver supports this feature, switch it on as it significantly speeds up table population.</i></td>
  *  </tr>
+ * <tr><td><b>batchSize</b><br><i>optional</i></td><td>number - determines how many records will be sent to database in one batch update. Default is 25.
+ * </td>
+ *  </tr> 
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>allows specification of SQL query/DML statement to be executed against
  *  database. Questionmarks [?] in the query text are placeholders which are filled with values from input fields specified in <b>cloverFields</b>
  *  attribute. If you use this option/parameter, cloverFields must be specified as well - it determines which input fields will
