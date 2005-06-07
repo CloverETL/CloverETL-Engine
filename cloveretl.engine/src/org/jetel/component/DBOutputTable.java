@@ -122,6 +122,7 @@ public class DBOutputTable extends Node {
 	private int recordsInCommit;
 	private int maxErrors;
 	private boolean useBatch;
+	private int batchSize;
 
 	private int countError;
 	/**  Description of the Field */
@@ -174,6 +175,7 @@ public class DBOutputTable extends Node {
 		recordsInCommit = RECORDS_IN_COMMIT;
 		maxErrors=MAX_ALLOWED_ERRORS;
 		useBatch=false;
+		batchSize=RECORDS_IN_BATCH;
 	}
 	
 	/**
@@ -195,6 +197,14 @@ public class DBOutputTable extends Node {
 		this.useBatch = batchMode;
 	}
 
+	/**
+	 * Sets batch size - how many records are in batch which is sent
+	 * to DB at once.
+	 * @param batchSize
+	 */
+	public void setBatchSize(int batchSize){
+	    this.batchSize=batchSize;
+	}
 
 	/**
 	 *  Sets the cloverFields attribute of the DBOutputTable object
@@ -278,9 +288,9 @@ public class DBOutputTable extends Node {
 				useBatch=false;
 			}
 			// it is probably wise to have COMMIT size multiplication of BATCH size
-			if (useBatch && (recordsInCommit % RECORDS_IN_BATCH != 0)){
-				int multiply= recordsInCommit/RECORDS_IN_BATCH;
-				recordsInCommit=(multiply+1) * RECORDS_IN_BATCH;
+			if (useBatch && (recordsInCommit % batchSize != 0)){
+				int multiply= recordsInCommit/batchSize;
+				recordsInCommit=(multiply+1) * batchSize;
 			}
 			
 			// if SQL/DML statement is given, then only prepare statement
@@ -403,7 +413,7 @@ public class DBOutputTable extends Node {
 					}
 				}
 				preparedStatement.clearParameters();
-				if (recCount++ % recordsInCommit == 0) {
+				if (++recCount % recordsInCommit == 0) {
 					dbConnection.getConnection().commit();
 				}
 			}
@@ -439,7 +449,7 @@ public class DBOutputTable extends Node {
 				}
 			}
 			// shall we commit ?
-			if (batchCount++ % RECORDS_IN_BATCH == 0) {
+			if (++batchCount % batchSize == 0) {
 				try {
 					preparedStatement.executeBatch();
 					preparedStatement.clearBatch();
@@ -448,7 +458,7 @@ public class DBOutputTable extends Node {
 				}
 				batchCount = 0;
 			}
-			if (recCount++ % recordsInCommit == 0) {
+			if (++recCount % recordsInCommit == 0) {
 				if (batchCount!=0){
 					try {
 						preparedStatement.executeBatch();
@@ -534,7 +544,9 @@ public class DBOutputTable extends Node {
 			if (xattribs.exists("batchMode")) {
 				outputTable.setUseBatch(xattribs.getBoolean("batchMode"));
 			}
-			
+			if (xattribs.exists("batchSize")) {
+				outputTable.setBatchSize(xattribs.getInteger("batchSize"));
+			}
 			if (xattribs.exists("maxErrors")){
 				outputTable.setMaxErrors(xattribs.getInteger("maxErrors"));
 			}
