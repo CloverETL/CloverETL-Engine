@@ -22,7 +22,9 @@ package org.jetel.component;
 import java.io.*;
 import java.sql.*;
 import java.util.List;
-import java.util.logging.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.*;
@@ -131,7 +133,7 @@ public class DBOutputTable extends Node {
 	private final static int RECORDS_IN_BATCH = 25;
 	private final static int MAX_ALLOWED_ERRORS = 0;
 
-	static Logger logger = Logger.getLogger("org.jetel");
+	static Log logger = LogFactory.getLog(DBOutputTable.class);
 
 
 	/**
@@ -272,7 +274,7 @@ public class DBOutputTable extends Node {
 		try {
 			// first check that what we require is supported
 			if (useBatch && !dbConnection.getConnection().getMetaData().supportsBatchUpdates()){
-				logger.warning("DB indicates no support for batch updates -> switching it off !");
+				logger.warn("DB indicates no support for batch updates -> switching it off !");
 				useBatch=false;
 			}
 			// it is probably wise to have COMMIT size multiplication of BATCH size
@@ -315,7 +317,7 @@ public class DBOutputTable extends Node {
 		try {
 			dbConnection.getConnection().setAutoCommit(false);
 		} catch (SQLException ex) {
-			logger.warning("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
+			logger.warn("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
 		}
 		
 		try{

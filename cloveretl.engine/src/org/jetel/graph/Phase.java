@@ -24,9 +24,11 @@ import java.util.List;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 
-import java.util.logging.Logger;
 /**
  * A class that represents processing Phase of Transformation Graph
  *
@@ -56,7 +58,7 @@ public class Phase implements Comparable {
 
 	protected TransformationGraph graph;
 
-	static Logger logger = Logger.getLogger("org.jetel.phase");
+	static Log logger = LogFactory.getLog(Phase.class);
 
 	/**  Description of the Field */
 	public final static int RESULT_RUNNING = 0;
@@ -143,7 +145,7 @@ public class Phase implements Comparable {
 				edge = (Edge) edgeIterator.next();
 				edge.init();
 			} catch (IOException ex) {
-				logger.severe(ex.getMessage());
+				logger.fatal(ex.getMessage());
 				return false;
 			}
 		}
@@ -169,13 +171,13 @@ public class Phase implements Comparable {
 				if (log!=null){
 					log.println(" ...FAILED !");
 				}
-				logger.severe(ex.getMessage());
+				logger.fatal(ex.getMessage());
 				return false;
 			} catch (Exception ex) {
 				if (log!=null){
 					log.println(" ...FATAL ERROR !");
 				}
-				logger.severe(ex.getMessage());
+				logger.fatal(ex.getMessage());
 				return false;
 			}
 			if (log != null) {

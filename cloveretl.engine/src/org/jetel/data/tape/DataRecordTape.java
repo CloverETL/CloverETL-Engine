@@ -29,8 +29,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.FixLenDataParser;
 
 
 /**
@@ -84,7 +87,7 @@ public class DataRecordTape {
 	private final static String TMP_FILE_MODE = "rw";
 	private static final String JAVA_IO_TMPDIR_ENV_VAR_NAME = "java.io.tmpdir";
 
-
+	static Log logger = LogFactory.getLog(DataRecordTape.class);
 
 	/**
 	 *  Constructor for the DataRecordTape object
@@ -362,7 +365,7 @@ public class DataRecordTape {
 	
 	public void testConsistency(){
 	    ByteBuffer buffer=ByteBuffer.allocateDirect(2048);
-	    System.out.print("Testing consistency...");
+	    logger.info("Testing consistency...");
 	    rewind();
 	    for(int i=0;i<getNumChunks();i++){
 	        int counter=0;
@@ -372,12 +375,12 @@ public class DataRecordTape {
 	                buffer.clear();
 	            }
 	        }catch(Exception ex){
-	            System.out.println("ERR - problem with chunk: "+i+" record "+counter);
+	            logger.error("Problem with chunk: "+i+" record "+counter);
 	            ex.printStackTrace();
 	        }
 	        if(!nextDataChunk()) break;
 	    }
-	    System.out.println("OK");
+	    logger.info("OK");
 	}
 	
 	/**

@@ -26,6 +26,9 @@ import java.net.URLClassLoader;
 import java.util.regex.*;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.*;
 
 /**
@@ -45,6 +48,8 @@ public class DynamicJavaCode {
 	private String fileSeparator;
 	private String fileName;
 
+	Log logger = LogFactory.getLog(DynamicJavaCode.class);
+	
 	public DynamicJavaCode(String srcCode) {
 		this.srcCode=srcCode;
 		srcPath = System.getProperty("java.io.tmpdir", ".");
@@ -125,7 +130,7 @@ public class DynamicJavaCode {
 		try {
 			myObject = tClass.newInstance();
 		} catch (Exception ex) {
-			System.out.println("Error when crating object of class " + className + " : " + ex.getMessage());
+			logger.error("Error when crating object of class " + className + " : " + ex.getMessage());
 			myObject = null;
 		}
 

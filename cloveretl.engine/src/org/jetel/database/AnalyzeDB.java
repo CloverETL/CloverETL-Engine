@@ -23,6 +23,9 @@ import java.io.*;
 import java.sql.*;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  *  Class easing creation of Clover metadata describing data originating in Database.<br>
  *  This "utility" connects to database and based on specified SQL query, generates
@@ -77,6 +80,7 @@ public class AnalyzeDB {
 	private static String query;
 	private static boolean showDriverInfo;
 
+	static Log logger = LogFactory.getLog(AnalyzeDB.class);
 
 	/**
 	 *  Main method
@@ -193,7 +197,7 @@ public class AnalyzeDB {
 				print = new PrintStream(new FileOutputStream(filename),true,DEFAULT_XML_ENCODING);
 				utf8Encoding=true;
 			}catch(UnsupportedEncodingException ex){
-				System.out.println("Error:"+ex.getMessage());
+				logger.error(ex);
 				print = new PrintStream(new FileOutputStream(filename));
 			}
 		} else {

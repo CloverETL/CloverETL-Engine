@@ -20,7 +20,9 @@
 package org.jetel.component;
 
 import java.sql.*;
-import java.util.logging.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.database.*;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
@@ -96,7 +98,7 @@ public class DBExecute extends Node {
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
 	private final static String SQL_STATEMENT_DELIMITER = ";";
 
-	static Logger logger = Logger.getLogger("org.jetel");
+	static Log logger = LogFactory.getLog(DBExecute.class);
 
 
 	/**
@@ -187,7 +189,7 @@ public class DBExecute extends Node {
 			dbConnection.getConnection().setAutoCommit(false);
 		} catch (SQLException ex) {
 			if (oneTransaction) {
-				logger.severe("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
+				logger.fatal("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				return;
@@ -204,7 +206,7 @@ public class DBExecute extends Node {
 				}
 				// shall we print what is sent to DB ?
 				if (printStatements){
-					System.out.println(dbSQL[i]);
+					logger.info(dbSQL[i]);
 				}
 				sqlStatement.executeUpdate(dbSQL[i]);
 				// shall we commit each statemetn ?
@@ -218,7 +220,7 @@ public class DBExecute extends Node {
 
 		} catch (SQLException ex) {
 			performRollback();
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			return;

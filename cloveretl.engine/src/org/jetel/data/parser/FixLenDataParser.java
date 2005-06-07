@@ -25,6 +25,8 @@ import java.nio.channels.*;
 import java.nio.charset.*;
 import java.io.*;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -59,6 +61,8 @@ public class FixLenDataParser implements Parser {
 	private int recordCounter;
 	private int fieldLengths[];
 
+	static Log logger = LogFactory.getLog(FixLenDataParser.class);
+	
 	// Attributes
 
 	/**
@@ -228,7 +232,9 @@ public class FixLenDataParser implements Parser {
 		if (dataBuffer.remaining() < length) {
 			dataBuffer.compact();
 			size = reader.read(dataBuffer);
-			//debug: System.out.println( "Read: " + size);
+			if (logger.isDebugEnabled()) {
+				logger.debug( "Read: " + size);
+			}
 			dataBuffer.flip();
 
 			// if no more data or incomplete record

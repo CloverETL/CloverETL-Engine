@@ -24,8 +24,10 @@ import java.io.*;
 import java.text.MessageFormat;
 import java.util.Properties;
 import java.util.Enumeration;
-import java.util.logging.Logger;
 import javax.xml.parsers.*;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.DOMException;
@@ -126,7 +128,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
-	private static Logger logger = Logger.getLogger("org.jetel.metadata");
+	private static Log logger = LogFactory.getLog(DataRecordMetadata.class);
 
 	// Associations
 
@@ -163,26 +165,25 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			document.normalize();
 
 		} catch (SAXParseException ex) {
-			logger.severe(ex.getMessage() + " --> on line "
+			logger.fatal(ex.getMessage() + " --> on line "
 					+ ex.getLineNumber() + " row " + ex.getColumnNumber());
 			return null;
 		} catch (ParserConfigurationException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			return null;
 		} catch (Exception ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			return null;
 		}
 
 		try {
 			return parseRecordMetadata(document);
 		} catch (DOMException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			return null;
 		} catch (Exception ex) {
-			logger
-					.severe("parseRecordMetadata method call: "
-							+ ex.getMessage());
+			logger.fatal("parseRecordMetadata method call: "
+					+ ex.getMessage());
 			return null;
 		}
 	}
@@ -202,7 +203,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		try {
 			out = new PrintStream(outStream, false, DEFAULT_CHARACTER_ENCODING);
 		} catch (UnsupportedEncodingException ex) {
-			logger.severe(ex.getMessage());
+			logger.fatal(ex.getMessage());
 			throw new RuntimeException(ex);
 		}
 		DataFieldMetadata field;

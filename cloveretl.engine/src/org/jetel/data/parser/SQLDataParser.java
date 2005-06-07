@@ -24,6 +24,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.database.CopySQLData;
 import org.jetel.database.SQLUtil;
@@ -54,6 +56,8 @@ public class SQLDataParser implements Parser {
 	private ResultSet resultSet = null;
 	private CopySQLData[] transMap;
 	private DataRecord outRecord = null;
+	
+	static Log logger = LogFactory.getLog(SQLDataParser.class);
 
 	/**
 	 * @param sqlQuery
@@ -218,7 +222,7 @@ public class SQLDataParser implements Parser {
 			statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
 		
 		} catch (Exception e) {
-			System.out.println("Warning: "+e.getMessage());
+			logger.warn(e);
 		}
 		
 		try{

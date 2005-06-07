@@ -25,7 +25,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.database.SQLUtil;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 /**
@@ -89,6 +93,7 @@ public class CodeParser {
 	private final static char GET_REFERENCE_OPCODE = 'R';
 	private final static char UNKNOWN_OPCODE = (char) -1;
 
+	static Log logger = LogFactory.getLog(CodeParser.class);
 
 	/**
 	 * @param  inputRecords   Description of the Parameter
@@ -227,7 +232,9 @@ public class CodeParser {
 		char fieldType;
 		StringBuffer code = new StringBuffer(40);
 
-		// for debugging System.out.println(fieldRef[0]+" : "+fieldRef[1]);
+		if (logger.isDebugEnabled()) {
+			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+		}
 
 		if (fieldRef[0].startsWith(INPUT_RECORDS_OPTIONAL_PREFIX)) {
 			recordNum = new Integer(fieldRef[0].substring(INPUT_RECORDS_OPTIONAL_PREFIX.length()));
@@ -294,7 +301,9 @@ public class CodeParser {
 		char fieldType;
 		StringBuffer code = new StringBuffer(40);
 
-		// for debugging System.out.println(fieldRef[0]+" : "+fieldRef[1]);
+		if (logger.isDebugEnabled()) {
+			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+		}
 
 		if (fieldRef[0].startsWith(OUTPUT_RECORDS_OPTIONAL_PREFIX)) {
 			recordNum = new Integer(fieldRef[0].substring(OUTPUT_RECORDS_OPTIONAL_PREFIX.length()));

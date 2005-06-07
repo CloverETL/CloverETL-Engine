@@ -21,6 +21,9 @@ package org.jetel.util;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 
@@ -46,6 +49,8 @@ public class PropertyRefResolver {
 
 	private static final int MAX_RECURSION_DEPTH=10;
 
+	Log logger = LogFactory.getLog(DynamicJavaCode.class);
+	
 	/**Constructor for the PropertyRefResolver object */
 	public PropertyRefResolver() {
 		properties = TransformationGraph.getReference().getGraphProperties();
@@ -119,7 +124,9 @@ public class PropertyRefResolver {
 			while (regexMatcher.find()) {
 				found=true;
 				reference = regexMatcher.group(1);
-				//System.out.println("Reference: "+reference);
+				if (logger.isDebugEnabled()) {
+					logger.debug("Reference: "+reference);
+				}
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
 					throw new RuntimeException("Can't resolve reference to graph property: " + reference);

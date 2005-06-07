@@ -30,6 +30,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -67,6 +69,9 @@ public class FixLenDataParser2 implements Parser {
 	private int recordLength;
 	private ReadableByteChannel reader = null;
 	private CharsetDecoder decoder;
+	
+	static Log logger = LogFactory.getLog(FixLenDataParser2.class);
+	
 	/**
 	 *Constructor for the FixLenDataParser object
 	 *
@@ -227,7 +232,9 @@ public class FixLenDataParser2 implements Parser {
 			charBuffer.clear();
 		}
 		size = reader.read(dataBuffer);
-		//System.out.println( "Read: " + size);
+		if (logger.isDebugEnabled()) {
+			logger.debug("Read: " + size);
+		}
 		dataBuffer.flip();
 
 		// if no more data 
