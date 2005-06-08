@@ -23,6 +23,8 @@
  */
 package org.jetel.data.sequence;
 
+import org.jetel.exception.JetelException;
+
 /**
  * @author david
  * @since  31.5.2005
@@ -33,12 +35,15 @@ package org.jetel.data.sequence;
 public interface Sequence {
     
     /**
-     * Method with returns sequence's name (ID). It is deemed that all sequences are
+     * Method with returns sequence´s name (ID). It is deemed that all sequences are
      * kept in directory and accessed by client's transformations by their names.
      * @return sequence name 
      */
     public String getName();
     
+    /**
+     * @return current value of the sequence
+     */
     public int currentValueInt();
     
     /**
@@ -62,7 +67,7 @@ public interface Sequence {
     public void reset();
 
     /**
-     * Informs whether the seqence is persistent - i.e. whether it keeps its value
+     * Informs whether the sequence is persistent - i.e. whether it keeps its value
      * between different class instances. 
      * @return true/false (is/is not persistent)
      */
@@ -70,9 +75,9 @@ public interface Sequence {
     
     /**
      * Initializes sequence object. It is called after the sequence class is instantiated.
-     * All neccessary internal initialization should be performed in this method.
+     * All necessary internal initialization should be performed in this method.
      */
-    public void init();
+    public void init() throws JetelException;
     
     /**
      * Closes the sequence (current instance). All internal resources should be freed in
