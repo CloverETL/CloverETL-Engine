@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Simple Lookup with parameters">
+<!-- This graph demonstrates usage of Node-level parameters
+-->
+<Global>
+<Metadata id="InMetadata1" fileURL="metadata/orders.fmt"/>
+<Metadata id="InMetadata2" fileURL="metadata/employees.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+</Global>
+<Phase number="0">
+<!-- List of nodes which we will use for transformation -->
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" DataPolicy="Strict"/>
+<Node id="JOIN" type="REFORMAT" keyField="EmployeeID" lookupFile="data/employees.dat">
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+import org.jetel.data.lookup.*;
+import org.jetel.graph.*;
+import org.jetel.metadata.*;
+import org.jetel.data.parser.*;
+import org.jetel.exception.*;
+import java.io.*;
+import java.util.Properties;
+
+public class reformatTest extends DataRecordTransform{
+
+	LookupTable mylookup;
+
+	public boolean init(){
+		
+	Parser parser=new DelimitedDataParserNIO();
+		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
+		try{	
+		parser.open(new FileInputStream(parameters.getProperty("lookupFile")), lookupMetadata);
+	    String[] lookupKeyStr=new String[1];
+	    lookupKeyStr[0]=parameters.getProperty("keyField");
+		mylookup = new SimpleLookupTable(lookupMetadata, lookupKeyStr ,parser);
+		// create key 
+		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
+		key.init();
+		mylookup.init();
+		mylookup.setLookupKey(key);
+		}catch(Exception ex){
+			ex.printStackTrace();
+			return false;
+		}
+		return true;
+	}
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+	        
+
+		DataRecord employee; 
+		employee=mylookup.get(source[0]);
+		
+		if (employee==null) return false; // skip this one
+		
+		target[0].getField(0).setValue(source[0].getField(0).getValue());
+  		target[0].getField(1).setValue(source[0].getField(1).getValue());
+		target[0].getField(2).setValue(source[0].getField(2).getValue());
+		target[0].getField(3).setValue(employee.getField(0).getValue());
+		target[0].getField(4).setValue(employee.getField(1).getValue());
+
+		return true;
+	}
+}
+
+</Node>
+<Node id="WRITER" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joined_data_hash.out"/>
+<!-- Edges connecting nodes -->
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="JOIN:0" metadata="InMetadata1"/>
+<Edge id="OUTEDGE" fromNode="JOIN:0" toNode="WRITER:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
