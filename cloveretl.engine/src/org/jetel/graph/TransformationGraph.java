@@ -21,7 +21,6 @@
 
 package org.jetel.graph;
 import java.io.BufferedInputStream;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -322,6 +321,7 @@ public final class TransformationGraph {
 				dbCon = (DBConnection) iterator.next();
 				dbCon.close();
 			} catch (Exception ex) {
+			    logger.warn("Can't free DBConnection: "+ex.getMessage());
 				log.println(ex.getMessage());
 			}
 		}
@@ -331,6 +331,7 @@ public final class TransformationGraph {
 			try {
 				((LookupTable)iterator.next()).close();
 			} catch (Exception ex) {
+			    logger.warn("Can't free LookupTable: "+ex.getMessage());
 				log.println(ex.getMessage());
 			}
 		}
