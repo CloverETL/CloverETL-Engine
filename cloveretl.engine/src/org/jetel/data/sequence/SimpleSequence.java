@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
+import org.jetel.exception.JetelException;
+
 /**
  * @author david
  * @since  31.5.2005
@@ -120,8 +122,8 @@ public class SimpleSequence implements Sequence {
         return true;
     }
     
-    public void init(){
-        buffer=ByteBuffer.allocate(DATA_SIZE);
+    public void init() throws JetelException{
+        buffer=ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file=new File(filename);
             if (!file.exists()){
@@ -143,7 +145,7 @@ public class SimpleSequence implements Sequence {
                 sequenceValue=buffer.getLong();
             }
         }catch(IOException ex){
-            
+            throw new JetelException(ex.getMessage());
         }
     }
     
@@ -174,7 +176,7 @@ public class SimpleSequence implements Sequence {
         File sequenceFile;
         close();
         sequenceFile=new File(filename);
-        if (sequenceFile.exists()){
+        if (sequenceFile.exists()){;
             sequenceFile.delete();
         }
     }
