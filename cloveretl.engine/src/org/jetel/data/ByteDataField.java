@@ -111,16 +111,15 @@ public class ByteDataField extends DataField {
 	 *@since          October 29, 2002
 	 */
 	public void setValue(Object _value) {
-		if (_value == null) {
-			setNull(true);
-			return;
-		}
 		if (_value instanceof byte[]) {
 			value = (byte[]) _value;
 			setNull(false);
-		} else {
+		} else if (_value == null) {
+			setNull(true);
+		}else {
 			throw new RuntimeException("not byte array");
 		}
+		return;
 	}
 
 
@@ -132,8 +131,10 @@ public class ByteDataField extends DataField {
 	 *@since         October 29, 2002
 	 */
 	public void setValue(byte[] value) {
-		System.arraycopy(value, 0, this.value, 0, this.value.length);
-		setNull(false);
+	    /* begin changes by FSI */
+	    this.value = value;
+		setNull(value == null);
+		/* end changes by FSI */	
 	}
 
 
