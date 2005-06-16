@@ -399,8 +399,8 @@ public class SQLUtil {
 			case Types.INTEGER:
 			case Types.SMALLINT:
 			case Types.TINYINT:
-				return DataFieldMetadata.INTEGER_FIELD;
-			case Types.BIGINT:
+			case Types.BIGINT:    
+			    return DataFieldMetadata.INTEGER_FIELD;
 			case Types.DECIMAL:
 			case Types.DOUBLE:
 			case Types.FLOAT:
