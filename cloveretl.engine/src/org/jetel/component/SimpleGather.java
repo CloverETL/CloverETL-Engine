@@ -104,7 +104,8 @@ public class SimpleGather extends Node {
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
-		InputPort inputPorts[]= (InputPort[])getInPorts().toArray();
+		InputPort inputPorts[]= (InputPort[])getInPorts().toArray(new
+		        InputPort[0]);
 		numActive = inputPorts.length;// counter of still active ports - those without EOF status
 		// the metadata is taken from output port definition
 		DataRecord record = new DataRecord(outPort.getMetadata());
