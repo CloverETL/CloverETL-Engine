@@ -70,6 +70,15 @@ public class SimpleGather extends Node {
 
 	private final static int WRITE_TO_PORT = 0;
 
+	/*
+	 * how many empty loops till thead wait() is called
+	 */
+	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 99;
+	
+	/*	 how many millis to wait if we reached the specified number of empty loops (when no data
+	 * has been read).
+	 */
+	private final static int EMPTY_LOOPS_WAIT = 20 ;  
 
 	/**
 	 *Constructor for the SimpleGather object
@@ -95,6 +104,7 @@ public class SimpleGather extends Node {
 		 *  signalized that they are empty.
 		 */
 		int numActive;
+		int emptyLoopCounter=0;
 		/*
 		 *  we need to keep track of all input ports - it they contain data or
 		 *  signalized that they are empty.
@@ -112,12 +122,13 @@ public class SimpleGather extends Node {
 		DataRecord inRecord;
 		record.init();
 
-		while (runIt && numActive > 0) {
+	
 			readFromPort = 0;
-			while (runIt) {
+			while (runIt && numActive > 0) {
 				inPort = inputPorts[readFromPort];
 				if (!isEOF[readFromPort]&&(inPort.hasData())) {
-					try {
+				    emptyLoopCounter=0;
+				    try {
 						inRecord = inPort.readRecord(record);
 						if (inRecord != null) {
 							outPort.writeRecord(inRecord);
@@ -136,9 +147,21 @@ public class SimpleGather extends Node {
 						return;
 					}
 					yield();
+				}else{
+				    emptyLoopCounter++;
 				}
-				readFromPort++;
-			}
+				readFromPort=(++readFromPort)%(inputPorts.length);
+				// have we reached the maximum empty loops count ?
+				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD){
+				    try{
+				        wait(EMPTY_LOOPS_WAIT);
+				    }catch(InterruptedException ex){
+				        // end processing of data
+				        resultMsg="Interrputed !";
+				        resultCode=Node.RESULT_ERROR;
+				        return;
+				    }
+				}
 		}
 		setEOF(WRITE_TO_PORT);
 		if (runIt) {
