@@ -61,7 +61,7 @@ import org.jetel.util.FileUtils;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DB_OUTPUT_TABLE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
- *  <tr><td><b>dbTable</b></td><td>name of the DB table to populate data with</td>
+ *  <tr><td><b>dbTable</b><br><i>optional</i></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
