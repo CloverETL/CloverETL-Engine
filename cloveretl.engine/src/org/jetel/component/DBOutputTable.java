@@ -163,6 +163,7 @@ public class DBOutputTable extends Node {
 	public DBOutputTable(String id, String dbConnectionName, String sqlQuery, String[] cloverFields) {
 		this(id,dbConnectionName);
 		this.cloverFields = cloverFields;
+		this.sqlQuery=sqlQuery;
 
 	}
 	
