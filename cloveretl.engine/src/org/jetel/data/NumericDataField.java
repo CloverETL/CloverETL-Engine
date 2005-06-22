@@ -450,7 +450,7 @@ public class NumericDataField extends DataField {
 	 */
 	public int hashCode(){
 		long v=Double.doubleToLongBits(value);
-		return (int)(v^(v>>>32));
+		return (int)(v^(v>>32));
 	}
 
 	/**
