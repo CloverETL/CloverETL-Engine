@@ -41,7 +41,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      March 27, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class NumericDataField extends DataField {
+public class NumericDataField extends DataField implements Number{
 
 	private double value;
 	private NumberFormat numberFormat;
@@ -149,7 +149,8 @@ public class NumericDataField extends DataField {
 	}
 	
 	/**
-	 *  Sets the value of the field
+	 *  Sets the value of the field - the value is extracted from the passed-in object.
+	 * If the object is null, then the field value is set to NULL.
 	 *
 	 *@param  _value  The new Value value
 	 *@since          March 28, 2002
@@ -177,7 +178,8 @@ public class NumericDataField extends DataField {
 
 
 	/**
-	 *  Sets the value of the field
+	 *  Sets the value of the field. If the passed in value is Double.NaN, then
+	 * the value of the field is set to NULL.
 	 *
 	 *@param  value  The new Double value
 	 *@since         August 19, 2002
@@ -197,7 +199,8 @@ public class NumericDataField extends DataField {
 
 
 	/**
-	 *  Sets the value of the field
+	 *  Sets the value of the field. If the passed in value is Integer.MIN_VALUE, then
+	 * the value of the field is set to NULL.
 	 *
 	 *@param  value  The new Int value
 	 *@since         August 19, 2002
@@ -215,6 +218,25 @@ public class NumericDataField extends DataField {
 		this.value = value;
 	}
 
+	/**
+	 *  Sets the value of the field. If the passed in value is Long.MIN_VALUE, then
+	 * the value of the field is set to NULL.
+	 *
+	 *@param  value  The new Int value
+	 *@since         August 19, 2002
+	 */
+	public void setValue(long value) {
+		if (value == Long.MIN_VALUE) {
+			if(this.metadata.isNullable()) {
+				this.value = Double.NaN;
+				super.setNull(true);
+			} else {
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+			}
+			return;
+		}
+		this.value = (double)value;
+	}
 
 	/**
 	 *  Sets the Null value indicator
@@ -263,7 +285,7 @@ public class NumericDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public Object getValue() {
-		if( Double.isNaN(value) ) {
+		if( isNull ) {
 			return null;
 		}
 		return new Double(value);
@@ -277,7 +299,10 @@ public class NumericDataField extends DataField {
 	 *@since     August 19, 2002
 	 */
 	public double getDouble() {
-		return value;
+		if (isNull){
+		    return Double.NaN;
+		}
+	    return value;
 	}
 
 
@@ -288,12 +313,24 @@ public class NumericDataField extends DataField {
 	 *@since     August 19, 2002
 	 */
 	public int getInt() {
-		if( Double.NaN==value ) {
+		if( isNull ) {
 			return Integer.MIN_VALUE;
 		}
 		return (int) value;
 	}
 
+	/**
+	 *  Gets the numeric value represented by this object casted to long primitive
+	 *
+	 *@return    The Int value
+	 *@since     August 19, 2002
+	 */
+	public long getLong() {
+		if( isNull ) {
+			return Long.MIN_VALUE;
+		}
+		return (long) value;
+	}
 
 	/**
 	 *  Gets the Null value indicator
@@ -313,7 +350,7 @@ public class NumericDataField extends DataField {
 	 *@since     March 28, 2002
 	 */
 	public String toString() {
-		if( Double.isNaN(value) ) {
+		if( isNull ) {
 			return "";
 		}
 		if (numberFormat != null) {
@@ -418,10 +455,10 @@ public class NumericDataField extends DataField {
 
 
 	/**
-	 *  Compares this object with the specified object for order.
+	 *  Compares field's internal value to value of passed-in Object
 	 *
-	 *@param  obj  Description of the Parameter
-	 *@return      Description of the Return Value
+	 *@param  obj  Object representing numeric value
+	 *@return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
 		
@@ -431,19 +468,29 @@ public class NumericDataField extends DataField {
 			return compareTo(((Double)obj).doubleValue());
 		}else if (obj instanceof Integer){
 			return compareTo(((Integer)obj).doubleValue());
+		}else if (obj instanceof Long){
+			return compareTo(((Long)obj).doubleValue());
 		}else throw new RuntimeException("Object does not represent a numeric value: "+obj);
 	}
 
 
 	/**
-	 *  Compares this object with the specified object for order.
+	 *  Compares field's internal value to passed-in value
 	 *
-	 *@param  compVal  Description of the Parameter
-	 *@return          Description of the Return Value
+	 *@param  compVal  double value against which to compare
+	 *@return          -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(double compVal) {
 		return Double.compare(value,compVal);
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
+	 */
+	public int compareTo(Number value){
+	    return compareTo(value.getDouble());
+	}
+	
 	
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()

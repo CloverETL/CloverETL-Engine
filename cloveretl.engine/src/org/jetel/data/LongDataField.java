@@ -37,10 +37,10 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class IntegerDataField extends DataField implements Number {
+public class LongDataField extends DataField implements Number{
 
-	private int value;
-	private final static int FIELD_SIZE_BYTES = 4;// standard size of field
+	private long value;
+	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 	//private DecimalFormat numberFormat;
 	//private ParsePosition parsePosition;
 
@@ -54,7 +54,7 @@ public class IntegerDataField extends DataField implements Number {
 	 * @param  _metadata  Metadata describing field
 	 * @since             March 28, 2002
 	 */
-	public IntegerDataField(DataFieldMetadata _metadata) {
+	public LongDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
 	}
 
@@ -66,7 +66,7 @@ public class IntegerDataField extends DataField implements Number {
 	 * @param  value      Value to assign to field
 	 * @since             March 28, 2002
 	 */
-	public IntegerDataField(DataFieldMetadata _metadata, int value) {
+	public LongDataField(DataFieldMetadata _metadata, long value) {
 		super(_metadata);
 		setValue(value);
 	}
@@ -77,19 +77,18 @@ public class IntegerDataField extends DataField implements Number {
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate(){
-	    IntegerDataField newField= new IntegerDataField(metadata,value);
+	    LongDataField newField= new LongDataField(metadata,value);
 	    newField.setNull(isNull());
 	    return newField;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
 	public void copyFrom(DataField fromField){
-	    if (fromField instanceof IntegerDataField){
+	    if (fromField instanceof LongDataField){
 	        if (!fromField.isNull){
-	            this.value=((IntegerDataField)fromField).value;
+	            this.value=((LongDataField)fromField).value;
 	        }
 	        setNull(fromField.isNull);
 	    }
@@ -105,19 +104,19 @@ public class IntegerDataField extends DataField implements Number {
 	public void setValue(Object _value) {
 		if (_value == null) {
 			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
-		if (_value instanceof Integer) {
-			value = ((Integer) _value).intValue();
+		if (_value instanceof Long) {
+			this.value = ((Long) _value).longValue();
 			setNull(false);
 		} else {
 			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
@@ -127,8 +126,8 @@ public class IntegerDataField extends DataField implements Number {
 
 
 	/**
-	 *  Sets the value of the field.If the passed in value is Double.NaN, then
-	 * the value of the field is set to NULL. Double value is casted to int - possible information loss !!
+	 *  Sets the value of the field. If the passed in value is Double.NaN, then
+	 * the value of the field is set to NULL.
 	 *
 	 * @param  value  The new Double value
 	 * @since         August 19, 2002
@@ -136,20 +135,20 @@ public class IntegerDataField extends DataField implements Number {
 	public void setValue(double value) {
 		if (value == Double.NaN) {
 			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
-		this.value = (int) value;
+		this.value = (long) value;
 		setNull(false);
 	}
 
 
 	/**
-	 *  Sets the value of the field.If the passed in value is Integer.MIN_VALUE, then
+	 *  Sets the value of the field. If the passed in value is Integer.MIN_VALUE, then
 	 * the value of the field is set to NULL.
 	 *
 	 * @param  value  The new Int value
@@ -158,7 +157,7 @@ public class IntegerDataField extends DataField implements Number {
 	public void setValue(int value) {
 		if (value == Integer.MIN_VALUE) {
 			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
@@ -171,7 +170,7 @@ public class IntegerDataField extends DataField implements Number {
 
 	/**
 	 *  Sets the value of the field.If the passed in value is Long.MIN_VALUE, then
-	 * the value of the field is set to NULL. Long value is casted to int - possible information loss !!
+	 * the value of the field is set to NULL.
 	 *
 	 * @param  value  The new Int value
 	 * @since         August 19, 2002
@@ -179,18 +178,17 @@ public class IntegerDataField extends DataField implements Number {
 	public void setValue(long value) {
 		if (value == Long.MIN_VALUE) {
 			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
-		this.value = (int)value;
+		this.value = value;
 		setNull(false);
 	}
-	
-	
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -200,7 +198,7 @@ public class IntegerDataField extends DataField implements Number {
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (isNull) {
-			value = Integer.MIN_VALUE;
+			this.value = Long.MIN_VALUE;
 		}
 	}
 
@@ -227,7 +225,7 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since     March 28, 2002
 	 */
 	public char getType() {
-		return DataFieldMetadata.INTEGER_FIELD;
+		return DataFieldMetadata.LONG_FIELD;
 	}
 
 
@@ -241,7 +239,7 @@ public class IntegerDataField extends DataField implements Number {
 		if (isNull) {
 			return null;
 		}
-		return new Integer(value);
+		return new Long(value);
 	}
 
 
@@ -266,24 +264,23 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since     August 19, 2002
 	 */
 	public int getInt() {
-		if (isNull){
-		    return Integer.MIN_VALUE;
-		}
-	    return value;
+	    if (isNull){
+	        return Integer.MIN_VALUE;
+	    }
+		return (int)value;
 	}
 
 	/**
-	 *  Gets the numeric value represented by this object casted to long primitive
-	 *
-	 * @return    The Int value
-	 * @since     August 19, 2002
+	 * Gets the numeric value represented by this object as long primitive
+	 * @return the long value of this object
 	 */
-	public long getLong() {
-		if (isNull){
-		    return Long.MIN_VALUE;
-		}
-	    return value;
+	public long getLong(){
+	    if (isNull){
+	        return Long.MIN_VALUE;
+	    }
+	    return this.value;
 	}
+	
 
 	/**
 	 *  Formats internal decimal value into string representation
@@ -295,7 +292,7 @@ public class IntegerDataField extends DataField implements Number {
 		if (isNull) {
 			return "";
 		}
-		return Integer.toString(value);
+		return Long.toString(value);
 	}
 
 
@@ -308,7 +305,7 @@ public class IntegerDataField extends DataField implements Number {
 	public void fromString(String valueStr) {
 		if (valueStr == null || valueStr.equals("")) {
 			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
+				this.value = Long.MIN_VALUE;
 				super.setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", valueStr);
@@ -316,7 +313,7 @@ public class IntegerDataField extends DataField implements Number {
 			return;
 		} else {
 			try {
-				value = Integer.parseInt(valueStr);
+				this.value = Long.parseLong(valueStr);
 			} catch (Exception ex) {
 				throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
 			}
@@ -358,7 +355,7 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		buffer.putInt(value);
+		buffer.putLong(value);
 	}
 
 
@@ -369,8 +366,8 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		value = buffer.getInt();
-		if (value == Integer.MIN_VALUE) {
+		this.value = buffer.getLong();
+		if (value == Long.MIN_VALUE) {
 			setNull(true);
 		} else {
 			setNull(false);
@@ -386,9 +383,9 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		Integer numValue = new Integer(this.value);
+		Long numValue = new Long(this.value);
 
-		return (numValue.equals((((IntegerDataField) obj).getValue())));
+		return (numValue.equals((((LongDataField) obj).getValue())));
 	}
 
 
@@ -400,25 +397,25 @@ public class IntegerDataField extends DataField implements Number {
 	 */
 	public int compareTo(Object obj) {
 		
-		if (obj instanceof IntegerDataField){
-			return compareTo(((IntegerDataField) obj).getInt());
+		if (obj instanceof LongDataField){
+			return compareTo(((LongDataField) obj).getInt());
 		}else if (obj instanceof Integer){
-			return compareTo(((Integer)obj).intValue());
+			return compareTo(((Integer)obj).longValue());
 		}else if (obj instanceof Long){
-				return compareTo(((Long)obj).intValue());
+			return compareTo(((Long)obj).longValue());
 		}else if (obj instanceof Double){
-			return compareTo(((Double)obj).intValue());
+			return compareTo(((Double)obj).longValue());
 		}else throw new RuntimeException("Object does not represent a numeric value: "+obj);
 	}
 
 
 	/**
-	 *  Compares field's internal value to passed-in value
+	 * Compares field's internal value to passed-in value
 	 *
-	 * @param  compInt  Description of the Parameter
-	 * @return          -1,0,1 if internal value(less-then,equals, greather then) passed-in value
+	 * @param  compInt  long value against which to compare
+	 * @return           -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
-	public int compareTo(int compInt) {
+	public int compareTo(long compInt) {
 		if (value > compInt) {
 			return 1;
 		} else if (value < compInt) {
@@ -428,12 +425,11 @@ public class IntegerDataField extends DataField implements Number {
 		}
 	}
 	
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
-	public int compareTo(Number value){
-	    return compareTo(value.getInt());
+	public int compareTo(Number value) {
+	    return compareTo(value.getLong());
 	}
 	
 	/**
@@ -448,7 +444,7 @@ public class IntegerDataField extends DataField implements Number {
 	}
 
 	public int hashCode(){
-		return value;
+		return (int)(value^value>>32);
 	}
 	
 }
