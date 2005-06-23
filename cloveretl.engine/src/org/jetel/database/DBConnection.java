@@ -220,20 +220,35 @@ public class DBConnection {
 
 
 	/**
-	 *  Gets the statement attribute of the DBConnection object
+	 *  Creates new statement with default parameters and returns it
 	 *
-	 * @return                   The statement value
+	 * @return                   The new statement 
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public Statement getStatement() throws SQLException {
 		return dbConnection.createStatement();
 	}
 
+	/**
+	 * Creates new statement with specified parameters
+	 * 
+	 * @param type			one of the following ResultSet constants: ResultSet.TYPE_FORWARD_ONLY, 
+	 * 						ResultSet.TYPE_SCROLL_INSENSITIVE, or ResultSet.TYPE_SCROLL_SENSITIVE
+	 * @param concurrency	one of the following ResultSet constants: ResultSet.CONCUR_READ_ONLY or 
+	 * 						ResultSet.CONCUR_UPDATABLE
+	 * @param holdability	one of the following ResultSet constants: ResultSet.HOLD_CURSORS_OVER_COMMIT 
+	 * 						or ResultSet.CLOSE_CURSORS_AT_COMMIT
+	 * @return				The new statement
+	 * @throws SQLException
+	 */
+	public Statement getStatement(int type,int concurrency,int holdability) throws SQLException {
+	    return dbConnection.createStatement(type,concurrency,holdability);
+	}
 
 	/**
-	 *  Description of the Method
+	 *  Creates new prepared statement with default parameters
 	 *
-	 * @param  sql               Description of the Parameter
+	 * @param  sql               SQL/DML query
 	 * @return                   Description of the Return Value
 	 * @exception  SQLException  Description of the Exception
 	 */
@@ -241,6 +256,21 @@ public class DBConnection {
 		return dbConnection.prepareStatement(sql);
 	}
 
+	/**
+	 * Creates new prepared statement with specified parameters
+	 * 
+	 * @param sql			SQL/DML query
+	 * @param resultSetType
+	 * @param resultSetConcurrency
+	 * @param resultSetHoldability
+	 * @return
+	 * @throws SQLException
+	 */
+	public PreparedStatement prepareStatement(String sql, int resultSetType,
+            int resultSetConcurrency,
+            int resultSetHoldability) throws SQLException {
+		return dbConnection.prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
+	}
 
 	/**
 	 *  Sets the property attribute of the DBConnection object
