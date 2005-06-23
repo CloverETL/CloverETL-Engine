@@ -66,6 +66,7 @@ import org.jetel.util.FileUtils;
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by url</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i></td>
  *  <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
@@ -96,6 +97,8 @@ public class DBInputTable extends Node {
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String sqlQuery;
+	
+	private int fetchSize=0;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
@@ -237,6 +240,9 @@ public class DBInputTable extends Node {
                     aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
                                                 xattribs.getString("DataPolicy")));
                 }
+                if (xattribs.exists("fetchSize")){
+                    aDBInputTable.setFetchSize(xattribs.getInteger("fetchSize"));
+                }
             } 
             catch (Exception ex) 
             {
@@ -266,4 +272,8 @@ public class DBInputTable extends Node {
 		return COMPONENT_TYPE;
 	}
 
+	public void setFetchSize(int fetchSize){
+	    this.fetchSize=fetchSize;
+	}
+	
  }
