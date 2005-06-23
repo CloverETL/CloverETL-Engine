@@ -104,6 +104,9 @@ public class DataFieldMetadata {
 	public final static char INTEGER_FIELD = 'i';
 
 	/**  Description of the Field */
+	public final static char LONG_FIELD = 'l';
+	
+	/**  Description of the Field */
 	public final static char DECIMAL_FIELD = 'd';
 
 	/**  Description of the Field */

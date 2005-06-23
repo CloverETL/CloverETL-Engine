@@ -236,12 +236,15 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				"\t<Field name=\"{0}\" type=\"{1}\" ");
 
 		char[] fieldTypeLimits = { DataFieldMetadata.STRING_FIELD,
-				DataFieldMetadata.DATE_FIELD, DataFieldMetadata.DATETIME_FIELD,
+				DataFieldMetadata.DATE_FIELD, 
+				DataFieldMetadata.DATETIME_FIELD,
 				DataFieldMetadata.NUMERIC_FIELD,
 				DataFieldMetadata.INTEGER_FIELD,
-				DataFieldMetadata.DECIMAL_FIELD, DataFieldMetadata.BYTE_FIELD };
+				DataFieldMetadata.LONG_FIELD,
+				DataFieldMetadata.DECIMAL_FIELD, 
+				DataFieldMetadata.BYTE_FIELD };
 		String[] fieldTypeParts = { "string", "date", "datetime", "numeric",
-				"integer", "decimal", "byte" };
+				"integer", "long", "decimal", "byte" };
 
 		for (int i = 0; i < record.getNumFields(); i++) {
 			field = record.getField(i);
@@ -501,6 +504,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		if (fieldType.equalsIgnoreCase("integer")) {
 			return DataFieldMetadata.INTEGER_FIELD;
+		}
+		if (fieldType.equalsIgnoreCase("long")) {
+			return DataFieldMetadata.LONG_FIELD;
 		}
 		if (fieldType.equalsIgnoreCase("decimal")) {
 			return DataFieldMetadata.DECIMAL_FIELD;

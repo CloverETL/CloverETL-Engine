@@ -311,7 +311,7 @@ public class SQLUtil {
 	 * @return                   The fieldTypes value
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public static List getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) throws SQLException {
+	public static List getFieldTypes(DataRecordMetadata metadata, String[] cloverFields) {
 		List fieldTypes = new LinkedList();
 		DataFieldMetadata fieldMeta;
 		for (int i = 0; i < cloverFields.length; i++) {
@@ -320,6 +320,21 @@ public class SQLUtil {
 			} else {
 				throw new RuntimeException("Field name [" + cloverFields[i] + "] not found in " + metadata.getName());
 			}
+		}
+		return fieldTypes;
+	}
+	
+	/**
+	 *  Gets the fieldTypes attribute of the SQLUtil class
+	 *
+	 * @param  metadata          Description of the Parameter
+	 * @return                   The fieldTypes value
+	 * @exception  SQLException  Description of the Exception
+	 */
+	public static List getFieldTypes(DataRecordMetadata metadata)  {
+		List fieldTypes = new LinkedList();
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+				fieldTypes.add(new Integer(jetelType2sql(metadata.getField(i).getType())));
 		}
 		return fieldTypes;
 	}
@@ -357,6 +372,8 @@ public class SQLUtil {
 				return "string";
 			case DataFieldMetadata.DATE_FIELD:
 				return "date";
+			case DataFieldMetadata.LONG_FIELD:
+				return "long";
 			default:
 				throw new RuntimeException("Unsupported data type " + fieldType);
 		}
@@ -380,6 +397,8 @@ public class SQLUtil {
 				return Types.VARCHAR;
 			case DataFieldMetadata.DATE_FIELD:
 				return Types.DATE;
+			case DataFieldMetadata.LONG_FIELD:
+				return Types.BIGINT;
 			default:
 				return -1;
 			// unknown or not possible to translate
@@ -399,8 +418,11 @@ public class SQLUtil {
 			case Types.INTEGER:
 			case Types.SMALLINT:
 			case Types.TINYINT:
-			case Types.BIGINT:    
 			    return DataFieldMetadata.INTEGER_FIELD;
+			//-------------------
+			case Types.BIGINT:
+			    return DataFieldMetadata.LONG_FIELD;
+			//-------------------
 			case Types.DECIMAL:
 			case Types.DOUBLE:
 			case Types.FLOAT:

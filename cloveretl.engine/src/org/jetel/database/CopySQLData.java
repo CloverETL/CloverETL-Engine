@@ -31,6 +31,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.NumericDataField;
+import org.jetel.data.LongDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -255,6 +256,7 @@ public abstract class CopySQLData {
 			case Types.SMALLINT:
 				return new CopyInteger(record, fromIndex, toIndex);
 			case Types.BIGINT:
+			    return new CopyLong(record,fromIndex,toIndex);
 			case Types.DECIMAL:
 			case Types.DOUBLE:
 			case Types.FLOAT:
@@ -459,6 +461,53 @@ public abstract class CopySQLData {
 		}
 	}
 
+	static class CopyLong extends CopySQLData {
+		/**
+		 *  Constructor for the CopyNumeric object
+		 *
+		 * @param  record      Description of Parameter
+		 * @param  fieldSQL    Description of Parameter
+		 * @param  fieldJetel  Description of Parameter
+		 * @since              October 7, 2002
+		 */
+		CopyLong(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+
+		/**
+		 *  Sets the Jetel attribute of the CopyNumeric object
+		 *
+		 * @param  resultSet         The new Jetel value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			long i = resultSet.getLong(fieldSQL);
+			if (resultSet.wasNull()) {
+				((LongDataField) field).setValue(null);
+			} else {
+				((LongDataField) field).setValue(i);
+			}
+		}
+
+
+		/**
+		 *  Sets the SQL attribute of the CopyNumeric object
+		 *
+		 * @param  pStatement        The new SQL value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+				pStatement.setLong(fieldSQL, ((LongDataField) field).getLong());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.BIGINT);
+			}
+
+		}
+	}
 
 	/**
 	 *  Description of the Class

@@ -437,8 +437,8 @@ public class DataRecordMetadata {
         StringBuffer buffer = new StringBuffer();
         buffer.append("DataRecordMetadata[");
         buffer.append("fields = ").append(fields);
-        buffer.append(", fieldNames = ").append(fieldNames);
-        buffer.append(", fieldTypes = ").append(fieldTypes);
+        buffer.append(", fieldNames = ").append(getFieldNames());
+        buffer.append(", fieldTypes = ").append(getFieldTypes());
         buffer.append(", name = ").append(name);
         buffer.append(", recType = ").append(recType);
         buffer.append(", localeStr = ").append(localeStr);
