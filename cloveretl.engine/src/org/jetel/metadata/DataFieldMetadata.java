@@ -21,6 +21,7 @@
 
 package org.jetel.metadata;
 
+import java.io.Serializable;
 import java.util.Properties;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
@@ -34,7 +35,7 @@ import org.jetel.util.StringUtils;
  * @revision    $Revision$
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataFieldMetadata {
+public class DataFieldMetadata implements Serializable {
 
 	/**
 	 *  Name of the field

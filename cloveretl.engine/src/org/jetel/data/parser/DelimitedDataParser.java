@@ -240,6 +240,19 @@ public class DelimitedDataParser implements Parser {
 		}
 	}
 
+	
+	/**
+	 * Returns data policy type for this parser
+	 * @return Data policy type or null if none was specified
+	 */
+	public String getBDFHandlerPolicyType() {
+		if (this.handlerBDFE != null) {
+			return(this.handlerBDFE.getPolicyType());
+		} else {
+			return(null);
+		}
+			
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)

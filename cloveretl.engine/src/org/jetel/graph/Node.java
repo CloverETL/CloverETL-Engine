@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.util.StringUtils;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.w3c.dom.Element;
 
 
 /**
@@ -84,6 +85,11 @@ public abstract class Node extends Thread {
 	/**  Description of the Field */
 	public final static int RESULT_FATAL_ERROR = -1;
 
+	/**
+	 * XML attributes of every cloverETL component
+	 */
+	public final static String XML_ID_ATTRIBUTE="id";
+	public final static String XML_TYPE_ATTRIBUTE="type";
 
 	/**
 	 *  Standard constructor.
@@ -731,7 +737,11 @@ public abstract class Node extends Thread {
 	 *@return    Description of the Returned Value
 	 *@since     May 21, 2002
 	 */
-	public abstract org.w3c.dom.Node toXML();
+	public void toXML(Element xmlElement) {
+		// set basic XML attributes of all graph components
+		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getID());
+		xmlElement.setAttribute(XML_TYPE_ATTRIBUTE, getType());
+	}
 
 
 	/**

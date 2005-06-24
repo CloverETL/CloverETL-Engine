@@ -69,7 +69,7 @@ public class FixLenDataParser2 implements Parser {
 	private int recordLength;
 	private ReadableByteChannel reader = null;
 	private CharsetDecoder decoder;
-	
+	private String charSet = null;
 	static Log logger = LogFactory.getLog(FixLenDataParser2.class);
 	
 	/**
@@ -99,6 +99,7 @@ public class FixLenDataParser2 implements Parser {
 
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 //		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
+		this.charSet = charsetDecoder;
 		decoder = Charset.forName(charsetDecoder).newDecoder();
 		lineSeparatorSize=System.getProperty("line.separator","\n").length();
 	}
@@ -435,4 +436,49 @@ public class FixLenDataParser2 implements Parser {
 	public void setLineSeparatorSize(int lineDelimiterSize) {
 		this.lineSeparatorSize = lineDelimiterSize;
 	}
+	
+	/**
+	 * 
+	 * @return Charset name or null if none was specified
+	 */
+	public String getCharsetName() {
+		return(this.charSet);
+	}
+	
+	/**
+	 * Returns data policy type for this parser
+	 * @return Data policy type or null if none was specified
+	 */
+	public String getBDFHandlerPolicyType() {
+		if (this.handlerBDFE != null) {
+			return(this.handlerBDFE.getPolicyType());
+		} else {
+			return(null);
+		}		
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean getOneRecordPerLinePolicy() {
+		return(this.oneRecordPerLinePolicy);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean getSkipLeadingBlanks() {
+		return(this.skipLeadingBlanks);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public int getLineSeparatorSize() {
+		return(this.lineSeparatorSize);
+	}
+	
 }

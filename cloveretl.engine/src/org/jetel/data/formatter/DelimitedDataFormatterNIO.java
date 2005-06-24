@@ -44,7 +44,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see        DataFormatter
  */
 public class DelimitedDataFormatterNIO implements Formatter {
-
+	private String charSet = null;
 	private boolean oneRecordPerLinePolicy=false;
 	// Attributes
 	private DataRecordMetadata metadata;
@@ -69,6 +69,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	public DelimitedDataFormatterNIO(String charEncoder){
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charSet = charEncoder;
 		encoder = Charset.forName(charEncoder).newEncoder();
 		encoder.reset();
 	}
@@ -163,6 +164,22 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;
 	}
+	
+	/**
+	 * @return true if formatter should output one record per line
+	 */
+	public boolean getOneRecordPerLinePolicy() {
+		return(this.oneRecordPerLinePolicy);
+	}
+	
+	/**
+	 * Returns name of charset which is used by this formatter
+	 * @return Name of charset or null if none was specified
+	 */
+	public String getCharsetName() {
+		return(this.charSet);
+	}
+	
 }
 /*
  *  end class DelimitedDataFormatter

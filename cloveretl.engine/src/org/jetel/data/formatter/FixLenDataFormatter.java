@@ -56,6 +56,7 @@ public class FixLenDataFormatter implements Formatter {
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
 	private byte[] crLF;
+	private String charSet = null;
 	
 	private boolean oneRecordPerLinePolicy = false;
 
@@ -85,6 +86,7 @@ public class FixLenDataFormatter implements Formatter {
 	 *@since               August 21, 2002
 	 */
 	public FixLenDataFormatter(String charEncoder) {
+		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		encoder = Charset.forName(charEncoder).newEncoder();
@@ -225,6 +227,24 @@ public class FixLenDataFormatter implements Formatter {
 	public void setLineSeparator(String separator){
 		crLF=separator.getBytes();
 	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean getOneRecordPerLinePolicy() {
+		return(this.oneRecordPerLinePolicy);
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public String getCharSetName() {
+		return(this.charSet);
+	}
+	
+	
 }
 /*
  *  end class FixLenDataFormatter

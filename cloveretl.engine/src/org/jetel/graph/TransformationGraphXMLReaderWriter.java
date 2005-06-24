@@ -22,8 +22,8 @@ package org.jetel.graph;
 import java.io.*;
 import java.util.*;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
-
 import javax.xml.parsers.*;
 import org.xml.sax.SAXParseException;
 import org.apache.commons.logging.Log;
@@ -140,6 +140,8 @@ public class TransformationGraphXMLReaderWriter {
 	private static TransformationGraphXMLReaderWriter graphXMLReaderWriter = new TransformationGraphXMLReaderWriter();
 
 	private static Log logger = LogFactory.getLog(TransformationGraphXMLReaderWriter.class);
+	
+	private Document outputXMLDocument = null;
 	
 	/**
 	 *Constructor for the TransformationGraphXMLReaderWriter object
@@ -514,8 +516,10 @@ public class TransformationGraphXMLReaderWriter {
 	    }
 	    // we successfully instantiated all properties
 	}
-
 	
+	public Document getOutputXMLDocumentReference() {
+		return(this.outputXMLDocument);
+	}
 	
 	/**
 	 *  Gets the reference to GraphXMLReaderWriter static object
@@ -526,5 +530,108 @@ public class TransformationGraphXMLReaderWriter {
 	public static TransformationGraphXMLReaderWriter getReference() {
 		return graphXMLReaderWriter;
 	}
+	
+	
+	public boolean write(TransformationGraph graph, Document outputDocument) {
+		// store reference to allow usage of getOutputXMLDocument() function
+		this.outputXMLDocument = outputDocument;
+		return(write(graph));
+	}
+	
+	/**
+	 * Tests whether current output XML document contains element with specified name and attributes
+	 * with given values.
+	 * 
+	 * @param elementName 			XML tag to be tested
+	 * @param requiredAttributes 	required attribute name-valu pairs to match. If element should contain
+	 * 								no attributes, use empty map. Insert "*" as attribute name to match
+	 * 								element containing any attributes.
+	 * @return element satisfying requirements or null if none was find
+	 */
+	private Node xmlElementInDocument(String elementName, Map requiredAttributes) {
+		NodeList xmlElements = this.outputXMLDocument.getElementsByTagName(elementName);
+		// check required attribute/value pairs on candidates
+		Element candidate = null;
+		boolean matchAnyAtts = requiredAttributes.containsKey("*");
+		for (int i=0; i < xmlElements.getLength(); i++) {
+			candidate = (Element)xmlElements.item(i);
+			
+			if (matchAnyAtts) {
+				// element can have any attributes ("*")
+				return((Node)candidate);
+			} 
+			
+			if (requiredAttributes.isEmpty() && candidate.hasAttributes() == false) {
+				//	element without attributes required
+				return((Node)candidate);			
+			
+			} 
+			
+			if (requiredAttributes.isEmpty() == false) {
+				// check required name-value pairs
+				Iterator nameIterator = requiredAttributes.keySet().iterator();
+				while (nameIterator.hasNext()) {
+					String requiredName = (String)nameIterator.next();
+					String requiredValue = (String)requiredAttributes.get(requiredName);
+					if (candidate.hasAttribute(requiredName) == false ||
+						candidate.getAttribute(requiredName) != requiredValue) {
+						// candidate is missing attribute/value
+						break;
+					} 
+	 						
+				}
+			}
+			
+		}
+		
+		return(null);
+	}
+	
+	
+	private boolean write(TransformationGraph graph) {
+		// initialize document to which all element will belong to
+		try {
+			Element rootElement = outputXMLDocument.getDocumentElement();
+			if (rootElement == null) {
+				rootElement = outputXMLDocument.createElement(GRAPH_ELEMENT);
+				outputXMLDocument.appendChild(rootElement);
+			}
+			// pass through all nodes in graph, serializing them to XML
+			Phase[] phases = graph.getPhases();
+			
+			for (int i=0; i<phases.length; i++) {
+				// find element for this phase
+				HashMap phaseAtts = new HashMap();
+				phaseAtts.put("number",String.valueOf(i));
+				Element phaseElement = (Element)xmlElementInDocument(PHASE_ELEMENT,phaseAtts);
+				if (phaseElement == null) {
+					phaseElement = outputXMLDocument.createElement(PHASE_ELEMENT);
+					phaseElement.setAttribute("number",String.valueOf(i));
+					rootElement.appendChild(phaseElement);
+				}
+				
+				List nodes = phases[i].getNodes();
+				Iterator iter = nodes.iterator();
+				while (iter.hasNext()) {
+					Node graphNode = (Node)iter.next();
+					HashMap nodeAtts = new HashMap();
+					nodeAtts.put(Node.XML_ID_ATTRIBUTE, graphNode.getID());
+					nodeAtts.put(Node.XML_TYPE_ATTRIBUTE, graphNode.getType());
+					Element xmlElement = (Element)xmlElementInDocument(NODE_ELEMENT,nodeAtts); 
+					if (xmlElement == null) {
+						xmlElement = outputXMLDocument.createElement(NODE_ELEMENT);
+					}
+					System.out.println("writing: " + graphNode.getName());
+					graphNode.toXML(xmlElement);
+					phaseElement.appendChild(xmlElement);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			return(false);
+		}
+		return(true);
+	}
+	
 }
 

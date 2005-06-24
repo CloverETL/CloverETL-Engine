@@ -115,7 +115,12 @@ public final class Defaults {
 		 *  When attribute can contain multiple values delimited, this regex
 		 *  specifies which are the valid delimiters.
 		 */
-		 public final static String KEY_FIELDS_DELIMITER_REGEX = "\\s*[:;|]\\s*"; 
+		 public final static String KEY_FIELDS_DELIMITER_REGEX = "\\s*[:;|]\\s*";
+		 
+		 /**
+		  *  Delimiter character used when exporting components to XML
+		  */
+		 public final static String KEY_FIELDS_DELIMITER = ";";
 	}
 
 

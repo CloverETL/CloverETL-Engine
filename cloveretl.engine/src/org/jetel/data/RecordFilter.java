@@ -163,6 +163,10 @@ public class RecordFilter {
 		return filterSpecs;
 	}
 
+	public String getFilterExpression() {
+		return(this.filterExpression);
+	}
+	
 
 	/**
 	 *  Description of the Method
