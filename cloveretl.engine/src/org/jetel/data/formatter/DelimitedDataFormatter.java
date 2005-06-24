@@ -132,6 +132,11 @@ public class DelimitedDataFormatter implements Formatter {
 	public void setOneRecordPerLinePolicy(boolean b) {
 		oneRecordPerLinePolicy = b;
 	}
+	
+	public boolean getOneRecordPerLinePolicy() {
+		return(this.oneRecordPerLinePolicy);
+	}
+	
 }
 /*
  *  end class DelimitedDataFormatter

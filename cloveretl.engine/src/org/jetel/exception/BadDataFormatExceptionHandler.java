@@ -59,6 +59,11 @@ public class BadDataFormatExceptionHandler {
 	private String fieldContent = null;
 	
 	/**
+	 *  Data policy type for which the handler was created
+	 */
+	protected String policyType = STRICT;
+	
+	/**
 	 * It implements the behavior of the handles.
 	 */
 	public void handleException(DataRecord record) {
@@ -141,5 +146,13 @@ public class BadDataFormatExceptionHandler {
 	 */
 	public String getFieldName(){
 		return record.getMetadata().getField(fieldCounter).getName();
+	}
+	
+	/**
+	 * Return policy for which the handler was created
+	 * @return data policy for which the handler serves
+	 */
+	public String getPolicyType() {
+		return this.policyType;
 	}
 }

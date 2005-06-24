@@ -20,6 +20,7 @@
 // FILE: c:/projects/jetel/org/jetel/metadata/DataRecordMetadata.java
 
 package org.jetel.metadata;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -40,7 +41,7 @@ import org.jetel.exception.InvalidGraphObjectNameException;
  * @see         org.jetel.data.DataRecord
  * @see         org.jetel.data.DataField
  */
-public class DataRecordMetadata {
+public class DataRecordMetadata implements Serializable {
 
 	// Associations
 	/**

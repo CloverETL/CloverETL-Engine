@@ -158,6 +158,13 @@ public class DynamicJavaCode {
 		}
 	}
 	
+	/**
+	 * Returns Java source code from which this object has been compiled
+	 * @return String with source code
+	 */
+	public String getSourceCode() {
+		return(this.srcCode);
+	}
 	
 	public static DynamicJavaCode fromXML(org.w3c.dom.Node nodeXML){
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);

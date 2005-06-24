@@ -74,7 +74,29 @@ public class DBFDataParser implements Parser {
     public DBFDataParser(String charSet) {
         this.charSet = charSet;
     }
+    
+    
+    /**
+     * Returns charset this parser has been created with
+     * @return Charset of this parser or null if none was specified
+     */
+    public String getCharset() {
+    	return(this.charSet);
+    }
 
+    /**
+	 * Returns data policy type for this parser
+	 * @return Data policy type or null if none was specified
+	 */
+	public String getBDFHandlerPolicyType() {
+		if (this.handlerBDFE != null) {
+			return(this.handlerBDFE.getPolicyType());
+		} else {
+			return(null);
+		}
+			
+	}
+        
     /*
      * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
      * 

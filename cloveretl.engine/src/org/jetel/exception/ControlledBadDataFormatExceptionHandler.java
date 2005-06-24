@@ -34,7 +34,11 @@ import org.jetel.data.DataRecord;
  */
 public class ControlledBadDataFormatExceptionHandler
 	extends BadDataFormatExceptionHandler {
-
+	
+		public ControlledBadDataFormatExceptionHandler() {
+			this.policyType = BadDataFormatExceptionHandler.CONTROLLED;
+		}
+	
 		/**
 		 * It logs the bad record info and returns nu
 		 */

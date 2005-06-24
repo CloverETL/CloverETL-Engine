@@ -48,6 +48,7 @@ import org.jetel.metadata.*;
  * @revision    $Revision$
  */
 public class DelimitedDataParserNIO implements Parser {
+	private String charSet = null;
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
 	private CharBuffer charBuffer;
@@ -96,7 +97,7 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@since                  March 28, 2002
 	 */
 	public DelimitedDataParserNIO(String charsetDecoder) {
-
+		this.charSet = charsetDecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer.flip(); // initially empty
@@ -432,7 +433,28 @@ public class DelimitedDataParserNIO implements Parser {
 		this.handlerBDFE = handler;
 	}
 
-}
+	/**
+	 * Returns charset name of this parser
+	 * @return Returns name of the charset used to construct or null if none was specified
+	 */
+	public String getCharsetName() {
+		return(this.charSet);
+	}
+	
+	/**
+	 * Returns data policy type for this parser
+	 * @return Data policy type or null if none was specified
+	 */
+	public String getBDFHandlerPolicyType() {
+		if (this.handlerBDFE != null) {
+			return(this.handlerBDFE.getPolicyType());
+		} else {
+			return(null);
+		}
+			
+	}
+	
+}	
 /*
  *  end class DelimitedDataParser
  */

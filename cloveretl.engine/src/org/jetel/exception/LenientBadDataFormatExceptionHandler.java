@@ -30,6 +30,10 @@ import org.jetel.data.DataRecord;
 public class LenientBadDataFormatExceptionHandler
 	extends BadDataFormatExceptionHandler {
 
+		public LenientBadDataFormatExceptionHandler() {
+			this.policyType = BadDataFormatExceptionHandler.LENIENT;
+		}
+	
 		/**
 		 * It does nothing as all action in this handler happens in populateFieldFailure.
 		 */
