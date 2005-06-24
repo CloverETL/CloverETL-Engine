@@ -26,6 +26,7 @@ import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Delimited Data Reader Component</h3>
@@ -67,6 +68,8 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class DelimitedDataReader extends Node {
 
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_READER";
 
@@ -154,9 +157,13 @@ public class DelimitedDataReader extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
+		String dataPolicy = this.parser.getBDFHandlerPolicyType();
+		if (dataPolicy != null ) {
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy);
+		}
 	}
 
 
@@ -172,11 +179,11 @@ public class DelimitedDataReader extends Node {
 		DelimitedDataReader aDelimitedDataReader = null;
 
 		try {
-			aDelimitedDataReader = new DelimitedDataReader(xattribs.getString("id"),
-					xattribs.getString("fileURL"));
-			if (xattribs.exists("DataPolicy")) {
+			aDelimitedDataReader = new DelimitedDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_FILEURL_ATTRIBUTE));
+			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 				aDelimitedDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-						xattribs.getString("DataPolicy")));
+						xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

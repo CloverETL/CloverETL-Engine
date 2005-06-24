@@ -65,6 +65,10 @@ import org.jetel.util.ComponentXMLAttributes;
  * @since    April 4, 2002
  */
 public class DelimitedDataWriterNIO extends Node {
+	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatterNIO formatter;
@@ -160,9 +164,18 @@ public class DelimitedDataWriterNIO extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		String charSet = this.formatter.getCharsetName();
+		if (charSet != null) {
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
+		}
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
+		if (this.formatter.getOneRecordPerLinePolicy()) {
+			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
+					String.valueOf(this.formatter.getOneRecordPerLinePolicy()));
+		}
 	}
 
 	
@@ -178,18 +191,18 @@ public class DelimitedDataWriterNIO extends Node {
 		DelimitedDataWriterNIO aDelimitedDataWriterNIO = null;
 		
 		try{
-			if (xattribs.exists("charset")){
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString("id"),
-										xattribs.getString("fileURL"),
-										xattribs.getString("charset"),
-										xattribs.getBoolean("append"));	
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+										xattribs.getString(XML_FILEURL_ATTRIBUTE),
+										xattribs.getString(XML_CHARSET_ATTRIBUTE),
+										xattribs.getBoolean(XML_APPEND_ATTRIBUTE));	
 			}else{
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString("id"),
-										xattribs.getString("fileURL"),
-										xattribs.getBoolean("append"));	
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+										xattribs.getString(XML_FILEURL_ATTRIBUTE),
+										xattribs.getBoolean(XML_APPEND_ATTRIBUTE));	
 			}
-			if (xattribs.exists("OneRecordPerLine")){
-				if(xattribs.getBoolean("OneRecordPerLine")){
+			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
+				if(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE)){
 					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(true);
 				}else{
 					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);

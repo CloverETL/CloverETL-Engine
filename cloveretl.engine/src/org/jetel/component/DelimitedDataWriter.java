@@ -24,6 +24,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>DelimitedDataWriter Component</h3>
@@ -66,6 +67,9 @@ import org.jetel.util.ComponentXMLAttributes;
  * @revision    $Revision$
  */
 public class DelimitedDataWriter extends Node {
+	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatter formatter;
@@ -157,9 +161,12 @@ public class DelimitedDataWriter extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
+		xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
+				String.valueOf(this.formatter.getOneRecordPerLinePolicy()));
 	}
 
 
@@ -175,11 +182,11 @@ public class DelimitedDataWriter extends Node {
 		DelimitedDataWriter aDelimitedDataWriter = null;
 
 		try {
-			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString("id"),
-					xattribs.getString("fileURL"),
-					xattribs.getBoolean("append"));
-			if (xattribs.exists("OneRecordPerLine")) {
-				if (xattribs.getBoolean("OneRecordPerLine")) {
+			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_FILEURL_ATTRIBUTE),
+					xattribs.getBoolean(XML_APPEND_ATTRIBUTE));
+			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)) {
+				if (xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE)) {
 					aDelimitedDataWriter.setOneRecordPerLinePolicy(true);
 				} else {
 					aDelimitedDataWriter.setOneRecordPerLinePolicy(false);

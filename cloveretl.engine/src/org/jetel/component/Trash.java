@@ -30,6 +30,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Trash Component</h3>
@@ -73,6 +74,8 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class Trash extends Node {
 
+	private static final String XML_DEBUGFILENAME_ATTRIBUTE = "debugFilename";
+	private static final String XML_DEBUGPRINT_ATTRIBUTE = "debugPrint";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "TRASH";
 	private final static int READ_FROM_PORT = 0;
@@ -196,9 +199,12 @@ public class Trash extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_DEBUGPRINT_ATTRIBUTE, String.valueOf(this.debugPrint));
+		if (debugFilename != null) {
+			xmlElement.setAttribute(XML_DEBUGFILENAME_ATTRIBUTE,this.debugFilename);
+		}
 	}
 
 
@@ -214,12 +220,12 @@ public class Trash extends Node {
 		Trash trash;
 
 		try {
-			trash = new Trash(xattribs.getString("id"));
-			if (xattribs.exists("debugPrint")) {
-				trash.setDebugPrint(xattribs.getBoolean("debugPrint"));
+			trash = new Trash(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			if (xattribs.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
+				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
-			if (xattribs.exists("debugFilename")) {
-				trash.setDebugFile(xattribs.getString("debugFilename"));
+			if (xattribs.exists(XML_DEBUGFILENAME_ATTRIBUTE)) {
+				trash.setDebugFile(xattribs.getString(XML_DEBUGFILENAME_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

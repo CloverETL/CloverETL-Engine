@@ -26,6 +26,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Dedup Component</h3>
@@ -68,6 +69,8 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class Dedup extends Node {
 
+	private static final String XML_KEEP_ATTRIBUTE = "keep";
+	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
 
@@ -195,9 +198,23 @@ public class Dedup extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		// dedupKeys attribute
+		if (dedupKeys != null) {
+			String keys = this.dedupKeys[0];
+			for (int i=1; i<this.dedupKeys.length; i++) {
+				keys += Defaults.Component.KEY_FIELDS_DELIMITER + this.dedupKeys[i];
+			}
+			xmlElement.setAttribute(XML_DEDUPKEY_ATTRIBUTE,keys);
+		}
+		
+		// keep attribute
+		if (this.keepFirst) {
+			xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "First");
+		} else {
+			xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Last");
+		}
 	}
 
 
@@ -212,9 +229,9 @@ public class Dedup extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 
 		try {
-			return new Dedup(xattribs.getString("id"),
-					xattribs.getString("dedupKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString("keep").matches("^[Ff].*"));
+			return new Dedup(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_DEDUPKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*"));
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;

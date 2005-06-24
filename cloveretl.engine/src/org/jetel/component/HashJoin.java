@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.io.*;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -37,6 +38,9 @@ import org.jetel.graph.*;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>HashJoin Component</h3> <!-- Joins two records from two different
@@ -131,6 +135,11 @@ import org.jetel.util.DynamicJavaCode;
  */
 public class HashJoin extends Node {
 
+	private static final String XML_HASHTABLESIZE_ATTRIBUTE = "hashTableSize";
+	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
+	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
+	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
 
@@ -419,9 +428,44 @@ public class HashJoin extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
+		} else {
+			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+			Text text = doc.createTextNode(dynamicTransformation.getSourceCode());
+			xmlElement.appendChild(text);
+		}
+		
+		if (joinKeys != null) {
+			String jKeys = joinKeys[0];
+			for (int i=1; i< joinKeys.length; i++) {
+				jKeys += Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]; 
+			}
+			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, jKeys);
+		}
+		
+		if (slaveOverrideKeys != null) {
+			String overKeys = slaveOverrideKeys[0];
+			for (int i=1; i< slaveOverrideKeys.length; i++) {
+				overKeys += Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]; 
+			}
+			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE, overKeys);
+		}
+		
+		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(this.leftOuterJoin));
+		
+		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY ) {
+			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
+		}
+		
+		Enumeration propertyAtts = transformationParameters.propertyNames();
+		while (propertyAtts.hasMoreElements()) {
+			String attName = (String)propertyAtts.nextElement();
+			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+		}
 	}
 
 
@@ -438,35 +482,35 @@ public class HashJoin extends Node {
 		DynamicJavaCode dynaTransCode;
 
 		try {
-			if (xattribs.exists("transformClass")) {
-				join = new HashJoin(xattribs.getString("id"),
-						xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString("transformClass"));
+			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
+				join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
 			} else {
 				// do we have child node wich Java source code ?
 				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
-				join = new HashJoin(xattribs.getString("id"),
-						xattribs.getString("joinKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+				join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 						dynaTransCode);
 
 			}
 
-			if (xattribs.exists("slaveOverrideKey")) {
-				join.setSlaveOverrideKey(xattribs.getString("slaveOverrideKey").
+			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
-			if (xattribs.exists("leftOuterJoin")) {
-				join.setLeftOuterJoin(xattribs.getBoolean("leftOuterJoin"));
+			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
+				join.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
-			if (xattribs.exists("hashTableSize")) {
-				join.setHashTableInitialCapacity(xattribs.getInteger("hashTableSize"));
+			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
+				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
 			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
-			                new String[]{"transformClass","hashTableSize"}));
+			                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_HASHTABLESIZE_ATTRIBUTE}));
 			
 			return join;
 		} catch (Exception ex) {

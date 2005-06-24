@@ -28,8 +28,12 @@ import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -92,6 +96,13 @@ import org.jetel.util.FileUtils;
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
+	private static final String XML_URL_ATTRIBUTE = "url";
+	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
+	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	
 	private SQLDataParser parser;
 
 	private DBConnection dbConnection;
@@ -103,6 +114,7 @@ public class DBInputTable extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
+	private String url = null;
 
 
 	/**
@@ -138,16 +150,6 @@ public class DBInputTable extends Node {
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     September 27, 2002
-	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO implement toXML()
-		return null;
-	}
 
 
 	/**
@@ -196,6 +198,34 @@ public class DBInputTable extends Node {
 
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     September 27, 2002
+	 */
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (this.url != null) {
+			// query specified in a file
+			xmlElement.setAttribute(XML_URL_ATTRIBUTE, this.url);
+		} else {
+			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
+			// join given SQL commands
+			Text textElement = doc.createTextNode(sqlQuery);
+			childElement.appendChild(textElement);
+			xmlElement.appendChild(childElement);
+		}
+		
+		if (fetchSize > 0) {
+			xmlElement.setAttribute(XML_FETCHSIZE_ATTRIBUTE, String.valueOf(fetchSize));
+		}
+		
+		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
+		
+	}
 
 	/**
 	 *  Description of the Method
@@ -214,14 +244,14 @@ public class DBInputTable extends Node {
             try 
             {
                 String query = null;
-                if (xattribs.exists("url"))
+                if (xattribs.exists(XML_URL_ATTRIBUTE))
                 {
-                   query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url")));
-                }else if (xattribs.exists("sqlQuery")){
-                    query = xattribs.getString("sqlQuery");
+                   query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE)));
+                }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
+                    query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
                 }else{
                     
-                    childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+                    childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
                     if (childNode == null) {
                         throw new RuntimeException("Can't find <SQLCode> node !");
                     }
@@ -231,17 +261,22 @@ public class DBInputTable extends Node {
         			
                 }
 
-                aDBInputTable = new DBInputTable(xattribs.getString("id"),
-                        xattribs.getString("dbConnection"),
+                aDBInputTable = new DBInputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                        xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
                         query);
-
-                if (xattribs.exists("DataPolicy")) 
+                
+                if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) 
                 {
                     aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-                                                xattribs.getString("DataPolicy")));
+                                                xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
                 }
-                if (xattribs.exists("fetchSize")){
-                    aDBInputTable.setFetchSize(xattribs.getInteger("fetchSize"));
+                
+                if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
+                    aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+                }
+                
+                if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+                	aDBInputTable.setURL(XML_URL_ATTRIBUTE);
                 }
             } 
             catch (Exception ex) 
@@ -252,6 +287,14 @@ public class DBInputTable extends Node {
             }
 
             return aDBInputTable;
+	}
+
+
+	/**
+	 * @param xml_url_attribute2
+	 */
+	private void setURL(String url){
+		this.url = url;
 	}
 
 

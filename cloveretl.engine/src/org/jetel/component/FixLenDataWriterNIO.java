@@ -28,6 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>FixLenDataWriter Component</h3>
@@ -71,6 +72,11 @@ import org.jetel.util.ComponentXMLAttributes;
  * @revision    $Revision$
  */
 public class FixLenDataWriterNIO extends Node {
+	private static final String XML_LINESEPARATOR_ATTRIBUTE = "LineSeparator";
+	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private String fileURL;
 	private boolean appendData;
 	private Formatter formatter;
@@ -179,9 +185,19 @@ public class FixLenDataWriterNIO extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE,
+				((FixLenDataFormatter)this.formatter).getCharSetName());
+		if (this.appendData) {
+			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(this.appendData));
+		}
+		
+		if (((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()) {
+			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
+					String.valueOf(((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()));
+		}
 	}
 
 
@@ -201,21 +217,21 @@ public class FixLenDataWriterNIO extends Node {
 		
 		try{
 		
-			if (xattribs.exists("charset")){
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
 				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
-						xattribs.getString("id"), 
-						xattribs.getString("fileURL"),
-						xattribs.getString("charset"),
-						xattribs.getBoolean("append",_APPEND_));
+						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
+						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						xattribs.getString(XML_CHARSET_ATTRIBUTE),
+						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,_APPEND_));
 			}else{
 				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
-						xattribs.getString("id"), 
-						xattribs.getString("fileURL"),
-						xattribs.getBoolean("append",_APPEND_));
+						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
+						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,_APPEND_));
 			}
-			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine",_ONE_REC_PER_LINE_));
-			if (xattribs.exists("LineSeparator")){
-				aFixLenDataWriterNIO.setLineSeparator(xattribs.getString("LineSeparator"));
+			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE,_ONE_REC_PER_LINE_));
+			if (xattribs.exists(XML_LINESEPARATOR_ATTRIBUTE)){
+				aFixLenDataWriterNIO.setLineSeparator(xattribs.getString(XML_LINESEPARATOR_ATTRIBUTE));
 			}
 		
 		}catch(Exception ex){

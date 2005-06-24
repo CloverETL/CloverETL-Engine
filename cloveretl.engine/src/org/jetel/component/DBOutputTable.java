@@ -110,11 +110,23 @@ import org.jetel.util.FileUtils;
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
- * @created     22. �ervenec 2003
+ * @created     22. ???ervenec 2003
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBOutputTable extends Node {
 
+	private static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
+	private static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
+	private static final String XML_COMMIT_ATTRIBUTE = "commit";
+	private static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
+	private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
+	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	private static final String XML_DBTABLE_ATTRIBUTE = "dbTable";
+	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	private static final String XML_SQLQUERY_ATRIBUTE = "sqlQuery";
+	private static final String XML_BATCHSIZE_ATTRIBUTE = "batchSize";
+	private static final String XML_URL_ATTRIBUTE = "url";
+	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String dbTableName;
@@ -257,16 +269,6 @@ public class DBOutputTable extends Node {
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     September 27, 2002
-	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
-	}
 
 
 	/**
@@ -486,6 +488,50 @@ public class DBOutputTable extends Node {
 		
 	}
 	
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     September 27, 2002
+	 */
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		if (dbConnectionName != null) {
+			xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, dbConnectionName);
+		}
+		if (sqlQuery != null) {
+			xmlElement.setAttribute(XML_SQLQUERY_ATRIBUTE, sqlQuery);
+		}
+		if (dbTableName != null) {
+			xmlElement.setAttribute(XML_DBTABLE_ATTRIBUTE, dbTableName);
+		}
+		if (dbFields != null) {
+			String fields = dbFields[0];
+			for (int i=1; i< dbFields.length; i++ ) {
+				fields += Defaults.Component.KEY_FIELDS_DELIMITER + dbFields[i];
+			}
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, fields);
+		}
+		
+		if (cloverFields != null) {
+			String clovers= cloverFields[0];
+			for (int i=1; i< cloverFields.length; i++ ) {
+				clovers += Defaults.Component.KEY_FIELDS_DELIMITER + cloverFields[i];
+			}
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, clovers);
+		}
+		if (recordsInCommit > 0) {
+			xmlElement.setAttribute(XML_COMMIT_ATTRIBUTE,String.valueOf(recordsInCommit));
+		}
+		
+		xmlElement.setAttribute(XML_BATCHMODE_ATTRIBUTE, String.valueOf(useBatch));
+		
+		xmlElement.setAttribute(XML_BATCHSIZE_ATTRIBUTE, String.valueOf(batchSize));
+		
+		xmlElement.setAttribute(XML_MAXERRORS_ATRIBUTE, String.valueOf(maxErrors));
+		
+		
+	}
 	
 	/**
 	 *  Description of the Method
@@ -502,57 +548,62 @@ public class DBOutputTable extends Node {
 
 		try {
 			// allows specifying parameterized SQL (with ? - questionmarks)
-			if (xattribs.exists("sqlQuery")) {
-					outputTable = new DBOutputTable(xattribs.getString("id"),
-					xattribs.getString("dbConnection"),
-					xattribs.getString("sqlQuery"),	null);
-			}else if(xattribs.exists("url")){
-				outputTable = new DBOutputTable(xattribs.getString("id"),
-						xattribs.getString("dbConnection"),
-						xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url"))),	
+			if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
+					outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+					xattribs.getString(XML_SQLQUERY_ATRIBUTE),	null);
+			}else if(xattribs.exists(XML_URL_ATTRIBUTE)){
+				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+						xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE))),	
 						null);
 			    
-			}else if(xattribs.exists("dbTable")){
-				outputTable = new DBOutputTable(xattribs.getString("id"),
-						xattribs.getString("dbConnection"),
-						xattribs.getString("dbTable"));
+			}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
+				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+						xattribs.getString(XML_DBTABLE_ATTRIBUTE));
+				
+			}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
+				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
+						xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 				
 			}else{
-			    childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+			    childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
                 if (childNode == null) {
                     throw new RuntimeException("Can't find <SQLCode> node !");
                 }
                 xattribsChild = new ComponentXMLAttributes(childNode);
-                outputTable = new DBOutputTable(xattribs.getString("id"),
-    					xattribs.getString("dbConnection"),
+                outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+    					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
     					xattribsChild.getText(childNode),
     					null);
 			}
 			
-			if (xattribs.exists("dbFields")) {
-				outputTable.setDBFields(xattribs.getString("dbFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+				outputTable.setDBFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			
-			if (xattribs.exists("dbTable")) {
-				outputTable.setDBTableName(xattribs.getString("dbTable"));
+			if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
+				outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 			}
 			
-			if (xattribs.exists("cloverFields")) {
-				outputTable.setCloverFields(xattribs.getString("cloverFields").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
+				outputTable.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 			
-			if (xattribs.exists("commit")) {
-				outputTable.setRecordsInCommit(xattribs.getInteger("commit"));
+			if (xattribs.exists(XML_COMMIT_ATTRIBUTE)) {
+				outputTable.setRecordsInCommit(xattribs.getInteger(XML_COMMIT_ATTRIBUTE));
 			}
 			
-			if (xattribs.exists("batchMode")) {
-				outputTable.setUseBatch(xattribs.getBoolean("batchMode"));
+			if (xattribs.exists(XML_BATCHMODE_ATTRIBUTE)) {
+				outputTable.setUseBatch(xattribs.getBoolean(XML_BATCHMODE_ATTRIBUTE));
 			}
-			if (xattribs.exists("batchSize")) {
-				outputTable.setBatchSize(xattribs.getInteger("batchSize"));
+			if (xattribs.exists(XML_BATCHSIZE_ATTRIBUTE)) {
+				outputTable.setBatchSize(xattribs.getInteger(XML_BATCHSIZE_ATTRIBUTE));
 			}
-			if (xattribs.exists("maxErrors")){
-				outputTable.setMaxErrors(xattribs.getInteger("maxErrors"));
+			if (xattribs.exists(XML_MAXERRORS_ATRIBUTE)){
+				outputTable.setMaxErrors(xattribs.getInteger(XML_MAXERRORS_ATRIBUTE));
 			}
 			
 			return outputTable;
