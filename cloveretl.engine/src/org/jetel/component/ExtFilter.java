@@ -29,10 +29,14 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.interpreter.CLVFStart;
 import org.jetel.interpreter.FilterExpParser;
 import org.jetel.interpreter.FilterExpParserExecutor;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>Filter Component</h3>
@@ -117,6 +121,7 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class ExtFilter extends org.jetel.graph.Node {
 
+	private static final String XML_FILTEREXPRESSION_ATTRIBUTE = "filterExpression";
 	public final static String COMPONENT_TYPE="EXT_FILTER";
 	private final static int READ_FROM_PORT=0;
 	
@@ -216,9 +221,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 * @return    Description of the Returned Value
 	 * @since     July 23, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+		Text text = doc.createTextNode(this.filterExpression);
+		xmlElement.appendChild(text);
 	}
 
 	/**
@@ -233,9 +240,9 @@ public class ExtFilter extends org.jetel.graph.Node {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
 		
 		try{
-			filter = new ExtFilter(xattribs.getString("id"));
-			if (xattribs.exists("filterExpression")){
-				filter.setFilterExpression(xattribs.getString("filterExpression"));
+			filter = new ExtFilter(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
+				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE));
 			}else{
 				filter.setFilterExpression(xattribs.getText(nodeXML));
 			}

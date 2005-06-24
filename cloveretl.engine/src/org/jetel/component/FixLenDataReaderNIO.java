@@ -36,6 +36,7 @@ import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Fixed Length Data NIO Reader Component</h3>
@@ -85,6 +86,12 @@ import org.jetel.util.ComponentXMLAttributes;
 
 public class FixLenDataReaderNIO extends Node {
 
+	private static final String XML_LINESEPARATORSIZE_ATTRIBUTE = "LineSeparatorSize";
+	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "SkipLeadingBlanks";
+	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER_NIO";
 
@@ -188,9 +195,31 @@ public class FixLenDataReaderNIO extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		
+		String dataPolicy = this.parser.getBDFHandlerPolicyType();
+		if (dataPolicy != null) {
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy);
+		}
+		
+		if (this.parser.getOneRecordPerLinePolicy()) {
+			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
+					String.valueOf(this.parser.getOneRecordPerLinePolicy()));
+		}
+		
+		if (this.parser.getCharsetName() != null) {
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharsetName());
+		}
+		
+		if (this.parser.getSkipLeadingBlanks()) {
+			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE,
+					String.valueOf(this.parser.getSkipLeadingBlanks()));
+		}
+		
+		xmlElement.setAttribute(XML_LINESEPARATORSIZE_ATTRIBUTE,
+				String.valueOf(this.parser.getLineSeparatorSize()));
 	}
 
 
@@ -206,26 +235,26 @@ public class FixLenDataReaderNIO extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		
 		try {
-			if (xattribs.exists("charset")) {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString("id"),
-						xattribs.getString("fileURL"),
-						xattribs.getString("charset"));
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString("id"),
-						xattribs.getString("fileURL"));
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
-			if (xattribs.exists("DataPolicy")) {
+			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 				aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
-					xattribs.getString("DataPolicy")));
+					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
-			if (xattribs.exists("OneRecordPerLine")){
-				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(xattribs.getBoolean("OneRecordPerLine"));
+			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE));
 			}
-			if (xattribs.exists("SkipLeadingBlanks")){
-				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean("SkipLeadingBlanks"));
+			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
-			if (xattribs.exists("LineSeparatorSize")){
-				aFixLenDataReaderNIO.setLineSeparatorSize(xattribs.getInteger("LineSeparatorSize"));
+			if (xattribs.exists(XML_LINESEPARATORSIZE_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setLineSeparatorSize(xattribs.getInteger(XML_LINESEPARATORSIZE_ATTRIBUTE));
 			}
 			
 		} catch (Exception ex) {

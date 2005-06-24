@@ -83,6 +83,10 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class ExtSort extends Node {
 
+	private static final String XML_NUMBEROFTAPES_ATTRIBUTE = "numberOfTapes";
+	private static final String XML_SORTERINITIALCAPACITY_ATTRIBUTE = "sorterInitialCapacity";
+	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
+	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "EXT_SORT";
 
@@ -582,9 +586,33 @@ public class ExtSort extends Node {
      * @return    Description of the Returned Value
      * @since     May 21, 2002
      */
-    public org.w3c.dom.Node toXML() {
-        // TODO
-        return null;
+    public void toXML(org.w3c.dom.Element xmlElement) {
+       super.toXML(xmlElement);
+       
+       // sortKey attribute
+       String sortKeys = this.sortKeysNames[0];
+       for (int i=0; i < this.sortKeysNames.length; i++) {
+       		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i];
+       }
+       xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
+       
+       // sortOrder attribute
+       if (this.sortOrderAscending == false) {
+       		xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE,"Descending");
+       }
+       
+       // numberOfTapes attribute
+       if (this.numberOfTapes != 2) {
+       		xmlElement.setAttribute(XML_NUMBEROFTAPES_ATTRIBUTE,String.valueOf(this.numberOfTapes));
+       }
+       
+       // sorterInitialCapacity
+       if (this.internalSorterCapacity > 10) {
+       		xmlElement.setAttribute(XML_SORTERINITIALCAPACITY_ATTRIBUTE, 
+       				String.valueOf(this.internalSorterCapacity));
+       }
+       
+       
     }
 
     /**
@@ -598,18 +626,18 @@ public class ExtSort extends Node {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
         ExtSort sort;
         try {
-            sort = new ExtSort(xattribs.getString("id"), xattribs.getString(
-                    "sortKey").split(
+            sort = new ExtSort(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(
+                    XML_SORTKEY_ATTRIBUTE).split(
                     Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-            if (xattribs.exists("sortOrder")) {
-                sort.setSortOrderAscending(xattribs.getString("sortOrder")
+            if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
+                sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE)
                         .matches("^[Aa].*"));
             }
-            if (xattribs.exists("sorterInitialCapacity")){
-                sort.setInternalSorterInitialCapacity(xattribs.getInteger("sorterInitialCapacity"));
+            if (xattribs.exists(XML_SORTERINITIALCAPACITY_ATTRIBUTE)){
+                sort.setInternalSorterInitialCapacity(xattribs.getInteger(XML_SORTERINITIALCAPACITY_ATTRIBUTE));
             }
-            if (xattribs.exists("numberOfTapes")){
-                sort.setNumberOfTapes(xattribs.getInteger("numberOfTapes"));
+            if (xattribs.exists(XML_NUMBEROFTAPES_ATTRIBUTE)){
+                sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
             }
         } catch (Exception ex) {
             System.err.println(ex.getMessage());

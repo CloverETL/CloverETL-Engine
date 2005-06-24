@@ -28,6 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>CheckForeignKey Component</h3> <!--  Checks a foreign key against a table of 
@@ -96,6 +97,10 @@ import org.jetel.exception.ComponentNotReadyException;
  */
 public class CheckForeignKey extends Node {
 
+	private static final String XML_HASHSIZE_ATTRIBUTE = "hashSize";
+	private static final String XML_DEFAULTFOREIGNKEY_ATTRIBUTE = "defaultForeignKey";
+	private static final String XML_FOREIGNKEY_ATTRIBUTE = "foreignKey";
+	private static final String XML_PRIMARYKEY_ATTRIBUTE = "primaryKey";
 	public final static String COMPONENT_TYPE = "CHECK_FOREIGN_KEY";
 
 	private final static int DEFAULT_HASH_SET_INITIAL_CAPACITY = 512;
@@ -217,10 +222,38 @@ public class CheckForeignKey extends Node {
 	 *
 	 * @return    Description of the Returned Value
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		// not yet implmented in the framework 
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		// join primary keys to the original string
+		if (primaryKeys != null) {
+			String primaryKeyAttribute = this.primaryKeys[0];
+			for (int i=1; i< this.primaryKeys.length; i++ ) {
+				primaryKeyAttribute += Defaults.Component.KEY_FIELDS_DELIMITER + this.primaryKeys[i];
+			}
+			xmlElement.setAttribute(XML_PRIMARYKEY_ATTRIBUTE, primaryKeyAttribute);
+		}
+		
+		// join foreign keys to the original string
+		if (foreignKeys != null) {
+			String foreignKeyAttribute = this.foreignKeys[0];
+			for (int i=1; i< this.foreignKeys.length; i++) {
+				foreignKeyAttribute += Defaults.Component.KEY_FIELDS_DELIMITER + this.foreignKeys[i];
+			}
+			xmlElement.setAttribute(XML_FOREIGNKEY_ATTRIBUTE, foreignKeyAttribute);
+		}
+		
+		// join default keys to the original string
+		if (defaultForeignKeys != null) {
+			String defaultKeyAttribute = this.defaultForeignKeys[0];
+			for (int i=1; i< this.defaultForeignKeys.length; i++) {
+				defaultKeyAttribute += Defaults.Component.KEY_FIELDS_DELIMITER + this.defaultForeignKeys[i];
+			}
+			xmlElement.setAttribute(XML_DEFAULTFOREIGNKEY_ATTRIBUTE, defaultKeyAttribute);
+		}
+		
+		if (this.hashSetInitialCapacity != 0) {
+			xmlElement.setAttribute(XML_HASHSIZE_ATTRIBUTE, String.valueOf(this.hashSetInitialCapacity));
+		}
 	}
 
 
@@ -235,12 +268,12 @@ public class CheckForeignKey extends Node {
 		CheckForeignKey check;
 
 		try {
-			check = new CheckForeignKey(xattribs.getString("id"),
-					xattribs.getString("primaryKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString("foreignKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString("defaultForeignKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			if (xattribs.exists("hashSize")) {
-				check.setHashCapacity(xattribs.getInteger("hashSize"));
+			check = new CheckForeignKey(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_HASHSIZE_ATTRIBUTE)) {
+				check.setHashCapacity(xattribs.getInteger(XML_HASHSIZE_ATTRIBUTE));
 			}
 			return check;
 		} catch (Exception ex) {

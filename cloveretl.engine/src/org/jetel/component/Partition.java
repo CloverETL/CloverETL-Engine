@@ -28,6 +28,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Partition Component</h3> <!-- Partitions input data into
@@ -95,6 +96,10 @@ public class Partition extends Node {
 
 	//	 instantiate proper partitioning function
 	private PartitionFunction partitionFce;
+
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+
+	private static final String XML_RANGES_ATTRIBUTE = "ranges";
 
 	/**
 	 *  Constructor for the Partition object
@@ -216,9 +221,26 @@ public class Partition extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+
+		if (partitionKeyNames != null) {
+			StringBuffer buf = new StringBuffer(partitionKeyNames[0]);
+			for (int i=1; i<partitionKeyNames.length; i++) {
+			buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + partitionKeyNames[i]);
+			}
+			
+			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (partitionRanges != null) {
+			StringBuffer buf = new StringBuffer(partitionRanges[0]);
+			for (int i=1; i<partitionRanges.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + partitionRanges[i]);
+			}
+			
+			xmlElement.setAttribute(XML_RANGES_ATTRIBUTE,buf.toString());
+		}
 	}
 
 
@@ -234,12 +256,12 @@ public class Partition extends Node {
 		Partition partition;
 		
 		try {
-		    partition = new Partition(xattribs.getString("id"));
-		    if (xattribs.exists("partitionKey")){
-					partition.setPartitionKeyNames(xattribs.getString("partitionKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		    partition = new Partition(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+		    if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)){
+					partition.setPartitionKeyNames(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		    }
-		    if (xattribs.exists("ranges")){
-		        partition.setPartitionRanges(xattribs.getString("ranges").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
+		        partition.setPartitionRanges(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		    }
 		    return partition;
 		} catch (Exception ex) {

@@ -28,6 +28,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseExecute Component</h3>
@@ -83,11 +86,18 @@ import org.jetel.util.FileUtils;
  * @author      dpavlis
  * @since       Jan 17 2004
  * @revision    $Revision$
- * @created     22. èervenec 2003
+ * @created     22. ?ervenec 2003
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBExecute extends Node {
 
+	private static final String XML_PRINTSTATEMENTS_ATTRIBUTE = "printStatements";
+	private static final String XML_INTRANSACTION_ATTRIBUTE = "inTransaction";
+	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	private static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
+	private static final String XML_URL_ATTRIBUTE = "url";
+	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String[] dbSQL;
@@ -99,6 +109,7 @@ public class DBExecute extends Node {
 	private final static String SQL_STATEMENT_DELIMITER = ";";
 
 	static Log logger = LogFactory.getLog(DBExecute.class);
+	private String url = null;
 
 
 	/**
@@ -152,16 +163,6 @@ public class DBExecute extends Node {
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Returned Value
-	 * @since     September 27, 2002
-	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
-	}
 
 
 	/**
@@ -177,6 +178,14 @@ public class DBExecute extends Node {
 		this.printStatements=printStatements;
 	}
 
+	
+	public void setURL(String url) {
+		this.url = url;
+	}
+	
+	public String getURL() {
+		return(this.url = null);
+	}
 	/**
 	 *  Main processing method for the DBInputTable object
 	 *
@@ -249,6 +258,47 @@ public class DBExecute extends Node {
 		}
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     September 27, 2002
+	 */
+	public void toXML(Element xmlElement) {
+		
+		// set attributes of DBExecute
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
+		if (this.printStatements) {
+			xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
+		}
+		
+		if (this.oneTransaction) {
+			xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
+		}
+		
+		// use attribute for single SQL command, SQLCode element for multiple
+		if (this.dbSQL.length == 1) {
+			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
+		} else {
+			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
+			// join given SQL commands
+			String sqlCommands = "";
+			for (int i=0; i<this.dbSQL.length; i++) {
+				sqlCommands += this.dbSQL[i] + SQL_STATEMENT_DELIMITER + "\n";
+			}
+			Text textElement = doc.createTextNode(sqlCommands);
+			childElement.appendChild(textElement);
+			xmlElement.appendChild(childElement);
+		}
+		
+		
+		
+		
+		
+		
+	}
 
 	/**
 	 *  Description of the Method
@@ -265,20 +315,20 @@ public class DBExecute extends Node {
 		String query=null;	
 		
 		try {
-		    if (xattribs.exists("dbSQL")) {
-			    query=xattribs.getString("dbSQL");
-			}else if (xattribs.exists("url")){
-			    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString("url")));
+		    if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
+			    query=xattribs.getString(XML_DBSQL_ATTRIBUTE);
+			}else if (xattribs.exists(XML_URL_ATTRIBUTE)){
+			    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE)));
 			}else {//we try to get it from child text node
-				childNode = xattribs.getChildNode(nodeXML, "SQLCode");
+				childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
 				if (childNode == null) {
 					throw new RuntimeException("Can't find <SQLCode> node !");
 				}
 				xattribsChild = new ComponentXMLAttributes(childNode);
 				query=xattribsChild.getText(childNode);
 			}   
-			executeSQL = new DBExecute(xattribs.getString("id"),
-						xattribs.getString("dbConnection"),
+			executeSQL = new DBExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 						query.split(SQL_STATEMENT_DELIMITER));
 
 			} catch (Exception ex) {
@@ -286,13 +336,18 @@ public class DBExecute extends Node {
 				return null;
 			}
 
-		if (xattribs.exists("inTransaction")) {
-			executeSQL.setTransaction(xattribs.getBoolean("inTransaction"));
+		if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
+			executeSQL.setTransaction(xattribs.getBoolean(XML_INTRANSACTION_ATTRIBUTE));
 		}
 
-		if (xattribs.exists("printStatements")) {
-			executeSQL.setPrintStatements(xattribs.getBoolean("printStatements"));
+		if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+			executeSQL.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
 		}
+		
+		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+			executeSQL.setURL(xattribs.getString(XML_URL_ATTRIBUTE));
+		}
+		
 		
 		return executeSQL;
 	}

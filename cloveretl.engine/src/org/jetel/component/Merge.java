@@ -26,6 +26,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Merge Component</h3> <!-- Merges data records from two input ports onto
@@ -70,6 +71,7 @@ import org.jetel.exception.ComponentNotReadyException;
  */
 public class Merge extends Node {
 
+	private static final String XML_MERGEKEY_ATTRIBUTE = "mergeKey";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE";
 
@@ -275,9 +277,13 @@ public class Merge extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		String mKeys = mergeKeys[0];
+		for (int i=1; i< mergeKeys.length; i++) {
+			mKeys += Defaults.Component.KEY_FIELDS_DELIMITER + mergeKeys[i]; 
+		}
+		xmlElement.setAttribute(XML_MERGEKEY_ATTRIBUTE, mKeys);
 	}
 
 
@@ -292,8 +298,8 @@ public class Merge extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 
 		try {
-			return new Merge(xattribs.getString("id"),
-					xattribs.getString("mergeKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			return new Merge(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;

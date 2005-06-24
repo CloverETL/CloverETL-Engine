@@ -27,6 +27,7 @@ import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 /**
  *  <h3>Sort Component</h3>
  *
@@ -68,6 +69,8 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class Sort extends Node {
 
+	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
+	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "SORT";
 
@@ -215,9 +218,18 @@ public class Sort extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		if (sortKeys != null) {
+			StringBuffer buf = new StringBuffer(sortKeys[0]);
+			for (int i=1; i< sortKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + sortKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE,buf.toString());
+		}
+		if (this.sortOrderAscending == false) {
+			xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, "Descending");
+		}
 	}
 
 
@@ -232,10 +244,10 @@ public class Sort extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		Sort sort;
 		try {
-			sort = new Sort(xattribs.getString("id"),
-					xattribs.getString("sortKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			if (xattribs.exists("sortOrder")) {
-				sort.setSortOrderAscending(xattribs.getString("sortOrder").matches("^[Aa].*"));
+			sort = new Sort(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
+				sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE).matches("^[Aa].*"));
 			}
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

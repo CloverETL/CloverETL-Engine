@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.io.*;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -30,6 +31,9 @@ import org.jetel.graph.*;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>Reformat Component</h3>
@@ -123,6 +127,7 @@ import org.jetel.util.DynamicJavaCode;
  */
 public class Reformat extends Node {
 
+	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";
 
@@ -284,9 +289,23 @@ public class Reformat extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
+		} else {
+			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+			Text text = doc.createTextNode(this.dynamicTransformCode.getSourceCode());
+			xmlElement.appendChild(text);
+		}
+		
+		Enumeration propertyAtts = transformationParameters.propertyNames();
+		while (propertyAtts.hasMoreElements()) {
+			String attName = (String)propertyAtts.nextElement();
+			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+		}
+				
 	}
 
 
@@ -304,18 +323,18 @@ public class Reformat extends Node {
 
 		try {
 			//if transform class defined (as an attribute) use it first
-			if (xattribs.exists("transformClass")) {
-				reformat= new Reformat(xattribs.getString("id"),
-						xattribs.getString("transformClass"));
+			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
+				reformat= new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
 			} else {
 				// do we have child node wich Java source code ?
 				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
-				reformat = new Reformat(xattribs.getString("id"), dynaTransCode);
+				reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
 			}
-			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{"transformClass"}));
+			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
 			
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());

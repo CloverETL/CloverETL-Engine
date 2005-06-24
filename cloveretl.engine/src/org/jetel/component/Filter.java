@@ -27,6 +27,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordFilter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Filter Component</h3>
@@ -84,6 +85,7 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class Filter extends Node {
 
+	private static final String XML_FILTEREXPRESSION_ATTRIBUTE = "filterExpression";
 	public final static String COMPONENT_TYPE="FILTER";
 	private final static int READ_FROM_PORT=0;
 	
@@ -171,9 +173,9 @@ public class Filter extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     July 23, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILTEREXPRESSION_ATTRIBUTE,this.recordFilter.getFilterExpression());
 	}
 
 	public void setRecordFilter(RecordFilter rf)
@@ -195,9 +197,9 @@ public class Filter extends Node {
 		
 
 		try{
-			filter = new Filter(xattribs.getString("id"));
-			if (xattribs.exists("filterExpression")){
-				filterExpression=xattribs.getString("filterExpression");
+			filter = new Filter(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
+				filterExpression=xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE);
 				filter.setRecordFilter(new RecordFilter(filterExpression));
 			}
 			return filter;
