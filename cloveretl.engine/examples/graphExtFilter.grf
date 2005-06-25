@@ -2,7 +2,7 @@
 <Graph name="Testing Filter">
 <!-- This graph demonstrates functionality of Extended Filter component. 
 It can filter on text, date, integer, numeric
-fields with comparison operators: [ >, <, =, <=, >=, !=].
+fields with comparison operators: [ >, <, ==, <=, >=, !=].
 Text fields can also be compared to a Java regexp using ~= operator.
 
 A filter can be made of different parts separated by a logical operator
