@@ -42,7 +42,7 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records accepted by the filter (passing filter condition) are copied from input port:0 onto output port:0. Rejected records
+ * <td>All records for which the filterExpression evaluates TRUE are copied from input port:0 onto output port:0. Rejected records
  * are copied onto output port:1 (if it is connected).</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
@@ -51,7 +51,7 @@ import org.w3c.dom.Element;
  * [1] - (optional) rejected records </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>It can filter on text, date, integer, numeric
- * fields with comparison <code>[>, <, ==, =<, >=, !=]</code><br>
+ * fields with comparison <code>[&gt;, &lt;, ==, =&lt;, &gt;=, !=]</code><br>
  * Text fields can also be compared to a
  * Java regexp. using ~ (tilda) character <br>
  * A filter can be made of different parts separated by a ";".<br> 
