@@ -51,8 +51,8 @@ public class RecordFilter {
 	private final static String S_CMP_EQ = "==";
 	private final static String S_CMP_LT = "<";
 	private final static String S_CMP_GT = ">";
-	private final static String S_CMP_LTEQ = ">=";
-	private final static String S_CMP_GTEQ = "=<";
+	private final static String S_CMP_LTEQ = "=<";
+	private final static String S_CMP_GTEQ = ">=";
 	private final static String S_CMP_REGEX = "~";
 	private final static String S_CMP_N_EQL = "!=";
 
@@ -201,22 +201,22 @@ public class RecordFilter {
 					}
 					break;// equal
 				case CMP_LT:
-					if (cmpResult == -1) {
+					if (cmpResult > 0) {
 						return true;
 					}
 					break;// less than
 				case CMP_GT:
-					if (cmpResult == 1) {
+					if (cmpResult < 0) {
 						return true;
 					}
 					break;// grater than
 				case CMP_LTEQ:
-					if (cmpResult <= 0) {
+					if (cmpResult >= 0) {
 						return true;
 					}
 					break;// less than equal
 				case CMP_GTEQ:
-					if (cmpResult >= 0) {
+					if (cmpResult <= 0) {
 						return true;
 					}
 					break;// greater than equal
