@@ -51,6 +51,8 @@ public class DataFieldFactory {
 				return new IntegerDataField(fieldMetadata);
 			case DataFieldMetadata.BYTE_FIELD:
 				return new ByteDataField(fieldMetadata);
+			case DataFieldMetadata.LONG_FIELD:
+				return new LongDataField(fieldMetadata);
 			default:
 				throw new RuntimeException("Unsupported data type: " + fieldType);
 		}
