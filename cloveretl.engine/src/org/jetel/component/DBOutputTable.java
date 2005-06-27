@@ -32,6 +32,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>DatabaseOutputTable Component</h3>
@@ -494,7 +495,7 @@ public class DBOutputTable extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     September 27, 2002
 	 */
-	public void toXML(org.w3c.dom.Element xmlElement) {
+	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (dbConnectionName != null) {
 			xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, dbConnectionName);
@@ -505,20 +506,21 @@ public class DBOutputTable extends Node {
 		if (dbTableName != null) {
 			xmlElement.setAttribute(XML_DBTABLE_ATTRIBUTE, dbTableName);
 		}
+		
 		if (dbFields != null) {
-			String fields = dbFields[0];
+			StringBuffer buf = new StringBuffer(dbFields[0]);
 			for (int i=1; i< dbFields.length; i++ ) {
-				fields += Defaults.Component.KEY_FIELDS_DELIMITER + dbFields[i];
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + dbFields[i]);
 			}
-			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, fields);
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, buf.toString());
 		}
 		
 		if (cloverFields != null) {
-			String clovers= cloverFields[0];
+			StringBuffer buf = new StringBuffer(cloverFields[0]);
 			for (int i=1; i< cloverFields.length; i++ ) {
-				clovers += Defaults.Component.KEY_FIELDS_DELIMITER + cloverFields[i];
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + cloverFields[i]);
 			}
-			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, clovers);
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, buf.toString());
 		}
 		if (recordsInCommit > 0) {
 			xmlElement.setAttribute(XML_COMMIT_ATTRIBUTE,String.valueOf(recordsInCommit));

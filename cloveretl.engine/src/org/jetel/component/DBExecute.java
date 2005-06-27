@@ -284,11 +284,11 @@ public class DBExecute extends Node {
 			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
 			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
 			// join given SQL commands
-			String sqlCommands = "";
-			for (int i=0; i<this.dbSQL.length; i++) {
-				sqlCommands += this.dbSQL[i] + SQL_STATEMENT_DELIMITER + "\n";
+			StringBuffer buf = new StringBuffer(dbSQL[0]);
+			for (int i=1; i<dbSQL.length; i++) {
+				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
 			}
-			Text textElement = doc.createTextNode(sqlCommands);
+			Text textElement = doc.createTextNode(buf.toString());
 			childElement.appendChild(textElement);
 			xmlElement.appendChild(childElement);
 		}
