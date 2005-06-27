@@ -28,6 +28,8 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileLock;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.JetelException;
 
 /**
@@ -43,6 +45,8 @@ public class SimpleSequence implements Sequence {
  
     public static final int DATA_SIZE = 8; //how many bytes occupy serialized value in file
     public static final String ACCESS_MODE="rwd";
+    
+    public static Log logger = LogFactory.getLog(SimpleSequence.class);
     
     String filename;
     String sequenceName;
@@ -86,7 +90,7 @@ public class SimpleSequence implements Sequence {
     }
     
     public long nextValueLong(){
-        if (counter==0){
+        if (counter<=0){
             flushValue(sequenceValue+step*numCachedValues);
             counter=numCachedValues;
         }
@@ -137,7 +141,7 @@ public class SimpleSequence implements Sequence {
                 lock=io.tryLock();
                 if (lock==null){
                     // report non-locked sequence
-                    System.out.println("Warning: can't obtain lock for sequence: "+getName());
+                    logger.warn("Can't obtain file lock for sequence: "+getName());
                 }
                 io.force(true);
                 io.read(buffer);
@@ -157,7 +161,8 @@ public class SimpleSequence implements Sequence {
             io.position(0);
             io.write(buffer);
         }catch(IOException ex){
-            throw new RuntimeException("Error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            logger.error("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            throw new RuntimeException("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
         }
     }
     
@@ -168,7 +173,8 @@ public class SimpleSequence implements Sequence {
             }
             io.close();
         }catch(IOException ex){
-            throw new RuntimeException("Error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            logger.error("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            throw new RuntimeException("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
         }
     }
     
