@@ -22,6 +22,7 @@ package org.jetel.component;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Properties;
 
@@ -490,6 +491,14 @@ public class DataIntersection extends Node {
 			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
 			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
 			xmlElement.appendChild(textElement);
+		}
+		
+		if (transformationParameters != null) {
+			Enumeration propertyAtts = transformationParameters.propertyNames();
+			while (propertyAtts.hasMoreElements()) {
+				String attName = (String)propertyAtts.nextElement();
+				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+			}
 		}
 		
 	}
