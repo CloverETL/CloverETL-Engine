@@ -19,20 +19,28 @@
 */
 package org.jetel.component;
 
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>Data Intersection Component</h3> <!-- Finds intersection of
@@ -457,9 +465,33 @@ public class DataIntersection extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (joinKeys != null) {
+			StringBuffer buf = new StringBuffer(joinKeys[0]);
+			for (int i=1; i< joinKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (slaveOverrideKeys!= null) {
+			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
+			for (int i=1; i< slaveOverrideKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
+		} else {
+			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
+			xmlElement.appendChild(textElement);
+		}
+		
 	}
 
 
