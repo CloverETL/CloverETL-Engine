@@ -527,7 +527,7 @@ public class DataIntersection extends Node {
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
-				return new DataIntersection(xattribs.getString("id"),
+				intersection= new DataIntersection(xattribs.getString("id"),
 							xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 							dynaTransCode);
 			}
