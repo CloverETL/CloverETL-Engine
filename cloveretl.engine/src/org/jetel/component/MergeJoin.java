@@ -645,10 +645,12 @@ public class MergeJoin extends Node {
 		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(this.leftOuterJoin));
 		xmlElement.setAttribute(XML_FULLOUTERJOIN_ATTRIBUTE, String.valueOf(this.fullOuterJoin));
 		
-		Enumeration propertyAtts = transformationParameters.propertyNames();
-		while (propertyAtts.hasMoreElements()) {
-			String attName = (String)propertyAtts.nextElement();
-			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+		if (transformationParameters != null) {
+			Enumeration propertyAtts = transformationParameters.propertyNames();
+			while (propertyAtts.hasMoreElements()) {
+				String attName = (String)propertyAtts.nextElement();
+				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+			}
 		}
 		
 	}
