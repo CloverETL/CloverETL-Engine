@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+This graph illustrates usage of dynamic metadata generation based on SQL query. It
+allows unloading of database data without prior assembly of DB table metadata.
+Dynamic metadata can be for example used for easy migration of data between two different databases when
+one universal graph with parameters specifying which table should be unload/migrated can be used.
+
+This graph requires db_table parameter to be defined. When running this graph, use command like this one:
+java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph graphDBUnloadUniversal.grf -P:db_table=Employee
+
+
+Note: where clause 1=0 in SQL query in dynamic metadata definition is there only for speeding up
+query processing - no real data is needed, only metadata describing the result - thus we specify
+condition which ensures that no data should really be returned - it is up to database wheter it
+will optimize the execution plan based on this.
+-->
+<Graph name="Testing DB Unload">
+<Global>
+<Metadata id="InMetadata" dbConnection="InterbaseDB" sqlQuery="select * from ${db_table} where 1=0"/>
+<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="InterbaseDB" sqlQuery="select * from ${db_table}"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/${db_table}.output"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+</Phase>
+</Graph>
