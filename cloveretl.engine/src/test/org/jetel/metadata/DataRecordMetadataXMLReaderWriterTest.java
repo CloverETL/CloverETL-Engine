@@ -49,18 +49,18 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 
-		aDataFieldMetadata  = new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata  = new DataFieldMetadata("Field_4",DataFieldMetadata.INTEGER_FIELD,";");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
-		aDataFieldMetadata = new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";");
+		aDataFieldMetadata = new DataFieldMetadata("Field_0",DataFieldMetadata.INTEGER_FIELD,";");
 		aDataFieldMetadata.setCodeStr("return Math.abs(-5);");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
-		aDataFieldMetadata = new DataFieldMetadata("Field 1",DataFieldMetadata.STRING_FIELD,":");
+		aDataFieldMetadata = new DataFieldMetadata("Field_1",DataFieldMetadata.STRING_FIELD,":");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
-		aDataFieldMetadata = new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,",");
+		aDataFieldMetadata = new DataFieldMetadata("Field_2",DataFieldMetadata.INTEGER_FIELD,",");
 		aDataFieldMetadata.setCodeStr("return 7;");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
-		aDataFieldMetadata = new DataFieldMetadata("Field 3",DataFieldMetadata.NUMERIC_FIELD,"\n");
+		aDataFieldMetadata = new DataFieldMetadata("Field_3",DataFieldMetadata.NUMERIC_FIELD,"\n");
 		aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
@@ -106,35 +106,35 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 			assertEquals(5,aDelimitedDataRecordMetadata.getNumFields());
 
 			DataFieldMetadata aDataFieldMetadata = null;
-			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field 4");
+			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_4");
 			assertEquals(";",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
 			assertEquals(null,aDataFieldMetadata.getCodeStr());
 			
-			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field 0");
+			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_0");
 			assertEquals(";",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
 			assertEquals("return Math.abs(-5);",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 
-			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field 1");
+			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_1");
 			assertEquals(":",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.STRING_FIELD,aDataFieldMetadata.getType());
 			assertEquals(null,aDataFieldMetadata.getCodeStr());
 
-			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field 2");
+			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_2");
 			assertEquals(",",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
 			assertEquals("return 7;",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 
-			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field 3");
+			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_3");
 			assertEquals("\n",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
