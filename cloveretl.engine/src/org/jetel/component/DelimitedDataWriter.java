@@ -67,9 +67,9 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  */
 public class DelimitedDataWriter extends Node {
-	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
-	private static final String XML_APPEND_ATTRIBUTE = "append";
-	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	public static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	public static final String XML_APPEND_ATTRIBUTE = "append";
+	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatter formatter;

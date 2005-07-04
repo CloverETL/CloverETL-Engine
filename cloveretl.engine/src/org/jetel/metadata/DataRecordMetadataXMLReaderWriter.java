@@ -20,11 +20,19 @@
 // FILE: c:/projects/jetel/org/jetel/metadata/DataRecordMetadataReaderWriter.java
 package org.jetel.metadata;
 
-import java.io.*;
-import java.text.MessageFormat;
-import java.util.Properties;
+import java.io.BufferedInputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Enumeration;
-import javax.xml.parsers.*;
+import java.util.Properties;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -32,9 +40,12 @@ import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
+import org.w3c.dom.Text;
+import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
-import org.xml.sax.helpers.*;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Helper class for reading/writing DataRecordMetadata (record structure)
@@ -121,11 +132,17 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	//private static boolean setSchemaSupport = true;
 	//private static boolean setSchemaFullSupport = false;
 	private static final String RECORD_ELEMENT = "Record";
-
 	private static final String FIELD_ELEMENT = "Field";
-
 	private static final String CODE_ELEMENT = "Code";
-
+	private static final String NAME_ATTR = "name"; 
+	private static final String TYPE_ATTR = "type";
+	private static final String DELIMITER_ATTR = "delimiter";
+	private static final String FORMAT_ATTR = "format";
+	private static final String DEFAULT_ATTR = "default";
+	private static final String LOCALE_ATTR = "locale";
+	private static final String NULLABLE_ATTR = "nullable";
+	private static final String SIZE_ATTR = "size";
+	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
 	private static Log logger = LogFactory.getLog(DataRecordMetadata.class);
@@ -198,42 +215,45 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 * @since May 6, 2002
 	 */
 	public static void write(DataRecordMetadata record, OutputStream outStream) {
-		PrintStream out;
-		Properties prop;
-		try {
-			out = new PrintStream(outStream, false, DEFAULT_CHARACTER_ENCODING);
-		} catch (UnsupportedEncodingException ex) {
-			logger.fatal(ex.getMessage());
-			throw new RuntimeException(ex);
-		}
+        DocumentBuilder db = null;
+	    try {
+	        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+	        db = dbf.newDocumentBuilder();
+		    Document doc = db.newDocument();
+		    Element rootElement = doc.createElement(RECORD_ELEMENT);
+		    doc.appendChild(rootElement);
+		    write(record, rootElement);
+        
+		    TransformerFactory tf = TransformerFactory.newInstance();
+		    Transformer t = tf.newTransformer();
+	        t.transform(new DOMSource(doc), new StreamResult(outStream));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+	}
+	
+	public static void write(DataRecordMetadata record, Element metadataElement) {
 		DataFieldMetadata field;
 
-		// XML standard header
-		out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+		metadataElement.setAttribute(NAME_ATTR, record.getName());
+		metadataElement.setAttribute(TYPE_ATTR,
+		        record.getRecType() == DataRecordMetadata.DELIMITED_RECORD
+		        		? "delimited" : "fixed");
 
-		// OUTPUT RECORD
-		MessageFormat recordForm = new MessageFormat(
-				"<Record name=\"{0}\" type=\"{1}\"");
-		Object[] recordArgs = {
-				record.getName(),
-				record.getRecType() == DataRecordMetadata.DELIMITED_RECORD ? "delimited"
-						: "fixed" };
-
-		out.print(recordForm.format(recordArgs));
-		prop = record.getRecordProperties();
+		Properties prop = record.getRecordProperties();
 		if (prop != null) {
 			Enumeration enumeration = prop.propertyNames();
 			while (enumeration.hasMoreElements()) {
 				String key = (String) enumeration.nextElement();
-				out.print(" " + key + "=\"" + prop.get(key) + "\"");
+				metadataElement.setAttribute(key, prop.getProperty(key));
 			}
 		}
-		// final closing bracket
-		out.println(">");
 
 		// OUTPUT FIELDS
-		MessageFormat fieldForm = new MessageFormat(
-				"\t<Field name=\"{0}\" type=\"{1}\" ");
+		
+//		MessageFormat fieldForm = new MessageFormat(
+//				"\t<Field name=\"{0}\" type=\"{1}\" ");
 
 		char[] fieldTypeLimits = { DataFieldMetadata.STRING_FIELD,
 				DataFieldMetadata.DATE_FIELD, 
@@ -246,34 +266,37 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String[] fieldTypeParts = { "string", "date", "datetime", "numeric",
 				"integer", "long", "decimal", "byte" };
 
+		Document doc = metadataElement.getOwnerDocument();
 		for (int i = 0; i < record.getNumFields(); i++) {
-			field = record.getField(i);
+			field = record.getField(i);			
+			
 			if (field != null) {
-				Object[] fieldArgs = {
-						field.getName(),
-						fieldTypeFormat(field.getType(), fieldTypeLimits,
-								fieldTypeParts) };
 
-				out.print(fieldForm.format(fieldArgs));
+			    Element fieldElement = doc.createElement(FIELD_ELEMENT);
+				metadataElement.appendChild(fieldElement);
+
+				fieldElement.setAttribute(NAME_ATTR, field.getName());
+			    fieldElement.setAttribute(TYPE_ATTR,
+			            fieldTypeFormat(field.getType(), fieldTypeLimits,
+						fieldTypeParts));
+
 				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
-					out.print("delimiter=\""
-							+ StringUtils
-									.specCharToString(field.getDelimiter())
-							+ "\" ");
+					fieldElement.setAttribute(DELIMITER_ATTR,
+					        StringUtils.specCharToString(field.getDelimiter()));
 				} else {
-					out.print("size=\"" + field.getSize() + "\" ");
+					fieldElement.setAttribute(SIZE_ATTR, String.valueOf(field.getSize()));
 				}
 				if (field.getFormatStr() != null) {
-					out.print("format=\"" + field.getFormatStr() + "\" ");
+					fieldElement.setAttribute(FORMAT_ATTR, field.getFormatStr());
 				}
 				if (field.getDefaultValue() != null) {
-					out.print("default=\"" + field.getDefaultValue() + "\" ");
+					fieldElement.setAttribute(DEFAULT_ATTR, field.getDefaultValue());
 				}
 				if (field.getLocaleStr() != null) {
-					out.print("locale=\"" + field.getLocaleStr() + "\" ");
+					fieldElement.setAttribute(LOCALE_ATTR, field.getLocaleStr());
 				}
-				out.print("nullable=\""
-						+ (new Boolean(field.isNullable())).toString() + "\" ");
+				fieldElement.setAttribute(NULLABLE_ATTR,
+				        String.valueOf(field.isNullable()));
 
 				// output field properties - if anything defined
 				prop = field.getFieldProperties();
@@ -281,24 +304,19 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					Enumeration enumeration = prop.propertyNames();
 					while (enumeration.hasMoreElements()) {
 						String key = (String) enumeration.nextElement();
-						out.print(" " + key + "=\"" + prop.get(key) + "\"");
+						fieldElement.setAttribute(key, prop.getProperty(key));
 					}
 				}
 
 				if (field.getCodeStr() != null) {
-					out.println(">");
-					out.println("\t\t<Code>");
-					out.println(field.getCodeStr());
-					out.println("\t\t</Code>");
-					out.println("\t</Field>");
-				} else {
-					out.println("/>");
+				    Element codeElement = doc.createElement(CODE_ELEMENT);
+				    fieldElement.appendChild(codeElement);
+				    Text codeText = doc.createTextNode(field.getCodeStr());
+				    codeElement.appendChild(codeText);
 				}
 
 			}
 		}
-		out.println("</Record>");
-		out.flush();
 	}
 
 	public DataRecordMetadata parseRecordMetadata(Document document)

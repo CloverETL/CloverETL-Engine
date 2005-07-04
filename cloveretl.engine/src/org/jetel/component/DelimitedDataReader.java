@@ -68,8 +68,8 @@ import org.w3c.dom.Element;
  */
 public class DelimitedDataReader extends Node {
 
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
-	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	public static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_READER";
 
