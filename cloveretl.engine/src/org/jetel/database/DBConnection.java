@@ -56,7 +56,7 @@ import org.w3c.dom.NamedNodeMap;
  *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
  *
  * @author      dpavlis
- * @since       21. bøezen 2004
+ * @since       21. b?ezen 2004
  * @revision    $Revision$
  * @created     January 15, 2003
  */
@@ -68,9 +68,16 @@ public class DBConnection {
 	Connection dbConnection;
 	Properties config;
 
-	private final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
+	public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
 	public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
 
+	public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
+	public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
+	public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
+	public static final String XML_PASSWORD_ATTRIBUTE = "password";
+	public static final String XML_USER_ATTRIBUTE = "user";
+	// not yet used by component
+	public static final String XML_NAME_ATTRIBUTE = "name";
 	/**
 	 *  Constructor for the DBConnection object
 	 *
@@ -81,8 +88,8 @@ public class DBConnection {
 	 */
 	public DBConnection(String dbDriver, String dbURL, String user, String password) {
 		this.config = new Properties();
-		if (user!=null) config.setProperty("user", user);
-		if (password!=null) config.setProperty("password", password);
+		if (user!=null) config.setProperty(XML_USER_ATTRIBUTE, user);
+		if (password!=null) config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
 		this.dbDriverName = dbDriver;
 		this.dbURL = dbURL;
 	}
@@ -100,15 +107,20 @@ public class DBConnection {
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
 			this.config.load(stream);
 			stream.close();
-			this.dbDriverName = config.getProperty("dbDriver");
-			this.dbURL = config.getProperty("dbURL");
+			this.dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
+			this.dbURL = config.getProperty(XML_DBURL_ATTRIBUTE);
 
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
 	}
 
-
+	public DBConnection(Properties configProperties) {
+		this.dbDriverName = (String)configProperties.remove(XML_DBDRIVER_ATTRIBUTE);
+		this.config = new Properties();
+		this.config.putAll(configProperties);
+		this.dbURL = (String)this.config.remove(XML_DBURL_ATTRIBUTE);
+	}
 	
 	/**
 	 * Method which connects to database and if successful, sets various
@@ -321,12 +333,12 @@ public class DBConnection {
 
 		try {
 			// do we have dbConfig parameter specified ??
-			if (xattribs.exists("dbConfig")) {
-				return new DBConnection(xattribs.getString("dbConfig"));
+			if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
+				return new DBConnection(xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
 			} else {
 
-				String dbDriver = xattribs.getString("dbDriver");
-				String dbURL = xattribs.getString("dbURL");
+				String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE);
+				String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE);
 				String user = "";
 				String password = "";
 
@@ -348,6 +360,14 @@ public class DBConnection {
 
 	}
 
+	public void saveConfiguration(OutputStream outStream) throws IOException {
+		Properties propsToStore = new Properties();
+		propsToStore.putAll(config);
+		propsToStore.put(XML_DBDRIVER_ATTRIBUTE,this.dbDriverName);
+		propsToStore.put(XML_DBURL_ATTRIBUTE,this.dbURL);
+		propsToStore.store(outStream,null);
+	}
+	
 
 	/**
 	 *  Description of the Method
