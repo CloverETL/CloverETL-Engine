@@ -96,7 +96,7 @@ public class DBConnection {
 
 
 	/**
-	 *  Constructor for the DBConnection object
+	 *  Constructor for the DBConnection object (not used in engine yet)
 	 *
 	 * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
 	 */
