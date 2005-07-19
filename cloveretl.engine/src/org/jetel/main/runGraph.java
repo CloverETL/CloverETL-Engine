@@ -86,8 +86,10 @@ public class runGraph {
 				}
 			}else
 			if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
-				String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
-				properties.setProperty(nameValue[0],nameValue[1]);
+			    //String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
+				//properties.setProperty(nameValue[0],nameValue[1]);
+			    String tmp =  args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"");
+                properties.setProperty(tmp.substring(0,tmp.indexOf("=")),tmp.substring(tmp.indexOf("=") +1)); 
 			}else
 			if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
 					i++;
