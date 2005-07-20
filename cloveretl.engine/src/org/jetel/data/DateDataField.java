@@ -26,6 +26,7 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharacterCodingException;
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
@@ -163,24 +164,21 @@ public class DateDataField extends DataField {
 	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object _value) throws BadDataFormatException {
-		if (_value == null) {
-			if (this.metadata.isNullable()) {
-				value = null;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-			return;
-		}
 		if ( _value instanceof Date ) {
 			if (value==null){
 				value = new Date(((Date) _value).getTime());
 			}else{
 				value.setTime(((Date) _value).getTime());
 			}
-
-			super.setNull(false);
-		} else {
+			setNull(false);
+		}else if (_value instanceof Timestamp){
+		    if (value==null){
+				value = new Date(((Timestamp)_value).getTime());
+		    }else{
+		    	value.setTime(((Timestamp)_value).getTime());
+		    }
+		    	setNull(false);
+		}else {
 			if (this.metadata.isNullable()) {
 				value = null;
 				super.setNull(true);
@@ -188,6 +186,21 @@ public class DateDataField extends DataField {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 			}
 		}
+	}
+	
+	/**
+	 * Sets the date represented by DateDataField object
+	 * 	
+	 * @param time the number of milliseconds since January 1, 1970, 00:00:00 GM
+	 */
+	public void setValue(long time){
+	    if (value==null){
+			value = new Date(time);
+		}else{
+			value.setTime(time);
+		}
+		setNull(false);
+	    
 	}
 
 
