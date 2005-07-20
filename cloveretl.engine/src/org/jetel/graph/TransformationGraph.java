@@ -458,8 +458,8 @@ public final class TransformationGraph {
 	 *
 	 * @param  lookupTable  The lookup table object to be registered
 	 */
-	public void addLookupTable(LookupTable lookupTable) {
-		lookupTables.put(lookupTable.getName(), lookupTable);
+	public void addLookupTable(String name, LookupTable lookupTable) {
+		lookupTables.put(name, lookupTable);
 	}
 
 	/**
