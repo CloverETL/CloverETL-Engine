@@ -46,13 +46,13 @@ import org.jetel.util.ComponentXMLAttributes;
  * &lt;!ATTLIST Graph
  *		name ID #REQUIRED &gt;
  *
- * &lt;!ELEMENT Global (Property*, Metadata+, DBConnection*)&gt;
+ * &lt;!ELEMENT Global (Property*, Metadata+, DBConnection*, Sequence*, Lookup*)&gt;
  *
  * &lt;!ELEMENT Property (#PCDATA)&gt;
  * &lt;!ATTLIST Property
- *           	name CDATA
- * 				value CDATA
- *				fileURL CDATA&gt;
+ *           	name CDATA #IMPLIED
+ * 				value CDATA #IMPLIED
+ *				fileURL CDATA #IMPLIED &gt;
  *
  * &lt;!ELEMENT Metadata (#PCDATA)&gt;
  * &lt;!ATTLIST Metadata
@@ -65,10 +65,22 @@ import org.jetel.util.ComponentXMLAttributes;
  * &lt;!ELEMENT DBConnection (#PCDATA)&gt;
  * &lt;!ATTLIST DBConnection
  *           	id ID #REQUIRED
- *				dbDriver CDATA #REQUIRED
- *				dbURL CDATA #REQUIRED
- *				user CDATA
- *				password CDATA &gt;
+ *		        dbDriver CDATA #REQUIRED
+ *		        dbURL CDATA #REQUIRED
+ *		        dbConfig CDATA #IMPLIED
+ *		        driverLibrary CDATA #IMPLIED
+ *              user CDATA #IMPLIED
+ *		        password CDATA #IMPLIED
+ *              transactionIsolation (READ_UNCOMMITTED | READ_COMMITTED |
+ *                                 REPEATABLE_READ | SERIALIZABLE ) #IMPLIED&gt;
+ *
+ * &lt;!ELEMENT Sequence (#PCDATA)&gt;
+ * &lt;!ATTLIST Sequence
+ *          	id ID #REQUIRED &gt;
+ *
+ * &lt;!ELEMENT Lookup (#PCDATA)&gt;
+ * &lt;!ATTLIST Lookup
+ *          	id ID #REQUIRED &gt;
  *
  * &lt;!ELEMENT Phase (Node+ , Edge+)&gt;
  * &lt;!ATTLIST Phase
