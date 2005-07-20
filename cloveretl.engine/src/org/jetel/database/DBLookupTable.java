@@ -22,9 +22,11 @@ package org.jetel.database;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
+import java.util.WeakHashMap;
+import java.util.Map;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.JetelException;
@@ -46,7 +48,7 @@ public class DBLookupTable implements LookupTable {
 	private DataRecordMetadata dbMetadata;
 	private DBConnection dbConnection;
 	private PreparedStatement pStatement;
-	private RecordKey key;
+	private RecordKey lookupKey;
 	private int[] keyFields;
 	private String[] keys;
 	private String sqlQuery;
@@ -55,68 +57,12 @@ public class DBLookupTable implements LookupTable {
 	private CopySQLData[] keyTransMap;
 	private DataRecord dbDataRecord;
 	private DataRecord keyDataRecord = null;
-	private List dbFieldTypes;
-
-	/**
-	 *  Constructor for the DBLookupTable object.<br>
-	 *
-	 *
-	 *@param  keys           Names of fields which comprise key to lookup table
-	 *@param  sqlQuery       Parametrized SQL query which will be executed against DB to obtain sought data
-	 *@param  keyDataRecord  Data record from which the key-field values will be
-	 *      taken
-	 *@param  dbConnection   Database connection object which will be used for communicating with DB
-	 *@since                 May 2, 2002
-	 */
-  public DBLookupTable(DBConnection dbConnection, DataRecord keyDataRecord,
-                       String[] keys, String sqlQuery) {
-		this(dbConnection,null,keyDataRecord,keys,sqlQuery);
-	}
-
+	private Map resultCache;
+	private int maxCached;
+	protected HashKey cacheKey;
+	
+	
   
-	/**
-	 *  Constructor for the DBLookupTable object
-	 *
-	 *@param  dbConnection      Database connection object which will be used for communicating with DB
-	 *@param  dbRecordMetadata  Metadata describing structure of data returned by DB when executing SQL query
-	 *@param  keyDataRecord     Data record from which the key-field values will be
-	 *      taken
-	 *@param  keys              Names of fields which comprise key to lookup table
-	 *@param  sqlQuery          Parametrized SQL query which will be executed against DB to obtain sought data
-	 */
-  public DBLookupTable(DBConnection dbConnection,
-                       DataRecordMetadata dbRecordMetadata,
-                       DataRecord keyDataRecord, String[] keys, String sqlQuery) {
-		this.dbConnection = dbConnection;
-		this.sqlQuery = sqlQuery;
-		this.keyDataRecord = keyDataRecord;
-		this.dbMetadata = dbRecordMetadata;
-		this.keys=keys;
-		if (keyDataRecord!=null){
-		    key = new RecordKey(keys, keyDataRecord.getMetadata());
-		    key.init();
-		    keyFields = key.getKeyFields();
-		}
-	}
-
-  public DBLookupTable(DBConnection dbConnection,
-          DataRecordMetadata dbRecordMetadata,
-          String[] keys, String sqlQuery) {
-      this(dbConnection,dbRecordMetadata,null,keys,sqlQuery);
-  }
-  
-	/**
-	 *  Constructor for the DBLookupTable object
-	 *
-	 *@param  sqlQuery      SQL query which returns data record based on specified
-	 *      condition
-	 *@param  dbConnection  Database connection object which will be used for communicating with DB
-	 */
-	public DBLookupTable(DBConnection dbConnection, String sqlQuery) {
-		this.dbConnection = dbConnection;
-		this.sqlQuery = sqlQuery;
-	}
-
 	/**
 	 *  Constructor for the DBLookupTable object
 	 *
@@ -126,14 +72,24 @@ public class DBLookupTable implements LookupTable {
    *@param dbFieldTypes      List containing the types of the final record
 	 */
   public DBLookupTable(DBConnection dbConnection,
-                       DataRecordMetadata dbRecordMetadata, String sqlQuery,
-                       List dbFieldTypes) {
+                       DataRecordMetadata dbRecordMetadata, String sqlQuery) {
 		this.dbConnection = dbConnection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
-		this.dbFieldTypes = dbFieldTypes;
 	}
 
+  
+  public DBLookupTable(DBConnection dbConnection,
+          DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
+      this.dbConnection = dbConnection;
+      this.dbMetadata = dbRecordMetadata;
+      this.sqlQuery = sqlQuery;
+      if (numCached>0){
+          this.resultCache= new WeakHashMap(numCached);
+          this.maxCached=numCached;
+      }
+}
+  
 	/**
 	 *  Gets the dbMetadata attribute of the DBLookupTable object.<br>
 	 *  <i>init() should be called prior to calling this method (unless dbMetadata
@@ -153,33 +109,50 @@ public class DBLookupTable implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
 	public DataRecord get(DataRecord keyRecord) {
-		try {
-            pStatement.clearParameters();
-
-            if (keyDataRecord != null) {
-
-                for (int i = 0; i < transMap.length; i++) {
-                    keyTransMap[i].jetel2sql(pStatement);
-                }
-            } else {
-                if (keyFields==null){
-                    key = new RecordKey(keys, keyRecord.getMetadata());
-            		key.init();
-            		keyFields = key.getKeyFields();
-                }
-                for (int i = 0; i < keyFields.length; i++) {
-                    pStatement.setObject(i + 1, keyRecord
-                            .getField(keyFields[i]).getValue());
-                }
-            }
-            //execute query
-            resultSet = pStatement.executeQuery();
-            fetch();
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex.getMessage());
-        }
-        return dbDataRecord;
-    }
+	    // if cached, then try to query cache first
+	    if (cacheKey!=null){
+	        cacheKey.setDataRecord(keyRecord);
+	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
+	        if (data!=null){
+	            return data;
+	        }
+	    }
+	    
+	    try {
+	        pStatement.clearParameters();
+	        
+	        if (keyTransMap==null){
+	            if (lookupKey != null) {
+	                throw new RuntimeException("RecordKey was not defined for lookup !");
+	            }
+	            
+	            try {
+	                keyTransMap = CopySQLData.jetel2sqlTransMap(
+	                        SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
+	                        keyRecord,lookupKey.getKeyFields());
+	            } catch (Exception ex) {
+	                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
+	            }
+	        }
+	        for (int i = 0; i < transMap.length; i++) {
+	            keyTransMap[i].jetel2sql(pStatement);
+	        }
+	        
+	    //execute query
+	    resultSet = pStatement.executeQuery();
+	    fetch();
+	} catch (SQLException ex) {
+	    throw new RuntimeException(ex.getMessage());
+	}
+	
+	// if cache exists, add this newly found to cache
+	if (maxCached>0){
+	    DataRecord storeRecord=dbDataRecord.duplicate();
+	    resultCache.put(new HashKey(lookupKey, storeRecord), storeRecord);
+	}
+	
+	return dbDataRecord;
+}
 
 	/**
 	 *  Looks-up record/data based on specified array of parameters
@@ -299,7 +272,13 @@ public class DBLookupTable implements LookupTable {
      * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
      */
     public void setLookupKey(Object obj){
-        // do nothing
+        this.keyTransMap=null; // invalidate current transmap -if it exists
+        if (obj instanceof RecordKey){
+	        this.lookupKey=((RecordKey)obj);
+	        this.cacheKey=new HashKey(lookupKey,null);
+	    }else{
+            this.lookupKey=null;
+        }
     }
     
 	/**
@@ -317,7 +296,7 @@ public class DBLookupTable implements LookupTable {
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
             
         } catch (SQLException ex) {
-            throw new JetelException("Can't establish DB connection: "
+            throw new JetelException("Can't create SQL statement: "
                     + ex.getMessage());
         }
         // obtain dbMetadata info if needed
@@ -335,35 +314,16 @@ public class DBLookupTable implements LookupTable {
         dbDataRecord.init();
         
         // create trans map which will be used for fetching data
-        if (dbFieldTypes != null) {
-            
-            transMap = CopySQLData.sql2JetelTransMap(dbFieldTypes, dbMetadata,
+        try {
+            transMap = CopySQLData.sql2JetelTransMap(
+                    SQLUtil.getFieldTypes(dbMetadata), dbMetadata,
                     dbDataRecord);
-            
-        } else {
-            
-           try {
-                transMap = CopySQLData.sql2JetelTransMap(
-                        SQLUtil.getFieldTypes(dbMetadata), dbMetadata,
-                        dbDataRecord);
-            } catch (Exception ex) {
-                throw new JetelException(
-                        "Can't automatically obtain dbMetadata/create transMap (use other constructor): "
-                        + ex.getMessage());
-            }
-            
+        } catch (Exception ex) {
+            throw new JetelException(
+                    "Can't automatically obtain dbMetadata/create transMap : "
+                    + ex.getMessage());
         }
         
-        // create keyTransMap if key data record defined (passed)
-        if (keyDataRecord != null) {
-            try {
-                keyTransMap = CopySQLData.jetel2sqlTransMap(SQLUtil
-                        .getFieldTypes(pStatement.getParameterMetaData()),
-                        keyDataRecord);
-            } catch (SQLException ex) {
-                keyTransMap = null;
-            }
-        }
     }
 
 	/**
@@ -378,7 +338,11 @@ public class DBLookupTable implements LookupTable {
 		}
 	}
 	
-	public String getName(){
-	    return dbMetadata.getName();
+	
+	public void setNumCached(int numCached){
+	    if (numCached>0){
+	          this.resultCache= new WeakHashMap(numCached);
+	          this.maxCached=numCached;
+	      }
 	}
 }
