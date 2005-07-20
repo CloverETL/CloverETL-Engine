@@ -40,19 +40,19 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class SimpleLookupTable implements LookupTable {
 
-	private DataRecordMetadata metadata;
-	private Parser dataParser;
-	private Map lookupTable;
-	private RecordKey indexKey;
-	private HashKey lookupKey;
-	private String name;
-	private int numFound;
-	private DataRecord lookupData;
+	protected DataRecordMetadata metadata;
+	protected Parser dataParser;
+	protected Map lookupTable;
+	protected RecordKey indexKey;
+	protected HashKey lookupKey;
+	protected int numFound;
+	protected DataRecord lookupData;
+	protected int tableInitialSize=0;
 	
 	/**
 	* Default capacity of HashMap when standard constructor is used.
 	*/
-	private final static int DEFAULT_INITIAL_CAPACITY = Defaults.Lookup.LOOKUP_INITIAL_CAPACITY;
+	protected final static int DEFAULT_INITIAL_CAPACITY = Defaults.Lookup.LOOKUP_INITIAL_CAPACITY;
 
 
 	/**
@@ -68,7 +68,12 @@ public class SimpleLookupTable implements LookupTable {
 		this(metadata,keys,parser,null);
 	}
 
+	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser, int initialSize) {
+		this(metadata,keys,parser,null);
+		this.tableInitialSize=initialSize;
+	}
 
+	
 	/**
 	 *Constructor for the SimpleLookupTable object.
 	 *
@@ -117,7 +122,7 @@ public class SimpleLookupTable implements LookupTable {
 	    return get();
 	}
 	
-	private DataRecord get(){
+	protected DataRecord get(){
 	    DataRecord data=(DataRecord)lookupTable.get(lookupKey);
 	    numFound= (data!=null ? 1 : 0);
 	    return data;
@@ -134,7 +139,11 @@ public class SimpleLookupTable implements LookupTable {
 	    record.init();
 		
 	    if (lookupTable==null){
-	        lookupTable = new HashMap(DEFAULT_INITIAL_CAPACITY);
+	        if (tableInitialSize>0){
+	            lookupTable = new HashMap(tableInitialSize);
+	        }else{
+	            lookupTable = new HashMap(DEFAULT_INITIAL_CAPACITY);
+	        }
 	    }
 		// populate the lookupTable (Map) with data
 		while (dataParser.getNext(record) != null) {
@@ -196,10 +205,6 @@ public class SimpleLookupTable implements LookupTable {
 	
 	public DataRecord getNext(){
 	    return null; // only one indexKey - one record is allowed
-	}
-	
-	public String getName(){
-	    return name;
 	}
 	
 	public int getNumFound(){

@@ -20,12 +20,24 @@
 package org.jetel.data.lookup;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Interface for lookup tables. This is a minimum functionality required.
+ * <br><br>
+ * The intended use of LookupTable is:<br>
+ * <ol>
+ * <li>LookupTable constructed (new LookupTable())
+ * <li>setLookupKey() method called to specify what object will be used as
+ * a lookup key (usually String, RecordKey, Object[])
+ * <li>init() method called to populate table with values or otherwise prepare for use
+ * <li>get() or getNext() methods called repeatedly
+ * <li>close() method called to free resources occupied by lookup table
+ * </ol>
+ * <br>
+ * <i>Note:</i> not all variants of get() method may be supported by particular
+ * LookupTable implementation.<br>
  * 
  * @author DPavlis
  * @since  8.7.2004
@@ -101,14 +113,6 @@ public interface LookupTable {
 	 * @throws JetelException
 	 */
 	public int getNumFound();
-	
-	/**
-	 * Gets the name (String) of the lookup table - used for keeping track of
-	 * various lookup tables registered within Transformation graph.
-	 * 
-	 * @return the name (String) of the lookup table 
-	 */
-	public String getName();
 	
 	/**
 	 * Gets the metadata associated with the DataRecord stored in the lookup table.
