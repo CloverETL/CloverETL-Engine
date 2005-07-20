@@ -46,6 +46,11 @@ public interface Number {
     
     public double getDouble();
     
+    /**
+     * @return True if Number is considered to have NULL value
+     */
+    public boolean isNull();
+    
     // public Decimal getDecimal();
     
     /**
