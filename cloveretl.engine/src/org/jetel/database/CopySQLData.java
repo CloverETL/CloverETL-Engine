@@ -55,7 +55,7 @@ public abstract class CopySQLData {
 	 *
 	 * @since    October 7, 2002
 	 */
-	protected int fieldSQL;
+	protected int fieldSQL,fieldJetel;
 	/**
 	 *  Description of the Field
 	 *
@@ -75,10 +75,32 @@ public abstract class CopySQLData {
 	CopySQLData(DataRecord record, int fieldSQL, int fieldJetel) {
 		this.fieldSQL = fieldSQL + 1;
 		// fields in ResultSet start with index 1
+		this.fieldJetel=fieldJetel;
 		field = record.getField(fieldJetel);
 	}
 
+	/**
+	 * Assigns different DataField than the original used when creating
+	 * copy object
+	 * 
+	 * @param field	New DataField
+	 */
+	public void setCloverField(DataField field){
+	    this.field=field;
+	}
+	
+	
+	/**
+	 * Assings different DataField (DataRecord). The proper field
+	 * is taken from DataRecord based on previously saved field number.
+	 * 
+	 * @param record	New DataRecord
+	 */
+	public void setCloverRecord(DataRecord record){
+	    this.field=record.getField(fieldJetel);
+	}
 
+	
 	/**
 	 *  Sets value of Jetel/Clover data field based on value from SQL ResultSet
 	 *
@@ -132,6 +154,21 @@ public abstract class CopySQLData {
 	abstract void setSQL(PreparedStatement pStatement) throws SQLException;
 
 
+	
+	
+	/**
+	 * Assigns new instance of DataRecord to existing CopySQLData structure (array).
+	 * Useful when CopySQLData (aka transmap) was created using some other
+	 * DataRecord and new one needs to be used
+	 * 
+	 * @param transMap	Array of CopySQLData object - the transmap
+	 * @param record	New DataRecord object to be used within transmap
+	 */
+	public static void resetDataRecord(CopySQLData[] transMap,DataRecord record){
+	    for(int i=0;i<transMap.length;transMap[i++].setCloverRecord(record));
+	}
+	
+	
 	/**
 	 *  Creates translation array for copying data from Database record into Jetel
 	 *  record
@@ -164,6 +201,7 @@ public abstract class CopySQLData {
 		return transMap;
 	}
 
+	
 
 	/**
 	 *  Creates translation array for copying data from Jetel record into Database
@@ -195,6 +233,8 @@ public abstract class CopySQLData {
 		}
 		return transMap;
 	}
+	
+	
 
 
 	/**
@@ -235,7 +275,49 @@ public abstract class CopySQLData {
 		return transMap;
 	}
 
+	/**
+	 *  Creates translation array for copying data from Jetel record into Database
+	 *  record. It allows only certain (specified) Clover fields to be considered
+	 *
+	 * @param  fieldTypes          Description of the Parameter
+	 * @param  record              Description of the Parameter
+	 * @param  cloverFields        array of DataRecord record's field numbers which should be considered for mapping
+	 * @return                     Description of the Return Value
+	 * @exception  SQLException    Description of the Exception
+	 * @exception  JetelException  Description of the Exception
+	 */
+	public static CopySQLData[] jetel2sqlTransMap(List fieldTypes,
+            DataRecord record, int[] cloverFields) throws SQLException,
+            JetelException {
+        int i = 0;
+        int fromIndex = 0;
+        int toIndex = 0;
+        short jdbcType;
+        char jetelFieldType;
 
+        CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
+        ListIterator iterator = fieldTypes.listIterator();
+
+        while (iterator.hasNext()) {
+            jdbcType = ((Integer) iterator.next()).shortValue();
+            // from index is index of specified cloverField in the Clover record
+            fromIndex = cloverFields[i];
+            jetelFieldType = record.getMetadata().getFieldType(fromIndex);
+            if (fromIndex == -1) {
+                throw new JetelException(" Field \"" + cloverFields[i]
+                        + "\" does not exist in DataRecord !");
+            }
+            // we copy from Clover's field to JDBC - toIndex/fromIndex is
+            // switched here
+            transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record,
+                    toIndex, fromIndex);
+            toIndex++;// we go one by one - order defined by insert/update statement
+
+        }
+        return transMap;
+    }
+	
+	
 	/**
 	 *  Creates copy object - bridge between JDBC data types and Clover data types
 	 *
