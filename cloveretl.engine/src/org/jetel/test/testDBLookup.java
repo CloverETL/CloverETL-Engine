@@ -17,10 +17,14 @@
 */
 
 package org.jetel.test;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.database.DBConnection;
 import org.jetel.database.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 public class testDBLookup{
 
@@ -32,17 +36,25 @@ public class testDBLookup{
 	int counter=0;
 	
 	if (args.length!=3){
-		System.out.println("Usage: testDBLookup <driver properties file> <sql query> <key>");
+		System.out.println("Usage: testDBLookup <driver properties file> <sql query> <key> <db metadata file>");
 		System.exit(1);
 	}
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Driver propeties: "+args[0]);
 	System.out.println("SQL query: "+args[1]);
 	System.out.println("Key: "+args[2]);
+	System.out.println("Metadata file: "+args[3]);
 	System.out.println("***************************************************");
 	
 	DataRecordMetadata metadataIn;
 	DataRecord data;
+	
+	DataRecordMetadataXMLReaderWriter metaReader=new DataRecordMetadataXMLReaderWriter();
+	try{
+	    metadataIn=metaReader.read(new FileInputStream(args[3]));
+	}catch(FileNotFoundException ex){
+	    throw new RuntimeException(ex.getMessage());
+	}
 	
 	//create connection object. Get driver and connect string from cfg file specified as a first argument
 	dbCon=new DBConnection(args[0]);
@@ -52,7 +64,7 @@ public class testDBLookup{
 		// is specified as a second parameter
 		// query string should contain ? (questionmark) in where clause
 		// e.g. select * from customers where customer_id = ? and customer_city= ?
-		DBLookupTable lookup=new DBLookupTable(dbCon,args[1]);
+		DBLookupTable lookup=new DBLookupTable(dbCon,metadataIn,args[1]);
 		
 		/*
 		* in case the DB doesn't support getMetadata, use following constructor:
