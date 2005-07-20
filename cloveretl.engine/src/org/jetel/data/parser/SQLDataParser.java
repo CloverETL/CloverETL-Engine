@@ -56,9 +56,11 @@ public class SQLDataParser implements Parser {
 	private ResultSet resultSet = null;
 	private CopySQLData[] transMap;
 	private DataRecord outRecord = null;
+
+	private int fetchSize = SQL_FETCH_SIZE_ROWS;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
-
+	
 	/**
 	 * @param sqlQuery
 	 */
@@ -208,6 +210,8 @@ public class SQLDataParser implements Parser {
 			// connection is created up front
 			//dbConnection.connect();
 			statement = dbConnection.getStatement();
+			/*ResultSet.TYPE_FORWARD_ONLY,
+			        ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new ComponentNotReadyException(e.getMessage());
@@ -219,7 +223,7 @@ public class SQLDataParser implements Parser {
 			// following calls are not always supported (as it seems)
 			// if error occures, we just ignore it
 			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-			statement.setFetchSize(SQL_FETCH_SIZE_ROWS);
+			statement.setFetchSize(fetchSize);
 		
 		} catch (Exception e) {
 			logger.warn(e);
@@ -258,6 +262,8 @@ public class SQLDataParser implements Parser {
 		this.handlerBDFE = handler;
 	}
 
-
+	public void setFetchSize(int fetchSize){
+	    this.fetchSize=fetchSize;
+	}
 
 }
