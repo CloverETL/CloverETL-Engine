@@ -23,20 +23,17 @@
  */
 package test.org.jetel.data.sequence;
 
-import org.jetel.data.sequence.SimpleIntSequence;
+import org.jetel.data.sequence.SimpleSequence;
 
 import junit.framework.TestCase;
 
 /**
  * @author david
  * @since  31.5.2005
- *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
  */
 public class SimpleIntSequenceTest extends TestCase {
     
-    SimpleIntSequence sequence;
+    SimpleSequence sequence;
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -44,7 +41,8 @@ public class SimpleIntSequenceTest extends TestCase {
     protected void setUp() throws Exception {
         // TODO Auto-generated method stub
         super.setUp();
-        sequence=new SimpleIntSequence("Test","c:\\tmp\\sequence2.dat",0,1,20);
+//        sequence=new SimpleSequence("Test","c:\\tmp\\sequence2.dat",0,1,20);
+        sequence=new SimpleSequence("Test","/tmp/sequence2.dat",0,1,20);
         sequence.init();
     }
 
@@ -54,8 +52,7 @@ public class SimpleIntSequenceTest extends TestCase {
         sequence.close();
     }
     
-    public void test_2(){
-        sequence.init();
+    public void test_2() throws Exception {
         assertEquals("different",sequence.currentValueInt(),1);
         sequence.close();
     }
