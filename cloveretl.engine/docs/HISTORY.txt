@@ -1,10 +1,33 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+REL 1-1-6
+---------
+New features:
++Sequences - definition of interface and implementation of simple sequence with
+persistent value.
++Parameters defined (parameter files referenced) from within graph's XML definition 
++Long datatype - represents signed 64bit integer
++Number interface - interface with methods to get/set/compare int,double,long values of
+data fields representing numeric value
++XML definition of graph's layout can now contain definition of properties (parameters).
+They may be defined directly in graph or loaded-in from external files.
+
+Changes:
++DBInputTable now allows to specify fetchSize when reading data from database
++Filter now accepts (copies to output port 0) all records for which the filterExpression evaluates TRUE
+(the same behaviour as ExtFilter)
 
 REL 1-1-5
 ---------
-The same as 1-1-5pre
+New features:
++DBInputTable,DBOutputTable,DBExecute now support loading SQL queries
+from external file - use "url" attribute. File can be accessed locally or
+through FTP or HTTP protocol - whatever is specified in "url".
++RecordTransform interface now includes "finished()" method. Called
+when particual Node (e.g. Reformat, MergeJoin,..)finishes transforming data.
++DataRecordTransform class has been updated to reflect changes in RecordTransform
+interface.
 
 REL 1-1-5pre
 ----------
