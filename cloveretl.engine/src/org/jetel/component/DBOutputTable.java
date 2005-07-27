@@ -83,7 +83,7 @@ import org.w3c.dom.Element;
  *  be used/mapped onto target fields</td></tr>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url. The same as
  *  for <i>sqlQuery</i> holds for this parameter.</td>
- *   <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error.</td></tr>
+ *   <tr><td><b>maxErrors</b><br><i>optional</i></td><td>maximum number of allowed SQL errors. Default: 0 (zero). If exceeded, component stops with error. If set to <b>-1</b>(minus one) all errors are ignored.</td></tr>
  * <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
@@ -415,7 +415,7 @@ public class DBOutputTable extends Node {
 					if (rejectedPort!=null){
 						rejectedPort.writeRecord(inRecord);
 					}
-					if (countError>maxErrors){
+					if (countError>maxErrors && maxErrors!=-1){
 						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
 					}
 				}
@@ -450,7 +450,7 @@ public class DBOutputTable extends Node {
 					if (rejectedPort!=null){
 						rejectedPort.writeRecord(inRecord);
 					}
-					if (countError>maxErrors){
+					if (countError>maxErrors && maxErrors!=-1){
 						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
 					}
 				}
