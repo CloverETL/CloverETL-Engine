@@ -330,14 +330,14 @@ public class XMLExtract extends Node
 	 */
 	public class Mapping
 	{
-		String					m_element;
-		int						m_outPort;
-		DataRecord				m_outRecord;
-		String					m_parentKey;
-		String					m_generatedKey;
-		Map<String, Mapping>	m_childMap;
-		WeakReference<Mapping>	m_parent;
-		int						m_level;
+		String			m_element;
+		int				m_outPort;
+		DataRecord		m_outRecord;
+		String			m_parentKey;
+		String			m_generatedKey;
+		Map				m_childMap;
+		WeakReference	m_parent;
+		int				m_level;
 
 		/*
 		 * Minimally required information.
@@ -370,7 +370,7 @@ public class XMLExtract extends Node
 			m_level = level;
 		}
 
-		public Map<String, Mapping> getChildMap()
+		public Map getChildMap()
 		{
 			return m_childMap;
 		}
@@ -388,7 +388,7 @@ public class XMLExtract extends Node
 		{
 			if (m_childMap == null)
 			{
-				m_childMap = new HashMap<String, Mapping>();
+				m_childMap = new HashMap();
 			}
 			m_childMap.put(mapping.getElement(), mapping);
 		}
@@ -485,15 +485,15 @@ public class XMLExtract extends Node
 
 		public void setParent(Mapping parent)
 		{
-			m_parent = new WeakReference<Mapping>(parent);
+			m_parent = new WeakReference(parent);
 		}
 	}
 
 	// Map of elementName => output port
-	private Map<String, Mapping>	m_elementPortMap	= new HashMap<String, Mapping>();
+	private Map			m_elementPortMap	= new HashMap();
 
 	// Where the XML comes from
-	private InputSource				m_inputSource;
+	private InputSource	m_inputSource;
 
 	/**
 	 * Constructs an XML Extract node with the given id.
@@ -810,7 +810,7 @@ public class XMLExtract extends Node
 	/**
 	 * Returns the mapping. Maybe make this read-only?
 	 */
-	public Map<String, Mapping> getMappings()
+	public Map getMappings()
 	{
 		// return Collections.unmodifiableMap(m_elementPortMap); // return a
 		// read-only map
