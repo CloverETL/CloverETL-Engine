@@ -1,31 +1,11 @@
-/*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-05  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
-
 package org.jetel.component;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Constructor;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeMap;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -38,7 +18,9 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
-import org.w3c.dom.NamedNodeMap;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -47,414 +29,791 @@ import org.xml.sax.helpers.DefaultHandler;
 /**
  * Provides the logic to parse a xml file and filter to different ports based on
  * a matching element. The element and all children will be turned into a
- * Datarecord and processed by other components. For example: given an xml file
- * of the type: 
- * <a>
- *   <b id="x"> 
- *     <c>hello</c1> 
- *   </b>  
- *   <d name="y"> 
- *     <e>bye</e>
- * 	 </d>
- *   <b id="z"> 
- *     <c>hello again</c>
- *   </b>
- * </a> 
- * 
- * and a mapping of b->port 1 and d->port 2 port 1 will receive: 
- * Column: id c 
- * Row 1: x hello 
- * Row 2: z hello
- * again port 2 will receive: 
- * Column: name d 
- * Row 1: y bye 
- * 
- * Issue: Nested XML implying foreign key relationships are not supported 
- * i.e.
- * <person>
- *   <name>blah</name>
- *   <address><line1>123 Main</line1></address>
- * </person>
- * Where address was another table. (this will flatten it into one table) 
- * 
- * Issue:
- * Enclosing elements having values are not supported 
- * i.e. 
- * <x>
- *   <y>z</y>
- *   xValue
- * </x>
- * there will be no column x with value xValue. 
- * 
- * Issue: Namespaces are not considered 
- * i.e. 
- * <ns1:x>xValue</ns1:x>
- * <ns2:x>xValue2</ns2:x> 
- * will be in the same column x.
+ * Datarecord.<br>
+ * For example: given an xml file:<br>
+ * <code>
+ * &lt;myXML&gt; <br>
+ * &nbsp;&lt;phrase id="1111"&gt; <br> 
+ * &nbsp;&nbsp;&lt;text&gt;hello&lt;/text&gt; <br> 
+ * &nbsp;&nbsp;&lt;localization&gt; <br>
+ * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;how allo yee dew ying&lt;/chinese&gt; <br> 
+ * &nbsp;&nbsp;&nbsp;&lt;german&gt;wie gehts&lt;/german&gt; <br>
+ * &nbsp;&nbsp;&lt;/localization&gt; <br>
+ * &nbsp;&lt;/phrase&gt; <br>
+ * &nbsp;&lt;locations&gt; <br>
+ * &nbsp;&nbsp;&lt;location&gt; <br>
+ * &nbsp;&nbsp;&nbsp;&lt;name&gt;Stormwind&lt;/name&gt; <br>
+ * &nbsp;&nbsp;&nbsp;&lt;description&gt;Beautiful European architecture with a scenic canal system.&lt;/description&gt; <br>
+ * &nbsp;&nbsp;&lt;/location&gt; <br>
+ * &nbsp;&nbsp;&lt;location&gt; <br> 
+ * &nbsp;&nbsp;&nbsp;&lt;name&gt;Ironforge&lt;/name&gt; <br> 
+ * &nbsp;&nbsp;&nbsp;&lt;description&gt;Economic capital of the region with a high population density.&lt;/description&gt; <br> 
+ * &nbsp;&nbsp;&lt;/location&gt; <br>
+ * &nbsp;&lt;/locations&gt; <br>
+ * &nbsp;&lt;someUselessElement&gt;...&lt;/someUselessElement&gt; <br>
+ * &nbsp;&lt;someOtherUselessElement/&gt; <br>
+ * &nbsp;&lt;phrase id="2222"&gt; <br>
+ * &nbsp;&nbsp;&lt;text&gt;bye&lt;/text&gt; <br>
+ * &nbsp;&nbsp;&lt;localization&gt; <br>
+ * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;she yee lai ta&lt;/chinese&gt; <br> 
+ * &nbsp;&nbsp;&nbsp;&lt;german&gt;aufweidersehen&lt;/german&gt; <br>
+ * &nbsp;&nbsp;&lt;/localization&gt; <br>
+ * &nbsp;&lt;/phrase&gt; <br>
+ * &lt;/myXML&gt; <br>
+ * </code> Suppose we want to pull out "phrase" as one datarecord,
+ * "localization" as another datarecord, and "location" as the final datarecord
+ * and ignore the useless elements. First we define the metadata for the
+ * records. Then create the following mapping in the graph: <br>
+ * <code>
+ * &lt;node id="myId" type="com.lrn.etl.job.component.XMLExtract"&gt; <br>
+ * &nbsp;&lt;mapping element="phrase" outPort="0"&gt;<br> 
+ * &nbsp;&nbsp;&lt;mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br> 
+ * &nbsp;&lt;/mapping&gt; <br>
+ * &nbsp;&lt;mapping element="location" outPort="2"/&gt;<br> 
+ * &lt;/node&gt;<br>
+ * </code> Port 0 will get the DataRecords:<br>
+ * 1) id=1111, text=hello<br>
+ * 2) id=2222, text=bye<br>
+ * Port 1 will get:<br>
+ * 1) parent_id=1111, chinese=how allo yee dew ying, german=wie gehts<br>
+ * 2) parent_id=2222, chinese=she yee lai ta, german=aufwiedersehen<br>
+ * Port 2 will get:<br>
+ * 1) name=Stormwind, description=Beautiful European architecture with a scenic
+ * canal system.<br>
+ * 2) name=Ironforge, description=Economic capital of the region with a high
+ * population density.<br>
+ * <hr>
+ * Issue: Enclosing elements having values are not supported.<br>
+ * i.e. <br>
+ * <code>
+ *   &lt;x&gt; <br>
+ *     &lt;y&gt;z&lt;/y&gt;<br>
+ *     xValue<br>
+ *   &lt;/x&gt;<br>
+ * </code> there will be no column x with value xValue.<br>
+ * Issue: Namespaces are not considered.<br>
+ * i.e. <br>
+ * <code>
+ *   &lt;ns1:x&gt;xValue&lt;/ns1:x&gt;<br>
+ *   &lt;ns2:x&gt;xValue2&lt;/ns2:x&gt;<br>
+ * </code> will be considered the same x.
  * 
  * @author KKou
  */
-public class XMLExtract extends Node {
+public class XMLExtract extends Node
+{
 	// Logger
-	private static final Log LOG = LogFactory.getLog(XMLExtract.class);
-	
+	private static final Log	LOG	= LogFactory.getLog(XMLExtract.class);
+
 	/**
 	 * SAX Handler that will dispatch the elements to the different ports.
 	 */
-	private class SAXHandler extends DefaultHandler {
-		// depth of the element, used to determine when we hit the matching close element
-		private int m_activeRecordLevel = 0;
-		// flag set if we saw characters, otherwise don't save the column (used to set null values)
-		private boolean m_hasCharacters = false;
-		// the record being updated
-		private DataRecord m_activeRecord = null; 
+	private class SAXHandler extends DefaultHandler
+	{
+		// depth of the element, used to determine when we hit the matching
+		// close element
+		private int				m_level			= 0;
+		// flag set if we saw characters, otherwise don't save the column (used
+		// to set null values)
+		private boolean			m_hasCharacters	= false;
 		// buffer for node value
-		private StringBuffer m_characters = new StringBuffer(); 
-		
-		private String nodeID = null;
+		private StringBuffer	m_characters	= new StringBuffer();
+		// the active mapping
+		private Mapping			m_activeMapping	= null;
 
-		private SAXHandler(String nodeID){
-		    this.nodeID=nodeID;
-		}
-		
 		public void startElement(String prefix, String namespace,
-				String localName, Attributes attributes) throws SAXException {
-			if (m_activeRecord == null) {
-				// Not in a matched element, check to see if this element
-				// matches any we are interested in.
-				if (m_elementPortMap.containsKey(localName)) {
-					// We have a match, start converting all child nodes into
-					// the DataRecord structure
-					Integer portInt = (Integer) m_elementPortMap.get(localName);
-					// if port isn't mapped, the activeRecord will be set to null below, so it's ok
-					m_activeRecord = (DataRecord) m_records.get(portInt);
-					if (m_activeRecord == null) {
-						// If it's null that means that there's no edge mapped to the output port
-						// remove this mapping so we don't repeat this logic (and logging)
-						LOG.warn("XML Extract: " + nodeID + " Element (" + localName + ") does not have an edge mapped to that port.");
-						m_elementPortMap.remove(localName);
-					}
-					// Below code will increment it to 0 if we got an active record
-					m_activeRecordLevel = -1;
+				String localName, Attributes attributes) throws SAXException
+		{
+			m_level++;
+			Mapping mapping = null;
+			if (m_activeMapping == null)
+			{
+				mapping = (Mapping) m_elementPortMap.get(localName);
+			}
+			else
+			{
+				mapping = (Mapping) m_activeMapping.getChildMapping(localName);
+			}
+			if (mapping != null)
+			{
+				// We have a match, start converting all child nodes into
+				// the DataRecord structure
+				m_activeMapping = mapping;
+				m_activeMapping.setLevel(m_level);
+				DataRecord record = mapping.getOutRecord();
+
+				if (record == null)
+				{
+					// If it's null that means that there's no edge mapped to
+					// the output port
+					// remove this mapping so we don't repeat this logic (and
+					// logging)
+					LOG.warn("XML Extract: " + getID() + " Element ("
+							+ localName
+							+ ") does not have an edge mapped to that port.");
+					m_activeMapping.getParent().removeChildMapping(
+							m_activeMapping);
+					return;
 				}
 			}
 
-			if (m_activeRecord != null) {
+			if (m_activeMapping != null)
+			{
 				// In a matched element (i.e. we are creating a DataRecord)
-				// Store all attributes as columns (this hasn't been used/tested)
-				m_activeRecordLevel++; // Start element so increase our depth
-				for (int i = 0; i < attributes.getLength(); i++) {
-					DataField field = m_activeRecord.getField(attributes
-							.getLocalName(i));
-					field.setValue(attributes.getValue(i));
+				// Store all attributes as columns (this hasn't been
+				// used/tested)
+				for (int i = 0; i < attributes.getLength(); i++)
+				{
+					DataField field = m_activeMapping.getOutRecord().getField(
+							attributes.getQName(i));
+					if (field != null)
+					{
+						field.fromString(attributes.getValue(i));
+					}
 				}
 			}
 		}
 
 		public void characters(char[] data, int offset, int length)
-				throws SAXException {
-			// Save the characters into the buffer, endElement will store it into the field
-			if (m_activeRecord != null) {
+				throws SAXException
+		{
+			// Save the characters into the buffer, endElement will store it
+			// into the field
+			if (m_activeMapping != null)
+			{
 				m_characters.append(data, offset, length);
 				m_hasCharacters = true;
 			}
 		}
 
 		public void endElement(String prefix, String namespace, String localName)
-				throws SAXException {
-			if (m_activeRecord != null && m_characters.length() > 0) {
+				throws SAXException
+		{
+			if (m_activeMapping != null && m_characters.length() > 0)
+			{
 				// Store the characters processed by the characters() call back
-				DataField field = m_activeRecord.getField(localName);
-				if (field != null) {
+				DataField field = m_activeMapping.getOutRecord().getField(
+						localName);
+				if (field != null)
+				{
 					// If field is nullable and there's no character data set it
 					// to null
-					if (!m_hasCharacters && field.getMetadata().isNullable()) {
+					if (!m_hasCharacters && field.getMetadata().isNullable())
+					{
 						field.setNull(true); // it's null
-					} else {
+					}
+					else
+					{
 						field.setNull(false); // it's not null
-						try {
-							field.fromString(m_characters.toString());
-						} catch (BadDataFormatException ex) {
+						try
+						{
+							field.fromString(m_characters.toString().trim());
+						}
+						catch (BadDataFormatException ex)
+						{
 							// This is a bit hacky here SOOO let me explain...
-							if (field.getType() == 'D') {
+							if (field.getType() == 'D')
+							{
 								// XML dateTime format is not supported by the
-								// DateFormat oject that clover uses... 
+								// DateFormat oject that clover uses...
 								// so timezones are unparsable
-								// i.e. XML wants -5:00 but DateFormat wants -500
-								// Attempt to munge and retry... (there has to be a better way)
-								try {
-									// Chop off the ":" in the timezone (it HAS to be at the end)
+								// i.e. XML wants -5:00 but DateFormat wants
+								// -500
+								// Attempt to munge and retry... (there has to
+								// be a better way)
+								try
+								{
+									// Chop off the ":" in the timezone (it HAS
+									// to be at the end)
 									String dateTime = m_characters.substring(0,
 											m_characters.lastIndexOf(":"))
-											+ m_characters.substring(m_characters
-													.lastIndexOf(":") + 1);
-									DateFormat format =
-										new SimpleDateFormat(field.getMetadata().getFormatStr());
-									field.setValue(format.parse(dateTime.trim()));
-								} catch (Exception ex2) {
-									// Oh well we tried, throw the originating exception
-									throw new SAXException("Error setting field: "
-											+ localName + " data: "
-											+ m_characters.toString() + " "
-											+ ex.getMessage(), ex);
+											+ m_characters
+													.substring(m_characters
+															.lastIndexOf(":") + 1);
+									DateFormat format = new SimpleDateFormat(
+											field.getMetadata().getFormatStr());
+									field.setValue(format
+											.parse(dateTime.trim()));
 								}
-							} else {
+								catch (Exception ex2)
+								{
+									// Oh well we tried, throw the originating
+									// exception
+									throw new SAXException(
+											"Error setting field: " + localName
+													+ " data: "
+													+ m_characters.toString()
+													+ " " + ex.getMessage(), ex);
+								}
+							}
+							else
+							{
 								throw ex;
 							}
 						}
 					}
 				}
 
-				// Regardless of whether this was saved, reset the length of the buffer and flag
+				// Regardless of whether this was saved, reset the length of the
+				// buffer and flag
 				m_characters.setLength(0);
 				m_hasCharacters = false;
 			}
 
-			if (m_activeRecordLevel == 0 && m_activeRecord != null) {
-				// This is the closing element of the matched element that triggered the processing
-				// That should be the end of this record so send it off to the next Node
-				Integer portInt = (Integer) m_elementPortMap.get(localName);
-				if (portInt == null) {
-					// Mapping not found for this element!
-					// This should never happen as the start element will not set the m_activeRecord
-					// unless there was an output port for it.
-				} else if (runIt) {
-					try {
-						((OutputPort) outPorts.get(portInt))
-								.writeRecord(m_activeRecord);
-						m_activeRecord = null;
-						// TODO Do we need to clean out the record object? Other
-						// components from clover seems to reuse it, keep an 
-						// eye on data not cleaned out between runs
-					} catch (Exception ex) {
+			if (m_activeMapping != null
+					&& m_level == m_activeMapping.getLevel())
+			{
+				// This is the closing element of the matched element that
+				// triggered the processing
+				// That should be the end of this record so send it off to the
+				// next Node
+				if (runIt)
+				{
+					try
+					{
+						OutputPort outPort = getOutputPort(m_activeMapping
+								.getOutPort());
+						DataRecord outRecord = m_activeMapping.getOutRecord();
+						if (m_activeMapping.getParentKey() != null)
+						{
+							DataField generatedField = outRecord
+									.getField(m_activeMapping.getGeneratedKey());
+							DataField parentKeyField = m_activeMapping
+									.getParent().getOutRecord().getField(
+											m_activeMapping.getParentKey());
+							if (generatedField == null)
+							{
+								LOG
+										.warn(getID()
+												+ ": XML Extract Mapping's generatedKey field was not found. "
+												+ m_activeMapping
+														.getGeneratedKey());
+								m_activeMapping.setGeneratedKey(null);
+								m_activeMapping.setParentKey(null);
+							}
+							else if (parentKeyField == null)
+							{
+								LOG
+										.warn(getID()
+												+ ": XML Extract Mapping's parentKey field was not found. "
+												+ m_activeMapping
+														.getParentKey());
+								m_activeMapping.setGeneratedKey(null);
+								m_activeMapping.setParentKey(null);
+							}
+							else
+							{
+								generatedField.setValue(parentKeyField
+										.getValue());
+							}
+						}
+						outPort.writeRecord(outRecord);
+						outRecord.init();
+						m_activeMapping = m_activeMapping.getParent();
+					}
+					catch (Exception ex)
+					{
 						throw new SAXException(ex);
 					}
-				} else {
+				}
+				else
+				{
 					throw new SAXException("Stop Signaled");
 				}
 			}
-			m_activeRecordLevel--; // ended an element so decrease our depth
+			m_level--; // ended an element so decrease our depth
 		}
 	}
-	
-	// Map of elementName => output port
-	private Map m_elementPortMap = new HashMap();
 
-	// Map of elementName => record
-	private Map m_records;
+	/**
+	 * Mapping holds a single mapping.
+	 */
+	public class Mapping
+	{
+		String					m_element;
+		int						m_outPort;
+		DataRecord				m_outRecord;
+		String					m_parentKey;
+		String					m_generatedKey;
+		Map<String, Mapping>	m_childMap;
+		WeakReference<Mapping>	m_parent;
+		int						m_level;
+
+		/*
+		 * Minimally required information.
+		 */
+		public Mapping(String element, int outPort)
+		{
+			m_element = element;
+			m_outPort = outPort;
+		}
+
+		/**
+		 * Gives the optional attributes parentKey and generatedKey.
+		 */
+		public Mapping(String element, int outPort, String parentKey,
+				String generatedKey)
+		{
+			this(element, outPort);
+
+			m_parentKey = parentKey;
+			m_generatedKey = generatedKey;
+		}
+
+		public int getLevel()
+		{
+			return m_level;
+		}
+
+		public void setLevel(int level)
+		{
+			m_level = level;
+		}
+
+		public Map<String, Mapping> getChildMap()
+		{
+			return m_childMap;
+		}
+
+		public Mapping getChildMapping(String element)
+		{
+			if (m_childMap == null)
+			{
+				return null;
+			}
+			return (Mapping) m_childMap.get(element);
+		}
+
+		public void addChildMapping(Mapping mapping)
+		{
+			if (m_childMap == null)
+			{
+				m_childMap = new HashMap<String, Mapping>();
+			}
+			m_childMap.put(mapping.getElement(), mapping);
+		}
+
+		public void removeChildMapping(Mapping mapping)
+		{
+			if (m_childMap == null)
+			{
+				return;
+			}
+			m_childMap.remove(mapping.getElement());
+		}
+
+		public String getElement()
+		{
+			return m_element;
+		}
+
+		public void setElement(String element)
+		{
+			m_element = element;
+		}
+
+		public String getGeneratedKey()
+		{
+			return m_generatedKey;
+		}
+
+		public void setGeneratedKey(String generatedKey)
+		{
+			m_generatedKey = generatedKey;
+		}
+
+		public int getOutPort()
+		{
+			return m_outPort;
+		}
+
+		public void setOutPort(int outPort)
+		{
+			m_outPort = outPort;
+		}
+
+		public DataRecord getOutRecord()
+		{
+			if (m_outRecord == null)
+			{
+				OutputPort outPort = getOutputPort(getOutPort());
+				if (outPort != null)
+				{
+					m_outRecord = new DataRecord(outPort.getMetadata());
+					m_outRecord.init();
+				}
+				else
+				{
+					m_outRecord = new DataRecord(new DataRecordMetadata(
+							"nonexistant"));
+					LOG
+							.warn(getID()
+									+ ": Port "
+									+ getOutPort()
+									+ " does not have an edge connected.  Please connect the edge or remove the mapping.");
+				}
+			}
+			return m_outRecord;
+		}
+
+		public void setOutRecord(DataRecord outRecord)
+		{
+			m_outRecord = outRecord;
+		}
+
+		public String getParentKey()
+		{
+			return m_parentKey;
+		}
+
+		public void setParentKey(String parentKey)
+		{
+			m_parentKey = parentKey;
+		}
+
+		public Mapping getParent()
+		{
+			if (m_parent != null)
+			{
+				return (Mapping) m_parent.get();
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		public void setParent(Mapping parent)
+		{
+			m_parent = new WeakReference<Mapping>(parent);
+		}
+	}
+
+	// Map of elementName => output port
+	private Map<String, Mapping>	m_elementPortMap	= new HashMap<String, Mapping>();
 
 	// Where the XML comes from
-	private InputSource m_inputSource;
+	private InputSource				m_inputSource;
 
 	/**
 	 * Constructs an XML Extract node with the given id.
 	 */
-	public XMLExtract(String id) {
+	public XMLExtract(String id)
+	{
 		super(id);
 	}
 
-	/**
-	 * Perform sanity checks.
-	 */
-	public void init() throws ComponentNotReadyException {
-		// test that we have at least one input port and one output
-		// TODO: Flesh out the initialization/add in more checks
-		if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException(
-					"At least one output port has to be defined!");
+	// //////////////////////////////////////////////////////////////////////////
+	// De-Serialization
+	//
+	public static Node fromXML(org.w3c.dom.Node nodeXML)
+	{
+		ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeXML);
+
+		if (attributes.exists("id"))
+		{
+			try
+			{
+				// Go through this round about method so that sub classes may
+				// re-use this logic like:
+				// fromXML(nodeXML) {
+				// MyXMLExtract = (MyXMLExtract) XMLExtract.fromXML(nodeXML);
+				// Do more stuff with MyXMLExtract
+				// return MyXMLExtract
+				// }
+				Constructor constructor = Class.forName(
+						attributes.getString("type")).getConstructor(
+						new Class[]
+						{
+							String.class
+						});
+				XMLExtract extract = (XMLExtract) constructor
+						.newInstance(new Object[]
+						{
+							attributes.getString("id")
+						});
+
+				if (attributes.exists("sourceUri"))
+				{
+					extract.setInputSource(new InputSource(attributes
+							.getString("sourceUri")));
+				}
+				// Process the mappings
+				NodeList nodes = nodeXML.getChildNodes();
+				for (int i = 0; i < nodes.getLength(); i++)
+				{
+					org.w3c.dom.Node node = nodes.item(i);
+					processMappings(extract, null, node);
+				}
+
+				return extract;
+			}
+			catch (Exception ex)
+			{
+				LOG.error("Could not instantiate XML Extract node.", ex);
+			}
+		}
+		return null;
+	}
+
+	private static void processMappings(XMLExtract extract,
+			Mapping parentMapping, org.w3c.dom.Node nodeXML)
+	{
+		if ("Mapping".equals(nodeXML.getLocalName()))
+		{
+			// for a mapping declaration, process all of the attributes
+			// element, outPort, parentKeyName, generatedKey
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(
+					nodeXML);
+			Mapping mapping = null;
+
+			if (attributes.exists("element") && attributes.exists("outPort"))
+			{
+				mapping = extract.new Mapping(attributes.getString("element"),
+						attributes.getInteger("outPort"));
+			}
+			else
+			{
+				if (attributes.exists("outPort"))
+				{
+					LOG
+							.warn(extract.getID()
+									+ ": XML Extract Mapping for element: "
+									+ mapping.getElement()
+									+ " missing a required attribute, element for outPort "
+									+ attributes.getString("outPort")
+									+ ".  Skipping this mapping and all children.");
+				}
+				else if (attributes.exists("element"))
+				{
+					LOG
+							.warn(extract.getID()
+									+ ": XML Extract Mapping for element: "
+									+ mapping.getElement()
+									+ " missing a required attribute, outPort for element "
+									+ attributes.getString("element")
+									+ ".  Skipping this mapping and all children.");
+				}
+				else
+				{
+					LOG
+							.warn(extract.getID()
+									+ ": XML Extract Mapping for element: "
+									+ mapping.getElement()
+									+ " missing required attributes, element and outPort.  Skipping this mapping and all children.");
+				}
+				return;
+			}
+
+			boolean parentKeyPresent = false;
+			boolean generatedKeyPresent = false;
+			if (attributes.exists("parentKey"))
+			{
+				mapping.setParentKey(attributes.getString("parentKey"));
+				parentKeyPresent = true;
+			}
+
+			if (attributes.exists("generatedKey"))
+			{
+				mapping.setGeneratedKey(attributes.getString("generatedKey"));
+				generatedKeyPresent = true;
+			}
+
+			if (parentKeyPresent != generatedKeyPresent)
+			{
+				LOG
+						.warn(extract.getID()
+								+ ": XML Extract Mapping for element: "
+								+ mapping.getElement()
+								+ " must either have both parentKey and generatedKey attributes or neither.");
+				mapping.setParentKey(null);
+				mapping.setGeneratedKey(null);
+			}
+
+			// Add this mapping to the parent
+			if (parentMapping != null)
+			{
+				parentMapping.addChildMapping(mapping);
+				mapping.setParent(parentMapping);
+			}
+			else
+			{
+				extract.addMapping(mapping);
+			}
+
+			if (parentKeyPresent && mapping.getParent() == null)
+			{
+				LOG
+						.warn(extract.getID()
+								+ ": XML Extact Mapping for element: "
+								+ mapping.getElement()
+								+ " may only have parentKey or generatedKey attributes if it is a nested mapping");
+				mapping.setParentKey(null);
+				mapping.setGeneratedKey(null);
+			}
+
+			// Process all nested mappings
+			NodeList nodes = nodeXML.getChildNodes();
+			for (int i = 0; i < nodes.getLength(); i++)
+			{
+				org.w3c.dom.Node node = nodes.item(i);
+				processMappings(extract, mapping, node);
+			}
+		}
+		else if (nodeXML.getNodeType() == org.w3c.dom.Node.TEXT_NODE)
+		{
+			// Ignore text values inside nodes
+		}
+		else
+		{
+			LOG.warn(extract.getID() + ": Unknown element: "
+					+ nodeXML.getLocalName()
+					+ " ignoring it and all child elements.");
 		}
 	}
 
+	// //////////////////////////////////////////////////////////
+	// Execution Section
+	//
 	/**
 	 * Call back from the Clover Engine starting this node.
 	 */
-	public void run() {
-		// Allocate the records and put them into a map so we can retrieve them later
-		m_records = new TreeMap();
-		Iterator itr = outPorts.entrySet().iterator();
-		while (itr.hasNext()) {
-			Map.Entry entry = (Map.Entry) itr.next();
-			OutputPort outport = (OutputPort) entry.getValue();
-			DataRecord record = new DataRecord(outport.getMetadata());
-			m_records.put(entry.getKey(), record);
-
-			// Initialize the DataRecord.
-			record.init();
-		}
-
+	public void run()
+	{
 		// Parse the XML file
-		if (parseXML()) {
-			// We have successfully sent out all the data, send out the EOF signal
+		if (parseXML())
+		{
+			// We have successfully sent out all the data, send out the EOF
+			// signal
 			broadcastEOF();
 
-			// determine if we successfully sent out everything or we successfully stopped
-			// due to a stop signal
+			// determine if we successfully sent out everything or we
+			// successfully stopped due to a stop signal
 			if (runIt)
 				resultMsg = "OK";
 			else
 				resultMsg = "STOPPED";
 			resultCode = Node.RESULT_OK;
-		} else {
-			// If it's false, the result message and codes have been set in the SAX event handler.
+		}
+		else
+		{
+			// If it's false, the result message and codes have been set in the
+			// parseXML Method.
 			broadcastEOF();
 			return;
 		}
 	}
 
 	/**
+	 * Parses the inputSource. The SAXHandler defined in this class will handle
+	 * the rest of the events. Returns false if there was an exception
+	 * encountered during processing.
+	 */
+	private boolean parseXML()
+	{
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser parser;
+
+		try
+		{
+			parser = factory.newSAXParser();
+		}
+		catch (Exception ex)
+		{
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			return false;
+		}
+
+		try
+		{
+			parser.parse(m_inputSource, new SAXHandler());
+		}
+		catch (SAXException ex)
+		{
+			if (!runIt)
+			{
+				return true; // we were stopped by a stop signal... probably
+			}
+			LOG.error("XML Extract: " + getID() + " Parse Exception", ex);
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
+			return false;
+		}
+		catch (Exception ex)
+		{
+			LOG.error("XML Extract: " + getID() + " Unexpected Exception", ex);
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			return false;
+		}
+		return true;
+	}
+
+	// //////////////////////////////////////////////////////////////////
+	// Clover Call Back Methods
+	//
+	/**
+	 * Perform sanity checks.
+	 */
+	public void init() throws ComponentNotReadyException
+	{
+		// test that we have at least one input port and one output
+		if (outPorts.size() < 1)
+		{
+			throw new ComponentNotReadyException(getID()
+					+ ": At least one output port has to be defined!");
+		}
+
+		if (m_elementPortMap.size() < 1)
+		{
+			throw new ComponentNotReadyException(
+					getID()
+							+ ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
+		}
+	}
+
+	public String getType()
+	{
+		return getClass().getName();
+	}
+
+	public boolean checkConfig()
+	{
+		return true;
+	}
+
+	public org.w3c.dom.Node toXML()
+	{
+		return null;
+	}
+
+	// //////////////////////////////////////////////////////////////////
+	// Accessors
+	//
+	/**
 	 * Set the input source containing the XML this will parse.
 	 */
-	public void setInputSource(InputSource inputSource) {
-		this.m_inputSource = inputSource;
-	}
-	
-	/**
-	 * Accessor to add a mapping programatically.
-	 */
-	public void addMapping(String localName, Integer portNumber) {
-		this.m_elementPortMap.put(localName, portNumber);
+	public void setInputSource(InputSource inputSource)
+	{
+		m_inputSource = inputSource;
 	}
 
 	/**
-	 * Accessor to remove a mapping programatically.
+	 * Accessor to add a mapping programatically.
 	 */
-	public void removeMapping(String localName) {
-		this.m_elementPortMap.remove(localName);
+	public void addMapping(Mapping mapping)
+	{
+		m_elementPortMap.put(mapping.getElement(), mapping);
 	}
 
 	/**
 	 * Returns the mapping. Maybe make this read-only?
 	 */
-	public Map getMappings() {
+	public Map<String, Mapping> getMappings()
+	{
 		// return Collections.unmodifiableMap(m_elementPortMap); // return a
 		// read-only map
-		return this.m_elementPortMap;
-	}
-
-	/**
-	 * Deserializes/constructs an XML Extract node from a given XML configuration.
-	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		NamedNodeMap attribs = nodeXML.getAttributes();
-		XMLExtract extract = null;
-
-		// We must have attributes id, type and sourceUri
-		if (attribs != null) {
-			// Retrieve the required attributes
-			org.w3c.dom.Node idNode = attribs.getNamedItem("id");
-			org.w3c.dom.Node sourceUriNode = attribs.getNamedItem("sourceUri");
-			String id = null;
-			String uriString = null;
-
-			if (idNode != null) {
-				id = idNode.getNodeValue();
-			} else {
-				// id is a required attribute... error out
-				LOG.error("XML Extract: missing required attribute: id");
-				return null;
-			}
-
-			if (sourceUriNode != null) {
-				uriString = sourceUriNode.getNodeValue();
-			} else {
-				// source URI is another required attribute, so error out
-				LOG.error("XML Extract: " + id + " missing requried attribute: sourceUri");
-				return null;
-			}
-
-			if (uriString != null && id != null) {
-				InputSource inputSource = new InputSource(uriString);
-				extract = new XMLExtract(id);
-				extract.setInputSource(inputSource);
-			} else {
-				LOG.error("XML Extract: " + id + " missing required attribute value id and/or sourceUri");
-				return null;
-			}
-		} else {
-			LOG.error("XML Extract:  Missing required parameters id and/or sourceUri");
-			return null;
-		}
-
-		// All of this node's children should consists of mappings
-		for (int i = 0; i < nodeXML.getChildNodes().getLength(); i++) {
-			org.w3c.dom.Node mapNode = nodeXML.getChildNodes().item(i);
-			NamedNodeMap mapAttribs = mapNode.getAttributes();
-			if (mapAttribs != null && mapNode.getFirstChild() != null) {
-				// There's attributes (at least the element attribute is
-				// required)
-				// and a child (at least the textNode representing the port is
-				// required)
-				org.w3c.dom.Node elementAttr = mapAttribs
-						.getNamedItem("element");
-				String element = elementAttr.getNodeValue();
-				String portString = mapNode.getFirstChild().getNodeValue();
-				Integer portNumber;
-				try {
-					portNumber = new Integer(portString);
-				} catch (NumberFormatException ex) {
-					LOG.warn("XML Extract: " + extract.getID() + " Mapping for element (" + element 
-							+ ") is invalid.  The port (" + portString + ") is not a number.");
-					continue; // other mappings might be valid so continue
-				}
-
-				if (element != null && portNumber != null) {
-					// Store this <ElementName> to Port #, mapping
-					extract.m_elementPortMap.put(element, portNumber);
-				}
-			}
-		}
-
-		return extract;
-	}
-
-	/**
-	 * Parses the inputSource.  The SAXHandler defined in this class will handle
-	 * the rest of the events.
-	 * 
-	 * Returns false if there was an exception encountered during processing.
-	 */
-	private boolean parseXML() {
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser parser;
-
-		try {
-			parser = factory.newSAXParser();
-		} catch (Exception ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return false;
-		}
-
-		try {
-			parser.parse(m_inputSource, new SAXHandler(getID()));
-		} catch (SAXException ex) {
-			if (!runIt) {
-				return true; // we were stopped by a stop signal... probably
-			}
-			LOG.error("XML Extract: " + getID() + " Parse Exception", ex);
-			// ?? LxNode.rollback();
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			return false;
-		} catch (Exception ex) {
-			LOG.error("XML Extract: " + getID() + " Unexpected Exception", ex);
-			// ?? LxNode.rollback();
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return false;
-		}
-		return true;
-	}
-
-	public String getType() {
-		return this.getClass().getName();
-	}
-
-	public boolean checkConfig() {
-		return true;
-	}
-
-	public org.w3c.dom.Node toXML() {
-		return null;
+		return m_elementPortMap;
 	}
 }
