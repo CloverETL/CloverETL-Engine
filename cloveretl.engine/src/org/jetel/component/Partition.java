@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.io.*;
+import java.util.Arrays;
 import org.jetel.graph.*;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -45,11 +46,18 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Partitions data into distinct flows. Each connected port becomes
  * one flow. For each record read, the partition function chosen denotes which output
- * flow (port) will be the record sent to.<br>If <code>partitionKey</code> is specified, then 
- * partition by key algorithm is used. Otherwise RoundRobin algorithm is used.<br>
- * <i>Note: partition by key algorithm calculates hash value based on partitionKey fields and
- * then determines the output port using following formula:</i><br>
- * (hashValue / MAX_HASH_VALUE * #connected_output_ports) MOD #connected_output_ports</td></tr>
+ * flow (port) will be the record sent to.<br>
+ * Which partition algorithm becomes active depends on following:
+ * <ul>
+ * <li>If <code>partitionKey</code> is <b>NOT</b> specified/defined, RoundRobin algorithm is used.
+ * <li>If <code>partitionKey</code> <b>IS</b> specified and <b>NO</b> <code>ranges</code> is specified, then
+ * partition by calculated hash value is used. The formula used is: <code>hashValue / MAX_HASH_VALUE * #connected_output_ports) MOD #connected_output_ports</code>
+ * <li>If <b>BOTH</b> <code>partitionKey</code> and <code>ranges</code> are specified, then partition by
+ * range is used - <i>partitionKey's</i> value is sequentially compared with defined range boundaris. If
+ * the value is less or equal to specified boundary, then the record is sent out through the port corresponding
+ * to that boundary.<br><i>Note: when boundaries are used, only 1 field can be specified as partitionKey.</i>
+ * </ul>
+ * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -68,7 +76,7 @@ import org.w3c.dom.Element;
  * partitionKey will be checked. If key's value belongs to interval then interval's order number is converted
  * to output port number. <br>If this option is used, the partitioning is range partitioning and partition key can
  * be composed of ONE field only (actually 2nd and additional fields will be ignored).<br>
- * <i>Note:ranges must be listed in ascending order. When checking interval boundaries, the
+ * <i>Note:Boundaries are first sorted in ascending order, then checked.When checking interval boundaries, the
  * &lt;= operator is used.</i></td>
  *  </tr>
  *  </table>
@@ -376,17 +384,33 @@ public class Partition extends Node {
 	            boundaries[i]=record.getField(keyFields[0]).duplicate();
 	            boundaries[i].fromString(boundariesStr[i]);
 	        }
+	        Arrays.sort(boundaries);
 
 	    }
 	    
 	    public int getOutputPort(DataRecord record){
-	        for(int i=0;i<numPorts && i<boundaries.length;i++){
-	            // current boundary is upper limit inclusive
-	            if (record.getField(keyFields[0]).compareTo(boundaries[i])<=0){
-	                return i;
-	            }
-	        }
-	        return numPorts-1;
+	         // use sequential search if number of boundries is small
+	        if (boundaries.length <= 6) {
+                for (int i = 0; i < numPorts && i < boundaries.length; i++) {
+                    // current boundary is upper limit inclusive
+                    if (record.getField(keyFields[0]).compareTo(boundaries[i]) <= 0) {
+                        return i;
+                    }
+                }
+                return numPorts - 1;
+            } else {
+                int index = Arrays.binarySearch(boundaries, record
+                        .getField(keyFields[0]));
+                // DEBUG
+                // System.out.println("Index partition: "+index+" value "+record
+                //         .getField(keyFields[0]).toString());
+                // DEBUG END
+                if (index>=0){
+                    return index;
+                }else{
+                    return (index*-1)-1;
+                }
+            }
 	    }
 	}
 	
