@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<Record name="Orders" type="delimited">
+	<Field name="ShipCity" type="string" delimiter="|" />
+	<Field name="ShipCountry" type="string" delimiter="|" />
+	<Field name="Count" type="integer" delimiter="|" format="#" />
+	<Field name="AvgFreight" type="numeric" delimiter="|" format="#.##" />
+	<Field name="CustomerID" type="string" delimiter="\n" />
+</Record>

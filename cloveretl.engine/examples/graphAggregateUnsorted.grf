@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="TestingSort">
+<!-- This graph illustrates usage of Aggregate component. 
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersAggregate.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="AGGREGATE" type="AGGREGATE" aggregateKey="ShipName;ShipCity" aggregateFunctions="count(Freight); avg(Freight); min(CustomerID)" sorted="false"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.aggregated"/>
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="AGGREGATE:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="AGGREGATE:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
