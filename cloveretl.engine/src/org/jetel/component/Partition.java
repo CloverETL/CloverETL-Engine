@@ -374,6 +374,9 @@ public class Partition extends Node {
 	    RangePartition(String[] boundariesStr,DataRecord record){
 	        this.boundariesStr=boundariesStr;
 	        this.record=record;
+	        if (record==null){
+	            throw new RuntimeException("Passed DataRecord is null !");
+	        }
 	    }
 	    
 	    public void init(int numPartitions, RecordKey partitionKey){
