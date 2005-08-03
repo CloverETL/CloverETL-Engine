@@ -289,8 +289,9 @@ public class DelimitedDataParserNIO implements Parser {
 			delimiterPosition = 0;
 			try {
 				while ((character = readChar()) != -1) {
-					if(character=='\r')  //fix for new line being \r\n
-						continue;
+//					causes problem when composed delimiter "\r\n" is used
+//					if(character=='\r')  //fix for new line being \r\n
+//						continue;
 					totalCharCounter++;
 					if ((result = is_delimiter((char) character, fieldCounter, delimiterPosition)) == 1) {
 						/*
