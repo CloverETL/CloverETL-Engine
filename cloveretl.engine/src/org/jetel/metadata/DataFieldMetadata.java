@@ -416,6 +416,32 @@ public class DataFieldMetadata implements Serializable {
 		fieldProperties = properties;
 	}
 
+	
+	public static String type2Str(char fieldType) {
+		switch (fieldType) {
+			case DataFieldMetadata.NUMERIC_FIELD:
+				return "numeric";
+			case DataFieldMetadata.INTEGER_FIELD:
+				return "integer";
+			case DataFieldMetadata.STRING_FIELD:
+				return "string";
+			case DataFieldMetadata.DATE_FIELD:
+				return "date";
+			case DataFieldMetadata.LONG_FIELD:
+				return "long";
+			case DataFieldMetadata.DECIMAL_FIELD:
+			    return "decimal";
+			case DataFieldMetadata.BYTE_FIELD:
+			    return "byte";
+			case DataFieldMetadata.DATETIME_FIELD:
+			    return "datetime";
+			case DataFieldMetadata.SEQUENCE_FIELD:
+			    return "sequence";
+			default:
+				return "!!! UNKNOWN !!!";
+		}
+	}
+	
 }
 /*
  *  end class DataFieldMetadata
