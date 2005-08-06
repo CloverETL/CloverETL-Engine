@@ -363,20 +363,7 @@ public class SQLUtil {
 	 * @return            Corresponding string name
 	 */
 	public static String jetelType2Str(char fieldType) {
-		switch (fieldType) {
-			case DataFieldMetadata.NUMERIC_FIELD:
-				return "numeric";
-			case DataFieldMetadata.INTEGER_FIELD:
-				return "integer";
-			case DataFieldMetadata.STRING_FIELD:
-				return "string";
-			case DataFieldMetadata.DATE_FIELD:
-				return "date";
-			case DataFieldMetadata.LONG_FIELD:
-				return "long";
-			default:
-				throw new RuntimeException("Unsupported data type " + fieldType);
-		}
+		return DataFieldMetadata.type2Str(fieldType);
 	}
 
 
