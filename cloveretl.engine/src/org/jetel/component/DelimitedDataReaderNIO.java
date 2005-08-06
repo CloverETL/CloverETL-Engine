@@ -232,7 +232,7 @@ public class DelimitedDataReaderNIO extends Node {
 	 *
 	 * @param  handler
 	 */
-	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
 		parser.addBDFHandler(handler);
 	}
 
