@@ -17,6 +17,9 @@ Changes:
 +DBInputTable now allows to specify fetchSize when reading data from database
 +Filter now accepts (copies to output port 0) all records for which the filterExpression evaluates TRUE
 (the same behaviour as ExtFilter)
++DBOutputTable - if maxErrors parameter is set to -1, all SQL errors are ignored.
++DataRecord now implements Comparable interface. However, compareTo() method can be used
+only to compare records based on the same metadata object
 
 REL 1-1-5
 ---------
