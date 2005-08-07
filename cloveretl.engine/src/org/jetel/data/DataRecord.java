@@ -38,7 +38,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created     18. kvìten 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataRecord implements Serializable {
+public class DataRecord implements Serializable, Comparable {
 
 	/**
 	 * @since
@@ -57,6 +57,12 @@ public class DataRecord implements Serializable {
 	private transient DataRecordMetadata metadata;
 
 
+	/**
+	 * Create new instance of DataRecord based on specified metadata (
+	 * how many fields, what field types, etc.)
+	 * 
+	 * @param _metadata
+	 */
 	public DataRecord(DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
 		fields = new DataField[metadata.getNumFields()];
@@ -139,7 +145,8 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  Description of the Method
+	 *  Deletes/removes specified field. The field's internal reference
+	 * is set to NULL, so it can be garbage collected.
 	 *
 	 * @param  _fieldNum  Description of Parameter
 	 * @since
@@ -166,29 +173,59 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  Description of the Method
+	 *  Test two DataRecords for equality. Records must have the same metadata (be
+	 * created using the same metadata object) and their field values must be equal.
 	 *
-	 * @param  obj  Description of Parameter
-	 * @return      Description of the Returned Value
+	 * @param  obj  DataRecord to compare with
+	 * @return      True if they equals, false otherwise
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
 		/*
-		 *  first test that both records have the same structure i.e. point to the same
-		 *  metadata
-		 */
-		if (metadata != ((DataRecord) obj).getMetadata()) {
-			return false;
-		}
-		// check field by field that they are the same
-		for (int i = 0; i < fields.length; i++) {
-			if (!fields[i].equals(((DataRecord) obj).getField(i))) {
-				return false;
-			}
-		}
-		return true;
-	}
+         * first test that both records have the same structure i.e. point to
+         * the same metadata
+         */
+        if (obj instanceof DataRecord) {
+            if (metadata != ((DataRecord) obj).getMetadata()) {
+                return false;
+            }
+            // check field by field that they are the same
+            for (int i = 0; i < fields.length; i++) {
+                if (!fields[i].equals(((DataRecord) obj).getField(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
+	
+	/**
+	 * Compares two DataRecords. Records must have the same metadata (be
+	 * created using the same metadata object). Their field values are compare one by one,
+	 * the first non-equal pair of fields denotes the overall comparison result.
+	 * 
+	 * @see java.lang.Comparable#compareTo(java.lang.Object)
+	 */
+	public int compareTo(Object obj){
+	    if (obj instanceof DataRecord) {
+            if (metadata != ((DataRecord) obj).getMetadata()) {
+                throw new RuntimeException("Can't compare - records have different metadata objects assigned!");
+            }
+            int cmp;
+            // check field by field that they are the same
+            for (int i = 0; i < fields.length; i++) {
+                cmp=fields[i].compareTo(((DataRecord) obj).getField(i));
+                if (cmp!=0) {
+                    return cmp;
+                }
+            }
+            return 0;
+        }else{
+            throw new ClassCastException("Can't compare DataRecord with "+obj.getClass().getName());
+        }
+	}
 
 	/**
 	 *  Gets the codeClassName attribute of the DataRecord object
@@ -296,13 +333,20 @@ public class DataRecord implements Serializable {
 
 
 	/**
-	 *  Sets the Metadata attribute of the DataRecord object
+	 *  Assigns new metadata to this DataRecord. If the new
+	 * metadata is not equal to the current metadata, the record's
+	 * content is recreated from scratch. After calling this
+	 * method, record is uninitialized and init() method should
+	 * be called prior any attempt to manipulate this record's content.
 	 *
 	 * @param  metadata  The new Metadata value
 	 * @since            April 5, 2002
 	 */
 	public void setMetadata(DataRecordMetadata metadata) {
-		this.metadata = metadata;
+		if (this.metadata != metadata){
+		    this.metadata=metadata;
+		    fields = new DataField[metadata.getNumFields()];
+		}
 	}
 
 
@@ -320,7 +364,7 @@ public class DataRecord implements Serializable {
 	 *  An operation that sets value of the selected data field to its default
 	 *  value.
 	 *
-	 * @param  _fieldNum  The new toDefaultValue value
+	 * @param  _fieldNum  Ordinal number of the field which should be set to default
 	 */
 	public void setToDefaultValue(int _fieldNum) {
 		fields[_fieldNum].setToDefaultValue();
