@@ -37,7 +37,7 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class IntegerDataField extends DataField implements Number {
+public class IntegerDataField extends DataField implements Number, Comparable {
 
 	private int value;
 	private final static int FIELD_SIZE_BYTES = 4;// standard size of field
@@ -386,9 +386,16 @@ public class IntegerDataField extends DataField implements Number {
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		Integer numValue = new Integer(this.value);
-
-		return (numValue.equals((((IntegerDataField) obj).getValue())));
+	    if (isNull || obj==null) return false;
+	    
+	    if (obj instanceof Integer){
+	        return value==((IntegerDataField) obj).value;
+	        //return (numValue.equals((((IntegerDataField) obj).getValue())));
+	    }else if (obj instanceof Number){
+	        return value==((Number)obj).getInt();
+	    }else{
+	        throw new ClassCastException("Can't compare IntegerDataField and "+obj.getClass().getName());
+	    }
 	}
 
 
@@ -399,16 +406,18 @@ public class IntegerDataField extends DataField implements Number {
 	 * @return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
-		
+		if (obj==null) return 1;
+		if (isNull) return -1;
+	    
 		if (obj instanceof IntegerDataField){
-			return compareTo(((IntegerDataField) obj).getInt());
+			return compareTo(((IntegerDataField) obj).value);
 		}else if (obj instanceof Integer){
 			return compareTo(((Integer)obj).intValue());
 		}else if (obj instanceof Long){
 				return compareTo(((Long)obj).intValue());
 		}else if (obj instanceof Double){
 			return compareTo(((Double)obj).intValue());
-		}else throw new RuntimeException("Object does not represent a numeric value: "+obj);
+		}else throw new ClassCastException("Can't compare IntegerDataField and "+obj.getClass().getName());
 	}
 
 
@@ -433,6 +442,9 @@ public class IntegerDataField extends DataField implements Number {
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
 	public int compareTo(Number value){
+	    if (value==null || value.isNull()) return 1;
+		if (isNull) return -1;
+	    
 	    return compareTo(value.getInt());
 	}
 	

@@ -20,17 +20,18 @@
 // FILE: c:/projects/jetel/org/jetel/data/DateDataField.java
 
 package org.jetel.data;
-import java.util.*;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -44,7 +45,7 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         OtherClasses
  */
-public class DateDataField extends DataField {
+public class DateDataField extends DataField implements Comparable{
 
 	// Attributes
 	/**
@@ -211,7 +212,7 @@ public class DateDataField extends DataField {
 	 * @since     April 23, 2002
 	 */
 	public Object getValue() {
-		return value;
+		return isNull ? null : value;
 	}
 
 
@@ -221,7 +222,7 @@ public class DateDataField extends DataField {
 	 * @return    The date value
 	 */
 	public Date getDate() {
-		return value;
+		return isNull ? null : value;
 	}
 
 
@@ -374,7 +375,17 @@ public class DateDataField extends DataField {
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		return (this.value.equals((((DateDataField) obj).getValue())));
+	    if (isNull || obj==null) return false;
+	    
+	    if (obj instanceof DateDataField){
+	        return (this.value.equals((((DateDataField) obj).value)));
+	    }else if (obj instanceof java.util.Date){
+	        return this.value.equals((java.util.Date) obj);
+	    }else if (obj instanceof java.sql.Date){
+	        return this.value.getTime()==((java.sql.Date)obj).getTime();
+	    }else{
+	        throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
+	    }
 	}
 
 
@@ -385,23 +396,19 @@ public class DateDataField extends DataField {
 	 * @return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		if (obj instanceof Date){
-			return value.compareTo((Date) obj);
+		if (obj==null) return 1;
+		if (isNull) return -1;
+	    
+		if (obj instanceof java.util.Date){
+			return value.compareTo((java.util.Date) obj);
 		}else if (obj instanceof DateDataField){
-			return value.compareTo(((DateDataField) obj).getDate());
-		}else throw new RuntimeException("Object does not represent a Date value: "+obj);
+			return value.compareTo(((DateDataField) obj).value);
+		}else if (obj instanceof java.sql.Date){
+		    long result=value.getTime()-((java.sql.Date)obj).getTime();
+		    if (result>0) return 1; else if (result<0) return -1; else return 0;
+		}else throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  obj  Description of the Parameter
-	 * @return      Description of the Return Value
-	 */
-	public int compareTo(java.util.Date obj) {
-		return value.compareTo(obj);
-	}
 	
 	public int hashCode(){
 		return value.hashCode();
