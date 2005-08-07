@@ -35,7 +35,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      October 29, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class ByteDataField extends DataField {
+public class ByteDataField extends DataField  implements Comparable{
 
 	// Attributes
 
@@ -110,16 +110,17 @@ public class ByteDataField extends DataField {
 	 *@param  _value  The new Value value
 	 *@since          October 29, 2002
 	 */
-	public void setValue(Object _value) {
-		if (_value instanceof byte[]) {
-			value = (byte[]) _value;
+	public void setValue(Object value) {
+		if (value instanceof byte[]) {
+		    this.value = (byte[]) value;
 			setNull(false);
-		} else if (_value == null) {
+		} else if (value instanceof Byte){
+		    setValue(((Byte)value).byteValue());
+		}else if (value == null) {
 			setNull(true);
 		}else {
-			throw new RuntimeException("not byte array");
+		    throw new ClassCastException("Not a byte/byte_array "+value.getClass().getName());
 		}
-		return;
 	}
 
 
@@ -206,7 +207,7 @@ public class ByteDataField extends DataField {
 	 *@return    The Byte[] value
 	 *@since     October 29, 2002
 	 */
-	public byte[] getByte() {
+	public byte[] getByteArray() {
 		return value;
 	}
 
@@ -292,12 +293,14 @@ public class ByteDataField extends DataField {
 	 *@since       October 29, 2002
 	 */
 	public boolean equals(Object obj) {
+	    if (isNull || obj==null) return false;
+	    
 		if (obj instanceof ByteDataField){
-			return Arrays.equals(this.value, ((ByteDataField) obj).getByte());
+			return Arrays.equals(this.value, ((ByteDataField) obj).value);
 		}else if (obj instanceof byte[]){
 			return Arrays.equals(this.value, (byte[])obj);
 		}else {
-			return false;
+		    throw new ClassCastException("Can't compare ByteDataField and "+obj.getClass().getName());
 		}
 	}
 
@@ -310,13 +313,15 @@ public class ByteDataField extends DataField {
 	 */
 	public int compareTo(Object obj) {
 		byte[] byteObj;
+		if (obj==null) return 1;
+		if (isNull) return -1;
 		
 		if (obj instanceof ByteDataField){
-			byteObj = (byte[]) ((ByteDataField) obj).getValue();
+			byteObj = ((ByteDataField) obj).value;
 		}else if (obj instanceof byte[]){
 			byteObj= (byte[])obj;
 		}else {
-			throw new RuntimeException("Object is NOT a ByteDataField or byte[] array: "+obj);
+		    throw new ClassCastException("Can't compare ByteDataField and "+obj.getClass().getName());
 		}
 		 
 		int compLength = value.length >= byteObj.length ? value.length : byteObj.length;
@@ -341,11 +346,14 @@ public class ByteDataField extends DataField {
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
-		int hash=5381;
+		return Arrays.hashCode(this.value);
+	    /* changed by D.Pavlis 07-Aug-2005
+	    int hash=5381;
 		for (int i=0;i<value.length;i++){
 			hash = ((hash << 5) + hash) + value[i]; 
 		}
 		return (hash & 0x7FFFFFFF);
+		*/
 	}
 	
 	/**
