@@ -31,8 +31,8 @@ import java.lang.IndexOutOfBoundsException;
 
 public class BitArray {
 
-	private byte bits[];
-	private int length;
+	private final byte bits[];
+	private final int length;
 
 
 	/**
@@ -56,7 +56,7 @@ public class BitArray {
 	 *
 	 *@param  index  which bit to set
 	 */
-	public void set(int index) {
+	public final void set(int index) {
 		if (index >= length) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -69,7 +69,7 @@ public class BitArray {
 	 *
 	 *@param  index  which bit to reset
 	 */
-	public void reset(int index) {
+	public final void reset(int index) {
 		if (index >= length) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -83,7 +83,7 @@ public class BitArray {
 	 *@param  index  which bit to check
 	 *@return        true/false according to bit state
 	 */
-	public boolean get(int index) {
+	public final boolean get(int index) {
 		if (index >= length) {
 			throw new IndexOutOfBoundsException();
 		}
@@ -99,7 +99,7 @@ public class BitArray {
 	 *@param  index  which bit to check
 	 *@return        true/false according to bit state
 	 */
-	public boolean isSet(int index) {
+	public final boolean isSet(int index) {
 		return get(index);
 	}
 
@@ -109,7 +109,7 @@ public class BitArray {
 	 *
 	 *@return    length
 	 */
-	public int length() {
+	public final int length() {
 		return length;
 	}
 
@@ -137,7 +137,7 @@ public class BitArray {
  	 *
 	 *@return    The byteArray value
 	 */
-	public byte[] getByteArray() {
+	public final byte[] getByteArray() {
 		return bits;
 	}
 
