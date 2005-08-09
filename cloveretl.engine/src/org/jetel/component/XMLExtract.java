@@ -12,12 +12,20 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DateDataField;
+import org.jetel.data.IntegerDataField;
+import org.jetel.data.LongDataField;
+import org.jetel.data.NumericDataField;
+import org.jetel.data.SequenceField;
+import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.NodeList;
@@ -168,6 +176,8 @@ public class XMLExtract extends Node
 							attributes.getQName(i));
 					if (field != null)
 					{
+						field.setNull(false); // Bug: Need to set null to
+						// false when there's valid data
 						field.fromString(attributes.getValue(i));
 					}
 				}
@@ -189,7 +199,7 @@ public class XMLExtract extends Node
 		public void endElement(String prefix, String namespace, String localName)
 				throws SAXException
 		{
-			if (m_activeMapping != null && m_characters.length() > 0)
+			if (m_activeMapping != null)
 			{
 				// Store the characters processed by the characters() call back
 				DataField field = m_activeMapping.getOutRecord().getField(
@@ -308,7 +318,9 @@ public class XMLExtract extends Node
 							}
 						}
 						outPort.writeRecord(outRecord);
-						outRecord.init();
+						// reset record
+						resetRecord(outRecord);
+
 						m_activeMapping = m_activeMapping.getParent();
 					}
 					catch (Exception ex)
@@ -441,6 +453,7 @@ public class XMLExtract extends Node
 				{
 					m_outRecord = new DataRecord(outPort.getMetadata());
 					m_outRecord.init();
+					resetRecord(m_outRecord);
 				}
 				else
 				{
@@ -815,5 +828,77 @@ public class XMLExtract extends Node
 		// return Collections.unmodifiableMap(m_elementPortMap); // return a
 		// read-only map
 		return m_elementPortMap;
+	}
+
+	private void resetRecord(DataRecord record)
+	{
+		// reset the record setting the nullable fields to null and default
+		// values. Unfortunately init() does not do this, so if you have a field
+		// that's nullable and you never set a value to it, it will NOT be null.
+
+		// the reason we need to reset data records is the fact that XML data is
+		// not as rigidly
+		// structured as csv fields, so column values are regularly "missing"
+		// and without a reset
+		// the prior row's value will be present.
+		for (int i = 0; i < record.getNumFields(); i++)
+		{
+			DataFieldMetadata fieldMetadata = record.getMetadata().getField(i);
+			DataField field = record.getField(i);
+			if (fieldMetadata.isNullable())
+			{
+				// Default all nullables to null
+				field.setNull(true);
+			}
+			else
+			{
+				// Not nullable so set it to the default value (what init does)
+				switch (fieldMetadata.getType())
+				{
+				case DataFieldMetadata.INTEGER_FIELD:
+					((IntegerDataField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.STRING_FIELD:
+					((StringDataField) field).setValue("");
+					break;
+
+				case DataFieldMetadata.DATE_FIELD:
+				case DataFieldMetadata.DATETIME_FIELD:
+					((DateDataField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.NUMERIC_FIELD:
+					((NumericDataField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.LONG_FIELD:
+					((LongDataField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.DECIMAL_FIELD:
+					((NumericDataField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.BYTE_FIELD:
+					((ByteDataField) field).setValue((byte) 0);
+					break;
+
+				case DataFieldMetadata.SEQUENCE_FIELD:
+					((SequenceField) field).setValue(0);
+					break;
+
+				case DataFieldMetadata.UNKNOWN_FIELD:
+				default:
+					break;
+				}
+			}
+
+			if (fieldMetadata.getDefaultValue() != null)
+			{
+				// Default all default values to their given defaults
+				field.fromString(fieldMetadata.getDefaultValue());
+			}
+		}
 	}
 }
