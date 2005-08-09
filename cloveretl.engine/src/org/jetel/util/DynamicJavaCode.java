@@ -67,7 +67,11 @@ public class DynamicJavaCode {
 
 	private void saveSrc(){
 		long checkSumFile;
-		fileName=srcPath+fileSeparator+className+".java";
+		fileName=srcPath
+			+ (srcPath.endsWith(fileSeparator)
+			   ? ""
+			   : fileSeparator)
+			+ className + ".java";
 		Checksum checkSumSrc=new Adler32();
 		byte[] stringBytes=srcCode.getBytes();
 		checkSumSrc.update(stringBytes,0,stringBytes.length);
@@ -103,7 +107,10 @@ public class DynamicJavaCode {
 	 */
 	public Object instantiate() {
 		Class tClass;
-		String urlString = "file:" + srcPath;
+		String urlString = "file:" + srcPath
+			+ (srcPath.endsWith(fileSeparator)
+			  ? ""
+			  : fileSeparator);
 		URL[] myURLs;
 		
 		// firstly, save source

@@ -111,7 +111,12 @@ public class Compile {
 			
 			
 		if (forceCompile || needsRecompile()) {
-			errFilename=destDir + source.getName() + ".err";
+			errFilename=destDir
+				+ (destDir.endsWith(fileSeparator)
+				  ? ""
+				  : fileSeparator)
+				+ source.getName()
+				+ ".err";
 			if (useExecutable) {
 				String[] args = new String[]{compilerExecutable, "-d", destDir, srcFile,
 						"-Xstdout", errFilename };
@@ -169,7 +174,12 @@ public class Compile {
 			int index=source.getName().lastIndexOf('.');
 			String className=source.getName().substring(0,index);
 			// we need to conver blblabl.java to blablab.class to compare files
-			File dest = new File(destDir + fileSeparator + className+".class");
+			File dest = new File(destDir
+				+ (destDir.endsWith(fileSeparator)
+				  ? ""
+				  : fileSeparator)
+				+ className
+				+ ".class");
 			if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
 				return false;// is already compiled !!!!
 			} else {
