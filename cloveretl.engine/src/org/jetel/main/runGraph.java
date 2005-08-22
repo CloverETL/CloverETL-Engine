@@ -2,18 +2,20 @@
  *  jETeL/Clover - Java based ETL application framework.
  *  Copyright (C) 2002-03  David Pavlis
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *    
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ *    Lesser General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 package org.jetel.main;
 
@@ -41,7 +43,7 @@ import org.jetel.graph.*;
  */
 public class runGraph {
 
-	private final static String RUN_GRAPH_VERSION="1.6";
+	private final static String RUN_GRAPH_VERSION="1.7";
 	private final static String VERBOSE_SWITCH = "-v";
 	private final static String LOG_SWITCH = "-log";
 	private final static String PROPERTY_FILE_SWITCH = "-cfg";
@@ -61,7 +63,7 @@ public class runGraph {
 		Properties properties=new Properties();
 		int trackingInterval=-1;
 
-		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-04 D.Pavlis, released under GNU Public License  ***\n");
+		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***\n");
 		if (args.length < 1) {
 			printHelp();
 			System.exit(-1);
