@@ -213,9 +213,9 @@ public abstract class CopySQLData {
 	 *  Creates translation array for copying data from Jetel record into Database
 	 *  record
 	 *
-	 * @param  fieldTypes        Description of Parameter
-	 * @param  record            Description of Parameter
-	 * @return                   Description of the Returned Value
+	 * @param  fieldTypes        JDBC field types - of the target JDBC data fields
+	 * @param  record            DataRecord which will be used to populate DB
+	 * @return                   the transMap (array of CopySQLData) object
 	 * @exception  SQLException  Description of Exception
 	 * @since                    October 4, 2002
 	 */
@@ -247,7 +247,7 @@ public abstract class CopySQLData {
 	 *  Creates translation array for copying data from Jetel record into Database
 	 *  record. It allows only certain (specified) Clover fields to be considered
 	 *
-	 * @param  fieldTypes          Description of the Parameter
+	 * @param  fieldTypes          DJDBC field types - of the target JDBC data fields
 	 * @param  record              Description of the Parameter
 	 * @param  cloverFields        array of DataRecord record's field names which should be considered for mapping
 	 * @return                     Description of the Return Value
@@ -285,7 +285,7 @@ public abstract class CopySQLData {
 	 *  Creates translation array for copying data from Jetel record into Database
 	 *  record. It allows only certain (specified) Clover fields to be considered
 	 *
-	 * @param  fieldTypes          Description of the Parameter
+	 * @param  fieldTypes          JDBC field types - of the target JDBC data fields
 	 * @param  record              Description of the Parameter
 	 * @param  cloverFields        array of DataRecord record's field numbers which should be considered for mapping
 	 * @return                     Description of the Return Value
@@ -330,7 +330,7 @@ public abstract class CopySQLData {
 	 * method only as the last resort.
 	 * 
 	 * @param record
-	 * @param cloverFields
+	 * @param cloverFields  array of DataRecord record's field numbers which should be considered for mapping
 	 * @return
 	 * @throws JetelException
 	 */
