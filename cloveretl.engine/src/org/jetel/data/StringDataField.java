@@ -42,9 +42,9 @@ import org.jetel.metadata.DataFieldMetadata;
  * @created     January 26, 2003
  * @see         org.jetel.metadata.DataFieldMetadata
  */
-public class StringDataField extends DataField implements CharSequence, Comparable{
+public class StringDataField extends DataField implements CharSequence{
 
-	private CharBuffer value;
+	private StringBuffer value;
 	
 	// Attributes
 	/**
@@ -68,9 +68,9 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	public StringDataField(DataFieldMetadata _metadata) {
 		super(_metadata);
 		if (_metadata.getSize() < 1) {
-			value = CharBuffer.allocate(INITIAL_STRING_BUFFER_CAPACITY);
+			value = new StringBuffer(INITIAL_STRING_BUFFER_CAPACITY);
 		} else {
-		    allocateSpace(_metadata.getSize());
+			value = new StringBuffer(_metadata.getSize());
 		}
 	}
 
@@ -87,11 +87,6 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 		setValue(_value);
 	}
 
-	public StringDataField(DataFieldMetadata _metadata, CharSequence _value) {
-		this(_metadata);
-		setValue(_value);
-	}
-	
 
 	/**
 	 * Private constructor used internally when clonning
@@ -99,10 +94,10 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @param _metadata
 	 * @param _value
 	 */
-	private StringDataField(DataFieldMetadata _metadata, CharBuffer _value){
+	private StringDataField(DataFieldMetadata _metadata, StringBuffer _value){
 	    super(_metadata);
-	    allocateSpace(_value.length());
-	    this.value.put(_value);
+	    this.value=new StringBuffer(_value.length());
+	    this.value.append(_value);
 	}
 	
 	
@@ -122,7 +117,8 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	public void copyFrom(DataField fieldFrom){
 	    if (fieldFrom instanceof StringDataField ){
 	        if (!fieldFrom.isNull){
-	            setValue(((StringDataField)fieldFrom).value);
+	            this.value.setLength(0);
+	            this.value.append(((StringDataField)fieldFrom).value);
 	        }
 	        setNull(fieldFrom.isNull);
 	    }else{
@@ -138,40 +134,36 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object value) throws BadDataFormatException {
+	    this.value.setLength(0);
 		if (value instanceof StringDataField){
-		    setValue((CharBuffer)((StringDataField)value).getValue());
+		    this.value.append(((StringDataField)value).value);
 		}else if (value instanceof String){
-		    fromString((String)value);
+		    this.value.append((String)value);
 		}else if (value instanceof StringBuffer){
-		    fromStringBuffer((StringBuffer)value);
+		    this.value.append((StringBuffer)value);
 		}else if (value instanceof char[]){
-		    fromCharArray((char[])value);
+		    this.value.append((char[])value);
+		}else if (value instanceof CharSequence){
+		    this.value.append((CharSequence)value);
 		}else if (value==null){
 		    if (this.metadata.isNullable()) {
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
 			return;
 		}
-		super.setNull(false);
-	}
-
-	
-	public void setValue(CharBuffer value){
-	    if (value.length()>0){
-	    allocateSpace(value.length());
-	    this.value.put(value);
-	    this.value.flip();
-	    this.setNull(false);
-	    }else{
-	        if (this.metadata.isNullable()) {
-				super.setNull(true);
+		if (this.value.length()!=0){
+		    	setNull(false);
+		}else{
+		    if (this.metadata.isNullable()) {
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
-	    }
+		}
 	}
+
 
 	/**
 	 *  Sets the value attribute of the StringDataField object
@@ -181,10 +173,11 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since       October 29, 2002
 	 */
 	public void setValue(CharSequence seq) {
+		value.setLength(0);
 		if (seq != null && seq.length() > 0) {
-		    allocateSpace(seq.length());
-		    for (int i=0;i<seq.length();this.value.put(seq.charAt(i++)));
-		    this.value.flip();
+			for (int i = 0; i < seq.length(); i++) {
+				value.append(seq.charAt(i));
+			}
 			setNull(false);
 		} else {
 			if (this.metadata.isNullable()) {
@@ -196,18 +189,6 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 		}
 	}
 
-	/**
-	 * Ensures that the internal character buffer has enough capacity
-	 * 
-	 * @param size  size of the new char buffer (in num of characters)
-	 */
-	private void allocateSpace(int size){
-	    if ((this.value==null)||(this.value.capacity()<size)){
-	        this.value=CharBuffer.allocate(((size/4)+1)*4);
-	    }
-	    this.value.clear();
-	}
-	
 
 	/**
 	 *  Sets the Null value indicator
@@ -218,12 +199,22 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (isNull) {
-			value.clear();
+			value.setLength(0);
 		}
 	}
 
 
-	
+	/**
+	 *  Gets the Null value indicator
+	 *
+	 * @return    The Null value
+	 * @since     October 29, 2002
+	 */
+	public boolean isNull() {
+		return super.isNull();
+	}
+
+
 	/**
 	 *  Gets the Value attribute of the StringDataField object
 	 *
@@ -231,7 +222,7 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since     April 23, 2002
 	 */
 	public Object getValue() {
-		return (isNull ? null : this.value.rewind());
+	    return (isNull  ? null : value);
 	}
 
 
@@ -265,14 +256,7 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		this.value.clear();
-		this.value.put(decoder.decode(dataBuffer));
-		this.value.flip();
-		if (this.value.length()>0){
-		    setNull(false);
-		}else{
-		    setNull(true);
-		}
+		fromString(decoder.decode(dataBuffer).toString());
 	}
 
 
@@ -285,8 +269,7 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		this.value.rewind();
-	    dataBuffer.put(encoder.encode(this.value));
+		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 	}
 
 
@@ -297,12 +280,7 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since     April 23, 2002
 	 */
 	public String toString() {
-	    if (isNull()){
-	        return null;
-	    }else{
-	        value.rewind();
-	        return value.toString();
-	    }
+		return value.toString();
 	}
 
 
@@ -313,50 +291,9 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since         April 23, 2002
 	 */
 	public void fromString(String value) {
-		if (value==null || value.length()==0){
-		    if (this.metadata.isNullable()) {
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-		}else{
-		    allocateSpace(value.length());
-		    this.value.put(value);
-		    this.value.flip();
-		    setNull(false);
-		}
-	}
-	
-	public void fromCharArray(char[] value) {
-		if (value==null || value.length==0){
-		    if (this.metadata.isNullable()) {
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-		}else{
-		    allocateSpace(value.length);
-		    this.value.put(value);
-		    this.value.flip();
-		    setNull(false);
-		}
+		setValue(value);
 	}
 
-	private void fromStringBuffer(StringBuffer value){
-	    if (value==null || value.length()==0){
-		    if (this.metadata.isNullable()) {
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-		}else{
-		    allocateSpace(value.length());
-		    for (int i=0;i<value.length();this.value.put(value.charAt(i++)));
-		    this.value.flip();
-		    setNull(false);
-		}
-	}
-	
 
 	/**
 	 *  Description of the Method
@@ -365,12 +302,19 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		value.rewind();
-	    int length=value.remaining();
-		buffer.putShort((short)length);
-		length=length*2+buffer.position(); // the new limit
-		buffer.asCharBuffer().put(this.value);
-		buffer.position(length);
+	    int length=value.length();
+	    int chars=length;
+	    
+	    do{
+            buffer.put((byte)(0xFF&length));
+            length=length>>7;
+	    }while(length>0);
+	    
+	    //buffer.putShort((short)size);
+
+		for(int counter=0;counter < chars;counter++) {
+			buffer.putChar(value.charAt(counter));
+		}
 	}
 
 
@@ -381,17 +325,27 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		int length = buffer.getShort();
+	    int length; 
+	    byte size;
+	    length=size= 0;
+	    
+	   do{
+	       length=length<<7;
+	       size=buffer.get();
+	       length=length|(size&0x7F);
+	    }while(size>0x7f);
+	    
+	    //int length = buffer.getShort();
+		
+		// empty value - so we can store new string
+		value.setLength(0);
+
 		if (length == 0) {
-		    setNull(true);
+			setNull(true);
 		} else {
-		    final int savedLimit=buffer.limit();
-		    buffer.limit(buffer.position()+length*2);
-		    allocateSpace(length);
-			value.put(buffer.asCharBuffer());
-			buffer.position(buffer.position()+length*2);
-			buffer.limit(savedLimit);
-			value.flip();
+		    for(int counter=0;counter<length;counter++){
+		        value.append(buffer.getChar());
+		    }
 			setNull(false);
 		}
 	}
@@ -406,24 +360,26 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 */
 	public boolean equals(Object obj) {
 	    if (obj==null || isNull) return false;
-	    
-	    this.value.rewind();
-	    
-	    if (obj instanceof StringDataField){
-	        if (((StringDataField)obj).isNull()) return false;
-	        return this.value.equals(((StringDataField)obj).value);
-	    }else if (obj instanceof CharSequence){
-	        CharSequence data;
-	        data = (CharSequence)obj;
-	        if (value.length() != data.length()) return false;
-	        for (int i = 0; i < value.length(); i++) {
-	            if (value.charAt(i) != data.charAt(i)) {
-	                return false;
-	            }
-	        }
-	        return true;
-	    }
-	    return false;
+		CharSequence data;
+		
+		if (obj instanceof StringDataField){
+		    if (((StringDataField)obj).isNull()) return false;
+			data = (CharSequence)((StringDataField) obj).getValue();
+		}else if (obj instanceof CharSequence){
+			data = (CharSequence)obj;
+		}else{
+	        throw new ClassCastException("Can't compare StringDataField and "+obj.getClass().getName());
+		}
+		
+		if (value.length() != data.length()) {
+			return false;
+		}
+		for (int i = 0; i < value.length(); i++) {
+			if (value.charAt(i) != data.charAt(i)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 
@@ -434,51 +390,49 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @return      Description -1;0;1 based on comparison result
 	 */
 	public int compareTo(Object obj) {
-		if (obj==null) return 1;
+	    CharSequence strObj;
+	    
+	    if (obj==null) return 1;
 		if (isNull) return -1;
-
-        // we are going to calculate something, so rewind
-        this.value.rewind();
 
         if (obj instanceof StringDataField) {
             if (((StringDataField) obj).isNull())
                 return 1;
-            return this.value.compareTo(((StringDataField) obj).value);
-        } else if (obj instanceof CharSequence) {
-            CharSequence strObj = (CharSequence) obj;
-
-            int valueLenght = value.length();
-            int strObjLenght = strObj.length();
-            int compLength = (valueLenght < strObjLenght ? valueLenght
-                    : strObjLenght);
-            for (int i = 0; i < compLength; i++) {
-                if (value.charAt(i) > strObj.charAt(i)) {
-                    return 1;
-                } else if (value.charAt(i) < strObj.charAt(i)) {
-                    return -1;
-                }
-            }
-            // strings seem to be the same (so far), decide according to the
-            // length
-            if (valueLenght == strObjLenght) {
-                return 0;
-            } else if (valueLenght > strObjLenght) {
-                return 1;
-            } else {
-                return -1;
-            }
-        } else {
+            strObj=((StringDataField) obj).value;
+        }else if (obj instanceof CharSequence) {
+            strObj = (CharSequence) obj;
+        }else {
             throw new ClassCastException("Can't compare StringDataField to "
                     + obj.getClass().getName());
         }
 
-    }
+        int valueLenght = value.length();
+        int strObjLenght = strObj.length();
+        int compLength = (valueLenght < strObjLenght ? valueLenght
+                : strObjLenght);
+        for (int i = 0; i < compLength; i++) {
+            if (value.charAt(i) > strObj.charAt(i)) {
+                return 1;
+            } else if (value.charAt(i) < strObj.charAt(i)) {
+                return -1;
+            }
+        }
+        // strings seem to be the same (so far), decide according to the
+        // length
+        if (valueLenght == strObjLenght) {
+            return 0;
+        } else if (valueLenght > strObjLenght) {
+            return 1;
+        } else {
+            return -1;
+        }
+        
+	}
 
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
-	    value.rewind();
 		int hash=5381;
 		for (int i=0;i<value.length();i++){
 			hash = ((hash << 5) + hash) + value.charAt(i); 
@@ -496,8 +450,15 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	public int getSizeSerialized() {
 		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
 		// size of length indicator (basically int variable)
-	    value.rewind();
-		return value.length()*2+STRING_LENGTH_INDICATOR_SIZE;
+	    int length=value.length();
+	    int count=0;
+	    
+	    do{
+	        count++;
+            length=length>>7;
+	    }while(length>0x7F);
+	        
+		return value.length()*2+count;
 	}
 	
 	/**
@@ -507,7 +468,6 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @return
 	 */
 	public char charAt(int position){
-	    value.rewind();
 		return value.charAt(position);
 	}
 	
@@ -516,7 +476,6 @@ public class StringDataField extends DataField implements CharSequence, Comparab
 	 * @return
 	 */
 	public int length(){
-	    value.rewind();
 		return value.length();
 	}
 	
