@@ -323,6 +323,39 @@ public abstract class CopySQLData {
         return transMap;
     }
 	
+	/**
+	 * Creates translation array for copying data from Jetel record into Database
+	 *  record. It allows only certain (specified) Clover fields to be considered.<br>
+	 * <i>Note:</i> the target (JDBC) data types are guessed from Jetel field types - so use this
+	 * method only as the last resort.
+	 * 
+	 * @param record
+	 * @param cloverFields
+	 * @return
+	 * @throws JetelException
+	 */
+	public static CopySQLData[] jetel2sqlTransMap(DataRecord record, int[] cloverFields) throws JetelException {
+        int fromIndex;
+        int toIndex;
+        int jdbcType;
+        char jetelFieldType;
+
+        CopySQLData[] transMap = new CopySQLData[cloverFields.length];
+
+       for(int i=0;i<cloverFields.length;i++) {
+            jetelFieldType=record.getField(cloverFields[i]).getType();
+            jdbcType = SQLUtil.jetelType2sql(jetelFieldType);
+            
+            // from index is index of specified cloverField in the Clover record
+            fromIndex = cloverFields[i];
+            toIndex=i;
+            // we copy from Clover's field to JDBC - toIndex/fromIndex is
+            // switched here
+            transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record,
+                    toIndex, fromIndex);
+        }
+        return transMap;
+    }
 	
 	/**
 	 *  Creates copy object - bridge between JDBC data types and Clover data types
