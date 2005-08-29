@@ -76,6 +76,7 @@ public class DBLookupTable implements LookupTable {
 		this.dbConnection = dbConnection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
+		this.maxCached = 0;
 	}
 
   
@@ -87,6 +88,8 @@ public class DBLookupTable implements LookupTable {
       if (numCached>0){
           this.resultCache= new WeakHashMap(numCached);
           this.maxCached=numCached;
+      }else{
+          this.maxCached=0;
       }
 }
   
@@ -103,9 +106,10 @@ public class DBLookupTable implements LookupTable {
 
 	/**
 	 *  Looks-up data based on speficied key.<br>
-	 *  The key value is taken from data record
+	 *  The key value is taken from passed-in data record. If caching is enabled, the
+	 * internal cache is searched first, then the DB is queried.
 	 *
-	 *@return                     Associated DataRecord or NULL if not found
+	 *@return                     found DataRecord or NULL
 	 *@since                      May 2, 2002
 	 */
 	public DataRecord get(DataRecord keyRecord) {
@@ -122,7 +126,7 @@ public class DBLookupTable implements LookupTable {
 	        pStatement.clearParameters();
 	        
 	        if (keyTransMap==null){
-	            if (lookupKey != null) {
+	            if (lookupKey == null) {
 	                throw new RuntimeException("RecordKey was not defined for lookup !");
 	            }
 	            
@@ -130,8 +134,16 @@ public class DBLookupTable implements LookupTable {
 	                keyTransMap = CopySQLData.jetel2sqlTransMap(
 	                        SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
 	                        keyRecord,lookupKey.getKeyFields());
-	            } catch (Exception ex) {
+	            } catch (JetelException ex){
 	                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
+	            }catch (Exception ex) {
+	                // PreparedStatement parameterMetadata probably not implemented - use work-around
+	                // we only guess the correct data types on JDBC side
+	                try{
+	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields());
+	                }catch(JetelException ex1){
+	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
+	                }
 	            }
 	        }
 	        for (int i = 0; i < transMap.length; i++) {
@@ -155,10 +167,11 @@ public class DBLookupTable implements LookupTable {
 }
 
 	/**
-	 *  Looks-up record/data based on specified array of parameters
+	 *  Looks-up record/data based on specified array of parameters(values).
+	 * No caching is performed.
 	 *
 	 *@param  keys                Description of the Parameter
-	 *@return                     Description of the Return Value
+	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(Object keys[]) {
 		try {
@@ -181,26 +194,41 @@ public class DBLookupTable implements LookupTable {
 	}
 
 	/**
-	 *  Looks-up data based on specified key-string
+	 *  Looks-up data based on specified key-string.<br>
+	 * If caching is enabled, the
+	 * internal cache is searched first, then the DB is queried.<br>
+	 * <b>Warning:</b>it is not recommended to  mix this call with call to <code>get(DataRecord keyRecord)</code> method.
 	 *
-	 *@param  keyStr              Description of the Parameter
-	 *@return                     Description of the Return Value
+	 *@param  keyStr              string representation of the key-value
+	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(String keyStr) {
-		try {
-			// set up parameters for query
-			// statement uses indexing from 1
-			pStatement.clearParameters();
-			pStatement.setString(1, keyStr);
-			//execute query
-			resultSet = pStatement.executeQuery();
-			if (!fetch()) {
-				return null;
-			}
-    }
-    catch (SQLException ex) {
-			throw new RuntimeException(ex.getMessage());
-		}
+	    if (maxCached>0){
+	        DataRecord data=(DataRecord)resultCache.get(keyStr);
+	        if (data!=null){
+	            return data;
+	        }
+	    }
+	    
+	    try {
+	        // set up parameters for query
+	        // statement uses indexing from 1
+	        pStatement.clearParameters();
+	        pStatement.setString(1, keyStr);
+	        //execute query
+	        resultSet = pStatement.executeQuery();
+	        if (!fetch()) {
+	            return null;
+	        }
+	    }
+	    catch (SQLException ex) {
+	        throw new RuntimeException(ex.getMessage());
+	    }
+	    if (maxCached>0){
+	        DataRecord storeRecord=dbDataRecord.duplicate();
+	        resultCache.put(keyStr, storeRecord);
+	    }
+	    
 		return dbDataRecord;
 	}
 
