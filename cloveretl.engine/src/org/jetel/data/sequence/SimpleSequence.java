@@ -187,5 +187,43 @@ public class SimpleSequence implements Sequence {
         }
     }
     
+	public int getNumCachedValues() {
+		return numCachedValues;
+	}
 
+	public void setNumCachedValues(int numCachedValues) {
+		this.numCachedValues = numCachedValues;
+	}
+	
+	public String getSequenceName() {
+		return sequenceName;
+	}
+	
+	public void setSequenceName(String sequenceName) {
+		this.sequenceName = sequenceName;
+	}
+	
+	public int getStart() {
+		return start;
+	}
+	
+	public void setStart(int start) {
+		this.start = start;
+	}
+	
+	public int getStep() {
+		return step;
+	}
+	
+	public void setStep(int step) {
+		this.step = step;
+	}
+	
+	public String getFilename() {
+		return filename;
+	}
+	
+	public void setFilename(String filename) {
+		this.filename = filename;
+	}
 }
