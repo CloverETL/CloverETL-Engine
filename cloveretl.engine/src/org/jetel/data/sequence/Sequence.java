@@ -35,11 +35,17 @@ import org.jetel.exception.JetelException;
 public interface Sequence {
     
     /**
-     * Method with returns sequence´s name (ID). It is deemed that all sequences are
+     * Method with returns sequence?s name (ID). It is deemed that all sequences are
      * kept in directory and accessed by client's transformations by their names.
      * @return sequence name 
      */
     public String getName();
+    
+    /**
+     * Method allows to set the name of sequence.
+     * @param sequenceName 	new name of the sequence instance
+     */
+    public void setName(String sequenceName);
     
     /**
      * @return current value of the sequence
