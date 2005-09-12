@@ -34,7 +34,10 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  Database table/SQLquery based lookup table which gets data by performing SQL
- *  query. No caching is performed, except the one done on DB side.
+ *  query. Caching of found values can be provided - if the constructor with
+ *  <code>numCached</code> parameter is used. The caching is performed by WeakHashMap so
+ * it can happend that even the frequently used entry (key-value pair) is garbage collected - thus
+ * removed from cache.
  * 
  *  Example using DBLookupTable:
  * 
