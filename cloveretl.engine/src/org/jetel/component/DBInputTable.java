@@ -70,7 +70,8 @@ import org.w3c.dom.Text;
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by url</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i></td>
+ *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i><br><b><code>MIN_INT</code></b> constant
+ * is implemented - is resolved to Integer.MIN_INT value <i>(good for MySQL JDBC driver)</i></td>
  *  <tr><td>&lt;SQLCode&gt;<br><i>optional<small>!!XML tag!!</small></i></td><td>This tag allows for embedding large SQL statement directly into graph.. See example below.</td></tr>
  *  </table>
  *
@@ -102,6 +103,7 @@ public class DBInputTable extends Node {
 	private static final String XML_URL_ATTRIBUTE = "url";
 	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	private static final String XML_FETCH_SIZE_MIN_INT = "MIN_INT";
 	
 	private SQLDataParser parser;
 
@@ -147,6 +149,7 @@ public class DBInputTable extends Node {
 
 		// try to open file & initialize data parser
 		parser.open(this.graph.getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
+		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 	}
 
 
@@ -272,7 +275,11 @@ public class DBInputTable extends Node {
                 }
                 
                 if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
-                    aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+                    if (xattribs.getString(XML_FETCHSIZE_ATTRIBUTE).equalsIgnoreCase(XML_FETCH_SIZE_MIN_INT)){
+                        aDBInputTable.setFetchSize(Integer.MIN_VALUE);
+                    }else{
+                        aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
+                    }
                 }
                 
                 if (xattribs.exists(XML_URL_ATTRIBUTE)) {
