@@ -222,7 +222,7 @@ public class SQLDataParser implements Parser {
 		try {
 			// following calls are not always supported (as it seems)
 			// if error occures, we just ignore it
-			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
+			statement.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY); 
 			statement.setFetchSize(fetchSize);
 		
 		} catch (Exception e) {
