@@ -18,15 +18,28 @@
 *
 */
 package org.jetel.database;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
+
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.PropertyRefResolver;
 import org.w3c.dom.NamedNodeMap;
+
 
 /**
  *  CloverETL class for connecting to databases.<br>
@@ -50,11 +63,26 @@ import org.w3c.dom.NamedNodeMap;
  * <li>READ_COMMITTED</li>
  * <li>REPEATABLE_READ</li>
  * <li>SERIALIZABLE</li>
- * </ul><i>Note: If not specified, then the driver's default is used.</i></td></tr> 
+ * </ul>
+ * <tr><td><b>threadSafeConnection</b><br><i>optional</i></td><td>if set, each thread gets its own connection. <i>Can be used
+ * to prevent problems when multiple components conversate with DB through the same connection object which is
+ * not thread safe.</i></td></tr>
+ * <i>Note: If not specified, then the driver's default is used.</i></td></tr> 
  * </table>
  *  <h4>Example:</h4>
  *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
- *
+ * <i>Note: any XML attribute name can also be used in the dbConfig file. If the option is set there, then
+ * the value is applied to the connection object created.</i>
+ * <h4>Example of dbConfig file:</h4>
+ * <pre>**********
+ * dbDriver=oracle.jdbc.driver.OracleDriver
+ * dbURL=jdbc:oracle:thin:@@//localhost:1521/mytestdb
+ * user=noname
+ * password=free
+ * defaultRowPrefetch=10
+ * driverLibrary=c:/Orahome91/jdbc/lib/ojdbc14.jar
+ * threadSafeConnection=true
+ * ********</pre>
  * @author      dpavlis
  * @since       21. b?ezen 2004
  * @revision    $Revision$
@@ -67,6 +95,8 @@ public class DBConnection {
 	Driver dbDriver;
 	Connection dbConnection;
 	Properties config;
+	boolean threadSafeConnections;
+	private Map openedConnections;
 
 	public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
 	public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
@@ -76,6 +106,7 @@ public class DBConnection {
 	public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
 	public static final String XML_PASSWORD_ATTRIBUTE = "password";
 	public static final String XML_USER_ATTRIBUTE = "user";
+	public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
 	// not yet used by component
 	public static final String XML_NAME_ATTRIBUTE = "name";
 	/**
@@ -92,6 +123,8 @@ public class DBConnection {
 		if (password!=null) config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
 		this.dbDriverName = dbDriver;
 		this.dbURL = dbURL;
+		this.threadSafeConnections=false;
+		this.openedConnections=new HashMap();
 	}
 
 
@@ -102,6 +135,7 @@ public class DBConnection {
 	 */
 	public DBConnection(String configFilename) {
 		this.config = new Properties();
+		this.openedConnections=new HashMap();
 
 		try {
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
@@ -109,6 +143,7 @@ public class DBConnection {
 			stream.close();
 			this.dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
 			this.dbURL = config.getProperty(XML_DBURL_ATTRIBUTE);
+			this.threadSafeConnections=Boolean.parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
 
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -116,10 +151,12 @@ public class DBConnection {
 	}
 
 	public DBConnection(Properties configProperties) {
+	    this.openedConnections=new HashMap();
 		this.dbDriverName = (String)configProperties.remove(XML_DBDRIVER_ATTRIBUTE);
 		this.config = new Properties();
 		this.config.putAll(configProperties);
 		this.dbURL = (String)this.config.remove(XML_DBURL_ATTRIBUTE);
+		this.threadSafeConnections=Boolean.parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
 	}
 	
 	/**
@@ -136,44 +173,39 @@ public class DBConnection {
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
 	public void connect() {
-	    if (dbConnection!=null){
-	        try{
-	            if (!dbConnection.isClosed()) return;
-	        }catch(SQLException ex){
-	            // do nothing - connection is probably invalid, create a new one - continue execution
+	    if (dbDriver==null){
+	        try {
+	            dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
+	        } catch (ClassNotFoundException ex) {
+	            // let's try to load in any additional .jar library (if specified)
+	            String jdbcDriverLibrary = config
+	            .getProperty(JDBC_DRIVER_LIBRARY_NAME);
+	            if (jdbcDriverLibrary != null) {
+	                String urlString = "file:" + jdbcDriverLibrary;
+	                URL[] myURLs;
+	                try {
+	                    myURLs = new URL[] { new URL(urlString) };
+	                    URLClassLoader classLoader = new URLClassLoader(myURLs);
+	                    dbDriver = (Driver) Class.forName(dbDriverName, true,
+	                            classLoader).newInstance();
+	                } catch (MalformedURLException ex1) {
+	                    throw new RuntimeException("Malformed URL: "
+	                            + ex1.getMessage());
+	                } catch (ClassNotFoundException ex1) {
+	                    throw new RuntimeException("Can not find class: " + ex1);
+	                } catch (Exception ex1) {
+	                    throw new RuntimeException("General exception: "
+	                            + ex1.getMessage());
+	                }
+	            } else {
+	                throw new RuntimeException("Can't load DB driver :"
+	                        + ex.getMessage());
+	            }
+	        } catch (Exception ex) {
+	            throw new RuntimeException("Can't load DB driver :"
+	                    + ex.getMessage());
 	        }
 	    }
-		try {
-			dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
-		} catch (ClassNotFoundException ex) {
-			// let's try to load in any additional .jar library (if specified)
-			String jdbcDriverLibrary = config
-					.getProperty(JDBC_DRIVER_LIBRARY_NAME);
-			if (jdbcDriverLibrary != null) {
-				String urlString = "file:" + jdbcDriverLibrary;
-				URL[] myURLs;
-				try {
-					myURLs = new URL[] { new URL(urlString) };
-					URLClassLoader classLoader = new URLClassLoader(myURLs);
-					dbDriver = (Driver) Class.forName(dbDriverName, true,
-							classLoader).newInstance();
-				} catch (MalformedURLException ex1) {
-					throw new RuntimeException("Malformed URL: "
-							+ ex1.getMessage());
-				} catch (ClassNotFoundException ex1) {
-					throw new RuntimeException("Can not find class: " + ex1);
-				} catch (Exception ex1) {
-					throw new RuntimeException("General exception: "
-							+ ex1.getMessage());
-				}
-			} else {
-				throw new RuntimeException("Can't load DB driver :"
-						+ ex.getMessage());
-			}
-		} catch (Exception ex) {
-			throw new RuntimeException("Can't load DB driver :"
-					+ ex.getMessage());
-		}
 		try {
 			dbConnection = dbDriver.connect(dbURL, this.config);
 		} catch (SQLException ex) {
@@ -217,17 +249,40 @@ public class DBConnection {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public void close() throws SQLException {
-		dbConnection.close();
+	    for(Iterator i=openedConnections.entrySet().iterator();i.hasNext();){
+	        ((Connection)i.next()).close();
+	    }
 	}
 
 
 	/**
-	 *  Gets the connection attribute of the DBConnection object
+	 *  Gets the connection attribute of the DBConnection object. If threadSafe option
+	 * is set, then each call will result in new connection being created.
 	 *
-	 * @return    The connection value
+	 * @return    The database connection (JDBC)
 	 */
 	public Connection getConnection() {
-		return dbConnection;
+	    Connection con=null;
+	    if (threadSafeConnections){
+	        con=(Connection)openedConnections.get(Thread.currentThread());
+	        if(con==null){
+	            connect();
+	            con=dbConnection;
+	            openedConnections.put(Thread.currentThread(),con);
+	        }
+		}else{
+		    try{
+	            if (dbConnection.isClosed()){
+	                connect();
+	            }
+	        }catch(SQLException ex){
+	            throw new RuntimeException(
+						"Can't establish or reuse existing connection : " + dbDriver
+								+ " ; " + dbURL);
+	        }
+		    con=dbConnection;
+		}
+	    return con;
 	}
 
 
@@ -238,7 +293,7 @@ public class DBConnection {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public Statement getStatement() throws SQLException {
-		return dbConnection.createStatement();
+		return getConnection().createStatement();
 	}
 
 	/**
@@ -254,7 +309,7 @@ public class DBConnection {
 	 * @throws SQLException
 	 */
 	public Statement getStatement(int type,int concurrency,int holdability) throws SQLException {
-	    return dbConnection.createStatement(type,concurrency,holdability);
+	    return getConnection().createStatement(type,concurrency,holdability);
 	}
 
 	/**
@@ -265,7 +320,7 @@ public class DBConnection {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return dbConnection.prepareStatement(sql);
+		return getConnection().prepareStatement(sql);
 	}
 
 	/**
@@ -281,7 +336,7 @@ public class DBConnection {
 	public PreparedStatement prepareStatement(String sql, int resultSetType,
             int resultSetConcurrency,
             int resultSetHoldability) throws SQLException {
-		return dbConnection.prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
+		return getConnection().prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
 	}
 
 	/**
@@ -344,6 +399,11 @@ public class DBConnection {
 
 				con = new DBConnection(dbDriver, dbURL, user, password);
 
+				//check thread safe option
+				if (xattribs.exists(XML_THREAD_SAFE_CONNECTIONS)){
+				    con.setThreadSafeConnections(xattribs.getBoolean(XML_THREAD_SAFE_CONNECTIONS));
+				}
+				
 				// assign rest of attributes/parameters to connection properties so
 				// it can be retrieved by DB JDBC driver
 				for (int i = 0; i < attributes.getLength(); i++) {
@@ -365,6 +425,7 @@ public class DBConnection {
 		propsToStore.putAll(config);
 		propsToStore.put(XML_DBDRIVER_ATTRIBUTE,this.dbDriverName);
 		propsToStore.put(XML_DBURL_ATTRIBUTE,this.dbURL);
+		propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,new Boolean(this.threadSafeConnections));
 		propsToStore.store(outStream,null);
 	}
 	
@@ -377,5 +438,17 @@ public class DBConnection {
 	public String toString() {
 		return dbURL;
 	}
+    /**
+     * @return Returns the threadSafeConnections.
+     */
+    public boolean isThreadSafeConnections() {
+        return threadSafeConnections;
+    }
+    /**
+     * @param threadSafeConnections The threadSafeConnections to set.
+     */
+    public void setThreadSafeConnections(boolean threadSafeConnections) {
+        this.threadSafeConnections = threadSafeConnections;
+    }
 }
 
