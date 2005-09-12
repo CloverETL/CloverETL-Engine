@@ -113,7 +113,7 @@ public class LongDataField extends DataField implements Number, Comparable{
 		}
 		if (_value instanceof Long) {
 			this.value = ((Long) _value).longValue();
-			setNull(false);
+			if (this.value!=Long.MIN_VALUE) setNull(false); else setNull(true);
 		} else {
 			if (this.metadata.isNullable()) {
 				this.value = Long.MIN_VALUE;
