@@ -222,7 +222,7 @@ public class DBInputTable extends Node {
 			xmlElement.appendChild(childElement);
 		}
 		
-		if (fetchSize > 0) {
+		if (fetchSize != 0) {
 			xmlElement.setAttribute(XML_FETCHSIZE_ATTRIBUTE, String.valueOf(fetchSize));
 		}
 		
