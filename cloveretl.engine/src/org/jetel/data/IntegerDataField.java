@@ -114,7 +114,7 @@ public class IntegerDataField extends DataField implements Number, Comparable {
 		}
 		if (_value instanceof Integer) {
 			value = ((Integer) _value).intValue();
-			setNull(false);
+			if (value!=Integer.MIN_VALUE) setNull(false); else setNull(true);
 		} else {
 			if (this.metadata.isNullable()) {
 				value = Integer.MIN_VALUE;
