@@ -27,7 +27,7 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  *  Interface to output data formatters
  *
- *@author     your_name_here
+ *@author     David Pavlis
  *@since      December 30, 2002
  *@see        OtherClasses
  */
