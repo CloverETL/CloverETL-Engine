@@ -37,7 +37,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
- * @author david
+ * @author David Pavlis
  * @since  28.6.2005
  *
  * TODO To change the template for this generated type comment go to

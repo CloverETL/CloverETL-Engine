@@ -111,7 +111,10 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
-	 *  Sets the Null value indicator
+	 *  Sets the Null value indicator/status. If passed-in value
+	 * is True, then the field's internal value is set to NULL. The nullability
+	 * of the field is checked and if the NULL value is not permitted, the
+	 * BadDataFormatException is thrown.
 	 *
 	 * @param  isNull  The new Null value
 	 * @since          September 16, 2002
@@ -126,7 +129,10 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
-	 *  Gets the value of the data field
+	 *  Gets the internal value of the data field. If field's value is
+	 * deemed to be NULL (isNull() return true) then the returned
+	 * value is NULL. Otherwise the internal values is converted
+	 * to appropriate object representation and returned.<br>
 	 *
 	 * @return    The Value value
 	 * @since
@@ -155,9 +161,10 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
-	 *  Gets the Null value indicator
+	 *  Checks the field value for being NULL.
 	 *
-	 * @return    The Null value
+	 * @return    True if the data field's internal value is
+	 * deemed to be NULL otherwise false;
 	 * @since     September 16, 2002
 	 */
 	public boolean isNull() {
@@ -226,7 +233,11 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
-	 *  Checks whether two DataField objects are equal
+	 *  Checks whether two DataField objects are equal. Both
+	 * fiels should be of the same type. If they are not, ClassCastException
+	 * is thrown.<br> 
+	 * Two datafields where each is flagged as to be NULL (isNull() returns true) are
+	 * deemed <b>NOT equal</b>.
 	 *
 	 * @param  obj  Description of Parameter
 	 * @return      Description of the Returned Value
@@ -237,6 +248,11 @@ public abstract class DataField implements Serializable, Comparable {
 
 	/**
 	 *  Compares two fields and returs -1,0,1 depending on result of comparison.
+	 * Both fiels should be of the same type. If they are not, ClassCastException
+	 * is thrown.<br>
+	 * When comparing fields where one or both are NULL (isNull() returns true), the
+	 * result of comparison is that if <code>obj</code> is NULL the result is 1,
+	 * if <code>this.value</code> (value of this field) is NULL, the result is -1; 
 	 *
 	 * @param  obj  Description of the Parameter
 	 * @return      Description of the Return Value
