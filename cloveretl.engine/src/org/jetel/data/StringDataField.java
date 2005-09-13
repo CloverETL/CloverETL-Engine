@@ -302,17 +302,16 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-	    int length=value.length();
-	    int chars=length;
+	    int length = value.length();
+	    int chars = length;
 	    
-	    do{
-            buffer.put((byte)(0xFF&length));
-            length=length>>7;
-	    }while(length>0);
+	    do {
+	    	buffer.put((byte)(0x80 | (byte) length));
+            length = length >> 7;
+	    } while((length >> 7) > 0);
+    	buffer.put((byte) length);
 	    
-	    //buffer.putShort((short)size);
-
-		for(int counter=0;counter < chars;counter++) {
+		for(int counter = 0; counter < chars; counter++) {
 			buffer.putChar(value.charAt(counter));
 		}
 	}
@@ -326,30 +325,27 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void deserialize(ByteBuffer buffer) {
 	    int length; 
-	    byte size;
-	    length=size= 0;
+	    int size;
+	    length = size = 0;
+	    int count = 0;
 	    
-	   do{
-	       length=length<<7;
-	       size=buffer.get();
-	       length=length|(size&0x7F);
-	    }while(size>0x7f);
-	    
-	    //int length = buffer.getShort();
-		
+	    do {
+	       size = buffer.get();
+	       length = length | ((size & 0x7F) << (7 * count++));
+	    } while(size < 0);
+	   
 		// empty value - so we can store new string
 		value.setLength(0);
 
 		if (length == 0) {
 			setNull(true);
 		} else {
-		    for(int counter=0;counter<length;counter++){
+		    for(int counter = 0; counter < length; counter++){
 		        value.append(buffer.getChar());
 		    }
 			setNull(false);
 		}
 	}
-
 
 	/**
 	 *  Description of the Method

@@ -167,7 +167,7 @@ public class NumericDataField extends DataField implements Number, Comparable{
 		}
 		if (_value instanceof Double) {
 			value = ((Double) _value).doubleValue();
-			if (value!=Double.NaN) setNull(false) else setNull(true);
+			if (value!=Double.NaN) setNull(false); else setNull(true);
 		} else {
 			if(this.metadata.isNullable()) {
 				value = Double.NaN;
