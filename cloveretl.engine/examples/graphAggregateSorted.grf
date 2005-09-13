@@ -7,7 +7,7 @@
 <Metadata id="OutMetadata" fileURL="metadata/ordersAggregate.fmt"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders1.dat" />
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
 <Node id="SORT" type="SORT" sortKey="ShipName;ShipCity"/>
 <Node id="AGGREGATE" type="AGGREGATE" aggregateKey="ShipName;ShipCity" aggregateFunctions="count(Freight); avg(Freight)" sorted="true"/>
 <Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.aggregated"/>

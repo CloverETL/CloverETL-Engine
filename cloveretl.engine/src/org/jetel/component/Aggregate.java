@@ -68,7 +68,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="AGGREGATE_NODE" type="AGGREGATE" aggregateKey="FirstName" aggregateFunctions="count(); min(Age); avg(Salery); min(HireDate)" sorted="false" /&gt;</pre>
  *
- * @author      Martin Zatopek
+ * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
  * @since       June 27, 2005
  * @revision    $Revision$
  */

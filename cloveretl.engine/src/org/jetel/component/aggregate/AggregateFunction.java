@@ -33,7 +33,7 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  *  Represent aggregate function of agregate component.
  *
- * @author      Martin Zatopek
+ * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
  * @since       June 27, 2005
  * @revision    $Revision$
  */
@@ -264,7 +264,7 @@ public class AggregateFunction implements Iterator {
 	/**
 	 *  Represent one aggregate function.
 	 *
-	 * @author      Martin Zatopek
+	 * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
 	 * @since
 	 * @revision    $Revision$
 	 */
@@ -488,11 +488,15 @@ public class AggregateFunction implements Iterator {
 		private char fieldType;
 		private int count;
 		private DataField value = null;
+		private DataField value1 = null;
 		
 		Data(int count, Object v, char fieldType, DataField df) {
 			this.fieldType = fieldType;
 			this.count = count;
-			if(df != null) value = df.duplicate();
+			if(df != null) { 
+				value = df.duplicate();
+				value.setNull(true);
+			}
 			setValue(v);
 		}
 
@@ -504,35 +508,47 @@ public class AggregateFunction implements Iterator {
 			count++;
 		}
 
-		public void increaseValue(Object increasor) {
-			if(value instanceof Number) {
-				
-			}
+		private void increaseValueEx(DataField val, Object increasor) {
 			switch(fieldType) {
 				case DataFieldMetadata.INTEGER_FIELD:
-					if(value == null) {
-						setValue(increasor);
+					if(val.isNull()) {
+						setValueEx(val, increasor);
 					} else {
-						setValue(new Integer(((Integer) value.getValue()).intValue() + ((Integer) increasor).intValue()));
+						setValueEx(val, new Integer(((Integer) val.getValue()).intValue() + ((Integer) increasor).intValue()));
 					}
 					break;
 				case DataFieldMetadata.NUMERIC_FIELD:
-					if(value == null) {
-						setValue(increasor);
+					if(val.isNull()) {
+						setValueEx(val, increasor);
 					} else {
-						setValue(new Double(((Double) value.getValue()).doubleValue() + ((Double) increasor).doubleValue()));
+						setValueEx(val, new Double(((Double) val.getValue()).doubleValue() + ((Double) increasor).doubleValue()));
 					}
 					break;
 				case DataFieldMetadata.LONG_FIELD:
-					if(value == null) {
-						setValue(increasor);
+					if(val.isNull()) {
+						setValueEx(val, increasor);
 					} else {
-						setValue(new Long(((Long) value.getValue()).longValue() + ((Long) increasor).longValue()));
+						setValueEx(val, new Long(((Long) val.getValue()).longValue() + ((Long) increasor).longValue()));
 					}
 					break;
 			}
 		}
+
+		public void increaseValue(Object increasor) {
+			increaseValueEx(value, increasor);
+		}
+
+		public void increaseValue1(Object increasor) {
+			increaseValueEx(value1, increasor);
+		}
 		
+		private void setValueEx(DataField val, Object v) {
+			if(val != null) {
+				val.setNull(false);
+				val.setValue(v);
+			}
+		}
+
 		public void setValue(Object v) {
 			if(value != null) {
 				value.setValue(v);
