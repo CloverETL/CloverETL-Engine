@@ -151,7 +151,11 @@ public class DateDataField extends DataField implements Comparable{
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DateDataField){
 	        if (!fromField.isNull){
-	            this.value.setTime(((DateDataField)fromField).value.getTime());
+	        	if (this.value == null) {
+	        		this.value = new Date(((DateDataField)fromField).value.getTime());
+	        	} else {
+	            	this.value.setTime(((DateDataField)fromField).value.getTime());
+	        	}
 	        }
 	        setNull(fromField.isNull);
 	    }
