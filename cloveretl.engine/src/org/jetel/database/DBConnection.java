@@ -143,7 +143,7 @@ public class DBConnection {
 			stream.close();
 			this.dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
 			this.dbURL = config.getProperty(XML_DBURL_ATTRIBUTE);
-			this.threadSafeConnections=Boolean.parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
 
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -156,7 +156,7 @@ public class DBConnection {
 		this.config = new Properties();
 		this.config.putAll(configProperties);
 		this.dbURL = (String)this.config.remove(XML_DBURL_ATTRIBUTE);
-		this.threadSafeConnections=Boolean.parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
 	}
 	
 	/**
@@ -449,6 +449,10 @@ public class DBConnection {
      */
     public void setThreadSafeConnections(boolean threadSafeConnections) {
         this.threadSafeConnections = threadSafeConnections;
+    }
+    
+    private boolean parseBoolean(String s) {
+        return s != null && s.equalsIgnoreCase("true");
     }
 }
 
