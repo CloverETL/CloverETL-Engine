@@ -203,24 +203,29 @@ public class SQLUtil {
 		if (tableName.indexOf(".") != -1) {
 			tableSpec = tableName.toUpperCase().split("\\.", 2);
 		}
-		ResultSet rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
-		List fieldTypes = new LinkedList();
-		while (rs.next()) {
-			// get DATA TYPE - fifth column in result set from Database metadata
-			fieldTypes.add(new Integer(rs.getInt(5)));
-		}
-		if (fieldTypes.size() == 0) {
-			//throw new RuntimeException("No metadata obtained for table: " + tableName);
-			//Warn !
-			logger.warn("No metadata obtained for table: \"" + tableName + "\", using workaround ...");
-			// WE HAVE SOME PATCH, but ...
-			ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
-			for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
-				fieldTypes.add(new Integer(fieldsMetadata.getColumnType(i + 1)));
+		ResultSet rs = null;
+		try {
+			rs = metadata.getColumns(null, tableSpec[0], tableSpec[1], "%");//null as last parm
+			List fieldTypes = new LinkedList();
+			while (rs.next()) {
+				// get DATA TYPE - fifth column in result set from Database metadata
+				fieldTypes.add(new Integer(rs.getInt(5)));
 			}
+			if (fieldTypes.size() == 0) {
+				//throw new RuntimeException("No metadata obtained for table: " + tableName);
+				//Warn !
+				logger.warn("No metadata obtained for table: \"" + tableName + "\", using workaround ...");
+				// WE HAVE SOME PATCH, but ...
+				ResultSetMetaData fieldsMetadata = getTableFieldsMetadata(metadata.getConnection(), tableName);
+				for (int i = 0; i < fieldsMetadata.getColumnCount(); i++) {
+					fieldTypes.add(new Integer(fieldsMetadata.getColumnType(i + 1)));
+				}
+			}
+			return fieldTypes;
+		} finally {
+			if (rs != null)
+				rs.close();
 		}
-
-		return fieldTypes;
 	}
 
 
