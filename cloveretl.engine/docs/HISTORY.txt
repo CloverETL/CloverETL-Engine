@@ -11,7 +11,8 @@ persistent value.
 +Number interface - interface with methods to get/set/compare int,double,long values of
 data fields representing numeric value
 +XML definition of graph's layout can now contain definition of properties (parameters).
-They may be defined directly in graph or loaded-in from external files.
+They may be defined directly in graph or loaded-in from external files - see JavaDoc
+for TransformationGraphXMLReaderWriter class.
 
 Changes:
 +DBInputTable now allows to specify fetchSize when reading data from database
@@ -20,6 +21,9 @@ Changes:
 +DBOutputTable - if maxErrors parameter is set to -1, all SQL errors are ignored.
 +DataRecord now implements Comparable interface. However, compareTo() method can be used
 only to compare records based on the same metadata object
++Removed package org.jetel.test from clover's engine and put into clover examples package
++Removed clover org.jetel.gui - long abandoned code
++runGraph() method is now covered by LGPL license
 
 REL 1-1-5
 ---------
