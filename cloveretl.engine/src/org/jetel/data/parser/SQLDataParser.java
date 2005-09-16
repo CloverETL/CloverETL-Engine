@@ -222,7 +222,7 @@ public class SQLDataParser implements Parser {
 		try {
 			// following calls are not always supported (as it seems)
 			// if error occures, we just ignore it
-			statement.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY); 
+			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
 			statement.setFetchSize(fetchSize);
 		
 		} catch (Exception e) {
@@ -234,6 +234,13 @@ public class SQLDataParser implements Parser {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			throw new ComponentNotReadyException(e.getMessage());
+		}
+		// try to set up some cursor parameters (fetchSize, reading type)
+		try{
+		    resultSet.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY);
+		    resultSet.setFetchSize(fetchSize);
+		}catch (SQLException e){
+		    // do nothing - just attempt
 		}
 		
 	}
