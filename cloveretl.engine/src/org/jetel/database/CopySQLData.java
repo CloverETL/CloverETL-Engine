@@ -388,6 +388,8 @@ public abstract class CopySQLData {
 				// lost so we can use CopyInteger
 				if (jetelFieldType == DataFieldMetadata.INTEGER_FIELD) {
 					return new CopyInteger(record, fromIndex, toIndex);
+				} else if (jetelFieldType == DataFieldMetadata.LONG_FIELD) {
+					return new CopyLong(record, fromIndex, toIndex);
 				} else {
 					return new CopyNumeric(record, fromIndex, toIndex);
 				}
