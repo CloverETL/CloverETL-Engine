@@ -53,7 +53,6 @@ public class TransformationGraphAnalyzer {
 
 	static PrintStream log = System.out;// default info messages to stdout
 
-
 	/**
 	 *  Returns list (precisely array) of all Nodes. The order of Nodes listed is such that
 	 *  any parent Node is guaranteed to be listed befor child Node.
@@ -226,7 +225,7 @@ public class TransformationGraphAnalyzer {
 								((Edge)edge).setType(Edge.EDGE_TYPE_BUFFERED);
 								// DEBUG
 								//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
-								logger.info(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
+								logger.debug(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
 							}
 						}
 					}

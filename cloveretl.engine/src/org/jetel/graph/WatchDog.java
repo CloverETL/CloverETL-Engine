@@ -35,8 +35,6 @@ import org.jetel.util.StringUtils;
  * @revision    $Revision$
  */
 class WatchDog extends Thread {
-
-	private PrintStream log;
 	private int trackingInterval;
 	private int watchDogStatus;
 	private TransformationGraph graph;
@@ -67,7 +65,6 @@ class WatchDog extends Thread {
 	 */
 	WatchDog(TransformationGraph graph, Phase[] phases) {
 		super("WatchDog");
-		log = System.out;
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		setDaemon(true);
 		this.graph = graph;
@@ -88,9 +85,8 @@ class WatchDog extends Thread {
 	 * @param  phases    Description of the Parameter
 	 * @since            September 02, 2003
 	 */
-	WatchDog(TransformationGraph graph, Phase[] phases, PrintStream out, int tracking) {
+	WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
 		this(graph,phases);
-		log = out;
 		trackingInterval = tracking;
 	}
 
@@ -98,20 +94,20 @@ class WatchDog extends Thread {
 	/**  Main processing method for the WatchDog object */
 	public void run() {
 		watchDogStatus = WATCH_DOG_STATUS_RUNNING;
-		log.println("[WatchDog] Thread started.");
-		log.print("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)");
-		log.println(" max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
+		logger.info("[WatchDog] Thread started.");
+		logger.info("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)"
+			+ " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
 		// renice - lower the priority
 		setPriority(Thread.MIN_PRIORITY);
 		
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
 			if (!runPhase(phases[currentPhaseNum])) {
 				watchDogStatus = WATCH_DOG_STATUS_ERROR;
-				log.println("[WatchDog] !!! Phase finished with error - stopping graph run !!!");
+				logger.info("[WatchDog] !!! Phase finished with error - stopping graph run !!!");
 				return;
 			}
 			// force running of garbage collector
-			log.println("[WatchDog] Forcing garbage collection ...");
+			logger.info("[WatchDog] Forcing garbage collection ...");
 			javaRuntime.runFinalization();
 			javaRuntime.gc();
 		}
@@ -149,8 +145,8 @@ class WatchDog extends Thread {
 			if (leafNodes.isEmpty()) {
 				phase.setPhaseMemUtilization(phaseMemUtilizationMaxKB);
 				phase.setPhaseExecTime((int) (System.currentTimeMillis() - startTimestamp));
-				log.print("[WatchDog] Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): ");
-				log.println(phase.getPhaseExecTime() / 1000);
+				logger.info("[WatchDog] Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
+						+ phase.getPhaseExecTime() / 1000);
 				printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
 				return true;
 				// nothing else to do in this phase
@@ -177,7 +173,7 @@ class WatchDog extends Thread {
 				while (nodesIterator.hasNext()) {
 					node = (Node) nodesIterator.next();
 					if ((!node.isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
-						log.println("[WatchDog] !!! Fatal Error !!! - graph execution is aborting");
+						logger.info("[WatchDog] !!! Fatal Error !!! - graph execution is aborting");
 						logger.fatal("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
 						watchDogStatus = WATCH_DOG_STATUS_ERROR;
 						abort();
@@ -225,24 +221,24 @@ class WatchDog extends Thread {
 		int i;
 		int recCount;
 		Node node;
-		log.println("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
-		log.print("Time: ");
+		logger.debug("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
 		// France is here just to get 24hour time format
-		log.println(DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
+		logger.debug("Time: "
+			+ DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
 				format(Calendar.getInstance().getTime()));
-		log.println("Node                        Status         Port                          #Records");
-		log.println("---------------------------------------------------------------------------------");
+		logger.debug("Node                        Status         Port                          #Records");
+		logger.debug("---------------------------------------------------------------------------------");
 		while (iterator.hasNext()) {
 			node = (Node) iterator.next();
 			Object nodeInfo[] = {node.getID(), node.getStatus()};
 			int nodeSizes[] = {-28, -15};
-			log.println(StringUtils.formatString(nodeInfo, nodeSizes));
+			logger.debug(StringUtils.formatString(nodeInfo, nodeSizes));
 			//in ports
 			i = 0;
 			while ((recCount = node.getRecordCount(Node.INPUT_PORT, i)) != -1) {
 				Object portInfo[] = {"In:", Integer.toString(i), Integer.toString(recCount)};
 				int portSizes[] = {47, -2, 32};
-				log.println(StringUtils.formatString(portInfo, portSizes));
+				logger.debug(StringUtils.formatString(portInfo, portSizes));
 				i++;
 			}
 			//out ports
@@ -250,26 +246,25 @@ class WatchDog extends Thread {
 			while ((recCount = node.getRecordCount(Node.OUTPUT_PORT, i)) != -1) {
 				Object portInfo[] = {"Out:", Integer.toString(i), Integer.toString(recCount)};
 				int portSizes[] = {47, -2, 32};
-				log.println(StringUtils.formatString(portInfo, portSizes));
+				logger.debug(StringUtils.formatString(portInfo, portSizes));
 				i++;
 			}
 		}
-		log.println("---------------------------------** End of Log **--------------------------------");
-		log.flush();
+		logger.debug("---------------------------------** End of Log **--------------------------------");
 	}
 
 
 	/**  Outputs summary info about executed phases */
 	void printPhasesSummary() {
-		log.println("-----------------------** Summary of Phases execution **---------------------");
-		log.println("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
+		logger.info("-----------------------** Summary of Phases execution **---------------------");
+		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 		for (int i = 0; i < phases.length; i++) {
 			Object nodeInfo[] = {new Integer(phases[i].getPhaseNum()), new Integer(0),
 					new Integer(phases[i].getPhaseExecTime()/1000), new Integer(phases[i].getPhaseMemUtilization())};
 			int nodeSizes[] = {-18, -24, 12, 18};
-			log.println(StringUtils.formatString(nodeInfo, nodeSizes));
+			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 		}
-		log.println("------------------------------** End of Summary **---------------------------");
+		logger.info("------------------------------** End of Summary **---------------------------");
 	}
 
 
@@ -286,9 +281,8 @@ class WatchDog extends Thread {
 		while (iterator.hasNext()) {
 			node = (Node) iterator.next();
 			node.abort();
-			log.print("[WatchDog] Interrupted node: ");
-			log.println(node.getID());
-			log.flush();
+			logger.info("[WatchDog] Interrupted node: "
+				+ node.getID());
 		}
 	}
 
@@ -304,14 +298,13 @@ class WatchDog extends Thread {
 		Node node;
 		while (nodesIterator.hasNext()) {
 			node = (Node) nodesIterator.next();
-			log.print("[WatchDog]   ");
-			log.print(node.getID());
 			node.start();
 			if (node.isLeaf() || node.isPhaseLeaf()) {
 				leafNodesList.add(node);
 			}
-			log.println(" ... started");
-			log.flush();
+			logger.debug("[WatchDog]   "
+					+ node.getID() 
+					+ " ... started");
 		}
 	}
 
@@ -328,13 +321,13 @@ class WatchDog extends Thread {
 		List leafNodes = new LinkedList();
 		phase.check();
 		// init phase
-		if (!phase.init(log)) {
+		if (!phase.init()) {
 			// something went wrong !
 			return false;
 		}
-		log.println("[WatchDog] Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
+		logger.info("[WatchDog] Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase.getNodes().iterator(), leafNodes);
-		log.println("[WatchDog] Sucessfully started all nodes in phase!");
+		logger.info("[WatchDog] Sucessfully started all nodes in phase!");
 		// watch running nodes in phase
 		result = watch(phase, leafNodes);
 		//end of phase, destroy it

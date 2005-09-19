@@ -45,7 +45,6 @@ public class runGraph {
 
 	private final static String RUN_GRAPH_VERSION="1.7";
 	private final static String VERBOSE_SWITCH = "-v";
-	private final static String LOG_SWITCH = "-log";
 	private final static String PROPERTY_FILE_SWITCH = "-cfg";
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
@@ -57,9 +56,6 @@ public class runGraph {
 	 */
 	public static void main(String args[]) {
 		boolean verbose = false;
-		String logFilename = null;
-		String propertyFilename;
-		OutputStream log = null;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
 
@@ -72,12 +68,7 @@ public class runGraph {
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith(VERBOSE_SWITCH)) {
 				verbose = true;
-			}else
-			if (args[i].startsWith(LOG_SWITCH)) {
-				i++;
-				logFilename = args[i];
-			}else
-			if (args[i].startsWith(PROPERTY_FILE_SWITCH)){
+			}else if (args[i].startsWith(PROPERTY_FILE_SWITCH)){
 				i++;
 				try {
 					InputStream inStream = new BufferedInputStream(new FileInputStream(args[i]));
@@ -86,20 +77,17 @@ public class runGraph {
 					System.err.println(ex.getMessage());
 					System.exit(-1);
 				}
-			}else
-			if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
-			    //String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
+			}else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
+			   	//String[] nameValue=args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"").split("=");
 				//properties.setProperty(nameValue[0],nameValue[1]);
-			    String tmp =  args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"");
-                properties.setProperty(tmp.substring(0,tmp.indexOf("=")),tmp.substring(tmp.indexOf("=") +1)); 
-			}else
-			if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
-					i++;
-					trackingInterval = Integer.parseInt(args[i]);
-			}else
-			if (args[i].startsWith("-")) {
-					System.err.println("Unknown option: "+args[i]);
-					System.exit(-1);
+		    	String tmp =  args[i].replaceFirst(PROPERTY_DEFINITION_SWITCH,"");
+        	    properties.setProperty(tmp.substring(0,tmp.indexOf("=")),tmp.substring(tmp.indexOf("=") +1)); 
+			}else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
+				i++;
+				trackingInterval = Integer.parseInt(args[i]);
+			}else if (args[i].startsWith("-")) {
+				System.err.println("Unknown option: "+args[i]);
+				System.exit(-1);
 			}
 		}
 
@@ -108,10 +96,6 @@ public class runGraph {
 
 		try {
 			in = new FileInputStream(args[args.length - 1]);
-			if (logFilename != null) {
-				log = new FileOutputStream(logFilename);
-				System.out.println("\nSending output messages to file: " + logFilename);
-			}
 		} catch (FileNotFoundException e) {
 			System.err.println("File not found: "+e.getMessage());
 			System.exit(-1);
@@ -127,7 +111,7 @@ public class runGraph {
 				System.exit(-1);
 			}
 
-			if (!graph.init(log)) {
+			if (!graph.init()) {
 				System.err.println("Graph initialization failed !");
 				System.exit(-1);
 			}
@@ -177,7 +161,6 @@ public class runGraph {
 		System.out.println("Usage: runGraph [-(v|log|cfg|P:)] <graph definition file>");
 		System.out.println("Options:");
 		System.out.println("-v\t\t\tbe verbose - print even graph layout");
-		System.out.println("-log <logfile>\t\tsend output messages to specified logfile instead of stdout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");

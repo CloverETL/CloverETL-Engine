@@ -229,7 +229,7 @@ public class DBExecute extends Node {
 
 		} catch (SQLException ex) {
 			performRollback();
-			logger.fatal(ex.getMessage());
+			logger.fatal(ex);
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			return;
