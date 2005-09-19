@@ -182,8 +182,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			document.normalize();
 
 		} catch (SAXParseException ex) {
-			logger.fatal(ex.getMessage() + " --> on line "
-					+ ex.getLineNumber() + " row " + ex.getColumnNumber());
+			logger.fatal("SAX Exception on line "
+					+ ex.getLineNumber() + " row " + ex.getColumnNumber(), ex);
 			return null;
 		} catch (ParserConfigurationException ex) {
 			logger.fatal(ex.getMessage());

@@ -79,8 +79,6 @@ public final class TransformationGraph {
 
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
-	static PrintStream log = System.out;// default info messages to stdout
-
 	private WatchDog watchDog;
 
 	private Properties graphProperties;
@@ -208,27 +206,27 @@ public final class TransformationGraph {
 	 */
 	public boolean run() {
 		long timestamp = System.currentTimeMillis();
-		watchDog = new WatchDog(this, phasesArray, log, trackingInterval);
+		watchDog = new WatchDog(this, phasesArray, trackingInterval);
 
-		log.println("[Clover] starting WatchDog thread ...");
+		logger.info("[Clover] starting WatchDog thread ...");
 		watchDog.start();
 		try {
 			watchDog.join();
 		} catch (InterruptedException ex) {
-			logger.fatal(ex.getMessage());
+			logger.error(ex);
 			return false;
 		}
-		log.print("[Clover] WatchDog thread finished - total execution time: ");
-		log.print((System.currentTimeMillis() - timestamp) / 1000);
-		log.println(" (sec)");
+		logger.info("[Clover] WatchDog thread finished - total execution time: " 
+				+ (System.currentTimeMillis() - timestamp) / 1000
+				+ " (sec)");
 
 		freeResources();
 
 		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
-			log.println("[Clover] Graph execution finished successfully");
+			logger.info("[Clover] Graph execution finished successfully");
 			return true;
 		} else {
-			log.println("[Clover] !!! Graph execution finished with errors !!!");
+			logger.info("[Clover] !!! Graph execution finished with errors !!!");
 			return false;
 		}
 
@@ -251,31 +249,39 @@ public final class TransformationGraph {
 	/**
 	 *  initializes graph (must be called prior attemting to run graph)
 	 *
-	 * @param  out  OutputStream - if defined, info messages are printed thereDescription of Parameter
+	 * @param out The output stream to log to
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       April 10, 2002
+	 * @deprecated The OutputStream is now ignored, please call init().  The logging is
+	 * sent to commons-logging.
 	 */
 	public boolean init(OutputStream out) {
+		return init();
+	}
+	
+	/**
+	 *  initializes graph (must be called prior attemting to run graph)
+	 *
+	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
+	 * @since       Sept. 16, 2005
+	 */
+	public boolean init() {
 		Iterator iterator;
-		DBConnection dbCon;
+		DBConnection dbCon = null;
 		int i = 0;
-
-		if (out != null) {
-			log = new PrintStream(out);
-		}
+		
 		// initialize DB Connections
 		// iterate through all dbConnection(s) and initialize them - try to connect to db
 		iterator = dbConnections.values().iterator();
 		while (iterator.hasNext()) {
-			log.print("Initializing DB connection: ");
+			logger.info("Initializing DB connection: ");
 			try {
 				dbCon = (DBConnection) iterator.next();
-				log.print(dbCon);
 				dbCon.connect();
-				log.println(" ... OK");
+				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
-				log.println(" ... !!! ERROR !!!");
-				logger.fatal("Can't connect to database: " + ex.getMessage());
+				logger.info(dbCon + " ... !!! ERROR !!!");
+				logger.info("Can't connect to database: " + ex.getMessage());
 				return false;
 			}
 		}
@@ -317,12 +323,12 @@ public final class TransformationGraph {
 		DBConnection dbCon;
 		iterator = dbConnections.values().iterator();
 		while (iterator.hasNext()) {
+			dbCon = (DBConnection) iterator.next();
+
 			try {
-				dbCon = (DBConnection) iterator.next();
 				dbCon.close();
 			} catch (Exception ex) {
-			    logger.warn("Can't free DBConnection: "+ex.getMessage());
-				log.println(ex.getMessage());
+			    logger.warn("Can't free DBConnection", ex);
 			}
 		}
 		// free all lookup tables
@@ -331,8 +337,7 @@ public final class TransformationGraph {
 			try {
 				((LookupTable)iterator.next()).close();
 			} catch (Exception ex) {
-			    logger.warn("Can't free LookupTable: "+ex.getMessage());
-				log.println(ex.getMessage());
+			    logger.warn("Can't free LookupTable", ex);
 			}
 		}
 		// any other deinitialization shoud go here
@@ -524,25 +529,25 @@ public final class TransformationGraph {
 		Iterator iterator;
 		Node node;
 		Edge edge;
-		log.println("*** TRANSFORMATION GRAPH CONFIGURATION ***\n");
+		logger.info("*** TRANSFORMATION GRAPH CONFIGURATION ***\n");
 		for (int i = 0; i < phasesArray.length; i++) {
-			log.println("--- Phase [" + phasesArray[i].getPhaseNum() + "] ---");
-			log.println("\t... nodes ...");
+			logger.info("--- Phase [" + phasesArray[i].getPhaseNum() + "] ---");
+			logger.info("\t... nodes ...");
 			iterator = phasesArray[i].getNodes().iterator();
 			while (iterator.hasNext()) {
 				node = (Node) iterator.next();
-				log.println("\t" + node.getID() + " : " + node.getName() + " phase: " + node.getPhase());
+				logger.info("\t" + node.getID() + " : " + node.getName() + " phase: " + node.getPhase());
 			}
-			log.println("\t... edges ...");
+			logger.info("\t... edges ...");
 			iterator = phasesArray[i].getEdges().iterator();
 			while (iterator.hasNext()) {
 				edge = (Edge) iterator.next();
-				log.print("\t" + edge.getID() + " type: ");
-				log.println(edge.getType() == Edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct");
+				logger.info("\t" + edge.getID() + " type: "
+					+ (edge.getType() == Edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct"));
 			}
-			log.println("--- end phase ---");
+			logger.info("--- end phase ---");
 		}
-		log.println("*** END OF GRAPH LIST ***");
+		logger.info("*** END OF GRAPH LIST ***");
 	}
 
 

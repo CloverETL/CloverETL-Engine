@@ -119,77 +119,51 @@ public class Phase implements Comparable {
 	 * @return      returns TRUE if succeeded or FALSE if some Node or Edge failed initialization
 	 * @since       April 10, 2002
 	 */
-	public boolean init(OutputStream out) {
-		PrintStream log = null;
-		Node node;
+	public boolean init() {
+		Node node = null;
 		Edge edge;
 		Iterator nodeIterator = nodesInPhase.iterator();
 		Iterator edgeIterator = edgesInPhase.iterator();
 		phaseExecTime = phaseMemUtilization = 0;
 
 		// if the output stream is specified, create logging possibility information
-		if (out != null) {
-			log = new PrintStream(out);
-		}
-		if (log != null) {
-			log.print("[Clover] Initializing phase: ");
-			log.println(phaseNum);
-		}
+		logger.info("[Clover] Initializing phase: "
+			+ phaseNum);
 
 		// iterate through all edges and initialize them
-		if (log != null) {
-			log.print(" initializing edges: ");
-		}
+		logger.debug(" initializing edges: ");
 		while (edgeIterator.hasNext()) {
 			try {
 				edge = (Edge) edgeIterator.next();
 				edge.init();
 			} catch (IOException ex) {
-				logger.fatal(ex.getMessage());
+				logger.error(ex);
 				return false;
 			}
 		}
 		// if logger exists, print some out information
-		if (log != null) {
-			log.println(" all edges initialized successfully... ");
-		}
+		logger.debug(" all edges initialized successfully... ");
 
 		// iterate through all nodes and initialize them
-		if (log != null) {
-			log.println(" initializing nodes: ");
-		}
+		logger.debug(" initializing nodes: ");
 		while (nodeIterator.hasNext()) {
 			try {
 				node = (Node) nodeIterator.next();
 				// if logger exists, print some out information
-				if (log != null) {
-					log.print("\t");
-					log.print(node.getID());
-				}
 				node.init();
+				logger.debug("\t" + node.getID() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
-				if (log!=null){
-					log.println(" ...FAILED !");
-				}
-				logger.fatal(ex.getMessage());
+				logger.error("\t" + node.getID() + " ...FAILED !", ex);
 				return false;
 			} catch (Exception ex) {
-				if (log!=null){
-					log.println(" ...FATAL ERROR !");
-				}
-				logger.fatal(ex.getMessage());
+				logger.error("\t" + node.getID() + " ...FATAL ERROR !", ex);
 				return false;
 			}
-			if (log != null) {
-				log.println(" ...OK");
-			}
-			
 		}
-		if (log != null) {
-			log.print("[Clover] phase: ");
-			log.print(phaseNum);
-			log.println(" initialized successfully.");
-		}
+		logger.info("[Clover] phase: "
+			+ phaseNum 
+			+ " initialized successfully.");
+		
 		return true;
 		// initialized OK
 	}
