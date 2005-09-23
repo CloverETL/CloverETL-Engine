@@ -249,7 +249,7 @@ public class DBConnection {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public void close() throws SQLException {
-	    for(Iterator i=openedConnections.entrySet().iterator();i.hasNext();){
+	    for(Iterator i=openedConnections.values().iterator();i.hasNext();){
 	        ((Connection)i.next()).close();
 	    }
 	}
