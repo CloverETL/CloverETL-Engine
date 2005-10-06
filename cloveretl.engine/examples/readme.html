@@ -25,6 +25,14 @@ When executing examples, You have to be in directory where you unzipped the exam
 you have extracted the archive into <tt>/home/clover/examples</tt>. Then when executing any example, you
 have to be switched in <tt>/home/clover/examples</tt> (the directory where the <tt>.grf</tt> files are). 
 </p>
+<h4>Installing Jakarta's Commonst Logging</h4>
+<p>Starting with version 1.1.6 CloverETL depends on Jakarta's <a href="http://jakarta.apache.org/commons/logging/" target="_blank"><code>commons-logging</code></a> library. 
+It must be part of your classpath or specified within <code>-cp</code> option when running Clover (together with Clover binary package).<br>
+I will assume that you've downloaded the library and saved it in <tt>/home/clover</tt> directory under name 
+<tt>commons-logging.jar</tt>.
+</p>
+<p><a href="http://archive.apache.org/dist/jakarta/commons/logging/" target="_blank">The Commons Logging library can be downloaded from here</a>. 
+</p>
 <h4>Installing JAXP XML parser</h4>
 <p>This step is usually not required as new Java SDKs have this already solved. However, if you
 get error message connected with XML data parsing, you can try to solve it
@@ -34,7 +42,7 @@ CloverETL depends (partially) on presence of JAXP compatible parser - such as Cr
 way of installing it is to put the <tt>xxx.jar</tt> file into <tt>$JAVA_HOME/jre/lib/ext</tt><br>.
 </p>
 <p>
-<i>Note: It is a good idea to read <a href="http://cloveretl.berlios.de/doc1.html" target="_blank">
+<i>Note: It is a good idea to read <a href="http://cloveretl.berlios.de/docs/doc1.html" target="_blank">
 CloverETL general documentation</a> first.</i> 
 </p>
 <h3>Common things</h3>
@@ -42,6 +50,16 @@ CloverETL general documentation</a> first.</i>
 The examples presented here use various inputs and create various outputs. In general, input
 data is taken from files stored in <tt>data/</tt> subdirectory. Outputs are created in <tt>output/</tt> subdirectory
 and required metadata is read from <tt>metadata/</tt> subdirectory.
+</p>
+<h4>Important notes</h4>
+<p>
+All the examples below show how to run transformations on Linux (Unix) machine. If you have
+Windows installed, just change the <tt>-cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar"</tt> into
+<tt>-cp "/home/clover/CloverETL.zip;/home/clover/commons-logging.jar"</tt> - the Java classpath delimiter on Windows
+is <tt>;</tt> (semicolon) not <tt>:</tt> (colon).
+</p>
+<p>
+CloverETL requires Java (JVM) version 1.4 or higher !
 </p>
 <!-- Simple Examples -->
 <h2>Simple Examples</h2>
@@ -56,7 +74,7 @@ file <tt>Trash1_output.txt</tt> - mostly for debugging purpose.<br>
 The Trash component normally discards all records it receives on input port.
 </p>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphSimpleCopy.grf" target="_blank">graphSimpleCopy.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphSimpleCopy.grf" target="_blank">graphSimpleCopy.grf</a></tt><br>
 <br>This is the expected output produced by the framework:
 <hr><pre><tt>***  CloverETL framework/transformation graph runner, (c) 2002-04 D.Pavlis, released under GNU Public Licence  ***
 
@@ -126,7 +144,7 @@ in directory accessed by Java when searching for classes (i.e. either included i
 starting java VM.
 <P>
 Executing:<br>
-<tt>java -cp "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphOrdersReformat.grf" target="_blank">graphOrdersReformat.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar:./" org.jetel.main.runGraph <a href="graphOrdersReformat.grf" target="_blank">graphOrdersReformat.grf</a></tt><br>
 </p>
 <!-- Reformat Inline -->
 <h3>Reformat example with transformation class source embedded</h3>
@@ -139,7 +157,7 @@ When the graph is run subsequently, the source is recompiled only if it changes 
 In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.  
 <P>
 Executing:<br>
-<tt>java -cp "/home/clover/CloverETL.zip" org.jetel.main.runGraph <a href="graphOrdersReformatInline.grf" target="_blank">graphOrdersReformatInline.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphOrdersReformatInline.grf" target="_blank">graphOrdersReformatInline.grf</a></tt><br>
 </p>
 <!-- Merge -->
 <h3>Merge example</h3>
@@ -153,7 +171,7 @@ The testing graph reads data form <tt>orders.sorted</tt> file (actually three re
 same time) and stores the result into <tt>orders.merged</tt> file.
 <P>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphMergeData.grf" target="_blank">graphMergeData.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphMergeData.grf" target="_blank">graphMergeData.grf</a></tt><br>
 </p>
 <!-- Filter -->
 <h3>Filter example</h3>
@@ -172,7 +190,7 @@ language and were hired before 1993-12-31</li>
 </ul>
 <P>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphExtFilter.grf" target="_blank">graphExtFilter.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphExtFilter.grf" target="_blank">graphExtFilter.grf</a></tt><br>
 </p>
 <!-- Join -->
 <h3>Join example</h3>
@@ -188,7 +206,7 @@ Each pair of corresponding records is transformed by <tt>reformatJoinTest.class<
 source code for this class is attached as well.
 <P>
 Executing:<br>
-<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinData.grf" target="_blank">graphJoinData.grf</a></tt><br>
+<tt>java -classpath "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar:./" org.jetel.main.runGraph <a href="graphJoinData.grf" target="_blank">graphJoinData.grf</a></tt><br>
 <br><i>!!! Important: note the change in running this example. You have to extend the CLASSPATH by
 the current directory as the class for transforming is present there.</i>
 </p>
@@ -207,7 +225,7 @@ source code for this class is attached as well.
 </p>
 <P>
 Executing:<br>
-<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinHash.grf" target="_blank">graphJoinHash.grf</a></tt><br>
+<tt>java -classpath "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar:./" org.jetel.main.runGraph <a href="graphJoinHash.grf" target="_blank">graphJoinHash.grf</a></tt><br>
 <br><i>!!! Important: note the change in running this example. You have to extend the CLASSPATH by
 the current directory as the class for transforming is present there.</i>
 </p>
@@ -220,7 +238,7 @@ It is again dynamically compiled at run-time.<br>
 <i>Note:In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.</i>
 </p><p>
 Executing:<br>
-<tt>java -classpath "/home/clover/CloverETL.zip:./" org.jetel.main.runGraph <a href="graphJoinHashInline.grf" target="_blank">graphJoinHashInline.grf</a></tt><br>
+<tt>java -classpath "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar:./" org.jetel.main.runGraph <a href="graphJoinHashInline.grf" target="_blank">graphJoinHashInline.grf</a></tt><br>
 </p>
 <!-- Sort -->
 <h3>Sort example</h3>
@@ -234,7 +252,7 @@ of memory you have.<br>
 The testing graph reads data form <tt>orders.dat</tt> file, sorts them and stores the result into <tt>orders.sorted</tt> file.
 <P>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphSortData.grf" target="_blank">graphSortData.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphSortData.grf" target="_blank">graphSortData.grf</a></tt><br>
 </p>
 <!-- Sort Universal -->
 <h3>Sort Universal example</h3>
@@ -246,7 +264,7 @@ CloverETL allows global graph properties to be defined and these properties can 
 from within the graph. Each reference is replaced by property value at run-time.<br>
 </p><p>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph 
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph 
 -P:sortKey=<i>&lt;..your.fieldName..&gt;</i> -P:metadata=<i>&lt;..metadata filename..&gt;</i> -P:data=<i>&lt;..datafile..&gt;</i> -P:output=<i>&lt;..datafile..&gt;</i> <a href="graphSortUniversal.grf" target="_blank">graphSortUniversal.grf</a></tt><br>
 </p>
 <!-- Phases examples -->
@@ -267,7 +285,7 @@ in second,data is copied into three similar flows. In third, data is again merge
 one flow and saved to file.<br> 
 <P>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphPhasesDemo.grf" target="_blank">graphPhasesDemo.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphPhasesDemo.grf" target="_blank">graphPhasesDemo.grf</a></tt><br>
 </p>
 <!-- Complex example -->
 <h2>Complex example</h2>
@@ -291,7 +309,7 @@ with missing.<br>
 <i>Note:In order to run successfully,<tt>tools.jar</tt> library (present in $JAVA_HOME/lib/) has to be part of CLASSPATH.</i>
 <P>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBFJoin.grf" target="_blank">graphDBFJoin.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphDBFJoin.grf" target="_blank">graphDBFJoin.grf</a></tt><br>
 </p>
 <!-- Database related examples -->
 <h2>Database related examples</h2>
@@ -347,7 +365,7 @@ records from <b>employee</b> table. It then stores the records in <tt>employees.
 </p>
 <p>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBUnload.grf" target="_blank">graphDBUnload.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphDBUnload.grf" target="_blank">graphDBUnload.grf</a></tt><br>
 </p>
 <!-- DB Load -->
 <h3>DBLoad example</h3>
@@ -358,7 +376,7 @@ supplied. In order to be able to run this example, you have to create a DB table
 <tt>EMPLOYEE_TMP</tt> and structure similar to <tt>EMPLOYEE</tt> table presented above. 
 </p>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphDBLoad.grf" target="_blank">graphDBLoad.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphDBLoad.grf" target="_blank">graphDBLoad.grf</a></tt><br>
 </p>
 <hr>
 <!-- Partition -->
@@ -379,8 +397,105 @@ CASE operator, with ranges defined by their upper boundary (inclusive).</li>
 </ul>
 </p>
 Executing:<br>
-<tt>java -cp /home/clover/CloverETL.zip org.jetel.main.runGraph <a href="graphPartition.grf" target="_blank">graphPartition.grf</a></tt><br>
+<tt>java -cp "/home/clover/CloverETL.zip:/home/clover/commons-logging.jar" org.jetel.main.runGraph <a href="graphPartition.grf" target="_blank">graphPartition.grf</a></tt><br>
 </p>
-<hr>
+<hr/>
+<!--- ALL EXAMPLES INDEX --->
+<h1>Index of all examples</h1>
+<hr/><table>
+<tr>
+ <td><a href="graphAggregateSorted.grf">graphAggregateSorted.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphAggregateUnsorted.grf">graphAggregateUnsorted.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBExecute.grf">graphDBExecute.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBExecuteOra.grf">graphDBExecuteOra.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBFJoin.grf">graphDBFJoin.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBFLoad.grf">graphDBFLoad.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBLoad.grf">graphDBLoad.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBLoad5.grf">graphDBLoad5.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBLoad6.grf">graphDBLoad6.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBUnload.grf">graphDBUnload.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphDBUnloadUniversal.grf">graphDBUnloadUniversal.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphExtFilter.grf">graphExtFilter.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphExtFilter2.grf">graphExtFilter2.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphFilter.grf">graphFilter.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphIntersectData.grf">graphIntersectData.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphJoinData.grf">graphJoinData.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphJoinHash.grf">graphJoinHash.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphJoinHashInline.grf">graphJoinHashInline.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphMergeData.grf">graphMergeData.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphOrdersReformat.grf">graphOrdersReformat.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphOrdersReformatInline.grf">graphOrdersReformatInline.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphParametrizedLookup.grf">graphParametrizedLookup.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphPartition.grf">graphPartition.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphPhasesDemo.grf">graphPhasesDemo.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSimpleCopy.grf">graphSimpleCopy.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSimpleCopyEmbeddedMetadata.grf">graphSimpleCopyEmbeddedMetadata.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSimpleCopyLocale.grf">graphSimpleCopyLocale.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSimpleLookup.grf">graphSimpleLookup.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSortData.grf">graphSortData.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphSortUniversal.grf">graphSortUniversal.grf</a></td>
+</tr>
+<tr>
+ <td><a href="graphViewData.grf">graphViewData.grf</a></td>
+</tr>
+</table>
 </body>
 </html>
