@@ -31,6 +31,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.*;
+import org.jetel.util.StringUtils;
 
 /**
  *  Parsing delimited text data. Supports delimiters with the length of up to 32
@@ -68,7 +69,9 @@ public class DelimitedDataParserNIO implements Parser {
 	// maximum length of delimiter
 	private final static int DELIMITER_CANDIDATE_BUFFER_LENGTH = 32;
 	
-
+	
+	
+	
 	// Associations
 
 	// Operations
@@ -276,6 +279,8 @@ public class DelimitedDataParserNIO implements Parser {
 		int delimiterPosition;
 		long size = 0;
 		int charCounter;
+		boolean isWithinQuotes;
+		char quoteChar=' ';
 
 		// populate all data fields
 
@@ -283,6 +288,7 @@ public class DelimitedDataParserNIO implements Parser {
 			// we clear our buffer
 			fieldStringBuffer.clear();
 			character = 0;
+			isWithinQuotes=false;
 			// read data till we reach delimiter, end of file or exceed buffer size
 			// exceeded buffer is indicated by BufferOverflowException
 			charCounter = 0;
@@ -293,7 +299,16 @@ public class DelimitedDataParserNIO implements Parser {
 //					if(character=='\r')  //fix for new line being \r\n
 //						continue;
 					totalCharCounter++;
-					if ((result = is_delimiter((char) character, fieldCounter, delimiterPosition)) == 1) {
+					// handle quoted strings
+					if (handleQuotedStrings && StringUtils.isQuoteChar((char)character)){
+					    if (!isWithinQuotes){ /*&&charCounter==0)*/
+					        quoteChar=(char)character;
+					        isWithinQuotes=true;
+					    }else if (isWithinQuotes && quoteChar==(char)character){
+					        isWithinQuotes=false;
+					    }
+					}
+					if ((result = is_delimiter((char) character, fieldCounter, delimiterPosition,isWithinQuotes)) == 1) {
 						/*
 						 *  DELIMITER
 						 */
@@ -378,26 +393,18 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@return               String with quotes removed if specified
 	 */
 	private String buffer2String(CharBuffer buffer,int fieldNum, boolean removeQuotes) {
-		if (removeQuotes && buffer.hasRemaining() &&
+	    if (removeQuotes && buffer.hasRemaining() &&
 			metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
 			/* if first & last characters are quotes (and quoted is at least one character, remove quotes */
-			if (buffer.charAt(0) == '\'') { 
-				if (buffer.charAt(buffer.limit()-1) == '\'') {
+			if (StringUtils.isQuoteChar(buffer.charAt(0))) { 
+				if (StringUtils.isQuoteChar(buffer.charAt(buffer.limit()-1))) {
 					if (buffer.remaining()>2){
 						return buffer.subSequence(1, buffer.limit() - 1).toString();
 					}else{
 						return ""; //empty string after quotes removed
 					}
 				}
-			} else if (buffer.charAt(0) == '"' ) {
-				if (buffer.charAt(buffer.limit()-1) == '"') {
-					if ( buffer.remaining()>2){
-						return buffer.subSequence(1, buffer.limit() - 1).toString();
-					}else{
-						return ""; //empty string after quotes removed
-					}
-				}
-			}
+			} 
 		}
 		return buffer.toString();
 	}
@@ -411,8 +418,11 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@param  delimiterPosition  current position within delimiter string
 	 *@return                    1 if delimiter matched; -1 if can't decide yet; 0 if not part of delimiter
 	 */
-	private int is_delimiter(char character, int fieldCounter, int delimiterPosition) {
-		if (character == delimiters[fieldCounter][delimiterPosition]) {
+	private int is_delimiter(char character, int fieldCounter, int delimiterPosition, boolean isWithinQuotes) {
+		if (isWithinQuotes){
+		    return 0;
+		}
+	    if (character == delimiters[fieldCounter][delimiterPosition]) {
 			if (delimiterPosition == delimiters[fieldCounter].length - 1) {
 				return 1;
 				// whole delimiter matched
