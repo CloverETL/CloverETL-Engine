@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Reformat">
+<!--
+This example extends graphOrdersReformat in a sence that
+the counter used for generating OrderKey is taken from
+Sequence object which is persistent between graph executions - i.e.
+you get continuous sequence of unique numbers.
+For successfull compilation, tools.jar library must be part of CLASSPATH.
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersRef.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="REF" type="REFORMAT" >
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+import org.jetel.data.sequence.SimpleSequence;
+
+public class reformatOrders extends DataRecordTransform{
+
+	SimpleSequence sequence;
+	int field=0;
+
+	public boolean init(){
+		try{
+		sequence=new SimpleSequence("Test","sequence.dat",0,1,5);
+        sequence.init();
+        }catch(Exception ex){
+         return false;
+        }
+        return true;
+	}
+
+	public boolean transform(DataRecord source[], DataRecord[] target){
+		StringBuffer strBuf=new StringBuffer(80);
+		try{
+			// let's concatenate shipping address into one long string
+			strBuf.append(GetVal.getString(source[0],"ShipName")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipAddress")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCity")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCountry"));
+			// mapping among source + target fields
+			// some fields get assigned directly from source fields, some
+			// are assigned from internall variables
+			// OrderKey gets its value from sequence
+			SetVal.setInt(target[0],"OrderKey",sequence.nextValueInt());
+			SetVal.setInt(target[0],"OrderID",GetVal.getInt(source[0],"OrderID"));
+			SetVal.setString(target[0],"CustomerID",GetVal.getString(source[0],"CustomerID"));
+			SetVal.setValue(target[0],"OrderDate",GetVal.getDate(source[0],"OrderDate"));
+			SetVal.setString(target[0],"ShippedDate","02.02.1999");
+			SetVal.setInt(target[0],"ShipVia",GetVal.getInt(source[0],"ShipVia"));
+			SetVal.setString(target[0],"ShipTo",strBuf.toString());
+		}catch(Exception ex){
+			return false;
+		}
+			return true;
+	}
+}
+</Node>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.dat.out"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="REF:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="REF:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
