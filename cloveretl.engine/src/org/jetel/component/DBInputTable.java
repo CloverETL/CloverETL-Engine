@@ -146,10 +146,11 @@ public class DBInputTable extends Node {
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-
+		//set fetch size (if defined)
+		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
 		parser.open(this.graph.getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
-		if (fetchSize!=0) parser.setFetchSize(fetchSize);
+		
 	}
 
 
