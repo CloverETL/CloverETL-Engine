@@ -191,6 +191,15 @@ public class StringUtils {
 		return true;
 	}
 
+
+	/**
+	 * @param c
+	 * @return
+	 */
+	public static boolean isQuoteChar(char c) {
+		return (c == '\'' || c == '"');
+	}
+
 }
 /*
  *  End class StringUtils
