@@ -389,7 +389,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		Object a = stack.pop();
 		int start,end;
 		
-		if ( a instanceof CharSequence){
+		if(a == null) {
+			stack.push("");
+		} else if ( a instanceof CharSequence){
 			CharSequence seq=(CharSequence)a;
 			int length=seq.length();
 			for(start=0;start<length;start++){
@@ -402,11 +404,11 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 					break;
 				}
 			}
-			
-			stack.push(seq.subSequence(start,end));
+			if(start > end) stack.push("");
+			else stack.push(seq.subSequence(start,end + 1));
 		}else {
 			Object[] arguments={a};
-			throw new InterpreterRuntimeException(arguments,"uppercase - wrong type of literal");
+			throw new InterpreterRuntimeException(arguments,"trim - wrong type of literal");
 		}
 		return data;
 	}
