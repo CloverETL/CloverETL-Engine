@@ -224,6 +224,7 @@ void BuildInFunction() #void : {}
 	|DateDiffNode()
 	|"today" "(" ")" #TodayNode(0)
 	|"isnull" "(" IDExp() ")" #IsNullNode(1)
+	|"nvl" "(" IDExp() "," AdditiveExpression() ")" #NVLNode(2)
 }
 
 void LitExp() #void :            // 
@@ -283,4 +284,4 @@ void DateDiffNode() :
 	")"
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "sec" > }
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" |"sec" > }
