@@ -27,6 +27,8 @@ import org.jetel.data.DataField;
 import org.jetel.data.DateDataField;
 
 /**
+ * Executor of FilterExpression parse tree.
+ * 
  * @author dpavlis
  * @since  16.9.2004
  *
@@ -447,6 +449,24 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else{
 			Object[] arguments={value};
 			throw new InterpreterRuntimeException(arguments,"isnull - wrong type of literal");
+		}
+		
+		
+		return data;
+	}
+	
+	public Object visit(CLVFNVLNode node, Object data){
+		Object value=node.jjtGetChild(0).jjtAccept(this, data);
+		
+		if (value instanceof DataField){
+			if (((DataField)value).isNull()){
+				stack.push(node.jjtGetChild(1).jjtAccept(this, data));
+			}else{
+				stack.push(value);
+			}
+		}else{
+			Object[] arguments={value};
+			throw new InterpreterRuntimeException(arguments,"nvl - wrong type of literal");
 		}
 		
 		
