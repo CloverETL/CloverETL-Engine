@@ -32,6 +32,10 @@ public class CLVFDateAddNode extends SimpleNode {
 			calendarField=Calendar.WEEK_OF_YEAR;
 		}else if (fieldName.equalsIgnoreCase("day")){
 				calendarField=Calendar.DAY_OF_MONTH;
+		}else if (fieldName.equalsIgnoreCase("hour")){
+		     calendarField=Calendar.HOUR_OF_DAY;
+		}else if (fieldName.equalsIgnoreCase("minute")){
+		     calendarField=Calendar.MINUTE;
 		}else{
 			calendarField=Calendar.SECOND;
 		}
