@@ -259,7 +259,7 @@ public class BufferedEdge extends EdgeBase {
 	private final void packBuffer(){
 	    int position=dataBuffer.position();
 	    
-	    if (dataBuffer.remaining()==0 || readPosition==position){
+	    if (readPosition==position){
 	        dataBuffer.clear();
 	        readPosition=0;
 	    }else if (readPosition>=compactLimitPosition){
