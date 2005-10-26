@@ -53,7 +53,7 @@ public final class JetelVersion {
      */
     public static final String JAVA_REQUIRED_VERSION = "1.4";
     
-    public static final String LIBRARY_BUILD_DATETIME ="@BUILD_DATE@ @BUILD_TIME@";
+    public static final String LIBRARY_BUILD_DATETIME ="@BUILD_TIME@";
     
     /**
      * @return Major version of current library - e.g. if
