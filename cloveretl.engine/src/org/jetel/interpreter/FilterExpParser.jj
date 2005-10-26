@@ -714,6 +714,20 @@ void BuildInFunction()       : {}
                                 }
                               }
 /*@egen*/
+	|"nvl" "(" IDExp() "," AdditiveExpression()/*@bgen(jjtree) #NVLNode( 2) */
+                                                    {
+                                                      CLVFNVLNode jjtn008 = new CLVFNVLNode(this, JJTNVLNODE);
+                                                      boolean jjtc008 = true;
+                                                      jjtree.openNodeScope(jjtn008);
+                                                    }
+                                                    try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                                    } finally {
+                                                      if (jjtc008) {
+                                                        jjtree.closeNodeScope(jjtn008,  2);
+                                                      }
+                                                    }
+/*@egen*/
 }
 
 void LitExp()       :            // 
@@ -977,4 +991,4 @@ void DateDiffNode() :
 /*@egen*/
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "sec" > }
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" |"sec" > }
