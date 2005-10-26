@@ -35,6 +35,38 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 /**
+ * <h3>XMLExtract Component</h3>
+ *
+ * <!-- Provides the logic to parse a xml file and filter to different ports based on
+ * a matching element. The element and all children will be turned into a
+ * Data record -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>Concatenate</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Provides the logic to parse a xml file and filter to different ports based on
+ * a matching element. The element and all children will be turned into a
+ * Data record.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>0</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>Output port[0] defined/connected. Depends on mapping definition.</td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"XML_EXTRACT"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>sourceUri</b></td><td>location of source XML data to process</td>
+ *  </tr>
+ *  </table>
+ * 
  * Provides the logic to parse a xml file and filter to different ports based on
  * a matching element. The element and all children will be turned into a
  * Datarecord.<br>
@@ -110,6 +142,7 @@ import org.xml.sax.helpers.DefaultHandler;
  */
 public class XMLExtract extends Node
 {
+    public final static String COMPONENT_TYPE = "XML_EXTRACT";
 	// Logger
 	private static final Log	LOG	= LogFactory.getLog(XMLExtract.class);
 
@@ -522,6 +555,7 @@ public class XMLExtract extends Node
 	public static Node fromXML(org.w3c.dom.Node nodeXML)
 	{
 		ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeXML);
+		XMLExtract extract;
 
 		if (attributes.exists("id"))
 		{
@@ -534,17 +568,7 @@ public class XMLExtract extends Node
 				// Do more stuff with MyXMLExtract
 				// return MyXMLExtract
 				// }
-				Constructor constructor = Class.forName(
-						attributes.getString("type")).getConstructor(
-						new Class[]
-						{
-							String.class
-						});
-				XMLExtract extract = (XMLExtract) constructor
-						.newInstance(new Object[]
-						{
-							attributes.getString("id")
-						});
+				extract = new XMLExtract(attributes.getString("id"));
 
 				if (attributes.exists("sourceUri"))
 				{
@@ -788,7 +812,7 @@ public class XMLExtract extends Node
 
 	public String getType()
 	{
-		return getClass().getName();
+		return COMPONENT_TYPE;
 	}
 
 	public boolean checkConfig()
