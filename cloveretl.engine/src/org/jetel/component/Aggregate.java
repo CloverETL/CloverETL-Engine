@@ -57,7 +57,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"AGGRAGATE"</td></tr>
+ *  <tr><td><b>type</b></td><td>"AGGREGATE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
  *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev</td>
