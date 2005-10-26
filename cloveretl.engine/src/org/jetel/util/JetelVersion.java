@@ -53,6 +53,8 @@ public final class JetelVersion {
      */
     public static final String JAVA_REQUIRED_VERSION = "1.4";
     
+    public static final String LIBRARY_BUILD_DATETIME ="@BUILD_DATE@ @BUILD_TIME@";
+    
     /**
      * @return Major version of current library - e.g. if
      * the library version is "1.6" then 1 is returned
@@ -74,6 +76,13 @@ public final class JetelVersion {
      */
     public static final int getBuildNumber(){
         return Integer.parseInt(BUILD_NUMBER);
+    }
+    
+    /**
+     * @return Timestamp of library assembly (when it was compiled)
+     */
+    public static final String getBuildDatetime(){
+        return LIBRARY_BUILD_DATETIME;
     }
     
     /**
