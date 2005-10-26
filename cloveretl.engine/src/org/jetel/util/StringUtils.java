@@ -29,6 +29,10 @@ package org.jetel.util;
 
 public class StringUtils {
 
+    //  quoting characters
+	public final static char QUOTE_CHAR='\'';
+	public final static char DOUBLE_QUOTE_CHAR='"';
+    
 	/**
 	 *  Converts control characters into textual representation<br>
 	 *  Note: This code handles only \n, \r and \t special chars
@@ -191,15 +195,31 @@ public class StringUtils {
 		return true;
 	}
 
-
 	/**
-	 * @param c
-	 * @return
+	 * Returns true if the passed-in character is quote ['] or double
+	 * quote ["].
+	 * 
+	 * @param character
+	 * @return true if character equals to ['] or ["]
 	 */
-	public static boolean isQuoteChar(char c) {
-		return (c == '\'' || c == '"');
+	public static final boolean isQuoteChar(char character){
+	    return (character==QUOTE_CHAR || character==DOUBLE_QUOTE_CHAR ) ? true : false;
 	}
-
+	
+	
+	/**
+	 * Returns true of passed-in string is quoted - i.e.
+	 * the first character is quote character and the
+	 * last character is equal to the first one.
+	 * 
+	 * @param str
+	 * @return true if the string is quoted
+	 */
+	public static final boolean isQuoted(String str){
+	    return (isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1))
+	            ? true : false;
+	}
+	
 }
 /*
  *  End class StringUtils
