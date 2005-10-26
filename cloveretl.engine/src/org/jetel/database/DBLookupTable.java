@@ -72,7 +72,6 @@ public class DBLookupTable implements LookupTable {
 	 *@param  dbConnection      Description of the Parameter
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
-   *@param dbFieldTypes      List containing the types of the final record
 	 */
   public DBLookupTable(DBConnection dbConnection,
                        DataRecordMetadata dbRecordMetadata, String sqlQuery) {
@@ -82,6 +81,18 @@ public class DBLookupTable implements LookupTable {
 		this.maxCached = 0;
 	}
 
+  /**
+   * Constructor for the DBLookupTable object
+   *
+   *@param  dbConnection      Description of the Parameter
+   *@param  dbRecordMetadata  Description of the Parameter
+   *@param  sqlQuery          Description of the Parameter
+   * @param dbFieldTypes      List containing the types of the final record
+   */
+  public DBLookupTable(DBConnection dbConnection, DataRecordMetadata
+          dbRecordMetadata, java.lang.String sqlQuery, java.util.List dbFieldTypes){
+      this(dbConnection,dbRecordMetadata,sqlQuery);
+  }
   
   public DBLookupTable(DBConnection dbConnection,
           DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
