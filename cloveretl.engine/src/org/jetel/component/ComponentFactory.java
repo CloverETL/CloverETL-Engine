@@ -71,6 +71,7 @@ public class ComponentFactory {
 		registerComponent(Partition.COMPONENT_TYPE,"org.jetel.component.Partition");
 		registerComponent(DataIntersection.COMPONENT_TYPE,"org.jetel.component.DataIntersection");
 		registerComponent(Aggregate.COMPONENT_TYPE,"org.jetel.component.Aggregate");
+		registerComponent(XMLExtract.COMPONENT_TYPE,"org.jetel.component.XMLExtract");
 	}
 	
 	
