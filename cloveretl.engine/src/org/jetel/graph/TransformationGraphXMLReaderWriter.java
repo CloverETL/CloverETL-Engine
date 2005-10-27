@@ -32,6 +32,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataJDBCStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.data.sequence.Sequence;
+import org.jetel.data.sequence.SimpleSequence;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.NotFoundException;
 import org.jetel.util.ComponentXMLAttributes;
@@ -132,6 +134,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String METADATA_ELEMENT = "Metadata";
 	private final static String PHASE_ELEMENT = "Phase";
 	private final static String DBCONNECTION_ELEMENT = "DBConnection";
+	private final static String SEQUENCE_ELEMENT = "Sequence";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
 	private final static String PROPERTY_ELEMENT = "Property";
 
@@ -184,6 +187,7 @@ public class TransformationGraphXMLReaderWriter {
 		graph.deleteNodes();
 		graph.deletePhases();
 		graph.deleteDBConnections();
+		graph.deleteSequences();
 
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -233,6 +237,10 @@ public class TransformationGraphXMLReaderWriter {
 			// handle all defined DB connections
 			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
 			instantiateDBConnections(dbConnectionElements, graph);
+
+			// handle all defined DB connections
+			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+			instantiateSequences(sequenceElements, graph);
 			
 			//create metadata
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
@@ -503,6 +511,22 @@ public class TransformationGraphXMLReaderWriter {
 		}
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  dbConnectionElements  Description of Parameter
+	 * @param  graph                 Description of Parameter
+	 * @since                        October 1, 2002
+	 */
+	private void instantiateSequences(NodeList sequenceElements, TransformationGraph graph) {
+		Sequence seq;
+		for (int i = 0; i < sequenceElements.getLength(); i++) {
+			seq = SimpleSequence.fromXML(sequenceElements.item(i));
+			if (seq != null) {
+				graph.addSequence(((Element) sequenceElements.item(i)).getAttribute("id"), seq);
+			}
+		}
+	}
 
 	private void instantiateProperties(NodeList propertyElements, TransformationGraph graph) throws IOException {
 	    

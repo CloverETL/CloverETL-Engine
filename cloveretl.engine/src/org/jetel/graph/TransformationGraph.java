@@ -24,7 +24,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -39,6 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.sequence.Sequence;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -66,6 +66,8 @@ public final class TransformationGraph {
 	private List edges;
 
 	private Map dbConnections;
+
+	private Map sequences;
 
 	private Map lookupTables;
 	
@@ -98,6 +100,7 @@ public final class TransformationGraph {
 		nodes = new LinkedList();
 		edges = new LinkedList();
 		dbConnections = new HashMap();
+		sequences = new HashMap();
 		lookupTables = new HashMap();
 		dataRecordMetadata = new HashMap();
 		// initialize logger - just basic
@@ -141,6 +144,16 @@ public final class TransformationGraph {
 	}
 
 	/**
+	 *  Gets the sequence object asssociated with the name provided
+	 *
+	 * @param  name  The sequence name under which the connection was registered.
+	 * @return       The sequence object (if found) or null
+	 */
+	public Sequence getSequence(String name) {
+		return (Sequence) sequences.get(name);
+	}
+
+	/**
 	 * Gets the Iterator which can be used to go through all DBConnection objects
 	 * (their names) registered with graph.<br>
 	 * 
@@ -151,6 +164,16 @@ public final class TransformationGraph {
 	    return dbConnections.keySet().iterator();
 	}
 	
+	/**
+	 * Gets the Iterator which can be used to go through all sequence objects
+	 * (their names) registered with graph.<br>
+	 * 
+	 * @return	Iterator with sequence names
+	 * @see		getSequence
+	 */
+	public Iterator getSequences(){
+	    return sequences.keySet().iterator();
+	}
 	
 	/**
 	 * Gets the LookupTable object asssociated with the name provided
@@ -268,6 +291,7 @@ public final class TransformationGraph {
 	public boolean init() {
 		Iterator iterator;
 		DBConnection dbCon = null;
+		Sequence seq = null;
 		int i = 0;
 		
 		// initialize DB Connections
@@ -282,6 +306,21 @@ public final class TransformationGraph {
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
 				logger.info("Can't connect to database: " + ex.getMessage());
+				return false;
+			}
+		}
+		// initialize sequences
+		// iterate through all sequences and initialize them
+		iterator = sequences.values().iterator();
+		while (iterator.hasNext()) {
+			logger.info("Initializing sequence: ");
+			try {
+				seq = (Sequence) iterator.next();
+				seq.init();
+				logger.info(seq + " ... OK");
+			} catch (Exception ex) {
+				logger.info(seq + " ... !!! ERROR !!!");
+				logger.info("Can't initialize sequence: " + ex.getMessage());
 				return false;
 			}
 		}
@@ -338,6 +377,15 @@ public final class TransformationGraph {
 				((LookupTable)iterator.next()).close();
 			} catch (Exception ex) {
 			    logger.warn("Can't free LookupTable", ex);
+			}
+		}
+		// free all sequences
+		iterator = sequences.values().iterator();
+		while (iterator.hasNext()) {
+			try {
+				((Sequence)iterator.next()).close();
+			} catch (Exception ex) {
+			    logger.warn("Can't free Sequence", ex);
 			}
 		}
 		// any other deinitialization shoud go here
@@ -456,6 +504,16 @@ public final class TransformationGraph {
 		dbConnections.put(name, connection);
 	}
 
+	/**
+	 *  Adds a feature to the sequence attribute of the TransformationGraph object
+	 *
+	 * @param  name        Name(ID) under which the DBConnection is registered
+	 * @param  connection  DBConnection object to associate with ID
+	 * @since              October 1, 2002
+	 */
+	public void addSequence(String name, Sequence seq) {
+		sequences.put(name, seq);
+	}
 
 	/**
 	 * Registers lookup table within TransformationGraph. It can be later
@@ -495,6 +553,14 @@ public final class TransformationGraph {
 		dbConnections.clear();
 	}
 
+	/**
+	 *  Removes all sequences objects from Map
+	 *
+	 * @since    October 1, 2002
+	 */
+	public void deleteSequences() {
+		sequences.clear();
+	}
 
 	/**  Remove all lookup table definitions */
 	public void deleteLookupTables() {
