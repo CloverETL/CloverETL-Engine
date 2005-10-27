@@ -31,6 +31,7 @@ import java.nio.channels.FileLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.JetelException;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  * @author david
@@ -60,6 +61,11 @@ public class SimpleSequence implements Sequence {
     FileChannel io;
     FileLock lock;
     ByteBuffer buffer;
+	private static final String XML_NAME_ATTRIBUTE = "name";
+	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
+	private static final String XML_START_ATTRIBUTE = "start";
+	private static final String XML_STEP_ATTRIBUTE = "step";
+	private static final String XML_CACHED_ATTRIBUTE = "cached";
     
     /**
      * @param sequenceName name (should be unique) of the sequence to be created
@@ -207,4 +213,15 @@ public class SimpleSequence implements Sequence {
 		return filename;
 	}
 	
+	static public SimpleSequence fromXML(org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+
+		return new SimpleSequence(
+				xattribs.getString(XML_NAME_ATTRIBUTE),
+				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
+				Integer.parseInt(xattribs.getString(XML_START_ATTRIBUTE)),
+				Integer.parseInt(xattribs.getString(XML_STEP_ATTRIBUTE)),
+				Integer.parseInt(xattribs.getString(XML_CACHED_ATTRIBUTE)));
+		
+	}
 }
