@@ -388,7 +388,7 @@ public class DateDataField extends DataField implements Comparable{
 	    }else if (obj instanceof java.sql.Date){
 	        return this.value.getTime()==((java.sql.Date)obj).getTime();
 	    }else{
-	        throw new ClassCastException("Can't compare DateDataField and "+obj.getClass().getName());
+	        return false;
 	    }
 	}
 
@@ -400,7 +400,6 @@ public class DateDataField extends DataField implements Comparable{
 	 * @return      Description of the Return Value
 	 */
 	public int compareTo(Object obj) {
-		if (obj==null) return 1;
 		if (isNull) return -1;
 	    
 		if (obj instanceof java.util.Date){

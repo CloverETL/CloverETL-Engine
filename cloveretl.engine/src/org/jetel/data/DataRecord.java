@@ -181,7 +181,9 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-		/*
+		if (this==obj) return true;
+	    
+	    /*
          * first test that both records have the same structure i.e. point to
          * the same metadata
          */
@@ -196,8 +198,9 @@ public class DataRecord implements Serializable, Comparable {
                 }
             }
             return true;
+        }else{
+            return false;
         }
-        return false;
     }
 
 	
@@ -209,6 +212,8 @@ public class DataRecord implements Serializable, Comparable {
 	 * @see java.lang.Comparable#compareTo(java.lang.Object)
 	 */
 	public int compareTo(Object obj){
+	    if (this==obj) return 0;
+	    
 	    if (obj instanceof DataRecord) {
             if (metadata != ((DataRecord) obj).getMetadata()) {
                 throw new RuntimeException("Can't compare - records have different metadata objects assigned!");
@@ -401,6 +406,17 @@ public class DataRecord implements Serializable, Comparable {
 		int size=0;
 		for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
 		return size;
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode(){
+	    int hash=17;
+	    for (int i=0;i<fields.length;i++){
+	        hash=37*hash+fields[i].hashCode();
+	    }
+	    return hash;
 	}
 }
 /*

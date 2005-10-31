@@ -389,7 +389,7 @@ public class LongDataField extends DataField implements Number, Comparable{
 	    }else if (obj instanceof Long){
 	        return value==((Long)obj).longValue();
 	    }else{
-	        throw new ClassCastException("Can't compare LongDataField and "+obj.getClass().getName());
+	        return false;
 	    }
 	}
 
@@ -401,7 +401,6 @@ public class LongDataField extends DataField implements Number, Comparable{
 	 * @return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
-		if (obj==null) return 1;
 		if (isNull) return -1;
 		
 		if (obj instanceof LongDataField){
@@ -436,10 +435,13 @@ public class LongDataField extends DataField implements Number, Comparable{
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
 	public int compareTo(Number value) {
-	    if (value==null || value.isNull()) return 1;
-		if (isNull) return -1;
-	    
-	    return compareTo(value.getLong());
+	    if (isNull) {
+	        return -1;
+	    }else if (value.isNull()) {
+	        return 1;
+	    }else {
+	        return compareTo(value.getLong());
+	    }
 	}
 	
 	/**
