@@ -51,6 +51,7 @@ public class RecordKey {
 
 	private StringBuffer keyStr;
 
+	private boolean equalNULLs = false; // specifies whether two NULLs are deemed equal
 
 	/**
 	 *  Constructor for the RecordKey object
@@ -153,11 +154,22 @@ public class RecordKey {
 			throw new RuntimeException("Can't compare - records have different metadata associated." +
 					" Possibly different structure");
 		}
-		for (int i = 0; i < keyFields.length; i++) {
-			compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
-			if (compResult != 0) {
-				return compResult;
-			}
+		if (equalNULLs){
+		    for (int i = 0; i < keyFields.length; i++) {
+		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
+		        if (compResult != 0) {
+		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		                return compResult;
+		            }
+		        }
+		    }
+		}else {
+		    for (int i = 0; i < keyFields.length; i++) {
+		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
+		        if (compResult != 0) {
+		            return compResult;
+		        }
+		    }
 		}
 		return 0;
 		// seem to be the same
@@ -180,11 +192,24 @@ public class RecordKey {
 		if (keyFields.length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. keys have different number of DataFields");
 		}
-		for (int i = 0; i < keyFields.length; i++) {
-			compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
-			if (compResult != 0) {
-				return compResult;
-			}
+
+		if (equalNULLs){
+		    for (int i = 0; i < keyFields.length; i++) {
+		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
+		        if (compResult != 0) {
+		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		                return compResult;
+		            }
+		        }
+		    }
+		}else{
+		    
+		    for (int i = 0; i < keyFields.length; i++) {
+		        compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
+		        if (compResult != 0) {
+		            return compResult;
+		        }
+		    }
 		}
 		return 0;
 		// seem to be the same
@@ -203,10 +228,20 @@ public class RecordKey {
 			throw new RuntimeException("Can't compare - records have different metadata associated." +
 					" Possibly different structure");
 		}
-		for (int i = 0; i < keyFields.length; i++) {
-			if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
-				return false;
-			}
+		if (equalNULLs){
+		    for (int i = 0; i < keyFields.length; i++) {
+		        if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
+		            if (!(record1.getField(keyFields[i]).isNull&&record2.getField(keyFields[i]).isNull)){
+		                return false;
+		            }
+		        }
+		    }
+		}else{
+		    for (int i = 0; i < keyFields.length; i++) {
+		        if (!record1.getField(keyFields[i]).equals(record2.getField(keyFields[i]))) {
+		            return false;
+		        }
+		    }
 		}
 		return true;
 	}
@@ -265,11 +300,28 @@ public class RecordKey {
         }
         buffer.append(", KEY_ITEMS_DELIMITER = ").append(KEY_ITEMS_DELIMITER);
         buffer.append(", DEFAULT_KEY_LENGTH = ").append(DEFAULT_STRING_KEY_LENGTH);
+        buffer.append(", EQUAL_NULLS = ").append(equalNULLs);
         buffer.append(", keyStr = ").append(keyStr);
         buffer.append("]");
         return buffer.toString();
     }
 
+    /**
+     * True if two NULL values (fields with NULL flag set) are considered equal
+     * 
+     * @return Returns the equalNULLs.
+     */
+    public boolean isEqualNULLs() {
+        return equalNULLs;
+    }
+    /**
+     * Sets whether two NULL values (fields with NULL flag set) are considered equal
+     * 
+     * @param equalNULLs The equalNULLs to set.
+     */
+    public void setEqualNULLs(boolean equalNULLs) {
+        this.equalNULLs = equalNULLs;
+    }
 }
 // end RecordKey
 
