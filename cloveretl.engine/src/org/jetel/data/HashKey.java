@@ -53,12 +53,12 @@ public class HashKey {
 	 * @return    Description of the Return Value
 	 */
 	public int hashCode() {
-		int hash = 0;
+		int hash = 17;
 		int[] keyFields = recKey.getKeyFields();
 		for (int i = 0; i < keyFields.length; i++) {
-			hash = hash + record.getField(keyFields[i]).hashCode();
+			hash = 37*hash + record.getField(keyFields[i]).hashCode();
 		}
-		return (hash & 0x7FFFFFFF);
+		return hash;
 	}
 
 
