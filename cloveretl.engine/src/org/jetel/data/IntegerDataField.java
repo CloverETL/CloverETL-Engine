@@ -388,13 +388,13 @@ public class IntegerDataField extends DataField implements Number, Comparable {
 	public boolean equals(Object obj) {
 	    if (isNull || obj==null) return false;
 	    
-	    if (obj instanceof Integer){
+	    if (obj instanceof IntegerDataField){
 	        return value==((IntegerDataField) obj).value;
 	        //return (numValue.equals((((IntegerDataField) obj).getValue())));
-	    }else if (obj instanceof Number){
-	        return value==((Number)obj).getInt();
+	    }else if (obj instanceof Integer){
+	        return value==((Integer)obj).intValue();
 	    }else{
-	        throw new ClassCastException("Can't compare IntegerDataField and "+obj.getClass().getName());
+	        return false;
 	    }
 	}
 
@@ -406,7 +406,6 @@ public class IntegerDataField extends DataField implements Number, Comparable {
 	 * @return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
-		if (obj==null) return 1;
 		if (isNull) return -1;
 	    
 		if (obj instanceof IntegerDataField){
@@ -442,10 +441,13 @@ public class IntegerDataField extends DataField implements Number, Comparable {
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
 	public int compareTo(Number value){
-	    if (value==null || value.isNull()) return 1;
-		if (isNull) return -1;
-	    
-	    return compareTo(value.getInt());
+	    if (isNull) {
+	        return -1;
+	    }else if (value.isNull()) {
+	        return 1;
+	    }else {
+	        return compareTo(value.getInt());
+	    }
 	}
 	
 	/**

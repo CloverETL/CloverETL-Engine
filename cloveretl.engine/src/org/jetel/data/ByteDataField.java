@@ -300,7 +300,7 @@ public class ByteDataField extends DataField  implements Comparable{
 		}else if (obj instanceof byte[]){
 			return Arrays.equals(this.value, (byte[])obj);
 		}else {
-		    throw new ClassCastException("Can't compare ByteDataField and "+obj.getClass().getName());
+		    return false;
 		}
 	}
 
@@ -313,7 +313,6 @@ public class ByteDataField extends DataField  implements Comparable{
 	 */
 	public int compareTo(Object obj) {
 		byte[] byteObj;
-		if (obj==null) return 1;
 		if (isNull) return -1;
 		
 		if (obj instanceof ByteDataField){

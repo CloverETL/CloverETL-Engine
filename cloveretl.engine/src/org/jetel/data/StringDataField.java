@@ -353,7 +353,8 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-	    if (obj==null || isNull) return false;
+	    if (isNull || obj==null ) return false;
+	    if (this==obj) return true;
 		CharSequence data;
 		
 		if (obj instanceof StringDataField){
@@ -362,7 +363,7 @@ public class StringDataField extends DataField implements CharSequence{
 		}else if (obj instanceof CharSequence){
 			data = (CharSequence)obj;
 		}else{
-	        throw new ClassCastException("Can't compare StringDataField and "+obj.getClass().getName());
+	        return false;
 		}
 		
 		if (value.length() != data.length()) {
@@ -386,7 +387,6 @@ public class StringDataField extends DataField implements CharSequence{
 	public int compareTo(Object obj) {
 	    CharSequence strObj;
 	    
-	    if (obj==null) return 1;
 		if (isNull) return -1;
 
         if (obj instanceof StringDataField) {
