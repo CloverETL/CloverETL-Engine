@@ -343,9 +343,9 @@ public class Partition extends Node {
 	    
 	    public int getOutputPort(DataRecord record){
 	        hashKey.setDataRecord(record);
-	        int hash=hashKey.hashCode(); 
-	        int value=(hash)&0x0FF;//// take only last 8 bits
-	        return value%numPorts;
+	        //int hash=hashKey.hashCode(); 
+	        //int value=(hash)&0x0FF;//// take only last 8 bits
+	        return hashKey.hashCode()%numPorts;
 	    }
 	}
 	
