@@ -56,8 +56,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"DEDUP"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dedupKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>keep</b></td><td>one of "First|Last" {the fist letter is sufficient, if not defined, then First}</td>
- *  </tr>
+ *  <tr><td><b>keep</b></td><td>one of "First|Last|Unique" {the fist letter is sufficient, if not defined, then First}</td></tr>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -71,27 +71,35 @@ public class Dedup extends Node {
 
 	private static final String XML_KEEP_ATTRIBUTE = "keep";
 	private static final String XML_DEDUPKEY_ATTRIBUTE = "dedupKey";
+	private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
+	
+	private final static int KEEP_FIRST = 1;
+	private final static int KEEP_LAST = -1;
+	private final static int KEEP_UNIQUE = 0;
+	
 
-	private boolean keepFirst;
+	private int keep;
 	private String[] dedupKeys;
 	private RecordKey recordKey;
+	private boolean equalNULLs;
 
 
 	/**
 	 *Constructor for the Dedup object
 	 *
-	 * @param  id         Description of the Parameter
-	 * @param  dedupKeys  Description of the Parameter
-	 * @param  keepFirst  Description of the Parameter
+	 * @param  id         unique id of the component
+	 * @param  dedupKeys  definitio of key fields used to compare records
+	 * @param  keep  (1 - keep first; 0 - keep unique; -1 - keep last)
 	 */
-	public Dedup(String id, String[] dedupKeys, boolean keepFirst) {
+	public Dedup(String id, String[] dedupKeys, int keep) {
 		super(id);
-		this.keepFirst = keepFirst;
+		this.keep = keep;
 		this.dedupKeys = dedupKeys;
 	}
 
@@ -120,35 +128,51 @@ public class Dedup extends Node {
 	public void run() {
 		int current;
 		int previous;
-		boolean isFirst = true;
+		int groupItems;
+		boolean isFirst = true; // special treatment for 1st record
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
 		records[0].init();
 		records[1].init();
 		current = 1;
 		previous = 0;
-
+		groupItems=0;
+		
 		while (records[current] != null && runIt) {
 			try {
-				records[current] = inPort.readRecord(records[current]);// readRecord(READ_FROM_PORT,inRecord);
+				records[current] = inPort.readRecord(records[current]);
 				if (records[current] != null) {
-					if (isFirst) {
-						if (keepFirst) {
-							writeRecordBroadcast(records[current]);
-						}
-						isFirst = false;
-					} else if (isChange(records[current], records[previous])) {
-						if (keepFirst) {
-							writeRecordBroadcast(records[current]);
-						} else {
-							writeRecordBroadcast(records[previous]);
-						}
-					}
+				    if (isFirst) {
+				        if (keep==KEEP_FIRST) {
+				            writeRecordBroadcast(records[current]);
+				        }
+				        isFirst = false;
+				    } else { 
+				        if (isChange(records[current], records[previous])) {
+				            switch(keep){
+				            case KEEP_FIRST:
+				                writeRecordBroadcast(records[current]);
+				                break;
+				            case KEEP_LAST:
+				                writeRecordBroadcast(records[previous]);
+				                break;
+				            case KEEP_UNIQUE:
+				                if (groupItems==1){
+				                    writeRecordBroadcast(records[previous]);
+				                }
+				                break;
+				            }
+				            groupItems=0;
+				        }else{
+				            
+				        }
+				    }
+				    groupItems++;
 					// swap indexes
 					current = current ^ 1;
 					previous = previous ^ 1;
 				} else {
-					if (!keepFirst) {
+					if (!isFirst && (keep==KEEP_LAST || (keep==KEEP_UNIQUE && groupItems==1))) {
 						writeRecordBroadcast(records[previous]);
 					}
 				}
@@ -189,6 +213,9 @@ public class Dedup extends Node {
 		}
 		recordKey = new RecordKey(dedupKeys, getInputPort(READ_FROM_PORT).getMetadata());
 		recordKey.init();
+		// for DEDUP component, specify whether two fields with NULL value indicator set
+		// are considered equal
+		recordKey.setEqualNULLs(equalNULLs);
 	}
 
 
@@ -210,11 +237,17 @@ public class Dedup extends Node {
 		}
 		
 		// keep attribute
-		if (this.keepFirst) {
-			xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "First");
-		} else {
-			xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Last");
+		switch(this.keep){
+			case KEEP_FIRST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "First");
+				break;
+			case KEEP_LAST: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Last");
+				break;
+			case KEEP_UNIQUE: xmlElement.setAttribute(XML_KEEP_ATTRIBUTE, "Unique");
+				break;
 		}
+		
+		// equal NULL attribute
+		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE,(equalNULLs ? "True":"False"));
 	}
 
 
@@ -227,15 +260,21 @@ public class Dedup extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-
+		Dedup dedup;
 		try {
-			return new Dedup(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			dedup=new Dedup(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_DEDUPKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*"));
+					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
+					    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
+			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+			    dedup.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+			}
+			
 		} catch (Exception ex) {
 			System.err.println(ex.getMessage());
 			return null;
 		}
+		return dedup;
 	}
 
 
@@ -246,6 +285,10 @@ public class Dedup extends Node {
 	
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+	
+	public void setEqualNULLs(boolean equal){
+	    this.equalNULLs=equal;
 	}
 }
 
