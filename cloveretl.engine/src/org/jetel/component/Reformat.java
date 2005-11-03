@@ -213,7 +213,14 @@ public class Reformat extends Node {
 			}
 		}
 		// signal end of record stream to transformation function
-		transformation.finished();
+		try{
+		    transformation.finished();
+		}catch (Exception ex) {
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			//closeAllOutputPorts();
+			return;
+		}
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
