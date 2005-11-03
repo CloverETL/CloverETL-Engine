@@ -18,7 +18,6 @@
 *
 */
 package org.jetel.graph;
-import java.io.*;
 import java.text.DateFormat;
 import java.util.*;
 
@@ -202,10 +201,10 @@ class WatchDog extends Thread {
 	/**
 	 *  Gets the Status of the WatchDog
 	 *
-	 * @return    0 if successful, -1 otherwise
+	 * @return	0 READY, -1 ERROR, 1 RUNNING, 2 FINISHED OK    
 	 * @since     July 30, 2002
 	 */
-	int getStatus() {
+	public int getStatus() {
 		return watchDogStatus;
 	}
 
