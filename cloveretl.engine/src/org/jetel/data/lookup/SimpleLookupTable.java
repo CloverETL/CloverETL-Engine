@@ -196,7 +196,10 @@ public class SimpleLookupTable implements LookupTable {
 	}
 	
 	public void close(){
-	    lookupTable.clear();
+	    if (lookupTable!=null){
+	    	lookupTable.clear();
+	    	lookupTable=null;
+	    }
 	}
 	
 	public DataRecordMetadata getMetadata(){
