@@ -99,12 +99,8 @@ public class DBLookupTable implements LookupTable {
       this.dbConnection = dbConnection;
       this.dbMetadata = dbRecordMetadata;
       this.sqlQuery = sqlQuery;
-      if (numCached>0){
-          this.resultCache= new WeakHashMap(numCached);
-          this.maxCached=numCached;
-      }else{
-          this.maxCached=0;
-      }
+      this.maxCached=numCached;
+      
 }
   
 	/**
@@ -330,6 +326,11 @@ public class DBLookupTable implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
     public void init() throws JetelException {
+    	// if caching is required, crate map to store records
+    	if (maxCached>0){
+            this.resultCache= new WeakHashMap(maxCached);
+            
+        }
         // first try to connect to db
         try {
             //dbConnection.connect();
@@ -374,6 +375,8 @@ public class DBLookupTable implements LookupTable {
 	public void close() {
 		try {
 			pStatement.close();
+			resultCache = null;
+			transMap = null;
     }
     catch (SQLException ex) {
 			throw new RuntimeException(ex.getMessage());
