@@ -32,6 +32,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataJDBCStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.component.ComponentFactory;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SimpleSequence;
 import org.jetel.database.DBConnection;
@@ -135,6 +137,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String PHASE_ELEMENT = "Phase";
 	private final static String DBCONNECTION_ELEMENT = "DBConnection";
 	private final static String SEQUENCE_ELEMENT = "Sequence";
+	private final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
 	private final static String PROPERTY_ELEMENT = "Property";
 
@@ -246,6 +249,13 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
 			instantiateMetadata(metadataElements, metadata);
 
+			// register metadata (DataRecordMetadata) within transformation graph
+			graph.addDataRecordMetadata(metadata);
+
+			// handle all defined lookup tables
+			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+			instantiateLookupTables(lookupsElements, graph);
+
 			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
 			instantiatePhases(phaseElements, phases,allNodes);
 
@@ -270,9 +280,6 @@ public class TransformationGraphXMLReaderWriter {
 			graph.addEdge((org.jetel.graph.Edge) colIterator.next());
 		}
 
-		// register metadata (DataRecordMetadata) within transformation graph
-		graph.addDataRecordMetadata(metadata);
-		
 		return true;
 	}
 
@@ -524,6 +531,23 @@ public class TransformationGraphXMLReaderWriter {
 			seq = SimpleSequence.fromXML(sequenceElements.item(i));
 			if (seq != null) {
 				graph.addSequence(((Element) sequenceElements.item(i)).getAttribute("id"), seq);
+			}
+		}
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  dbConnectionElements  Description of Parameter
+	 * @param  graph                 Description of Parameter
+	 * @since                        October 1, 2002
+	 */
+	private void instantiateLookupTables(NodeList lookupElements, TransformationGraph graph) {
+		LookupTable lookup;
+		for (int i = 0; i < lookupElements.getLength(); i++) {
+			lookup = LookupTableFactory.fromXML(lookupElements.item(i));
+			if (lookup != null) {
+				graph.addLookupTable(((Element) lookupElements.item(i)).getAttribute("id"), lookup);
 			}
 		}
 	}
