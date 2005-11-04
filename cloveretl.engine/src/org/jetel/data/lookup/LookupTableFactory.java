@@ -102,7 +102,7 @@ public class LookupTableFactory {
                 String[] keys=xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
                 DataRecordMetadata metadata=TransformationGraph.getReference().getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
                 
-                lookupTable =new DBLookupTable(TransformationGraph.getReference().getDBConnection(XML_DBCONNECTION),
+                lookupTable =new DBLookupTable(TransformationGraph.getReference().getDBConnection(xattribs.getString(XML_DBCONNECTION)),
                         	metadata, xattribs.getString(XML_SQL_QUERY));
                 
                 
