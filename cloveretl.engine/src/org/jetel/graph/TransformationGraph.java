@@ -526,10 +526,11 @@ public final class TransformationGraph {
 	}
 
 	/**
-	 * Registers lookup table within TransformationGraph. It can be later
-	 * retrieved by calling getLookupTable().
+	 * Registers record metadata object within TransformationGraph. It can be later
+	 * retrieved by calling getDataRecordMetadata().
 	 *
-	 * @param  lookupTable  The lookup table object to be registered
+	 * @param name  name/ID under which metadata object is registered
+	 * @param metadata reference to metadata object
 	 */
 	public void addDataRecordMetadata(String name, DataRecordMetadata metadata) {
 		this.dataRecordMetadata.put(name, metadata);
