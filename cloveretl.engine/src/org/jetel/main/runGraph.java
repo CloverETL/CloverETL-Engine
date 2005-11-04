@@ -21,6 +21,8 @@ package org.jetel.main;
 
 import java.io.*;
 import java.util.Properties;
+
+import org.jetel.component.ComponentFactory;
 import org.jetel.graph.*;
 
 /**
@@ -58,7 +60,8 @@ public class runGraph {
 		boolean verbose = false;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
-
+		ComponentFactory.init();
+		
 		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***\n");
 		if (args.length < 1) {
 			printHelp();
