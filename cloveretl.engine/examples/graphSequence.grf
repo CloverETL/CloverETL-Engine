@@ -10,26 +10,25 @@ For successfull compilation, tools.jar library must be part of CLASSPATH.
 <Global>
 <Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
 <Metadata id="OutMetadata" fileURL="metadata/ordersRef.fmt"/>
+<Sequence cached="5" fileURL="sequence.dat" id="Sequence0" name="seq" start="1" step="1"/>
 </Global>
 <Phase number="0">
 <Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
 <Node id="REF" type="REFORMAT" >
 import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-import org.jetel.data.sequence.SimpleSequence;
+import org.jetel.data.DataRecord;
+import org.jetel.data.GetVal;
+import org.jetel.data.SetVal;
+import org.jetel.data.sequence.Sequence;
+import org.jetel.graph.TransformationGraph;
 
 public class reformatOrders extends DataRecordTransform{
 
-	SimpleSequence sequence;
+	Sequence sequence;
 	int field=0;
 
 	public boolean init(){
-		try{
-		sequence=new SimpleSequence("Test","sequence.dat",0,1,5);
-        sequence.init();
-        }catch(Exception ex){
-         return false;
-        }
+		sequence = TransformationGraph.getReference().getSequence("Sequence0");
         return true;
 	}
 
