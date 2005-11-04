@@ -25,6 +25,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 import org.jetel.graph.Node;
+import org.jetel.util.ComponentDescription;
+import org.jetel.util.ComponentDescriptionReader;
 
 /**
  *  Description of the Class
@@ -39,39 +41,45 @@ public class ComponentFactory {
 	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { org.w3c.dom.Node.class };
 	private final static Map componentMap = new HashMap();
 	
-	static{
+	public static void init() {
+		ComponentDescription[] components = new ComponentDescriptionReader().getComponentDescriptions();
+		
+		for(int i = 0; i < components.length; i++) {
+			registerComponent(components[i].getType(), components[i].getClassName());
+		}
+		
 		// register known components
 		// parameters <component type>,<full class name including package>
-		registerComponent(SimpleCopy.COMPONENT_TYPE,"org.jetel.component.SimpleCopy");
-		registerComponent(Concatenate.COMPONENT_TYPE,"org.jetel.component.Concatenate");
-		registerComponent(DelimitedDataReader.COMPONENT_TYPE,"org.jetel.component.DelimitedDataReader");
-		registerComponent(DelimitedDataWriter.COMPONENT_TYPE,"org.jetel.component.DelimitedDataWriter");
-		registerComponent(SimpleGather.COMPONENT_TYPE,"org.jetel.component.SimpleGather");
-		registerComponent(DelimitedDataWriterNIO.COMPONENT_TYPE,"org.jetel.component.DelimitedDataWriterNIO");
-		registerComponent(DelimitedDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.DelimitedDataReaderNIO");
-		registerComponent(Reformat.COMPONENT_TYPE,"org.jetel.component.Reformat");
-		registerComponent(DBInputTable.COMPONENT_TYPE,"org.jetel.component.DBInputTable");
-		registerComponent(Sort.COMPONENT_TYPE,"org.jetel.component.Sort");
-		registerComponent(DBOutputTable.COMPONENT_TYPE,"org.jetel.component.DBOutputTable");
-		registerComponent(FixLenDataWriterNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataWriterNIO");
-		registerComponent(Dedup.COMPONENT_TYPE,"org.jetel.component.Dedup");
-		registerComponent(FixLenDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataReaderNIO");
-		registerComponent("FIXED_DATA_READER_NIO","org.jetel.component.FixLenDataReaderNIO");
-		registerComponent(Merge.COMPONENT_TYPE,"org.jetel.component.Merge");
-		registerComponent(MergeJoin.COMPONENT_TYPE,"org.jetel.component.MergeJoin");
-		registerComponent("SORTED_JOIN","org.jetel.component.MergeJoin"); // synonym for MergeJoin (former name)
-		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash"); 
-		registerComponent(Filter.COMPONENT_TYPE,"org.jetel.component.Filter");
-		registerComponent(DBExecute.COMPONENT_TYPE,"org.jetel.component.DBExecute");
-		registerComponent(HashJoin.COMPONENT_TYPE,"org.jetel.component.HashJoin");
-		registerComponent(CheckForeignKey.COMPONENT_TYPE,"org.jetel.component.CheckForeignKey");
-		registerComponent(DBFDataReader.COMPONENT_TYPE,"org.jetel.component.DBFDataReader");
-		registerComponent(ExtFilter.COMPONENT_TYPE,"org.jetel.component.ExtFilter");
-		registerComponent(ExtSort.COMPONENT_TYPE,"org.jetel.component.ExtSort");
-		registerComponent(Partition.COMPONENT_TYPE,"org.jetel.component.Partition");
-		registerComponent(DataIntersection.COMPONENT_TYPE,"org.jetel.component.DataIntersection");
-		registerComponent(Aggregate.COMPONENT_TYPE,"org.jetel.component.Aggregate");
-		registerComponent(XMLExtract.COMPONENT_TYPE,"org.jetel.component.XMLExtract");
+//		registerComponent(SimpleCopy.COMPONENT_TYPE,"org.jetel.component.SimpleCopy");
+//		registerComponent(Concatenate.COMPONENT_TYPE,"org.jetel.component.Concatenate");
+//		registerComponent(DelimitedDataReader.COMPONENT_TYPE,"org.jetel.component.DelimitedDataReader");
+//		registerComponent(DelimitedDataWriter.COMPONENT_TYPE,"org.jetel.component.DelimitedDataWriter");
+//		registerComponent(SimpleGather.COMPONENT_TYPE,"org.jetel.component.SimpleGather");
+//		registerComponent(DelimitedDataWriterNIO.COMPONENT_TYPE,"org.jetel.component.DelimitedDataWriterNIO");
+//		registerComponent(DelimitedDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.DelimitedDataReaderNIO");
+//		registerComponent(Reformat.COMPONENT_TYPE,"org.jetel.component.Reformat");
+//		registerComponent(DBInputTable.COMPONENT_TYPE,"org.jetel.component.DBInputTable");
+//		registerComponent(Sort.COMPONENT_TYPE,"org.jetel.component.Sort");
+//		registerComponent(DBOutputTable.COMPONENT_TYPE,"org.jetel.component.DBOutputTable");
+//		registerComponent(FixLenDataWriterNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataWriterNIO");
+//		registerComponent(Dedup.COMPONENT_TYPE,"org.jetel.component.Dedup");
+//		registerComponent(FixLenDataReaderNIO.COMPONENT_TYPE,"org.jetel.component.FixLenDataReaderNIO");
+//		registerComponent("FIXED_DATA_READER_NIO","org.jetel.component.FixLenDataReaderNIO");
+//		registerComponent(Merge.COMPONENT_TYPE,"org.jetel.component.Merge");
+//		registerComponent(MergeJoin.COMPONENT_TYPE,"org.jetel.component.MergeJoin");
+//		registerComponent("SORTED_JOIN","org.jetel.component.MergeJoin"); // synonym for MergeJoin (former name)
+//		registerComponent(Trash.COMPONENT_TYPE,"org.jetel.component.Trash"); 
+//		registerComponent(Filter.COMPONENT_TYPE,"org.jetel.component.Filter");
+//		registerComponent(DBExecute.COMPONENT_TYPE,"org.jetel.component.DBExecute");
+//		registerComponent(HashJoin.COMPONENT_TYPE,"org.jetel.component.HashJoin");
+//		registerComponent(CheckForeignKey.COMPONENT_TYPE,"org.jetel.component.CheckForeignKey");
+//		registerComponent(DBFDataReader.COMPONENT_TYPE,"org.jetel.component.DBFDataReader");
+//		registerComponent(ExtFilter.COMPONENT_TYPE,"org.jetel.component.ExtFilter");
+//		registerComponent(ExtSort.COMPONENT_TYPE,"org.jetel.component.ExtSort");
+//		registerComponent(Partition.COMPONENT_TYPE,"org.jetel.component.Partition");
+//		registerComponent(DataIntersection.COMPONENT_TYPE,"org.jetel.component.DataIntersection");
+//		registerComponent(Aggregate.COMPONENT_TYPE,"org.jetel.component.Aggregate");
+//		registerComponent(XMLExtract.COMPONENT_TYPE,"org.jetel.component.XMLExtract");
 	}
 	
 	
