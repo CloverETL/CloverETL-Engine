@@ -11,42 +11,38 @@ and big master data set. It doesn't require master and slave data to be sorted
 <Metadata id="InMetadata1" fileURL="metadata/orders.fmt"/>
 <Metadata id="InMetadata2" fileURL="metadata/employees.fmt"/>
 <Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+<LookupTable dataType="delimited" fileURL="data/employees.dat" id="LookupTable0" key="EmployeeID" metadata="InMetadata2" name="jmeno" type="simpleLookup"/>
 </Global>
 <Phase number="0">
 <!-- List of nodes which we will use for transformation -->
 <Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" DataPolicy="Strict"/>
 <Node id="JOIN" type="REFORMAT">
 import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-import org.jetel.data.lookup.*;
-import org.jetel.graph.*;
-import org.jetel.metadata.*;
-import org.jetel.data.parser.*;
-import org.jetel.exception.*;
-import java.io.*;
-import java.util.Properties;
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.JetelException;
+import org.jetel.graph.TransformationGraph;
 
 public class reformatTest extends DataRecordTransform{
 
 	LookupTable mylookup;
 
 	public boolean init(){
+
+		try {
+			mylookup = TransformationGraph.getReference().getLookupTable("LookupTable0");
+			mylookup.init();
+		} catch (JetelException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-	Parser parser=new DelimitedDataParserNIO();
-		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
-		try{	
-		parser.open(new FileInputStream("data/employees.dat"), lookupMetadata);
-	    String[] lookupKeyStr={"EmployeeID"};
-		mylookup = new SimpleLookupTable(lookupMetadata, lookupKeyStr ,parser);
 		// create key 
+	    String[] lookupKeyStr={"EmployeeID"};
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();
-		mylookup.init();
 		mylookup.setLookupKey(key);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			return false;
-		}
 		return true;
 	}
 
@@ -67,7 +63,6 @@ public class reformatTest extends DataRecordTransform{
 		return true;
 	}
 }
-
 </Node>
 <Node id="WRITER" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joined_data_hash.out"/>
 <!-- Edges connecting nodes -->
