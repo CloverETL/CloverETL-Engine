@@ -24,6 +24,7 @@ import java.util.Properties;
 
 import org.jetel.component.ComponentFactory;
 import org.jetel.graph.*;
+import org.jetel.util.JetelVersion;
 
 /**
  *  class for executing transformations described in XML layout file<br><br>
@@ -36,6 +37,7 @@ import org.jetel.graph.*;
  *  <tr><td nowrap>-P:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
  *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
+ *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -50,6 +52,7 @@ public class runGraph {
 	private final static String PROPERTY_FILE_SWITCH = "-cfg";
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
+	private final static String INFO_SWITCH= "-info";
 	
 	/**
 	 *  Description of the Method
@@ -88,6 +91,9 @@ public class runGraph {
 			}else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
 				i++;
 				trackingInterval = Integer.parseInt(args[i]);
+			}else if (args[i].startsWith(INFO_SWITCH)){
+			    printInfo();
+			    System.exit(0);
 			}else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
@@ -161,13 +167,18 @@ public class runGraph {
 	}
 	
 	private static void printHelp(){
-		System.out.println("Usage: runGraph [-(v|log|cfg|P:)] <graph definition file>");
+		System.out.println("Usage: runGraph [-(v|log|cfg|P:|tracking|info)] <graph definition file>");
 		System.out.println("Options:");
 		System.out.println("-v\t\t\tbe verbose - print even graph layout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
+		System.out.println("-info\tprint info about Clover library version");
 	}
 
+	private static void printInfo(){
+	    System.out.println("CloverETL library version "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
+	}
+	
 }
 
