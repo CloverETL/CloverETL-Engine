@@ -315,7 +315,8 @@ public class RecordKey {
         return equalNULLs;
     }
     /**
-     * Sets whether two NULL values (fields with NULL flag set) are considered equal
+     * Sets whether two NULL values (fields with NULL flag set) are considered equal.<br>
+     * Default is false.
      * 
      * @param equalNULLs The equalNULLs to set.
      */
