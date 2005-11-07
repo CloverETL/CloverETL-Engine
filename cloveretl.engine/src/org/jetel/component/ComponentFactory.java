@@ -25,8 +25,6 @@ import java.util.Map;
 import java.util.HashMap;
 import java.lang.reflect.Method;
 import org.jetel.graph.Node;
-import org.jetel.util.ComponentDescription;
-import org.jetel.util.ComponentDescriptionReader;
 
 /**
  *  Description of the Class
