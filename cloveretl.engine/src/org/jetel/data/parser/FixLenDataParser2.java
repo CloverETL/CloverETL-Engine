@@ -146,7 +146,6 @@ public class FixLenDataParser2 implements Parser {
 		int fieldCounter = 0;
 		int posCounter = 0;
 		boolean isDataAvailable;
-		boolean skipBlanks=skipLeadingBlanks;
 		int remaining=charBuffer.remaining();
 				
 		if (charBuffer.remaining() < recordLength){
@@ -154,12 +153,12 @@ public class FixLenDataParser2 implements Parser {
 			try {
 				isDataAvailable = readRecord();
 				if (!isDataAvailable){
-					reader.close();
 					if (remaining > 0){
 						//- incomplete record - do something
 						throw new RuntimeException("Incomplete record at the end of the stream");
+					}else{
+					    return null; // end of data stream
 					}
-					return null; // end of data stream 
 				}
 			} catch (IOException e) {
 				throw new JetelException(e.getMessage());
@@ -172,6 +171,7 @@ public class FixLenDataParser2 implements Parser {
 			while (fieldCounter < metadata.getNumFields()) {
 				fieldStringBuffer.clear();
 				char c;
+				boolean skipBlanks=skipLeadingBlanks;
 				for(int i=0; i < fieldLengths[fieldCounter] ; i++) {
 					
 					c = charBuffer.get();
@@ -233,9 +233,9 @@ public class FixLenDataParser2 implements Parser {
 			charBuffer.clear();
 		}
 		size = reader.read(dataBuffer);
-		if (logger.isDebugEnabled()) {
-			logger.debug("Read: " + size);
-		}
+//		if (logger.isDebugEnabled()) {
+//			logger.debug("Read: " + size);
+//		}
 		dataBuffer.flip();
 
 		// if no more data 
@@ -246,14 +246,15 @@ public class FixLenDataParser2 implements Parser {
 		decodingResult=decoder.decode(dataBuffer,charBuffer,true);
 		charBuffer.flip();
 		
-		// check if \r or \n ; if yes discard
-		charBuffer.mark();
-		char c = charBuffer.get();
-		while (c=='\r' || c=='\n') {
-			charBuffer.mark();
-			c = charBuffer.get();
-		}
-		charBuffer.reset();
+// CR, LF handled elsewhere		
+//		// check if \r or \n ; if yes discard   
+//		charBuffer.mark();
+//		char c = charBuffer.get();
+//		while (c=='\r' || c=='\n') {
+//			charBuffer.mark();
+//			c = charBuffer.get();
+//		}
+//		charBuffer.reset();
 		return true;
 	}
 
@@ -307,9 +308,8 @@ public class FixLenDataParser2 implements Parser {
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(handlerBDFE != null ) {  //use handler only if configured
-			while(handlerBDFE.isThrowException()) {
+			while(record!=null && handlerBDFE.isThrowException()) {
 				handlerBDFE.handleException(record);
-				//record.init();  redundant
 				record = parseNext(record);
 			}
 		}
