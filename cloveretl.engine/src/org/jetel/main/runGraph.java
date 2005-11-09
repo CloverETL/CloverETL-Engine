@@ -49,7 +49,7 @@ public class runGraph {
 
 	private final static String RUN_GRAPH_VERSION="1.7";
 	private final static String VERBOSE_SWITCH = "-v";
-	private final static String PROPERTY_FILE_SWITCH = "-cfg";
+	public final static String PROPERTY_FILE_SWITCH = "-cfg";
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	private final static String INFO_SWITCH= "-info";
