@@ -41,19 +41,23 @@ public class DelimitedDataFormatter implements Formatter {
 	private PrintStream writer;
 	private String delimiters[];
 	private String encoding;
+	private static char[] NEW_LINE_CHAR;
 
 	private final static int OUTPUT_STREAM_BUFFER_SIZE = 2048; // size of the buffer
 	private final static String DEFAULT_CHARSET_ENCODING = "ISO-8859-1";	
+	private final static String DELIMITER_SYSTEM_PROPERTY_NAME="line.separator";
 	// Associations
 
 	// Operations
 	
 	public DelimitedDataFormatter(){
 		encoding=null;
+		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
 	}
 	
 	public DelimitedDataFormatter(String encoding){
 		this.encoding=encoding;
+		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
 	}
 	
 	/**
@@ -121,7 +125,7 @@ public class DelimitedDataFormatter implements Formatter {
 			writer.print(delimiters[i]);
 		}
 		if(oneRecordPerLinePolicy){
-			writer.print("\n");
+			writer.print(NEW_LINE_CHAR);
 		}
 	}
 

@@ -44,7 +44,9 @@ import org.jetel.metadata.DataRecordMetadata;
  * @see        DataFormatter
  */
 public class DelimitedDataFormatterNIO implements Formatter {
-	private String charSet = null;
+	
+    private final static String DELIMITER_SYSTEM_PROPERTY_NAME="line.separator";
+    private String charSet = null;
 	private boolean oneRecordPerLinePolicy=false;
 	// Attributes
 	private DataRecordMetadata metadata;
@@ -54,6 +56,8 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	private int delimiterLength[];
 	private CharBuffer charBuffer;
 	private ByteBuffer dataBuffer;
+	
+	private static char[] NEW_LINE_CHAR;
 
 	// Associations
 
@@ -64,6 +68,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
 		encoder.reset();
+		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
 	}
 	
 	public DelimitedDataFormatterNIO(String charEncoder){
@@ -72,6 +77,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		charSet = charEncoder;
 		encoder = Charset.forName(charEncoder).newEncoder();
 		encoder.reset();
+		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
 	}
 	
 	/**
@@ -142,7 +148,11 @@ public class DelimitedDataFormatterNIO implements Formatter {
 			charBuffer.put(delimiters[i]);
 		}
 		if(oneRecordPerLinePolicy){
-			charBuffer.put("\n");
+		    if (NEW_LINE_CHAR.length > charBuffer.remaining())
+			{
+				flushBuffer();
+			}
+			charBuffer.put(NEW_LINE_CHAR);
 		}
 	}
 	
