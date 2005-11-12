@@ -130,6 +130,17 @@ public class GetVal {
 		return record.getField(fieldNo).getValue();
 	}
 
+	/**
+	 * Returns field's NULL status (true/false)
+	 * 
+	 * @param record	DataRecord
+	 * @param fieldNo	index of data field
+	 * @return		true if field has NULL indicator (value) set
+	 */
+	public final static boolean isNull(DataRecord record, int fieldNo) {
+		return record.getField(fieldNo).isNull();
+	}
+	
 
 	/**
 	 *  Gets the Int attribute of the GetVal class
@@ -225,5 +236,17 @@ public class GetVal {
 	public final static Object getValue(DataRecord record, String fieldName) {
 		return record.getField(record.getMetadata().getFieldPosition(fieldName)).getValue();
 	}
+	
+	/**
+	 * Returns field's NULL status (true/false)
+	 * 
+	 * @param record		DataRecord
+	 * @param fieldName		field's name
+	 * @return				true if field has NULL indicator (value) set
+	 */
+	public final static boolean isNull(DataRecord record, String fieldName) {
+		return record.getField(record.getMetadata().getFieldPosition(fieldName)).isNull();
+	}
+	
 }
 
