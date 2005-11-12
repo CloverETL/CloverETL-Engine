@@ -22,57 +22,76 @@ package org.jetel.data;
 
 import java.util.Date;
 /**
- *  Supporting "macros" for getting values of differend data fields 
+ *  Supporting "macros" for getting values of differend data fields.<br>
+ * <i>Note: methods which takes field's position within record as input
+ * parameter are much faster than those accepting field's name.</i> 
  *
  * @author     dpavlis
  * @since    August 20, 2002
+ * @revision    $Revision$
  */
 public class GetVal {
 
 	/**
-	 *  Gets the Int attribute of the GetVal class
+	 *  Return field's value as integer (int primitive)
 	 *
-	 * @param  record   Description of Parameter
-	 * @param  fieldNo  Description of Parameter
-	 * @return          The Int value
+	 * @param  record   DataRecord
+	 * @param  fieldNo  index of data field
+	 * @return          integer value
 	 * @since           August 20, 2002
 	 */
 	public final static int getInt(DataRecord record, int fieldNo) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof NumericDataField) {
-			return ((NumericDataField) field).getInt();
-		}else if (field instanceof IntegerDataField) {
-			return ((IntegerDataField) field).getInt();
+		if (field instanceof Number) {
+			return ((Number) field).getInt();
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
 
 	/**
-	 *  Gets the Double attribute of the GetVal class
+	 *  Return field's value as double (double primitive)
 	 *
-	 * @param  record   Description of Parameter
-	 * @param  fieldNo  Description of Parameter
-	 * @return          The Double value
+	 * @param  record   DataRecord
+	 * @param  fieldNo  index of data field
+	 * @return          double value
 	 * @since           August 20, 2002
 	 */
 	public final static double getDouble(DataRecord record, int fieldNo) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof NumericDataField) {
-			return ((NumericDataField) field).getDouble();
+		if (field instanceof Number) {
+			return ((Number) field).getDouble();
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
+		}
+	}
+
+	/**
+	 * Return field's value as long (long primitive)
+	 * 
+	 * @param record	DataRecord
+	 * @param fieldNo	index of data field
+	 * @return			long value
+	 */
+	public final static long getLong(DataRecord record, int fieldNo) {
+		DataField field = record.getField(fieldNo);
+		if (field instanceof Number) {
+			return ((Number) field).getLong();
+		} else {
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
 
 	/**
-	 *  Gets the String attribute of the GetVal class
+	 *  Return field's value as String. If field is not
+	 * of type StringDataField, the field's value is converted
+	 * to String based on format specified in field's metadata 
 	 *
-	 * @param  record   Description of Parameter
-	 * @param  fieldNo  Description of Parameter
-	 * @return          The String value
+	 * @param  record   DataRecord
+	 * @param  fieldNo  index of data field
+	 * @return          String value of the field
 	 * @since           August 20, 2002
 	 */
 	public final static String getString(DataRecord record, int fieldNo) {
@@ -82,10 +101,10 @@ public class GetVal {
 
 
 	/**
-	 *  Gets the Date attribute of the GetVal class
+	 *  Return field's value as Date (java.util.Date).<br>
 	 *
-	 * @param  record   Description of Parameter
-	 * @param  fieldNo  Description of Parameter
+	 * @param  record   DataRecord
+	 * @param  fieldNo  index of data field
 	 * @return          The Date value
 	 * @since           August 23, 2002
 	 */
@@ -122,12 +141,10 @@ public class GetVal {
 	 */
 	public final static int getInt(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof NumericDataField) {
+		if (field instanceof Number) {
 			return ((NumericDataField) field).getInt();
-		} else if (field instanceof IntegerDataField) {
-			return ((IntegerDataField) field).getInt();
 		} else {			
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
@@ -142,13 +159,28 @@ public class GetVal {
 	 */
 	public final static double getDouble(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof NumericDataField) {
-			return ((NumericDataField) field).getDouble();
+		if (field instanceof Number) {
+			return ((Number) field).getDouble();
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a number DataField!");
 		}
 	}
 
+	/**
+	 * Return field's value as long (long primitive)
+	 * 
+	 * @param record
+	 * @param fieldName
+	 * @return
+	 */
+	public final static long getLong(DataRecord record, String fieldName) {
+		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
+		if (field instanceof Number) {
+			return ((Number) field).getLong();
+		} else {
+			throw new RuntimeException("Not a number DataField!");
+		}
+	}
 
 	/**
 	 *  Gets the String attribute of the GetVal class
