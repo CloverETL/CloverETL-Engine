@@ -34,13 +34,16 @@ import org.jetel.exception.JetelException;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
- * @author david
+ * @author dpavlis
  * @since  31.5.2005
+ * @revision    $Revision$
  *
  * Simple class implementing Sequence interface. It uses internally "long" datatype to
- * store sequence's value. The value is persistent (stored on disk under specified name).
+ * store sequence's value. The value is persistent (stored on disk under specified name).<br>
  * The class caches specified number of sequence values so it protects uniqueness of
- * generated values in various situations.
+ * generated values in various situations.<br>
+ * <i>Note: by setting number of cached values to high enough value (>20) the performance
+ * of SimpleSequence can be greatly increased.</i>
  */
 public class SimpleSequence implements Sequence {
  
@@ -68,12 +71,14 @@ public class SimpleSequence implements Sequence {
 	private static final String XML_CACHED_ATTRIBUTE = "cached";
     
     /**
+     * Creates SimpleSequence object.
+     * 
      * @param sequenceName name (should be unique) of the sequence to be created
      * @param filename filename (with full path) under which store sequence value's
      * @param start	the number the sequence should start with
      * @param step	the step to use when generating sequences
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
-     * available values)
+     * available values between object reusals)
      */
     public SimpleSequence(String sequenceName,String filename,int start,int step,int numCachedValues){
         this.sequenceName=sequenceName;
@@ -104,10 +109,11 @@ public class SimpleSequence implements Sequence {
             flushValue(sequenceValue+step*numCachedValues);
             counter=numCachedValues;
         }
+        long tmpVal=sequenceValue;
         sequenceValue+=step;
         counter--;
     
-        return sequenceValue;
+        return tmpVal;
     }
     
     public int currentValueInt(){
