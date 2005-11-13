@@ -152,10 +152,8 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 			Object b=stack.pop();
 			
 			try{
-				if (a instanceof Double){
-					cmpResult=compare(((Double)a).doubleValue(),((Number)b).doubleValue());
-				}else if (a instanceof Integer){
-					cmpResult=compare(((Integer)a).intValue(),((Number)b).intValue());
+				if (a instanceof org.jetel.data.Number){
+					cmpResult=((org.jetel.data.Number)a).compareTo((org.jetel.data.Number)b);
 				}else if (a instanceof Date){
 					cmpResult=((Date)a).compareTo((Date)b);
 				}else if (a instanceof CharSequence){
@@ -221,6 +219,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else if (a instanceof Double){
 			stack.push(new Double(((Number)a).doubleValue()  
 					+ ((Number)b).doubleValue())); 
+		}else if (a instanceof Long){
+			stack.push(new Long(((Number)a).longValue()  
+					+ ((Number)b).longValue())); 
 		}else {
 			Object[] arguments={a,b};
 			throw new InterpreterRuntimeException(arguments,"add - wrong type of literal(s)");
@@ -241,6 +242,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else if (a instanceof Double){
 			stack.push(new Double(((Number)a).doubleValue()  
 					- ((Number)b).doubleValue())); 
+		}else if (a instanceof Long){
+			stack.push(new Long(((Number)a).longValue()  
+					- ((Number)b).longValue())); 
 		}else {
 			Object[] arguments={a,b};
 			throw new InterpreterRuntimeException(arguments,"sub - wrong type of literal(s)");
@@ -262,6 +266,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else if (a instanceof Double){
 			stack.push(new Double(((Number)a).doubleValue()  
 					* ((Number)b).doubleValue())); 
+		}else if (a instanceof Long){
+			stack.push(new Long(((Number)a).longValue()  
+					* ((Number)b).longValue())); 
 		}else {
 			Object[] arguments={a,b};
 			throw new InterpreterRuntimeException(arguments,"mul - wrong type of literal(s)");
@@ -282,6 +289,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else if (a instanceof Double){
 			stack.push(new Double(((Number)a).doubleValue()  
 					/ ((Number)b).doubleValue())); 
+		}else if (a instanceof Long){
+			stack.push(new Long(((Number)a).longValue()  
+					/ ((Number)b).longValue())); 
 		}else {
 			Object[] arguments={a,b};
 			throw new InterpreterRuntimeException(arguments,"div - wrong type of literal(s)");
@@ -302,6 +312,9 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		}else if (a instanceof Double){
 			stack.push(new Double(((Number)a).doubleValue()  
 					% ((Number)b).doubleValue())); 
+		}else if (a instanceof Long){
+			stack.push(new Long(((Number)a).longValue()  
+					% ((Number)b).longValue())); 
 		}else {
 			Object[] arguments={a,b};
 			throw new InterpreterRuntimeException(arguments,"mod - wrong type of literal(s)");
@@ -616,6 +629,8 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 			stack.push(new Double(-1*((Double)value).doubleValue()));
 		}else if (value instanceof Integer){
 			stack.push(new Double(-1*((Integer)value).intValue()));
+		}else if (value instanceof Long){
+			stack.push(new Long(-1*((Long)value).longValue()));
 		}else{
 			Object arguments[]={value};
 			throw new InterpreterRuntimeException(arguments,"minus - not a number");
