@@ -29,39 +29,54 @@ package org.jetel.data;
 public class SetVal {
 
 	/**
-	 *  Assign integer value into Numeric field
+	 *  Assign integer value into numeric field
 	 *
 	 * @param  record   data record containing field to set
 	 * @param  fieldNo  field ordinal number within record
-	 * @param  value    The new Int value
+	 * @param  value    The new int value
 	 * @since           August 20, 2002
 	 */
 	public final static void setInt(DataRecord record, int fieldNo, int value) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof NumericDataField) {
-			((NumericDataField) field).setValue(value);
-		}else if (field instanceof IntegerDataField) {
-			((IntegerDataField) field).setValue(value);
-		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
+		}else {
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
 
 	/**
-	 *  Assign double value into Numeric field
+	 *  Assign double value into numeric field
 	 *
 	 * @param  record   data record containing field to set
 	 * @param  fieldNo  field ordinal number within record
-	 * @param  value    The new Double value
+	 * @param  value    The new double value
 	 * @since           August 20, 2002
 	 */
 	public final static void setDouble(DataRecord record, int fieldNo, double value) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof NumericDataField) {
-			((NumericDataField) field).setValue(value);
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
+		}
+	}
+	
+	/**
+	 *  Assign long value into numeric field
+	 *
+	 * @param  record   data record containing field to set
+	 * @param  fieldNo  field ordinal number within record
+	 * @param  value    The new long value
+	 * @since           August 20, 2002
+	 */
+	public final static void setLong(DataRecord record, int fieldNo, long value) {
+		DataField field = record.getField(fieldNo);
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
+		} else {
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
@@ -140,12 +155,10 @@ public class SetVal {
 	 */
 	public final static void setInt(DataRecord record, String fieldName, int value) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof NumericDataField) {
-			((NumericDataField) field).setValue(value);
-		} else if (field instanceof IntegerDataField) {
-			((IntegerDataField) field).setValue(value);
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
@@ -160,13 +173,29 @@ public class SetVal {
 	 */
 	public final static void setDouble(DataRecord record, String fieldName, double value) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof NumericDataField) {
-			((NumericDataField) field).setValue(value);
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
 		} else {
-			throw new RuntimeException("Not a NumericDataField!");
+			throw new RuntimeException("Not a numeric DataField!");
 		}
 	}
 
+	/**
+	 *  Assign long value into Numeric field
+	 *
+	 * @param  record     data record containing field to set
+	 * @param  fieldName  name of the field to set
+	 * @param  value      The new Double value
+	 * @since             August 20, 2002
+	 */
+	public final static void setLong(DataRecord record, String fieldName, long value) {
+		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
+		if (field instanceof Number) {
+			((Number) field).setValue(value);
+		} else {
+			throw new RuntimeException("Not a numeric DataField!");
+		}
+	}
 
 	/**
 	 *  Assign String value into field.<br>
