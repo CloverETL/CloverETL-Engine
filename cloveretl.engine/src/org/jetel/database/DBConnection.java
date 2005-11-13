@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import org.jetel.util.PasswordEncrypt;
 
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.PropertyRefResolver;
@@ -90,12 +91,11 @@ import org.w3c.dom.NamedNodeMap;
  */
 public class DBConnection {
 
-	String dbDriverName;
-	String dbURL;
 	Driver dbDriver;
 	Connection dbConnection;
 	Properties config;
 	boolean threadSafeConnections;
+	boolean isPasswordEncrypted;
 	private Map openedConnections;
 
 	public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
@@ -107,6 +107,8 @@ public class DBConnection {
 	public static final String XML_PASSWORD_ATTRIBUTE = "password";
 	public static final String XML_USER_ATTRIBUTE = "user";
 	public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
+	public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted"; 
+	
 	// not yet used by component
 	public static final String XML_NAME_ATTRIBUTE = "name";
 	/**
@@ -118,13 +120,18 @@ public class DBConnection {
 	 * @param  password  Description of the Parameter
 	 */
 	public DBConnection(String dbDriver, String dbURL, String user, String password) {
-		this.config = new Properties();
-		if (user!=null) config.setProperty(XML_USER_ATTRIBUTE, user);
-		if (password!=null) config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
-		this.dbDriverName = dbDriver;
-		this.dbURL = dbURL;
+	    this.openedConnections=new HashMap();
+	    this.config = new Properties();
+		try{
+		    config.setProperty(XML_USER_ATTRIBUTE, user);
+		    config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
+		    config.setProperty(XML_DBDRIVER_ATTRIBUTE, dbDriver);
+		    config.setProperty(XML_DBURL_ATTRIBUTE, dbURL);
+		    }catch(NullPointerException ex){
+		        // do nothing in constructor - will probably fail later
+		    }
 		this.threadSafeConnections=false;
-		this.openedConnections=new HashMap();
+		this.isPasswordEncrypted=false;
 	}
 
 
@@ -134,16 +141,15 @@ public class DBConnection {
 	 * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
 	 */
 	public DBConnection(String configFilename) {
-		this.config = new Properties();
-		this.openedConnections=new HashMap();
+	    this.openedConnections=new HashMap();
+	    this.config = new Properties();
 
 		try {
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
 			this.config.load(stream);
 			stream.close();
-			this.dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-			this.dbURL = config.getProperty(XML_DBURL_ATTRIBUTE);
 			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+			this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
 
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
@@ -152,11 +158,9 @@ public class DBConnection {
 
 	public DBConnection(Properties configProperties) {
 	    this.openedConnections=new HashMap();
-		this.dbDriverName = (String)configProperties.remove(XML_DBDRIVER_ATTRIBUTE);
-		this.config = new Properties();
-		this.config.putAll(configProperties);
-		this.dbURL = (String)this.config.remove(XML_DBURL_ATTRIBUTE);
+		this.config = configProperties;
 		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+		this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
 	}
 	
 	/**
@@ -173,7 +177,9 @@ public class DBConnection {
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
 	public void connect() {
+	    String dbDriverName;
 	    if (dbDriver==null){
+	        dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
 	        try {
 	            dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
 	        } catch (ClassNotFoundException ex) {
@@ -207,7 +213,12 @@ public class DBConnection {
 	        }
 	    }
 		try {
-			dbConnection = dbDriver.connect(dbURL, this.config);
+		    // handle encrypted password
+		    if (isPasswordEncrypted){
+		        decryptPassword(this.config);
+		        isPasswordEncrypted=false;
+		    }
+			dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), this.config);
 		} catch (SQLException ex) {
 			throw new RuntimeException("Can't connect to DB :"
 					+ ex.getMessage());
@@ -215,7 +226,7 @@ public class DBConnection {
 		if (dbConnection == null) {
 			throw new RuntimeException(
 					"Not suitable driver for specified DB URL : " + dbDriver
-							+ " ; " + dbURL);
+							+ " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
 		}
 		// try to set Transaction isolation level, it it was specified
 		if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
@@ -278,7 +289,7 @@ public class DBConnection {
 	        }catch(SQLException ex){
 	            throw new RuntimeException(
 						"Can't establish or reuse existing connection : " + dbDriver
-								+ " ; " + dbURL);
+								+ " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
 	        }
 		    con=dbConnection;
 		}
@@ -357,6 +368,7 @@ public class DBConnection {
 	 */
 	public void setProperty(Properties properties) {
 		config.putAll(properties);
+		this.decryptPassword(this.config);
 	}
 
 
@@ -404,11 +416,17 @@ public class DBConnection {
 				    con.setThreadSafeConnections(xattribs.getBoolean(XML_THREAD_SAFE_CONNECTIONS));
 				}
 				
+				//check passwordEncrypted option
+				if (xattribs.exists(XML_IS_PASSWORD_ENCRYPTED)){
+				    con.setPasswordEncrypted(xattribs.getBoolean(XML_IS_PASSWORD_ENCRYPTED));
+				}
+				
 				// assign rest of attributes/parameters to connection properties so
 				// it can be retrieved by DB JDBC driver
 				for (int i = 0; i < attributes.getLength(); i++) {
 					con.setProperty(attributes.item(i).getNodeName(), refResolver.resolveRef(attributes.item(i).getNodeValue()));
 				}
+				con.decryptPassword(con.config);
 
 				return con;
 			}
@@ -423,9 +441,8 @@ public class DBConnection {
 	public void saveConfiguration(OutputStream outStream) throws IOException {
 		Properties propsToStore = new Properties();
 		propsToStore.putAll(config);
-		propsToStore.put(XML_DBDRIVER_ATTRIBUTE,this.dbDriverName);
-		propsToStore.put(XML_DBURL_ATTRIBUTE,this.dbURL);
 		propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,new Boolean(this.threadSafeConnections));
+		propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,new Boolean(this.isPasswordEncrypted));
 		propsToStore.store(outStream,null);
 	}
 	
@@ -436,8 +453,13 @@ public class DBConnection {
 	 * @return    Description of the Return Value
 	 */
 	public String toString() {
-		return dbURL;
+	    StringBuffer strBuf=new StringBuffer(255);
+	    strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
+	    strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
+	    strBuf.append("]:user[").append(config.getProperty(XML_NAME_ATTRIBUTE)).append("]");
+		return strBuf.toString();
 	}
+	
     /**
      * @return Returns the threadSafeConnections.
      */
@@ -453,6 +475,40 @@ public class DBConnection {
     
     private boolean parseBoolean(String s) {
         return s != null && s.equalsIgnoreCase("true");
+    }
+    
+ 
+    /** Decrypt the password entry in the configuration properties if the
+     * isPasswordEncrypted property is set to "y" or "yes". If any error occurs
+     * and decryption fails, the original password entry will be used.
+     * 
+     * @param configProperties
+     *            configuration properties
+     */
+    private void decryptPassword(Properties configProperties) {
+        if (isPasswordEncrypted){
+            PasswordEncrypt dec = new PasswordEncrypt();
+            String decryptedPassword = dec.decrypt(configProperties
+                    .getProperty(XML_PASSWORD_ATTRIBUTE));
+            // If password decryption returns failure, try with the password
+            // as it is.
+            if (decryptedPassword != null) {
+                configProperties.setProperty(XML_PASSWORD_ATTRIBUTE,
+                        decryptedPassword);
+            }
+        }
+    } 
+    /**
+     * @return Returns the isPasswordEncrypted.
+     */
+    public boolean isPasswordEncrypted() {
+        return isPasswordEncrypted;
+    }
+    /**
+     * @param isPasswordEncrypted The isPasswordEncrypted to set.
+     */
+    public void setPasswordEncrypted(boolean isPasswordEncrypted) {
+        this.isPasswordEncrypted = isPasswordEncrypted;
     }
 }
 
