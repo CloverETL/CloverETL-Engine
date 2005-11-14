@@ -23,7 +23,6 @@
 package org.jetel.data.formatter;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -87,9 +86,9 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 28, 2002
 	 */
-	public void open(OutputStream out, DataRecordMetadata _metadata) {
+	public void open(Object out, DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
-
+		
 		// create buffered input stream reader 
 		writer = ((FileOutputStream) out).getChannel();
 

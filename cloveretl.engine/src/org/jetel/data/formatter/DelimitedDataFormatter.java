@@ -67,18 +67,19 @@ public class DelimitedDataFormatter implements Formatter {
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 28, 2002
 	 */
-	public void open(OutputStream out, DataRecordMetadata _metadata) {
+	public void open(Object out, DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
-
+		OutputStream o = (OutputStream) out;
+		
 		// create buffered input stream reader 
 		if (encoding!=null){
 			try{
-				writer = new PrintStream(new BufferedOutputStream(out,OUTPUT_STREAM_BUFFER_SIZE),false,encoding);
+				writer = new PrintStream(new BufferedOutputStream(o,OUTPUT_STREAM_BUFFER_SIZE),false,encoding);
 			}catch(UnsupportedEncodingException ex){
 				throw new RuntimeException(ex);
 			}
 		}else{
-			writer = new PrintStream(new BufferedOutputStream(out,OUTPUT_STREAM_BUFFER_SIZE),false);
+			writer = new PrintStream(new BufferedOutputStream(o,OUTPUT_STREAM_BUFFER_SIZE),false);
 		}
 		
 		// create array of delimiters & initialize them
