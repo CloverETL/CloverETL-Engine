@@ -60,4 +60,45 @@ public interface Number {
      * @return 	-1,0,1 if internal value(less-then,equals, greather then) passed-in value
      */
     public int compareTo(Number value);
+    
+    /**
+     * Sum of two Number, this and added parameter.
+     * @param a second operand of sum
+     */
+    public void sum(Number a);
+    
+    /**
+     * Difference of two Number, this and added parameter.
+     * @param a second operand of difference 
+     */
+    public void sub(Number a);
+    
+    /**
+     * Multiplication of two Number, this and added parameter.
+     * @param a secondt operand of multiplikation 
+     */
+    public void mul(Number a);
+    
+    /**
+     * Division of two Number, this and added parameter.
+     * @param a second operand of division 
+     */
+    public void div(Number a);
+    
+    /**
+     * Absolute value of this Number.
+     */
+    public void abs();
+    
+    /**
+     * Rest of a divided this by <code>a</code>.
+     * @param a second operand of division 
+     */
+    public void mod(Number a);
+    
+    /**
+     * Opposite value.
+     */
+    public void opp();
+    
 }
