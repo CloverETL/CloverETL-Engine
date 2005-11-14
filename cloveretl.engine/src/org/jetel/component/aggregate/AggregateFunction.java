@@ -129,7 +129,7 @@ public class AggregateFunction implements Iterator {
 			}
 			
 			if(functionNumber == FNC_COUNT) { // parameter for COUNT aggregate function is not meanfull
-				aggregateItems[i] = new AggregateItem(functionNumber, -1, ' ');
+				aggregateItems[i] = new AggregateItem(functionNumber, -1);
 				continue;
 			}
 			
@@ -150,14 +150,13 @@ public class AggregateFunction implements Iterator {
 			}
 
 			//create aggregate item
-			if(inMetadata.getField(fieldNum.intValue()).getType() != DataFieldMetadata.INTEGER_FIELD
-					&& inMetadata.getField(fieldNum.intValue()).getType() != DataFieldMetadata.NUMERIC_FIELD
+			if(inMetadata.getField(fieldNum.intValue()) instanceof Number
 					&& functionNumber != FNC_MIN
 					&& functionNumber != FNC_MAX
 					&& functionNumber != FNC_COUNT) {
 				throw new RuntimeException("Incorrect data type for aggregation.");
 			}
-			aggregateItems[i] = new AggregateItem(functionNumber, fieldNum.intValue(), inMetadata.getField(fieldNum.intValue()).getType());
+			aggregateItems[i] = new AggregateItem(functionNumber, fieldNum.intValue());
 		}
 		
 		if(!sorted) {
@@ -188,8 +187,15 @@ public class AggregateFunction implements Iterator {
 		}
 		
 		//copy agregation results
+		Object val;
 		for (int i = 0; i < aggregateItems.length; i++) {
-			outRecord.getField(keyFields.length + i).setValue(aggregateItems[i].getValue());
+			val = aggregateItems[i].getValue();
+			if(val instanceof MyInteger) 
+				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
+			else if(val instanceof MyDouble)
+				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+			else 
+				outRecord.getField(keyFields.length + i).setValue(val);
 		}
 
 		return outRecord;
@@ -230,7 +236,7 @@ public class AggregateFunction implements Iterator {
 	 * @see java.util.Iterator#remove()
 	 */
 	public void remove() {
-		throw new RuntimeException("Call of unimplented method.");
+		throw new RuntimeException("Call of unimplemented method.");
 	}
 
 	/* (non-Javadoc)
@@ -254,13 +260,26 @@ public class AggregateFunction implements Iterator {
 		}
 		
 		//copy agregation results
+		Object val;
 		for (int i = 0; i < aggregateItems.length; i++) {
-			outRecord.getField(keyFields.length + i).setValue(aggregateItems[i].getValueUnsorted(key));
+			val = aggregateItems[i].getValueUnsorted(key);
+			if(val instanceof MyInteger) 
+				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
+			else if(val instanceof MyDouble)
+				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+			else 
+				outRecord.getField(keyFields.length + i).setValue(val);
 		}
 		
 		return outRecord;
 	}
 
+	private class MyInteger {
+		int value;
+	}
+	private class MyDouble {
+		double value;
+	}
 	/**
 	 *  Represent one aggregate function.
 	 *
@@ -272,20 +291,20 @@ public class AggregateFunction implements Iterator {
 		boolean firstLoop;
 		int function;
 		int fieldNo;
-		char fieldType;
 		Data data;
 		Map dataMap; 
-
+		MyInteger myInteger;
+		MyDouble myDouble;
+		
 		/**
 		 *Constructor for the FilterItem object
 		 *
 		 * @param  function   Description of the Parameter
 		 * @param  fieldNo    Description of the Parameter
 		 */
-		AggregateItem(int function, int fieldNo, char fieldtype) {
+		AggregateItem(int function, int fieldNo) {
 			this.function = function;
 			this.fieldNo = fieldNo;
-			this.fieldType = fieldtype;
 			
 			firstLoop = true;
 			
@@ -296,6 +315,9 @@ public class AggregateFunction implements Iterator {
 					throw new RuntimeException("Can't allocate HashSet of size: " + aggregateGroupInitialCapacity);
 				}
 			}
+
+			myInteger = new MyInteger();
+			myDouble = new MyDouble();
 		}
 
 		/**
@@ -311,7 +333,7 @@ public class AggregateFunction implements Iterator {
 				if(currentValue == null) return;
  			}
 			if(data == null) {
-				data = new Data(0, null, fieldType, currentDF);
+				data = new Data(0, null, currentDF);
 			}
 			
 			switch(function) {
@@ -332,18 +354,26 @@ public class AggregateFunction implements Iterator {
 					}
 					break;
 				case FNC_SUM:
-					data.increaseValue(currentValue);
+					data.increaseValue(currentDF);
 					break;
 				case FNC_COUNT:
 					data.increaseCount();
 					break;
 				case FNC_AVG:
-					data.increaseValue(currentValue);
+					data.increaseValue(currentDF);
 					data.increaseCount();
 					break;
 				case FNC_STDEV:
-					data.increaseValue(currentValue);
 					data.increaseCount();
+					if(firstLoop) {
+						data.dValue1 = ((Number) currentDF).getDouble();
+						data.dValue2 = 0;
+						firstLoop = false;
+					} else {
+						double tempD = data.dValue1;
+						data.dValue1 += (((Number) currentDF).getDouble() - data.dValue1) / data.count;
+						data.dValue2 += (((Number) currentDF).getDouble() - tempD) * (((Number) currentDF).getDouble() - data.dValue1); 	
+					}
 					break;
 			}
 		}
@@ -372,13 +402,19 @@ public class AggregateFunction implements Iterator {
 					result = resultValue;
 					break;
 				case FNC_COUNT:
-					result = new Integer(data.getCount());
+					myInteger.value = data.count;
+					result = myInteger;
 					break;
 				case FNC_AVG:
-					result = new Double(data.getDoubleValue() / data.getCount());
+					myDouble.value = data.getDoubleValue() / data.count;
+					result = myDouble;
 					break;
 				case FNC_STDEV:
-					result = new Double(data.getDoubleValue() / data.getCount());
+					if(data.count > 1) {
+						myDouble.value = Math.sqrt(data.dValue2 / (data.count - 1));
+						result = myDouble;
+					} else 
+						result = null;
 					break;
 			}
 			
@@ -405,7 +441,7 @@ public class AggregateFunction implements Iterator {
 			switch(function) {
 				case FNC_MIN:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(0, currentValue, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(0, currentValue, currentDF));
 					} else {
 						Data d = (Data) dataMap.get(keyStr);
 						if(currentDF.compareTo(d.getValue()) < 0) 
@@ -414,7 +450,7 @@ public class AggregateFunction implements Iterator {
 					break;
 				case FNC_MAX:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(0, currentValue, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(0, currentValue, currentDF));
 					} else {
 						Data d = (Data) dataMap.get(keyStr);
 						if(currentDF.compareTo(d.getValue()) > 0) 
@@ -423,32 +459,35 @@ public class AggregateFunction implements Iterator {
 					break;
 				case FNC_SUM:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(0, currentValue, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(0, currentValue, currentDF));
 					} else {
-						((Data) dataMap.get(keyStr)).increaseValue(currentValue);
+						((Data) dataMap.get(keyStr)).increaseValue(currentDF);
 					}
 					break;
 				case FNC_COUNT:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(1, null, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(1, null, currentDF));
 					} else {
 						((Data) dataMap.get(keyStr)).increaseCount();
 					}
 					break;
 				case FNC_AVG:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(1, currentValue, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(1, currentValue, currentDF));
 					} else {
 						((Data) dataMap.get(keyStr)).increaseCount();
-						((Data) dataMap.get(keyStr)).increaseValue(currentValue);
+						((Data) dataMap.get(keyStr)).increaseValue(currentDF);
 					}
 					break;
 				case FNC_STDEV:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(1, currentValue, fieldType, currentDF));
+						dataMap.put(keyStr, new Data(1, ((Number) currentDF).getDouble(), 0));
 					} else {
-						((Data) dataMap.get(keyStr)).increaseCount();
-						((Data) dataMap.get(keyStr)).increaseValue(currentValue);
+						Data tempData = (Data) dataMap.get(keyStr);
+						double tempD = tempData.dValue1;
+						tempData.increaseCount();
+						tempData.dValue1 += (((Number) currentDF).getDouble() - tempData.dValue1) / tempData.count;
+						tempData.dValue2 += (((Number) currentDF).getDouble() - tempD) * (((Number) currentDF).getDouble() - tempData.dValue1); 	
 					}
 					break;
 			}
@@ -470,11 +509,17 @@ public class AggregateFunction implements Iterator {
 				case FNC_SUM:
 					return resultValue;
 				case FNC_COUNT:
-					return new Integer(data.getCount());
+					myInteger.value = data.count;
+					return myInteger;
 				case FNC_AVG:
-					return new Double(data.getDoubleValue() / data.getCount());
+					myDouble.value = data.getDoubleValue() / data.count;
+					return myDouble;
 				case FNC_STDEV:
-					return new Double(data.getDoubleValue() / data.getCount());
+					if(data.count > 1) {
+						myDouble.value = Math.sqrt(data.dValue2 / (data.count - 1));
+						return myDouble;
+					} else 
+						return null;
 				default:
 					throw new RuntimeException("Unknown aggregate function.");
 			}
@@ -485,13 +530,12 @@ public class AggregateFunction implements Iterator {
 	 * Helper data container.
 	 */
 	class Data {
-		private char fieldType;
-		private int count;
+		int count;
 		private DataField value = null;
-		private DataField value1 = null;
+		double dValue1;
+		double dValue2;
 		
-		Data(int count, Object v, char fieldType, DataField df) {
-			this.fieldType = fieldType;
+		Data(int count, Object v, DataField df) {
 			this.count = count;
 			if(df != null) { 
 				value = df.duplicate();
@@ -500,52 +544,34 @@ public class AggregateFunction implements Iterator {
 			setValue(v);
 		}
 
-		public int getCount() {
-			return count;
+		Data(int count, double dVal1, double dVal2) {
+			this.count = count;
+			dValue1 = dVal1;
+			dValue2 = dVal2;
 		}
 
 		public void increaseCount() {
 			count++;
 		}
 
-		private void increaseValueEx(DataField val, Object increasor) {
-			switch(fieldType) {
-				case DataFieldMetadata.INTEGER_FIELD:
-					if(val.isNull()) {
-						setValueEx(val, increasor);
-					} else {
-						setValueEx(val, new Integer(((Integer) val.getValue()).intValue() + ((Integer) increasor).intValue()));
-					}
-					break;
-				case DataFieldMetadata.NUMERIC_FIELD:
-					if(val.isNull()) {
-						setValueEx(val, increasor);
-					} else {
-						setValueEx(val, new Double(((Double) val.getValue()).doubleValue() + ((Double) increasor).doubleValue()));
-					}
-					break;
-				case DataFieldMetadata.LONG_FIELD:
-					if(val.isNull()) {
-						setValueEx(val, increasor);
-					} else {
-						setValueEx(val, new Long(((Long) val.getValue()).longValue() + ((Long) increasor).longValue()));
-					}
-					break;
+		private void increaseValueEx(DataField val, DataField increasor) {
+			Number num = (Number) val;
+			
+			if(val.isNull()) {
+				setValueEx(val, increasor);
+			} else {
+				num.sum(((Number) increasor));
 			}
 		}
 
-		public void increaseValue(Object increasor) {
+		public void increaseValue(DataField increasor) {
 			increaseValueEx(value, increasor);
 		}
 
-		public void increaseValue1(Object increasor) {
-			increaseValueEx(value1, increasor);
-		}
-		
-		private void setValueEx(DataField val, Object v) {
+		private void setValueEx(DataField val, DataField v) {
 			if(val != null) {
-				val.setNull(false);
-				val.setValue(v);
+				//val.setNull(false); //TODO kokon
+				val.setValue(v.getValue());
 			}
 		}
 
@@ -565,7 +591,9 @@ public class AggregateFunction implements Iterator {
 		
 		public void reset() {
 			count = 0;
-			setValue(null);
+			if(value != null) value.setNull(true);
+			dValue1 = 0;
+			dValue2 = 0;
 		}
 	}
 }
