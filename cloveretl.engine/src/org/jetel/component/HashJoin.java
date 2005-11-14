@@ -20,6 +20,9 @@
 package org.jetel.component;
 
 import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -99,6 +102,8 @@ import org.w3c.dom.Text;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
@@ -140,6 +145,7 @@ public class HashJoin extends Node {
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
+	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
 
@@ -150,6 +156,7 @@ public class HashJoin extends Node {
 	private final static int SLAVE_ON_PORT = 1;
 
 	private String transformClassName;
+	private String libraryPath = null;
 
 	private RecordTransform transformation = null;
 	private DynamicJavaCode dynamicTransformation = null;
@@ -278,9 +285,21 @@ public class HashJoin extends Node {
 				try {
 					tClass = Class.forName(transformClassName);
 				} catch (ClassNotFoundException ex) {
-					throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
+					// let's try to load in any additional .jar library (if specified)
+					if(libraryPath == null) {
+						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+					}
+					String urlString = "file:" + libraryPath;
+					URL[] myURLs;
+					try {
+						myURLs = new URL[] { new URL(urlString) };
+						URLClassLoader classLoader = new URLClassLoader(myURLs);
+						tClass = Class.forName(transformClassName, true, classLoader);
+					} catch (MalformedURLException ex1) {
+						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+					} catch (ClassNotFoundException ex1) {
+						throw new RuntimeException("Can not find class: " + ex1);
+					}
 				}
 				try {
 					transformation = (RecordTransform) tClass.newInstance();
@@ -486,6 +505,9 @@ public class HashJoin extends Node {
 				join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
+				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
+					join.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
+				}
 			} else {
 				// do we have child node wich Java source code ?
 				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
@@ -519,6 +541,12 @@ public class HashJoin extends Node {
 		}
 	}
 
+	/**
+	 * @param string
+	 */
+	private void setLibraryPath(String libraryPath) {
+		this.libraryPath = libraryPath;
+	}
 
 	/**
 	 *  Description of the Method
