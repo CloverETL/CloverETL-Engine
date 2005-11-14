@@ -19,7 +19,10 @@
 */
 package org.jetel.component;
 
-import java.io.*;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -27,7 +30,10 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.*;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
@@ -66,6 +72,8 @@ import org.w3c.dom.Text;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"REFORMAT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *  to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
  *  <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td>
  *  </tr>
  *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
@@ -128,6 +136,7 @@ import org.w3c.dom.Text;
 public class Reformat extends Node {
 
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
+	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";
 
@@ -137,6 +146,7 @@ public class Reformat extends Node {
 	private String transformClassName = null;
 	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
+	private String libraryPath = null;
 
 	private Properties transformationParameters=null;
 	
@@ -252,9 +262,21 @@ public class Reformat extends Node {
 				try {
 					tClass = Class.forName(transformClassName);
 				} catch (ClassNotFoundException ex) {
-					throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
+					// let's try to load in any additional .jar library (if specified)
+					if(libraryPath == null) {
+						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+					}
+					String urlString = "file:" + libraryPath;
+					URL[] myURLs;
+					try {
+						myURLs = new URL[] { new URL(urlString) };
+						URLClassLoader classLoader = new URLClassLoader(myURLs);
+						tClass = Class.forName(transformClassName, true, classLoader);
+					} catch (MalformedURLException ex1) {
+						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+					} catch (ClassNotFoundException ex1) {
+						throw new RuntimeException("Can not find class: " + ex1);
+					}
 				}
 				try {
 					transformation = (RecordTransform) tClass.newInstance();
@@ -333,6 +355,9 @@ public class Reformat extends Node {
 			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
 				reformat= new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
+				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
+					reformat.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
+				}
 			} else {
 				// do we have child node wich Java source code ?
 				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
@@ -348,6 +373,14 @@ public class Reformat extends Node {
 			return null;
 		}
 		return reformat;
+	}
+
+
+	/**
+	 * @param string
+	 */
+	private void setLibraryPath(String libraryPath) {
+		this.libraryPath = libraryPath;
 	}
 
 
