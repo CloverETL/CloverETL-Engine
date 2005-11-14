@@ -471,6 +471,7 @@ public class NumericDataField extends DataField implements Number, Comparable{
 	 *@return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
+		if (obj==null) return 1;
 		if (isNull) return -1;
 	    
 		if (obj instanceof NumericDataField){
@@ -526,6 +527,62 @@ public class NumericDataField extends DataField implements Number, Comparable{
 	 */
 	public int getSizeSerialized() {
 		return FIELD_SIZE_BYTES;
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#sum(org.jetel.data.Number)
+	 */
+	public void sum(Number a) {
+		value += a.getDouble();
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#sub(org.jetel.data.Number)
+	 */
+	public void sub(Number a) {
+		value -= a.getDouble();
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#mul(org.jetel.data.Number)
+	 */
+	public void mul(Number a) {
+		value *= a.getDouble();
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#div(org.jetel.data.Number)
+	 */
+	public void div(Number a) {
+		value /= a.getDouble();
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#abs()
+	 */
+	public void abs() {
+		value = Math.abs(value);
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#mod(org.jetel.data.Number)
+	 */
+	public void mod(Number a) {
+		value %= a.getDouble();
+	}
+
+
+	/**
+	 * @see org.jetel.data.Number#opp()
+	 */
+	public void opp() {
+		value *= -1;
 	}
 
 }
