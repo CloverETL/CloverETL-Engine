@@ -44,7 +44,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Aggregate functions ara applied on input data flow base on specified key.<br>
+ * <td>Aggregate functions are applied on input data flow base on specified key.<br>
  *  The key is name (or combination of names) of field(s) from input record.
  *  Data flow can be sorted or not.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
