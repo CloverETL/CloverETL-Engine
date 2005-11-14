@@ -36,6 +36,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.DOMException;
@@ -234,12 +235,16 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	}
 	
 	public static void write(DataRecordMetadata record, Element metadataElement) {
+		String rt;
 		DataFieldMetadata field;
 
 		metadataElement.setAttribute(NAME_ATTR, record.getName());
-		metadataElement.setAttribute(TYPE_ATTR,
-		        record.getRecType() == DataRecordMetadata.DELIMITED_RECORD
-		        		? "delimited" : "fixed");
+
+		if(record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) rt = "delimited";
+		else if(record.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) rt = "fixed";
+		else rt = "mixed";
+
+		metadataElement.setAttribute(TYPE_ATTR, rt);
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
@@ -338,6 +343,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		DataRecordMetadata recordMetadata;
 		String recordName = null;
 		String recordType = null;
+		String recordDelimiter = null;
 		String recLocaleStr = null;
 		String itemName;
 		String itemValue;
@@ -363,6 +369,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recordType = itemValue;
 			} else if (itemName.equalsIgnoreCase("locale")) {
 				recLocaleStr = itemValue;
+			} else if (itemName.equalsIgnoreCase("recordDelimiter")) {
+				recordDelimiter = itemValue;
 			} else {
 				if (recordProperties == null) {
 					recordProperties = new Properties();
@@ -376,14 +384,20 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					"Attribute \"name\" or \"type\" not defined within Record !");
 		}
 
-		recordMetadata = new DataRecordMetadata(recordName, recordType
-				.equalsIgnoreCase("fixed") ? DataRecordMetadata.FIXEDLEN_RECORD
-				: DataRecordMetadata.DELIMITED_RECORD);
+		char rt;
+		if(recordType.equalsIgnoreCase("delimited")) rt = DataRecordMetadata.DELIMITED_RECORD;
+		else if(recordType.equalsIgnoreCase("fixed")) rt = DataRecordMetadata.FIXEDLEN_RECORD;
+		else rt = DataRecordMetadata.MIXED_RECORD;
+
+		recordMetadata = new DataRecordMetadata(recordName, rt);
 		if (recLocaleStr != null) {
 			recordMetadata.setLocaleStr(recLocaleStr);
 		}
 		recordMetadata.setRecordProperties(recordProperties);
-
+		if(recordDelimiter != null) {
+			recordMetadata.setRecordDelimiter(StringUtils.stringToSpecChar(recordDelimiter).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+		}
+		
 		/*
 		 * parse metadata of FIELDs
 		 */
@@ -447,7 +461,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 				field = new DataFieldMetadata(name, fieldType,
 						getFieldSize(size));
-			} else {
+			} else if (recordMetadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 				if (delimiter == null) {
 					throw new DOMException(DOMException.NOT_FOUND_ERR,
 							"Attribute \"delimiter\" not defined for field #"
@@ -455,6 +469,16 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				}
 				field = new DataFieldMetadata(name, fieldType, StringUtils
 						.stringToSpecChar(delimiter));
+			} else { //mixed dataRecord type
+				if (delimiter == null && size == null) {
+					throw new DOMException(DOMException.NOT_FOUND_ERR,
+							"Attribute \"delimiter\" either \"size\" not defined for field #"
+									+ i);
+				}
+				if(delimiter != null)
+					field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter));
+				else
+					field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
 			}
 			// set properties
 			field.setFieldProperties(fieldProperties);
