@@ -20,7 +20,6 @@
 package org.jetel.data.formatter;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -118,7 +117,7 @@ public class FixLenDataFormatter implements Formatter {
 	 *@param  out        Description of the Parameter
 	 *@param  _metadata  Description of the Parameter
 	 */
-	public void open(OutputStream out, DataRecordMetadata _metadata) {
+	public void open(Object out, DataRecordMetadata _metadata) {
 		CoderResult result;
 		this.metadata = _metadata;
 

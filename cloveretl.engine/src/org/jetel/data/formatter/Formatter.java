@@ -20,7 +20,7 @@
 
 package org.jetel.data.formatter;
 import java.io.IOException;
-import java.io.OutputStream;
+
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -44,7 +44,7 @@ public interface Formatter {
 	 *@param  out        Description of the Parameter
 	 *@param  _metadata  Description of the Parameter
 	 */
-	public void open(OutputStream out, DataRecordMetadata _metadata);
+	public void open(Object out, DataRecordMetadata _metadata);
 
 
 	/**
@@ -64,8 +64,9 @@ public interface Formatter {
 
 	/**
 	 *  Flush any unwritten data into output stream
+	 * @throws IOException
 	 */
-	public void flush();
+	public void flush() throws IOException;
 
 
 	/**
