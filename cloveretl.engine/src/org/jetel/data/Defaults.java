@@ -19,6 +19,11 @@
 */
 package org.jetel.data;
 
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
 /**
  *  Helper class which contains some framework-wide constants defitions.<br>
  *  Change the compile-time defaults here !
@@ -27,21 +32,66 @@ package org.jetel.data;
  *@created    January 23, 2003
  */
 public final class Defaults {
+	private static Properties properties;
 
+	private static void initProperties() {
+		InputStream in;
+		properties = new Properties();
+		try {
+			in = Defaults.class.getResourceAsStream("../defaultProperties");
+			properties.load(in);
+			in.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private static int getIntProperties(String key, int def) {
+		return new Integer(properties.getProperty(key, Integer.toString(def))).intValue();
+	}
+
+	private static short getShortProperties(String key, short def) {
+		return new Short(properties.getProperty(key, Short.toString(def))).shortValue();
+	}
+	
+	private static String getStringProperties(String key, String def) {
+		return properties.getProperty(key, def);
+	}
+
+	public static void init() {
+		initProperties();
+		
+		DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
+		DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
+		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
+		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
+		
+		Record.init();
+		DataParser.init();
+		DataFormatter.init();
+		Component.init();
+		Data.init();
+		Lookup.init();
+		WatchDog.init();
+		GraphProperties.init();
+	}
+	
 	/**
 	 *  when buffering IO, what is the default size of the buffer
 	 */
-	public final static int DEFAULT_INTERNAL_IO_BUFFER_SIZE = 32768;
-	
+	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
+
 	/**
 	 * when creating/parsing date from string, what is the expected/default
 	 * format of date
 	 */
 	
-	public final static String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
-	public final static String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	public static String DEFAULT_DATE_FORMAT;// = "yyyy-MM-dd";
+	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
 
-	public final static String DEFAULT_LOCALE_STR_DELIMITER_REGEX = "\\.";
+	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
 
 	/**
 	 *  Defaults regarding DataRecord structure/manipulation
@@ -50,13 +100,16 @@ public final class Defaults {
 	 *@created    January 23, 2003
 	 */
 	public final static class Record {
-
+		public static void init() {
+			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 8192);
+		}
+		
 		/**
 		 *  Determines max size of record (serialized) in bytes.<br>
 		 *  If you are getting BufferOverflow, increase the limit here. This
 		 *  affects the memory footprint !!!
 		 */
-		public final static int MAX_RECORD_SIZE = 8192;
+		public static int MAX_RECORD_SIZE;// = 8192;
 	}
 
 
@@ -67,17 +120,21 @@ public final class Defaults {
 	 *@created    January 23, 2003
 	 */
 	public final static class DataParser {
+		public static void init() {
+			FIELD_BUFFER_LENGTH = getIntProperties("DataParser.FIELD_BUFFER_LENGTH", 512);
+			DEFAULT_CHARSET_DECODER = getStringProperties("DataParser.DEFAULT_CHARSET_DECODER", "ISO-8859-1");
+		}
 
 		/**
 		 *  max length of field's value representation (bytes or characters).<br>
 		 *  If your records contain long fields (usually text-memos), increase the limit here.
 		 */
-		public final static int FIELD_BUFFER_LENGTH = 512;
+		public static int FIELD_BUFFER_LENGTH;// = 512;
 
 		/**
 		 *  default character-decoder to be used if not specified
 		 */
-		public final static String DEFAULT_CHARSET_DECODER = "ISO-8859-1";
+		public static String DEFAULT_CHARSET_DECODER;// = "ISO-8859-1";
 	}
 
 
@@ -88,17 +145,27 @@ public final class Defaults {
 	 *@created    January 23, 2003
 	 */
 	public final static class DataFormatter {
+		public static void init() {
+			DEFAULT_CHARSET_ENCODER = getStringProperties("DataFormatter.DEFAULT_CHARSET_ENCODER", "ISO-8859-1");
+			FIELD_BUFFER_LENGTH = getIntProperties("DataFormatter.FIELD_BUFFER_LENGTH", 512);
+			DELIMITER_DELIMITERS_REGEX = getStringProperties("DataFormatter.DELIMITER_DELIMITERS_REGEX", "\\\\\\|");
+		}
 
 		/**
 		 *  default character-encoder to be used
 		 */
-		public final static String DEFAULT_CHARSET_ENCODER = "ISO-8859-1";
+		public static String DEFAULT_CHARSET_ENCODER;// = "ISO-8859-1";
 		/**
 		 *  max length of field's value representation (bytes or characters).<br>
 		 *  If your records contain long fields (usually text-memos), increase the limit here.
 		 */
-		public final static int FIELD_BUFFER_LENGTH = 512;
+		public static int FIELD_BUFFER_LENGTH;// = 512;
 
+		/**
+		 *  This regular expression is used by data parser when parsing
+		 *  field delimiters out of metadata XML file.<br>
+		 */
+		 public static String DELIMITER_DELIMITERS_REGEX;// = "\\\\\\|";
 	}
 
 
@@ -109,18 +176,23 @@ public final class Defaults {
 	 *@created    January 26, 2003
 	 */
 	public final static class Component {
+		public static void init() {
+			KEY_FIELDS_DELIMITER_REGEX = getStringProperties("Component.KEY_FIELDS_DELIMITER_REGEX", "\\s*[:;|]\\s*");
+			KEY_FIELDS_DELIMITER = getStringProperties("Component.KEY_FIELDS_DELIMITER", ";");
+		}
+
 		/**
 		 *  This regular expression is used by various components when parsing
 		 *  parameters out of XML attributes.<br>
 		 *  When attribute can contain multiple values delimited, this regex
 		 *  specifies which are the valid delimiters.
 		 */
-		 public final static String KEY_FIELDS_DELIMITER_REGEX = "\\s*[:;|]\\s*";
+		 public static String KEY_FIELDS_DELIMITER_REGEX;// = "\\s*[:;|]\\s*";
 		 
 		 /**
 		  *  Delimiter character used when exporting components to XML
 		  */
-		 public final static String KEY_FIELDS_DELIMITER = ";";
+		 public static String KEY_FIELDS_DELIMITER;// = ";";
 	}
 
 
@@ -131,14 +203,19 @@ public final class Defaults {
 	 *@created    6. duben 2003
 	 */
 	public final static class Data {
+		public static void init() {
+			DATA_RECORDS_BUFFER_SIZE = getIntProperties("Data.DATA_RECORDS_BUFFER_SIZE", 10 * 1048576);
+			MAX_BUFFERS_ALLOCATED = getShortProperties("Data.MAX_BUFFERS_ALLOCATED", (short) 99);
+		}
+
 		/**
 		 *  Unit size of data buffer which keeps data records for sorting/hashing
 		 */
-		public final static int DATA_RECORDS_BUFFER_SIZE = 10 * 1048576; // 10MB
+		public static int DATA_RECORDS_BUFFER_SIZE;// = 10 * 1048576; // 10MB
 		/**
 		 *  How many units (buffers) can be allocated 
 		 */
-		public final static short MAX_BUFFERS_ALLOCATED = 99;
+		public static short MAX_BUFFERS_ALLOCATED;// = 99;
 		// all together up to 990 MB
 	}
 	
@@ -150,28 +227,37 @@ public final class Defaults {
 	 *
 	 */
 	public final static class Lookup {
+		public static void init() {
+			LOOKUP_INITIAL_CAPACITY = getIntProperties("Lookup.LOOKUP_INITIAL_CAPACITY", 512);
+		}
 	    
 	    /**
 	     * Initial size of lookup table (SimpleLookup)
 	     */
-	    public final static int LOOKUP_INITIAL_CAPACITY = 512;
+	    public static int LOOKUP_INITIAL_CAPACITY;// = 512;
 	    
 	}
 	
-	public final static class WatchDog{
+	public final static class WatchDog {
+		public static void init() {
+			WATCHDOG_SLEEP_INTERVAL = getIntProperties("WatchDog.WATCHDOG_SLEEP_INTERVAL", 500);
+			DEFAULT_WATCHDOG_TRACKING_INTERVAL = getIntProperties("WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL", 30000);
+			NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = getIntProperties("WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS", 5);
+		}
+
 		/**
 		 *  how long watchdog thread sleeps (milliseconds) between each awakening.
 		 *
 		 * @since    July 30, 2002
 		 */
 		
-		public final static int WATCHDOG_SLEEP_INTERVAL = 500;  	
+		public static int WATCHDOG_SLEEP_INTERVAL;// = 500;  	
 		/**
 		 *  how often is watchdog reporting about graph progress
 		 *
 		 * @since    July 30, 2002
 		 */
-		public final static int DEFAULT_WATCHDOG_TRACKING_INTERVAL = 30000;
+		public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 30000;
 
 		/**
 		 *  One tick is one awakening of watch dog. Sleep interval * number_of_ticks
@@ -181,13 +267,16 @@ public final class Defaults {
 		 *
 		 * @since    October 1, 2002
 		 */
-		public final static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5;
+		public static int NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;// = 5;
 
 	}
 	
-	public final static class GraphProperties{
+	public final static class GraphProperties {
+		public static void init() {
+			PROPERTY_PLACEHOLDER_REGEX = getStringProperties("GraphProperties.PROPERTY_PLACEHOLDER_REGEX", "\\$\\{(\\w+)\\}");
+		}
 		
-		public final static String PROPERTY_PLACEHOLDER_REGEX = "\\$\\{(\\w+)\\}";
+		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
 	}
 }
 
