@@ -75,6 +75,9 @@ public class StringUtils {
 	 * @since                 July 25, 2002
 	 */
 	public static String stringToSpecChar(String controlString) {
+		if(controlString == null) {
+			return null;
+		}
 		StringBuffer copy = new StringBuffer();
 		char character;
 		boolean isBackslash = false;
