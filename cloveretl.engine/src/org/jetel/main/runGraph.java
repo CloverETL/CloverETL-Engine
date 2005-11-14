@@ -23,6 +23,7 @@ import java.io.*;
 import java.util.Properties;
 
 import org.jetel.component.ComponentFactory;
+import org.jetel.data.Defaults;
 import org.jetel.graph.*;
 import org.jetel.util.JetelVersion;
 
@@ -63,6 +64,7 @@ public class runGraph {
 		boolean verbose = false;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
+		Defaults.init();
 		ComponentFactory.init();
 		
 		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***\n");
