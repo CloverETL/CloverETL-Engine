@@ -23,6 +23,8 @@ package org.jetel.metadata;
 
 import java.io.Serializable;
 import java.util.Properties;
+
+import org.jetel.data.Defaults;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
 
@@ -325,6 +327,15 @@ public class DataFieldMetadata implements Serializable {
 		return delimiter;
 	}
 
+	/**
+	 *  An operation that does ...
+	 *
+	 * @return    The Delimiter value
+	 * @since
+	 */
+	public String[] getDelimiters() {
+		return delimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX);
+	}
 
 	/**
 	 *  Gets Format string specifying pattern which will be used when
@@ -416,6 +427,13 @@ public class DataFieldMetadata implements Serializable {
 		fieldProperties = properties;
 	}
 
+	public boolean isDelimited() {
+		return (delimiter != null);
+	}
+
+	public boolean isFixed() {
+		return (delimiter == null);
+	}
 	
 	public static String type2Str(char fieldType) {
 		switch (fieldType) {

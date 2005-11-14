@@ -54,6 +54,7 @@ public class DataRecordMetadata implements Serializable {
 
 	private String name;
 	private char recType;
+	private String[] recordDelimiters;
 	private String localeStr;
 
 	private Properties recordProperties;
@@ -62,6 +63,8 @@ public class DataRecordMetadata implements Serializable {
 	public final static char DELIMITED_RECORD = 'D';
 	/**  Description of the Field */
 	public final static char FIXEDLEN_RECORD = 'F';
+	/**  Description of the Field */
+	public final static char MIXED_RECORD = 'M';
 
 
 	// Operations
@@ -391,7 +394,7 @@ public class DataRecordMetadata implements Serializable {
 		}
 	}
 
-
+	
 	/**
 	 * This method is used by gui to prepopulate record meta info with
 	 * default fields and user defined sizes.  It also adjusts the number of fields
@@ -428,6 +431,18 @@ public class DataRecordMetadata implements Serializable {
 			}
 		}
 
+	}
+	
+	public void setRecordDelimiter(String[] recordDelimiters) {
+		this.recordDelimiters = recordDelimiters;
+	}
+
+	public boolean isSpecifiedRecordDelimiter() {
+		return recordDelimiters != null;
+	}
+
+	public String[] getRecordDelimiters() {
+		return recordDelimiters;
 	}
 
     /**
