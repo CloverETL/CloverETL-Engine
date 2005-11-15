@@ -191,6 +191,8 @@ public class TransformationGraphXMLReaderWriter {
 		graph.deletePhases();
 		graph.deleteDBConnections();
 		graph.deleteSequences();
+		graph.deleteLookupTables();
+		graph.deleteDataRecordMetadata();
 
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
