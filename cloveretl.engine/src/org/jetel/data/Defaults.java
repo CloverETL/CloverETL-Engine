@@ -38,7 +38,7 @@ public final class Defaults {
 		InputStream in;
 		properties = new Properties();
 		try {
-			in = Defaults.class.getResourceAsStream("../defaultProperties");
+			in = Defaults.class.getResourceAsStream("defaultProperties");
 			properties.load(in);
 			in.close();
 		} catch (FileNotFoundException e) {
