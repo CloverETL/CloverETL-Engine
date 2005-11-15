@@ -134,6 +134,9 @@
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
 </property>
+<property category="clover" displayName="Java source" modifiable="true" name="javaSource" nullable="true">
+<singleType name="string"/>
+</property>
 </properties>
 </ETLComponent>
 <ETLComponent category="readers" className="org.jetel.component.DBInputTable" iconPath="icons/comp32.gif" name="DB Input Table" smallIconPath="icons/comp16.gif" type="DB_INPUT_TABLE">
@@ -333,7 +336,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.MergeJion" iconPath="icons/comp32.gif" name="Merge Join" smallIconPath="icons/comp16.gif" type="MERGE_JOIN">
+<ETLComponent category="transformers" className="org.jetel.component.MergeJoin" iconPath="icons/comp32.gif" name="Merge Join" smallIconPath="icons/comp16.gif" type="MERGE_JOIN">
 <shortDescription/>
 <description/>
 <inputPorts>
