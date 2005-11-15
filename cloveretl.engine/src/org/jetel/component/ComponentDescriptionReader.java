@@ -35,7 +35,7 @@ import org.w3c.dom.NodeList;
  */
 public class ComponentDescriptionReader {
 	
-	private static final String fileName = "./components.xml";
+	private static final String fileName = "components.xml";
 
 	private static final String ETL_COMPONENT_LIST_ELEMENT = "ETLComponentList";
 	
