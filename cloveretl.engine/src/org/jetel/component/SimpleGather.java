@@ -74,12 +74,12 @@ public class SimpleGather extends Node {
 	/*
 	 * how many empty loops till thead wait() is called
 	 */
-	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 99;
+	private final static int NUM_EMPTY_LOOPS_TRESHOLD = 29;
 	
 	/*	 how many millis to wait if we reached the specified number of empty loops (when no data
 	 * has been read).
 	 */
-	private final static int EMPTY_LOOPS_WAIT = 20 ;  
+	private final static int EMPTY_LOOPS_WAIT = 10 ;  
 
 	/**
 	 *Constructor for the SimpleGather object
@@ -123,7 +123,7 @@ public class SimpleGather extends Node {
 		DataRecord inRecord;
 		record.init();
 
-	
+			try{
 			readFromPort = 0;
 			while (runIt && numActive > 0) {
 				inPort = inputPorts[readFromPort];
@@ -155,15 +155,23 @@ public class SimpleGather extends Node {
 				// have we reached the maximum empty loops count ?
 				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD){
 				    try{
-				        wait(EMPTY_LOOPS_WAIT);
+				        sleep(EMPTY_LOOPS_WAIT);
 				    }catch(InterruptedException ex){
 				        // end processing of data
 				        resultMsg="Interrputed !";
 				        resultCode=Node.RESULT_ERROR;
 				        return;
+				    }catch(Exception ex){
+				        resultMsg=ex.getMessage();
+				        resultCode=Node.RESULT_FATAL_ERROR;
+				        return;
 				    }
 				}
 		}
+			}catch(Exception ex){
+			    ex.printStackTrace();
+			}
+			
 		setEOF(WRITE_TO_PORT);
 		if (runIt) {
 			resultMsg = "OK";
