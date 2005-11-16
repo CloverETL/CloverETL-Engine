@@ -143,7 +143,6 @@ public class SQLDataParser implements Parser {
 			if(resultSet.next() == false)
 				return null;
 		} catch (SQLException e) {
-			e.printStackTrace();
 			throw new JetelException(e.getMessage());
 		}
 			
@@ -179,8 +178,7 @@ public class SQLDataParser implements Parser {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
 		}
 	}
 
@@ -213,7 +211,6 @@ public class SQLDataParser implements Parser {
 			/*ResultSet.TYPE_FORWARD_ONLY,
 			        ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
 		} catch (SQLException e) {
-			e.printStackTrace();
 			throw new ComponentNotReadyException(e.getMessage());
 		}
 		

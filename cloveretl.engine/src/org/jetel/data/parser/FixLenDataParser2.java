@@ -207,7 +207,7 @@ public class FixLenDataParser2 implements Parser {
 				for(int i=0;i<lineSeparatorSize;i++) charBuffer.get();
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(ex.getMessage());
+			throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
 		}
 
 		recordCounter++;

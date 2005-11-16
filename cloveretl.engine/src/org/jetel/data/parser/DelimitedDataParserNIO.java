@@ -338,7 +338,8 @@ public class DelimitedDataParserNIO implements Parser {
 					throw new RuntimeException("Incomplete record");
 				}
 			} catch (Exception ex) {
-				throw new RuntimeException(getErrorMessage(ex.getMessage(),null, recordCounter, fieldCounter));
+				throw new RuntimeException(getErrorMessage(ex.getClass().getName()+":"+ex.getMessage(),null, 
+				        	recordCounter, fieldCounter));
 			}
 
 			// did we have EOF situation ?
