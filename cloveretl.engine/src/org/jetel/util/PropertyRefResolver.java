@@ -28,7 +28,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 
 /**
- *  Helper class for resolving references within string values to Properties´.<br>
+ *  Helper class for resolving references within string values to Properties.<br>
  *  The reference is expected in form: ${..property_name..} <br> If property
  *  name is found in properties, then the whole ${...} substring is replaced by the property value.
  *
@@ -49,7 +49,9 @@ public class PropertyRefResolver {
 
 	private static final int MAX_RECURSION_DEPTH=10;
 
-	Log logger = LogFactory.getLog(DynamicJavaCode.class);
+	Log logger = LogFactory.getLog(PropertyRefResolver.class);
+	
+	private boolean resolve;
 	
 	/**Constructor for the PropertyRefResolver object */
 	public PropertyRefResolver() {
@@ -58,6 +60,7 @@ public class PropertyRefResolver {
 			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 			regexMatcher = pattern.matcher("");
 		}
+		resolve=true; //default behaviour is to resolve references
 	}
 
 
@@ -72,6 +75,7 @@ public class PropertyRefResolver {
 			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 			regexMatcher = pattern.matcher("");
 		}
+		resolve=true; //default behaviour is to resolve references
 	}
 
 
@@ -98,13 +102,21 @@ public class PropertyRefResolver {
 	 */
 	
 	public String resolveRef(String value){
-		StringBuffer strBuf = new StringBuffer(value);
-		resolveRef2(strBuf);
-		return strBuf.toString();	
+		if (resolve){
+		    StringBuffer strBuf = new StringBuffer(value);
+		    resolveRef2(strBuf);
+		    return strBuf.toString();
+		}else{
+		    return value;
+		}
 	}
 	
 	public boolean resolveRef(StringBuffer value){
-	    return resolveRef2(value);
+	    if (resolve){
+	      return resolveRef2(value);
+	    }else{
+	        return true;
+	    }
 	}
 	
 	/**
@@ -129,6 +141,7 @@ public class PropertyRefResolver {
 				}
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
+				    logger.error("Can't resolve reference to graph property: " + reference);
 					throw new RuntimeException("Can't resolve reference to graph property: " + reference);
 				}
 				value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
@@ -161,5 +174,21 @@ public class PropertyRefResolver {
 //	   }
 	
 	 
+    /**
+     * Determines whether resolving references is enabled/disabled
+     * 
+     * @return Returns the resolve value.
+     */
+    public boolean isResolve() {
+        return resolve;
+    }
+    /**
+     * Enables/disables resolving references within string values to Properties
+     * 
+     * @param resolve true to resolve references
+     */
+    public void setResolve(boolean resolve) {
+        this.resolve = resolve;
+    }
 }
 

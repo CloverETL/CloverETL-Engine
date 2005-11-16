@@ -119,7 +119,7 @@ public class ComponentXMLAttributes {
 					}
 					// add value of child node as attribute, also create new attribute node
 					if (newAttributeName!=null && newAttributeValue!=null){
-					    org.w3c.dom.Element newAttribute = nodeXML.getOwnerDocument().createElement(newAttributeName);
+					    org.w3c.dom.Attr newAttribute = nodeXML.getOwnerDocument().createAttribute(newAttributeName);
 					    newAttribute.setNodeValue(newAttributeValue);
 					    nodeXML.getAttributes().setNamedItem(newAttribute);
 					    // remove child node as it is now included as an attribute - in attribute
