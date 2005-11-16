@@ -41,7 +41,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      March 27, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class NumericDataField extends DataField implements Number, Comparable{
+public class NumericDataField extends DataField implements Numeric, Comparable{
 
 	private double value;
 	private NumberFormat numberFormat;
@@ -499,7 +499,7 @@ public class NumericDataField extends DataField implements Number, Comparable{
 	/* (non-Javadoc)
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
-	public int compareTo(Number value){
+	public int compareTo(Numeric value){
 	    if (isNull) {
 	        return -1;
 	    }else if (value.isNull()) {
@@ -531,39 +531,39 @@ public class NumericDataField extends DataField implements Number, Comparable{
 
 
 	/**
-	 * @see org.jetel.data.Number#sum(org.jetel.data.Number)
+	 * @see org.jetel.data.Numeric#add(org.jetel.data.Number)
 	 */
-	public void sum(Number a) {
+	public void add(Numeric a) {
 		value += a.getDouble();
 	}
 
 
 	/**
-	 * @see org.jetel.data.Number#sub(org.jetel.data.Number)
+	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Number)
 	 */
-	public void sub(Number a) {
+	public void sub(Numeric a) {
 		value -= a.getDouble();
 	}
 
 
 	/**
-	 * @see org.jetel.data.Number#mul(org.jetel.data.Number)
+	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Number)
 	 */
-	public void mul(Number a) {
+	public void mul(Numeric a) {
 		value *= a.getDouble();
 	}
 
 
 	/**
-	 * @see org.jetel.data.Number#div(org.jetel.data.Number)
+	 * @see org.jetel.data.Numeric#div(org.jetel.data.Number)
 	 */
-	public void div(Number a) {
+	public void div(Numeric a) {
 		value /= a.getDouble();
 	}
 
 
 	/**
-	 * @see org.jetel.data.Number#abs()
+	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
 		value = Math.abs(value);
@@ -571,17 +571,17 @@ public class NumericDataField extends DataField implements Number, Comparable{
 
 
 	/**
-	 * @see org.jetel.data.Number#mod(org.jetel.data.Number)
+	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Number)
 	 */
-	public void mod(Number a) {
+	public void mod(Numeric a) {
 		value %= a.getDouble();
 	}
 
 
 	/**
-	 * @see org.jetel.data.Number#opp()
+	 * @see org.jetel.data.Numeric#neg()
 	 */
-	public void opp() {
+	public void neg() {
 		value *= -1;
 	}
 
