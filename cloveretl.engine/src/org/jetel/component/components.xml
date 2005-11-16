@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ETLComponentList>
-<ETLComponent category="readers" className="org.jetel.component.DelimiterDataReader" iconPath="icons/dreader32.gif" name="Delimited Data Reader" smallIconPath="icons/dreader16.gif" type="DELIMITED_DATA_READER">
+<ETLComponent category="readers" className="org.jetel.component.DelimitedDataReader" iconPath="icons/dataReader32.png" name="Delimited Data Reader" smallIconPath="icons/dataReader16.png" type="DELIMITED_DATA_READER">
 <shortDescription>Reads data from flat files.</shortDescription>
 <description>Reads data from flat files.</description>
 <inputPorts/>
@@ -12,11 +12,11 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="writers" className="org.jetel.component.DelimiterDataWriter" iconPath="icons/dwriter32.gif" name="Delimited Data Writer" smallIconPath="icons/dwriter16.gif" type="DELIMITED_DATA_WRITER">
+<ETLComponent category="writers" className="org.jetel.component.DelimitedDataWriter" iconPath="icons/dataWriter16.png" name="Delimited Data Writer" smallIconPath="icons/dataWriter16.png" type="DELIMITED_DATA_WRITER">
 <shortDescription>Writes data to flat files.</shortDescription>
 <description>Writes data to flat files.</description>
 <inputPorts>
@@ -24,7 +24,7 @@
 </inputPorts>
 <outputPorts/>
 <properties>
-<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="true">
+<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
 <enumType>
 <item displayValue="true" value="true"/>
 <item displayValue="false" value="false"/>
@@ -37,11 +37,11 @@
 </enumType>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SimpleCopy" iconPath="icons/scopy32.gif" name="Simple Copy" smallIconPath="icons/scopy16.gif" type="SIMPLE_COPY">
+<ETLComponent category="transformers" className="org.jetel.component.SimpleCopy" iconPath="icons/simpleCopy32.png" name="Simple Copy" smallIconPath="icons/simpleCopy16.png" type="SIMPLE_COPY">
 <shortDescription>Copies data from sourceport to the outputs.</shortDescription>
 <description>Copies data from sourceport to the outputs.</description>
 <inputPorts>
@@ -52,7 +52,7 @@
 </outputPorts>
 <properties/>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Concatenate" iconPath="icons/comp32.gif" name="Concatenate" smallIconPath="icons/comp16.gif" type="CONCATENATE">
+<ETLComponent category="transformers" className="org.jetel.component.Concatenate" iconPath="icons/concatenate32.png" name="Concatenate" smallIconPath="icons/concatenate16.png" type="CONCATENATE">
 <shortDescription>.</shortDescription>
 <description/>
 <inputPorts>
@@ -63,7 +63,7 @@
 </outputPorts>
 <properties/>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SimpleGather" iconPath="icons/comp32.gif" name="Simple Gather" smallIconPath="icons/comp16.gif" type="SIMPLE_GATHER">
+<ETLComponent category="transformers" className="org.jetel.component.SimpleGather" iconPath="icons/simpleGather32.png" name="Simple Gather" smallIconPath="icons/simpleGather16.png" type="SIMPLE_GATHER">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -74,7 +74,7 @@
 </outputPorts>
 <properties/>
 </ETLComponent>
-<ETLComponent category="writers" className="org.jetel.component.DelimitedDataWriterNIO" iconPath="icons/comp32.gif" name="Delimited Data Writer (New I/O)" smallIconPath="icons/comp16.gif" type="DELIMITED_DATA_WRITER_NIO">
+<ETLComponent category="writers" className="org.jetel.component.DelimitedDataWriterNIO" iconPath="icons/dataWriter32.png" name="Delimited Data Writer (New I/O)" smallIconPath="icons/dataWriter16.png" type="DELIMITED_DATA_WRITER_NIO">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -82,7 +82,10 @@
 </inputPorts>
 <outputPorts/>
 <properties>
-<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="true">
+<property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
+<singleType name="file"/>
+</property>
+<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
 <enumType>
 <item displayValue="true" value="true"/>
 <item displayValue="false" value="false"/>
@@ -97,12 +100,9 @@
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
 <singleType name="string"/>
 </property>
-<property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
-</property>
 </properties>
 </ETLComponent>
-<ETLComponent category="readers" className="org.jetel.component.DelimitedDataReaderNIO" iconPath="icons/comp32.gif" name="Delimited Data Reader (New I/O)" smallIconPath="icons/comp16.gif" type="DELIMITED_DATA_READER_NIO">
+<ETLComponent category="readers" className="org.jetel.component.DelimitedDataReaderNIO" iconPath="icons/dataReader32.png" name="Delimited Data Reader (New I/O)" smallIconPath="icons/dataReader16.png" type="DELIMITED_DATA_READER_NIO">
 <shortDescription/>
 <description/>
 <inputPorts/>
@@ -117,29 +117,29 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Reformat" iconPath="icons/comp32.gif" name="Reformat" smallIconPath="icons/comp16.gif" type="REFORMAT">
+<ETLComponent category="transformers" className="org.jetel.component.Reformat" iconPath="icons/reformat32.png" name="Reformat" smallIconPath="icons/reformat16.png" type="REFORMAT">
 <shortDescription/>
 <description/>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
 <outputPorts>
-<singlePort name="0"/>
+<multiplePort/>
 </outputPorts>
 <properties>
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
 </property>
 <property category="clover" displayName="Java source" modifiable="true" name="javaSource" nullable="true">
-<singleType name="string"/>
+<singleType name="multiline"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="readers" className="org.jetel.component.DBInputTable" iconPath="icons/comp32.gif" name="DB Input Table" smallIconPath="icons/comp16.gif" type="DB_INPUT_TABLE">
+<ETLComponent category="readers" className="org.jetel.component.DBInputTable" iconPath="icons/dbInputTable32.png" name="DB Input Table" smallIconPath="icons/dbInputTable16.png" type="DB_INPUT_TABLE">
 <shortDescription/>
 <description/>
 <inputPorts/>
@@ -167,7 +167,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Sort" iconPath="icons/comp32.gif" name="Sort" smallIconPath="icons/comp16.gif" type="SORT">
+<ETLComponent category="transformers" className="org.jetel.component.Sort" iconPath="icons/sort32.png" name="Sort" smallIconPath="icons/sort16.png" type="SORT">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -188,7 +188,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="writers" className="org.jetel.component.DBOutputTable" iconPath="icons/comp32.gif" name="DB Output Table" smallIconPath="icons/comp16.gif" type="DB_OUTPUT_TABLE">
+<ETLComponent category="writers" className="org.jetel.component.DBOutputTable" iconPath="icons/dbOutputTable32.png" name="DB Output Table" smallIconPath="icons/dbOutputTable16.png" type="DB_OUTPUT_TABLE">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -234,7 +234,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="writers" className="org.jetel.component.FixLenDataWriterNIO" iconPath="icons/comp32.gif" name="Fixed Length Data Writer (New I/O)" smallIconPath="icons/comp16.gif" type="FIXLEN_DATA_WRITER_NIO">
+<ETLComponent category="writers" className="org.jetel.component.FixLenDataWriterNIO" iconPath="icons/dataWriter32.png" name="Fixed Length Data Writer (New I/O)" smallIconPath="icons/dataWriter16.png" type="FIXLEN_DATA_WRITER_NIO">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -242,7 +242,7 @@
 </inputPorts>
 <outputPorts/>
 <properties>
-<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="true">
+<property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
 <enumType>
 <item displayValue="true" value="true"/>
 <item displayValue="false" value="false"/>
@@ -261,11 +261,11 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Dedup" iconPath="icons/comp32.gif" name="Dedup" smallIconPath="icons/comp16.gif" type="DEDUP">
+<ETLComponent category="transformers" className="org.jetel.component.Dedup" iconPath="icons/dedup32.png" name="Dedup" smallIconPath="icons/dedup16.png" type="DEDUP">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -286,7 +286,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="readers" className="org.jetel.component.FixLenDataReaderNIO" iconPath="icons/comp32.gif" name="Fixed Length Data Reader (New I/O)" smallIconPath="icons/comp16.gif" type="FIXLEN_DATA_READER_NIO">
+<ETLComponent category="readers" className="org.jetel.component.FixLenDataReaderNIO" iconPath="icons/dataReader32.png" name="Fixed Length Data Reader (New I/O)" smallIconPath="icons/dataReader16.png" type="FIXLEN_DATA_READER_NIO">
 <shortDescription/>
 <description/>
 <inputPorts/>
@@ -316,11 +316,11 @@
 </enumType>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Merge" iconPath="icons/comp32.gif" name="Merge" smallIconPath="icons/comp16.gif" type="MERGE">
+<ETLComponent category="transformers" className="org.jetel.component.Merge" iconPath="icons/merge32.png" name="Merge" smallIconPath="icons/merge16.png" type="MERGE">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -336,7 +336,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.MergeJoin" iconPath="icons/comp32.gif" name="Merge Join" smallIconPath="icons/comp16.gif" type="MERGE_JOIN">
+<ETLComponent category="transformers" className="org.jetel.component.MergeJoin" iconPath="icons/join32.png" name="Merge Join" smallIconPath="icons/join16.png" type="MERGE_JOIN">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -369,7 +369,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SortedJoin" iconPath="icons/comp32.gif" name="Sorted Join" smallIconPath="icons/comp16.gif" type="SORTED_JOIN">
+<ETLComponent category="transformers" className="org.jetel.component.SortedJoin" iconPath="icons/join32.png" name="Sorted Join" smallIconPath="icons/join16.png" type="SORTED_JOIN">
 <shortDescription>Synonym for merge sort.</shortDescription>
 <description/>
 <inputPorts>
@@ -402,7 +402,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="writers" className="org.jetel.component.Trash" iconPath="icons/comp32.gif" name="Trash" smallIconPath="icons/comp16.gif" type="TRASH">
+<ETLComponent category="writers" className="org.jetel.component.Trash" iconPath="icons/trash32.png" name="Trash" smallIconPath="icons/trash16.png" type="TRASH">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -411,14 +411,14 @@
 <outputPorts/>
 <properties>
 <property category="clover" displayName="Debug file name" modifiable="true" name="debugFilename" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 <property category="clover" displayName="Debug print" modifiable="true" name="debugPrint" nullable="true">
-<singleType name="string"/>
+<singleType name="bool"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Filter" iconPath="icons/comp32.gif" name="Filter" smallIconPath="icons/comp16.gif" type="FILTER">
+<ETLComponent category="transformers" className="org.jetel.component.Filter" iconPath="icons/filter32.png" name="Filter" smallIconPath="icons/filter16.png" type="FILTER">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -466,7 +466,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.HashJoin" iconPath="icons/comp32.gif" name="Hash Join" smallIconPath="icons/comp16.gif" type="HASH_JOIN">
+<ETLComponent category="transformers" className="org.jetel.component.HashJoin" iconPath="icons/join32.png" name="Hash Join" smallIconPath="icons/join16.png" type="HASH_JOIN">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -522,7 +522,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="readers" className="org.jetel.component.DBFDataReader" iconPath="icons/comp32.gif" name="DBF Data Reader" smallIconPath="icons/comp16.gif" type="DBF_DATA_READER">
+<ETLComponent category="readers" className="org.jetel.component.DBFDataReader" iconPath="icons/dataReader32.png" name="DBF Data Reader" smallIconPath="icons/dataReader16.png" type="DBF_DATA_READER">
 <shortDescription/>
 <description/>
 <inputPorts/>
@@ -537,11 +537,11 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
-<singleType name="string"/>
+<singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.ExtFilter" iconPath="icons/comp32.gif" name="Ext Filter" smallIconPath="icons/comp16.gif" type="EXT_FILTER">
+<ETLComponent category="transformers" className="org.jetel.component.ExtFilter" iconPath="icons/filter32.png" name="Ext Filter" smallIconPath="icons/filter16.png" type="EXT_FILTER">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -557,7 +557,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.ExtSort" iconPath="icons/comp32.gif" name="Ext Sort" smallIconPath="icons/comp16.gif" type="EXT_SORT">
+<ETLComponent category="transformers" className="org.jetel.component.ExtSort" iconPath="icons/sort32.png" name="Ext Sort" smallIconPath="icons/sort16.png" type="EXT_SORT">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -584,7 +584,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Partition" iconPath="icons/comp32.gif" name="Partition" smallIconPath="icons/comp16.gif" type="PARTITION">
+<ETLComponent category="transformers" className="org.jetel.component.Partition" iconPath="icons/partition32.png" name="Partition" smallIconPath="icons/partition16.png" type="PARTITION">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -602,7 +602,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.DataIntersection" iconPath="icons/comp32.gif" name="Data Intersection" smallIconPath="icons/comp16.gif" type="DATA_INTERSECTION">
+<ETLComponent category="transformers" className="org.jetel.component.DataIntersection" iconPath="icons/dataIntersection32.png" name="Data Intersection" smallIconPath="icons/dataIntersection16.png" type="DATA_INTERSECTION">
 <shortDescription/>
 <description/>
 <inputPorts>
@@ -626,7 +626,7 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Aggregate" iconPath="icons/comp32.gif" name="Aggregate" smallIconPath="icons/comp16.gif" type="AGGREGATE">
+<ETLComponent category="transformers" className="org.jetel.component.Aggregate" iconPath="icons/aggregate32.png" name="Aggregate" smallIconPath="icons/aggregate16.png" type="AGGREGATE">
 <shortDescription>Aggregate function</shortDescription>
 <description>Aggregate functions ara applied on input data flow base on specified key.
 The key is name (or combination of names) of field(s) from input record. Data flow can be sorted or not.</description>
