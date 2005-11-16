@@ -106,21 +106,21 @@ public class ComponentXMLAttributes {
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeName().equalsIgnoreCase(XML_ATTRIBUTE_NODE_NAME)) {
-				    newAttributeName=new String(childNode.getAttributes().getNamedItem(XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE).getNodeValue());
+				    newAttributeName=childNode.getAttributes().getNamedItem(XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE).getNodeValue();
 				    // get text value
 				    newAttributeValue=null;
 				    org.w3c.dom.NodeList childList = childNode.getChildNodes();
 					for (int j = 0; j < list.getLength(); j++) {
 					    org.w3c.dom.Node child2Node = childList.item(j);
 						if (child2Node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-						    newAttributeValue=new String(child2Node.getNodeValue());
+						    newAttributeValue=child2Node.getNodeValue();
 						    break;
 						}
 					}
 					// add value of child node as attribute, also create new attribute node
 					if (newAttributeName!=null && newAttributeValue!=null){
-					    org.w3c.dom.Attr newAttribute = nodeXML.getOwnerDocument().createAttribute(newAttributeName);
-					    newAttribute.setValue(newAttributeValue);
+					    org.w3c.dom.Element newAttribute = nodeXML.getOwnerDocument().createElement(newAttributeName);
+					    newAttribute.setNodeValue(newAttributeValue);
 					    nodeXML.getAttributes().setNamedItem(newAttribute);
 					    // remove child node as it is now included as an attribute - in attribute
 						nodeXML.removeChild(childNode);
@@ -379,7 +379,7 @@ public class ComponentXMLAttributes {
 	        }
 	    }
 	    for (int i=0; i<attributes.getLength();i++){
-	        name=attributes.item(i).getLocalName();
+	        name=attributes.item(i).getNodeName();
 	        if (!exception.contains(name)){
 	            properties.setProperty(name,
 	                    refResolver.resolveRef(attributes.item(i).getNodeValue()));
