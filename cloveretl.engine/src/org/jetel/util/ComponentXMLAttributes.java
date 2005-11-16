@@ -110,7 +110,7 @@ public class ComponentXMLAttributes {
 				    // get text value
 				    newAttributeValue=null;
 				    org.w3c.dom.NodeList childList = childNode.getChildNodes();
-					for (int j = 0; j < list.getLength(); j++) {
+					for (int j = 0; j < childList.getLength(); j++) {
 					    org.w3c.dom.Node child2Node = childList.item(j);
 						if (child2Node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
 						    newAttributeValue=child2Node.getNodeValue();
