@@ -32,7 +32,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -44,7 +43,8 @@ import org.w3c.dom.Text;
 /**
  *  <h3>Reformat Component</h3>
  *
- * <!-- Changes / reformats the data between pair of INPUT/OUTPUT ports
+ * <!-- Changes / reformats the data between INPUT/OUTPUT ports.
+ *  In general, it transforms between 1 input and several output ports.
  *  This component is only a wrapper around transformation class implementing
  *  org.jetel.component.RecordTransform interface. The method transform
  *  is called for every record passing through this component -->
@@ -56,14 +56,14 @@ import org.w3c.dom.Text;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Changes / reformats the data between pair of INPUT/OUTPUT ports.<br>
+ * <td>Changes / reformats data record between one INPUT and several OUTPUT ports.<br>
  *  This component is only a wrapper around transformation class implementing
  *  <i>org.jetel.component.RecordTransform</i> interface. The method <i>transform</i>
  *  is called for every record passing through this component.<br></td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td></td></tr>
+ * <td>[0]...[n] - output records (on several output ports)</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -195,18 +195,27 @@ public class Reformat extends Node {
 	 */
 	public void run() {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 		DataRecord inRecord[] = {new DataRecord(inPort.getMetadata())};
-		DataRecord outRecord[] = { new DataRecord(outPort.getMetadata())};
+		int numOutputPorts=getOutPorts().size();
+		DataRecord outRecord[] = new DataRecord[numOutputPorts]; 
+		
 		inRecord[0].init();
-		outRecord[0].init();
-
+		// initialize output ports
+		for (int i=0;i<numOutputPorts;i++){
+		    outRecord[i]=new DataRecord(getOutputPort(i).getMetadata());
+		    outRecord[i].init();
+		}
+		
+		// MAIN PROCESSING LOOP
+		int outPort;
 		while (inRecord[0] != null && runIt) {
 			try {
 				inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
 				if (inRecord[0] != null) {
 					if (transformation.transform(inRecord, outRecord)) {
-						writeRecord(WRITE_TO_PORT, outRecord[0]);
+					     for(outPort=0;outPort<numOutputPorts;outPort++){
+					         writeRecord(outPort, outRecord[outPort]);
+					     }
 					}// skip record if transformation returned false
 				}
 				yield();
@@ -298,7 +307,12 @@ public class Reformat extends Node {
 		}
 		// init transformation
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata()};
-		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
+		// output ports metadata
+		int outPortsNum=getOutPorts().size();
+		DataRecordMetadata outMetadata[]=new DataRecordMetadata[outPortsNum];
+		for (int i=0;i<outPortsNum;i++){
+		    outMetadata[i]=getOutputPort(i).getMetadata();
+		}
 		if (!transformation.init(transformationParameters,inMetadata,outMetadata)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
