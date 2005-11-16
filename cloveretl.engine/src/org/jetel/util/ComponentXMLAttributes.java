@@ -29,8 +29,29 @@ import org.w3c.dom.NamedNodeMap;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
- *  Used in conjunction with org.jetel.Component.*
+ *  Used in conjunction with org.jetel.Component.*<br>
+ *  Converts any child nodes of form <code>&lt;attr name="xyz"&gt;abcd&lt;/attr&gt;</code> into
+ *  attribute of the current node with name="xyz" and value="abcd".<br>
+ *  Example:<br>
+ *  <code><pre>
+ *  &lt;Node id="mynode" name="xyz" append="yes"&gt;
+ *  	&lt;attr name="query"&gt;
+ * 			select * from my_table;
+ *  	&lt;/attr&gt;
+ *  	&lt;attr name="code"&gt;
+ * 			a=b*10-20%50;
+ *  	&lt;/attr&gt;
+ *  &lt;/Node&gt;
+ *  </pre></code>
  *
+ *  There will be following attribute/value pairs available for getXXX() calls:
+ *  <ul>
+ *  <li>id - "mynode"</li>
+ *  <li>name - "xyz"</li>
+ *  <li>append - "yes"</li>
+ *  <li>query - "select * from my_table;"</li>
+ *  <li>code - "a=b*10-20%50;"</li>
+ *  </ul>
  * @author      dpavlis
  * @since       July 25, 2002
  * @revision    $Revision$
@@ -43,6 +64,8 @@ public class ComponentXMLAttributes {
 	private org.w3c.dom.Node nodeXML;
 	private PropertyRefResolver refResolver;
 	
+	public static final String XML_ATTRIBUTE_NODE_NAME = "attr";
+	public static final String XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE = "name";
 
 	//private Map    childNodes;
 
@@ -52,11 +75,7 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML  Description of the Parameter
 	 */
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
-		attributes = nodeXML.getAttributes();
-		this.nodeXML = nodeXML;
-		// if some property is defined for graph, we will
-		// try to look for refereneces to graph properties within XML attributes values;
-		refResolver=new PropertyRefResolver();
+	    this(nodeXML,null);
 	}
 
 
@@ -67,10 +86,50 @@ public class ComponentXMLAttributes {
 	 * @param  properties  Description of the Parameter
 	 */
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
-		attributes = nodeXML.getAttributes();
+	   
 		this.nodeXML = nodeXML;
-		refResolver=new PropertyRefResolver(properties);
-
+		refResolver=new PropertyRefResolver( properties!=null ? properties : new Properties());
+		instantiateInlinedNodeAttributes(nodeXML);
+		this.attributes = nodeXML.getAttributes();
+	}
+	
+	private void instantiateInlinedNodeAttributes(org.w3c.dom.Node nodeXML){
+	    org.w3c.dom.Node childNode;
+	    org.w3c.dom.NodeList list;
+	    NamedNodeMap childNodeAttributes;
+	    String newAttributeName;
+	    String newAttributeValue;
+	    
+		// add all "inlined" attributes in form of "attr" node as normal attributes
+		if (nodeXML.hasChildNodes()) {
+			list = nodeXML.getChildNodes();
+			for (int i = 0; i < list.getLength(); i++) {
+				childNode = list.item(i);
+				if (childNode.getNodeName().equalsIgnoreCase(XML_ATTRIBUTE_NODE_NAME)) {
+				    newAttributeName=childNode.getAttributes().getNamedItem(XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE).getNodeValue();
+				    // get text value
+				    newAttributeValue=null;
+				    org.w3c.dom.NodeList childList = childNode.getChildNodes();
+					for (int j = 0; j < list.getLength(); j++) {
+					    org.w3c.dom.Node child2Node = childList.item(j);
+						if (child2Node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
+						    newAttributeValue=child2Node.getNodeValue();
+						    break;
+						}
+					}
+					// add value of child node as attribute, also create new attribute node
+					if (newAttributeName!=null && newAttributeValue!=null){
+					    org.w3c.dom.Attr newAttribute = nodeXML.getOwnerDocument().createAttribute(newAttributeName);
+					    newAttribute.setValue(newAttributeValue);
+					    nodeXML.getAttributes().setNamedItem(newAttribute);
+					    // remove child node as it is now included as an attribute - in attribute
+						nodeXML.removeChild(childNode);
+					}
+					
+				}
+			}
+		}
+		
 	}
 
 
