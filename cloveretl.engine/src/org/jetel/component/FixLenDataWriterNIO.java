@@ -28,6 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -60,11 +61,15 @@ import org.w3c.dom.Element;
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
  *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
+ *  <tr><td><b>LineSeparator</b><br><i>optional</i></td><td>characters to be output as line/record separator (if OneRecordPerLine is set to true). Control
+ * characters "\n", "\r", "\t" may be used as well as all printable characers.</td>
  *  </tr>
  *  </table>
  *
  * <h4>Example:</h4>
  * <pre>&lt;Node type="FIXLEN_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
+ * 
+ * <pre>&lt;Node type="FIXLEN_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" OneRecordPerLine="true" LineSeparator="\r\n" /&gt;</pre>
  *
  *
  * @author      dpavlis
@@ -263,7 +268,7 @@ public class FixLenDataWriterNIO extends Node {
 	private void setLineSeparator(String separator){
 		// this should be somehow generalized
 		if (formatter instanceof FixLenDataFormatter){
-			((FixLenDataFormatter)formatter).setLineSeparator(separator);
+			((FixLenDataFormatter)formatter).setLineSeparator(StringUtils.stringToSpecChar(separator));
 		}
 	}
 	
