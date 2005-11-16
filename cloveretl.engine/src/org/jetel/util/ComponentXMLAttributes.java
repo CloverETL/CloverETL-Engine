@@ -399,6 +399,25 @@ public class ComponentXMLAttributes {
 	public String resloveReferences(String input){
 	    return refResolver.resolveRef(input);
 	}
+
+	/**
+	 * Determines whether resolving references is enabled/disabled.
+	 * 
+	 * @return	true if resolving references is enables.
+	 */
+	public boolean isResolveReferences(){
+	    return this.refResolver.isResolve();
+	}
+	
+	/**
+	 * Enables/disables resolving references within string values to Properties.<br>
+	 * Default behaviour is to resolve.
+	 * 
+	 * @param resolve	true to resolve references
+	 */
+	public void setResolveReferences(boolean resolve){
+	    this.refResolver.setResolve(resolve);
+	}
 	
 }
 /*
