@@ -106,14 +106,14 @@ public class ComponentXMLAttributes {
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeName().equalsIgnoreCase(XML_ATTRIBUTE_NODE_NAME)) {
-				    newAttributeName=childNode.getAttributes().getNamedItem(XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE).getNodeValue();
+				    newAttributeName=new String(childNode.getAttributes().getNamedItem(XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE).getNodeValue());
 				    // get text value
 				    newAttributeValue=null;
 				    org.w3c.dom.NodeList childList = childNode.getChildNodes();
 					for (int j = 0; j < list.getLength(); j++) {
 					    org.w3c.dom.Node child2Node = childList.item(j);
 						if (child2Node.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-						    newAttributeValue=child2Node.getNodeValue();
+						    newAttributeValue=new String(child2Node.getNodeValue());
 						    break;
 						}
 					}
