@@ -26,6 +26,7 @@ import java.nio.charset.*;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  *  A class that represents data field (its value).
@@ -93,7 +94,7 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	public void setToDefaultValue() throws BadDataFormatException {
 		try {
-			fromString(metadata.getDefaultValue());
+			fromString(StringUtils.stringToSpecChar(metadata.getDefaultValue()));
 		} catch (Exception ex) {
 			String tmp = metadata.getDefaultValue();
 			if (tmp == null || tmp.equals("")) {
