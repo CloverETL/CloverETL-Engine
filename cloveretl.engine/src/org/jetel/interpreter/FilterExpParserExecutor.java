@@ -152,8 +152,8 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 			Object b=stack.pop();
 			
 			try{
-				if (a instanceof org.jetel.data.Number){
-					cmpResult=((org.jetel.data.Number)a).compareTo((org.jetel.data.Number)b);
+				if (a instanceof org.jetel.data.Numeric){
+					cmpResult=((org.jetel.data.Numeric)a).compareTo((org.jetel.data.Numeric)b);
 				}else if (a instanceof Date){
 					cmpResult=((Date)a).compareTo((Date)b);
 				}else if (a instanceof CharSequence){

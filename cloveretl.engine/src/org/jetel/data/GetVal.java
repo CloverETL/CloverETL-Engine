@@ -42,8 +42,8 @@ public class GetVal {
 	 */
 	public final static int getInt(DataRecord record, int fieldNo) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			return ((Number) field).getInt();
+		if (field instanceof Numeric) {
+			return ((Numeric) field).getInt();
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -60,8 +60,8 @@ public class GetVal {
 	 */
 	public final static double getDouble(DataRecord record, int fieldNo) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			return ((Number) field).getDouble();
+		if (field instanceof Numeric) {
+			return ((Numeric) field).getDouble();
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -76,8 +76,8 @@ public class GetVal {
 	 */
 	public final static long getLong(DataRecord record, int fieldNo) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			return ((Number) field).getLong();
+		if (field instanceof Numeric) {
+			return ((Numeric) field).getLong();
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -152,7 +152,7 @@ public class GetVal {
 	 */
 	public final static int getInt(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
+		if (field instanceof Numeric) {
 			return ((NumericDataField) field).getInt();
 		} else {			
 			throw new RuntimeException("Not a numeric DataField!");
@@ -170,8 +170,8 @@ public class GetVal {
 	 */
 	public final static double getDouble(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
-			return ((Number) field).getDouble();
+		if (field instanceof Numeric) {
+			return ((Numeric) field).getDouble();
 		} else {
 			throw new RuntimeException("Not a number DataField!");
 		}
@@ -186,8 +186,8 @@ public class GetVal {
 	 */
 	public final static long getLong(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
-			return ((Number) field).getLong();
+		if (field instanceof Numeric) {
+			return ((Numeric) field).getLong();
 		} else {
 			throw new RuntimeException("Not a number DataField!");
 		}

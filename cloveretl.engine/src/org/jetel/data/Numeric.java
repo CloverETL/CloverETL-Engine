@@ -30,7 +30,7 @@ package org.jetel.data;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public interface Number {
+public interface Numeric {
     
     public void setValue(int value);
     
@@ -59,31 +59,31 @@ public interface Number {
      * @param value
      * @return 	-1,0,1 if internal value(less-then,equals, greather then) passed-in value
      */
-    public int compareTo(Number value);
+    public int compareTo(Numeric value);
     
     /**
      * Sum of two Number, this and added parameter.
      * @param a second operand of sum
      */
-    public void sum(Number a);
+    public void add(Numeric a);
     
     /**
      * Difference of two Number, this and added parameter.
      * @param a second operand of difference 
      */
-    public void sub(Number a);
+    public void sub(Numeric a);
     
     /**
      * Multiplication of two Number, this and added parameter.
      * @param a secondt operand of multiplikation 
      */
-    public void mul(Number a);
+    public void mul(Numeric a);
     
     /**
      * Division of two Number, this and added parameter.
      * @param a second operand of division 
      */
-    public void div(Number a);
+    public void div(Numeric a);
     
     /**
      * Absolute value of this Number.
@@ -94,11 +94,11 @@ public interface Number {
      * Rest of a divided this by <code>a</code>.
      * @param a second operand of division 
      */
-    public void mod(Number a);
+    public void mod(Numeric a);
     
     /**
-     * Opposite value.
+     * Negation/Opposite value.
      */
-    public void opp();
+    public void neg();
     
 }

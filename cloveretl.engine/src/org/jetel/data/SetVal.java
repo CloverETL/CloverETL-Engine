@@ -38,8 +38,8 @@ public class SetVal {
 	 */
 	public final static void setInt(DataRecord record, int fieldNo, int value) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		}else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -56,8 +56,8 @@ public class SetVal {
 	 */
 	public final static void setDouble(DataRecord record, int fieldNo, double value) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -73,8 +73,8 @@ public class SetVal {
 	 */
 	public final static void setLong(DataRecord record, int fieldNo, long value) {
 		DataField field = record.getField(fieldNo);
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -155,8 +155,8 @@ public class SetVal {
 	 */
 	public final static void setInt(DataRecord record, String fieldName, int value) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -173,8 +173,8 @@ public class SetVal {
 	 */
 	public final static void setDouble(DataRecord record, String fieldName, double value) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}
@@ -190,8 +190,8 @@ public class SetVal {
 	 */
 	public final static void setLong(DataRecord record, String fieldName, long value) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
-		if (field instanceof Number) {
-			((Number) field).setValue(value);
+		if (field instanceof Numeric) {
+			((Numeric) field).setValue(value);
 		} else {
 			throw new RuntimeException("Not a numeric DataField!");
 		}

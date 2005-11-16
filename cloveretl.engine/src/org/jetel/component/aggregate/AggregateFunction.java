@@ -25,7 +25,7 @@ import java.util.Map;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.Number;
+import org.jetel.data.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -150,7 +150,7 @@ public class AggregateFunction implements Iterator {
 			}
 
 			//create aggregate item
-			if(inMetadata.getField(fieldNum.intValue()) instanceof Number
+			if(inMetadata.getField(fieldNum.intValue()) instanceof Numeric
 					&& functionNumber != FNC_MIN
 					&& functionNumber != FNC_MAX
 					&& functionNumber != FNC_COUNT) {
@@ -191,9 +191,9 @@ public class AggregateFunction implements Iterator {
 		for (int i = 0; i < aggregateItems.length; i++) {
 			val = aggregateItems[i].getValue();
 			if(val instanceof MyInteger) 
-				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
+				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
 			else if(val instanceof MyDouble)
-				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
 			else 
 				outRecord.getField(keyFields.length + i).setValue(val);
 		}
@@ -264,9 +264,9 @@ public class AggregateFunction implements Iterator {
 		for (int i = 0; i < aggregateItems.length; i++) {
 			val = aggregateItems[i].getValueUnsorted(key);
 			if(val instanceof MyInteger) 
-				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
+				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
 			else if(val instanceof MyDouble)
-				((Number) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
 			else 
 				outRecord.getField(keyFields.length + i).setValue(val);
 		}
@@ -366,13 +366,13 @@ public class AggregateFunction implements Iterator {
 				case FNC_STDEV:
 					data.increaseCount();
 					if(firstLoop) {
-						data.dValue1 = ((Number) currentDF).getDouble();
+						data.dValue1 = ((Numeric) currentDF).getDouble();
 						data.dValue2 = 0;
 						firstLoop = false;
 					} else {
 						double tempD = data.dValue1;
-						data.dValue1 += (((Number) currentDF).getDouble() - data.dValue1) / data.count;
-						data.dValue2 += (((Number) currentDF).getDouble() - tempD) * (((Number) currentDF).getDouble() - data.dValue1); 	
+						data.dValue1 += (((Numeric) currentDF).getDouble() - data.dValue1) / data.count;
+						data.dValue2 += (((Numeric) currentDF).getDouble() - tempD) * (((Numeric) currentDF).getDouble() - data.dValue1); 	
 					}
 					break;
 			}
@@ -481,13 +481,13 @@ public class AggregateFunction implements Iterator {
 					break;
 				case FNC_STDEV:
 					if(!dataMap.containsKey(keyStr)) {
-						dataMap.put(keyStr, new Data(1, ((Number) currentDF).getDouble(), 0));
+						dataMap.put(keyStr, new Data(1, ((Numeric) currentDF).getDouble(), 0));
 					} else {
 						Data tempData = (Data) dataMap.get(keyStr);
 						double tempD = tempData.dValue1;
 						tempData.increaseCount();
-						tempData.dValue1 += (((Number) currentDF).getDouble() - tempData.dValue1) / tempData.count;
-						tempData.dValue2 += (((Number) currentDF).getDouble() - tempD) * (((Number) currentDF).getDouble() - tempData.dValue1); 	
+						tempData.dValue1 += (((Numeric) currentDF).getDouble() - tempData.dValue1) / tempData.count;
+						tempData.dValue2 += (((Numeric) currentDF).getDouble() - tempD) * (((Numeric) currentDF).getDouble() - tempData.dValue1); 	
 					}
 					break;
 			}
@@ -555,12 +555,12 @@ public class AggregateFunction implements Iterator {
 		}
 
 		private void increaseValueEx(DataField val, DataField increasor) {
-			Number num = (Number) val;
+			Numeric num = (Numeric) val;
 			
 			if(val.isNull()) {
 				setValueEx(val, increasor);
 			} else {
-				num.sum(((Number) increasor));
+				num.add(((Numeric) increasor));
 			}
 		}
 
@@ -586,7 +586,7 @@ public class AggregateFunction implements Iterator {
 		}
 		
 		public double getDoubleValue() {
-			return ((Number) value).getDouble();
+			return ((Numeric) value).getDouble();
 		}
 		
 		public void reset() {
