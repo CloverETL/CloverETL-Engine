@@ -441,8 +441,8 @@ public class DBConnection {
 	public void saveConfiguration(OutputStream outStream) throws IOException {
 		Properties propsToStore = new Properties();
 		propsToStore.putAll(config);
-		propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,new Boolean(this.threadSafeConnections));
-		propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,new Boolean(this.isPasswordEncrypted));
+		propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,Boolean.toString(this.threadSafeConnections));
+		propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,Boolean.toString(this.isPasswordEncrypted));
 		propsToStore.store(outStream,null);
 	}
 	
