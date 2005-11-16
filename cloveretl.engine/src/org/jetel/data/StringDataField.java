@@ -144,7 +144,8 @@ public class StringDataField extends DataField implements CharSequence{
 		}else if (value instanceof char[]){
 		    this.value.append((char[])value);
 		}else if (value instanceof CharSequence){
-		    this.value.append((CharSequence)value);
+		    CharSequence str=(CharSequence)value;
+		    for (int i=0;i<str.length();this.value.append(str.charAt(i++)));
 		}else if (value==null){
 		    if (this.metadata.isNullable()) {
 				setNull(true);
