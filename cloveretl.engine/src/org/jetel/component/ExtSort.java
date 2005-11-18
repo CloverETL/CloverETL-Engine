@@ -640,7 +640,7 @@ public class ExtSort extends Node {
                 sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
             }
         } catch (Exception ex) {
-            System.err.println(ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
             return null;
         }
         return sort;

@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.io.*;
 import org.jetel.graph.*;
+
 import java.util.HashSet;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
@@ -277,7 +278,7 @@ public class CheckForeignKey extends Node {
 			}
 			return check;
 		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}
