@@ -301,7 +301,7 @@ public class Merge extends Node {
 			return new Merge(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_MERGEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}

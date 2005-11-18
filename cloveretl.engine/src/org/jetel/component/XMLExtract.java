@@ -1,7 +1,6 @@
 package org.jetel.component;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Constructor;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -554,10 +553,10 @@ public class XMLExtract extends Node
 	//
 	public static Node fromXML(org.w3c.dom.Node nodeXML)
 	{
-		ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		XMLExtract extract;
 
-		if (attributes.exists("id"))
+		if (xattribs.exists("id"))
 		{
 			try
 			{
@@ -568,11 +567,11 @@ public class XMLExtract extends Node
 				// Do more stuff with MyXMLExtract
 				// return MyXMLExtract
 				// }
-				extract = new XMLExtract(attributes.getString("id"));
+				extract = new XMLExtract(xattribs.getString("id"));
 
-				if (attributes.exists("sourceUri"))
+				if (xattribs.exists("sourceUri"))
 				{
-					extract.setInputSource(new InputSource(attributes
+					extract.setInputSource(new InputSource(xattribs
 							.getString("sourceUri")));
 				}
 				// Process the mappings
@@ -587,7 +586,7 @@ public class XMLExtract extends Node
 			}
 			catch (Exception ex)
 			{
-				LOG.error("Could not instantiate XML Extract node.", ex);
+				System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			}
 		}
 		return null;
