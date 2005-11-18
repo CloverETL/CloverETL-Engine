@@ -219,7 +219,6 @@ public class FixLenDataWriterNIO extends Node {
 		final boolean _ONE_REC_PER_LINE_=false;
 		final boolean _APPEND_=false;
 		
-		
 		try{
 		
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
@@ -240,7 +239,7 @@ public class FixLenDataWriterNIO extends Node {
 			}
 		
 		}catch(Exception ex){
-			System.err.println(ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		
