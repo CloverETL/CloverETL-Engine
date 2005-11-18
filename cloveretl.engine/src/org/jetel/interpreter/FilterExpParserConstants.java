@@ -35,7 +35,7 @@ public interface FilterExpParserConstants {
   int FIELD_ID = 34;
   int OPEN_PAR = 35;
   int CLOSE_PAR = 36;
-  int DATE_FIELD_LITERAL = 49;
+  int DATE_FIELD_LITERAL = 50;
 
   int DEFAULT = 0;
 
@@ -86,6 +86,7 @@ public interface FilterExpParserConstants {
     "\"length\"",
     "\"today\"",
     "\"isnull\"",
+    "\"nvl\"",
     "\"concat\"",
     "\"dateadd\"",
     "\"datediff\"",

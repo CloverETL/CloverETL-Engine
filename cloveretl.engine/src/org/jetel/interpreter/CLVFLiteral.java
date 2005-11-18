@@ -36,7 +36,12 @@ public class CLVFLiteral extends SimpleNode implements FilterExpParserConstants 
 				value=valueImage;
 				break;
 			case INTEGER_LITERAL:
-				value= Integer.valueOf(valueImage);
+			    // try to parse as INT first, if error then LONG
+			    try{
+			        value= Integer.valueOf(valueImage);
+			    }catch(NumberFormatException ex){
+			        value= Long.valueOf(valueImage);
+			    }
 				break;
 			case DATE_LITERAL:
 				DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
@@ -54,8 +59,10 @@ public class CLVFLiteral extends SimpleNode implements FilterExpParserConstants 
 						+tokenImage[literalType]);
 			}
 		}catch(java.text.ParseException ex){
-			throw new InterpreterRuntimeException(this,new Object[0],"Unrecognized value: "+valueImage);
-		} 
+		    throw new InterpreterRuntimeException(this,new Object[0],"Parser exception ["+tokenImage[literalType]+"] : Unrecognized value: "+valueImage);
+		}catch(Exception ex){
+		    throw new InterpreterRuntimeException(this,new Object[0],ex.getClass().getName()+" : ["+tokenImage[literalType]+"] : Unrecognized value: "+valueImage);
+		}
 	}
 	
 	void setVal(int literalType, String valueImage){
