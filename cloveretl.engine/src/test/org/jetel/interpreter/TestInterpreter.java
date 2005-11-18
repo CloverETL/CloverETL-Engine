@@ -42,7 +42,9 @@ public class TestInterpreter extends TestCase {
 	DataRecordMetadata metadata;
 	DataRecord record;
 	
-	protected void setUp() { 
+	protected void setUp() {
+	    Defaults.init();
+	    
 		metadata=new DataRecordMetadata("TestInput",DataRecordMetadata.DELIMITED_RECORD);
 		
 		metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
@@ -54,10 +56,11 @@ public class TestInterpreter extends TestCase {
 		record = new DataRecord(metadata);
 		record.init();
 		
-		SetVal.setString(record,0,"HELLO");
+		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setInt(record,1,135);
 		SetVal.setString(record,2,"Some silly longer string.");
 		SetVal.setValue(record,3,Calendar.getInstance().getTime());
+		record.getField("Born").setNull(true);
 		SetVal.setInt(record,4,-999);
 	}
 	
@@ -67,7 +70,7 @@ public class TestInterpreter extends TestCase {
 	}
 	
 	public void test_1_expression() {
-		String expStr="$Age>=135 or $Age<200 and $Age>0 or $Name==\"HELLO\"";
+		String expStr="$Age>=135 or 200>$Age and $Age>0 and 1==999999999999999 or $Name==\"HELLO\"";
 		
 		try {
 			  FilterExpParser parser = new FilterExpParser(record,
@@ -85,6 +88,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
+		      
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
@@ -92,7 +96,7 @@ public class TestInterpreter extends TestCase {
 		}
 	
 	public void test_2_expression() {
-		String expStr="datediff(today(),2003-10-1,year)";
+		String expStr="datediff(nvl($Born,2005-2-1),2005-1-1,month)";
 		try {
 			  FilterExpParser parser = new FilterExpParser(record,
 			  		new ByteArrayInputStream(expStr.getBytes()));
@@ -100,12 +104,13 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      parseTree.dump("");
 		      System.out.println("Interpreting parse tree..");
 		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      System.out.println(executor.getResult());
+		      System.out.println("result: "+executor.getResult());
 		      
 		      
 		      parseTree.dump("");
@@ -117,5 +122,31 @@ public class TestInterpreter extends TestCase {
 		
 	}
 		
+	public void test_3_expression() {
+		String expStr="trim($Name)==\"HELLO\"";
+		try {
+			  FilterExpParser parser = new FilterExpParser(record,
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      parseTree.dump("");
+		      System.out.println("Interpreting parse tree..");
+		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      System.out.println("result: "+executor.getResult());
+		      
+		      
+		      parseTree.dump("");
+		      
+		    } catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+		
+	}
 	
 }
