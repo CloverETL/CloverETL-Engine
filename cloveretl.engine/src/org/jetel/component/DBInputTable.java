@@ -253,6 +253,8 @@ public class DBInputTable extends Node {
                    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE)));
                 }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
                     query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+                }if (xattribs.exists(XML_SQLCODE_ELEMENT)){
+                    query = xattribs.getString(XML_SQLCODE_ELEMENT);
                 }else{
                     
                     childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);

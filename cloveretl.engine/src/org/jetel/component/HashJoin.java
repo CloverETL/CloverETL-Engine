@@ -146,6 +146,8 @@ public class HashJoin extends Node {
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
+	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
+	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
 
@@ -509,8 +511,12 @@ public class HashJoin extends Node {
 					join.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
 				}
 			} else {
-				// do we have child node wich Java source code ?
-				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
+					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
+				}else{
+					// do we have child node wich Java source code ?
+					dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				}
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}
