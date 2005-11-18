@@ -22,6 +22,7 @@ package org.jetel.component;
 import java.io.*;
 import java.sql.*;
 import java.util.List;
+import java.util.Arrays;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -432,62 +433,109 @@ public class DBOutputTable extends Node {
 
 
 	private void runInBatchMode(InputPort inPort,OutputPort rejectedPort,
-			DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
-		int i;
-		int batchCount=0;
-		int recCount = 0;
-		int countError=0;
-		while (inRecord != null && runIt) {
-			inRecord = readRecord(READ_FROM_PORT, inRecord);
-			if (inRecord != null) {
-				for (i = 0; i < transMap.length; i++) {
-					transMap[i].jetel2sql(preparedStatement);
-				}
-				try{
-					preparedStatement.addBatch();
-				}catch(SQLException ex){
-					countError++;;
-					if (rejectedPort!=null){
-						rejectedPort.writeRecord(inRecord);
-					}
-					if (countError>maxErrors && maxErrors!=-1){
-						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
-					}
-				}
-			}
-			// shall we commit ?
-			if (++batchCount % batchSize == 0) {
-				try {
-					preparedStatement.executeBatch();
-					preparedStatement.clearBatch();
-				} catch (BatchUpdateException ex) {
-					throw new SQLException("Batch error:"+ex.getMessage());
-				}
-				batchCount = 0;
-			}
-			if (++recCount % recordsInCommit == 0) {
-				if (batchCount!=0){
-					try {
-						preparedStatement.executeBatch();
-						preparedStatement.clearBatch();
-					} catch (BatchUpdateException ex) {
-						throw new SQLException("Batch error:"+ex.getMessage());
-					}
-					batchCount = 0;
-				}
-				dbConnection.getConnection().commit();
-			}
-			yield();
-		}
-		
-		try{
-			preparedStatement.executeBatch();
-		}catch (BatchUpdateException ex) {
-			throw new SQLException("Batch error:"+ex.getMessage());
-		}
-		dbConnection.getConnection().commit();
-		
+	        DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
+	    int i;
+	    int batchCount=0;
+	    int recCount = 0;
+	    int countError=0;
+	    DataRecord[] dataRecordHolder;
+	    int holderCount=0;
+	    
+	    // if we have rejected records port connected, we will
+	    // store and report erroneous records in batch
+	    if (rejectedPort!=null){
+	        dataRecordHolder=new DataRecord[batchSize];
+	        for (int j=0;j<batchSize;j++){
+	            dataRecordHolder[j]=inRecord.duplicate();
+	        }
+	    }else{
+	        dataRecordHolder=null;
+	    }
+	    
+	    while (inRecord != null && runIt) {
+	        inRecord = readRecord(READ_FROM_PORT, inRecord);
+	        if (inRecord != null) {
+	            for (i = 0; i < transMap.length; i++) {
+	                transMap[i].jetel2sql(preparedStatement);
+	            }
+	            try{
+	                preparedStatement.addBatch();
+	                if (dataRecordHolder!=null) dataRecordHolder[holderCount++].copyFrom(inRecord);
+	            }catch(SQLException ex){
+	                countError++;;
+	                if (rejectedPort!=null){
+	                    rejectedPort.writeRecord(inRecord);
+	                }
+	                if (countError>maxErrors && maxErrors!=-1){
+	                    throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
+	                }
+	            }
+	        }
+	        // shall we commit ?
+	        if (++batchCount % batchSize == 0) {
+	            try {
+	                preparedStatement.executeBatch();
+	                preparedStatement.clearBatch();
+	            } catch (BatchUpdateException ex) {
+	                preparedStatement.clearBatch();
+	                logger.error(ex);
+	                if (dataRecordHolder!=null){
+	                    for (int j=0;j<holderCount;j++) {
+	                        rejectedPort.writeRecord(dataRecordHolder[j]);
+	                    }
+	                }
+	                if (countError>maxErrors && maxErrors!=-1){
+	                    throw new SQLException("Batch error:"+ex.getMessage());
+	                }
+	                rejectedPort.close();
+	            }
+	            batchCount = 0;
+	            holderCount=0;
+	        }
+	        if (++recCount % recordsInCommit == 0) {
+	            if (batchCount!=0){
+	                try {
+	                    preparedStatement.executeBatch();
+	                    preparedStatement.clearBatch();
+	                } catch (BatchUpdateException ex) {
+	                    preparedStatement.clearBatch();
+	                    logger.error(ex);
+	                    if (dataRecordHolder!=null){
+	                        for (int j=0;j<holderCount;j++) {
+		                        rejectedPort.writeRecord(dataRecordHolder[j]);
+		                    }
+	                    }
+	                    if (countError>maxErrors && maxErrors!=-1){
+	                        throw new SQLException("Batch error:"+ex.getMessage());
+	                    }
+	                }
+	                batchCount = 0;
+	                holderCount=0;
+	            }
+	            dbConnection.getConnection().commit();
+	        }
+	        yield();
+	    }
+	    // final commit (if anything is left in batch
+	    try{
+	        preparedStatement.executeBatch();
+	    }catch (BatchUpdateException ex) {
+	        logger.error(ex);
+	        if (dataRecordHolder!=null){
+	            for (int j=0;j<holderCount;j++) {
+                    rejectedPort.writeRecord(dataRecordHolder[j]);
+                }
+	            holderCount=0;
+	            Arrays.fill(dataRecordHolder,null);
+	        }
+	        if (countError>maxErrors && maxErrors!=-1){
+	            throw new SQLException("Batch error:"+ex.getMessage());
+	        }
+	    }
+	    dbConnection.getConnection().commit();
+	    Arrays.fill(dataRecordHolder,null);
 	}
+	
 	
 	/**
 	 *  Description of the Method
