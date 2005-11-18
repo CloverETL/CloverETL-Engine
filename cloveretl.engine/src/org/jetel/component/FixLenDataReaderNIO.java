@@ -271,7 +271,7 @@ public class FixLenDataReaderNIO extends Node {
 	 *
 	 * @param  b
 	 */
-	private void setOneRecordPerLinePolicy(boolean b) {
+	public void setOneRecordPerLinePolicy(boolean b) {
 		parser.setOneRecordPerLinePolicy(b);
 	}
 	
@@ -288,7 +288,7 @@ public class FixLenDataReaderNIO extends Node {
 	 *
 	 * @param  handler
 	 */
-	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
 		parser.addBDFHandler(handler);
 	}
 

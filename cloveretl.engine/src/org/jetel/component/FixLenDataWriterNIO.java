@@ -255,7 +255,7 @@ public class FixLenDataWriterNIO extends Node {
 	 *
 	 * @param  b
 	 */
-	private void setOneRecordPerLinePolicy(boolean b) {
+	public void setOneRecordPerLinePolicy(boolean b) {
 		formatter.setOneRecordPerLinePolicy(b);
 	}
 
@@ -265,7 +265,7 @@ public class FixLenDataWriterNIO extends Node {
 	 * 
 	 * @param separator
 	 */
-	private void setLineSeparator(String separator){
+	public void setLineSeparator(String separator){
 		// this should be somehow generalized
 		if (formatter instanceof FixLenDataFormatter){
 			((FixLenDataFormatter)formatter).setLineSeparator(StringUtils.stringToSpecChar(separator));
