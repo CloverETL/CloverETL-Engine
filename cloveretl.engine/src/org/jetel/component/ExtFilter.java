@@ -66,7 +66,8 @@ import org.w3c.dom.Text;
  * A filter can be made of different parts separated by a logical
  * operator AND, OR. You can as well use parenthesis to give precendence<br> 
  * <b>Note:</b>Date format used for specifying date value is <tt>yyyy-MM-dd</tt> for
- * dates only and <tt>yyyy-MM-dd HH:mm:ss</tt> for date&time.
+ * dates only and <tt>yyyy-MM-dd HH:mm:ss</tt> for date&time. These patterns correspond
+ * to values specified in "defaultProperties" file.<br>
  * When referencing particular field, you have to precede field's name with 
  * dollar [$] sign - e.g. $FirstName.<br>
  * To ease the burden of converting comparison operators to XML-compatible form,
@@ -79,10 +80,11 @@ import org.w3c.dom.Text;
  * <li>substring( ..str expression.. , from, length)
  * <li>trim( .. str expression.. )
  * <li>length( ..str expression.. )
- * <li>isnull( <field reference> )
+ * <li>isnull( &lt;field reference&gt; )
  * <li>concat( ..str expression.., ..str expression.. , ...... )
- * <li>dateadd( ..date expression.., ..amount.. , year|month|day )
- * <li>datediff( ..date expression.., ..date expression.. , year|month|day|sec )
+ * <li>dateadd( ..date expression.., ..amount.. , year|month|day|hour|minute|sec )
+ * <li>datediff( ..date expression.., ..date expression.. , year|month|day|hour|minute|sec )
+ * <li>nvl(&lt;field reference&gt;, ..expression.. )
  * </ul> 
  * </td></tr>
  * </table>
@@ -107,6 +109,12 @@ import org.w3c.dom.Text;
  * More complex example showing how to use various built-in functions.<br>
  * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER"&gt;
  * ( trim($CustomerName)~=".*Peter.*" or $DateSale==dateadd(today(),-1,month)) and $Age*2.lt.$Weight-10
+ *&lt;/Node&gt;</pre>
+ * </pre>
+ * Evaluating data fields with NULL values (have isNull() set) results in runtime error. To
+ * circumvent such situation, use <code>isnull</code> and <code>nvl</code> functions.<br>
+ * <pre>&lt;Node id="FILTEREMPL1" type="EXT_FILTER"&gt;
+ * !isnull($CustomerName) && $CustomerName~=".*Peter.*" or nvl($DateSale,2001-1-1)>=$DateInvoice
  *&lt;/Node&gt;</pre>
  * </pre>
  * <br>
