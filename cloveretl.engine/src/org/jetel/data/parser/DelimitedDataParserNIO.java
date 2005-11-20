@@ -301,10 +301,12 @@ public class DelimitedDataParserNIO implements Parser {
 					totalCharCounter++;
 					// handle quoted strings
 					if (handleQuotedStrings && StringUtils.isQuoteChar((char)character)){
-					    if (!isWithinQuotes){ /*&&charCounter==0)*/
+					    if (!isWithinQuotes){
+					        if (charCounter==0){
 					        quoteChar=(char)character;
 					        isWithinQuotes=true;
-					    }else if (isWithinQuotes && quoteChar==(char)character){
+					        }
+					    }else if (quoteChar==(char)character){
 					        isWithinQuotes=false;
 					    }
 					}
@@ -318,11 +320,9 @@ public class DelimitedDataParserNIO implements Parser {
 						 *  NOT A DELIMITER
 						 */
 						if (delimiterPosition > 0) {
-							charCounter += delimiterPosition;
 							fieldStringBuffer.put(delimiterCandidateBuffer,0,delimiterPosition);
 						} else {
 							fieldStringBuffer.put((char) character);
-							charCounter++;
 						}
 						delimiterPosition = 0;
 					} else {
@@ -332,6 +332,7 @@ public class DelimitedDataParserNIO implements Parser {
 						delimiterCandidateBuffer[delimiterPosition]=((char) character);
 						delimiterPosition++;
 					}
+					charCounter++;
 				}
 				if ((character == -1) && (totalCharCounter > 1)) {
 					//- incomplete record - do something
