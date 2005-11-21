@@ -351,7 +351,7 @@ public abstract class CopySQLData {
             toIndex=i;
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i++] = createCopyObject(jdbcType, jetelFieldType, record,
+            transMap[i] = createCopyObject(jdbcType, jetelFieldType, record,
                     toIndex, fromIndex);
         }
         return transMap;
