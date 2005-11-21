@@ -198,6 +198,11 @@ public class AggregateFunction implements Iterator {
 				outRecord.getField(keyFields.length + i).setValue(val);
 		}
 
+		//reset aggregate items
+		for (int i = 0; i < aggregateItems.length; i++) {
+			aggregateItems[i].reset();
+		}
+
 		return outRecord;
 	}
 	
@@ -418,10 +423,12 @@ public class AggregateFunction implements Iterator {
 					break;
 			}
 			
+			return result;
+		}
+		
+		void reset() {
 			data.reset();
 			firstLoop = true;
-			
-			return result;
 		}
 		
 		/**
