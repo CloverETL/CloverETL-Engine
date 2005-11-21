@@ -153,6 +153,9 @@ public class DBLookupTable implements LookupTable {
 	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields());
 	                }catch(JetelException ex1){
 	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
+	                }catch(Exception ex1){
+	                    // some serious problem
+	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
 	                }
 	            }
 	        }
