@@ -37,27 +37,26 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author maciorowski
+ * @author maciorowski,dpavlis
  *
  */
 public class SQLDataParser implements Parser {
 	private final static int SQL_FETCH_SIZE_ROWS = 20;
 
-	private BadDataFormatExceptionHandler handlerBDFE;
-	private DataRecordMetadata metadata;
-	private int recordCounter;
-	private int fieldCount;
+	protected BadDataFormatExceptionHandler handlerBDFE;
+	protected DataRecordMetadata metadata;
+	protected int recordCounter;
+	protected int fieldCount;
 
-	private DBConnection dbConnection;
-	private String dbConnectionName;
-	private String sqlQuery;
-	private Statement statement;
+	protected DBConnection dbConnection;
+	protected String sqlQuery;
+	protected Statement statement;
 
-	private ResultSet resultSet = null;
-	private CopySQLData[] transMap;
-	private DataRecord outRecord = null;
+	protected ResultSet resultSet = null;
+	protected CopySQLData[] transMap=null;
+	protected DataRecord outRecord = null;
 
-	private int fetchSize = SQL_FETCH_SIZE_ROWS;
+	protected int fetchSize = SQL_FETCH_SIZE_ROWS;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
 	
@@ -65,11 +64,19 @@ public class SQLDataParser implements Parser {
 	 * @param sqlQuery
 	 */
 	public SQLDataParser(String dbConnectionName,String sqlQuery) {
-		this.dbConnectionName = dbConnectionName;
+		this(sqlQuery);
+	}
+
+	/**
+	 * Creates SQLDataParser object
+	 * 
+	 * @param sqlQuery query to be executed against DB
+	 */
+	public SQLDataParser(String sqlQuery) {
 		this.sqlQuery = sqlQuery;
 		this.recordCounter = 1;
 	}
-
+	
 
 	/**
 	 *  Returs next data record parsed from input data sorce or NULL if no more data
@@ -125,10 +132,8 @@ public class SQLDataParser implements Parser {
 	 */
 
 	public DataRecord getNext() throws JetelException {
-		if (outRecord==null){
-			outRecord = new DataRecord(metadata);
-			outRecord.init();
-		}
+		DataRecord outRecord=new DataRecord(metadata);
+		outRecord.init();
 
 		return getNext(outRecord);
 	}
@@ -138,12 +143,19 @@ public class SQLDataParser implements Parser {
 	 * @param record
 	 * @return
 	 */
-	private DataRecord parseNext(DataRecord record) throws JetelException {
+	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		try {
 			if(resultSet.next() == false)
 				return null;
 		} catch (SQLException e) {
 			throw new JetelException(e.getMessage());
+		}
+		// init transMap if null
+		if (transMap==null){
+		    initSQLMap(record);
+		}else if (record!=outRecord){
+		    CopySQLData.resetDataRecord(transMap,record);
+		    outRecord=record;
 		}
 			
 			for (int i = 1; i <= fieldCount; i++) {
@@ -164,12 +176,9 @@ public class SQLDataParser implements Parser {
 	 */
 
 	protected void populateField(DataRecord record, int fieldNum) {
-		//String data = null;
 		
 		try {
 			transMap[fieldNum-1].sql2jetel(resultSet);
-			//data = resultSet.getString(fieldNum);
-			//record.getField(fieldNum-1).fromString( data );
 
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
@@ -183,6 +192,10 @@ public class SQLDataParser implements Parser {
 	}
 
 	public void initSQLDataMap(DataRecord record){
+	    initSQLMap(record);
+	}
+	
+	protected void initSQLMap(DataRecord record){
 		try{
 			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
 		}catch (Exception ex) {
@@ -200,10 +213,10 @@ public class SQLDataParser implements Parser {
 
 		//outRecord.init();
 		// get dbConnection from graph
-		dbConnection= (DBConnection) inputDataSource;
-		if (dbConnection==null){
-			throw new ComponentNotReadyException("Can't find DBConnection ID: "+dbConnectionName);
+		if (! (inputDataSource instanceof DBConnection)){
+			throw new ComponentNotReadyException("Need DBConnection object !");
 		}
+		dbConnection= (DBConnection) inputDataSource;
 		try {
 			// connection is created up front
 			//dbConnection.connect();
