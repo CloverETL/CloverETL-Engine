@@ -256,6 +256,11 @@ public class DBLookupTable implements LookupTable {
 		if (!resultSet.next()) {
 			return false;
 		}
+		// initialize trans map if needed
+		if (transMap==null){
+		    initInternal();
+		}
+		
 		//get data from results
 		for (int i = 0; i < transMap.length; i++) {
 			transMap[i].sql2jetel(resultSet);
@@ -345,13 +350,24 @@ public class DBLookupTable implements LookupTable {
             throw new JetelException("Can't create SQL statement: "
                     + ex.getMessage());
         }
+          
+    }
+    
+    /**
+     * We assume that query has already been executed and
+     * we have resultSet available to get metadata.
+     * 
+     * 
+     * @throws JetelException
+     */
+    private void initInternal()  {
         // obtain dbMetadata info if needed
         if (dbMetadata == null) {
             try {
-                dbMetadata = SQLUtil.dbMetadata2jetel(pStatement.getMetaData());
+                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
             } catch (SQLException ex) {
-                throw new JetelException(
-                        "Can't automatically obtain dbMetadata (use other constructor): "
+                throw new RuntimeException(
+                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
                         + ex.getMessage());
             }
         }
@@ -365,26 +381,26 @@ public class DBLookupTable implements LookupTable {
                     SQLUtil.getFieldTypes(dbMetadata), dbMetadata,
                     dbDataRecord);
         } catch (Exception ex) {
-            throw new JetelException(
+            throw new RuntimeException(
                     "Can't automatically obtain dbMetadata/create transMap : "
                     + ex.getMessage());
         }
-        
+
     }
 
 	/**
 	 *  Deallocates resources
 	 */
-	public void close() {
-		try {
-			pStatement.close();
-			resultCache = null;
-			transMap = null;
+    public void close() {
+        try {
+            pStatement.close();
+            resultCache = null;
+            transMap = null;
+        }
+        catch (SQLException ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
     }
-    catch (SQLException ex) {
-			throw new RuntimeException(ex.getMessage());
-		}
-	}
 	
 	
 	public void setNumCached(int numCached){
