@@ -161,7 +161,7 @@ public class DBLookupTable implements LookupTable {
 	            }
 	        }
 	        // set prepared statement parameters
-	        for (int i = 0; i < transMap.length; i++) {
+	        for (int i = 0; i < keyTransMap.length; i++) {
 	            keyTransMap[i].jetel2sql(pStatement);
 	        }
 	        
