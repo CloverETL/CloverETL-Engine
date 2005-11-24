@@ -22,7 +22,6 @@ package org.jetel.database;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.WeakHashMap;
 import java.util.Map;
 
 import org.jetel.data.DataRecord;
@@ -31,6 +30,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.SimpleCache;
 
 /**
  *  Database table/SQLquery based lookup table which gets data by performing SQL
@@ -48,20 +48,20 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DBLookupTable implements LookupTable {
 
-	private DataRecordMetadata dbMetadata;
-	private DBConnection dbConnection;
-	private PreparedStatement pStatement;
-	private RecordKey lookupKey;
-	private int[] keyFields;
-	private String[] keys;
-	private String sqlQuery;
-	private ResultSet resultSet;
-	private CopySQLData[] transMap;
-	private CopySQLData[] keyTransMap;
-	private DataRecord dbDataRecord;
-	private DataRecord keyDataRecord = null;
-	private Map resultCache;
-	private int maxCached;
+	protected DataRecordMetadata dbMetadata;
+	protected DBConnection dbConnection;
+	protected PreparedStatement pStatement;
+	protected RecordKey lookupKey;
+	protected int[] keyFields;
+	protected String[] keys;
+	protected String sqlQuery;
+	protected ResultSet resultSet;
+	protected CopySQLData[] transMap;
+	protected CopySQLData[] keyTransMap;
+	protected DataRecord dbDataRecord;
+	protected DataRecord keyDataRecord = null;
+	protected Map resultCache;
+	protected int maxCached;
 	protected HashKey cacheKey;
 	
 	
@@ -124,7 +124,7 @@ public class DBLookupTable implements LookupTable {
 	 */
 	public DataRecord get(DataRecord keyRecord) {
 	    // if cached, then try to query cache first
-	    if (cacheKey!=null){
+	    if (resultCache!=null){
 	        cacheKey.setDataRecord(keyRecord);
 	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
 	        if (data!=null){
@@ -135,6 +135,7 @@ public class DBLookupTable implements LookupTable {
 	    try {
 	        pStatement.clearParameters();
 	        
+	        // initialization of trans map if it was not already done
 	        if (keyTransMap==null){
 	            if (lookupKey == null) {
 	                throw new RuntimeException("RecordKey was not defined for lookup !");
@@ -159,6 +160,7 @@ public class DBLookupTable implements LookupTable {
 	                }
 	            }
 	        }
+	        // set prepared statement parameters
 	        for (int i = 0; i < transMap.length; i++) {
 	            keyTransMap[i].jetel2sql(pStatement);
 	        }
@@ -171,7 +173,7 @@ public class DBLookupTable implements LookupTable {
 	}
 	
 	// if cache exists, add this newly found to cache
-	if (maxCached>0){
+	if (resultCache!=null){
 	    DataRecord storeRecord=dbDataRecord.duplicate();
 	    resultCache.put(new HashKey(lookupKey, storeRecord), storeRecord);
 	}
@@ -216,7 +218,7 @@ public class DBLookupTable implements LookupTable {
 	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(String keyStr) {
-	    if (maxCached>0){
+	    if (resultCache!=null){
 	        DataRecord data=(DataRecord)resultCache.get(keyStr);
 	        if (data!=null){
 	            return data;
@@ -237,7 +239,7 @@ public class DBLookupTable implements LookupTable {
 	    catch (SQLException ex) {
 	        throw new RuntimeException(ex.getMessage());
 	    }
-	    if (maxCached>0){
+	    if (resultCache!=null){
 	        DataRecord storeRecord=dbDataRecord.duplicate();
 	        resultCache.put(keyStr, storeRecord);
 	    }
@@ -324,6 +326,7 @@ public class DBLookupTable implements LookupTable {
 	        this.cacheKey=new HashKey(lookupKey,null);
 	    }else{
             this.lookupKey=null;
+            this.cacheKey=null;
         }
     }
     
@@ -336,7 +339,7 @@ public class DBLookupTable implements LookupTable {
     public void init() throws JetelException {
     	// if caching is required, crate map to store records
     	if (maxCached>0){
-            this.resultCache= new WeakHashMap(maxCached);
+            this.resultCache= new SimpleCache(maxCached);
             
         }
         // first try to connect to db
@@ -405,7 +408,7 @@ public class DBLookupTable implements LookupTable {
 	
 	public void setNumCached(int numCached){
 	    if (numCached>0){
-	          this.resultCache= new WeakHashMap(numCached);
+	          this.resultCache= new SimpleCache(numCached);
 	          this.maxCached=numCached;
 	      }
 	}
