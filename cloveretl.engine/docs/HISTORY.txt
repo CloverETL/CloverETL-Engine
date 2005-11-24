@@ -1,6 +1,43 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+
+REL 1-1-7
+---------
+New features:
++added NVL() function to internal language used by filter component
++added JetelVersion class (in org.jetel.util) with several
+static methods (and vars) which can be used to get info about library
+version, build number, time of assembly, etc.
++added option to use encrypted passwords in JDBC config files
++all components now accept XML definition of parameters as XML attributes
+or inner XML nodes
++framework Defaults (org.jetel.data.Defaults) are now set/configured through
+defaultProperties file (in org/jetel/ directory of the binary package). It is no more
+needed to recompile the whole package if (for example) the maximum size of data record
+needs to be changed. Just edit the "defaultProperties" file.
++component factory is now configured through "components.xml" definition file. User
+components can now easily be added through modifying this file and specifying component's
+ID and class name.
++when defining graph layout and parameters for components in form of XML file, component parametes
+previously accepted only as XML nodes' attributes can be now defined in form of "child" nodes too.
+This is useful for long definitions or multiline parameters.
+
+
+Changes:
++information messages & debugging messages are now output through
+Jakarta's CommonsLogging means - they are not sent directly to console any more.
++fixed DelimitedDataFormatter - to properly handle OneRecordPerLine policy on differnet
+OS (CR&LF issue on Windows, Unix)
++fixed skipLeadingBlanks at FixLenDataParser
++refactored interface org.jetel.data.Number to org.jetel.data.Numeric - Number collided with
+java.lang.Number class
++Reformat component now supports multiple output ports connected. Appropriate transformation
+class has to be provided by user.
++Dedup component now offers selecting unique only data records - those records for which
+there were no duplicates found.
+
+
 REL 1-1-6
 ---------
 New features:
