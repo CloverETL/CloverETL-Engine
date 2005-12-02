@@ -103,7 +103,6 @@ public class DBInputTable extends Node {
 	private static final String XML_URL_ATTRIBUTE = "url";
 	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
-	private static final String XML_FETCH_SIZE_MIN_INT = "MIN_INT";
 	
 	private SQLDataParser parser;
 
@@ -253,7 +252,7 @@ public class DBInputTable extends Node {
                    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE)));
                 }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
                     query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
-                }if (xattribs.exists(XML_SQLCODE_ELEMENT)){
+                }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
                     query = xattribs.getString(XML_SQLCODE_ELEMENT);
                 }else{
                     
@@ -278,11 +277,7 @@ public class DBInputTable extends Node {
                 }
                 
                 if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
-                    if (xattribs.getString(XML_FETCHSIZE_ATTRIBUTE).equalsIgnoreCase(XML_FETCH_SIZE_MIN_INT)){
-                        aDBInputTable.setFetchSize(Integer.MIN_VALUE);
-                    }else{
                         aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
-                    }
                 }
                 
                 if (xattribs.exists(XML_URL_ATTRIBUTE)) {
