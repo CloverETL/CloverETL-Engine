@@ -67,7 +67,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
- *  <tr><td><b>commit</b><br><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, DEFAULT is 100</td>
+ *  <tr><td><b>commit</b><br><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, DEFAULT is 100.<br>If
+ * MAX_INT is specified, it is considered as NEVER COMMIT - i.e. records are send to DB without every issuing commit. It can
+ * be called later from withing other component - for example DBExecute.</td>
  *  <tr><td><b>cloverFields</b><br><i>optional</i></td><td>delimited list of input record's fields.<br>Only listed fields (in the order
  *  they appear in the list) will be considered for mapping onto target table's fields. Combined with <b>dbFields</b> option you can
  *  specify mapping from source (Clover's) fields to DB table fields. If no <i>dbFields</i> are specified, then #of <i>cloverFields</i> must
@@ -283,10 +285,8 @@ public class DBOutputTable extends Node {
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		CopySQLData[] transMap;
-		int result = 0;
 		List dbFieldTypes;
 		String sql;
-		String errMsg;
 		
 		inRecord.init();
 		try {
@@ -296,7 +296,8 @@ public class DBOutputTable extends Node {
 				useBatch=false;
 			}
 			// it is probably wise to have COMMIT size multiplication of BATCH size
-			if (useBatch && (recordsInCommit % batchSize != 0)){
+			// except situation when commit size is MAX_INTEGER -> we never commit in this situation;
+			if (useBatch && recordsInCommit!=Integer.MAX_VALUE && (recordsInCommit % batchSize != 0)){
 				int multiply= recordsInCommit/batchSize;
 				recordsInCommit=(multiply+1) * batchSize;
 			}
@@ -427,8 +428,11 @@ public class DBOutputTable extends Node {
 			}
 			yield();
 		}
-		// end of records stream - final commits;
-		dbConnection.getConnection().commit();
+ 		// end of records stream - final commits;
+		 // unless we have option never to commit, commit at the end of processing
+	    if (recordsInCommit!=Integer.MAX_VALUE){
+	        dbConnection.getConnection().commit();
+	    }
 	}
 
 
@@ -532,7 +536,10 @@ public class DBOutputTable extends Node {
 	            throw new SQLException("Batch error:"+ex.getMessage());
 	        }
 	    }
-	    dbConnection.getConnection().commit();
+	    // unless we have option never to commit, commit at the end of processing
+	    if (recordsInCommit!=Integer.MAX_VALUE){
+	        dbConnection.getConnection().commit();
+	    }
 	    Arrays.fill(dataRecordHolder,null);
 	}
 	
