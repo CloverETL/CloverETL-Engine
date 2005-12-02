@@ -30,6 +30,9 @@ import org.w3c.dom.NamedNodeMap;
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
  *  Used in conjunction with org.jetel.Component.*<br>
+ *  MAX_INT,MIN_INT,MAX_DOUBLE, MIN_DOUBLE constants are defined and are
+ * translated to appropriate int or double values when getInteger(), getDouble()
+ * methods are called.<br>
  *  Converts any child nodes of form <code>&lt;attr name="xyz"&gt;abcd&lt;/attr&gt;</code> into
  *  attribute of the current node with name="xyz" and value="abcd".<br>
  *  Example:<br>
@@ -60,9 +63,14 @@ import org.w3c.dom.NamedNodeMap;
 
 public class ComponentXMLAttributes {
 
-	private NamedNodeMap attributes;
-	private org.w3c.dom.Node nodeXML;
-	private PropertyRefResolver refResolver;
+    private static final String STR_MAX_INT="MAX_INT";
+    private static final String STR_MIN_INT="MIN_INT";
+    private static final String STR_MAX_DOUBLE="MAX_DOUBLE";
+    private static final String STR_MIN_DOUBLE="MIN_DOUBLE";
+    
+	protected NamedNodeMap attributes;
+	protected org.w3c.dom.Node nodeXML;
+	protected PropertyRefResolver refResolver;
 	
 	public static final String XML_ATTRIBUTE_NODE_NAME = "attr";
 	public static final String XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE = "name";
@@ -88,7 +96,7 @@ public class ComponentXMLAttributes {
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
 	   
 		this.nodeXML = nodeXML;
-		refResolver=new PropertyRefResolver( properties!=null ? properties : new Properties());
+		refResolver= ( properties!=null ? new PropertyRefResolver(properties) : new PropertyRefResolver());
 		instantiateInlinedNodeAttributes(nodeXML);
 		this.attributes = nodeXML.getAttributes();
 	}
@@ -175,6 +183,11 @@ public class ComponentXMLAttributes {
 		String value;
 		try {
 			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			if (value.equalsIgnoreCase(STR_MIN_INT)){
+			    return Integer.MIN_VALUE;
+			}else if (value.equalsIgnoreCase(STR_MAX_INT)){
+			    return Integer.MAX_VALUE;
+			}
 		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
@@ -193,6 +206,11 @@ public class ComponentXMLAttributes {
 		String value;
 		try {
 			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			if (value.equalsIgnoreCase(STR_MIN_INT)){
+			    return Integer.MIN_VALUE;
+			}else if (value.equalsIgnoreCase(STR_MAX_INT)){
+			    return Integer.MAX_VALUE;
+			}
 			return Integer.parseInt(value);
 		} catch (Exception ex) {
 			return defaultValue;
@@ -246,6 +264,11 @@ public class ComponentXMLAttributes {
 		String value;
 		try {
 			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
+			    return Double.MIN_VALUE;
+			}else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
+			    return Double.MAX_VALUE;
+			}
 		} catch (NullPointerException ex) {
 			throw new NotFoundException("Attribute " + key + " not found!");
 		}
@@ -264,6 +287,11 @@ public class ComponentXMLAttributes {
 		String value;
 		try {
 			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
+			    return Double.MIN_VALUE;
+			}else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
+			    return Double.MAX_VALUE;
+			}
 			return Double.parseDouble(value);
 		} catch (Exception ex) {
 			return defaultValue;
