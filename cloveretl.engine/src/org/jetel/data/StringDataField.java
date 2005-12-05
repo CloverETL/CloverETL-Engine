@@ -55,6 +55,8 @@ public class StringDataField extends DataField implements CharSequence{
 	private final static int INITIAL_STRING_BUFFER_CAPACITY = 32;
 	private final static int STRING_LENGTH_INDICATOR_SIZE = 2; // sizeof(short)
 
+	private static final int SIZE_OF_CHAR = 2;
+
 	// Associations
 
 	// Operations
@@ -448,12 +450,13 @@ public class StringDataField extends DataField implements CharSequence{
 	    int length=value.length();
 	    int count=0;
 	    
-	    do{
-	        count++;
-            length=length>>7;
-	    }while(length>0x7F);
-	        
-		return value.length()*2+count;
+	    do {
+	    	count++;
+            length = length >> 7;
+	    } while((length >> 7) > 0);
+    	count++;
+
+		return value.length()*SIZE_OF_CHAR+count;
 	}
 	
 	/**
