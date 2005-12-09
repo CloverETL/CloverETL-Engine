@@ -540,7 +540,8 @@ public class DBOutputTable extends Node {
 	    if (recordsInCommit!=Integer.MAX_VALUE){
 	        dbConnection.getConnection().commit();
 	    }
-	    Arrays.fill(dataRecordHolder,null);
+	    if (dataRecordHolder!=null)
+	        Arrays.fill(dataRecordHolder,null);
 	}
 	
 	
