@@ -45,7 +45,7 @@ public class LenientBadDataFormatExceptionHandler
 		 * @param fieldCounter
 		 * @param string
 		 */
-		public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+		public void populateFieldFailure(String errorMessage, DataRecord record, int fieldCounter, String string) {
 			record.getField(fieldCounter).setToDefaultValue();
 		}
 }
