@@ -54,7 +54,7 @@ public class ControlledBadDataFormatExceptionHandler
 		 * @param fieldCounter
 		 * @param string
 		 */
-		public void populateFieldFailure(DataRecord record, int fieldCounter, String string) {
+		public void populateFieldFailure(String errorMessage, DataRecord record, int fieldCounter, String string) {
 			//TODO save fieldCounter,incorrect data string for subsequent logging 
 			setThrowException(true);
 		}
