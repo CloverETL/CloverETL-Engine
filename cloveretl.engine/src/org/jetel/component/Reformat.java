@@ -36,6 +36,7 @@ import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -220,7 +221,7 @@ public class Reformat extends Node {
 					     }
 					}// skip record if transformation returned false
 				}
-				yield();
+				SynchronizeUtils.cloverYield();
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;

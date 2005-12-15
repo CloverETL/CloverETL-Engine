@@ -33,6 +33,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.*;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -426,7 +427,7 @@ public class DBOutputTable extends Node {
 					dbConnection.getConnection().commit();
 				}
 			}
-			yield();
+			SynchronizeUtils.cloverYield();
 		}
  		// end of records stream - final commits;
 		 // unless we have option never to commit, commit at the end of processing
@@ -518,7 +519,7 @@ public class DBOutputTable extends Node {
 	            }
 	            dbConnection.getConnection().commit();
 	        }
-	        yield();
+	        SynchronizeUtils.cloverYield();
 	    }
 	    // final commit (if anything is left in batch
 	    try{

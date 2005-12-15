@@ -26,6 +26,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -127,7 +128,7 @@ public class SimpleGather extends Node {
 			readFromPort = 0;
 			while (runIt && numActive > 0) {
 				inPort = inputPorts[readFromPort];
-				if (!isEOF[readFromPort]&&(inPort.hasData())) {
+				if (!isEOF[readFromPort] && (inPort.hasData() || !inPort.isOpen())) {
 				    emptyLoopCounter=0;
 				    try {
 						inRecord = inPort.readRecord(record);
@@ -147,7 +148,7 @@ public class SimpleGather extends Node {
 						resultCode = Node.RESULT_FATAL_ERROR;
 						return;
 					}
-					yield();
+					SynchronizeUtils.cloverYield();
 				}else{
 				    emptyLoopCounter++;
 				}
@@ -172,7 +173,7 @@ public class SimpleGather extends Node {
 			    ex.printStackTrace();
 			}
 			
-		setEOF(WRITE_TO_PORT);
+		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
 		} else {

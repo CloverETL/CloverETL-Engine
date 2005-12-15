@@ -41,6 +41,7 @@ import org.jetel.graph.*;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -368,7 +369,7 @@ public class HashJoin extends Node {
 					hashMap.put(new HashKey(slaveKey, storeRecord),
 							storeRecord);
 				} 
-				yield();
+				SynchronizeUtils.cloverYield();
 
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -382,15 +383,15 @@ public class HashJoin extends Node {
 			}
 		}
 		//XDEBUG START
-		if (logger.isDebugEnabled()) {
-			for (Iterator i = hashMap.values().iterator(); i.hasNext();) {
-				logger.debug("> " + i.next());
-			}
-			logger.debug("***KEYS***");
-			for (Iterator i = hashMap.keySet().iterator(); i.hasNext();) {
-				logger.debug("> " + i.next());
-			}
-		}
+//		if (logger.isDebugEnabled()) {
+//			for (Iterator i = hashMap.values().iterator(); i.hasNext();) {
+//				logger.debug("> " + i.next());
+//			}
+//			logger.debug("***KEYS***");
+//			for (Iterator i = hashMap.keySet().iterator(); i.hasNext();) {
+//				logger.debug("> " + i.next());
+//			}
+//		}
 		//XDEBUG END
 
 		// now read all records from DRIVER port and try to look up corresponding
@@ -419,7 +420,7 @@ public class HashJoin extends Node {
 						outPort.writeRecord(outRecord[0]);
 					}
 				}
-				yield();
+				SynchronizeUtils.cloverYield();
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;

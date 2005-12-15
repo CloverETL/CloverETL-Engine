@@ -28,6 +28,7 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.jetel.exception.ComponentNotReadyException;
 import org.w3c.dom.Element;
 
@@ -172,7 +173,7 @@ public class Partition extends Node {
 		        resultCode = Node.RESULT_FATAL_ERROR;
 		        return;
 		    }
-		    yield();
+		    SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
 		if (runIt) {
