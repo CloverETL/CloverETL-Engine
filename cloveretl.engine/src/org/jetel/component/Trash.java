@@ -30,6 +30,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -153,7 +154,7 @@ public class Trash extends Node {
 				resultCode = Node.RESULT_FATAL_ERROR;
 				return;
 			}
-			yield();
+			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
 		if (runIt) {

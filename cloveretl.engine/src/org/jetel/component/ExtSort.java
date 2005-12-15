@@ -34,6 +34,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 /**
  *  <h3>Sort Component</h3>
  *
@@ -194,7 +195,7 @@ public class ExtSort extends Node {
                 //closeAllOutputPorts();
                 return;
             }
-            yield();
+            SynchronizeUtils.cloverYield();
         }
         /*
          * PHASE MERGE ------------
@@ -248,7 +249,7 @@ public class ExtSort extends Node {
                         //closeAllOutputPorts();
                         return;
                     }
-                    yield();
+                    SynchronizeUtils.cloverYield();
                 }
                 sorter.free();
             }
@@ -365,7 +366,7 @@ public class ExtSort extends Node {
                     if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
                         sourceRecordsFlags[index] = false;
                     }
-                    yield();
+                    SynchronizeUtils.cloverYield();
                 }
                 targetTape.flush(false);
                 targetTape = targetCarousel.getNextTape();
@@ -414,7 +415,7 @@ public class ExtSort extends Node {
             if (!tapeCarousel.getTape(index).get(sourceRecords[index])) {
                 sourceRecordsFlags[index] = false;
             }
-            yield();
+            SynchronizeUtils.cloverYield();
         }
         // end-of-story
         tapeCarousel.free();

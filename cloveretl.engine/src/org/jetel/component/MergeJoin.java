@@ -38,6 +38,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -513,7 +514,7 @@ public class MergeJoin extends Node {
 				tmpRec = driverRecords[CURRENT];
 				driverRecords[CURRENT] = driverRecords[TEMPORARY];
 				driverRecords[TEMPORARY] = tmpRec;
-				yield();
+				SynchronizeUtils.cloverYield();
 			}
 			// if full outer join defined and there are some slave records left, flush them
 			if (fullOuterJoin) {

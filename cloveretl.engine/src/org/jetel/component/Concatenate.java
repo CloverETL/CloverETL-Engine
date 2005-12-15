@@ -24,6 +24,7 @@ import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -115,7 +116,7 @@ public class Concatenate extends Node {
 					} else {
 						break;
 					}
-					yield();
+					SynchronizeUtils.cloverYield();
 				} catch (IOException ex) {
 					resultMsg = ex.getMessage();
 					resultCode = Node.RESULT_ERROR;

@@ -27,6 +27,7 @@ import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -127,7 +128,7 @@ public class DelimitedDataReaderNIO extends Node {
 			while (((record = parser.getNext(record)) != null) && runIt) {
 				//broadcast the record to all connected Edges
 				writeRecordBroadcast(record);
-				yield();
+				SynchronizeUtils.cloverYield();
 			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();

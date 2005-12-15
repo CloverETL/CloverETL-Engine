@@ -34,6 +34,7 @@ import org.jetel.interpreter.CLVFStart;
 import org.jetel.interpreter.FilterExpParser;
 import org.jetel.interpreter.FilterExpParserExecutor;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -187,7 +188,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
-			yield();
+			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
