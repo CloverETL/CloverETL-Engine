@@ -44,9 +44,8 @@ public class GetVal {
 		DataField field = record.getField(fieldNo);
 		if (field instanceof Numeric) {
 			return ((Numeric) field).getInt();
-		} else {
-			throw new RuntimeException("Not a numeric DataField!");
-		}
+		} 
+		throw new RuntimeException("Not a numeric DataField!");
 	}
 
 
@@ -62,9 +61,8 @@ public class GetVal {
 		DataField field = record.getField(fieldNo);
 		if (field instanceof Numeric) {
 			return ((Numeric) field).getDouble();
-		} else {
-			throw new RuntimeException("Not a numeric DataField!");
 		}
+		throw new RuntimeException("Not a numeric DataField!");
 	}
 
 	/**
@@ -78,9 +76,8 @@ public class GetVal {
 		DataField field = record.getField(fieldNo);
 		if (field instanceof Numeric) {
 			return ((Numeric) field).getLong();
-		} else {
-			throw new RuntimeException("Not a numeric DataField!");
-		}
+		} 
+		throw new RuntimeException("Not a numeric DataField!");
 	}
 
 
@@ -112,9 +109,8 @@ public class GetVal {
 		DataField field = record.getField(fieldNo);
 		if (field instanceof DateDataField) {
 			return (Date) (field.getValue());
-		} else {
-			throw new RuntimeException("Not a DateDataField!");
-		}
+		} 
+		throw new RuntimeException("Not a DateDataField!");
 	}
 
 
@@ -153,10 +149,9 @@ public class GetVal {
 	public final static int getInt(DataRecord record, String fieldName) {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
 		if (field instanceof Numeric) {
-			return ((NumericDataField) field).getInt();
-		} else {			
-			throw new RuntimeException("Not a numeric DataField!");
-		}
+			return ((Numeric) field).getInt();
+		} 	
+		throw new RuntimeException("Not a numeric DataField!");
 	}
 
 
@@ -172,9 +167,8 @@ public class GetVal {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
 		if (field instanceof Numeric) {
 			return ((Numeric) field).getDouble();
-		} else {
-			throw new RuntimeException("Not a number DataField!");
 		}
+		throw new RuntimeException("Not a number DataField!");
 	}
 
 	/**
@@ -188,9 +182,8 @@ public class GetVal {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
 		if (field instanceof Numeric) {
 			return ((Numeric) field).getLong();
-		} else {
-			throw new RuntimeException("Not a number DataField!");
 		}
+		throw new RuntimeException("Not a number DataField!");
 	}
 
 	/**
@@ -219,9 +212,8 @@ public class GetVal {
 		DataField field = record.getField(record.getMetadata().getFieldPosition(fieldName));
 		if (field instanceof DateDataField) {
 			return (Date) (field.getValue());
-		} else {
-			throw new RuntimeException("Not a DateDataField!");
 		}
+		throw new RuntimeException("Not a DateDataField!");
 	}
 
 
