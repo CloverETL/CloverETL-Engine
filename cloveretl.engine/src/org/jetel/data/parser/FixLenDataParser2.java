@@ -291,7 +291,7 @@ public class FixLenDataParser2 implements Parser {
 		message.append(exceptionMessage);
 		message.append(" when parsing record #").append(recordCounter);
 		message.append(" field ").append(metadata.getField(fieldNo).getName());
-		message.append(" value \"").append(value).append("\"");
+		message.append(" value \"").append(value.toString()).append("\"");
 		return message.toString();
 	}
 	
