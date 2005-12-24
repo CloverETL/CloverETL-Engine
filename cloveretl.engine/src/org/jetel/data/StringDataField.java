@@ -178,7 +178,7 @@ public class StringDataField extends DataField implements CharSequence{
 	public void setValue(CharSequence seq) {
 		value.setLength(0);
 		if (seq != null && seq.length() > 0) {
-				value.append(seq);
+				value.append(seq.toString());
 			setNull(false);
 		} else {
 			if (this.metadata.isNullable()) {
