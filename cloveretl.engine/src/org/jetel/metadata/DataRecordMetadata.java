@@ -278,6 +278,13 @@ public class DataRecordMetadata implements Serializable {
 		return new HashMap(fieldTypes);
 	}
 
+	/**
+	 * Gets array of data field metadata objects.
+	 * @return
+	 */
+	public DataFieldMetadata[] getFields() {
+		return (DataFieldMetadata[]) fields.toArray(new DataFieldMetadata[0]);
+	}
 
 	/**  Description of the Method */
 	private void updateFieldTypesMap() {
