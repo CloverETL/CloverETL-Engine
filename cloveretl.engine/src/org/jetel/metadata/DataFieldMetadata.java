@@ -284,6 +284,14 @@ public class DataFieldMetadata implements Serializable {
 		return fieldType;
 	}
 
+	/**
+	 *  Gets the Type attribute of the DataFieldMetadata object
+	 *
+	 * @return    The Type value in full string form.
+	 */
+	public String getTypeAsString() {
+		return type2Str(fieldType);
+	}
 
 	/**
 	 *  Sets the Type attribute of the DataFieldMetadata object
