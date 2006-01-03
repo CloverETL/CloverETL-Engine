@@ -417,7 +417,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String nullable = null;
 			String localeStr = null;
 			char fieldType = ' ';
-			Properties fieldProperties = null;
+			Properties fieldProperties = new Properties();
 
 			for (int j = 0; j < attributes.getLength(); j++) {
 				itemName = attributes.item(j).getNodeName();
@@ -480,6 +480,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				else
 					field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
 			}
+			
 			// set properties
 			field.setFieldProperties(fieldProperties);
 
@@ -500,16 +501,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				field.setLocaleStr(localeStr);
 			}
 
-			NodeList fieldCodeElements = fieldElements.item(i).getChildNodes();
-			if (fieldCodeElements != null) {
-				for (int l = 0; l < fieldCodeElements.getLength(); l++) {
-					if (fieldCodeElements.item(l).getNodeName().equals(
-							CODE_ELEMENT)) {
-						field.setCodeStr(fieldCodeElements.item(l)
-								.getFirstChild().getNodeValue());
-					}
-				}
-			}
 			recordMetadata.addField(field);
 		}
 		// check that at least one valid field definition has been found

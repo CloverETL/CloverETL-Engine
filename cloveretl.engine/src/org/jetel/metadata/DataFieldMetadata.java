@@ -121,6 +121,9 @@ public class DataFieldMetadata implements Serializable {
 	/**  Description of the Field */
 	public final static char UNKNOWN_FIELD = ' ';
 
+	public final static String LENGTH_ATTR = "length";
+	
+	public final static String SCALE_ATTR = "scale";
 
 	/**
 	 *  Constructor for delimited type of field
@@ -433,6 +436,16 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	public void setFieldProperties(Properties properties) {
 		fieldProperties = properties;
+		
+		//set default attribute values
+		if(fieldType == DECIMAL_FIELD) {
+			if(fieldProperties.getProperty(LENGTH_ATTR) == null) {
+				fieldProperties.setProperty(LENGTH_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_LENGTH));
+			}
+			if(fieldProperties.getProperty(SCALE_ATTR) == null) {
+				fieldProperties.setProperty(SCALE_ATTR, Integer.toString(Defaults.DataFieldMetadata.DECIMAL_SCALE));
+			}
+		}
 	}
 
 	public boolean isDelimited() {

@@ -18,20 +18,24 @@
 *
 */
 package org.jetel.database;
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
-
 import java.util.List;
 import java.util.ListIterator;
+
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
+import org.jetel.data.Decimal;
+import org.jetel.data.DecimalDataField;
+import org.jetel.data.HugeDecimal;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.NumericDataField;
 import org.jetel.data.LongDataField;
+import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -391,7 +395,7 @@ public abstract class CopySQLData {
 				} else if (jetelFieldType == DataFieldMetadata.LONG_FIELD) {
 					return new CopyLong(record, fromIndex, toIndex);
 				} else {
-					return new CopyNumeric(record, fromIndex, toIndex);
+					return new CopyDecimal(record, fromIndex, toIndex);
 				}
 			case Types.DATE:
 			case Types.TIME:
@@ -527,6 +531,62 @@ public abstract class CopySQLData {
 		}
 	}
 
+
+	/**
+	 *  Description of the Class
+	 *
+	 * @author      dpavlis
+	 * @since       October 7, 2002
+	 * @revision    $Revision$
+	 * @created     8. èervenec 2003
+	 */
+	static class CopyDecimal extends CopySQLData {
+		/**
+		 *  Constructor for the CopyDecimal object
+		 *
+		 * @param  record      Description of Parameter
+		 * @param  fieldSQL    Description of Parameter
+		 * @param  fieldJetel  Description of Parameter
+		 * @since              October 7, 2002
+		 */
+		CopyDecimal(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+		}
+
+
+		/**
+		 *  Sets the Jetel attribute of the CopyDecimal object
+		 *
+		 * @param  resultSet         The new Jetel value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			BigDecimal i = resultSet.getBigDecimal(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DecimalDataField) field).setValue(null);
+			} else {
+				((DecimalDataField) field).setValue(new HugeDecimal(i, Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.LENGTH_ATTR)), Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.SCALE_ATTR)), false));
+			}
+		}
+
+
+		/**
+		 *  Sets the SQL attribute of the CopyNumeric object
+		 *
+		 * @param  pStatement        The new SQL value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+				pStatement.setBigDecimal(fieldSQL, ((Decimal) ((DecimalDataField) field).getValue()).getBigDecimal());
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DECIMAL);
+			}
+
+		}
+	}
 
 	/**
 	 *  Description of the Class
