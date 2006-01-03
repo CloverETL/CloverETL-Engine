@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 
 /**
  *  <h3>DelimitedDataWriter Component</h3>
@@ -127,7 +128,7 @@ public class DelimitedDataWriterNIO extends Node {
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
-
+			SynchronizeUtils.cloverYield();
 		}
 		formatter.close();
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
