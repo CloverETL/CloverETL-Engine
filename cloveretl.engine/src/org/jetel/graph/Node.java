@@ -297,6 +297,33 @@ public abstract class Node extends Thread {
 		return inPorts.values();
 	}
 
+	/**
+	 *  Gets the metadata on output ports of the Node object
+	 *
+	 *@return    Collection of output ports metadata
+	 */
+	public Collection getOutMetadata() {
+		List ret = new ArrayList(outPorts.size());
+		Collection outPorts = getOutPorts();
+		for(Iterator it = outPorts.iterator(); it.hasNext();) {
+		    ret.add(((OutputPort) (it.next())).getMetadata());
+		}
+	    return ret;
+	}
+
+	/**
+	 *  Gets the metadata on input ports of the Node object
+	 *
+	 *@return    Collection of input ports metadata
+	 */
+	public Collection getInMetadata() {
+		List ret = new ArrayList(inPorts.size());
+		Collection inPorts = getInPorts();
+		for(Iterator it = inPorts.iterator(); it.hasNext();) {
+		    ret.add(((InputPort) (it.next())).getMetadata());
+		}
+	    return ret;
+	}
 
 	/**
 	 *  Gets the number of records passed through specified port type and number

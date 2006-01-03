@@ -32,8 +32,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
@@ -139,6 +141,7 @@ public class Reformat extends Node {
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
 	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
+	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";
@@ -150,6 +153,7 @@ public class Reformat extends Node {
 	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
 	private String libraryPath = null;
+	private String transformSource = null;
 
 	private Properties transformationParameters=null;
 	
@@ -166,6 +170,16 @@ public class Reformat extends Node {
 		this.transformClassName = transformClass;
 	}
 
+	/**
+	 *Constructor for the Reformat object
+	 *
+	 * @param  id              unique identification of component
+	 * @param  transform       source of transformation in internal format
+	 */
+	public Reformat(String id, String transform, boolean distincter) {
+		super(id);
+		this.transformSource = transform;
+	}
 
 	/**
 	 *Constructor for the Reformat object
@@ -296,15 +310,30 @@ public class Reformat extends Node {
 					throw new ComponentNotReadyException(ex.getMessage());
 				}
 			} else {
+			    if(dynamicTransformCode == null) { //transformSource is set
+			        //creating dynamicTransformCode from internal transformation format
+			        CodeParser codeParser = new CodeParser((InputPort[]) getInPorts().toArray(new InputPort[0]), (OutputPort[]) getOutPorts().toArray(new OutputPort[0]));
+					codeParser.setSourceCode(transformSource);
+					codeParser.parse();
+					codeParser.addTransformCodeStub("Transform123");
+					System.out.println(codeParser.getSourceCode());
+			        dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode());
+			    }
 				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = dynamicTransformCode.instantiate();
+				Object transObject = null;
+				try {
+				    transObject = dynamicTransformCode.instantiate();
+				} catch(RuntimeException ex) {
+					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
+					        + "reason: " + ex.getMessage() + ")\n"
+							+ "source: " + dynamicTransformCode.getSourceCode() + "\n");
+				}
 				if (transObject instanceof RecordTransform) {
 					transformation = (RecordTransform) transObject;
 				} else {
 					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
 				}
-
 			}
 
 		}
@@ -364,7 +393,7 @@ public class Reformat extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-		DynamicJavaCode dynaTransCode;
+		DynamicJavaCode dynaTransCode = null;
 		Reformat reformat;
 
 		try {
@@ -380,12 +409,21 @@ public class Reformat extends Node {
 					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
 				}else{
 					// do we have child node wich Java source code ?
-					dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				    try {
+				        dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				    } catch(Exception ex) {
+				        //do nothing
+				    }
 				}
-				if (dynaTransCode == null) {
-					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+				if (dynaTransCode != null) {
+					reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
+				} else { //last chance to find reformat code is in transform attribute
+					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
+						reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
+					} else {
+						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+					}
 				}
-				reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
 			}
 			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
 			

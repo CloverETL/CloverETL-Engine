@@ -19,17 +19,17 @@
 */
 package org.jetel.util;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataRecord;
-import org.jetel.database.SQLUtil;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 /**
@@ -77,13 +77,12 @@ public class CodeParser {
 	private String[] classImports;
 
 	private final static int SOURCE_CODE_BUFFER_INITIAL_SIZE = 512;
-	private final static String GET_OPCODE_STR = "${";
-	private final static String SET_OPCODE_STR = "@{";
+	private final static String GET_OPCODE_STR = "${in.";
+	private final static String SET_OPCODE_STR = "${out.";
+	private final static String GET_OPCODE_REGEX = "\\$\\{in.";
+	private final static String SET_OPCODE_REGEX = "\\$\\{out.";
 	private final static String GET_REFERENCE_OPCODE_STR = "%{";
 	private final static String OPCODE_END_STR = "}";
-
-	private final static String INPUT_RECORDS_OPTIONAL_PREFIX = "IN";
-	private final static String OUTPUT_RECORDS_OPTIONAL_PREFIX = "OUT";
 
 	private final static String IN_RECORDS_ARRAY_NAME_STR = "inputRecords";
 	private final static String OUT_RECORDS_ARRAY_NAME_STR = "outputRecords";
@@ -99,16 +98,25 @@ public class CodeParser {
 	 * @param  inputRecords   Description of the Parameter
 	 * @param  outputRecords  Description of the Parameter
 	 */
-	public CodeParser(DataRecordMetadata[] inputRecordsMeta, DataRecordMetadata[] outputRecordsMeta) {
-		this.inputRecordsMeta = inputRecordsMeta;
-		this.outputRecordsMeta = outputRecordsMeta;
+	public CodeParser(InputPort[] inputPorts, OutputPort[] outputPorts) {
+	    
+	    //initialization metadata arrays based on given ports
+		this.inputRecordsMeta = new DataRecordMetadata[inputPorts.length];
+		this.outputRecordsMeta = new DataRecordMetadata[outputPorts.length];
+		for(int i = 0; i < inputPorts.length; i++) {
+		    inputRecordsMeta[i] = inputPorts[i].getMetadata();
+		}
+		for(int i = 0; i < outputPorts.length; i++) {
+		    outputRecordsMeta[i] = outputPorts[i].getMetadata();
+		}
+		
 		inputRecordsNames = new HashMap(inputRecordsMeta.length);
 		outputRecordsNames = new HashMap(outputRecordsMeta.length);
 		inputFieldsNames = new HashMap[inputRecordsMeta.length];
 		outputFieldsNames = new HashMap[outputRecordsMeta.length];
 		// initialize map for input records & fields
 		for (int i = 0; i < inputRecordsMeta.length; i++) {
-			inputRecordsNames.put(inputRecordsMeta[i].getName().toUpperCase(), new Integer(i));
+			inputRecordsNames.put(String.valueOf(i), new Integer(i));
 			inputFieldsNames[i] = new HashMap(inputRecordsMeta[i].getNumFields());
 			for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {
 				inputFieldsNames[i].put(inputRecordsMeta[i].getField(j).getName().toUpperCase(),
@@ -121,7 +129,7 @@ public class CodeParser {
 		}
 		// initialize map for output records & fields
 		for (int i = 0; i < outputRecordsMeta.length; i++) {
-			outputRecordsNames.put(outputRecordsMeta[i].getName().toUpperCase(), new Integer(i));
+			outputRecordsNames.put(String.valueOf(i), new Integer(i));
 			outputFieldsNames[i] = new HashMap(outputRecordsMeta[i].getNumFields());
 			for (int j = 0; j < outputRecordsMeta[i].getNumFields(); j++) {
 				outputFieldsNames[i].put(outputRecordsMeta[i].getField(j).getName().toUpperCase(),
@@ -236,11 +244,7 @@ public class CodeParser {
 			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
 		}
 
-		if (fieldRef[0].startsWith(INPUT_RECORDS_OPTIONAL_PREFIX)) {
-			recordNum = new Integer(fieldRef[0].substring(INPUT_RECORDS_OPTIONAL_PREFIX.length()));
-		} else {
-			recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
-		}
+		recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
 		try {
 			fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
 		} catch (ArrayIndexOutOfBoundsException ex) {
@@ -305,11 +309,7 @@ public class CodeParser {
 			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
 		}
 
-		if (fieldRef[0].startsWith(OUTPUT_RECORDS_OPTIONAL_PREFIX)) {
-			recordNum = new Integer(fieldRef[0].substring(OUTPUT_RECORDS_OPTIONAL_PREFIX.length()));
-		} else {
-			recordNum = (Integer) outputRecordsNames.get(fieldRef[0]);
-		}
+		recordNum = (Integer) outputRecordsNames.get(fieldRef[0]);
 		if (recordNum == null) {
 			throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
 		}
@@ -369,9 +369,9 @@ public class CodeParser {
 	 */
 	private String[] parseFieldReference(char refType, String fieldRef) {
 		if (refType == GET_OPCODE) {
-			fieldRef = fieldRef.replaceFirst("\\$\\{", "");
+			fieldRef = fieldRef.replaceFirst(GET_OPCODE_REGEX, "");
 		} else {
-			fieldRef = fieldRef.replaceFirst("\\@\\{", "");
+			fieldRef = fieldRef.replaceFirst(SET_OPCODE_REGEX, "");
 		}
 		fieldRef = fieldRef.replaceFirst("\\}", "");
 		fieldRef = fieldRef.toUpperCase();
@@ -433,6 +433,7 @@ public class CodeParser {
 		transCode.append("import org.jetel.data.*; \n");
 		transCode.append("import org.jetel.graph.*; \n");
 		transCode.append("import org.jetel.metadata.*; \n");
+		transCode.append("import org.jetel.component.*; \n");
 		
 		// add any user specified imports
 		if (classImports!=null){
@@ -444,13 +445,16 @@ public class CodeParser {
 		transCode.append("\n");
 		transCode.append("public class ").append(className).append(" extends DataRecordTransform { \n");
 		transCode.append("\tpublic ").append(className).append("() {super(\"").append(className).append("\"); }; \n");
-		transCode.append("// user's code STARTs from here !\n");
+		transCode.append("\tpublic boolean transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + "){\n");
+		transCode.append("\t// user's code STARTs from here !\n");
 
 		sourceCode.insert(0, transCode);
 
-		sourceCode.append("// user's code ENDs here !\n");
-		sourceCode.append("}");
-		sourceCode.append("\n//end of transform class \n");
+		sourceCode.append("\n\t// user's code ENDs here !\n");
+		sourceCode.append("\treturn true;\n");
+		sourceCode.append("\t}\n");
+		sourceCode.append("}\n");
+		sourceCode.append("//end of transform class \n");
 
 	}
 
@@ -468,8 +472,8 @@ public class CodeParser {
 	 * @param  argv  The command line arguments
 	 */
 //	public static void main(String[] argv) {
-//		String string = "@{TestInput.Name}=${TestInput.Name};\n    String name_city= ${TestInput.Name}+${TestInput.City};\n"+
-//		"int age=(int)${IN0.Age}+10; ";
+//		String string = "@{TestInput.Name} = ${TestInput.Name};\n    String name_city = ${TestInput.Name} + ${TestInput.City};\n"+
+//		"int age = (int) ${IN0.Age} + 10; ";
 //		DataRecord[] inRecords=new DataRecord[1];
 //		DataRecord[] outRecords=new DataRecord[1];
 //
@@ -481,9 +485,10 @@ public class CodeParser {
 //		outRecords[0] = new DataRecord(metadata);
 //		inRecords[0].init();
 //		outRecords[0].init();
-//		CodeParser parser=new CodeParser(inRecords,outRecords);
+//		CodeParser parser=new CodeParser(new DataRecordMetadata[] {metadata}, new DataRecordMetadata[] {metadata});
 //		parser.setSourceCode(string);
 //		parser.parse();
+//		parser.addTransformCodeStub("Transform");
 //		System.out.println(parser.getSourceCode());
 //
 //		try{
