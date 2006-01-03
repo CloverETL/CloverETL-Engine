@@ -121,10 +121,7 @@ public class DBExecute extends Node {
 	 * @since                    September 27, 2002
 	 */
 	public DBExecute(String id, String dbConnectionName, String dbSQL) {
-		super(id);
-		this.dbConnectionName = dbConnectionName;
-		this.dbSQL = new String[]{dbSQL};
-		// default
+	    this(id,dbConnectionName,new String[]{dbSQL});
 
 	}
 
@@ -143,7 +140,16 @@ public class DBExecute extends Node {
 		// default
 
 	}
+	
+	public DBExecute(String id, DBConnection dbConnection, String dbSQL){
+	    this(id,dbConnection,new String[]{dbSQL});
+	}
 
+	public DBExecute(String id, DBConnection dbConnection, String dbSQL[]){
+	    super(id);
+	    this.dbSQL=dbSQL;
+	    this.dbConnection=dbConnection;
+	}
 
 	/**
 	 *  Description of the Method
@@ -156,7 +162,9 @@ public class DBExecute extends Node {
 		//	throw new ComponentNotReadyException("This is independent component. No INPUT or OUTPUT connectins may exist !");
 		//}
 		// get dbConnection from graph
-		dbConnection = this.graph.getDBConnection(dbConnectionName);
+	    if (dbConnection == null){
+	        dbConnection = this.graph.getDBConnection(dbConnectionName);
+	    }
 		if (dbConnection == null) {
 			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
 		}
