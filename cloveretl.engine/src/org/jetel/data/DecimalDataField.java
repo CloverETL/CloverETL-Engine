@@ -18,96 +18,81 @@
 *
 */
 package org.jetel.data;
-import java.util.Locale;
-import java.text.NumberFormat;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.ParsePosition;
-import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CharsetDecoder;
-import java.nio.charset.CharacterCodingException;
+import java.text.NumberFormat;
+import java.util.Locale;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 
 /**
- *  A class that represents decimal number field (double precision)
+ *  A class that represents decimal number field (precision, scale pair)
  *
- *@author     D.Pavlis
- *@created    January 26, 2003
- *@since      March 27, 2002
+ *@author     Martin Zatopek
+ *@since      November 30, 2005
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class NumericDataField extends DataField implements Numeric, Comparable{
+public class DecimalDataField extends DataField implements Numeric, Comparable {
 
-	private double value;
+	private Decimal value;
+	private int precision;
+	private int scale;
 	private NumberFormat numberFormat;
-	private ParsePosition parsePosition;
-
-	private final static int FIELD_SIZE_BYTES = 8;// standard size of field
-	// Attributes
-	/**
-	 *  An attribute that represents ...
-	 *
-	 *@since
-	 */
 
 	/**
-	 *  Constructor for the NumericDataField object
+	 *  Constructor for the DecimalDataField object
 	 *
-	 *@param  _metadata  Metadata describing field
-	 *@since             March 28, 2002
 	 */
-	public NumericDataField(DataFieldMetadata _metadata) {
+	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale) {
 		super(_metadata);
 		Locale locale;
 		// handle locale
-		if (_metadata.getLocaleStr()!=null){
-			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-			if (localeLC.length>1){
-				locale=new Locale(localeLC[0],localeLC[1]);
+		if (_metadata.getLocaleStr() != null){
+			String[] localeLC = _metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+			if (localeLC.length > 1){
+				locale = new Locale(localeLC[0], localeLC[1]);
 			}else{
-				locale=new Locale(localeLC[0]);
+				locale = new Locale(localeLC[0]);
 			}
 			// probably wrong locale string defined
-			if (locale==null){
-				throw new RuntimeException("Can't create Locale based on "+_metadata.getLocaleStr());
+			if (locale == null){
+				throw new RuntimeException("Can't create Locale based on " + _metadata.getLocaleStr());
 			}
 		}else{
-			locale=null;
+			locale = null;
 		}
 		// handle formatString
 		String formatString;
 		formatString = _metadata.getFormatStr();
-		 if ((formatString != null) && (formatString.length() != 0)) {
-		 	if (locale!=null){
+		if ((formatString != null) && (formatString.length() != 0)) {
+			if (locale != null){
 				numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
 		 	}else{
 		 		numberFormat = new DecimalFormat(formatString);
 			}
-		 }else if (locale!=null) {
-				numberFormat = DecimalFormat.getInstance(locale);
+		} else if (locale != null) {
+			numberFormat = DecimalFormat.getInstance(locale);
 		}
-		if (numberFormat!=null){
-		    parsePosition = new ParsePosition(0);
-		}
-		
+		//instantiate Decimal interface
+		this.precision = precision;
+		this.scale = scale;
+		value = DecimalFactory.getDecimal(precision, scale);
 	}
 
 
 	/**
-	 *  Constructor for the NumericDataField object
+	 *  Constructor for the DecimalDataField object
 	 *
-	 *@param  _metadata  Metadata describing field
-	 *@param  value      Value to assign to field
-	 *@since             March 28, 2002
 	 */
-	public NumericDataField(DataFieldMetadata _metadata, double value) {
-		this(_metadata);
-		this.value = value;
+	public DecimalDataField(DataFieldMetadata _metadata, Decimal value, int precision, int scale) {
+		this(_metadata, precision, scale);
+		this.value.setValue(value);
 	}
 
 
@@ -118,19 +103,20 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @param value
 	 * @param numberFormat
 	 */
-	private NumericDataField(DataFieldMetadata _metadata,double value,NumberFormat numberFormat){
+	private DecimalDataField(DataFieldMetadata _metadata, Decimal value, NumberFormat numberFormat, int precision, int scale) {
 	    super(_metadata);
-	    this.value=value;
-	    this.numberFormat=numberFormat;
-	    this.parsePosition= (numberFormat !=null) ? new ParsePosition(0) : null; 
+	    this.value = value.createCopy();
+	    this.numberFormat = numberFormat;
+	    this.precision = precision;
+	    this.scale = scale;
 	 }
 	
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copy()
 	 */
-	public DataField duplicate(){
-	    NumericDataField newField=new NumericDataField(metadata,value,numberFormat);
+	public DataField duplicate() {
+	    DecimalDataField newField = new DecimalDataField(metadata, value, numberFormat, precision, scale);
 	    newField.setNull(isNull());
 	    return newField;
 	}
@@ -140,11 +126,13 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
 	public void copyFrom(DataField fromField){
-	    if (fromField instanceof NumericDataField){
-	        if (!fromField.isNull){
-	            this.value=((NumericDataField)fromField).value;
+	    if (fromField instanceof DecimalDataField){
+	        if (!fromField.isNull) {
+	            this.value.setValue(((DecimalDataField) fromField).value);
 	        }
 	        setNull(fromField.isNull);
+	    } else {
+	    	throw new RuntimeException("Can't copy value from '" + fromField.getClass().getName() + "' to Decimal field (" + getMetadata().getName() + ").");
 	    }
 	}
 	
@@ -158,22 +146,20 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setValue(Object _value) {
 		if (_value == null) {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
 			}
 			return;
 		}
-		if (_value instanceof Double) {
-			value = ((Double) _value).doubleValue();
-			if (value!=Double.NaN) setNull(false); else setNull(true);
+		if (_value instanceof Decimal) {
+			value.setValue((Decimal) _value);
+			if (!value.isNaN()) setNull(false); else setNull(true);
 		} else {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}
 
@@ -185,17 +171,16 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@param  value  The new Double value
 	 *@since         August 19, 2002
 	 */
-	public void setValue(double value) {
-		if (value == Double.NaN) {
+	public void setValue(double _value) {
+		if (_value == Double.NaN) {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
 			}
 			return;
 		}
-		this.value = value;
+		value.setValue(_value);
 		setNull(false);
 	}
 
@@ -207,17 +192,16 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@param  value  The new Int value
 	 *@since         August 19, 2002
 	 */
-	public void setValue(int value) {
-		if (value == Integer.MIN_VALUE) {
+	public void setValue(int _value) {
+		if (_value == Integer.MIN_VALUE) {
 			if(this.metadata.isNullable()) {
-				this.value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
 			}
 			return;
 		}
-		this.value = value;
+		value.setValue(_value);
 		setNull(false);
 	}
 
@@ -228,17 +212,16 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@param  value  The new Int value
 	 *@since         August 19, 2002
 	 */
-	public void setValue(long value) {
-		if (value == Long.MIN_VALUE) {
+	public void setValue(long _value) {
+		if (_value == Long.MIN_VALUE) {
 			if(this.metadata.isNullable()) {
-				this.value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
 			}
 			return;
 		}
-		this.value = (double)value;
+		value.setValue(value);
 		setNull(false);
 	}
 
@@ -251,7 +234,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (isNull) {
-			value = Double.NaN;
+			value.setNaN(true);
 		}
 	}
 
@@ -261,24 +244,13 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	// Operations
 
 	/**
-	 *  Gets the Metadata attribute of the NumericDataField object
-	 *
-	 *@return    The Metadata value
-	 *@since     October 31, 2002
-	 */
-	public DataFieldMetadata getMetadata() {
-		return super.getMetadata();
-	}
-
-
-	/**
 	 *  Gets the Field Type
 	 *
 	 *@return    The Type value
 	 *@since     March 28, 2002
 	 */
 	public char getType() {
-		return DataFieldMetadata.NUMERIC_FIELD;
+		return DataFieldMetadata.DECIMAL_FIELD;
 	}
 
 
@@ -289,10 +261,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since     March 28, 2002
 	 */
 	public Object getValue() {
-		if( isNull ) {
+		if(isNull) {
 			return null;
 		}
-		return new Double(value);
+		return value;
 	}
 
 
@@ -303,10 +275,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since     August 19, 2002
 	 */
 	public double getDouble() {
-		if (isNull){
+		if (isNull) {
 		    return Double.NaN;
 		}
-	    return value;
+	    return value.getDouble();
 	}
 
 
@@ -317,10 +289,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since     August 19, 2002
 	 */
 	public int getInt() {
-		if( isNull ) {
+		if(isNull) {
 			return Integer.MIN_VALUE;
 		}
-		return (int) value;
+		return value.getInt();
 	}
 
 	/**
@@ -330,22 +302,11 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since     August 19, 2002
 	 */
 	public long getLong() {
-		if( isNull ) {
+		if(isNull) {
 			return Long.MIN_VALUE;
 		}
-		return (long) value;
+		return value.getLong();
 	}
-
-	/**
-	 *  Gets the Null value indicator
-	 *
-	 *@return    The Null value
-	 *@since     October 29, 2002
-	 */
-	public boolean isNull() {
-		return super.isNull();
-	}
-
 
 	/**
 	 *  Formats internal decimal value into string representation
@@ -354,14 +315,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since     March 28, 2002
 	 */
 	public String toString() {
-		if( isNull ) {
+		if(isNull) {
 			return "";
 		}
-		if (numberFormat != null) {
-			return numberFormat.format(value);
-		} else {
-			return Double.toString(value);
-		}
+		return value.toString(numberFormat);
 	}
 
 
@@ -374,21 +331,18 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void fromString(String valueStr) {
 		if(valueStr == null || valueStr.equals("")) {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",valueStr);
+				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", valueStr);
 			return;
 		} else {
 			try {
-				if (numberFormat != null) {
-					parsePosition.setIndex(0);
-					value = numberFormat.parse(valueStr, parsePosition).doubleValue();
-				} else {
-					value = Double.parseDouble(valueStr);
+				value.fromString(valueStr, numberFormat);
+				if(value.isNaN()) {
+					setNull(true);
 				}
 			} catch (Exception ex) {
-				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr,valueStr);
+				throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
 			}
 		}
 	}
@@ -403,7 +357,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer).toString());
+		value.fromCharBuffer(decoder.decode(dataBuffer), numberFormat);
 	}
 
 
@@ -416,7 +370,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		dataBuffer.put(encoder.encode(value.toCharBuffer(numberFormat)));
 	}
 
 
@@ -428,7 +382,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		buffer.putDouble(value);
+		value.serialize(buffer);
 	}
 
 
@@ -439,8 +393,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		value = buffer.getDouble();
-		setNull(Double.isNaN(value));
+		value.deserialize(buffer);
 	}
 
 
@@ -452,13 +405,13 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@since       April 23, 2002
 	 */
 	public boolean equals(Object obj) {
-	    if (isNull || obj==null) return false;
+	    if (isNull || obj == null) return false;
 	    
-	    if (obj instanceof NumericDataField){
-	        return Double.doubleToLongBits(value)==Double.doubleToLongBits(((NumericDataField)obj).value);
-	    }else if (obj instanceof Double){
-	        return Double.doubleToLongBits(value)==Double.doubleToLongBits(((Double)obj).doubleValue());
-	    }else{
+	    if (obj instanceof DecimalDataField){
+	        return value.equals(((DecimalDataField) obj).value);
+	    } else if (obj instanceof Decimal){
+	        return value.equals((Decimal) obj);
+	    } else {
 	        return false;
 	    }
 	}
@@ -471,41 +424,22 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 *@return      -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
 	public int compareTo(Object obj) {
-		if (obj==null) return 1;
+		if (obj == null) return 1;
 		if (isNull) return -1;
 	    
-		if (obj instanceof NumericDataField){
-			return compareTo(((NumericDataField) obj).value);
-		}else if (obj instanceof Double){
-			return compareTo(((Double)obj).doubleValue());
-		}else if (obj instanceof Integer){
-			return compareTo(((Integer)obj).doubleValue());
-		}else if (obj instanceof Long){
-			return compareTo(((Long)obj).doubleValue());
-		}else throw new ClassCastException("Can't compare NumericDataField and "+obj.getClass().getName());
+		return value.compareTo(obj);
 	}
 
-
-	/**
-	 *  Compares field's internal value to passed-in value
-	 *
-	 *@param  compVal  double value against which to compare
-	 *@return          -1,0,1 if internal value(less-then,equals, greather then) passed-in value
-	 */
-	public int compareTo(double compVal) {
-		return Double.compare(value,compVal);
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.Number#compareTo(org.jetel.data.Number)
 	 */
-	public int compareTo(Numeric value){
+	public int compareTo(Numeric _value){
 	    if (isNull) {
 	        return -1;
-	    }else if (value.isNull()) {
+	    } else if (_value.isNull()) {
 	        return 1;
-	    }else{
-	        return compareTo(value.getDouble());
+	    } else {
+	        return value.compareTo(_value);
 	    }
 	}
 	
@@ -514,7 +448,8 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
-		long v=Double.doubleToLongBits(value);
+		//TODO hash code
+		long v = Double.doubleToLongBits(value.getDouble());
 		return (int)(v^(v>>32));
 	}
 
@@ -526,7 +461,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see	      org.jetel.data.DataField
 	 */
 	public int getSizeSerialized() {
-		return FIELD_SIZE_BYTES;
+		return value.getSizeSerialized();
 	}
 
 
@@ -534,7 +469,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#add(org.jetel.data.Number)
 	 */
 	public void add(Numeric a) {
-		value += a.getDouble();
+		value.add(a);
 	}
 
 
@@ -542,7 +477,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Number)
 	 */
 	public void sub(Numeric a) {
-		value -= a.getDouble();
+		value.sub(a);
 	}
 
 
@@ -550,7 +485,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Number)
 	 */
 	public void mul(Numeric a) {
-		value *= a.getDouble();
+		value.mul(a);
 	}
 
 
@@ -558,7 +493,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#div(org.jetel.data.Number)
 	 */
 	public void div(Numeric a) {
-		value /= a.getDouble();
+		value.div(a);
 	}
 
 
@@ -566,7 +501,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
-		value = Math.abs(value);
+		value.abs();
 	}
 
 
@@ -574,7 +509,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Number)
 	 */
 	public void mod(Numeric a) {
-		value %= a.getDouble();
+		value.mod(a);
 	}
 
 
@@ -582,36 +517,32 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#neg()
 	 */
 	public void neg() {
-		value *= -1;
+		value.neg();
 	}
 
 
 	/**
 	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
 	 */
-	public void setValue(Decimal _value) {
-		if(!_value.isNaN()) {
-			value = _value.getDouble();
-		}
-		setNull(_value.isNaN());
+	public void setValue(Decimal value) {
+		this.value.setValue(value);
+		if (!this.value.isNaN()) setNull(false); else setNull(true);
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
 	public Decimal getDecimal() {
-		return DecimalFactory.getDecimal(value);
+		//TODO
+		return value.createCopy();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
 	public Decimal getDecimal(int precision, int scale) {
-		return DecimalFactory.getDecimal(value, precision, scale);
+		//TODO
+		return value.createCopy();
 	}
 
 }
-/*
- *  end class NumericDataField
- */
-

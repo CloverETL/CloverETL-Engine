@@ -522,6 +522,30 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		value *= -1;
 	}
 
+	/**
+	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
+	 */
+	public void setValue(Decimal _value) {
+		if(!_value.isNaN()) {
+			value = _value.getInt();
+		}
+		setNull(_value.isNaN());
+	}
+
+	/**
+	 * @see org.jetel.data.Numeric#getDecimal()
+	 */
+	public Decimal getDecimal() {
+		return DecimalFactory.getDecimal(value);
+	}
+
+	/**
+	 * @see org.jetel.data.Numeric#getDecimal()
+	 */
+	public Decimal getDecimal(int precision, int scale) {
+		return DecimalFactory.getDecimal(value, precision, scale);
+	}
+
 }
 /*
  *  end class IntegerDataField
