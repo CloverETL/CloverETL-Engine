@@ -416,6 +416,7 @@ public class SQLUtil {
 			    return DataFieldMetadata.LONG_FIELD;
 			//-------------------
 			case Types.DECIMAL:
+				return DataFieldMetadata.DECIMAL_FIELD;
 			case Types.DOUBLE:
 			case Types.FLOAT:
 			case Types.NUMERIC:
