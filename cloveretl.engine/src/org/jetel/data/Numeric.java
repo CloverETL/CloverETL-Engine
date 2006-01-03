@@ -38,7 +38,7 @@ public interface Numeric {
     
     public void setValue(double value);
     
-    // public void setValue(Decimal value);
+    public void setValue(Decimal value);
     
     public int getInt();
     
@@ -51,7 +51,9 @@ public interface Numeric {
      */
     public boolean isNull();
     
-    // public Decimal getDecimal();
+    public Decimal getDecimal();
+
+    public Decimal getDecimal(int precision, int scale);
     
     /**
      * Compares Number internal value to passed-in value

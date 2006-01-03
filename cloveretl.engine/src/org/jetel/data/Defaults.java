@@ -112,6 +112,30 @@ public final class Defaults {
 		public static int MAX_RECORD_SIZE;// = 8192;
 	}
 
+	/**
+	 *  Defaults regarding DataFieldMetadata
+	 *
+	 *@author     dpavlis
+	 *@created    January 23, 2003
+	 */
+	public final static class DataFieldMetadata {
+		public static void init() {
+			DECIMAL_LENGTH = getIntProperties("DataFieldMetadata.DECIMAL_LENGTH", 10);
+			DECIMAL_SCALE = getIntProperties("DataFieldMetadata.DECIMAL_SCALE", 2);
+		}
+		
+		/**
+		 *  Determines default precision of decimal data field metatada.
+		 *  Example: <Field type="decimal" name="usrid" <b>length="10"</b> scale="2" delimiter=";"  nullable="true" />
+		 */
+		public static int DECIMAL_LENGTH;// = 10;
+
+		/**
+		 *  Determines default scale od decimal data field metadata.<br>
+		 *  Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
+		 */
+		public static int DECIMAL_SCALE;// = 2;
+	}
 
 	/**
 	 *  Defaults for all DataParsers

@@ -47,6 +47,8 @@ public class DataFieldFactory {
 				return new DateDataField(fieldMetadata);
 			case DataFieldMetadata.NUMERIC_FIELD:
 				return new NumericDataField(fieldMetadata);
+			case DataFieldMetadata.DECIMAL_FIELD:
+				return new DecimalDataField(fieldMetadata, Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("length")), Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("scale")));
 			case DataFieldMetadata.INTEGER_FIELD:
 				return new IntegerDataField(fieldMetadata);
 			case DataFieldMetadata.BYTE_FIELD:
