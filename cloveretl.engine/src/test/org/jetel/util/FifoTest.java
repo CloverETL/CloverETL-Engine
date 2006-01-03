@@ -21,7 +21,7 @@ package test.org.jetel.util;
 
 import junit.framework.TestCase;
 
-import org.jetel.util.Fifo;
+import org.jetel.util.Queue;
 
 /**
  *  A test case for the FIFO class.
@@ -39,7 +39,7 @@ public final class FifoTest extends TestCase {
      *  Check isEmpty() and removeAll().
      */
     public void testNormalEmpty() {
-    	Fifo fifo = new Fifo(10);
+    	Queue fifo = new Queue(10);
     	assertEquals(true, fifo.isEmpty());
 
     	fifo.add(new Integer(0));
@@ -53,7 +53,7 @@ public final class FifoTest extends TestCase {
 	 *  Put in elements and take them out
 	 */
 	public void testNormalCase1() {
-		Fifo fifo = new Fifo(4);
+		Queue fifo = new Queue(4);
 		Integer result = null;
 
 		fifo.add(new Integer(1));
@@ -79,7 +79,7 @@ public final class FifoTest extends TestCase {
 	 *  Put in elements and take them out
 	 */
 	public void testNormalCase2() {
-		Fifo fifo = new Fifo(2);
+		Queue fifo = new Queue(2);
 		Integer result = null;
 
 		fifo.add(new Integer(1));
@@ -115,7 +115,7 @@ public final class FifoTest extends TestCase {
 	 *  queue, this is transparant to the user of the queue.
 	 */
 	public void testNormalCase3() {
-		Fifo fifo = new Fifo(4);
+		Queue fifo = new Queue(4);
 		Integer result = null;
 
 		fifo.add(new Integer(1));
@@ -180,7 +180,7 @@ public final class FifoTest extends TestCase {
 	}
 
 	public void testNormalCase4() {
-		Fifo fifo = new Fifo(50000);
+		Queue fifo = new Queue(50000);
 		Integer result = null;
 
 		// add 40000
@@ -228,7 +228,7 @@ public final class FifoTest extends TestCase {
 	 *  Create a small queue
 	 */
 	public void testSmallFifo1() {
-		Fifo fifo = new Fifo(0);
+		Queue fifo = new Queue(0);
 		Integer result = null;
 
 		try  {
@@ -245,7 +245,7 @@ public final class FifoTest extends TestCase {
 	 *  Create a small queue
 	 */
 	public void testSmallFifo2() {
-		Fifo fifo = new Fifo(1);
+		Queue fifo = new Queue(1);
 		Integer result = null;
 
 		fifo.add(new Integer(1));
