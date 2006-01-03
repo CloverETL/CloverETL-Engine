@@ -132,10 +132,10 @@ public class SQLDataParser implements Parser {
 	 */
 
 	public DataRecord getNext() throws JetelException {
-		DataRecord outRecord=new DataRecord(metadata);
-		outRecord.init();
+		DataRecord localOutRecord=new DataRecord(metadata);
+		localOutRecord.init();
 
-		return getNext(outRecord);
+		return getNext(localOutRecord);
 	}
 
 
@@ -217,6 +217,13 @@ public class SQLDataParser implements Parser {
 			throw new ComponentNotReadyException("Need DBConnection object !");
 		}
 		dbConnection= (DBConnection) inputDataSource;
+		
+		try{
+		    // try to set autocommit to false
+		    dbConnection.getConnection().setAutoCommit(false);
+		}catch (Exception e) {
+			logger.warn(e);
+		}
 		try {
 			// connection is created up front
 			//dbConnection.connect();
