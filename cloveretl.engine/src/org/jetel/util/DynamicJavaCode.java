@@ -139,7 +139,7 @@ public class DynamicJavaCode {
 		try {
 			myObject = tClass.newInstance();
 		} catch (Exception ex) {
-			logger.error("Error when crating object of class " + className + " : " + ex.getMessage());
+			logger.error("Error when creating object of class " + className + " : " + ex.getMessage());
 			myObject = null;
 		}
 
