@@ -394,6 +394,8 @@ public abstract class CopySQLData {
 					return new CopyInteger(record, fromIndex, toIndex);
 				} else if (jetelFieldType == DataFieldMetadata.LONG_FIELD) {
 					return new CopyLong(record, fromIndex, toIndex);
+				} else if(jetelFieldType == DataFieldMetadata.NUMERIC_FIELD) {
+				    return new CopyNumeric(record, fromIndex, toIndex);
 				} else {
 					return new CopyDecimal(record, fromIndex, toIndex);
 				}
