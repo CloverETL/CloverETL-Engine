@@ -121,11 +121,10 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @since          September 16, 2002
 	 */
 	public void setNull(boolean isNull) {
-		if (metadata.isNullable()) {
-			this.isNull = isNull;
-		} else {
+		if (isNull && !metadata.isNullable()) {
 			throw new BadDataFormatException(metadata.getName() + " is not nullable and is being set to null!");
 		}
+		this.isNull = isNull;
 	}
 
 
