@@ -36,6 +36,7 @@ import org.jetel.data.Defaults;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
@@ -100,6 +101,7 @@ import org.w3c.dom.Text;
  *   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
  *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
  * 	  <tr><td><b>fullOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
  *    </table>
@@ -138,6 +140,7 @@ public class MergeJoin extends Node {
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
 	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
+	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE_JOIN";
@@ -152,6 +155,7 @@ public class MergeJoin extends Node {
 
 	private String transformClassName;
 	private String libraryPath = null;
+	private String transformSource = null;
 
 	private RecordTransform transformation = null;
 	private DynamicJavaCode dynamicTransformation = null;
@@ -190,6 +194,20 @@ public class MergeJoin extends Node {
 		// no outer join
 	}
 
+	/**
+	 *  Constructor for the SortedJoin object
+	 *
+	 * @param  id              id of component
+	 * @param  joinKeys        field names composing key
+	 * @param  transformClass  class (name) to be used for transforming data
+	 */
+	public MergeJoin(String id, String[] joinKeys, String transform, boolean distincter) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.transformSource = transform;
+		this.leftOuterJoin = false;
+		// no outer join
+	}
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -597,15 +615,29 @@ public class MergeJoin extends Node {
 					throw new ComponentNotReadyException(ex.getMessage());
 				}
 			} else {
+			    if(dynamicTransformation == null) { //transformSource is set
+			        //creating dynamicTransformation from internal transformation format
+			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
+					codeParser.setSourceCode(transformSource);
+					codeParser.parse();
+					codeParser.addTransformCodeStub("Transform");
+					System.out.println(codeParser.getSourceCode());
+			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
+			    }
 				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = dynamicTransformation.instantiate();
+				Object transObject = null;
+				try {
+				    transObject = dynamicTransformation.instantiate();
+				} catch(RuntimeException ex) {
+					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
+					        + "reason: " + ex.getMessage() + ")\n");
+				}
 				if (transObject instanceof RecordTransform) {
 					transformation = (RecordTransform) transObject;
 				} else {
 					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
 				}
-
 			}
 		}
 		// init transformation
@@ -688,7 +720,7 @@ public class MergeJoin extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		MergeJoin join;
-		DynamicJavaCode dynaTransCode;
+		DynamicJavaCode dynaTransCode = null;
 
 		try {
 			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)){
@@ -703,14 +735,24 @@ public class MergeJoin extends Node {
 					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
 				}else{
 					// do we have child node wich Java source code ?
-					dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
-				}
-				if (dynaTransCode == null) {
-					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-				}
-				return new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					try {
+					    dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+					} catch(Exception ex) {
+				        //do nothing
+				    }				}
+				if (dynaTransCode != null) {
+					join = new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 							xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 							dynaTransCode);
+				} else { //last chance to find reformat code is in transform attribute
+					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
+						join = new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+								xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true); 
+					} else {
+						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+					}
+				}
 			}
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
