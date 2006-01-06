@@ -24,12 +24,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.InputPort;
-import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 /**
@@ -75,13 +74,23 @@ public class CodeParser {
 	private DataRecordMetadata[] inputRecordsMeta;
 	private DataRecordMetadata[] outputRecordsMeta;
 	private String[] classImports;
+	private Map sequences = new HashMap();
+	private Map parameters = new HashMap();
 
 	private final static int SOURCE_CODE_BUFFER_INITIAL_SIZE = 512;
 	private final static String GET_OPCODE_STR = "${in.";
-	private final static String SET_OPCODE_STR = "${out.";
 	private final static String GET_OPCODE_REGEX = "\\$\\{in.";
+	
+	private final static String SET_OPCODE_STR = "${out.";
 	private final static String SET_OPCODE_REGEX = "\\$\\{out.";
-	private final static String GET_REFERENCE_OPCODE_STR = "%{";
+	
+	private final static String PARAM_OPCODE_STR = "${par.";
+	private final static String PARAM_OPCODE_REGEX = "\\$\\{par.";
+	private final static String PARAM_CODE_PREFIX = "param_";
+	
+	private final static String SEQ_OPCODE_STR = "${seq.";
+	private final static String SEQ_OPCODE_REGEX = "\\$\\{seq.";
+
 	private final static String OPCODE_END_STR = "}";
 
 	private final static String IN_RECORDS_ARRAY_NAME_STR = "inputRecords";
@@ -89,7 +98,6 @@ public class CodeParser {
 
 	private final static char GET_OPCODE = 'G';
 	private final static char SET_OPCODE = 'S';
-	private final static char GET_REFERENCE_OPCODE = 'R';
 	private final static char UNKNOWN_OPCODE = (char) -1;
 
 	static Log logger = LogFactory.getLog(CodeParser.class);
@@ -98,18 +106,12 @@ public class CodeParser {
 	 * @param  inputRecords   Description of the Parameter
 	 * @param  outputRecords  Description of the Parameter
 	 */
-	public CodeParser(InputPort[] inputPorts, OutputPort[] outputPorts) {
+	public CodeParser(DataRecordMetadata[] inputMetadatas, DataRecordMetadata[] outputMetadatas) {
 	    
 	    //initialization metadata arrays based on given ports
-		this.inputRecordsMeta = new DataRecordMetadata[inputPorts.length];
-		this.outputRecordsMeta = new DataRecordMetadata[outputPorts.length];
-		for(int i = 0; i < inputPorts.length; i++) {
-		    inputRecordsMeta[i] = inputPorts[i].getMetadata();
-		}
-		for(int i = 0; i < outputPorts.length; i++) {
-		    outputRecordsMeta[i] = outputPorts[i].getMetadata();
-		}
-		
+		this.inputRecordsMeta = inputMetadatas;
+		this.outputRecordsMeta = outputMetadatas;
+
 		inputRecordsNames = new HashMap(inputRecordsMeta.length);
 		outputRecordsNames = new HashMap(outputRecordsMeta.length);
 		inputFieldsNames = new HashMap[inputRecordsMeta.length];
@@ -119,7 +121,7 @@ public class CodeParser {
 			inputRecordsNames.put(String.valueOf(i), new Integer(i));
 			inputFieldsNames[i] = new HashMap(inputRecordsMeta[i].getNumFields());
 			for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {
-				inputFieldsNames[i].put(inputRecordsMeta[i].getField(j).getName().toUpperCase(),
+				inputFieldsNames[i].put(inputRecordsMeta[i].getField(j).getName(),
 						new Integer(j)
 				/*
 				 *  inputRecords.getField(j)
@@ -132,7 +134,7 @@ public class CodeParser {
 			outputRecordsNames.put(String.valueOf(i), new Integer(i));
 			outputFieldsNames[i] = new HashMap(outputRecordsMeta[i].getNumFields());
 			for (int j = 0; j < outputRecordsMeta[i].getNumFields(); j++) {
-				outputFieldsNames[i].put(outputRecordsMeta[i].getField(j).getName().toUpperCase(),
+				outputFieldsNames[i].put(outputRecordsMeta[i].getField(j).getName(),
 						new Integer(j)
 				/*
 				 *  outputRecords.getField(j)
@@ -179,8 +181,12 @@ public class CodeParser {
 	public void setSourceCode(CharSequence charSeq) {
 		sourceCode.setLength(0);
 		sourceCode.ensureCapacity(charSeq.length());
+		sourceCode.append("\t\t");
 		for (int i = 0; i < charSeq.length(); i++) {
 			sourceCode.append(charSeq.charAt(i));
+			if(charSeq.charAt(i) == '\n') {
+				sourceCode.append("\t\t");
+			}
 		}
 	}
 
@@ -189,6 +195,7 @@ public class CodeParser {
 	public void parse() {
 		// find all CloverETL tokens first
 		String[] fieldRefStr;
+		String refStr;
 		Token token;
 		int index;
 		// firstly all get opcodes
@@ -201,7 +208,27 @@ public class CodeParser {
 						translateToFieldGetMethod(fieldRefStr));
 			}
 		} while (token != null);
-		// secondly all set opcodes
+		// next all parameters
+		do {
+			token = findEnclosedString(0, PARAM_OPCODE_STR, OPCODE_END_STR);
+			if (token != null) {
+				refStr = parseParamReference(token.getString());
+				sourceCode.replace(token.getStartOffset(),
+						token.getEndOffset() + 1,
+						translateToParam(refStr));
+			}
+		} while (token != null);
+		// next all sequences
+		do {
+			token = findEnclosedString(0, SEQ_OPCODE_STR, OPCODE_END_STR);
+			if (token != null) {
+				refStr = parseSeqReference(token.getString());
+				sourceCode.replace(token.getStartOffset(),
+						token.getEndOffset() + 1,
+						translateToSeq(refStr));
+			}
+		} while (token != null);
+		// finally all set opcodes
 		do {
 			token = findEnclosedString(0, SET_OPCODE_STR, OPCODE_END_STR);
 			if (token != null) {
@@ -227,6 +254,31 @@ public class CodeParser {
 		} while (token != null);
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  fieldRef  Description of the Parameter
+	 * @return           Description of the Return Value
+	 */
+	private String translateToParam(String fieldRef) {
+	    if(!parameters.containsKey(fieldRef)) {
+	        parameters.put(fieldRef, fieldRef);
+	    }
+	    return PARAM_CODE_PREFIX + fieldRef;
+	}
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  fieldRef  Description of the Parameter
+	 * @return           Description of the Return Value
+	 */
+	private String translateToSeq(String fieldRef) {
+	    if(!sequences.containsKey(fieldRef)) {
+	        sequences.put(fieldRef, fieldRef);
+	    }
+	    return fieldRef + ".nextValueInt()";
+	}
 
 	/**
 	 *  Description of the Method
@@ -374,29 +426,40 @@ public class CodeParser {
 			fieldRef = fieldRef.replaceFirst(SET_OPCODE_REGEX, "");
 		}
 		fieldRef = fieldRef.replaceFirst("\\}", "");
-		fieldRef = fieldRef.toUpperCase();
+		//fieldRef = fieldRef.toUpperCase();
 
 		return fieldRef.split("\\.", 2);
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  refType   Description of the Parameter
+	 * @param  fieldRef  Description of the Parameter
+	 * @return           Description of the Return Value
+	 */
+	private String parseParamReference(String fieldRef) {
+		fieldRef = fieldRef.replaceFirst(PARAM_OPCODE_REGEX, "");
+		fieldRef = fieldRef.replaceFirst("\\}", "");
+		//fieldRef = fieldRef.toUpperCase();
+
+		return fieldRef;
+	}
 
 	/**
 	 *  Description of the Method
 	 *
+	 * @param  refType   Description of the Parameter
 	 * @param  fieldRef  Description of the Parameter
 	 * @return           Description of the Return Value
 	 */
-	private char analyzeFieldReference(String fieldRef) {
-		if (fieldRef.startsWith(GET_OPCODE_STR)) {
-			return GET_OPCODE;
-		} else if (fieldRef.startsWith(SET_OPCODE_STR)) {
-			return SET_OPCODE;
-		} else {
-			return UNKNOWN_OPCODE;
-		}
+	private String parseSeqReference(String fieldRef) {
+		fieldRef = fieldRef.replaceFirst(SEQ_OPCODE_REGEX, "");
+		fieldRef = fieldRef.replaceFirst("\\}", "");
+		//fieldRef = fieldRef.toUpperCase();
 
+		return fieldRef;
 	}
-
 
 	/**
 	 *  Description of the Method
@@ -428,12 +491,14 @@ public class CodeParser {
 	public void addTransformCodeStub(String className) {
 		StringBuffer transCode = new StringBuffer(40);
 
+		//imports
 		transCode.append("// automatically generated on ");
 		transCode.append(java.util.Calendar.getInstance().getTime()).append("\n");
 		transCode.append("import org.jetel.data.*; \n");
 		transCode.append("import org.jetel.graph.*; \n");
 		transCode.append("import org.jetel.metadata.*; \n");
 		transCode.append("import org.jetel.component.*; \n");
+		transCode.append("import org.jetel.data.sequence.*; \n");
 		
 		// add any user specified imports
 		if (classImports!=null){
@@ -443,16 +508,57 @@ public class CodeParser {
 		}
 		
 		transCode.append("\n");
-		transCode.append("public class ").append(className).append(" extends DataRecordTransform { \n");
-		transCode.append("\tpublic ").append(className).append("() {super(\"").append(className).append("\"); }; \n");
+		//class start definition
+		transCode.append("public class ").append(className).append(" extends DataRecordTransform { \n\n");
+		//definition sequences
+		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
+		    final String seq = (String) it.next();
+		    transCode.append("\tSequence " + seq + ";\n"); 
+		}
+		//definition parameters
+		for(Iterator it = parameters.values().iterator(); it.hasNext();) {
+		    final String param = (String) it.next();
+		    transCode.append("\tString " + PARAM_CODE_PREFIX + param + " = TransformationGraph.getReference().getGraphProperties().getProperty(\"" + param + "\");\n"); 
+		}
+		//init method
+		transCode.append("\n\t/**\n"
+		        		+ "\t * Initializes reformat class/function. This method is called only once at then\n"
+		   	 			+ "\t * beginning of transformation process. Any object allocation/initialization should\n"
+		        		+ "\t * happen here.)\n"
+        				+ "\t */\n");
+		transCode.append("\tpublic boolean init() {\n");
+		//initialization sequeneces
+		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
+		    final String seq = (String) it.next();
+		    transCode.append("\t\t" + seq + " = TransformationGraph.getReference().getSequence(\"" + seq + "\");\n"); 
+		}
+		transCode.append("\t\treturn true;\n");
+		transCode.append("\t}\n\n");
+		//transformation
+		transCode.append("\t/**\n"
+        		+ "\t * Performs reformat of source records to target records.\n"
+   	 			+ "\t * This method is called as one step in transforming flow of\n"
+        		+ "\t * records.\n"
+				+ "\t */\n");
 		transCode.append("\tpublic boolean transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + "){\n");
-		transCode.append("\t// user's code STARTs from here !\n");
+		transCode.append("\t\t// user's code STARTs from here !\n\n");
 
+		//add double tab before all lines of code
 		sourceCode.insert(0, transCode);
 
-		sourceCode.append("\n\t// user's code ENDs here !\n");
-		sourceCode.append("\treturn true;\n");
+		sourceCode.append("\n\t\t// user's code ENDs here !\n");
+		sourceCode.append("\t\treturn true;\n");
+		sourceCode.append("\t}\n\n");
+		
+		sourceCode.append("\t/**\n"
+        		+ "\t * Method called at the end of transformation process. No more\n"
+   	 			+ "\t * records will be processed. The implementing class should release\n"
+        		+ "\t * any resource reserved during init() or runtime at this point.\n"
+				+ "\t */\n");
+		sourceCode.append("\tpublic void finished() {\n");
+		sourceCode.append("\t\t\n");
 		sourceCode.append("\t}\n");
+		
 		sourceCode.append("}\n");
 		sourceCode.append("//end of transform class \n");
 

@@ -32,7 +32,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
@@ -312,7 +311,7 @@ public class Reformat extends Node {
 			} else {
 			    if(dynamicTransformCode == null) { //transformSource is set
 			        //creating dynamicTransformCode from internal transformation format
-			        CodeParser codeParser = new CodeParser((InputPort[]) getInPorts().toArray(new InputPort[0]), (OutputPort[]) getOutPorts().toArray(new OutputPort[0]));
+			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
 					codeParser.setSourceCode(transformSource);
 					codeParser.parse();
 					codeParser.addTransformCodeStub("Transform123");
