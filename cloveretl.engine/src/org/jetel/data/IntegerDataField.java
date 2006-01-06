@@ -526,6 +526,10 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
 	 */
 	public void setValue(Decimal _value) {
+		if(_value == null) {
+		    setNull(true);
+		    return;
+		}
 		if(!_value.isNaN()) {
 			value = _value.getInt();
 		}
