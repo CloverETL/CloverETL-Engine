@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -39,30 +41,87 @@ import org.jetel.metadata.DataRecordMetadata;
  * <h3>Syntax used</h3>
  * <table>
  * <tr>
- * <td><tt>${<i>record_name</i><b>.</b><i>field_name</i>}</tt></td>
- * <td><p>References record and field within record for reading values from it.</p>
- * <p>Record names can be names assigned to record through record's metadata or
- * <tt>INx</tt> where x runs from 0 to #of input records -1 (e.g. IN0, IN1)</p>
- * <p>Field names are names of individual fields within respective records or
- * numbers denoting index of field within record can be used</p>
- * <i>Note: names are not case sensitive</i></td>
+ * <td valign="top"><tt>${<b>in.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
+ * <td valign="top"><p>References <emp>intput record</emp> and field within record for reading values from it.</p>
+ * <p>Record ordinal number corresponfs to port number from which the record is/was read.</p>
+ * <p>Field names are names of individual fields within respective records.</p>
+ * <p>The actual Java code generated depends on field's data type. <br>
+ * Data field object is casted to proper subclass (e.g. StringDataField,
+ * NumericDataField,etc.) and then appropriate "getter" method is called
+ * This table shows
+ * what "getter" method is generated for individual Clover field types:</p>
+ * <table border="1">
+ * <tr><td>STRING_FIELD</td><td>toString()</td></tr>
+ * <tr><td>DATE_FIELD<br>DATETIME_FIELD</td><td>getDate()</td></tr>
+ * <tr><td>NUMERIC_FIELD</td><td>getDouble()</td></tr>
+ * <tr><td>INTEGER_FIELD</td><td>getInt()</td></tr>
+ * <tr><td>DECIMAL_FIELD</td><td>getDecimal()</td></tr>
+ * <tr><td>BYTE_FIELD</td><td>getValue()</td></tr>
+ * </table>
+ * <i>Note: field names are not case sensitive</i></td>
  * </tr>
  * <tr>
- * <td><tt>
- * \@{<i>record_name</i><b>.</b><i>field_name</i>}</tt></td>
- * <td><p>References record and field within record for assigning values to it.</p>
- * <p>Record names can be names assigned to record through record's metadata or
- * <tt>OUTx</tt> where x runs from 0 to #of output records -1 (e.g. OUT0, OUT1)</p>
+ * <td valign="top"><tt>${<b>out.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
+ * <td valign="top"><p>References <emp>output record</emp> and field within record for assigning values to it.</p>
+ * <p>The generated Java code takes care of casting the DataField to proper subclass (e.g. StringDataField,
+ * NumericDataField,etc.) and calling <tt>setValue()</tt> on the object. 
  * </td>
- *
+ * </tr>
+ * <tr>
+ * <td valign="top"><tt>${<b>par.</b><i>parameter_name</i>}</tt></td>
+ * <td valign="top"><p>References <emp>graph's paramater</emp> for reading values from it.</p>
+ * <p>Parameter's value in form of <tt>String</tt> object is returned.</p>
+ * </td>
+ * </tr>
+ * <td valign="top"><tt>${<b>seq.</b><i>sequence_name</i>}</tt></td>
+ * <td valign="top"><p>References <emp>graph's sequence</emp> for reading values from it.</p>
+ * <p>Sequence must be registered within graph. The generated Java code takes
+ * care of initializing the object and calling <tt>nextValueInt()</tt>.</p>
+ * </td>
  * </tr>
  * </table>
- * @author                          Wes Maciorowski, David Pavlis
+ * @author                          Wes Maciorowski, David Pavlis, Martin Zatopek
  * @since
  * @revision                        $Revision$
  * <h4>Example:</h4>
- * <pre> \@{OUT.OrderID}=${IN.OrderID};
- * String= ${IN.OrderID}+${IN.CustomerID}; </pre>
+ * <pre>
+ * String variable1 = Integer.parseInt(${in.0.OrderID});
+ * 
+ * ${out.0.OrderID}=variable1;
+ * ${out.0.UniqueID}=${in.0.OrderID}+${in.0.CustomerID}; </pre>
+ * <h4>Example:</h4>
+ * <h5>Mixed Java code:</h5>
+ * <pre>
+ * ${out.0.PSSO_ID} = ${seq.Sequence0};
+ * ${out.0.PROJECT_ID} = ${in.0.PROJECT_ID};
+ * ${out.0.PSFLAG} = ${in.0.PSFLAG};
+ * ${out.0.NAME} = ${in.0.NAME}+${in.1.NAME}.toUpperCase();
+ * ${out.0.PSSOUSERNUM} = ${in.0.PSSOUSERNUM};
+ * ${out.0.SUPPLIER} = ${in.1.SUPPLIER};
+ * ${out.0.PROJECTNUM} = ${in.1.PROJECTNUM};
+ * ${out.0.RESPONSIBLEPERSON} = "Person"+${in.1.RESPONSIBLEPERSON};
+ * ${out.0.HZS_IND_M} = ${in.1.HZS_IND_M};
+ * ${out.0.HZS_IND} = ${in.1.HZS_IND};
+ * ${out.0.STARTDATE} = ${in.1.STARTDATE};
+ * ${out.0.ENDDATE} = ${in.1.ENDDATE};
+ * ${out.0.DESCRIPTION} = ${par.dbURL};	</pre>
+ *<h5>Output Java source code (excerpt):</h5>
+ * <pre>
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_PSSO_ID)).setValue(  Sequence0.nextValueInt());
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_PROJECT_ID)).setValue(  (((IntegerDataField)inputRecords[0].getField(IN0_PROJECT_ID)).getInt()));
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_PSFLAG)).setValue(  (((IntegerDataField)inputRecords[0].getField(IN0_PSFLAG)).getInt()));
+ * (outputRecords[0].getField(OUT0_NAME)).setValue(  (inputRecords[0].getField(IN0_NAME).toString())+(inputRecords[1].getField(IN1_NAME).toString()).toUpperCase());
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_PSSOUSERNUM)).setValue(  (((IntegerDataField)inputRecords[0].getField(IN0_PSSOUSERNUM)).getInt()));
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_SUPPLIER)).setValue(  (((IntegerDataField)inputRecords[1].getField(IN1_SUPPLIER)).getInt()));
+ * ((IntegerDataField)outputRecords[0].getField(OUT0_PROJECTNUM)).setValue(  (((IntegerDataField)inputRecords[1].getField(IN1_PROJECTNUM)).getInt()));
+ * ((NumericDataField)outputRecords[0].getField(OUT0_HZS_IND_M)).setValue(  (((NumericDataField)inputRecords[1].getField(IN1_HZS_IND_M)).getDouble()));
+ * ((NumericDataField)outputRecords[0].getField(OUT0_HZS_IND)).setValue(  (((NumericDataField)inputRecords[1].getField(IN1_HZS_IND)).getDouble()));
+ * ((DateDataField)outputRecords[0].getField(OUT0_STARTDATE)).setValue(  (((DateDataField)inputRecords[1].getField(IN1_STARTDATE)).getDate()));
+ * ((DateDataField)outputRecords[0].getField(OUT0_ENDDATE)).setValue(  (((DateDataField)inputRecords[1].getField(IN1_ENDDATE)).getDate()));
+ * (outputRecords[0].getField(OUT0_DESCRIPTION)).setValue(  param_dbURL);
+ *</pre>
+ * 
+ *  
  */
 public class CodeParser {
 
@@ -76,6 +135,10 @@ public class CodeParser {
 	private String[] classImports;
 	private Map sequences = new HashMap();
 	private Map parameters = new HashMap();
+	private List refInputFieldNames = new LinkedList();
+	private List refOutputFieldNames = new LinkedList();
+	
+	private boolean useSymbolicNames=true;
 
 	private final static int SOURCE_CODE_BUFFER_INITIAL_SIZE = 512;
 	private final static String GET_OPCODE_STR = "${in.";
@@ -191,6 +254,23 @@ public class CodeParser {
 	}
 
 
+    public boolean isUseSymbolicNames() {
+        return useSymbolicNames;
+    }
+    
+    
+    /**
+     * Specifies whether output Java source code
+     * should use symbolic names when accessing fields
+     * instead of their ordinal numbers.<br>
+     * Default is yes(true).
+     * 
+     * @param useSymbolicNames true/false
+     */
+    public void setUseSymbolicNames(boolean useSymbolicNames) {
+        this.useSymbolicNames = useSymbolicNames;
+    }
+    
 	/** */
 	public void parse() {
 		// find all CloverETL tokens first
@@ -290,6 +370,7 @@ public class CodeParser {
 		Integer recordNum;
 		Integer fieldNum;
 		char fieldType;
+		FieldReference fieldRefObj=null;
 		StringBuffer code = new StringBuffer(40);
 
 		if (logger.isDebugEnabled()) {
@@ -305,10 +386,29 @@ public class CodeParser {
 		if (recordNum == null) {
 			throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
 		}
+		
+		//	register that field has been referenced
+		if (useSymbolicNames){
+		    DataRecordMetadata recMeta=inputRecordsMeta[recordNum.intValue()];
+		    int fieldNo=fieldNum.intValue();
+		    fieldRefObj=new FieldReference(recMeta.getName(),
+		            recordNum.intValue(),
+		            fieldRef[1],
+		            FieldReference.IN_DIRECTION,fieldNo);
+		    refInputFieldNames.add(fieldRefObj);
+		}
+
+		
 		// code for accessing record
 		code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum).append("]");
 		// code for accessing field
-		code.append(".getField(").append(fieldNum).append(")");
+		code.append(".getField(");
+		if (useSymbolicNames){
+		    code.append(formatFieldSymbolicName(fieldRefObj));
+		}else{
+		    code.append(fieldNum);
+		}
+		code.append(")");
 
 		// apply proper get method for field type
 		try {
@@ -336,11 +436,22 @@ public class CodeParser {
 				code.append(")");
 				code.append(".getInt()");
 				break;
+			case DataFieldMetadata.DECIMAL_FIELD:
+				code.insert(0,"((DecimalDataField)");
+				code.append(")");
+				code.append(".getDecimal()");
+				break;
+			case DataFieldMetadata.BYTE_FIELD:
+			    code.insert(0,"((ByteDataField)");
+				code.append(")");
+				code.append(".getValue()");
+			break;
 			default:
 				throw new RuntimeException("Can't translate field type !");
 		}
 		// finally, enclose everything into parenthesis
 		code.insert(0, "(").append(")");
+				
 		return code.toString();
 	}
 
@@ -355,6 +466,7 @@ public class CodeParser {
 		Integer recordNum;
 		Integer fieldNum;
 		char fieldType;
+		FieldReference fieldRefObj=null;
 		StringBuffer code = new StringBuffer(40);
 
 		if (logger.isDebugEnabled()) {
@@ -374,11 +486,29 @@ public class CodeParser {
 			throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in output record: " + fieldRef[0]);
 		}
 
+		//	register that field has been referenced
+		if (useSymbolicNames){
+		    DataRecordMetadata recMeta=outputRecordsMeta[recordNum.intValue()];
+		    int fieldNo=fieldNum.intValue();
+		    fieldRefObj=new FieldReference(recMeta.getName(),
+		            recordNum.intValue(),
+		            fieldRef[1],
+		            FieldReference.OUT_DIRECTION,fieldNo);
+		    refOutputFieldNames.add(fieldRefObj);
+		}
+		
 		// code for accessing record
 		code.append(OUT_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum).append("]");
+		
 		// code for accessing field
-		code.append(".getField(").append(fieldNum).append(")");
-
+		code.append(".getField(");
+		if (useSymbolicNames){
+		    code.append(formatFieldSymbolicName(fieldRefObj));
+		}else{
+		    code.append(fieldNum);
+		}
+		code.append(")");
+		
 		// type cast according to Field's type
 		// apply proper get method for field type
 		try {
@@ -400,6 +530,12 @@ public class CodeParser {
 			case DataFieldMetadata.INTEGER_FIELD:
 				code.insert(0,"((IntegerDataField)");
 				break;
+			case DataFieldMetadata.DECIMAL_FIELD:
+				code.insert(0,"((DecimalDataField)");
+				break;
+			case DataFieldMetadata.BYTE_FIELD:
+			    code.insert(0,"((ByteDataField)");
+			break;
 			default:
 				throw new RuntimeException("Can't translate field type !");
 		}
@@ -407,7 +543,7 @@ public class CodeParser {
 		
 		//set method
 		code.append(".setValue(");
-				
+					
 		return code.toString();
 	}
 
@@ -489,7 +625,7 @@ public class CodeParser {
 	 * @param  className  The feature to be added to the TransformCodeStub attribute
 	 */
 	public void addTransformCodeStub(String className) {
-		StringBuffer transCode = new StringBuffer(40);
+		StringBuffer transCode = new StringBuffer(512);
 
 		//imports
 		transCode.append("// automatically generated on ");
@@ -510,15 +646,38 @@ public class CodeParser {
 		transCode.append("\n");
 		//class start definition
 		transCode.append("public class ").append(className).append(" extends DataRecordTransform { \n\n");
+		
+		
+		// shall we use symbolic names when referencing fields ?
+		if (useSymbolicNames){
+		    // list input field references -
+		    transCode.append("\n");
+		    transCode.append("\t// CONSTANTS definition of input fields\n");
+		    for (Iterator it=refInputFieldNames.iterator();it.hasNext();){
+		        final FieldReference ref=(FieldReference)it.next();
+		        transCode.append("\tprivate final static int ").append(formatFieldSymbolicName(ref)).append(" = ").
+		        append(ref.fieldNum).append(";\n");
+		    }
+		    transCode.append("\n");
+		    // list input field references -
+		    transCode.append("\t// CONSTANTS definition of output fields\n");
+		    for (Iterator it=refOutputFieldNames.iterator();it.hasNext();){
+		        final FieldReference ref=(FieldReference)it.next();
+		        transCode.append("\tprivate final static int ").append(formatFieldSymbolicName(ref)).append(" = ").
+		        append(ref.fieldNum).append(";\n");
+		    }
+		    transCode.append("\n");
+		}
 		//definition sequences
 		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
 		    final String seq = (String) it.next();
-		    transCode.append("\tSequence " + seq + ";\n"); 
+		    transCode.append("\tSequence ").append(seq).append(";\n"); 
 		}
 		//definition parameters
 		for(Iterator it = parameters.values().iterator(); it.hasNext();) {
 		    final String param = (String) it.next();
-		    transCode.append("\tString " + PARAM_CODE_PREFIX + param + " = TransformationGraph.getReference().getGraphProperties().getProperty(\"" + param + "\");\n"); 
+		    transCode.append("\tString ").append(PARAM_CODE_PREFIX).append(param).append(" = TransformationGraph.getReference().getGraphProperties().getProperty(\"").
+		    					append(param).append("\");\n"); 
 		}
 		//init method
 		transCode.append("\n\t/**\n"
@@ -530,7 +689,8 @@ public class CodeParser {
 		//initialization sequeneces
 		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
 		    final String seq = (String) it.next();
-		    transCode.append("\t\t" + seq + " = TransformationGraph.getReference().getSequence(\"" + seq + "\");\n"); 
+		    transCode.append("\t\t").append(seq).append(" = TransformationGraph.getReference().getSequence(\"").
+		    					append(seq).append("\");\n"); 
 		}
 		transCode.append("\t\treturn true;\n");
 		transCode.append("\t}\n\n");
@@ -569,6 +729,11 @@ public class CodeParser {
 		this.classImports=classNames;
 	}
 
+	
+	public String formatFieldSymbolicName(FieldReference ref){
+	    return ref.direction+ref.recNum+"_"+ref.fieldName.toUpperCase();
+	}
+	
 	/**
 	 *  The main program for the CodeParser class - for testing/debugging only
 	 *
@@ -613,7 +778,7 @@ public class CodeParser {
 	 * @since
 	 * @revision    $Revision$
 	 */
-	class Token {
+	static class Token {
 		String token;
 		int startOffset;
 		int endOffset;
@@ -683,5 +848,23 @@ public class CodeParser {
 		}
 	}
 
+	static class FieldReference{
+	    static final String OUT_DIRECTION="OUT";
+	    static final String IN_DIRECTION="IN";
+	    
+	    String fieldName;
+	    String direction;
+	    int		fieldNum;
+	    int		recNum;
+	    String recordName;
+	    
+	    FieldReference(String recName,int recNum,String name,String direction,int num){
+	        this.fieldName=name;
+	        this.recordName=recName;
+	        this.fieldNum=num;
+	        this.recNum=recNum;
+	        this.direction=direction;
+	    } 
+	}
 }
 
