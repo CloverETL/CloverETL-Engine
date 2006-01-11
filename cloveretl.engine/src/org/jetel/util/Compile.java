@@ -18,15 +18,14 @@
 *
 */
 package org.jetel.util;
-import com.sun.tools.javac.Main;
-
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.IOException;
+import java.io.PrintStream;
+import java.net.URLClassLoader;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.database.SQLUtil;
-import org.jetel.exception.*;
 
 /**
  * @author      Wes Maciorowski, David Pavlis
@@ -35,23 +34,26 @@ import org.jetel.exception.*;
  */
 public class Compile {
 
-	private final static String compilerClassname = "sun.tools.javac.Main";
-	private final static String compilerExecutable = "javac";
+	private final static String COMPILER_CLASSNAME = "com.sun.tools.javac.Main";
+	private final static String COMPILER_EXECUTABLE = "javac";
+	private final static int DEFAULT_BYTE_ARRAY_SIZE=512;
 
 	private String srcFile;
 	private String destDir;
 	private String fileSeparator;
 	private String errFilename;
+	private String capturedOutput;
 	private boolean forceCompile;
 	private boolean compiled;
 	private boolean useExecutable = false;
+	private boolean captureSTDOUT = false;
 
 	static Log logger = LogFactory.getLog(Compile.class);
 
 	/**
 	 *Constructor for the JavaCompiler object
 	 *
-	 * @param  srcFile  Description of the Parameter
+	 * @param  srcFile  path to source code file which has to be compiled
 	 */
 	public Compile(String srcFile) {
 		this.srcFile = srcFile;
@@ -61,12 +63,22 @@ public class Compile {
 		fileSeparator = System.getProperty("file.separator", "/");
 	}
 
-
+	/**
+	 * 
+	 * @param srcFile Java source file to compile
+	 * @param captureOutput should compiler's output (to STDOUT & STDERR) be captured ?
+	 */
+	public Compile(String srcFile,boolean captureOutput){
+	    this(srcFile);
+	    this.captureSTDOUT=captureOutput;
+	}
+	
+	
 	/**
 	 *Constructor for the JavaCompiler object
 	 *
-	 * @param  srcFile  Description of the Parameter
-	 * @param  destDir  Description of the Parameter
+	 * @param  srcFile  path to source code file which has to be compiled
+	 * @param  destDir  destination directory where output (compiled) class should be stored
 	 */
 	public Compile(String srcFile, String destDir) {
 		this.srcFile = srcFile;
@@ -95,6 +107,10 @@ public class Compile {
 	public int compile() {
 		int status = 0;
 		File source;
+		PrintStream savedOut=null;
+		PrintStream savedErr=null;
+		String[] args;
+		ByteArrayOutputStream outputStream=null;
 		try{
 			source = new File(srcFile);
 		}catch(Exception ex){
@@ -102,12 +118,18 @@ public class Compile {
 		}
 		
 		// just try that we can reach compiler
+		Class cl = null;
+		Class cl1 = null;
+		URLClassLoader classLoader = null;
 		try{
-			Class.forName(compilerClassname);
+			Class.forName(COMPILER_CLASSNAME);
 		}catch(ClassNotFoundException ex){
 			useExecutable=true;
-			logger.warn("..can't locate class "+compilerClassname+" - will use external javac");
-		}
+			logger.warn("..can't locate class "+COMPILER_CLASSNAME+" - will use external javac");
+		} catch (Exception e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 			
 			
 		if (forceCompile || needsRecompile()) {
@@ -118,27 +140,63 @@ public class Compile {
 				+ source.getName()
 				+ ".err";
 			if (useExecutable) {
-				String[] args = new String[]{compilerExecutable, "-d", destDir, srcFile,
+			    Runtime runtime = Runtime.getRuntime();  
+			    if (captureSTDOUT){
+			        args = new String[]{COMPILER_EXECUTABLE, "-d", destDir, srcFile};
+			        savedOut=System.out;
+			        savedErr=System.err;
+			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_SIZE);
+			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
+			        System.setErr(out);
+			        System.setOut(out);
+			        
+			    }else{
+			        args = new String[]{COMPILER_EXECUTABLE, "-d", destDir, srcFile,
 						"-Xstdout", errFilename };
-				Runtime runtime = Runtime.getRuntime();
+			    }
+				
 				try{
 					status = runtime.exec(args).waitFor();
 				}catch(Exception ex){
 					status=-1;
 				}
+				
+				if (captureSTDOUT){
+                    System.setErr(savedErr);
+                    System.setOut(savedOut);
+                }
 
 			} else {
-				String[] args = new String[]{"-d", destDir, srcFile,
+			    if (captureSTDOUT){
+			        args = new String[]{"-d", destDir, srcFile};
+			        savedOut=System.out;
+			        savedErr=System.err;
+			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_SIZE);
+			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
+			        System.setErr(out);
+			        System.setOut(out);
+			        
+			    }else{
+			        args = new String[]{"-d", destDir, srcFile,
 						"-Xstdout", errFilename};
+			    }
 
-				status = com.sun.tools.javac.Main.compile(args);
-
+                        status = com.sun.tools.javac.Main.compile(args);
+                        //status = ((Integer) cl.getMethod("compile", new Class[] {String[].class}).invoke(null, new Object[] {args})).intValue();
+                 if (captureSTDOUT){
+                     System.setErr(savedErr);
+                     System.setOut(savedOut);
+                 }
+                       
 			}
 			if (status==0) { 
 			compiled = true;
 			}
 		}
-		
+		if (captureSTDOUT){
+		    this.capturedOutput=outputStream.toString();
+		}
+	
 		return status;
 	}
 
@@ -193,5 +251,14 @@ public class Compile {
 
 
 	
+    public boolean isCaptureSTDOUT() {
+        return captureSTDOUT;
+    }
+    public void setCaptureSTDOUT(boolean captureSTDOUT) {
+        this.captureSTDOUT = captureSTDOUT;
+    }
+    public String getCapturedOutput() {
+        return capturedOutput;
+    }
 }
 
