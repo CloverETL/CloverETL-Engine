@@ -373,9 +373,9 @@ public class CodeParser {
 		FieldReference fieldRefObj=null;
 		StringBuffer code = new StringBuffer(40);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
-		}
+		//if (logger.isDebugEnabled()) {
+		//	logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+		//}
 
 		recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
 		try {
@@ -469,9 +469,9 @@ public class CodeParser {
 		FieldReference fieldRefObj=null;
 		StringBuffer code = new StringBuffer(40);
 
-		if (logger.isDebugEnabled()) {
-			logger.debug(fieldRef[0]+" : "+fieldRef[1]);
-		}
+		//if (logger.isDebugEnabled()) {
+		//	logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+		//}
 
 		recordNum = (Integer) outputRecordsNames.get(fieldRef[0]);
 		if (recordNum == null) {
