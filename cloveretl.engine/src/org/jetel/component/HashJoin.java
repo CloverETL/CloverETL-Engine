@@ -331,9 +331,11 @@ public class HashJoin extends Node {
 			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
 					codeParser.setSourceCode(transformSource);
 					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform");
-					System.out.println(codeParser.getSourceCode());
+					codeParser.addTransformCodeStub("Transform"+this.id);
+					// DEBUG
+					//System.out.println(codeParser.getSourceCode());
 			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
+			        dynamicTransformation.setCaptureCompilerOutput(true);
 			    }
 				logger.info(" (compiling dynamic source) ");
 				// use DynamicJavaCode to instantiate transformation class
@@ -341,8 +343,10 @@ public class HashJoin extends Node {
 				try {
 				    transObject = dynamicTransformation.instantiate();
 				} catch(RuntimeException ex) {
+				    logger.debug(dynamicTransformation.getCompilerOutput());
+				    logger.debug(dynamicTransformation.getSourceCode());
 					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-					        + "reason: " + ex.getMessage() + ")\n");
+					        + "reason: " + ex.getMessage());
 				}
 				if (transObject instanceof RecordTransform) {
 					transformation = (RecordTransform) transObject;
