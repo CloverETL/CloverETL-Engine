@@ -49,6 +49,9 @@ public class DynamicJavaCode {
 	private String className;
 	private String fileSeparator;
 	private String fileName;
+	private String compilerOutput;
+	
+	private boolean captureCompilerOutput=true; 
 
 	Log logger = LogFactory.getLog(DynamicJavaCode.class);
 	
@@ -94,10 +97,15 @@ public class DynamicJavaCode {
 	
 	private void compile(){
 		Compile compiler=new Compile(fileName);
-		if (compiler.compile()!=0){
+		compiler.setCaptureSTDOUT(captureCompilerOutput);
+		int result=compiler.compile();
+		if (result!=0){
+		    compilerOutput=compiler.getCapturedOutput();
 			StringBuffer errMessage=new StringBuffer("Error(s) when compiling: ");
 			errMessage.append(fileName).append("\n");
-			errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFilename());
+			if (!captureCompilerOutput){
+			    errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFilename());
+			}
 			throw new RuntimeException(errMessage.toString()); 
 		}
 	}
@@ -193,5 +201,30 @@ public class DynamicJavaCode {
 		return new DynamicJavaCode(srcCode);
 	}
 	
+    /**
+     * Returns output of compiler for the last compilation
+     * of Java source code.<br>
+     * Only when captureCompilerOutput is set to true!
+     * 
+     * @return compiler's output (both STDOUT & STDERR)
+     */
+    public String getCompilerOutput() {
+        return compilerOutput;
+    }
+    
+    /**
+     * @return status of capturing compiler's output
+     */
+    public boolean isCaptureCompilerOutput() {
+        return captureCompilerOutput;
+    }
+    /**
+     * Sets on/off capturing compiler's output
+     * 
+     * @param captureCompilerOutput
+     */
+    public void setCaptureCompilerOutput(boolean captureCompilerOutput) {
+        this.captureCompilerOutput = captureCompilerOutput;
+    }
 }
 
