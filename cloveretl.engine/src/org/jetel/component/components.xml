@@ -651,4 +651,18 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </property>
 </properties>
 </ETLComponent>
+<ETLComponent category="readers" className="org.jetel.component.XMLExtract" iconPath="icons/dataReader16.png" name="XML Extract" smallIconPath="icons/dataReader16.png" type="XML_EXTRACT">
+<shortDescription>Parses xml file.</shortDescription>
+<description>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all children 
+will be turned into a Data record.</description>
+<inputPorts/>
+<outputPorts>
+<multiplePort/>
+</outputPorts>
+<properties>
+<property category="clover" displayName="Source URI" modifiable="true" name="sourceUri" nullable="true">
+<singleType name="file"/>
+</property>
+</properties>
+</ETLComponent>
 </ETLComponentList>
