@@ -36,7 +36,7 @@ public class Compile {
 
 	private final static String COMPILER_CLASSNAME = "com.sun.tools.javac.Main";
 	private final static String COMPILER_EXECUTABLE = "javac";
-	private final static int DEFAULT_BYTE_ARRAY_SIZE=512;
+	private final static int DEFAULT_BYTE_ARRAY_BUFFER_SIZE=512;
 
 	private String srcFile;
 	private String destDir;
@@ -118,9 +118,9 @@ public class Compile {
 		}
 		
 		// just try that we can reach compiler
-		Class cl = null;
+		/*Class cl = null;
 		Class cl1 = null;
-		URLClassLoader classLoader = null;
+		URLClassLoader classLoader = null;*/
 		try{
 			Class.forName(COMPILER_CLASSNAME);
 		}catch(ClassNotFoundException ex){
@@ -145,7 +145,7 @@ public class Compile {
 			        args = new String[]{COMPILER_EXECUTABLE, "-d", destDir, srcFile};
 			        savedOut=System.out;
 			        savedErr=System.err;
-			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_SIZE);
+			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
 			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
 			        System.setErr(out);
 			        System.setOut(out);
@@ -171,7 +171,7 @@ public class Compile {
 			        args = new String[]{"-d", destDir, srcFile};
 			        savedOut=System.out;
 			        savedErr=System.err;
-			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_SIZE);
+			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
 			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
 			        System.setErr(out);
 			        System.setOut(out);
@@ -194,7 +194,7 @@ public class Compile {
 			}
 		}
 		if (captureSTDOUT){
-		    this.capturedOutput=outputStream.toString();
+		    this.capturedOutput= (outputStream==null) ? "" : outputStream.toString();
 		}
 	
 		return status;
@@ -240,13 +240,14 @@ public class Compile {
 				+ ".class");
 			if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
 				return false;// is already compiled !!!!
-			} else {
-				return true;
 			}
+			
+			dest.delete(); // delete class file as we need to recompile it
 
 		} catch (Exception ex) {
-			return true;// needs recompile
+			logger.debug(ex);
 		}
+		return true;// needs recompile
 	}
 
 

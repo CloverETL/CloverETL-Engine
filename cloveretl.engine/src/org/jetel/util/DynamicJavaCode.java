@@ -86,10 +86,11 @@ public class DynamicJavaCode {
 		// do we need to save src ? 
 		if (checkSumFile!=checkSumSrc.getValue()){
 			try{
-				FileWriter writer=new FileWriter(fileName);
+				FileWriter writer=new FileWriter(fileName,false);
 				writer.write(srcCode);
 				writer.close();
 			}catch(IOException ex){
+			    logger.error("Error when trying to save source code: "+ex.getMessage());
 				throw new RuntimeException("Error when trying to save source code: "+ex.getMessage());
 			}
 		}
@@ -105,6 +106,8 @@ public class DynamicJavaCode {
 			errMessage.append(fileName).append("\n");
 			if (!captureCompilerOutput){
 			    errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFilename());
+			}else{
+			    errMessage.append(compilerOutput);
 			}
 			throw new RuntimeException(errMessage.toString()); 
 		}
@@ -139,8 +142,10 @@ public class DynamicJavaCode {
 		try {
 			tClass = Class.forName(className, true, classLoader);
 		} catch (ClassNotFoundException ex) {
-			throw new RuntimeException("Can not find class: "+ex);
+		    logger.error("Can not find class: "+ex);
+			throw new RuntimeException("Can not find class: "+className+" : "+ex);
 		} catch (Exception ex) {
+		    logger.error(ex);
 			throw new RuntimeException(ex);
 		}
 		Object myObject;
