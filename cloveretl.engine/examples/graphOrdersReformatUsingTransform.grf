@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Reformat">
+<!--
+This example illustrates usage of Reformat component with transformation
+code (class) inlined (saved with the graph itself). The source code
+is automatically compiled at runtime.
+For successfull compilation, tools.jar library must be part of CLASSPATH.
+-->
+<Global>
+<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/ordersRef.fmt"/>
+</Global>
+<Phase number="0">
+<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
+<Node id="REF" type="REFORMAT" >
+<attr name="transform">
+${out.0.CustomerID} = ${in.0.CustomerID};
+${out.0.OrderKey} = -1;
+${out.0.OrderID} = ${in.0.OrderID};
+${out.0.OrderDate} = ${in.0.OrderDate};
+${out.0.ShippedDate} = "02.02.1999";
+${out.0.ShipVia} = ${in.0.ShipVia};
+${out.0.ShipTo} = ${in.0.ShipName}+${in.0.ShipAddress}+${in.0.ShipCity}+${in.0.ShipCountry};
+</attr>
+</Node>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.dat.out"/>
+<Edge id="INEDGE" fromNode="INPUT:0" toNode="REF:0" metadata="InMetadata"/>
+<Edge id="OUTEDGE" fromNode="REF:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>

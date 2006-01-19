@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Hash Joiner">
+<!-- This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component
+performs joining of master data with slave data based on specified key. First all slave
+data are read and hash-table is constructed from them. Then for every master record, attempt
+is made to find corresponding slave-record.
+HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set
+and big master data set. It doesn't require master and slave data to be sorted
+-->
+<Global>
+<Metadata id="InMetadata1" fileURL="metadata/orders.fmt"/>
+<Metadata id="InMetadata2" fileURL="metadata/employees.fmt"/>
+<Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+</Global>
+<Phase number="0">
+<!-- List of nodes which we will use for transformation -->
+<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" DataPolicy="Strict"/>
+<Node id="INPUT2" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
+<Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false">
+<attr name="transform">
+${out.0.OrderID} = ${in.0.OrderID};
+${out.0.CustomerID} = ${in.0.CustomerID};
+${out.0.EmployeeID} = ${in.0.EmployeeID};
+if (source[1]!=null){
+  ${out.0.EmployeeID2} = ${in.1.EmployeeID};
+  ${out.0.LastName} = ${in.1.LastName}+":"+${in.1.FirstName};
+}
+</attr>
+</Node>
+<Node id="WRITER" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joined_data_hash.out"/>
+<!-- Edges connecting nodes -->
+<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="JOIN:0" metadata="InMetadata1"/>
+<Edge id="INEDGE2" fromNode="INPUT2:0" toNode="JOIN:1" metadata="InMetadata2"/>
+<Edge id="OUTEDGE" fromNode="JOIN:0" toNode="WRITER:0" metadata="OutMetadata"/>
+</Phase>
+</Graph>
