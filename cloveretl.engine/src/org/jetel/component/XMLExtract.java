@@ -43,7 +43,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
- * <td>Concatenate</td></tr>
+ * <td>XMLExtract</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
@@ -63,6 +63,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *  <tr><td><b>type</b></td><td>"XML_EXTRACT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sourceUri</b></td><td>location of source XML data to process</td>
+ *  <tr><td><i>subelement:</i><br><b>&lt;mapping&gt;</b></td><td></td>
  *  </tr>
  *  </table>
  * 
