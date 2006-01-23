@@ -24,10 +24,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -36,14 +40,15 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * The purpose for this class is to handle parsing java code enhanced with
  * cloverETL syntax.  Initially cloverETL syntax will support references
- * to field values. The future enhancement will be to add support for aggregate
+ * to field values and record &amp; field objects.<br>
+ * The future enhancement will be to add support for aggregate
  * functions (similar to SQL agregation). <br>
  * <h3>Syntax used</h3>
  * <table>
  * <tr>
  * <td valign="top"><tt>${<b>in.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
  * <td valign="top"><p>References <emp>intput record</emp> and field within record for reading values from it.</p>
- * <p>Record ordinal number corresponfs to port number from which the record is/was read.</p>
+ * <p>Record ordinal number corresponds to port number from which the record is/was read.</p>
  * <p>Field names are names of individual fields within respective records.</p>
  * <p>The actual Java code generated depends on field's data type. <br>
  * Data field object is casted to proper subclass (e.g. StringDataField,
@@ -61,11 +66,23 @@ import org.jetel.metadata.DataRecordMetadata;
  * <i>Note: field names are not case sensitive</i></td>
  * </tr>
  * <tr>
+ * <td valign="top"><tt>@{<b>in.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
+ * <td valign="top"><p>References <emp>intput record</emp> and field within record - the field object.</p>
+ * <p>Record ordinal number corresponds to port number from which the record is/was read.</p>
+ * <p>Field names are names of individual fields within respective records.</p>
+ * <p>It is translated to object access - e.g. <tt>@&lt;in.1.id&gt;</tt> is translated to
+ * to something like: <tt>(inputRecords[0].getField(1))</tt></p>
+ * </tr>
+ * <tr>
  * <td valign="top"><tt>${<b>out.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
  * <td valign="top"><p>References <emp>output record</emp> and field within record for assigning values to it.</p>
  * <p>The generated Java code takes care of casting the DataField to proper subclass (e.g. StringDataField,
  * NumericDataField,etc.) and calling <tt>setValue()</tt> on the object. 
  * </td>
+ * </tr>
+ * <tr>
+ * <td valign="top"><tt>@{<b>out.</b><i>record_ordinal_num</i><b>.</b><i>field_name</i>}</tt></td>
+ * <td valign="top"><i>similar to</i> <tt>@{<b>in.</b></tt> </td>
  * </tr>
  * <tr>
  * <td valign="top"><tt>${<b>par.</b><i>parameter_name</i>}</tt></td>
@@ -135,8 +152,8 @@ public class CodeParser {
 	private String[] classImports;
 	private Map sequences = new HashMap();
 	private Map parameters = new HashMap();
-	private List refInputFieldNames = new LinkedList();
-	private List refOutputFieldNames = new LinkedList();
+	private Set refInputFieldNames = new LinkedHashSet();
+	private Set refOutputFieldNames = new LinkedHashSet();
 	
 	private boolean useSymbolicNames=true;
 
@@ -144,8 +161,14 @@ public class CodeParser {
 	private final static String GET_OPCODE_STR = "${in.";
 	private final static String GET_OPCODE_REGEX = "\\$\\{in.";
 	
+	private final static String OBJ_IN_ACCESS_OPCODE_STR= "@{in.";
+	private final static String OBJ_IN_ACCESS_OPCODE_REGEX= "@\\{in.";
+	
 	private final static String SET_OPCODE_STR = "${out.";
 	private final static String SET_OPCODE_REGEX = "\\$\\{out.";
+	
+	private final static String OBJ_OUT_ACCESS_OPCODE_STR= "@{out.";
+	private final static String OBJ_OUT_ACCESS_OPCODE_REGEX= "@\\{out.";
 	
 	private final static String PARAM_OPCODE_STR = "${par.";
 	private final static String PARAM_OPCODE_REGEX = "\\$\\{par.";
@@ -153,6 +176,9 @@ public class CodeParser {
 	
 	private final static String SEQ_OPCODE_STR = "${seq.";
 	private final static String SEQ_OPCODE_REGEX = "\\$\\{seq.";
+
+  private final static String OBJ_SEQ_OPCODE_STR = "@{seq.";
+	private final static String OBJ_SEQ_OPCODE_REGEX = "@\\{seq.";
 
 	private final static String OPCODE_END_STR = "}";
 
@@ -172,288 +198,405 @@ public class CodeParser {
 	public CodeParser(DataRecordMetadata[] inputMetadatas, DataRecordMetadata[] outputMetadatas) {
 	    
 	    //initialization metadata arrays based on given ports
-		this.inputRecordsMeta = inputMetadatas;
-		this.outputRecordsMeta = outputMetadatas;
+        this.inputRecordsMeta = inputMetadatas;
+        this.outputRecordsMeta = outputMetadatas;
 
-		inputRecordsNames = new HashMap(inputRecordsMeta.length);
-		outputRecordsNames = new HashMap(outputRecordsMeta.length);
-		inputFieldsNames = new HashMap[inputRecordsMeta.length];
-		outputFieldsNames = new HashMap[outputRecordsMeta.length];
-		// initialize map for input records & fields
-		for (int i = 0; i < inputRecordsMeta.length; i++) {
-			inputRecordsNames.put(String.valueOf(i), new Integer(i));
-			inputFieldsNames[i] = new HashMap(inputRecordsMeta[i].getNumFields());
-			for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {
-				inputFieldsNames[i].put(inputRecordsMeta[i].getField(j).getName(),
-						new Integer(j)
-				/*
-				 *  inputRecords.getField(j)
-				 */
-						);
-			}
-		}
-		// initialize map for output records & fields
-		for (int i = 0; i < outputRecordsMeta.length; i++) {
-			outputRecordsNames.put(String.valueOf(i), new Integer(i));
-			outputFieldsNames[i] = new HashMap(outputRecordsMeta[i].getNumFields());
-			for (int j = 0; j < outputRecordsMeta[i].getNumFields(); j++) {
-				outputFieldsNames[i].put(outputRecordsMeta[i].getField(j).getName(),
-						new Integer(j)
-				/*
-				 *  outputRecords.getField(j)
-				 */
-						);
-			}
-		}
-		sourceCode = new StringBuffer(SOURCE_CODE_BUFFER_INITIAL_SIZE);
+        inputRecordsNames = new HashMap(inputRecordsMeta.length);
+        outputRecordsNames = new HashMap(outputRecordsMeta.length);
+        inputFieldsNames = new HashMap[inputRecordsMeta.length];
+        outputFieldsNames = new HashMap[outputRecordsMeta.length];
+        // initialize map for input records & fields
+        for (int i = 0; i < inputRecordsMeta.length; i++) {
+            inputRecordsNames.put(String.valueOf(i), new Integer(i));
+            inputFieldsNames[i] = new HashMap(inputRecordsMeta[i]
+                    .getNumFields());
+            for (int j = 0; j < inputRecordsMeta[i].getNumFields(); j++) {
+                inputFieldsNames[i].put(inputRecordsMeta[i].getField(j)
+                        .getName(), new Integer(j)
+                /*
+                 * inputRecords.getField(j)
+                 */
+                );
+            }
+        }
+        // initialize map for output records & fields
+        for (int i = 0; i < outputRecordsMeta.length; i++) {
+            outputRecordsNames.put(String.valueOf(i), new Integer(i));
+            outputFieldsNames[i] = new HashMap(outputRecordsMeta[i]
+                    .getNumFields());
+            for (int j = 0; j < outputRecordsMeta[i].getNumFields(); j++) {
+                outputFieldsNames[i].put(outputRecordsMeta[i].getField(j)
+                        .getName(), new Integer(j)
+                /*
+                 * outputRecords.getField(j)
+                 */
+                );
+            }
+        }
+        sourceCode = new StringBuffer(SOURCE_CODE_BUFFER_INITIAL_SIZE);
 
-	}
+    }
 
+    /**
+     * Gets the sourceCode attribute of the CodeParser object
+     * 
+     * @return The sourceCode value
+     */
+    public String getSourceCode() {
+        return sourceCode.toString();
+    }
 
-	/**
-	 *  Gets the sourceCode attribute of the CodeParser object
-	 *
-	 * @return    The sourceCode value
-	 */
-	public String getSourceCode() {
-		return sourceCode.toString();
-	}
+    /**
+     * Description of the Method
+     * 
+     * @param filename
+     *            Description of the Parameter
+     * @exception IOException
+     *                Description of the Exception
+     */
+    public void saveSourceCode(String filename) throws IOException {
+        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
+                filename)));
+        for (int i = 0; i < sourceCode.length(); i++) {
+            out.write(sourceCode.charAt(i));
+        }
+        out.close();
 
+    }
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  filename         Description of the Parameter
-	 * @exception  IOException  Description of the Exception
-	 */
-	public void saveSourceCode(String filename) throws IOException {
-		PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(filename)));
-		for (int i = 0; i < sourceCode.length(); i++) {
-			out.write(sourceCode.charAt(i));
-		}
-		out.close();
-
-	}
-
-
-	/**
-	 *  Sets the sourceCode attribute of the CodeParser object
-	 *
-	 * @param  charSeq  The new sourceCode value
-	 */
-	public void setSourceCode(CharSequence charSeq) {
-		sourceCode.setLength(0);
-		sourceCode.ensureCapacity(charSeq.length());
-		sourceCode.append("\t\t");
-		for (int i = 0; i < charSeq.length(); i++) {
-			sourceCode.append(charSeq.charAt(i));
-			if(charSeq.charAt(i) == '\n') {
-				sourceCode.append("\t\t");
-			}
-		}
-	}
-
+    /**
+     * Sets the sourceCode attribute of the CodeParser object
+     * 
+     * @param charSeq
+     *            The new sourceCode value
+     */
+    public void setSourceCode(CharSequence charSeq) {
+        sourceCode.setLength(0);
+        sourceCode.ensureCapacity(charSeq.length());
+        sourceCode.append("\t\t");
+        for (int i = 0; i < charSeq.length(); i++) {
+            sourceCode.append(charSeq.charAt(i));
+            if (charSeq.charAt(i) == '\n') {
+                sourceCode.append("\t\t");
+            }
+        }
+    }
 
     public boolean isUseSymbolicNames() {
         return useSymbolicNames;
     }
-    
-    
+
     /**
-     * Specifies whether output Java source code
-     * should use symbolic names when accessing fields
-     * instead of their ordinal numbers.<br>
+     * Specifies whether output Java source code should use symbolic names when
+     * accessing fields instead of their ordinal numbers. <br>
      * Default is yes(true).
      * 
-     * @param useSymbolicNames true/false
+     * @param useSymbolicNames
+     *            true/false
      */
     public void setUseSymbolicNames(boolean useSymbolicNames) {
         this.useSymbolicNames = useSymbolicNames;
     }
-    
-	/** */
-	public void parse() {
-		// find all CloverETL tokens first
-		String[] fieldRefStr;
-		String refStr;
-		Token token;
-		int index;
-		// firstly all get opcodes
-		do {
-			token = findEnclosedString(0, GET_OPCODE_STR, OPCODE_END_STR);
-			if (token != null) {
-				fieldRefStr = parseFieldReference(GET_OPCODE, token.getString());
-				sourceCode.replace(token.getStartOffset(),
-						token.getEndOffset() + 1,
-						translateToFieldGetMethod(fieldRefStr));
-			}
-		} while (token != null);
-		// next all parameters
-		do {
-			token = findEnclosedString(0, PARAM_OPCODE_STR, OPCODE_END_STR);
-			if (token != null) {
-				refStr = parseParamReference(token.getString());
-				sourceCode.replace(token.getStartOffset(),
-						token.getEndOffset() + 1,
-						translateToParam(refStr));
-			}
-		} while (token != null);
-		// next all sequences
-		do {
-			token = findEnclosedString(0, SEQ_OPCODE_STR, OPCODE_END_STR);
-			if (token != null) {
-				refStr = parseSeqReference(token.getString());
-				sourceCode.replace(token.getStartOffset(),
-						token.getEndOffset() + 1,
-						translateToSeq(refStr));
-			}
-		} while (token != null);
-		// finally all set opcodes
-		do {
-			token = findEnclosedString(0, SET_OPCODE_STR, OPCODE_END_STR);
-			if (token != null) {
-				fieldRefStr = parseFieldReference(SET_OPCODE, token.getString());
-				sourceCode.replace(token.getStartOffset(),
-						token.getEndOffset() + 1,
-						translateToFieldSetMethod(fieldRefStr));
-				//we have to remove [=]
-				index = sourceCode.indexOf("=", token.getEndOffset());
-				if (index != -1) {
-					sourceCode.deleteCharAt(index);
-				} else {
-					throw new RuntimeException("No [=] found when parsing field reference: " + token);
-				}
-				// we have to find [;] and insert parenthesis [)] in front of it
-				index = sourceCode.indexOf(";", token.getEndOffset());
-				if (index != -1) {
-					sourceCode.insert(index, ")");
-				} else {
-					throw new RuntimeException("No [;] found around when parsing field reference: " + token);
-				}
-			}
-		} while (token != null);
-	}
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  fieldRef  Description of the Parameter
-	 * @return           Description of the Return Value
-	 */
-	private String translateToParam(String fieldRef) {
-	    if(!parameters.containsKey(fieldRef)) {
-	        parameters.put(fieldRef, fieldRef);
-	    }
-	    return PARAM_CODE_PREFIX + fieldRef;
-	}
+    /** */
+    public void parse() {
+        // find all CloverETL tokens first
+        String[] fieldRefStr;
+        String refStr;
+        Token token;
+        int index;
+        // firstly all get opcodes
+        do {
+            token = findEnclosedString(0, GET_OPCODE_STR, OPCODE_END_STR);
+            if (token != null) {
+                fieldRefStr = parseFieldReference(GET_OPCODE, token.getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1,
+                        translateToFieldGetMethod(fieldRefStr));
+            }
+        } while (token != null);
+        // next all parameters
+        do {
+            token = findEnclosedString(0, PARAM_OPCODE_STR, OPCODE_END_STR);
+            if (token != null) {
+                refStr = parseParamReference(token.getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1, translateToParam(refStr));
+            }
+        } while (token != null);
+        // next all sequences' values
+        do {
+            token = findEnclosedString(0, SEQ_OPCODE_STR, OPCODE_END_STR);
+            if (token != null) {
+                refStr = parseSeqReference(token.getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1, translateToSeq(refStr));
+            }
+        } while (token != null);
+        // next all sequence objects
+        do {
+            token = findEnclosedString(0, OBJ_SEQ_OPCODE_STR, OPCODE_END_STR);
+            if (token != null) {
+                refStr = parseSeqReferenceObj(token.getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1, translateToSeqObj(refStr));
+            }
+        } while (token != null);
+        // next all input field & record objects
+        do {
+            token = findEnclosedString(0, OBJ_IN_ACCESS_OPCODE_STR,
+                    OPCODE_END_STR);
+            if (token != null) {
+                fieldRefStr = parseObjectReference(GET_OPCODE, token
+                        .getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1,
+                        translateToFieldRecordObjectReference(fieldRefStr));
+            }
+        } while (token != null);
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  fieldRef  Description of the Parameter
-	 * @return           Description of the Return Value
-	 */
-	private String translateToSeq(String fieldRef) {
-	    if(!sequences.containsKey(fieldRef)) {
-	        sequences.put(fieldRef, fieldRef);
-	    }
-	    return fieldRef + ".nextValueInt()";
-	}
+        // next all output field & record objects
+        do {
+            token = findEnclosedString(0, OBJ_OUT_ACCESS_OPCODE_STR,
+                    OPCODE_END_STR);
+            if (token != null) {
+                fieldRefStr = parseObjectReference(SET_OPCODE, token
+                        .getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1,
+                        translateToFieldRecordObjectReference(fieldRefStr));
+            }
+        } while (token != null);
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  fieldRef  Description of the Parameter
-	 * @return           Description of the Return Value
-	 */
-	private String translateToFieldGetMethod(String[] fieldRef) {
-		Integer recordNum;
-		Integer fieldNum;
-		char fieldType;
-		FieldReference fieldRefObj=null;
-		StringBuffer code = new StringBuffer(40);
+        // finally all set opcodes (assignments)
+        do {
+            token = findEnclosedString(0, SET_OPCODE_STR, OPCODE_END_STR);
+            if (token != null) {
+                fieldRefStr = parseFieldReference(SET_OPCODE, token.getString());
+                sourceCode.replace(token.getStartOffset(),
+                        token.getEndOffset() + 1,
+                        translateToFieldSetMethod(fieldRefStr));
+                //we have to remove [=]
+                index = sourceCode.indexOf("=", token.getEndOffset());
+                if (index != -1) {
+                    sourceCode.deleteCharAt(index);
+                } else {
+                    throw new RuntimeException(
+                            "No [=] found when parsing field reference: "
+                                    + token);
+                }
+                // we have to find [;] and insert parenthesis [)] in front of it
+                index = sourceCode.indexOf(";", token.getEndOffset());
+                if (index != -1) {
+                    sourceCode.insert(index, ")");
+                } else {
+                    throw new RuntimeException(
+                            "No [;] found around when parsing field reference: "
+                                    + token);
+                }
+            }
+        } while (token != null);
+    }
 
-		//if (logger.isDebugEnabled()) {
-		//	logger.debug(fieldRef[0]+" : "+fieldRef[1]);
-		//}
+    /**
+     * Description of the Method
+     * 
+     * @param fieldRef
+     *            Description of the Parameter
+     * @return Description of the Return Value
+     */
+    private String translateToParam(String fieldRef) {
+        if (!parameters.containsKey(fieldRef)) {
+            parameters.put(fieldRef, fieldRef);
+        }
+        return PARAM_CODE_PREFIX + fieldRef;
+    }
 
-		recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
-		try {
-			fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
-		} catch (ArrayIndexOutOfBoundsException ex) {
-			throw new RuntimeException("Nonexisting index to array containing input records :" + ex.getMessage());
-		}
-		if (recordNum == null) {
-			throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
-		}
-		
-		//	register that field has been referenced
-		if (useSymbolicNames){
-		    DataRecordMetadata recMeta=inputRecordsMeta[recordNum.intValue()];
-		    int fieldNo=fieldNum.intValue();
-		    fieldRefObj=new FieldReference(recMeta.getName(),
-		            recordNum.intValue(),
-		            fieldRef[1],
-		            FieldReference.IN_DIRECTION,fieldNo);
-		    refInputFieldNames.add(fieldRefObj);
-		}
+    /**
+     * Description of the Method
+     * 
+     * @param fieldRef
+     *            Description of the Parameter
+     * @return Description of the Return Value
+     */
+    private String translateToSeq(String fieldRef) {
+        if (!sequences.containsKey(fieldRef)) {
+            sequences.put(fieldRef, fieldRef);
+        }
+        return fieldRef + ".nextValueInt()";
+    }
 
-		
-		// code for accessing record
-		code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum).append("]");
-		// code for accessing field
-		code.append(".getField(");
-		if (useSymbolicNames){
-		    code.append(formatFieldSymbolicName(fieldRefObj));
-		}else{
-		    code.append(fieldNum);
-		}
-		code.append(")");
+    private String translateToSeqObj(String fieldRef) {
+        if (!sequences.containsKey(fieldRef)) {
+            sequences.put(fieldRef, fieldRef);
+        }
+        return fieldRef;
+    }
 
-		// apply proper get method for field type
-		try {
-			fieldType = inputRecordsMeta[recordNum.intValue()].getFieldType(fieldNum.intValue());
-		} catch (NullPointerException ex) {
-			throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
-		}
-		switch (fieldType) {
-			case DataFieldMetadata.STRING_FIELD:
-				code.append(".toString()");
-				break;
-			case DataFieldMetadata.DATETIME_FIELD:
-			case DataFieldMetadata.DATE_FIELD:
-				code.insert(0,"((DateDataField)");
-				code.append(")");
-				code.append(".getDate()");
-				break;
-			case DataFieldMetadata.NUMERIC_FIELD:
-				code.insert(0,"((NumericDataField)");
-				code.append(")");
-				code.append(".getDouble()");
-				break;
-			case DataFieldMetadata.INTEGER_FIELD:
-				code.insert(0,"((IntegerDataField)");
-				code.append(")");
-				code.append(".getInt()");
-				break;
-			case DataFieldMetadata.DECIMAL_FIELD:
-				code.insert(0,"((DecimalDataField)");
-				code.append(")");
-				code.append(".getDecimal()");
-				break;
-			case DataFieldMetadata.BYTE_FIELD:
-			    code.insert(0,"((ByteDataField)");
-				code.append(")");
-				code.append(".getValue()");
-			break;
-			default:
-				throw new RuntimeException("Can't translate field type !");
-		}
-		// finally, enclose everything into parenthesis
-		code.insert(0, "(").append(")");
-				
-		return code.toString();
-	}
+    /**
+     * Description of the Method
+     * 
+     * @param fieldRef
+     *            Description of the Parameter
+     * @return Description of the Return Value
+     */
+    private String translateToFieldGetMethod(String[] fieldRef) {
+        Integer recordNum;
+        Integer fieldNum;
+        char fieldType;
+        FieldReference fieldRefObj = null;
+        StringBuffer code = new StringBuffer(40);
+
+        //if (logger.isDebugEnabled()) {
+        //	logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+        //}
+
+        recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
+        try {
+            fieldNum = (Integer) inputFieldsNames[recordNum.intValue()]
+                    .get(fieldRef[1]);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            throw new RuntimeException(
+                    "Nonexisting index to array containing input records :"
+                            + ex.getMessage());
+        }
+        if (recordNum == null) {
+            throw new RuntimeException("Input record does not exist: "
+                    + fieldRef[0]);
+        }
+
+        //	register that field has been referenced
+        if (useSymbolicNames) {
+            DataRecordMetadata recMeta = inputRecordsMeta[recordNum.intValue()];
+            int fieldNo = fieldNum.intValue();
+            fieldRefObj = new FieldReference(recMeta.getName(), recordNum
+                    .intValue(), fieldRef[1], FieldReference.IN_DIRECTION,
+                    fieldNo);
+            refInputFieldNames.add(fieldRefObj);
+        }
+
+        // code for accessing record
+        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum)
+                .append("]");
+        // code for accessing field
+        code.append(".getField(");
+        if (useSymbolicNames) {
+            code.append(formatFieldSymbolicName(fieldRefObj));
+        } else {
+            code.append(fieldNum);
+        }
+        code.append(")");
+
+        // apply proper get method for field type
+        try {
+            fieldType = inputRecordsMeta[recordNum.intValue()]
+                    .getFieldType(fieldNum.intValue());
+        } catch (NullPointerException ex) {
+            throw new RuntimeException("Field does not exist: " + fieldRef[1]
+                    + " in input record: " + fieldRef[0]);
+        }
+        switch (fieldType) {
+        case DataFieldMetadata.STRING_FIELD:
+            code.append(".toString()");
+            break;
+        case DataFieldMetadata.DATETIME_FIELD:
+        case DataFieldMetadata.DATE_FIELD:
+            code.insert(0, "((DateDataField)");
+            code.append(")");
+            code.append(".getDate()");
+            break;
+        case DataFieldMetadata.NUMERIC_FIELD:
+            code.insert(0, "((NumericDataField)");
+            code.append(")");
+            code.append(".getDouble()");
+            break;
+        case DataFieldMetadata.INTEGER_FIELD:
+            code.insert(0, "((IntegerDataField)");
+            code.append(")");
+            code.append(".getInt()");
+            break;
+        case DataFieldMetadata.DECIMAL_FIELD:
+            code.insert(0, "((DecimalDataField)");
+            code.append(")");
+            code.append(".getDecimal()");
+            break;
+        case DataFieldMetadata.BYTE_FIELD:
+            code.insert(0, "((ByteDataField)");
+            code.append(")");
+            code.append(".getValue()");
+            break;
+        default:
+            throw new RuntimeException("Can't translate field type !");
+        }
+        // finally, enclose everything into parenthesis
+        code.insert(0, "(").append(")");
+
+        return code.toString();
+    }
+
+    /**
+     *  Description of the Method
+     *
+     * @param  fieldRef  Description of the Parameter
+     * @return           Description of the Return Value
+     */
+    private String translateToFieldRecordObjectReference(String[] fieldRef) {
+        Integer recordNum = null;
+        Integer fieldNum = null;
+        FieldReference fieldRefObj = null;
+        StringBuffer code = new StringBuffer(40);
+
+        //if (logger.isDebugEnabled()) {
+        //	logger.debug(fieldRef[0]+" : "+fieldRef[1]);
+        //}
+
+        recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
+        if (fieldRef.length > 1) { // we reference field as well
+            try {
+                fieldNum = (Integer) inputFieldsNames[recordNum.intValue()]
+                        .get(fieldRef[1]);
+            } catch (ArrayIndexOutOfBoundsException ex) {
+                throw new RuntimeException(
+                        "Nonexisting index to array containing input records :"
+                                + ex.getMessage());
+            }
+        }
+        if (recordNum == null) {
+            throw new RuntimeException("Input record does not exist: "
+                    + fieldRef[0]);
+        }
+
+        //	register that field has been referenced
+        if (useSymbolicNames && fieldNum != null) {
+            DataRecordMetadata recMeta = inputRecordsMeta[recordNum.intValue()];
+            int fieldNo = fieldNum.intValue();
+            fieldRefObj = new FieldReference(recMeta.getName(), recordNum
+                    .intValue(), fieldRef[1], FieldReference.IN_DIRECTION,
+                    fieldNo);
+            refInputFieldNames.add(fieldRefObj);
+        }
+
+        // code for accessing record
+        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum)
+                .append("]");
+        // code for accessing field
+        if (fieldNum != null) {
+            code.append(".getField(");
+            if (useSymbolicNames) {
+                code.append(formatFieldSymbolicName(fieldRefObj));
+            } else {
+                code.append(fieldNum);
+            }
+            code.append(")");
+        }
+
+        // finally, enclose everything into parenthesis
+        code.insert(0, "(").append(")");
+
+        return code.toString();
+    }
+
+  
 
 
 	/**
@@ -567,6 +710,26 @@ public class CodeParser {
 		return fieldRef.split("\\.", 2);
 	}
 
+  /**
+	 *  Description of the Method
+	 *
+	 * @param  refType   Description of the Parameter
+	 * @param  fieldRef  Description of the Parameter
+	 * @return           Description of the Return Value
+	 */
+	private String[] parseObjectReference(char refType, String fieldRef) {
+		if (refType == GET_OPCODE) {
+			fieldRef = fieldRef.replaceFirst(OBJ_IN_ACCESS_OPCODE_REGEX, "");
+		} else {
+			fieldRef = fieldRef.replaceFirst(OBJ_OUT_ACCESS_OPCODE_REGEX, "");
+		}
+		fieldRef = fieldRef.replaceFirst("\\}", "");
+		//fieldRef = fieldRef.toUpperCase();
+
+		return fieldRef.split("\\.", 2);
+	}
+
+
 	/**
 	 *  Description of the Method
 	 *
@@ -597,6 +760,14 @@ public class CodeParser {
 		return fieldRef;
 	}
 
+  private String parseSeqReferenceObj(String fieldRef) {
+		fieldRef = fieldRef.replaceFirst(OBJ_SEQ_OPCODE_REGEX, "");
+		fieldRef = fieldRef.replaceFirst("\\}", "");
+		//fieldRef = fieldRef.toUpperCase();
+
+		return fieldRef;
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -608,7 +779,6 @@ public class CodeParser {
 	private Token findEnclosedString(int offset, String openingStr, String closingStr) {
 		int startOffset;
 		int endOffset;
-		Token token;
 
 		if ((startOffset = sourceCode.indexOf(openingStr, offset)) != -1) {
 			if ((endOffset = sourceCode.indexOf(closingStr, startOffset)) != -1) {
@@ -864,7 +1034,20 @@ public class CodeParser {
 	        this.fieldNum=num;
 	        this.recNum=recNum;
 	        this.direction=direction;
-	    } 
+	    }
+	    
+	   public boolean equals(Object obj) {
+	        if (obj instanceof FieldReference){
+	            final FieldReference cmpTo=(FieldReference)obj;
+	            return (cmpTo.fieldNum==this.fieldNum && cmpTo.recNum==this.recNum && 
+	                    cmpTo.direction.equalsIgnoreCase(this.direction));
+	        }
+	        return false;
+	    }
+	   
+	   public int hashCode(){
+	       return this.fieldNum+this.recNum+direction.hashCode()+fieldName.hashCode();
+	   }
 	}
 }
 
