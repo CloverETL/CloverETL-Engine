@@ -55,6 +55,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	private int delimiterLength[];
 	private CharBuffer charBuffer;
 	private ByteBuffer dataBuffer;
+	private int numFields;
 	
 	private static char[] NEW_LINE_CHAR;
 
@@ -100,6 +101,8 @@ public class DelimitedDataFormatterNIO implements Formatter {
 			delimiterLength[i] = delimiters[i].length();
 		}
 		charBuffer.clear(); // preventively clear the buffer
+		
+		numFields=metadata.getNumFields(); // buffer numFields
 	}
 
 
@@ -110,7 +113,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	 */
 	public void close() {
 		try{
-			flushBuffer();
+			flushBuffer(true);
 			writer.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
@@ -137,33 +140,80 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	 */
 	public void write(DataRecord record) throws IOException {
 		String fieldVal;
-		for (int i = 0; i < metadata.getNumFields(); i++) {
+		for (int i = 0; i < numFields; i++) {
 			fieldVal=record.getField(i).toString();
 			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining())
 			{
-				flushBuffer();
+				flushBuffer(false);
 			}
+			
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
 		if(oneRecordPerLinePolicy){
 		    if (NEW_LINE_CHAR.length > charBuffer.remaining())
 			{
-				flushBuffer();
+				flushBuffer(false);
 			}
 			charBuffer.put(NEW_LINE_CHAR);
 		}
 	}
 	
+	/**
+	 * Output names of record's fields to output stream
+	 * 
+	 * @throws IOException
+	 */
+	public void writeFieldNames() throws IOException {
+		String fieldVal;
+		for (int i = 0; i < numFields; i++) {
+			fieldVal=metadata.getField(i).getName();
+			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining())
+			{
+				flushBuffer(false);
+			}
+			
+			charBuffer.put(fieldVal);
+			charBuffer.put(delimiters[i]);
+		}
+		if(oneRecordPerLinePolicy){
+		    if (NEW_LINE_CHAR.length > charBuffer.remaining())
+			{
+				flushBuffer(false);
+			}
+			charBuffer.put(NEW_LINE_CHAR);
+		}
+	}
 	
-	private void flushBuffer() throws IOException {
+	private void flushBuffer(boolean endOfData) throws IOException {
 		CoderResult result;
 		charBuffer.flip();
+
 		dataBuffer.clear();
-		result=encoder.encode(charBuffer,dataBuffer,false);
-		dataBuffer.flip();
-		writer.write(dataBuffer);
-		charBuffer.clear();
+
+		do {  // Make sure we encode and output all the characters as bytes.
+
+		    result=encoder.encode(charBuffer,dataBuffer,endOfData);		
+		    dataBuffer.flip();
+		    writer.write(dataBuffer);
+		    dataBuffer.clear();
+
+		} while (result.isOverflow());
+		
+
+		// Compact, don't clear in case the encoding needs the 
+		// remaining characters to continue encoding.
+		charBuffer.compact();
+
+		if (endOfData) {
+		    do {
+			result = encoder.flush(dataBuffer);
+			dataBuffer.flip();
+			writer.write(dataBuffer);
+			dataBuffer.clear();
+		    } while (result.isOverflow());
+
+		}
 	}
 
 	/**

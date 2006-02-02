@@ -56,6 +56,7 @@ import org.jetel.util.SynchronizeUtils;
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td> 
  *  </tr>
  *  </table>  
  *
@@ -70,9 +71,11 @@ public class DelimitedDataWriterNIO extends Node {
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatterNIO formatter;
+	private boolean outputFieldNames=false;
 
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER_NIO";
 	private final static int READ_FROM_PORT = 0;
@@ -110,6 +113,20 @@ public class DelimitedDataWriterNIO extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
+		
+		// shall we print field names to the output ?
+		if (outputFieldNames){
+		    try {
+		        formatter.writeFieldNames();
+		    }
+		    catch (IOException ex) {
+		        resultMsg=ex.getMessage();
+		        resultCode=Node.RESULT_ERROR;
+		        closeAllOutputPorts();
+		        return;
+		    }
+		}
+		
 		while (record != null && runIt) {
 			try {
 				record = inPort.readRecord(record);
@@ -177,6 +194,7 @@ public class DelimitedDataWriterNIO extends Node {
 			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
 					String.valueOf(this.formatter.getOneRecordPerLinePolicy()));
 		}
+		xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 	}
 
 	
@@ -212,6 +230,9 @@ public class DelimitedDataWriterNIO extends Node {
 				// sets the default policy
 				aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
 			}
+			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
+			    aDelimitedDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
+			}
 			
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
@@ -238,5 +259,17 @@ public class DelimitedDataWriterNIO extends Node {
 		return COMPONENT_TYPE;
 	}
 	
+    /**
+     * @return Returns the outputFieldNames.
+     */
+    public boolean isOutputFieldNames() {
+        return outputFieldNames;
+    }
+    /**
+     * @param outputFieldNames The outputFieldNames to set.
+     */
+    public void setOutputFieldNames(boolean outputFieldNames) {
+        this.outputFieldNames = outputFieldNames;
+    }
 }
 
