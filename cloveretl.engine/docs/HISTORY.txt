@@ -2,6 +2,27 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+
+REL 1-8-0
+---------
+The version numbering has changed. Starting with this version (1.8.0), the third part of version
+number will be used to distinguish bug-fixes between regular versions - if such release is needed.
+Second part is used to distinguish regular releases. First part of the number (e.g. 1) is changed when
+substantial architecture change was made.
+
+New features:
++new implementation of DirectEdge (the most common connection between components)
+brings substantial improvement in performance - especially on SMP systems
++new data type - Decimal - implemented. It brings really big numbers to Clover.
++Clover implements its own  "primitive" numeric data types - Integer, Long, Double
+which allow (in contrary to Java's own) modifications of stored values
++Reformat,HashJoin and MergeJoin components now support definition of mappings
+written in form of enhanced Java syntax  
+
+Changes:
++CodeParser has been updated to handle preprocessing of embedded "Clover" code in Java
+source code
+
 REL 1-1-7
 ---------
 New features:
