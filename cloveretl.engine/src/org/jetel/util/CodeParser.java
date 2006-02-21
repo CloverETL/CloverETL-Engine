@@ -24,12 +24,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -386,9 +382,27 @@ public class CodeParser {
                                     + token);
                 }
                 // we have to find [;] and insert parenthesis [)] in front of it
+                // [;] must be outside of quotes - counting quotes before first [;] - right is even number of quotes
                 index = sourceCode.indexOf(";", token.getEndOffset());
+
                 if (index != -1) {
-                    sourceCode.insert(index, ")");
+                    int numQuotes = 0;
+                    int indexQuotes = token.getEndOffset();
+                    boolean parenthesisNotAdded = true;
+                    while(parenthesisNotAdded) {
+                        indexQuotes = sourceCode.indexOf("\"", indexQuotes + 1);
+                    
+                        if(indexQuotes != -1 && indexQuotes < index) numQuotes++; 
+                        else {
+                            if(numQuotes % 2 == 0) {
+                                sourceCode.insert(index, ")");
+                                parenthesisNotAdded = false;
+                            } else {
+                                if(indexQuotes != -1) numQuotes++;
+                                index = sourceCode.indexOf(";", indexQuotes);
+                            }
+                        }
+                    }
                 } else {
                     throw new RuntimeException(
                             "No [;] found around when parsing field reference: "
@@ -514,6 +528,11 @@ public class CodeParser {
             code.insert(0, "((IntegerDataField)");
             code.append(")");
             code.append(".getInt()");
+            break;
+        case DataFieldMetadata.LONG_FIELD:
+            code.insert(0, "((LongDataField)");
+            code.append(")");
+            code.append(".getLong()");
             break;
         case DataFieldMetadata.DECIMAL_FIELD:
             code.insert(0, "((DecimalDataField)");
@@ -672,6 +691,9 @@ public class CodeParser {
 				break;
 			case DataFieldMetadata.INTEGER_FIELD:
 				code.insert(0,"((IntegerDataField)");
+				break;
+			case DataFieldMetadata.LONG_FIELD:
+				code.insert(0,"((LongDataField)");
 				break;
 			case DataFieldMetadata.DECIMAL_FIELD:
 				code.insert(0,"((DecimalDataField)");
