@@ -25,6 +25,7 @@ import java.util.Map;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.IntegerDataField;
 import org.jetel.data.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
@@ -55,6 +56,8 @@ public class AggregateFunction implements Iterator {
 	private final static String S_FNC_AVG = "AVG";
 	private final static String S_FNC_STDEV = "STDEV";
 
+	private final static String[] FNC_INDEX = {"MIN", "MAX", "SUM", "COUNT", "AVG", "STDEV"};
+	
 	private DataRecordMetadata inMetadata;
 	private DataRecordMetadata outMetadata;
 	private AggregateItem[] aggregateItems;
@@ -106,7 +109,7 @@ public class AggregateFunction implements Iterator {
 		for (int i = 0; i < functionParts.length; i++) {
 			functionPart = functionParts[i];
 			
-			//what function?
+			//what a function?
 			if((tempIndex = functionPart.indexOf("(")) == -1) {
 				throw new RuntimeException("Invalid aggragate function definition.");
 			}
@@ -129,6 +132,8 @@ public class AggregateFunction implements Iterator {
 			}
 			
 			if(functionNumber == FNC_COUNT) { // parameter for COUNT aggregate function is not meanfull
+			    if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+			        throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 				aggregateItems[i] = new AggregateItem(functionNumber, -1);
 				continue;
 			}
@@ -150,12 +155,27 @@ public class AggregateFunction implements Iterator {
 			}
 
 			//create aggregate item
-			if(inMetadata.getField(fieldNum.intValue()) instanceof Numeric
-					&& functionNumber != FNC_MIN
-					&& functionNumber != FNC_MAX
-					&& functionNumber != FNC_COUNT) {
+			if(!(inMetadata.getField(fieldNum.intValue()).isNumeric())
+					&& (functionNumber == FNC_SUM
+					        || functionNumber == FNC_AVG
+					        || functionNumber == FNC_STDEV)) {
 				throw new RuntimeException("Incorrect data type for aggregation.");
 			}
+			
+			//test output metadata
+			if(functionNumber == FNC_SUM 
+			        || functionNumber == FNC_AVG
+			        || functionNumber == FNC_STDEV)
+			    if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+			        throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
+			if(functionNumber == FNC_MIN
+			        || functionNumber == FNC_MAX)
+			    if(!(fieldMetadata.isNumeric())) {
+			        if(fieldMetadata.getType() != outMetadata.getField(recordKey.getLenght() + i).getType())
+					    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
+			    } else if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+				    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
+			
 			aggregateItems[i] = new AggregateItem(functionNumber, fieldNum.intValue());
 		}
 		
@@ -194,8 +214,10 @@ public class AggregateFunction implements Iterator {
 				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
 			else if(val instanceof MyDouble)
 				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
-			else 
-				outRecord.getField(keyFields.length + i).setValue(val);
+			else if(val instanceof DataField) 
+				outRecord.getField(keyFields.length + i).copyFrom((DataField) val);
+			else
+			    outRecord.getField(keyFields.length + i).setValue(val);
 		}
 
 		//reset aggregate items
@@ -590,6 +612,11 @@ public class AggregateFunction implements Iterator {
 		
 		public Object getValue() {
 			return value != null ? value.getValue() : null;
+		}
+		
+		public Object getAvg() {
+		    ((Numeric) value).div(new IntegerDataField(null, count));
+		    return value;
 		}
 		
 		public double getDoubleValue() {

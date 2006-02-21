@@ -138,8 +138,13 @@ public class RecordKey {
 	}
 
 
-	// end getKeyString
-
+	/**
+	 * Gets number of fields defined by this key.
+	 * @return length of key
+	 */
+	public int getLenght() {
+	    return keyFields.length;
+	}
 	
 	/**
 	 *  Compares two records (of the same layout) based on defined key-fields and returns (-1;0;1) if (< ; = ; >)

@@ -456,6 +456,16 @@ public class DataFieldMetadata implements Serializable {
 		return (delimiter == null);
 	}
 	
+	/**
+	 * @return true if data field of this metadata field implements numeric interface; false else
+	 */
+	public boolean isNumeric() {
+	    return fieldType == NUMERIC_FIELD
+	    	|| fieldType == INTEGER_FIELD
+	    	|| fieldType == LONG_FIELD
+	    	|| fieldType == DECIMAL_FIELD;
+	}
+	
 	public static String type2Str(char fieldType) {
 		switch (fieldType) {
 			case DataFieldMetadata.NUMERIC_FIELD:
