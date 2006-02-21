@@ -74,6 +74,8 @@ import org.jetel.util.ComponentXMLAttributes;
  */
 public class Aggregate extends Node {
 
+    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+
 	public final static String COMPONENT_TYPE = "AGGREGATE";
 
 	private final static int WRITE_TO_PORT = 0;
@@ -84,6 +86,7 @@ public class Aggregate extends Node {
 	private String aggregateFunctionStr;
 	private RecordKey recordKey;
 	private AggregateFunction aggregateFunction;
+	private boolean equalNULLs;
 
 
 	/**
@@ -199,7 +202,10 @@ public class Aggregate extends Node {
 		
 		recordKey = new RecordKey(aggregateKeys, getInputPort(READ_FROM_PORT).getMetadata());
 		recordKey.init();
-		
+		// for AGGREGATE component, specify whether two fields with NULL value indicator set
+		// are considered equal
+		recordKey.setEqualNULLs(equalNULLs);
+
 		aggregateFunction = new AggregateFunction(aggregateFunctionStr, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(), recordKey, sorted);
 		aggregateFunction.init();
 	}
@@ -228,10 +234,15 @@ public class Aggregate extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 
 		try {
-			return new Aggregate(xattribs.getString("id"),
+		    Aggregate agg;
+			agg = new Aggregate(xattribs.getString("id"),
 					xattribs.getString("aggregateKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString("aggregateFunctions"),
 					xattribs.getString("sorted").matches("^[Tt].*"));
+			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+			    agg.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+			}
+			return agg;
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
@@ -247,5 +258,10 @@ public class Aggregate extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+	
+	public void setEqualNULLs(boolean equal){
+	    this.equalNULLs=equal;
+	}
+
 }
 
