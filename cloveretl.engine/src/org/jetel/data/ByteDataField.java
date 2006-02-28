@@ -231,7 +231,13 @@ public class ByteDataField extends DataField  implements Comparable{
 	 *@since            October 29, 2002
 	 */
 	public void fromString(String valueStr) {
-		System.arraycopy(valueStr.getBytes(), 0, this.value, 0, this.value.length);
+	    final byte[] valueStrBytes = valueStr.getBytes();
+	    
+	    int length = valueStrBytes.length;
+        if (this.value.length != length){
+            this.value = new byte[length];
+        }
+		System.arraycopy(valueStrBytes, 0, this.value, 0, length);
 	}
 
 
