@@ -587,6 +587,10 @@ public final class TransformationGraph {
 		return graph;
 	}
 
+	public static TransformationGraph resetTransformationGraph() {
+	    graph = new TransformationGraph("");
+	    return graph;
+	}
 
 	/**
 	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be
@@ -701,6 +705,8 @@ public final class TransformationGraph {
 	public void setTrackingInterval(int trackingInterval) {
 		this.trackingInterval = trackingInterval;
 	}
+
+
 }
 /*
  *  end class TransformationGraph
