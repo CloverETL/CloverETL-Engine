@@ -405,7 +405,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		if (isNull) return -1;
 		
 		if (obj instanceof LongDataField){
-			return compareTo(((LongDataField) obj).getInt());
+			return compareTo(((LongDataField) obj).getLong());
 		}else if (obj instanceof Integer){
 			return compareTo(((Integer)obj).longValue());
 		}else if (obj instanceof Long){
