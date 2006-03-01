@@ -587,7 +587,15 @@ public final class TransformationGraph {
 		return graph;
 	}
 
-	public static TransformationGraph resetTransformationGraph() {
+
+	/**
+	 * Resets transformation graph - all Nodes, Edges, Metadata, etc.
+     * are forgotten.<br>
+     * Effectively creates a new instance of Transformation graph.
+	 *
+    */
+
+	public static TransformationGraph reset() {
 	    graph = new TransformationGraph("");
 	    return graph;
 	}
@@ -705,8 +713,6 @@ public final class TransformationGraph {
 	public void setTrackingInterval(int trackingInterval) {
 		this.trackingInterval = trackingInterval;
 	}
-
-
 }
 /*
  *  end class TransformationGraph
