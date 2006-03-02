@@ -22,6 +22,7 @@
 package org.jetel.metadata;
 
 import java.io.Serializable;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
@@ -202,7 +203,42 @@ public class DataFieldMetadata implements Serializable {
 		this.localeStr=null;
 	}
 
+	private DataFieldMetadata() {
+	    //EMPTY
+	}
 
+	/**
+	 * Creates deep copy of existing field metadata. 
+	 * 
+	 * @return new metadata (exact copy of current field metatada)
+	 */
+	public DataFieldMetadata duplicate() {
+	    DataFieldMetadata ret = new DataFieldMetadata();
+
+		ret.setName(getName());
+	    ret.setDelimiter(getDelimiter());
+	    ret.setFormatStr(getFormatStr());
+	    ret.setSize(getSize());
+		ret.setType(getType());
+		ret.setNullable(isNullable());
+		ret.setDefaultValue(getDefaultValue());
+		ret.setCodeStr(getCodeStr());
+		ret.setLocaleStr(getLocaleStr());
+
+		//copy record properties
+		Properties target = new Properties();
+		Properties source = getFieldProperties();
+		if(source != null) {
+		    for(Enumeration e = source.propertyNames(); e.hasMoreElements();) {
+		        String key = (String) e.nextElement();
+		        target.put(key, source.getProperty(key));
+		    }
+			ret.setFieldProperties(target);
+		}
+
+		return ret;
+	}
+	
 	/**
 	 *  Sets name of the field
 	 *

@@ -22,13 +22,14 @@
 package org.jetel.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import java.util.Properties;
-import org.jetel.util.StringUtils;
+
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.StringUtils;
 
 
 /**
@@ -100,6 +101,36 @@ public class DataRecordMetadata implements Serializable {
 		localeStr=null;
 	}
 
+	/**
+	 * Creates deep copy of existing metadata. 
+	 * 
+	 * @return new metadata (exact copy of current metatada)
+	 */
+	public DataRecordMetadata duplicate() {
+	    DataRecordMetadata ret = new DataRecordMetadata(getName(), getRecType());
+
+		ret.setRecordDelimiter(getRecordDelimiters());
+		ret.setLocaleStr(getLocaleStr());
+
+		//copy record properties
+		Properties target = new Properties();
+		Properties source = getRecordProperties();
+		if(source != null) {
+		    for(Enumeration e = source.propertyNames(); e.hasMoreElements();) {
+		        String key = (String) e.nextElement();
+		        target.put(key, source.getProperty(key));
+		    }
+		    ret.setRecordProperties(target);
+		}
+		
+		//copy fields
+		DataFieldMetadata[] sourceFields = getFields();
+		for(int i = 0; i < sourceFields.length; i++) {
+		    ret.addField(sourceFields[i].duplicate());
+		}
+		
+	    return ret;
+	}
 
 	/**
 	 *  An operation that sets Record Name
@@ -286,6 +317,14 @@ public class DataRecordMetadata implements Serializable {
 		return (DataFieldMetadata[]) fields.toArray(new DataFieldMetadata[0]);
 	}
 
+	/**
+	 * Call if structure of metedata changes (add or remove some field).
+	 */
+	private void structureChanged() {
+	    fieldNames.clear();
+	    fieldTypes.clear();
+	}
+	
 	/**  Description of the Method */
 	private void updateFieldTypesMap() {
 		DataFieldMetadata field;
@@ -363,7 +402,7 @@ public class DataRecordMetadata implements Serializable {
 	 */
 	public void addField(DataFieldMetadata _field) {
 		fields.add(_field);
-		fieldNames.clear();
+		structureChanged();
 	}
 
 
@@ -376,7 +415,7 @@ public class DataRecordMetadata implements Serializable {
 	public void delField(int _fieldNum) {
 		try {
 			fields.remove(_fieldNum);
-			fieldNames.clear();
+			structureChanged();
 		} catch (IndexOutOfBoundsException e) {
 			// do nothing - may-be singnalize error
 		}
@@ -401,6 +440,13 @@ public class DataRecordMetadata implements Serializable {
 		}
 	}
 
+	/**
+	 * Deletes all fields in metadata.
+	 */
+	public void delAllFields() {
+	    fields.clear();
+	    structureChanged();
+	}
 	
 	/**
 	 * This method is used by gui to prepopulate record meta info with
