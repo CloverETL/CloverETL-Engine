@@ -306,6 +306,10 @@ public class DataFieldMetadata implements Serializable {
 		fieldType = type;
 	}
 
+	public void setType(String type) {
+		fieldType = str2Type(type);
+	}
+
 
 	/**
 	 *  Returns the specified maximum field size (used only when dealing with fixed-size type of record)
@@ -491,6 +495,28 @@ public class DataFieldMetadata implements Serializable {
 		}
 	}
 	
+	public static char str2Type(String fieldType) {
+		if(fieldType.compareToIgnoreCase("numeric") == 0)
+		    return DataFieldMetadata.NUMERIC_FIELD;
+		else if(fieldType.compareToIgnoreCase("integer") == 0)
+		    return DataFieldMetadata.INTEGER_FIELD;
+		else if(fieldType.compareToIgnoreCase("string") == 0)
+		    return DataFieldMetadata.STRING_FIELD;
+		else if(fieldType.compareToIgnoreCase("date") == 0)
+		    return DataFieldMetadata.DATE_FIELD;
+		else if(fieldType.compareToIgnoreCase("long") == 0)
+		    return DataFieldMetadata.LONG_FIELD;
+		else if(fieldType.compareToIgnoreCase("decimal") == 0)
+		    return DataFieldMetadata.DECIMAL_FIELD;
+		else if(fieldType.compareToIgnoreCase("byte") == 0)
+		    return DataFieldMetadata.BYTE_FIELD;
+		else if(fieldType.compareToIgnoreCase("datetime") == 0)
+		    return DataFieldMetadata.DATETIME_FIELD;
+		else if(fieldType.compareToIgnoreCase("sequence") == 0)
+		    return DataFieldMetadata.SEQUENCE_FIELD;
+		return DataFieldMetadata.UNKNOWN_FIELD;
+	}
+
 }
 /*
  *  end class DataFieldMetadata
