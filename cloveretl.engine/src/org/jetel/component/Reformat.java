@@ -78,6 +78,7 @@ import org.w3c.dom.Text;
  *  to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
  *  <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td>
  *  </tr>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
  *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
  * class in Properties object - as a key->value pair. There is no limit to how many optional
  * attributes can be used.</td>
