@@ -609,7 +609,7 @@ In case there is not enough room in internal sort buffer, it performs external s
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.DataIntersection" iconPath="icons/dataIntersection32.png" name="Data Intersection" smallIconPath="icons/dataIntersection16.png" type="DATA_INTERSECTION">
 <shortDescription/>
-<description>Finds intersection of data flows (sets) A (in-port0) and B (in-port1) based on specified key. Both inputs must be sorted according to specified key. DataRecords only in flow A are sent out through out-port[0]. DataRecords in both A&B are sent to specified transformation function and the result is sent through out-port[1]. DataRecords present only in flow B are sent through out-port[2].</description>
+<description>Finds intersection of data flows (sets) A (in-port0) and B (in-port1) based on specified key. Both inputs must be sorted according to specified key. DataRecords only in flow A are sent out through out-port[0]. DataRecords in both A&amp;B are sent to specified transformation function and the result is sent through out-port[1]. DataRecords present only in flow B are sent through out-port[2].</description>
 <inputPorts>
 <singlePort name="0"/>
 <singlePort name="1"/>
@@ -656,7 +656,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="others" className="org.jetel.component.XMLExtract" iconPath="icons/gear.png" name="XMLExtract - under construction" smallIconPath="icons/gear16.png" type="XML_EXTRACT">
+<ETLComponent category="others" className="org.jetel.component.XMLExtract" iconPath="icons/comp32.gif" name="XMLExtract - under construction" smallIconPath="icons/comp16.gif" type="XML_EXTRACT">
 <shortDescription/>
 <description>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all children will be turned into a Data record.</description>
 <inputPorts/>
