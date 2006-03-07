@@ -2,7 +2,7 @@
 <ETLComponentList>
 <ETLComponent category="readers" className="org.jetel.component.DelimitedDataReader" iconPath="icons/dataReader32.png" name="Delimited Data Reader" smallIconPath="icons/dataReader16.png" type="DELIMITED_DATA_READER">
 <shortDescription>Reads data from flat files.</shortDescription>
-<description>Reads data from flat files.</description>
+<description>Parses specified input data file and broadcasts the records to all connected out ports.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -18,32 +18,27 @@
 </ETLComponent>
 <ETLComponent category="writers" className="org.jetel.component.DelimitedDataWriter" iconPath="icons/dataWriter16.png" name="Delimited Data Writer" smallIconPath="icons/dataWriter16.png" type="DELIMITED_DATA_WRITER">
 <shortDescription>Writes data to flat files.</shortDescription>
-<description>Writes data to flat files.</description>
+<description>All records from input port [0] are formatted with delimiter and written to specified file.
+Delimiters are taken from metadata specified for port[0] data flow.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
 <outputPorts/>
 <properties>
 <property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="One record per line" modifiable="true" name="OneRecordPerLine" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
 <singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SimpleCopy" iconPath="icons/simpleCopy32.png" name="Simple Copy" smallIconPath="icons/simpleCopy16.png" type="SIMPLE_COPY">
+<ETLComponent category="transformers" className="org.jetel.component.SimpleCopy" iconPath="icons/simpleCopy32.png" name="Simple Copy" smallIconPath="icons/simpleCopy16.png" type="SIMPLE_COPY" passThrough="true">
 <shortDescription>Copies data from sourceport to the outputs.</shortDescription>
-<description>Copies data from sourceport to the outputs.</description>
+<description>All records from input port:0 are copied onto all connected output ports.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -53,8 +48,10 @@
 <properties/>
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.Concatenate" iconPath="icons/concatenate32.png" name="Concatenate" smallIconPath="icons/concatenate16.png" type="CONCATENATE">
-<shortDescription>.</shortDescription>
-<description/>
+<shortDescription/>
+<description>All records from all input ports are copied onto output port [0].
+It goes port by port (waiting/blocked) if there is currently no data on port.
+When reading from one port is done (EOF status), continues with the next.</description>
 <inputPorts>
 <multiplePort/>
 </inputPorts>
@@ -63,9 +60,11 @@
 </outputPorts>
 <properties/>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SimpleGather" iconPath="icons/simpleGather32.png" name="Simple Gather" smallIconPath="icons/simpleGather16.png" type="SIMPLE_GATHER">
+<ETLComponent category="transformers" className="org.jetel.component.SimpleGather" iconPath="icons/simpleGather32.png" name="Simple Gather" smallIconPath="icons/simpleGather16.png" type="SIMPLE_GATHER" passThrough="true">
 <shortDescription/>
-<description/>
+<description>All records from all input ports are gathered and copied onto output port [0].
+It goes port by port (waiting/blocked) if there is currently no data on port.
+Implements inverse RoundRobin.</description>
 <inputPorts>
 <multiplePort/>
 </inputPorts>
@@ -76,7 +75,8 @@
 </ETLComponent>
 <ETLComponent category="writers" className="org.jetel.component.DelimitedDataWriterNIO" iconPath="icons/dataWriter32.png" name="Delimited Data Writer (New I/O)" smallIconPath="icons/dataWriter16.png" type="DELIMITED_DATA_WRITER_NIO">
 <shortDescription/>
-<description/>
+<description>All records from input port [0] are formatted with delimiter and written to specified file.
+Delimiters are taken from metadata specified for port[0] data flow.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -86,25 +86,22 @@
 <singleType name="file"/>
 </property>
 <property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="One record per line" modifiable="true" name="OneRecordPerLine" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
+</property>
+<property category="clover" displayName="Output field names" modifiable="true" name="outputFieldNames" nullable="true">
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
-<singleType name="string"/>
+<singleType name="charset"/>
 </property>
 </properties>
 </ETLComponent>
 <ETLComponent category="readers" className="org.jetel.component.DelimitedDataReaderNIO" iconPath="icons/dataReader32.png" name="Delimited Data Reader (New I/O)" smallIconPath="icons/dataReader16.png" type="DELIMITED_DATA_READER_NIO">
 <shortDescription/>
-<description/>
+<description>Parses specified input data file and broadcasts the records to all connected out ports.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -114,7 +111,7 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
-<singleType name="string"/>
+<singleType name="charset"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
 <singleType name="file"/>
@@ -123,7 +120,8 @@
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.Reformat" iconPath="icons/reformat32.png" name="Reformat" smallIconPath="icons/reformat16.png" type="REFORMAT">
 <shortDescription/>
-<description/>
+<description>Changes / reformats data record between one INPUT and several OUTPUT ports.
+This component is only a wrapper around transformation class implementing org.jetel.component.RecordTransform interface. The method transform is called for every record passing through this component.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -134,14 +132,22 @@
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
 </property>
+<property category="clover" displayName="Library path" modifiable="true" name="libraryPath" nullable="true">
+<singleType name="file"/>
+</property>
 <property category="clover" displayName="Java source" modifiable="true" name="javaSource" nullable="true">
 <singleType name="multiline"/>
+</property>
+<property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
 </property>
 </properties>
 </ETLComponent>
 <ETLComponent category="readers" className="org.jetel.component.DBInputTable" iconPath="icons/dbInputTable32.png" name="DB Input Table" smallIconPath="icons/dbInputTable16.png" type="DB_INPUT_TABLE">
 <shortDescription/>
-<description/>
+<description>This component reads data from DB. It first executes specified query on DB and then extracts all the rows returned.
+The metadata provided throuh output port/edge must precisely describe the structure of read rows.
+Use DBAnalyze utilitity to analyze DB structures and create Jetel/Clover metadata.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -167,9 +173,10 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Sort" iconPath="icons/sort32.png" name="Sort" smallIconPath="icons/sort16.png" type="SORT">
+<ETLComponent category="transformers" className="org.jetel.component.Sort" iconPath="icons/sort32.png" name="Sort" smallIconPath="icons/sort16.png" type="SORT" passThrough="true">
 <shortDescription/>
-<description/>
+<description>Sorts the incoming records based on specified key.
+The key is name (or combination of names) of field(s) from input record. The sort order is either Ascending (default) or Descending.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -190,17 +197,17 @@
 </ETLComponent>
 <ETLComponent category="writers" className="org.jetel.component.DBOutputTable" iconPath="icons/dbOutputTable32.png" name="DB Output Table" smallIconPath="icons/dbOutputTable16.png" type="DB_OUTPUT_TABLE">
 <shortDescription/>
-<description/>
+<description>This component performs append (so far) operation on specified database table.
+The metadata describing data comming in through input port[0] must be in the same structure as the target table.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
-<outputPorts/>
+<outputPorts>
+<singlePort name="0"/>
+</outputPorts>
 <properties>
 <property category="clover" displayName="Batch mode" modifiable="true" name="batchMode" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="DB table" modifiable="true" name="dbTable" nullable="true">
 <singleType name="string"/>
@@ -236,26 +243,21 @@
 </ETLComponent>
 <ETLComponent category="writers" className="org.jetel.component.FixLenDataWriterNIO" iconPath="icons/dataWriter32.png" name="Fixed Length Data Writer (New I/O)" smallIconPath="icons/dataWriter16.png" type="FIXLEN_DATA_WRITER_NIO">
 <shortDescription/>
-<description/>
+<description>All records from input port [0] are formatted with sizes specified in metadata and written to specified file.
+Sizes are taken from metadata specified for port[0] data flow.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
 <outputPorts/>
 <properties>
 <property category="clover" displayName="Append data" modifiable="true" name="append" nullable="false" defaultValue="false">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="One record per line" modifiable="true" name="OneRecordPerLine" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
-<singleType name="string"/>
+<singleType name="charset"/>
 </property>
 <property category="clover" displayName="Line separator" modifiable="true" name="LineSeparator" nullable="true">
 <singleType name="string"/>
@@ -265,9 +267,10 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Dedup" iconPath="icons/dedup32.png" name="Dedup" smallIconPath="icons/dedup16.png" type="DEDUP">
+<ETLComponent category="transformers" className="org.jetel.component.Dedup" iconPath="icons/dedup32.png" name="Dedup" smallIconPath="icons/dedup16.png" type="DEDUP" passThrough="true">
 <shortDescription/>
-<description/>
+<description>Dedup (remove duplicate records) from sorted incoming records based on specified key.
+The key is name (or combination of names) of field(s) from input record. It keeps either First or Last record from the group based on the parameter {keep} specified.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -279,16 +282,16 @@
 <keyType inputPortName="0"/>
 </property>
 <property category="clover" displayName="Keep" modifiable="true" name="keep" nullable="true">
-<enumType>
-<item displayValue="First" value="First"/>
-<item displayValue="Last" value="Last"/>
-</enumType>
+<singleType name="keep"/>
+</property>
+<property category="clover" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true">
+<singleType name="bool"/>
 </property>
 </properties>
 </ETLComponent>
 <ETLComponent category="readers" className="org.jetel.component.FixLenDataReaderNIO" iconPath="icons/dataReader32.png" name="Fixed Length Data Reader (New I/O)" smallIconPath="icons/dataReader16.png" type="FIXLEN_DATA_READER_NIO">
 <shortDescription/>
-<description/>
+<description>Parses specified fixed-length-record, input data file and broadcasts the records to all connected out ports.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -298,31 +301,26 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="One record per line" modifiable="true" name="OneRecordPerLine" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
-<singleType name="string"/>
+<singleType name="charset"/>
 </property>
 <property category="clover" displayName="Line separator size" modifiable="true" name="LineSeparatorSize" nullable="true">
 <singleType name="int"/>
 </property>
 <property category="clover" displayName="Skip leading blanks" modifiable="true" name="SkipLeadingBlanks" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
 <singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Merge" iconPath="icons/merge32.png" name="Merge" smallIconPath="icons/merge16.png" type="MERGE">
+<ETLComponent category="transformers" className="org.jetel.component.Merge" iconPath="icons/merge32.png" name="Merge" smallIconPath="icons/merge16.png" type="MERGE" passThrough="true">
 <shortDescription/>
-<description/>
+<description>Merges data records from two input ports onto one output. It preserves sorted order (as specified by the merge key)
+The structure of records in all merged data flows must be the same - it implies that all input ports share the same metadata.</description>
 <inputPorts>
 <singlePort name="0"/>
 <multiplePort/>
@@ -338,7 +336,8 @@
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.MergeJoin" iconPath="icons/join32.png" name="Merge Join" smallIconPath="icons/join16.png" type="MERGE_JOIN">
 <shortDescription/>
-<description/>
+<description>Joins sorted records on input ports. It expects that on port [0], there is a driver and on port [1] is slave
+For each driver record, all slave records with corresponding key are found and sent to transformation class.</description>
 <inputPorts>
 <multiplePort/>
 </inputPorts>
@@ -352,24 +351,24 @@
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
 </property>
+<property category="clover" displayName="Library path" modifiable="true" name="libraryPath" nullable="true">
+<singleType name="file"/>
+</property>
+<property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
+</property>
 <property category="clover" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Full outer join" modifiable="true" name="fullOuterJoin" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
 <keyType inputPortName="1"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.SortedJoin" iconPath="icons/join32.png" name="Sorted Join" smallIconPath="icons/join16.png" type="SORTED_JOIN">
+<ETLComponent category="transformers" className="org.jetel.component.MergeJoin" iconPath="icons/join32.png" name="Sorted Join" smallIconPath="icons/join16.png" type="SORTED_JOIN">
 <shortDescription>Synonym for merge sort.</shortDescription>
 <description/>
 <inputPorts>
@@ -384,6 +383,12 @@
 </property>
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
+</property>
+<property category="clover" displayName="Library path" modifiable="true" name="libraryPath" nullable="true">
+<singleType name="file"/>
+<property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
+</property>
 </property>
 <property category="clover" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true">
 <enumType>
@@ -404,7 +409,7 @@
 </ETLComponent>
 <ETLComponent category="writers" className="org.jetel.component.Trash" iconPath="icons/trash32.png" name="Trash" smallIconPath="icons/trash16.png" type="TRASH">
 <shortDescription/>
-<description/>
+<description>All records from input port:0 are discarded.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -418,9 +423,9 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Filter" iconPath="icons/filter32.png" name="Filter" smallIconPath="icons/filter16.png" type="FILTER">
+<ETLComponent category="transformers" className="org.jetel.component.Filter" iconPath="icons/filter32.png" name="Filter" smallIconPath="icons/filter16.png" type="FILTER" passThrough="true">
 <shortDescription/>
-<description/>
+<description>All records for which the filterExpression evaluates TRUE are copied from input port:0 onto output port:0. Rejected records are copied onto output port:1 (if it is connected).</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -436,7 +441,7 @@
 </ETLComponent>
 <ETLComponent category="others" className="org.jetel.component.DBExecute" iconPath="icons/comp32.gif" name="DB Execute" smallIconPath="icons/comp16.gif" type="DB_EXECUTE">
 <shortDescription/>
-<description/>
+<description>This component executes specified command(s) (SQL/DML) against specified DB</description>
 <inputPorts/>
 <outputPorts/>
 <properties>
@@ -447,10 +452,7 @@
 <singleType name="connection"/>
 </property>
 <property category="clover" displayName="Print statemenets" modifiable="true" name="printStatements" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="SQL code" modifiable="true" name="SQLCode" nullable="true">
 <singleType name="multiline"/>
@@ -459,16 +461,14 @@
 <singleType name="url"/>
 </property>
 <property category="clover" displayName="In transaction" modifiable="true" name="inTransaction" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 </properties>
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.HashJoin" iconPath="icons/join32.png" name="Hash Join" smallIconPath="icons/join16.png" type="HASH_JOIN">
 <shortDescription/>
-<description/>
+<description>Joins records on input ports. It expects that on port [0], there is a driver and on port [1] is a slave
+For each driver record, slave record is looked up in Hashtable which is created from all records on slave port. Pair of driver and slave records is sent to transformation class.</description>
 <inputPorts>
 <singlePort name="0"/>
 <singlePort name="1"/>
@@ -483,11 +483,14 @@
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
 <singleType name="class"/>
 </property>
+<property category="clover" displayName="Library path" modifiable="true" name="libraryPath" nullable="true">
+<singleType name="file"/>
+</property>
+<property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
+</property>
 <property category="clover" displayName="Left outer join" modifiable="true" name="leftOuterJoin" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
 <property category="clover" displayName="Hash table size" modifiable="true" name="hashTableSize" nullable="true">
 <singleType name="int"/>
@@ -499,7 +502,7 @@
 </ETLComponent>
 <ETLComponent category="others" className="org.jetel.component.CheckForeignKey" iconPath="icons/comp32.gif" name="Check Foreign Key" smallIconPath="icons/comp16.gif" type="CHECK_FOREIGN_KEY">
 <shortDescription/>
-<description/>
+<description>Checks a foreign key against a table of primary keys to see if the foreign key is valid. If the foreign key is invalid then a default foreign key is substituted. The resulting foreign record is broadcast to all connected outputs. The table containing the "primary" keys may contain duplicates but they will be ignored.</description>
 <inputPorts>
 <singlePort name="0"/>
 <singlePort name="1"/>
@@ -524,7 +527,7 @@
 </ETLComponent>
 <ETLComponent category="readers" className="org.jetel.component.DBFDataReader" iconPath="icons/dataReader32.png" name="DBF Data Reader" smallIconPath="icons/dataReader16.png" type="DBF_DATA_READER">
 <shortDescription/>
-<description/>
+<description>Reads records from specified dBase data file and broadcasts the records to all connected out ports.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -534,16 +537,16 @@
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="Charset" modifiable="true" name="charset" nullable="true">
-<singleType name="string"/>
+<singleType name="charset"/>
 </property>
 <property category="clover" displayName="File URL" modifiable="true" name="fileURL" nullable="true">
 <singleType name="file"/>
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.ExtFilter" iconPath="icons/filter32.png" name="Ext Filter" smallIconPath="icons/filter16.png" type="EXT_FILTER">
+<ETLComponent category="transformers" className="org.jetel.component.ExtFilter" iconPath="icons/filter32.png" name="Ext Filter" smallIconPath="icons/filter16.png" type="EXT_FILTER" passThrough="true">
 <shortDescription/>
-<description/>
+<description>All records for which the filterExpression evaluates TRUE are copied from input port:0 onto output port:0. Rejected records are copied onto output port:1 (if it is connected).</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -557,9 +560,11 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.ExtSort" iconPath="icons/sort32.png" name="Ext Sort" smallIconPath="icons/sort16.png" type="EXT_SORT">
+<ETLComponent category="transformers" className="org.jetel.component.ExtSort" iconPath="icons/sort32.png" name="Ext Sort" smallIconPath="icons/sort16.png" type="EXT_SORT" passThrough="true">
 <shortDescription/>
-<description/>
+<description>Sorts the incoming records based on specified key.
+The key is name (or combination of names) of field(s) from input record. The sort order is either Ascending (default) or Descending.
+In case there is not enough room in internal sort buffer, it performs external sorting - thus any number of internal records can be sorted.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -584,9 +589,9 @@
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.Partition" iconPath="icons/partition32.png" name="Partition" smallIconPath="icons/partition16.png" type="PARTITION">
+<ETLComponent category="transformers" className="org.jetel.component.Partition" iconPath="icons/partition32.png" name="Partition" smallIconPath="icons/partition16.png" type="PARTITION" passThrough="true">
 <shortDescription/>
-<description/>
+<description>Partitions data into distinct flows. Each connected port becomes one flow. For each record read, the partition function chosen denotes which output flow (port) will be the record sent to.</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -604,7 +609,7 @@
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.DataIntersection" iconPath="icons/dataIntersection32.png" name="Data Intersection" smallIconPath="icons/dataIntersection16.png" type="DATA_INTERSECTION">
 <shortDescription/>
-<description/>
+<description>Finds intersection of data flows (sets) A (in-port0) and B (in-port1) based on specified key. Both inputs must be sorted according to specified key. DataRecords only in flow A are sent out through out-port[0]. DataRecords in both A&B are sent to specified transformation function and the result is sent through out-port[1]. DataRecords present only in flow B are sent through out-port[2].</description>
 <inputPorts>
 <singlePort name="0"/>
 <singlePort name="1"/>
@@ -628,7 +633,7 @@
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.Aggregate" iconPath="icons/aggregate32.png" name="Aggregate" smallIconPath="icons/aggregate16.png" type="AGGREGATE">
 <shortDescription>Aggregate function</shortDescription>
-<description>Aggregate functions ara applied on input data flow base on specified key.
+<description>Aggregate functions are applied on input data flow base on specified key.
 The key is name (or combination of names) of field(s) from input record. Data flow can be sorted or not.</description>
 <inputPorts>
 <singlePort name="0"/>
@@ -638,23 +643,22 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </outputPorts>
 <properties>
 <property category="clover" displayName="Sorted input" modifiable="true" name="sorted" nullable="true">
-<enumType>
-<item displayValue="true" value="true"/>
-<item displayValue="false" value="false"/>
-</enumType>
+<singleType name="bool"/>
 </property>
-<property category="clover" displayName="Aggregate function" modifiable="true" name="aggregateFunction" nullable="true">
+<property category="clover" displayName="Aggregate function" modifiable="true" name="aggregateFunctions" nullable="true">
 <singleType name="string"/>
 </property>
 <property category="clover" displayName="Aggregate key" modifiable="true" name="aggregateKey" nullable="true">
 <keyType inputPortName="0"/>
 </property>
+<property category="clover" displayName="Equal NULL" modifiable="true" name="equalNULL" nullable="true">
+<singleType name="bool"/>
+</property>
 </properties>
 </ETLComponent>
-<ETLComponent category="readers" className="org.jetel.component.XMLExtract" iconPath="icons/dataReader16.png" name="XML Extract" smallIconPath="icons/dataReader16.png" type="XML_EXTRACT">
-<shortDescription>Parses xml file.</shortDescription>
-<description>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all children 
-will be turned into a Data record.</description>
+<ETLComponent category="others" className="org.jetel.component.XMLExtract" iconPath="icons/gear.png" name="XMLExtract - under construction" smallIconPath="icons/gear16.png" type="XML_EXTRACT">
+<shortDescription/>
+<description>Provides the logic to parse a xml file and filter to different ports based on a matching element. The element and all children will be turned into a Data record.</description>
 <inputPorts/>
 <outputPorts>
 <multiplePort/>
@@ -662,6 +666,9 @@ will be turned into a Data record.</description>
 <properties>
 <property category="clover" displayName="Source URI" modifiable="true" name="sourceUri" nullable="true">
 <singleType name="file"/>
+</property>
+<property category="clover" displayName="Mapping" modifiable="true" name="mapping" nullable="true">
+<singleType name="multiline"/>
 </property>
 </properties>
 </ETLComponent>

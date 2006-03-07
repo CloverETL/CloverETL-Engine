@@ -62,6 +62,7 @@ import org.jetel.util.ComponentXMLAttributes;
  *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
  *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev</td>
  *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
  *  </tr>
  *  </table>
  *

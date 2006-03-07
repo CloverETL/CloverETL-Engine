@@ -73,6 +73,7 @@ import org.w3c.dom.Element;
  *   and 2 for "\n\r" - DOS/Windows style. Can be set to any value and is added
  *   to total record length.<br>It is automatically determined from system properties. This method overrides the default value.<br>
  *   Has any meaning only if OneRecordPerLine is set to True - i.e. records are on separate lines.</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  </tr>
  *  </table>
  *
