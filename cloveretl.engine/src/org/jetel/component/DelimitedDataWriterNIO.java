@@ -73,6 +73,9 @@ public class DelimitedDataWriterNIO extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
+	
+	private static final boolean APPEND_DATA_AS_DEFAULT = false;
+	
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatterNIO formatter;
@@ -215,11 +218,11 @@ public class DelimitedDataWriterNIO extends Node {
 				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
 										xattribs.getString(XML_CHARSET_ATTRIBUTE),
-										xattribs.getBoolean(XML_APPEND_ATTRIBUTE));	
+										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}else{
 				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
-										xattribs.getBoolean(XML_APPEND_ATTRIBUTE));	
+										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}
 			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
 				if(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE)){
