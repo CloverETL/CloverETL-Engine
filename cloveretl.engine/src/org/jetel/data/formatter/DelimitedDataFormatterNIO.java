@@ -57,7 +57,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 	private ByteBuffer dataBuffer;
 	private int numFields;
 	
-	private static char[] NEW_LINE_CHAR;
+	private static String NEW_LINE_STR;
 
 	// Associations
 
@@ -68,7 +68,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
 		encoder.reset();
-		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
+		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
 	}
 	
 	public DelimitedDataFormatterNIO(String charEncoder){
@@ -77,7 +77,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		charSet = charEncoder;
 		encoder = Charset.forName(charEncoder).newEncoder();
 		encoder.reset();
-		NEW_LINE_CHAR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n").toCharArray();
+		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
 	}
 	
 	/**
@@ -99,6 +99,11 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			delimiters[i] = metadata.getField(i).getDelimiter();
 			delimiterLength[i] = delimiters[i].length();
+		}
+		// if oneRecordPerLine - change last delimiter to be new-line character
+		if (oneRecordPerLinePolicy){
+		    delimiters[delimiters.length-1]=NEW_LINE_STR;
+		    delimiterLength[delimiters.length-1]=NEW_LINE_STR.length();
 		}
 		charBuffer.clear(); // preventively clear the buffer
 		
@@ -150,13 +155,6 @@ public class DelimitedDataFormatterNIO implements Formatter {
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
-		if(oneRecordPerLinePolicy){
-		    if (NEW_LINE_CHAR.length > charBuffer.remaining())
-			{
-				flushBuffer(false);
-			}
-			charBuffer.put(NEW_LINE_CHAR);
-		}
 	}
 	
 	/**
@@ -176,13 +174,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
-		if(oneRecordPerLinePolicy){
-		    if (NEW_LINE_CHAR.length > charBuffer.remaining())
-			{
-				flushBuffer(false);
-			}
-			charBuffer.put(NEW_LINE_CHAR);
-		}
+		
 	}
 	
 	private void flushBuffer(boolean endOfData) throws IOException {
