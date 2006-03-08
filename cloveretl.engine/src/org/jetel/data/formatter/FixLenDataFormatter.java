@@ -98,10 +98,10 @@ public class FixLenDataFormatter implements Formatter {
 	/**
 	 *  Initialization of the FieldFiller buffer
 	 */
-	private void initFieldFiller() {
+	private void initFieldFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
 		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
-		Arrays.fill(fillerArray,DEFAULT_FILLER_CHAR);
+		Arrays.fill(fillerArray,filler);
 
 		try {
 			fieldFiller = encoder.encode(CharBuffer.wrap(fillerArray));
@@ -110,6 +110,19 @@ public class FixLenDataFormatter implements Formatter {
 		}
 	}
 
+	private void initFieldFiller(){
+	    initFieldFiller(DEFAULT_FILLER_CHAR);
+	}
+	
+	/**
+	 * Specify which character should be used as filler for
+	 * padding fields when outputting
+	 * 
+	 * @param filler	character used for padding
+	 */
+	public void setFiller(char filler){
+	    initFieldFiller(filler);
+	}
 
 	/**
 	 *  Description of the Method
@@ -118,7 +131,6 @@ public class FixLenDataFormatter implements Formatter {
 	 *@param  _metadata  Description of the Parameter
 	 */
 	public void open(Object out, DataRecordMetadata _metadata) {
-		CoderResult result;
 		this.metadata = _metadata;
 
 		writer = ((FileOutputStream) out).getChannel();
@@ -169,7 +181,38 @@ public class FixLenDataFormatter implements Formatter {
 		}
 	}
 
-
+	public void writeFieldNames() throws IOException {
+	    int size;
+	    CharBuffer charBuffer=CharBuffer.allocate(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			
+			if (fieldLengths[i] > dataBuffer.remaining()) {
+				flushBuffer();
+			}
+			fieldBuffer.clear();
+			charBuffer.clear();
+			charBuffer.put(metadata.getField(i).getName()).flip();
+			encoder.encode(charBuffer,fieldBuffer,false);
+			fieldBuffer.flip();
+			
+			size = fieldBuffer.position();
+			if (size < fieldLengths[i]) {
+				fieldFiller.rewind();
+				fieldFiller.limit(fieldLengths[i]-size);
+				fieldBuffer.put(fieldFiller);
+				
+			}
+			fieldBuffer.flip();
+			fieldBuffer.limit(fieldLengths[i]);
+			dataBuffer.put(fieldBuffer);
+		}
+		if(oneRecordPerLinePolicy){
+			if (dataBuffer.remaining()<crLF.length){
+				flushBuffer();
+			}
+			dataBuffer.put(crLF);
+		}
+	}
 
 	/**
 	 *  Description of the Method
