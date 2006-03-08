@@ -82,9 +82,15 @@ public class FixLenDataWriterNIO extends Node {
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
+	
+	private static final boolean DEFAULT_ONE_REC_PER_LINE=false;
+	private static final boolean DEFAULT_APPEND=false;
+	
 	private String fileURL;
 	private boolean appendData;
-	private Formatter formatter;
+	private FixLenDataFormatter formatter;
+	private boolean outputFieldNames=false;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER_NIO";
@@ -133,6 +139,20 @@ public class FixLenDataWriterNIO extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
+		
+//		 shall we print field names to the output ?
+		if (outputFieldNames){
+		    try {
+		        formatter.writeFieldNames();
+		    }
+		    catch (IOException ex) {
+		        resultMsg=ex.getMessage();
+		        resultCode=Node.RESULT_ERROR;
+		        closeAllOutputPorts();
+		        return;
+		    }
+		}
+				
 		while (record != null && runIt) {
 			try {
 				record = inPort.readRecord(record);
@@ -203,6 +223,7 @@ public class FixLenDataWriterNIO extends Node {
 			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
 					String.valueOf(((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()));
 		}
+		xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 	}
 
 
@@ -216,8 +237,7 @@ public class FixLenDataWriterNIO extends Node {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
-		final boolean _ONE_REC_PER_LINE_=false;
-		final boolean _APPEND_=false;
+		
 		
 		try{
 		
@@ -226,16 +246,19 @@ public class FixLenDataWriterNIO extends Node {
 						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE),
-						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,_APPEND_));
+						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 			}else{
 				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
 						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
-						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,_APPEND_));
+						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 			}
-			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE,_ONE_REC_PER_LINE_));
+			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE,DEFAULT_ONE_REC_PER_LINE));
 			if (xattribs.exists(XML_LINESEPARATOR_ATTRIBUTE)){
 				aFixLenDataWriterNIO.setLineSeparator(xattribs.getString(XML_LINESEPARATOR_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
+			    aFixLenDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
 			}
 		
 		}catch(Exception ex){
@@ -270,6 +293,13 @@ public class FixLenDataWriterNIO extends Node {
 			((FixLenDataFormatter)formatter).setLineSeparator(StringUtils.stringToSpecChar(separator));
 		}
 	}
+	
+	 /**
+     * @param outputFieldNames The outputFieldNames to set.
+     */
+    public void setOutputFieldNames(boolean outputFieldNames) {
+        this.outputFieldNames = outputFieldNames;
+    }
 	
 	/**
 	 *  Description of the Method
