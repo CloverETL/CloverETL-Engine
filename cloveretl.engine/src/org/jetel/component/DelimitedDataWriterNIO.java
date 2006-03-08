@@ -198,7 +198,9 @@ public class DelimitedDataWriterNIO extends Node {
 			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
 					String.valueOf(this.formatter.getOneRecordPerLinePolicy()));
 		}
-		xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+		if (outputFieldNames){
+		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+		}
 	}
 
 	

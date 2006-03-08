@@ -83,6 +83,7 @@ public class FixLenDataWriterNIO extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
+	private static final String XML_FILLER = "filler";
 	
 	private static final boolean DEFAULT_ONE_REC_PER_LINE=false;
 	private static final boolean DEFAULT_APPEND=false;
@@ -91,6 +92,7 @@ public class FixLenDataWriterNIO extends Node {
 	private boolean appendData;
 	private FixLenDataFormatter formatter;
 	private boolean outputFieldNames=false;
+	private String filler;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER_NIO";
@@ -201,6 +203,11 @@ public class FixLenDataWriterNIO extends Node {
 //		catch (IOException ex){
 //			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
 //		}
+		
+		// if filler is defined, use it
+		if (filler!=null){
+		    formatter.setFiller(filler.charAt(0));
+		}
 	}
 
 
@@ -223,7 +230,14 @@ public class FixLenDataWriterNIO extends Node {
 			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
 					String.valueOf(((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()));
 		}
-		xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+		if (outputFieldNames){
+		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+		}
+		
+		if (filler!=null){
+		    xmlElement.setAttribute(XML_FILLER,filler);
+		}
+		
 	}
 
 
@@ -261,6 +275,11 @@ public class FixLenDataWriterNIO extends Node {
 			    aFixLenDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
 			}
 		
+			if (xattribs.exists(XML_FILLER)){
+			    aFixLenDataWriterNIO.setFiller(xattribs.getString(XML_FILLER));
+			}
+			
+			
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
@@ -313,5 +332,20 @@ public class FixLenDataWriterNIO extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+    /**
+     * @return Returns the filler.
+     */
+    public String getFiller() {
+        return filler;
+    }
+    /**
+     * Which character (1st from specified string) will
+     * be used as filler for padding output fields
+     * 
+     * @param filler The filler to set.
+     */
+    public void setFiller(String filler) {
+        this.filler = filler;
+    }
 }
 
