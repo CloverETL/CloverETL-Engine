@@ -75,4 +75,21 @@ WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 30000
 WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5
 			
 GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
+
+#Size of internal buffer of DirectEdge for storing
+#data records when transmitted between two components.
+#The size should be at least MAX_RECORD_SIZE + 8, better
+#several times bigger
+#Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE = 8192
+
+
+#Size of internal buffer of BufferedEdge for storing/caching
+#data records. BufferedEdge is used when engine needs to compensate
+#fact that component reads data from two different ports and there might
+#be some interdependencies between the source data flows.
+#The size should be at least Defaults.Record.MAX_RECORD_SIZE*10, better
+#several times bigger - 128kB or more
+#Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = 81920
+
+
 			
