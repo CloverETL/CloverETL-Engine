@@ -64,6 +64,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>LineSeparator</b><br><i>optional</i></td><td>characters to be output as line/record separator (if OneRecordPerLine is set to true). Control
  * characters "\n", "\r", "\t" may be used as well as all printable characers.</td>
  *  </tr>
+ *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td>
+ *  <tr><td><b>filler</b><br><i>optional</i></td><td>allows specifying what character will be used for padding output fields. Default is " " (space)></td>
  *  </table>
  *
  * <h4>Example:</h4>
