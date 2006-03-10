@@ -115,16 +115,36 @@ public class GetVal {
 
 
 	/**
-	 *  Gets the Value attribute of the GetVal class
+	 *  Return field's value as Object (internal representation of the value).<br>
 	 *
-	 * @param  record   Description of Parameter
-	 * @param  fieldNo  Description of Parameter
+	 * @param  record   DataRecord
+	 * @param  fieldNo  index of data field
 	 * @return          The Value value
 	 * @since           August 23, 2002
 	 */
 	public final static Object getValue(DataRecord record, int fieldNo) {
 		return record.getField(fieldNo).getValue();
 	}
+	
+	
+	/**
+	 *  Return field's value as Object (internal representation of the value).
+	 *  If record or field happens to be NULL, use provided defaultValue instead.<br>
+	 * 
+	 * @param record	DataRecord
+	 * @param fieldNo	index of data field
+	 * @param defaultValue	value (Object) to be used if field's value is null or record is null
+	 * @return
+	 */
+	public final static Object getValueNVL(DataRecord record, int fieldNo,Object defaultValue){
+	    
+	    if (record!=null && ! record.getField(fieldNo).isNull()){
+	        return record.getField(fieldNo).getValue();
+	    }
+
+	    return defaultValue;
+	}
+	
 
 	/**
 	 * Returns field's NULL status (true/false)
@@ -228,6 +248,26 @@ public class GetVal {
 	public final static Object getValue(DataRecord record, String fieldName) {
 		return record.getField(record.getMetadata().getFieldPosition(fieldName)).getValue();
 	}
+	
+	
+	/**
+	 *  Return field's value as Object (internal representation of the value).
+	 *  If record or field happens to be NULL, use provided defaultValue instead.<br>
+	 * 
+	 * @param record	DataRecord
+	 * @param fieldName	Description of Parameter
+	 * @param defaultValue	value (Object) to be used if field's value is null or record is null
+	 * @return
+	 */
+	public final static Object getValueNVL(DataRecord record, String fieldName,Object defaultValue){
+	    
+	    if (record!=null && ! record.getField(record.getMetadata().getFieldPosition(fieldName)).isNull()){
+	        return record.getField(record.getMetadata().getFieldPosition(fieldName)).getValue();
+	    }
+
+	    return defaultValue;
+	}
+	
 	
 	/**
 	 * Returns field's NULL status (true/false)

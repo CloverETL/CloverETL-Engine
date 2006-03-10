@@ -38,8 +38,7 @@ import org.jetel.data.Defaults;
  */
 public class BufferedEdge extends EdgeBase {
 
-    private final static int DEFAULT_INTERNAL_DATA_BUFFER_SIZE = Defaults.Record.MAX_RECORD_SIZE*10;
-	private final static int BUFFER_COMPACT_LIMIT_PERCENT = 85;
+ 	private final static int BUFFER_COMPACT_LIMIT_PERCENT = 85;
 	
 	protected int recordCounter;
 	
@@ -75,7 +74,7 @@ public class BufferedEdge extends EdgeBase {
 	
 	
 	public BufferedEdge(Edge proxy) {
-	    this(proxy,DEFAULT_INTERNAL_DATA_BUFFER_SIZE);
+	    this(proxy,Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE);
 	}
 
 	/**
@@ -301,7 +300,7 @@ public class BufferedEdge extends EdgeBase {
      * @param internalBufferSize The internalBufferSize to set.
      */
     public void setInternalBufferSize(int internalBufferSize) {
-        if (internalBufferSize>DEFAULT_INTERNAL_DATA_BUFFER_SIZE)
+        if (internalBufferSize>Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE)
             this.internalBufferSize = internalBufferSize;
     }
 }

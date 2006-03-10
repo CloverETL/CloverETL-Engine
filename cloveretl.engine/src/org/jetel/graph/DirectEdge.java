@@ -29,8 +29,8 @@ import org.jetel.data.Defaults;
 
 /**
  * A class that represents DirectEdge - data connection between two NODEs.<br>
- * This Edge is in-memory buffered for better performance, however the buffer is limited in number of records
- * it can keep - the size is determined by INTERNAL_BUFFERS_NUM constant.
+ * This Edge is in-memory buffered for better performance, however the buffer is limited in size 
+ * - the size is determined by Defaults.Data.DIRECT_EDGE_INTERNAL_BUFFER_SIZE constant.
  *
  * @author     D.Pavlis
  * @since    	April 2, 2002
@@ -52,15 +52,6 @@ public class DirectEdge extends EdgeBase {
 
 	// Attributes
 	
-	/**
-	 *  Number of internal buffers for storing records
-	 * Note: it does not improve performance much if this
-	 * number is increased.
-	 *
-	 * @since    April 11, 2002
-	 */
-	
-	private final static int INTERNAL_BUFFER_SIZE = Defaults.Record.MAX_RECORD_SIZE*4;
 
 	private final static int IS_EOF=-1;
 	private	final static int SIZEOF_INT=4;	
@@ -105,8 +96,8 @@ public class DirectEdge extends EdgeBase {
 	public void init() throws IOException {
 		// initialize & open the data pipe
 		// we are ready to supply data
-		readBuffer= ByteBuffer.allocateDirect(INTERNAL_BUFFER_SIZE);
-		writeBuffer=ByteBuffer.allocateDirect(INTERNAL_BUFFER_SIZE);
+		readBuffer= ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
+		writeBuffer=ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		recordCounter = 0;
 		readBuffer.flip(); // we start with empty read buffer
 		tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

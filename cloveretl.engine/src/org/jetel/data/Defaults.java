@@ -76,6 +76,7 @@ public final class Defaults {
 		Lookup.init();
 		WatchDog.init();
 		GraphProperties.init();
+		Graph.init();
 	}
 	
 	/**
@@ -302,5 +303,33 @@ public final class Defaults {
 		
 		public static String PROPERTY_PLACEHOLDER_REGEX;// = "\\$\\{(\\w+)\\}";
 	}
+
+
+	public final static class Graph {
+		public static void init() {
+		    DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*4);
+		    BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*10);
+		}
+
+		/**
+		 *  Size of internal buffer of DirectEdge for storing
+		 * data records when transmitted between two components.
+		 * The size should be at least MAX_RECORD_SIZE + 8, better
+		 * several times bigger
+		 */
+		public static int DIRECT_EDGE_INTERNAL_BUFFER_SIZE;
+		
+		/**
+		 *  Size of internal buffer of BufferedEdge for storing/caching
+		 * data records. BufferedEdge is used when engine needs to compensate
+		 * fact that component reads data from two different ports and there might
+		 * be some interdependencies between the source data flows.
+		 * The size should be at least Defaults.Record.MAX_RECORD_SIZE*10, better
+		 * several times bigger - 128kB or more
+		 */
+		public static int BUFFERED_EDGE_INTERNAL_BUFFER_SIZE;
+	}
+
 }
+
 
