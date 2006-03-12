@@ -22,6 +22,7 @@ package org.jetel.interpreter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.jetel.util.Compare;
 
@@ -689,4 +690,69 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		return data;
 	}
 	
+	public Object visit(CLVFReplaceNode node, Object data){
+				
+		node.jjtGetChild(0).jjtAccept(this, data);
+		node.jjtGetChild(1).jjtAccept(this, data);
+		node.jjtGetChild(2).jjtAccept(this, data); 
+		Object withO=stack.pop();
+		Object regexO=stack.pop();
+		Object str=stack.pop();
+		
+		if (withO==null || regexO==null || str==null){
+		    throw new InterpreterRuntimeException(node,new Object[]{withO,regexO,str},"NULL value not allowed");
+		}
+		
+		if (str instanceof CharSequence && withO instanceof CharSequence && regexO instanceof CharSequence){
+		    
+		    if (node.pattern==null || !node.stored.equals(regexO)){
+		        node.pattern = Pattern.compile(((CharSequence)regexO).toString());
+		        node.matcher=node.pattern.matcher((CharSequence)str);
+		        node.stored=regexO;
+		    }else{
+		        node.matcher.reset((CharSequence)str);
+		    }
+		    stack.push(node.matcher.replaceAll(((CharSequence)withO).toString()));
+			
+			
+		}else{
+			Object[] arguments={withO,regexO,str};
+			throw new InterpreterRuntimeException(arguments,"replace - wrong type of literal(s)");
+		}
+		
+		return data;
+	}
+	
+	public Object visit(CLVFNum2StrNode node, Object data){
+		node.jjtGetChild(0).jjtAccept(this, data);
+		Object a = stack.pop();
+		
+		if ( a instanceof Number){
+			stack.push(((Number)a).toString()); 
+		}else {
+			Object[] arguments={a};
+			throw new InterpreterRuntimeException(arguments,"num2str - wrong type of literal");
+		}
+		
+		return data;
+	}
+	
+	public Object visit(CLVFStr2NumNode node, Object data){
+		node.jjtGetChild(0).jjtAccept(this, data);
+		Object a = stack.pop();
+		
+		if ( a instanceof CharSequence){
+		    try{
+		        stack.push(Double.valueOf(((CharSequence)a).toString()));
+		    }catch(NumberFormatException ex){
+		        Object[] arguments={a};
+				throw new InterpreterRuntimeException(arguments,"str2num- can't convert \""+a+"\"");
+		    }
+		}else {
+			Object[] arguments={a};
+			throw new InterpreterRuntimeException(arguments,"str2num- wrong type of literal");
+		}
+		
+		return data;
+	}
 }

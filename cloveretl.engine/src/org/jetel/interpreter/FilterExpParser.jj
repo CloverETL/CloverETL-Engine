@@ -728,6 +728,48 @@ void BuildInFunction()       : {}
                                                       }
                                                     }
 /*@egen*/
+	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #ReplaceNode( 3) */
+                                                                                              {
+                                                                                                CLVFReplaceNode jjtn009 = new CLVFReplaceNode(this, JJTREPLACENODE);
+                                                                                                boolean jjtc009 = true;
+                                                                                                jjtree.openNodeScope(jjtn009);
+                                                                                              }
+                                                                                              try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                                                                              } finally {
+                                                                                                if (jjtc009) {
+                                                                                                  jjtree.closeNodeScope(jjtn009,  3);
+                                                                                                }
+                                                                                              }
+/*@egen*/ // (string,pattern,new_content)
+  |"str2num" "(" AdditiveExpression()/*@bgen(jjtree) #Str2NumNode( 1) */
+                                      {
+                                        CLVFStr2NumNode jjtn010 = new CLVFStr2NumNode(this, JJTSTR2NUMNODE);
+                                        boolean jjtc010 = true;
+                                        jjtree.openNodeScope(jjtn010);
+                                      }
+                                      try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                      } finally {
+                                        if (jjtc010) {
+                                          jjtree.closeNodeScope(jjtn010,  1);
+                                        }
+                                      }
+/*@egen*/
+  |"num2str" "(" AdditiveExpression()/*@bgen(jjtree) #Num2StrNode( 1) */
+                                      {
+                                        CLVFNum2StrNode jjtn011 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
+                                        boolean jjtc011 = true;
+                                        jjtree.openNodeScope(jjtn011);
+                                      }
+                                      try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                      } finally {
+                                        if (jjtc011) {
+                                          jjtree.closeNodeScope(jjtn011,  1);
+                                        }
+                                      }
+/*@egen*/
 }
 
 void LitExp()       :            // 

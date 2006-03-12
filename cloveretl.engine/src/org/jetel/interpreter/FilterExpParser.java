@@ -511,6 +511,9 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 47:
     case 48:
     case 49:
+    case 50:
+    case 51:
+    case 52:
       PrimaryExpression();
       break;
     default:
@@ -599,6 +602,9 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 47:
     case 48:
     case 49:
+    case 50:
+    case 51:
+    case 52:
       BuildInFunction();
       break;
     case FIELD_ID:
@@ -697,13 +703,13 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                              }
       }
       break;
-    case 47:
+    case 50:
       ConcatNode();
       break;
-    case 48:
+    case 51:
       DateAddNode();
       break;
-    case 49:
+    case 52:
       DateDiffNode();
       break;
     case 44:
@@ -750,6 +756,55 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                       if (jjtc008) {
                                                         jjtree.closeNodeScope(jjtn008,  2);
                                                       }
+      }
+      break;
+    case 47:
+      jj_consume_token(47);
+      jj_consume_token(OPEN_PAR);
+      AdditiveExpression();
+      jj_consume_token(39);
+      AdditiveExpression();
+      jj_consume_token(39);
+      AdditiveExpression();
+                                                                                                CLVFReplaceNode jjtn009 = new CLVFReplaceNode(this, JJTREPLACENODE);
+                                                                                                boolean jjtc009 = true;
+                                                                                                jjtree.openNodeScope(jjtn009);
+      try {
+        jj_consume_token(CLOSE_PAR);
+      } finally {
+                                                                                                if (jjtc009) {
+                                                                                                  jjtree.closeNodeScope(jjtn009,  3);
+                                                                                                }
+      }
+      break;
+    case 48:
+      jj_consume_token(48);
+      jj_consume_token(OPEN_PAR);
+      AdditiveExpression();
+                                        CLVFStr2NumNode jjtn010 = new CLVFStr2NumNode(this, JJTSTR2NUMNODE);
+                                        boolean jjtc010 = true;
+                                        jjtree.openNodeScope(jjtn010);
+      try {
+        jj_consume_token(CLOSE_PAR);
+      } finally {
+                                        if (jjtc010) {
+                                          jjtree.closeNodeScope(jjtn010,  1);
+                                        }
+      }
+      break;
+    case 49:
+      jj_consume_token(49);
+      jj_consume_token(OPEN_PAR);
+      AdditiveExpression();
+                                        CLVFNum2StrNode jjtn011 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
+                                        boolean jjtc011 = true;
+                                        jjtree.openNodeScope(jjtn011);
+      try {
+        jj_consume_token(CLOSE_PAR);
+      } finally {
+                                        if (jjtc011) {
+                                          jjtree.closeNodeScope(jjtn011,  1);
+                                        }
       }
       break;
     default:
@@ -884,7 +939,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(47);
+      jj_consume_token(50);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
       label_8:
@@ -928,7 +983,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      jj_consume_token(48);
+      jj_consume_token(51);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
       jj_consume_token(39);
@@ -964,7 +1019,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      jj_consume_token(49);
+      jj_consume_token(52);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
       jj_consume_token(39);
@@ -1001,30 +1056,30 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     finally { jj_save(0, xla); }
   }
 
-  final private boolean jj_3R_42() {
-    if (jj_3R_43()) return true;
+  final private boolean jj_3R_45() {
+    if (jj_3R_46()) return true;
     return false;
   }
 
-  final private boolean jj_3R_36() {
-    if (jj_scan_token(48)) return true;
+  final private boolean jj_3R_39() {
+    if (jj_scan_token(51)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_41() {
-    if (jj_3R_42()) return true;
+  final private boolean jj_3R_44() {
+    if (jj_3R_45()) return true;
     return false;
   }
 
-  final private boolean jj_3R_35() {
-    if (jj_scan_token(47)) return true;
+  final private boolean jj_3R_38() {
+    if (jj_scan_token(50)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
-  final private boolean jj_3R_40() {
-    if (jj_3R_41()) return true;
+  final private boolean jj_3R_43() {
+    if (jj_3R_44()) return true;
     return false;
   }
 
@@ -1033,13 +1088,13 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_39() {
-    if (jj_3R_40()) return true;
+  final private boolean jj_3R_22() {
+    if (jj_scan_token(DATETIME_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_22() {
-    if (jj_scan_token(DATETIME_LITERAL)) return true;
+  final private boolean jj_3R_42() {
+    if (jj_3R_43()) return true;
     return false;
   }
 
@@ -1048,23 +1103,18 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_38() {
-    if (jj_3R_39()) return true;
-    return false;
-  }
-
   final private boolean jj_3R_20() {
     if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
   }
 
-  final private boolean jj_3R_19() {
-    if (jj_scan_token(INTEGER_LITERAL)) return true;
+  final private boolean jj_3R_41() {
+    if (jj_3R_42()) return true;
     return false;
   }
 
-  final private boolean jj_3R_34() {
-    if (jj_3R_38()) return true;
+  final private boolean jj_3R_19() {
+    if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
   }
 
@@ -1092,6 +1142,17 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
+  final private boolean jj_3R_34() {
+    if (jj_scan_token(47)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_37() {
+    if (jj_3R_41()) return true;
+    return false;
+  }
+
   final private boolean jj_3R_33() {
     if (jj_scan_token(46)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
@@ -1111,17 +1172,29 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_30() {
-    if (jj_3R_37()) return true;
+    if (jj_3R_40()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_36() {
+    if (jj_scan_token(49)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_29() {
-    if (jj_3R_36()) return true;
+    if (jj_3R_39()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_35() {
+    if (jj_scan_token(48)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_28() {
-    if (jj_3R_35()) return true;
+    if (jj_3R_38()) return true;
     return false;
   }
 
@@ -1132,7 +1205,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_17() {
-    if (jj_3R_34()) return true;
+    if (jj_3R_37()) return true;
     return false;
   }
 
@@ -1183,7 +1256,16 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     jj_scanpos = xsp;
     if (jj_3R_32()) {
     jj_scanpos = xsp;
-    if (jj_3R_33()) return true;
+    if (jj_3R_33()) {
+    jj_scanpos = xsp;
+    if (jj_3R_34()) {
+    jj_scanpos = xsp;
+    if (jj_3R_35()) {
+    jj_scanpos = xsp;
+    if (jj_3R_36()) return true;
+    }
+    }
+    }
     }
     }
     }
@@ -1213,7 +1295,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_45() {
+  final private boolean jj_3R_48() {
     if (jj_scan_token(NOT)) return true;
     return false;
   }
@@ -1245,26 +1327,26 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     return false;
   }
 
-  final private boolean jj_3R_44() {
+  final private boolean jj_3R_47() {
     if (jj_3R_9()) return true;
     return false;
   }
 
-  final private boolean jj_3R_43() {
+  final private boolean jj_3R_46() {
     Token xsp;
     xsp = jj_scanpos;
-    if (jj_3R_44()) {
+    if (jj_3R_47()) {
     jj_scanpos = xsp;
     if (jj_3_1()) {
     jj_scanpos = xsp;
-    if (jj_3R_45()) return true;
+    if (jj_3R_48()) return true;
     }
     }
     return false;
   }
 
-  final private boolean jj_3R_37() {
-    if (jj_scan_token(49)) return true;
+  final private boolean jj_3R_40() {
+    if (jj_scan_token(52)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
@@ -1289,7 +1371,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
       jj_la1_0 = new int[] {0x0,0x40,0x80,0x600000,0x600000,0xf800000,0xf800000,0x60000000,0x60000000,0x80000000,0x80000000,0x194200,0x100,0x194200,0x0,0x194200,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x3,0x3ff4c,0x0,0x3ff4c,0x3ff40,0x0,0x80,};
+      jj_la1_1 = new int[] {0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x3,0x1fff4c,0x0,0x1fff4c,0x1fff40,0x0,0x80,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
@@ -1463,8 +1545,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[51];
-    for (int i = 0; i < 51; i++) {
+    boolean[] la1tokens = new boolean[54];
+    for (int i = 0; i < 54; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -1483,7 +1565,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
         }
       }
     }
-    for (int i = 0; i < 51; i++) {
+    for (int i = 0; i < 54; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
