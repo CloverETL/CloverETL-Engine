@@ -394,9 +394,15 @@ public class MergeJoin extends Node {
 		inRecords[1] = null;
 		outRecords[0]= out;
 
-		if (!transformation.transform(inRecords, outRecords)) {
-			resultMsg = transformation.getMessage();
-			return false;
+		try{
+		    if (!transformation.transform(inRecords, outRecords)) {
+		        resultMsg = transformation.getMessage();
+		        return false;
+		    }
+		}catch(NullPointerException ex){
+		    logger.error("Null pointer exception when transforming input data",ex);
+		    logger.info("Possibly incorrectly handled outer-join situation");
+		    throw new RuntimeException("Null pointer exception when transforming input data",ex);
 		}
 		port.writeRecord(out);
 		return true;
@@ -419,10 +425,16 @@ public class MergeJoin extends Node {
 	    inRecords[1] = slave;
 	    outRecords[0]= out;
 	    
-	    if (!transformation.transform(inRecords, outRecords)) {
-	        resultMsg = transformation.getMessage();
-	        return false;
-	    }
+	    try{
+		    if (!transformation.transform(inRecords, outRecords)) {
+		        resultMsg = transformation.getMessage();
+		        return false;
+		    }
+		}catch(NullPointerException ex){
+		    logger.error("Null pointer exception when transforming input data",ex);
+		    logger.info("Possibly incorrectly handled outer-join situation");
+		    throw new RuntimeException("Null pointer exception when transforming input data",ex);
+		}
 	    port.writeRecord(out);
 	    return true;
 	}
@@ -554,7 +566,7 @@ public class MergeJoin extends Node {
 		}
 		// signal end of records stream to transformation function
 		transformation.finished();
-		broadcastEOF();
+		broadcastEOF();		
 		if (runIt) {
 			resultMsg = "OK";
 		} else {

@@ -387,16 +387,16 @@ public class ExtSort extends Node {
         targetCarousel.free();
 
         // DEBUG START
-        if (logger.isDebugEnabled()) {
-		    logger.debug("*** Merged data: ***");
-		    logger.debug("****** FINAL TAPE CAROUSEL REVIEW ***********");
-		
-		    DataRecordTape tape = tapeCarousel.getFirstTape();
-		    while (tape != null) {
-		    	logger.debug(tape);
-		        tape = tapeCarousel.getNextTape();
-		    }
-        }
+//        if (logger.isDebugEnabled()) {
+//		    logger.debug("*** Merged data: ***");
+//		    logger.debug("****** FINAL TAPE CAROUSEL REVIEW ***********");
+//		
+//		    DataRecordTape tape = tapeCarousel.getFirstTape();
+//		    while (tape != null) {
+//		    	logger.debug(tape);
+//		        tape = tapeCarousel.getNextTape();
+//		    }
+//        }
         // DEBUG END
         
         /* 
