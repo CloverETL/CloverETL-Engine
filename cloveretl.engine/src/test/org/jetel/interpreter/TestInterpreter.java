@@ -123,7 +123,7 @@ public class TestInterpreter extends TestCase {
 	}
 		
 	public void test_3_expression() {
-		String expStr="trim($Name)==\"HELLO\"";
+		String expStr="trim($Name)==\"HELLO\" or replace($Name,\".\" ,\"a\")";
 		try {
 			  FilterExpParser parser = new FilterExpParser(record,
 			  		new ByteArrayInputStream(expStr.getBytes()));
