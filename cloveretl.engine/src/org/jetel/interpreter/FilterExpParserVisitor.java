@@ -24,6 +24,9 @@ public interface FilterExpParserVisitor
   public Object visit(CLVFTodayNode node, Object data);
   public Object visit(CLVFIsNullNode node, Object data);
   public Object visit(CLVFNVLNode node, Object data);
+  public Object visit(CLVFReplaceNode node, Object data);
+  public Object visit(CLVFStr2NumNode node, Object data);
+  public Object visit(CLVFNum2StrNode node, Object data);
   public Object visit(CLVFLiteral node, Object data);
   public Object visit(CLVFJetelFieldLiteral node, Object data);
   public Object visit(CLVFRegexLiteral node, Object data);

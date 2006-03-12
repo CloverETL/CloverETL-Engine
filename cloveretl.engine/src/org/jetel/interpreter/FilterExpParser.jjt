@@ -225,6 +225,9 @@ void BuildInFunction() #void : {}
 	|"today" "(" ")" #TodayNode(0)
 	|"isnull" "(" IDExp() ")" #IsNullNode(1)
 	|"nvl" "(" IDExp() "," AdditiveExpression() ")" #NVLNode(2)
+	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
+  |"str2num" "(" AdditiveExpression() ")" #Str2NumNode(1)
+  |"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
 }
 
 void LitExp() #void :            // 
