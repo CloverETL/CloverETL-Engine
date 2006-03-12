@@ -86,6 +86,9 @@ import org.w3c.dom.Text;
  * <li>dateadd( ..date expression.., ..amount.. , year|month|day|hour|minute|sec )
  * <li>datediff( ..date expression.., ..date expression.. , year|month|day|hour|minute|sec )
  * <li>nvl(&lt;field reference&gt;, ..expression.. )
+ * <li>replace(..str expression.., ..regex_pattern.., ..str expression.. )
+ * <li>num2str(..num expression.. )
+ * <li>str2num(..str expression.. )
  * </ul> 
  * </td></tr>
  * </table>

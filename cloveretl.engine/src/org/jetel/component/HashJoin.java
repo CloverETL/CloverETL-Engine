@@ -446,10 +446,16 @@ public class HashJoin extends Node {
 					if ((slaveRecord != null) || (leftOuterJoin)) {
 						// call transformation function
 						inRecords[1] = slaveRecord;
-						if (!transformation.transform(inRecords, outRecord)) {
-							resultCode = Node.RESULT_ERROR;
-							resultMsg = transformation.getMessage();
-							return;
+						try{
+						    if (!transformation.transform(inRecords, outRecord)) {
+						        resultCode = Node.RESULT_ERROR;
+						        resultMsg = transformation.getMessage();
+						        return;
+						    }
+						}catch(NullPointerException ex){
+						    logger.error("Null pointer exception when transforming input data",ex);
+						    logger.info("Possibly incorrectly handled outer-join situation");
+						    throw new RuntimeException("Null pointer exception when transforming input data",ex);
 						}
 						outPort.writeRecord(outRecord[0]);
 					}
