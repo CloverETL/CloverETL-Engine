@@ -45,7 +45,7 @@ public class DirectEdge extends EdgeBase {
 	private ByteBuffer writeBuffer;
 	private ByteBuffer tmpDataRecord;
 	private int recordCounter;
-	private volatile boolean isClosed=false;
+	private boolean isClosed=false;
 	private boolean readFull=false;
 	
 	private int readBufferLimit;
@@ -53,7 +53,7 @@ public class DirectEdge extends EdgeBase {
 	// Attributes
 	
 
-	private final static int IS_EOF=-1;
+	private final static int EOF=Integer.MIN_VALUE;
 	private	final static int SIZEOF_INT=4;	
 
 	/**
@@ -117,13 +117,16 @@ public class DirectEdge extends EdgeBase {
 	 */
 
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-
+	    
 	    if (!readBuffer.hasRemaining()){
-	        fillReadBuffer();
+	        if (!fillReadBuffer()){
+	            return null;
+	        }
 	    }
 	    try{
 	        // create the record/read it from buffer
 	        if (readBuffer.getInt()<0){
+	            isClosed=true;
 	            return null; // EOF
 	        }
 	        record.deserialize(readBuffer);
@@ -145,13 +148,17 @@ public class DirectEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	    
 	    if (!readBuffer.hasRemaining()){
-	        fillReadBuffer();
+	        if (!fillReadBuffer()){
+	            return false;
+	        }
 	    }
 	    try{
 	        // create the record/read it from buffer
 	        int length=readBuffer.getInt();
 	        if (length<0){
+	            isClosed=true;
 	            return false;
 	        }
 	        readBuffer.limit(readBuffer.position()+length);
@@ -168,13 +175,14 @@ public class DirectEdge extends EdgeBase {
 	}
 
 	
-	private synchronized ByteBuffer fillReadBuffer() throws InterruptedException{
+	private synchronized boolean fillReadBuffer() throws InterruptedException{
+	    if(isClosed) return false;
 	    readFull=false;
 	    while (!readFull){
 	        notify();
 	        wait();
 	    }
-	    return readBuffer;
+	    return true;
 	}
 	
 
@@ -195,7 +203,7 @@ public class DirectEdge extends EdgeBase {
 	    int length=tmpDataRecord.remaining();
 	    
 	    if ((length+SIZEOF_INT)>writeBuffer.remaining()){
-	        emptyWriteBuffer();
+	        flushWriteBuffer();
 	    }
         writeBuffer.putInt(length);
         writeBuffer.put(tmpDataRecord);
@@ -217,7 +225,7 @@ public class DirectEdge extends EdgeBase {
 		int dataLength=record.remaining();
 	    
 	    if ((dataLength+SIZEOF_INT)>writeBuffer.remaining()){
-	        emptyWriteBuffer();
+	        flushWriteBuffer();
 	    }
         writeBuffer.putInt(dataLength);
         writeBuffer.put(record);
@@ -226,12 +234,19 @@ public class DirectEdge extends EdgeBase {
 	    
 	}
 
-	private synchronized ByteBuffer emptyWriteBuffer() throws InterruptedException{
+	private synchronized void flushWriteBuffer() throws InterruptedException{
 	    while(readFull){
 	        notify();
 	        wait();
 	    }
 	    // just switch buffers
+	    switchBuffers();
+
+	    readFull=true;
+	    notify();
+	}
+	
+	private final void switchBuffers(){
 	    ByteBuffer tmp;
 	    tmp=readBuffer;
 	    readBuffer=writeBuffer;
@@ -239,18 +254,7 @@ public class DirectEdge extends EdgeBase {
 	    writeBuffer.clear();
 	    readBuffer.flip();
 	    readBufferLimit=readBuffer.limit(); // save readRecord limit
-	    /* old fashion copying
-	    readBuffer.clear();
-	    writeBuffer.flip();
-	    readBuffer.put(writeBuffer);
-	    readBuffer.flip();
-	    writeBuffer.clear();
-	    */
-	    readFull=true;
-	    notify();
-	    return writeBuffer;
 	}
-	
 
 	/**
 	 *  Description of the Method
@@ -270,20 +274,17 @@ public class DirectEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public  void close() {
+	public synchronized void close() {
 	    try{
-	        if (writeBuffer.remaining()>=SIZEOF_INT){
-	            writeBuffer.putInt(IS_EOF); // EOF
-	            emptyWriteBuffer();	
-	        }else{
-	            emptyWriteBuffer();
-	            writeBuffer.putInt(IS_EOF); // EOF
-	            emptyWriteBuffer();
+	        if (writeBuffer.remaining()<SIZEOF_INT){
+	            flushWriteBuffer();
 	        }
+            writeBuffer.putInt(EOF); // send EOF
+            flushWriteBuffer();
+            
 	    }catch(InterruptedException ex){
 	        throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
 	    }
-	    isClosed=true;
 	}
 
 	public boolean hasData(){
