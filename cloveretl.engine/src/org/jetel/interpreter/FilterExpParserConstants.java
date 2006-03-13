@@ -35,7 +35,7 @@ public interface FilterExpParserConstants {
   int FIELD_ID = 34;
   int OPEN_PAR = 35;
   int CLOSE_PAR = 36;
-  int DATE_FIELD_LITERAL = 53;
+  int DATE_FIELD_LITERAL = 55;
 
   int DEFAULT = 0;
 
@@ -90,6 +90,8 @@ public interface FilterExpParserConstants {
     "\"replace\"",
     "\"str2num\"",
     "\"num2str\"",
+    "\"iif\"",
+    "\"print_err\"",
     "\"concat\"",
     "\"dateadd\"",
     "\"datediff\"",

@@ -226,8 +226,11 @@ void BuildInFunction() #void : {}
 	|"isnull" "(" IDExp() ")" #IsNullNode(1)
 	|"nvl" "(" IDExp() "," AdditiveExpression() ")" #NVLNode(2)
 	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
-  |"str2num" "(" AdditiveExpression() ")" #Str2NumNode(1)
-  |"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
+	|"str2num" "(" AdditiveExpression() ")" #Str2NumNode(1)
+	|"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
+	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
+	|"print_err" "(" AdditiveExpression() ")" #PrintErrNode(1)
+
 }
 
 void LitExp() #void :            // 

@@ -746,13 +746,45 @@ public class FilterExpParserExecutor implements FilterExpParserVisitor, FilterEx
 		        stack.push(Double.valueOf(((CharSequence)a).toString()));
 		    }catch(NumberFormatException ex){
 		        Object[] arguments={a};
-				throw new InterpreterRuntimeException(arguments,"str2num- can't convert \""+a+"\"");
+				throw new InterpreterRuntimeException(arguments,"str2num - can't convert \""+a+"\"");
 		    }
 		}else {
 			Object[] arguments={a};
-			throw new InterpreterRuntimeException(arguments,"str2num- wrong type of literal");
+			throw new InterpreterRuntimeException(arguments,"str2num - wrong type of literal");
 		}
 		
 		return data;
 	}
+	
+	public Object visit(CLVFIffNode node, Object data){
+	    node.jjtGetChild(0).jjtAccept(this, data);
+	    
+	    Object condition=stack.pop();
+	    
+	    if (condition instanceof Boolean){
+	        if (((Boolean)condition).booleanValue()){
+	            node.jjtGetChild(1).jjtAccept(this, data);
+	        }else{
+	            node.jjtGetChild(2).jjtAccept(this, data);
+	        }
+	        stack.push(stack.pop());
+	    }else{
+	        Object[] arguments={condition};
+			throw new InterpreterRuntimeException(arguments,"iif - wrong type of conditional expression");
+	    }
+	
+	    return data;
+	}
+	
+	public Object visit(CLVFPrintErrNode node, Object data){
+		node.jjtGetChild(0).jjtAccept(this, data);
+		Object a = stack.pop();
+		
+		System.err.println(a!=null ? a : "null");
+		
+		stack.push(Stack.TRUE_VAL);
+		
+		return data;
+	}
+	
 }

@@ -742,34 +742,63 @@ void BuildInFunction()       : {}
                                                                                                 }
                                                                                               }
 /*@egen*/ // (string,pattern,new_content)
-  |"str2num" "(" AdditiveExpression()/*@bgen(jjtree) #Str2NumNode( 1) */
-                                      {
-                                        CLVFStr2NumNode jjtn010 = new CLVFStr2NumNode(this, JJTSTR2NUMNODE);
-                                        boolean jjtc010 = true;
-                                        jjtree.openNodeScope(jjtn010);
-                                      }
-                                      try {
+	|"str2num" "(" AdditiveExpression()/*@bgen(jjtree) #Str2NumNode( 1) */
+                                            {
+                                              CLVFStr2NumNode jjtn010 = new CLVFStr2NumNode(this, JJTSTR2NUMNODE);
+                                              boolean jjtc010 = true;
+                                              jjtree.openNodeScope(jjtn010);
+                                            }
+                                            try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                                      } finally {
-                                        if (jjtc010) {
-                                          jjtree.closeNodeScope(jjtn010,  1);
-                                        }
-                                      }
+                                            } finally {
+                                              if (jjtc010) {
+                                                jjtree.closeNodeScope(jjtn010,  1);
+                                              }
+                                            }
 /*@egen*/
-  |"num2str" "(" AdditiveExpression()/*@bgen(jjtree) #Num2StrNode( 1) */
-                                      {
-                                        CLVFNum2StrNode jjtn011 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
-                                        boolean jjtc011 = true;
-                                        jjtree.openNodeScope(jjtn011);
-                                      }
-                                      try {
+	|"num2str" "(" AdditiveExpression()/*@bgen(jjtree) #Num2StrNode( 1) */
+                                            {
+                                              CLVFNum2StrNode jjtn011 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
+                                              boolean jjtc011 = true;
+                                              jjtree.openNodeScope(jjtn011);
+                                            }
+                                            try {
 /*@egen*/ ")"/*@bgen(jjtree)*/
-                                      } finally {
-                                        if (jjtc011) {
-                                          jjtree.closeNodeScope(jjtn011,  1);
-                                        }
-                                      }
+                                            } finally {
+                                              if (jjtc011) {
+                                                jjtree.closeNodeScope(jjtn011,  1);
+                                              }
+                                            }
 /*@egen*/
+	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #IffNode( 3) */
+                                                                                               {
+                                                                                                 CLVFIffNode jjtn012 = new CLVFIffNode(this, JJTIFFNODE);
+                                                                                                 boolean jjtc012 = true;
+                                                                                                 jjtree.openNodeScope(jjtn012);
+                                                                                               }
+                                                                                               try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                                                                               } finally {
+                                                                                                 if (jjtc012) {
+                                                                                                   jjtree.closeNodeScope(jjtn012,  3);
+                                                                                                 }
+                                                                                               }
+/*@egen*/ // (condition, express if true, express else)
+	|"print_err" "(" AdditiveExpression()/*@bgen(jjtree) #PrintErrNode( 1) */
+                                              {
+                                                CLVFPrintErrNode jjtn013 = new CLVFPrintErrNode(this, JJTPRINTERRNODE);
+                                                boolean jjtc013 = true;
+                                                jjtree.openNodeScope(jjtn013);
+                                              }
+                                              try {
+/*@egen*/ ")"/*@bgen(jjtree)*/
+                                              } finally {
+                                                if (jjtc013) {
+                                                  jjtree.closeNodeScope(jjtn013,  1);
+                                                }
+                                              }
+/*@egen*/
+
 }
 
 void LitExp()       :            // 
