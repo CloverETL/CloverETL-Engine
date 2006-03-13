@@ -27,12 +27,14 @@ public interface FilterExpParserTreeConstants
   public int JJTREPLACENODE = 20;
   public int JJTSTR2NUMNODE = 21;
   public int JJTNUM2STRNODE = 22;
-  public int JJTLITERAL = 23;
-  public int JJTJETELFIELDLITERAL = 24;
-  public int JJTREGEXLITERAL = 25;
-  public int JJTCONCATNODE = 26;
-  public int JJTDATEADDNODE = 27;
-  public int JJTDATEDIFFNODE = 28;
+  public int JJTIFFNODE = 23;
+  public int JJTPRINTERRNODE = 24;
+  public int JJTLITERAL = 25;
+  public int JJTJETELFIELDLITERAL = 26;
+  public int JJTREGEXLITERAL = 27;
+  public int JJTCONCATNODE = 28;
+  public int JJTDATEADDNODE = 29;
+  public int JJTDATEDIFFNODE = 30;
 
 
   public String[] jjtNodeName = {
@@ -59,6 +61,8 @@ public interface FilterExpParserTreeConstants
     "ReplaceNode",
     "Str2NumNode",
     "Num2StrNode",
+    "IffNode",
+    "PrintErrNode",
     "Literal",
     "JetelFieldLiteral",
     "RegexLiteral",

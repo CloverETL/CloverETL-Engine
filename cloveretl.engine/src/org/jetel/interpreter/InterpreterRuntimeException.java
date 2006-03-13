@@ -68,7 +68,9 @@ public class InterpreterRuntimeException extends RuntimeException {
 		strBuf.append(super.getMessage()).append("\n");
 		if (arguments !=null){
 			for(int i=0;i<arguments.length;i++){
-				strBuf.append("arg[").append(i).append("] ").append(arguments[i].getClass().getName());
+				strBuf.append("arg[").append(i).append("] ");
+				strBuf.append(arguments[i] != null ? arguments[i].getClass().getName() : "null").append(" \"");
+				strBuf.append(arguments[i] != null ? arguments[i] : "!! NULL !!").append("\"");
 				strBuf.append("\n");
 			}
 		}
