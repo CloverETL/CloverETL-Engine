@@ -18,7 +18,7 @@
  * Created on Mar 26, 2003
  *
  */
-package test.org.jetel.util;
+package org.jetel.util;
 
 import junit.framework.TestCase;
 import org.jetel.util.StringUtils;

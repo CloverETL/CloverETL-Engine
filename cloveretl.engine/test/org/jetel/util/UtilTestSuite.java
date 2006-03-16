@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package test.org.jetel.util;
+package org.jetel.util;
 
 import junit.framework.*;
 
@@ -33,11 +33,11 @@ public class UtilTestSuite extends TestSuite {
 
 		TestSuite suite = new TestSuite("All org.jetel.util Tests");
 
-		suite.addTest(new TestSuite(test.org.jetel.util.StringUtilsTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.ClassBuilderTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CodeParserTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CompileTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.util.CreateJavaObjectTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.StringUtilsTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.ClassBuilderTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.CodeParserTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.CompileTest.class));
+		suite.addTest(new TestSuite(org.jetel.util.CreateJavaObjectTest.class));
 		return suite;
 
 	}

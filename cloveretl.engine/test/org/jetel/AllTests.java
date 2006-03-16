@@ -16,16 +16,16 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
-package test.org.jetel;
+package org.jetel;
 /**
  * @author maciorowski
  * @version 1.0
  *
  */
-import test.org.jetel.data.DataTestSuite;
-import test.org.jetel.exception.ExceptionTestSuite;
-import test.org.jetel.metadata.MetadataTestSuite;
-import test.org.jetel.util.UtilTestSuite;
+import org.jetel.data.DataTestSuite;
+import org.jetel.exception.ExceptionTestSuite;
+import org.jetel.metadata.MetadataTestSuite;
+import org.jetel.util.UtilTestSuite;
 import junit.framework.*;
 /**
  * TestSuite that runs all the sample tests

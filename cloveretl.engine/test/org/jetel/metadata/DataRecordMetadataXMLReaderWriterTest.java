@@ -1,4 +1,4 @@
-package test.org.jetel.metadata;
+package org.jetel.metadata;
 
 import java.io.File;
 import java.io.FileInputStream;

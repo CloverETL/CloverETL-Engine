@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package test.org.jetel.graph;
+package org.jetel.graph;
 
 import java.io.IOException;
 import junit.framework.TestCase;

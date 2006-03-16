@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package test.org.jetel.data;
+package org.jetel.data;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -32,14 +32,14 @@ public class DataTestSuite  extends TestSuite  {
 	
 		TestSuite suite= new TestSuite("All org.jetel.data Tests");
 	
-		suite.addTest(new TestSuite(test.org.jetel.data.ByteDataFieldTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.DateDataFieldTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.IntegerDataFieldTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.NumericDataFieldTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.StringDataFieldTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.FixLenDataParser2Test.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.OneRecordPerLinePolicyTest.class));
-		suite.addTest(new TestSuite(test.org.jetel.data.FixLenDataFormatterTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.ByteDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.DateDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.IntegerDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.NumericDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.StringDataFieldTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.FixLenDataParser2Test.class));
+		suite.addTest(new TestSuite(org.jetel.data.OneRecordPerLinePolicyTest.class));
+		suite.addTest(new TestSuite(org.jetel.data.FixLenDataFormatterTest.class));
 		return suite;
 	
 	}

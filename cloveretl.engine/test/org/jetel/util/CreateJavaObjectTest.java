@@ -17,7 +17,7 @@
  *
  *  Created on May 31, 2003
  */
-package test.org.jetel.util;
+package org.jetel.util;
 
 import java.io.DataOutputStream;
 import java.io.File;

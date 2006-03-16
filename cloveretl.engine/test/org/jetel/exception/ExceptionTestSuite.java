@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-package test.org.jetel.exception;
+package org.jetel.exception;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -30,9 +30,9 @@ public class ExceptionTestSuite   extends TestSuite  {
 
 public static Test suite() {
 	TestSuite suite= new TestSuite("All org.jetel.exception Tests");
-	suite.addTest(new TestSuite(test.org.jetel.exception.BadDataFormatExceptionHandler_FixLenDataParser2_Test.class));
-	suite.addTest(new TestSuite(test.org.jetel.exception.BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test.class));
-	suite.addTest(new TestSuite(test.org.jetel.exception.BadDataFormatExceptionHandler_SQLDataParser_Test.class));
+	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_FixLenDataParser2_Test.class));
+	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test.class));
+	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_SQLDataParser_Test.class));
 		
 	return suite;
 }

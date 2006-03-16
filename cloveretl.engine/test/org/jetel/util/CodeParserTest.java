@@ -4,7 +4,7 @@
  * To change the template for this generated file go to
  * Window>Preferences>Java>Code Generation>Code and Comments
  */
-package test.org.jetel.util;
+package org.jetel.util;
 
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
