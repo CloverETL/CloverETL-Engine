@@ -896,7 +896,7 @@ public class CodeParser {
 		transCode.append("\t\t// user's code STARTs from here !\n\n");
 
 		//add double tab before all lines of code
-		sourceCode.insert(0, transCode);
+		sourceCode.insert(0, transCode.toString());
 
 		sourceCode.append("\n\t\t// user's code ENDs here !\n");
 		sourceCode.append("\t\treturn true;\n");
