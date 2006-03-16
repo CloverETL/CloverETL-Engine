@@ -21,7 +21,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package test.org.jetel.data.sequence;
+package org.jetel.data.sequence;
 
 import org.jetel.data.sequence.SimpleSequence;
 
