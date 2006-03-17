@@ -393,8 +393,8 @@ public class TransformationGraphXMLReaderWriter {
 				nodeType = attributes.getString("type");
 				graphNode = ComponentFactory.createComponent(nodeType,
 						nodeElements.item(i));
-				graphNode.setPhase(phaseNum);
 				if (graphNode != null) {
+                    graphNode.setPhase(phaseNum);
 					if (nodes.put(nodeID, graphNode) != null) {
 						throw new RuntimeException(
 								"Duplicate NodeID detected: " + nodeID);
