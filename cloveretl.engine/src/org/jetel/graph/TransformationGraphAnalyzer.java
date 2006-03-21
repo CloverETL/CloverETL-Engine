@@ -33,7 +33,9 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
+
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -420,6 +422,57 @@ public class TransformationGraphAnalyzer {
 			return node;
 		}
 	}
+
+    /**
+     * Apply disabled property of node to graph. Called in graph inital phase. 
+     */
+    public static void disableComponents(List nodes) {
+        Set nodesToRemove = new HashSet();
+        
+        for (Iterator it = nodes.iterator(); it.hasNext();) {
+            Node node = (Node) it.next();
+            if(node.getEnabled() == EnabledEnum.DISABLED) {
+                nodesToRemove.add(node);
+                disconnectAllEdges(node);
+            } else if(node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+                nodesToRemove.add(node);
+                final Edge inEdge = (Edge) node.getInputPort(node.getPassThroughInputPort());
+                final Edge outEdge = (Edge) node.getOutputPort(node.getPassThroughOutputPort());
+                if(inEdge == null || outEdge == null) {
+                    disconnectAllEdges(node);
+                    continue;
+                }
+                final Node sourceNode = inEdge.getWriter();
+                final Node targetNode = outEdge.getReader();
+                final int sourceIdx = inEdge.getOutputPortNumber();
+                final int targetIdx = outEdge.getInputPortNumber();
+                disconnectAllEdges(node);
+                if(inEdge != null && targetNode != null) {
+                    sourceNode.addOutputPort(sourceIdx, inEdge);
+                    targetNode.addInputPort(targetIdx, inEdge);
+                }
+            }
+        }
+        nodes.removeAll(nodesToRemove);
+    }
+    
+    /**
+     * Disconnect all edges connected to the given node.
+     * @param node
+     */
+    private static void disconnectAllEdges(Node node) {
+        for(Iterator it1 = node.getInPorts().iterator(); it1.hasNext();) {
+            final Edge edge = (Edge) it1.next();
+            Node writer = edge.getWriter();
+            if(writer != null) writer.removeOutputPort(edge);
+        }
+
+        for(Iterator it1 = node.getOutPorts().iterator(); it1.hasNext();) {
+            final Edge edge = (Edge) it1.next();
+            final Node reader = edge.getReader();
+            if(reader != null) reader.removeInputPort(edge);
+        }
+    }
 
 }
 /*

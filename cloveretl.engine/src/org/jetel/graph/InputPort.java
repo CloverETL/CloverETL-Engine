@@ -45,7 +45,7 @@ public interface InputPort {
 	 * @param  _reader  Description of Parameter
 	 * @since           April 2, 2002
 	 */
-	public void connectReader(Node _reader);
+	public void connectReader(Node _reader, int portNum);
 
 
 	/**
@@ -101,6 +101,13 @@ public interface InputPort {
 	 * @return True if read operation won't block due to lack of data
 	 */
 	public boolean hasData();
+    
+    /**
+     * Gets the id number of input port connected reader.
+     * @return
+     */
+    public int getInputPortNumber();
+
 }
 /*
  *  end interface InputPort

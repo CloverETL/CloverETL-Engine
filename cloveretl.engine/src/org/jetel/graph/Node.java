@@ -27,9 +27,11 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.data.DataRecord;
 import org.jetel.util.StringUtils;
+import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.w3c.dom.Element;
+
 
 
 /**
@@ -46,7 +48,11 @@ public abstract class Node extends Thread {
 
 	protected TransformationGraph graph;
 	protected String id;
+    protected EnabledEnum enabled;
+    protected int passThroughInputPort;
+    protected int passThroughOutputPort;
 
+    
 	protected TreeMap outPorts;
 	protected TreeMap inPorts;
 
@@ -448,7 +454,7 @@ public abstract class Node extends Thread {
 			keyVal = 0;
 		}
 		inPorts.put(new Integer(keyVal), port);
-		port.connectReader(this);
+		port.connectReader(this, keyVal);
 	}
 
 
@@ -461,7 +467,7 @@ public abstract class Node extends Thread {
 	 */
 	public void addInputPort(int portNum, InputPort port) {
 		inPorts.put(new Integer(portNum), port);
-		port.connectReader(this);
+		port.connectReader(this, portNum);
 	}
 
 
@@ -483,7 +489,7 @@ public abstract class Node extends Thread {
 			keyVal = 0;
 		}
 		outPorts.put(new Integer(keyVal), port);
-		port.connectWriter(this);
+		port.connectWriter(this, keyVal);
 		outPortList = null;
 	}
 
@@ -497,7 +503,7 @@ public abstract class Node extends Thread {
 	 */
 	public void addOutputPort(int portNum, OutputPort port) {
 		outPorts.put(new Integer(portNum), port);
-		port.connectWriter(this);
+		port.connectWriter(this, portNum);
 		outPortList = null;
 	}
 
@@ -523,6 +529,21 @@ public abstract class Node extends Thread {
 		return (InputPort) inPorts.get(new Integer(portNum));
 	}
 
+    /**
+     * Removes input port.
+     * @param inputPort
+     */
+    public void removeInputPort(InputPort inputPort) {
+        inPorts.remove(new Integer(inputPort.getInputPortNumber()));
+    }
+
+    /**
+     * Removes output port.
+     * @param outputPort
+     */
+    public void removeOutputPort(OutputPort outputPort) {
+        outPorts.remove(new Integer(outputPort.getOutputPortNumber()));
+    }
 
 	/**
 	 *  Adds a feature to the LogPort attribute of the Node object
@@ -532,7 +553,7 @@ public abstract class Node extends Thread {
 	 */
 	public void addLogPort(OutputPort port) {
 		logPort = port;
-		port.connectWriter(this);
+		port.connectWriter(this, -1);
 	}
 
 
@@ -781,6 +802,56 @@ public abstract class Node extends Thread {
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		return null;
 	}
+
+
+    /**
+     * @return <b>true</b> if node is enabled; <b>false</b> else
+     */
+    public EnabledEnum getEnabled() {
+        return enabled;
+    }
+
+
+    /**
+     * @param enabled whether node is enabled
+     */
+    public void setEnabled(String enabledStr) {
+        enabled = EnabledEnum.fromString(enabledStr);
+    }
+
+
+    /**
+     * @return index of "pass through" input port
+     */
+    public int getPassThroughInputPort() {
+        return passThroughInputPort;
+    }
+
+
+    /**
+     * Sets "pass through" input port.
+     * @param passThroughInputPort
+     */
+    public void setPassThroughInputPort(int passThroughInputPort) {
+        this.passThroughInputPort = passThroughInputPort;
+    }
+
+
+    /**
+     * @return index of "pass through" output port
+     */
+    public int getPassThroughOutputPort() {
+        return passThroughOutputPort;
+    }
+
+
+    /**
+     * Sets "pass through" output port
+     * @param passThroughOutputPort
+     */
+    public void setPassThroughOutputPort(int passThroughOutputPort) {
+        this.passThroughOutputPort = passThroughOutputPort;
+    }
 }
 /*
  *  end class Node

@@ -33,7 +33,8 @@ import org.jetel.graph.OutputPort;
  * @revision    $Revision$
  */
 public class Trash implements OutputPort, OutputPortDirect {
-
+    private int portNum;
+    
 	// Associations
 	/**
 	 * @since    April 2, 2002
@@ -211,8 +212,9 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 * @param  writer   Description of Parameter
 	 * @since           April 2, 2002
 	 */
-	public void connectWriter(Node writer) {
+	public void connectWriter(Node writer, int portNum) {
 		this.writer = writer;
+        this.portNum = portNum;
 	}
 
 
@@ -232,6 +234,11 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 */
 	public void close() {
 	}
+
+
+    public int getOutputPortNumber() {
+        return portNum;
+    }
 
 }
 /*

@@ -19,26 +19,40 @@
 */
 package org.jetel.graph;
 
-import java.io.*;
-import java.util.*;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import javax.xml.parsers.*;
-import org.xml.sax.SAXParseException;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataJDBCStub;
-import org.jetel.metadata.MetadataFactory;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SimpleSequence;
 import org.jetel.database.DBConnection;
+import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotFoundException;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataJDBCStub;
+import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXParseException;
+
 
 /**
  *  Helper class which reads transformation graph definition from XML data
@@ -377,7 +391,10 @@ public class TransformationGraphXMLReaderWriter {
 		org.jetel.graph.Node graphNode;
 		String nodeType;
 		String nodeID="";
-
+		String nodeEnabled;
+        int nodePassThroughInputPort;
+        int nodePassThroughOutputPort;
+        
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < nodeElements.getLength(); i++) {
 			if (NODE_ELEMENT.compareToIgnoreCase(nodeElements.item(i)
@@ -391,10 +408,19 @@ public class TransformationGraphXMLReaderWriter {
 			try {
 				nodeID = attributes.getString("id");
 				nodeType = attributes.getString("type");
-				graphNode = ComponentFactory.createComponent(nodeType,
-						nodeElements.item(i));
+                nodeEnabled = attributes.getString("enabled", EnabledEnum.ENABLED.toString());
+                nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
+                nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
+				if(nodeEnabled.equalsIgnoreCase(EnabledEnum.ENABLED.toString())) {
+				    graphNode = ComponentFactory.createComponent(nodeType, nodeElements.item(i));
+                } else {
+                    graphNode = new SimpleNode(nodeID);
+                }
 				if (graphNode != null) {
                     graphNode.setPhase(phaseNum);
+                    graphNode.setEnabled(nodeEnabled);
+                    graphNode.setPassThroughInputPort(nodePassThroughInputPort);
+                    graphNode.setPassThroughOutputPort(nodePassThroughOutputPort);
 					if (nodes.put(nodeID, graphNode) != null) {
 						throw new RuntimeException(
 								"Duplicate NodeID detected: " + nodeID);
@@ -694,6 +720,24 @@ public class TransformationGraphXMLReaderWriter {
 		}
 		return(true);
 	}
-	
+
+    /**
+     * Simple implementation of Node, used for "disabled" and "pass through" nodes 
+     * by reading graph from xml. In next graph processing will be this nodes removed from graph.
+     */
+    class SimpleNode extends Node {
+
+        public SimpleNode(String id) {
+            super(id);
+        }
+
+        public String getType() { return null; }
+
+        public boolean checkConfig() { return false; }
+
+        public void run() { }
+
+        public void init() throws ComponentNotReadyException { }
+    }
 }
 

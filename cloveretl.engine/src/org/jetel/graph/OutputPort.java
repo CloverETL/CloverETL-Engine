@@ -45,7 +45,7 @@ public interface OutputPort {
 	 * @param  _writer  Description of Parameter
 	 * @since           April 2, 2002
 	 */
-	public void connectWriter(Node _writer);
+	public void connectWriter(Node _writer, int portNum);
 
 
 	/**
@@ -98,6 +98,12 @@ public interface OutputPort {
 	 * @since     May 17, 2002
 	 */
 	public int getRecordCounter();
+    
+    /**
+     * Gets the id number of output port connected writer.
+     * @return
+     */
+    public int getOutputPortNumber();
 }
 /*
  *  end interface OutputPort
