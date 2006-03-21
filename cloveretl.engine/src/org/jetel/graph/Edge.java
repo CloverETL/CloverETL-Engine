@@ -50,6 +50,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 
 	protected Node reader;
 	protected Node writer;
+    
+    protected int readerPort;
+    protected int writerPort;
 
 	protected DataRecordMetadata metadata;
 	protected DataRecordMetadataJDBCStub metadataStub;
@@ -286,8 +289,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @param  _reader  Description of Parameter
 	 * @since           April 2, 2002
 	 */
-	public void connectReader(Node _reader) {
+	public void connectReader(Node _reader, int portNum) {
 		this.reader = _reader;
+        this.readerPort = portNum;
 	}
 
 
@@ -297,8 +301,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @param  _writer  Description of Parameter
 	 * @since           April 2, 2002
 	 */
-	public void connectWriter(Node _writer) {
+	public void connectWriter(Node _writer, int portNum) {
 		this.writer = _writer;
+        this.writerPort = portNum;
 	}
 
 
@@ -324,6 +329,14 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	public boolean hasData(){
 		return edge.hasData();
 	}
+
+    public int getInputPortNumber() {
+        return readerPort;
+    }
+
+    public int getOutputPortNumber() {
+        return writerPort;
+    }
 }
 /*
  *  end class EdgeStub

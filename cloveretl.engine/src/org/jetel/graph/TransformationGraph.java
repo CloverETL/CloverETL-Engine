@@ -61,7 +61,6 @@ public final class TransformationGraph {
 
 	private List nodes;
 
-	private Node[] nodesArray;
 	private Phase[] phasesArray;
 	private List edges;
 
@@ -292,7 +291,6 @@ public final class TransformationGraph {
 		Iterator iterator;
 		DBConnection dbCon = null;
 		Sequence seq = null;
-		int i = 0;
 		
 		// initialize DB Connections
 		// iterate through all dbConnection(s) and initialize them - try to connect to db
@@ -324,14 +322,14 @@ public final class TransformationGraph {
 				return false;
 			}
 		}
+        
+        //remove disabled components and their edges
+        TransformationGraphAnalyzer.disableComponents(nodes);
+        
 		// initialize phases
-		i = 0;
-		phasesArray = new Phase[phases.size()];
-		iterator = phases.iterator();
-		while (iterator.hasNext()) {
-			phasesArray[i++] = (Phase) iterator.next();
-		}
-		try {
+        phasesArray = (Phase[]) phases.toArray(new Phase[phases.size()]);
+        Node[] nodesArray;
+        try {
 			nodesArray = TransformationGraphAnalyzer.enumerateNodes(nodes);
 		} catch (GraphConfigurationException ex) {
 			logger.fatal(ex.getMessage());
@@ -350,7 +348,6 @@ public final class TransformationGraph {
 		// initialized OK
 		return true;
 	}
-
 
 	/**  Free all allocated resources which need special care */
 	private void freeResources() {
@@ -432,7 +429,7 @@ public final class TransformationGraph {
 	public void addNode(Node node, int phase) {
 		nodes.add(node);
 		node.setGraph(this);
-		node.setPhase(phase);
+		node.setPhase(phase); //is this necessary? imho no
 	}
 
 
