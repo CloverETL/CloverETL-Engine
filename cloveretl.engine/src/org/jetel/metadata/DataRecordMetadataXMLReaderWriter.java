@@ -1,3 +1,4 @@
+
 /*
  *    jETeL/Clover - Java based ETL application framework.
  *    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
@@ -23,6 +24,7 @@ package org.jetel.metadata;
 import java.io.BufferedInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.StringReader;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -33,6 +35,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -146,6 +149,13 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
+	  private static final String XSL_FORMATER
+  	= "<?xml version='1.0' encoding='"+DEFAULT_CHARACTER_ENCODING+"'?>"
+      + "<xsl:stylesheet version='1.0' xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>"
+      + "<xsl:output encoding='"+DEFAULT_CHARACTER_ENCODING+"' indent='yes' method='xml'/>"
+      + "<xsl:template match='/'><xsl:copy-of select='*'/></xsl:template>"
+      + "</xsl:stylesheet>";
+	
 	private static Log logger = LogFactory.getLog(DataRecordMetadata.class);
 
 	// Associations
@@ -225,8 +235,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		    doc.appendChild(rootElement);
 		    write(record, rootElement);
         
+		    StreamSource formSrc = new StreamSource(new StringReader(XSL_FORMATER));
 		    TransformerFactory tf = TransformerFactory.newInstance();
-		    Transformer t = tf.newTransformer();
+		    Transformer t = tf.newTransformer(formSrc);
 	        t.transform(new DOMSource(doc), new StreamResult(outStream));
         } catch (Exception e) {
             e.printStackTrace();
@@ -592,4 +603,3 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 /*
  *  end class DataRecordMetadataXMLReaderWriter
  */
-
