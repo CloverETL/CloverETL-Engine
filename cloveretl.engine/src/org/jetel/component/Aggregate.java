@@ -31,6 +31,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  <h3>Aggregate Component</h3>
@@ -218,11 +219,10 @@ public class Aggregate extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public org.w3c.dom.Node toXML() {
-		// TODO
-		return null;
-	}
-
+    public void toXML(Element xmlElement) {
+        // TODO
+        super.toXML(xmlElement);
+    }
 
 	/**
 	 *  Description of the Method
