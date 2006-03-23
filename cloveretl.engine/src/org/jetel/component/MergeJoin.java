@@ -70,7 +70,8 @@ import org.w3c.dom.Text;
  *	It skips driver records for which there is no corresponding slave - unless outer
  *	join (<code>leftOuterJoin</code> option) is specified, when only driver record is passed to <i>transform</i> method.<br>
  *  If full outer join (<code>fullOuterJoin</code> option) is enabled, then <i>transform</i> is called even if no corresponding
- * driver record is found for particular slave.
+ *  driver record is found for particular slave. In these cases be sure, that your transform code is prepared 
+ *  processe null input records. 
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -102,8 +103,8 @@ import org.w3c.dom.Text;
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
- *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
- * 	  <tr><td><b>fullOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i></td></tr>
+ *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i> See description of the Sorted join component.</td></tr>
+ * 	  <tr><td><b>fullOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i> See description of the Sorted join component.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false"&gt;
