@@ -67,7 +67,9 @@ public class runGraph {
 		Defaults.init();
 		ComponentFactory.init();
 		
-		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***\n");
+		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***");
+		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
+		System.out.println();
 		if (args.length < 1) {
 			printHelp();
 			System.exit(-1);
