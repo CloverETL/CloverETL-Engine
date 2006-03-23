@@ -429,7 +429,7 @@ public final class TransformationGraph {
 	public void addNode(Node node, int phase) {
 		nodes.add(node);
 		node.setGraph(this);
-		node.setPhase(phase); //is this necessary? imho no
+		//node.setPhase(phase); //relict code
 	}
 
 
