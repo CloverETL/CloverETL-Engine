@@ -22,6 +22,7 @@
 package org.jetel.data.parser;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.InvalidMarkException;
@@ -67,10 +68,12 @@ public class FixLenDataParser2 implements Parser {
 	private int recordCounter;
 	private int fieldLengths[];
 	private int recordLength;
+	private boolean skipRows=false;
 	private ReadableByteChannel reader = null;
 	private CharsetDecoder decoder;
 	private String charSet = null;
 	static Log logger = LogFactory.getLog(FixLenDataParser2.class);
+	private boolean isEOF;
 	
 	/**
 	 *Constructor for the FixLenDataParser object
@@ -85,6 +88,7 @@ public class FixLenDataParser2 implements Parser {
 //		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		lineSeparatorSize=System.getProperty("line.separator","\n").length();
+		skipRows=false;
 	}
 	/**
 	 *Constructor for the FixLenDataParser object
@@ -102,6 +106,7 @@ public class FixLenDataParser2 implements Parser {
 		this.charSet = charsetDecoder;
 		decoder = Charset.forName(charsetDecoder).newDecoder();
 		lineSeparatorSize=System.getProperty("line.separator","\n").length();
+		skipRows=false;
 	}
 	/**
 	 *  An operation that opens/initializes parser.
@@ -131,6 +136,7 @@ public class FixLenDataParser2 implements Parser {
 		if (oneRecordPerLinePolicy){
 			recordLength+=lineSeparatorSize;
 		}
+		isEOF=false;
 
 	}
 	/**
@@ -145,19 +151,23 @@ public class FixLenDataParser2 implements Parser {
 	private DataRecord parseNext(DataRecord record) throws JetelException {
 		int fieldCounter = 0;
 		int posCounter = 0;
-		boolean isDataAvailable;
 		int remaining=charBuffer.remaining();
-				
-		if (charBuffer.remaining() < recordLength){
+
+		if (remaining < recordLength){
 			// need to get some data
+			if (isEOF) return null;
 			try {
-				isDataAvailable = readRecord();
-				if (!isDataAvailable){
-					if (remaining > 0){
+				readRecord();
+				remaining=charBuffer.remaining();
+				if (remaining < recordLength){
+				    if (remaining > 0 && remaining < recordLength - lineSeparatorSize){
 						//- incomplete record - do something
-						throw new RuntimeException("Incomplete record at the end of the stream");
-					}else{
-					    return null; // end of data stream
+				        StringBuffer buffer = new StringBuffer(250);
+				        buffer.append("Incomplete record at the end of the stream. Expected length: ");
+				        buffer.append(recordLength).append(" read data size: ").append(remaining);
+				        logger.debug(buffer);
+				        logger.debug("Record content:"+charBuffer.toString());
+						throw new RuntimeException(buffer.toString());
 					}
 				}
 			} catch (IOException e) {
@@ -197,14 +207,23 @@ public class FixLenDataParser2 implements Parser {
 				}
 				// prepare for reading
 				fieldStringBuffer.flip();
-				populateField(record, fieldCounter, fieldStringBuffer);
+				
+				// are we skipping this row/field ?
+				if (skipRows){
+				    populateField(record, fieldCounter, fieldStringBuffer);
+				}
+				
 				posCounter += fieldLengths[fieldCounter];
 				fieldCounter++;
 			}
 			// handle EOL chars ? we just read as many chars as specified to
 			// constitute line delimiter
-			if (oneRecordPerLinePolicy){
-				for(int i=0;i<lineSeparatorSize;i++) charBuffer.get();
+			try{
+			    if (oneRecordPerLinePolicy){
+			        for(int i=0;i<lineSeparatorSize;i++) charBuffer.get();
+			    }
+			}catch(BufferUnderflowException ignore){
+			    // just ignore it - probably EOF file reached
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
@@ -232,15 +251,17 @@ public class FixLenDataParser2 implements Parser {
 		} else {
 			charBuffer.clear();
 		}
+		
+		remaining=dataBuffer.remaining();
 		size = reader.read(dataBuffer);
 //		if (logger.isDebugEnabled()) {
 //			logger.debug("Read: " + size);
 //		}
 		dataBuffer.flip();
 
-		// if no more data 
-		if ( size <= 0 ) {
-			return false;
+		// if no more data - set EOF status 
+		if ( size < remaining ) {
+		    isEOF=true;
 		}
 
 		decodingResult=decoder.decode(dataBuffer,charBuffer,true);
@@ -481,4 +502,16 @@ public class FixLenDataParser2 implements Parser {
 		return(this.lineSeparatorSize);
 	}
 	
+    /**
+     * @return Returns the skipRows.
+     */
+    public boolean getSkipRows() {
+        return skipRows;
+    }
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(boolean skipRows) {
+        this.skipRows = skipRows;
+    }
 }
