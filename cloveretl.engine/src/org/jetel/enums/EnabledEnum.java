@@ -27,7 +27,7 @@ public class EnabledEnum {
             EnabledEnum ee = (EnabledEnum) it.next();
             if(ee.toString().equalsIgnoreCase(id)) return ee; 
         }
-        return null;
+        return ENABLED;
     }
     
     public static final EnabledEnum ENABLED = new EnabledEnum("enabled");
