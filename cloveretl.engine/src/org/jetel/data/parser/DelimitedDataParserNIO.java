@@ -61,6 +61,8 @@ public class DelimitedDataParserNIO implements Parser {
 	private int recordCounter;
 	private char[] delimiters[];
 	private char fieldTypes[];
+	private boolean isEof;
+    private boolean skipRows=false;
 
 	// this will be added as a parameter to constructor
 	private boolean handleQuotedStrings = true;
@@ -82,13 +84,7 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@since    March 28, 2002
 	 */
 	public DelimitedDataParserNIO() {
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		charBuffer.flip(); // initially empty 
-		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
-		delimiterCandidateBuffer = new char[DELIMITER_CANDIDATE_BUFFER_LENGTH];
-		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-		decoder.reset();
+		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 	}
 
 
@@ -102,12 +98,10 @@ public class DelimitedDataParserNIO implements Parser {
 	public DelimitedDataParserNIO(String charsetDecoder) {
 		this.charSet = charsetDecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		charBuffer.flip(); // initially empty
+        charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		delimiterCandidateBuffer = new char [DELIMITER_CANDIDATE_BUFFER_LENGTH];
 		decoder = Charset.forName(charsetDecoder).newDecoder();
-		decoder.reset();
 	}
 
 
@@ -167,10 +161,10 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@param  _metadata  Metadata describing the structure of data
 	 *@since             March 27, 2002
 	 */
-	public void open(Object in, DataRecordMetadata _metadata) {
-		CoderResult result;
-		DataFieldMetadata fieldMetadata;
-		this.metadata = _metadata;
+	public void open(Object in, DataRecordMetadata metadata) {
+        
+        DataFieldMetadata fieldMetadata;
+		this.metadata = metadata;
 
 		reader = ((FileInputStream) in).getChannel();
 
@@ -183,10 +177,13 @@ public class DelimitedDataParserNIO implements Parser {
 			fieldTypes[i] = fieldMetadata.getType();
 			// we handle only one character delimiters
 		}
-		decoder.reset();
-		// reset CharsetDecoder
-		recordCounter = 1;
-		// reset record counter
+		decoder.reset();// reset CharsetDecoder
+		dataBuffer.clear();
+        dataBuffer.flip();
+		charBuffer.clear();
+		charBuffer.flip();
+		recordCounter = 1;// reset record counter
+		isEof=false;
 
 	}
 
@@ -238,28 +235,43 @@ public class DelimitedDataParserNIO implements Parser {
 	 *@since                   May 13, 2002
 	 */
 	private int readChar() throws IOException {
-		int size;
-		char character;
-		CoderResult decodingResult;
-
-		if (!charBuffer.hasRemaining()) {
-			dataBuffer.clear();
-			size = reader.read(dataBuffer);
-			// if no more data, return -1
-			if (size == -1) {
-				return -1;
-			}
-			try {
-				dataBuffer.flip();
-				charBuffer.clear();
-				decodingResult=decoder.decode(dataBuffer,charBuffer,true);
-				charBuffer.flip();
-			} catch (Exception ex) {
-				throw new IOException("Exception when decoding characters: "+ex.getMessage());
-			}
-		}
-		return charBuffer.get();
+	  
+	    if (charBuffer.hasRemaining()) {
+	        return charBuffer.get();
+	    }
+	    
+	    if (isEof) return -1;
+	    
+	    charBuffer.clear();
+	    if (dataBuffer.hasRemaining()) 
+	        dataBuffer.compact();
+	    else
+	        dataBuffer.clear();
+	    
+	    if (reader.read(dataBuffer)==-1){
+	        isEof=true;
+	    }
+	    dataBuffer.flip();
+	    
+	    if (decoder.decode(dataBuffer,charBuffer,isEof)==CoderResult.UNDERFLOW){
+	        //try to load additional data
+	        dataBuffer.compact();
+	        
+	        if (reader.read(dataBuffer)==-1){
+	            isEof=true;
+	        }
+	        dataBuffer.flip();
+	        decoder.decode(dataBuffer,charBuffer,isEof);
+	    }
+	    if (isEof){
+	        decoder.flush(charBuffer);   
+	    }
+	    charBuffer.flip();
+	    return charBuffer.hasRemaining() ? charBuffer.get() : -1;
+	    
+	    
 	}
+	
 
 
 	/**
@@ -322,7 +334,11 @@ public class DelimitedDataParserNIO implements Parser {
 						if (delimiterPosition > 0) {
 							fieldStringBuffer.put(delimiterCandidateBuffer,0,delimiterPosition);
 						} else {
-							fieldStringBuffer.put((char) character);
+                            try{
+                                fieldStringBuffer.put((char) character);
+                            }catch(BufferOverflowException ex){
+                                throw new IOException("Field too long or can not find delimiter ["+delimiters[fieldCounter]+"]");
+                            }
 						}
 						delimiterPosition = 0;
 					} else {
@@ -339,8 +355,9 @@ public class DelimitedDataParserNIO implements Parser {
 					throw new RuntimeException("Incomplete record");
 				}
 			} catch (Exception ex) {
+                ex.printStackTrace();
 				throw new RuntimeException(getErrorMessage(ex.getClass().getName()+":"+ex.getMessage(),null, 
-				        	recordCounter, fieldCounter));
+				        	recordCounter, fieldCounter),ex);
 			}
 
 			// did we have EOF situation ?
@@ -354,9 +371,12 @@ public class DelimitedDataParserNIO implements Parser {
 				return null;
 			}
 
-			// prepare for reading
-			fieldStringBuffer.flip();
-			populateField(record, fieldCounter, fieldStringBuffer);
+			// set field's value
+			// are we skipping this row/field ?
+			if (!skipRows){
+			    fieldStringBuffer.flip();
+			    populateField(record, fieldCounter, fieldStringBuffer);
+			}
 			fieldCounter++;
 		}
 		recordCounter++;
@@ -382,7 +402,7 @@ public class DelimitedDataParserNIO implements Parser {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(getErrorMessage(ex.getMessage(),null,recordCounter, fieldNum));
+			throw new RuntimeException(getErrorMessage(ex.getMessage(),null,recordCounter, fieldNum),ex);
 		}
 	}
 
@@ -466,6 +486,22 @@ public class DelimitedDataParserNIO implements Parser {
 		}
 			
 	}
+
+
+    /**
+     * @return Returns the skipRows.
+     */
+    public boolean isSkipRows() {
+        return skipRows;
+    }
+
+
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(boolean skipRows) {
+        this.skipRows = skipRows;
+    }
 	
 }	
 /*
