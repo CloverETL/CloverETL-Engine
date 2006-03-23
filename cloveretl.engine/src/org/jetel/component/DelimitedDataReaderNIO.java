@@ -58,6 +58,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  </tr>
  *  </table>
  *
@@ -78,11 +79,13 @@ public class DelimitedDataReaderNIO extends Node {
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+    private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
 	private DelimitedDataParserNIO parser;
+    private int skipRows=-1; // do not skip rows by default
 
 
 	/**
@@ -123,6 +126,23 @@ public class DelimitedDataReaderNIO extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
+		//       shall we skip rows ?
+        if (skipRows>0){
+            try {
+                for(int i=0;i<skipRows && runIt;i++){
+                // till we skip required num of records or it reaches end of data or it is stopped from outside
+                    if (parser.getNext(record) == null) break;
+                    SynchronizeUtils.cloverYield();
+                }
+            } catch (Exception ex) {
+                resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+                resultCode = Node.RESULT_FATAL_ERROR;
+                return;
+            }
+        }
+        
+        // MAIN RUN LOOOP
+        
 		try {
 			// till it reaches end of data or it is stopped from outside
 			while (((record = parser.getNext(record)) != null) && runIt) {
@@ -131,11 +151,13 @@ public class DelimitedDataReaderNIO extends Node {
 				SynchronizeUtils.cloverYield();
 			}
 		} catch (IOException ex) {
+		    ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
+		    ex.printStackTrace();
 			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
@@ -219,6 +241,9 @@ public class DelimitedDataReaderNIO extends Node {
 				aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
 						xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
+            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+                aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+            }
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
@@ -265,5 +290,19 @@ public class DelimitedDataReaderNIO extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+    
+     /**
+     * @return Returns the skipRows.
+     */
+    public int getSkipRows() {
+        return skipRows;
+    }
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(int skipRows) {
+        this.skipRows = skipRows;
+    }
+    
 }
 
