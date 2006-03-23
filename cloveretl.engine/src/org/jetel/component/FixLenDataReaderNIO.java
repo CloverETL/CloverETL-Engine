@@ -74,6 +74,7 @@ import org.w3c.dom.Element;
  *   to total record length.<br>It is automatically determined from system properties. This method overrides the default value.<br>
  *   Has any meaning only if OneRecordPerLine is set to True - i.e. records are on separate lines.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  </tr>
  *  </table>
  *
@@ -94,6 +95,8 @@ public class FixLenDataReaderNIO extends Node {
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
+	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER_NIO";
 
@@ -101,6 +104,8 @@ public class FixLenDataReaderNIO extends Node {
 	private String fileURL;
 
 	private FixLenDataParser2 parser;
+	
+	private int skipRows=-1; // do not skip rows by default
 
 
 	/**
@@ -141,6 +146,23 @@ public class FixLenDataReaderNIO extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
+		// shall we skip rows ?
+		if (skipRows>0){
+		    try {
+		        for(int i=0;i<skipRows && runIt;i++){
+				// till we skip required num of records or it reaches end of data or it is stopped from outside
+		            if (parser.getNext(record) == null) break;
+					SynchronizeUtils.cloverYield();
+				}
+			} catch (Exception ex) {
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
+				return;
+			}
+		}
+		
+		// MAIN RUN LOOOP
+		
 		try {
 			// till it reaches end of data or it is stopped from outside
 			while (((record = parser.getNext(record)) != null) && runIt) {
@@ -220,6 +242,10 @@ public class FixLenDataReaderNIO extends Node {
 					String.valueOf(this.parser.getSkipLeadingBlanks()));
 		}
 		
+		if (this.skipRows>0){
+		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
+		}
+		
 		xmlElement.setAttribute(XML_LINESEPARATORSIZE_ATTRIBUTE,
 				String.valueOf(this.parser.getLineSeparatorSize()));
 	}
@@ -257,6 +283,9 @@ public class FixLenDataReaderNIO extends Node {
 			}
 			if (xattribs.exists(XML_LINESEPARATORSIZE_ATTRIBUTE)){
 				aFixLenDataReaderNIO.setLineSeparatorSize(xattribs.getInteger(XML_LINESEPARATORSIZE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
 			}
 			
 		} catch (Exception ex) {
@@ -303,5 +332,17 @@ public class FixLenDataReaderNIO extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+    /**
+     * @return Returns the skipRows.
+     */
+    public int getSkipRows() {
+        return skipRows;
+    }
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(int skipRows) {
+        this.skipRows = skipRows;
+    }
 }
 
