@@ -73,7 +73,8 @@ import org.w3c.dom.Text;
  *	Pair of driver and slave records is sent to transformation class.<br>
  *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
  *	It skips driver records for which there is no corresponding slave - unless outer
- *	join is specified, when only driver record is passed to <i>transform<i> method.<br>
+ *	join is specified, when only driver record is passed to <i>transform</i> method.<br>
+ *  In this case be sure, that your transform code is prepared processe null input records. 
  *	Hash join does not require input data be sorted. But it spends some time at the beginning
  *	initializing hashtable of slave records.
  *	It is generally good idea to specify how many records are expected to be stored in hashtable, especially
@@ -110,7 +111,7 @@ import org.w3c.dom.Text;
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
- *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false</td></tr>
+ *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false  See description of the HashJoin component.</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
