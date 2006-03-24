@@ -2,6 +2,13 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-8-1
+---------
+Changes/bug fixes:
++ fixed DirectEdge problem which caused component hang-up
++ fixed DelimitedReaderNIO problem when reading UTF-8 encoding (and other multi-byte character encodings)
++ improved reporting of parsing errors for DelimitedDataReaderNIO and FixLenDataReader
+
 
 REL 1-8-0
 ---------
