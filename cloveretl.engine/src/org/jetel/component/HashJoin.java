@@ -313,7 +313,7 @@ public class HashJoin extends Node {
 					URL[] myURLs;
 					try {
 						myURLs = new URL[] { new URL(urlString) };
-						URLClassLoader classLoader = new URLClassLoader(myURLs);
+						URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
 						tClass = Class.forName(transformClassName, true, classLoader);
 					} catch (MalformedURLException ex1) {
 						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
