@@ -191,7 +191,7 @@ public class DBConnection {
 	                URL[] myURLs;
 	                try {
 	                    myURLs = new URL[] { new URL(urlString) };
-	                    URLClassLoader classLoader = new URLClassLoader(myURLs);
+	                    URLClassLoader classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
 	                    dbDriver = (Driver) Class.forName(dbDriverName, true,
 	                            classLoader).newInstance();
 	                } catch (MalformedURLException ex1) {

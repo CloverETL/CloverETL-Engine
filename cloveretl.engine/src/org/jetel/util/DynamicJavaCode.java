@@ -138,9 +138,12 @@ public class DynamicJavaCode {
 			throw new RuntimeException(ex);
 		}
 
-		URLClassLoader classLoader = new URLClassLoader(myURLs);
+		URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
+                // URLClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try {
+                        logger.debug("Loading Class: "+className + "...");
 			tClass = Class.forName(className, true, classLoader);
+                        logger.debug("Class: "+className + " Loaded");
 		} catch (ClassNotFoundException ex) {
 		    logger.error("Can not find class: "+ex);
 			throw new RuntimeException("Can not find class: "+className+" : "+ex);
