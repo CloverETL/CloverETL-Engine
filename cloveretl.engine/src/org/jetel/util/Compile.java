@@ -98,160 +98,222 @@ public class Compile {
 		this.forceCompile = forceCompile;
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Return Value
-	 */
-	public int compile() {
-		int status = 0;
-		File source;
-		PrintStream savedOut=null;
-		PrintStream savedErr=null;
-		String[] args;
-		ByteArrayOutputStream outputStream=null;
-		try{
-			source = new File(srcFile);
-		}catch(Exception ex){
-			throw new RuntimeException(ex.getMessage());
-		}
-		
-		// just try that we can reach compiler
-		/*Class cl = null;
-		Class cl1 = null;
-		URLClassLoader classLoader = null;*/
-		try{
-			Class.forName(COMPILER_CLASSNAME);
-		}catch(ClassNotFoundException ex){
-			useExecutable=true;
-			logger.warn("..can't locate class "+COMPILER_CLASSNAME+" - will use external javac");
-		} catch (Exception e) {
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
+    public int compile() {
+        int status = 0;
+        File source;
+        PrintStream savedOut = null;
+        PrintStream savedErr = null;
+        String[] args;
+        ByteArrayOutputStream outputStream = null;
+        try {
+            source = new File(srcFile);
+        } catch (Exception ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
+        logger.debug("srcFile:" + srcFile);
+        // just try that we can reach compiler
+        /*Class cl = null;
+           Class cl1 = null;
+           URLClassLoader classLoader = null;*/
+        try {
+            Class.forName(COMPILER_CLASSNAME);
+        } catch (ClassNotFoundException ex) {
+            useExecutable = true;
+            logger.warn("..can't locate class " + COMPILER_CLASSNAME +
+                        " - will use external javac");
+        } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-			
-			
-		if (forceCompile || needsRecompile()) {
-			errFilename=destDir
-				+ (destDir.endsWith(fileSeparator)
-				  ? ""
-				  : fileSeparator)
-				+ source.getName()
-				+ ".err";
-			if (useExecutable) {
-			    Runtime runtime = Runtime.getRuntime();  
-			    if (captureSTDOUT){
-			        args = new String[]{COMPILER_EXECUTABLE, "-d", destDir, srcFile};
-			        savedOut=System.out;
-			        savedErr=System.err;
-			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
-			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
-			        System.setErr(out);
-			        System.setOut(out);
-			        
-			    }else{
-			        args = new String[]{COMPILER_EXECUTABLE, "-d", destDir, srcFile,
-						"-Xstdout", errFilename };
-			    }
-				
-				try{
-					status = runtime.exec(args).waitFor();
-				}catch(Exception ex){
-					status=-1;
-				}
-				
-				if (captureSTDOUT){
+
+        // creating classpath
+        ClassLoader loader = Thread.currentThread().getContextClassLoader();
+        String classpath = ClassLoaderUtils.getClasspath(loader);
+        logger.debug("classpath=" + classpath);
+
+        if (forceCompile || needsRecompile()) {
+            errFilename = destDir
+                          + (destDir.endsWith(fileSeparator)
+                             ? ""
+                             : fileSeparator)
+                          + source.getName()
+                          + ".err";
+            if (useExecutable) {
+
+                Runtime runtime = Runtime.getRuntime();
+                if (captureSTDOUT) {
+                    if (classpath.length() > 0) {
+                        args = new String[] {
+                               COMPILER_EXECUTABLE, "-d", destDir, srcFile,
+                               "-classpath", classpath, };
+                    } else {
+                        args = new String[] {
+                               COMPILER_EXECUTABLE, "-d", destDir, srcFile};
+                    }
+                    savedOut = System.out;
+                    savedErr = System.err;
+                    outputStream = new ByteArrayOutputStream(
+                            DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
+                    PrintStream out = new PrintStream(new BufferedOutputStream(
+                            outputStream));
+                    System.setErr(out);
+                    System.setOut(out);
+
+                } else {
+                    if (classpath.length() > 0) {
+                        args = new String[] {
+                               COMPILER_EXECUTABLE, "-d", destDir, srcFile,
+                               "-classpath", classpath,
+                               "-Xstdout", errFilename};
+                    } else {
+                        args = new String[] {
+                               COMPILER_EXECUTABLE, "-d", destDir, srcFile,
+                               "-Xstdout", errFilename};
+                    }
+                }
+
+                try {
+                    logger.debug("starting runtime.exec(args)");
+                    status = runtime.exec(args).waitFor();
+                    logger.debug("status=" + status);
+                } catch (Exception ex) {
+                    status = -1;
+                }
+
+                if (captureSTDOUT) {
                     System.setErr(savedErr);
                     System.setOut(savedOut);
                 }
 
-			} else {
-			    if (captureSTDOUT){
-			        args = new String[]{"-d", destDir, srcFile};
-			        savedOut=System.out;
-			        savedErr=System.err;
-			        outputStream=new ByteArrayOutputStream(DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
-			        PrintStream out=new PrintStream(new BufferedOutputStream(outputStream));
-			        System.setErr(out);
-			        System.setOut(out);
-			        
-			    }else{
-			        args = new String[]{"-d", destDir, srcFile,
-						"-Xstdout", errFilename};
-			    }
+            } else {
+                if (captureSTDOUT) {
+                    if (classpath.length() > 0) {
+                        args = new String[] {
+                               "-d", destDir, srcFile,
+                               "-classpath", classpath};
+                    } else {
+                        args = new String[] {
+                               "-d", destDir, srcFile};
 
-                        status = com.sun.tools.javac.Main.compile(args);
-                        //status = ((Integer) cl.getMethod("compile", new Class[] {String[].class}).invoke(null, new Object[] {args})).intValue();
-                 if (captureSTDOUT){
-                     System.setErr(savedErr);
-                     System.setOut(savedOut);
-                 }
-                       
-			}
-			if (status==0) { 
-			compiled = true;
-			}
-		}
-		if (captureSTDOUT){
-		    this.capturedOutput= (outputStream==null) ? "" : outputStream.toString();
-		}
-	
-		return status;
-	}
+                    }
+                    savedOut = System.out;
+                    savedErr = System.err;
+                    outputStream = new ByteArrayOutputStream(
+                            DEFAULT_BYTE_ARRAY_BUFFER_SIZE);
+                    PrintStream out = new PrintStream(new BufferedOutputStream(
+                            outputStream));
+                    System.setErr(out);
+                    System.setOut(out);
 
+                } else {
+                    if (classpath.length() > 0) {
+                        args = new String[] {
+                               "-d", destDir, srcFile,
+                               "-classpath", classpath,
+                               "-Xstdout", errFilename};
+                    } else {
+                        args = new String[] {
+                               "-d", destDir, srcFile,
+                               "-Xstdout", errFilename};
+                    }
+                }
 
-	/**
-	 *  Gets the compiledClassPath attribute of the JavaCompiler object
-	 *
-	 * @return    The compiledClassPath value
-	 */
-	public String getCompiledClassPath() {
-		return destDir;
-	}
+                /* this is an other way
+                logger.debug("trying to compile...");
+                try {
+                    Class compilerClass = Class.forName(
+                            COMPILER_CLASSNAME, true, loader);
+                    try {
+                        Main cls = (Main) compilerClass.newInstance();
+                        logger.debug("starting compilation with " +
+                                     COMPILER_CLASSNAME);
+                        status = cls.compile(args);
+                        logger.debug("status=" + status);
+                    } catch (IllegalAccessException ex) {
+                        logger.error("Error while compiling:" + ex);
+                    } catch (InstantiationException ex) {
+                        logger.error("Error while compiling:" + ex);
+                    }
 
-	/**
-	 * Method which returns complete path to
-	 * file containing error output of Javac
-	 * 
-	 * @return path to error output file
-	 */
-	public String getErrFilename(){
-		return errFilename;
-	}
-	
-	
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    true if souce file needs recompiling(was modified after compilation), otherwise false
-	 */
-	private boolean needsRecompile() {
-		try {
-			File source = new File(srcFile);
-			int index=source.getName().lastIndexOf('.');
-			String className=source.getName().substring(0,index);
-			// we need to conver blblabl.java to blablab.class to compare files
-			File dest = new File(destDir
-				+ (destDir.endsWith(fileSeparator)
-				  ? ""
-				  : fileSeparator)
-				+ className
-				+ ".class");
-			if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
-				return false;// is already compiled !!!!
-			}
-			
-			dest.delete(); // delete class file as we need to recompile it
+                } catch (ClassNotFoundException ex1) {
+                    logger.error(ex1);
+                }
+                */
 
-		} catch (Exception ex) {
-			logger.debug(ex);
-		}
-		return true;// needs recompile
-	}
+                status = com.sun.tools.javac.Main.compile(args);
 
+                //status = ((Integer) cl.getMethod("compile", new Class[] {String[].class}).invoke(null, new Object[] {args})).intValue();
+                if (captureSTDOUT) {
+                    System.setErr(savedErr);
+                    System.setOut(savedOut);
+                }
 
-	
+            }
+            if (status == 0) {
+                compiled = true;
+            }
+        }
+        if (captureSTDOUT) {
+            this.capturedOutput = (outputStream == null) ? "" :
+                                  outputStream.toString();
+        }
+
+        return status;
+    }
+
+    /**
+     *  Gets the compiledClassPath attribute of the JavaCompiler object
+     *
+     * @return    The compiledClassPath value
+     */
+    public String getCompiledClassPath() {
+        return destDir;
+    }
+
+    /**
+     * Method which returns complete path to
+     * file containing error output of Javac
+     *
+     * @return path to error output file
+     */
+    public String getErrFilename() {
+        return errFilename;
+    }
+
+    /**
+     *  Description of the Method
+     *
+     * @return    true if souce file needs recompiling(was modified after compilation), otherwise false
+     */
+    private boolean needsRecompile() {
+        try {
+            File source = new File(srcFile);
+            int index = source.getName().lastIndexOf('.');
+            String className = source.getName().substring(0, index);
+            // we need to conver blblabl.java to blablab.class to compare files
+            File dest = new File(destDir
+                                 + (destDir.endsWith(fileSeparator)
+                                    ? ""
+                                    : fileSeparator)
+                                 + className
+                                 + ".class");
+            if (dest.exists() && (dest.lastModified() >= source.lastModified())) {
+                return false; // is already compiled !!!!
+            }
+
+            dest.delete(); // delete class file as we need to recompile it
+
+        } catch (Exception ex) {
+            logger.debug(ex);
+        }
+        return true; // needs recompile
+    }
+
     public boolean isCaptureSTDOUT() {
         return captureSTDOUT;
     }
