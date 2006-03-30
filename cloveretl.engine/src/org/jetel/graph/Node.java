@@ -56,7 +56,6 @@ public abstract class Node extends Thread {
 	protected TreeMap outPorts;
 	protected TreeMap inPorts;
 
-	protected List outPortList;
 	protected OutputPort logPort;
 
 	protected volatile boolean runIt = true;
@@ -65,6 +64,12 @@ public abstract class Node extends Thread {
 	protected String resultMsg;
 	protected int phase = 0;// default phase is 0
 
+    // buffered values
+    protected List outPortList;
+    protected OutputPort[] outPortsArray;
+    protected int outPortsSize;
+    
+    
 	/**
 	 *  Various PORT kinds identifiers
 	 *
@@ -310,8 +315,7 @@ public abstract class Node extends Thread {
 	 */
 	public Collection getOutMetadata() {
 		List ret = new ArrayList(outPorts.size());
-		Collection outPorts = getOutPorts();
-		for(Iterator it = outPorts.iterator(); it.hasNext();) {
+		for(Iterator it = getOutPorts().iterator(); it.hasNext();) {
 		    ret.add(((OutputPort) (it.next())).getMetadata());
 		}
 	    return ret;
@@ -324,8 +328,7 @@ public abstract class Node extends Thread {
 	 */
 	public Collection getInMetadata() {
 		List ret = new ArrayList(inPorts.size());
-		Collection inPorts = getInPorts();
-		for(Iterator it = inPorts.iterator(); it.hasNext();) {
+		for(Iterator it = getInPorts().iterator(); it.hasNext();) {
 		    ret.add(((InputPort) (it.next())).getMetadata());
 		}
 	    return ret;
@@ -341,6 +344,7 @@ public abstract class Node extends Thread {
 	 */
 	public int getRecordCount(char portType, int portNum) {
 		int count;
+        // Integer used as key to TreeMap containing ports
 		Integer port = new Integer(portNum);
 		try {
 			switch (portType) {
@@ -490,7 +494,7 @@ public abstract class Node extends Thread {
 		}
 		outPorts.put(new Integer(keyVal), port);
 		port.connectWriter(this, keyVal);
-		outPortList = null;
+        resetBufferedValues();
 	}
 
 
@@ -504,7 +508,7 @@ public abstract class Node extends Thread {
 	public void addOutputPort(int portNum, OutputPort port) {
 		outPorts.put(new Integer(portNum), port);
 		port.connectWriter(this, portNum);
-		outPortList = null;
+        resetBufferedValues();
 	}
 
 
@@ -535,6 +539,7 @@ public abstract class Node extends Thread {
      */
     public void removeInputPort(InputPort inputPort) {
         inPorts.remove(new Integer(inputPort.getInputPortNumber()));
+        
     }
 
     /**
@@ -543,6 +548,7 @@ public abstract class Node extends Thread {
      */
     public void removeOutputPort(OutputPort outputPort) {
         outPorts.remove(new Integer(outputPort.getOutputPortNumber()));
+        resetBufferedValues();
     }
 
 	/**
@@ -570,7 +576,10 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  An operation that writes one record through specified output port
+	 *  An operation that writes one record through specified output port.<br>
+     *  As this operation gets the Port object from TreeMap, don't use it in loops
+     *  or when time is critical. Instead obtain the Port object directly and
+     *  use it's writeRecord() method.
 	 *
 	 *@param  _portNum                  Description of Parameter
 	 *@param  _record                   Description of Parameter
@@ -579,18 +588,15 @@ public abstract class Node extends Thread {
 	 *@since                            April 2, 2002
 	 */
 	public void writeRecord(int _portNum, DataRecord _record) throws IOException, InterruptedException {
-		try {
 			((OutputPort) outPorts.get(new Integer(_portNum))).writeRecord(_record);
-		} catch (IndexOutOfBoundsException ex) {
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			throw ex;
-		}
 	}
 
 
 	/**
-	 *  An operation that reads one record through specified input port
+	 *  An operation that reads one record through specified input port.<br>
+     *  As this operation gets the Port object from TreeMap, don't use it in loops
+     *  or when time is critical. Instead obtain the Port object directly and
+     *  use it's readRecord() method.
 	 *
 	 *@param  _portNum                  Description of Parameter
 	 *@param  record                    Description of Parameter
@@ -600,14 +606,7 @@ public abstract class Node extends Thread {
 	 *@since                            April 2, 2002
 	 */
 	public DataRecord readRecord(int _portNum, DataRecord record) throws IOException, InterruptedException {
-		try {
-			record = ((InputPort) inPorts.get(new Integer(_portNum))).readRecord(record);
-		} catch (IndexOutOfBoundsException ex) {
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			throw ex;
-		}
-		return record;
+		return	((InputPort) inPorts.get(new Integer(_portNum))).readRecord(record);
 	}
 
 
@@ -620,13 +619,7 @@ public abstract class Node extends Thread {
 	 *@since                            April 2, 2002
 	 */
 	public void writeLogRecord(DataRecord record) throws IOException, InterruptedException {
-		try {
 			logPort.writeRecord(record);
-		} catch (IndexOutOfBoundsException ex) {
-			ex.printStackTrace();
-		} catch (IOException ex) {
-			throw ex;
-		}
 	}
 
 
@@ -639,28 +632,18 @@ public abstract class Node extends Thread {
 	 *@since                            April 2, 2002
 	 */
 	public void writeRecordBroadcast(DataRecord record) throws IOException, InterruptedException {
-		if (outPortList == null) {
-			outPortList = getPortList(getOutPorts());
+		if (outPortsArray == null) {
+            refreshBufferedValues();
 		}
-		Iterator iterator = outPortList.iterator();
-		OutputPort port;
-
-		while (iterator.hasNext()) {
-			port = (OutputPort) iterator.next();
-
-			try {
-				port.writeRecord(record);
-			} catch (IndexOutOfBoundsException ex) {
-				ex.printStackTrace();
-			} catch (IOException ex) {
-				throw ex;
-			}
+		
+        for(int i=0;i<outPortsSize;i++){
+				outPortsArray[i].writeRecord(record);
 		}
 	}
 
 
 	/**
-	 *  Converts the collection of ports into List (LinkedList)<br>
+	 *  Converts the collection of ports into List (ArrayList)<br>
 	 *  This is auxiliary method which "caches" list of ports for faster access
 	 *  when we need to go through all ports sequentially. Namely in
 	 *  RecordBroadcast situations
@@ -669,11 +652,16 @@ public abstract class Node extends Thread {
 	 *@return        List (LinkedList) of ports
 	 */
 	private List getPortList(Collection ports) {
-		List portList = new LinkedList();
+		List portList = new ArrayList();
 		portList.addAll(ports);
 		return portList;
 	}
 
+    private OutputPort[] getOutPortsArray(Collection ports) {
+        OutputPort[] portsArray = new OutputPort[ports.size()];
+        portsArray = (OutputPort[])ports.toArray(new OutputPort[0]);
+        return portsArray;
+    }
 
 	/**
 	 *  Description of the Method
@@ -683,30 +671,22 @@ public abstract class Node extends Thread {
 	 *@exception  InterruptedException  Description of Exception
 	 *@since                            August 13, 2002
 	 */
-	public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
-		if (outPortList == null) {
-			outPortList = getPortList(getOutPorts());
-		}
-		Iterator iterator = outPortList.iterator();
-		OutputPortDirect port;
+    public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
+        OutputPortDirect outPortsDirectArray[];
+        if (outPortsArray == null) {
+            refreshBufferedValues();
+        }
 
-		while (iterator.hasNext()) {
-			port = (OutputPortDirect) iterator.next();
-
-			try {
-				port.writeRecordDirect(recordBuffer);
-				recordBuffer.rewind();
-			} catch (IndexOutOfBoundsException ex) {
-				ex.printStackTrace();
-			} catch (IOException ex) {
-				throw ex;
-			}
-		}
-	}
+        outPortsDirectArray=(OutputPortDirect[])outPortsArray;
+        
+        for(int i=0;i<outPortsSize;i++){
+            outPortsDirectArray[i].writeRecordDirect(recordBuffer);
+        }
+    }
 
 
 	/**
-	 *  Closes all output ports.
+	 *  Closes all output ports - sends EOF signal to them.
 	 *
 	 *@since    April 11, 2002
 	 */
@@ -727,29 +707,17 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Description of the Method
+	 *  Send EOF (no more data) to all connected output ports
 	 *
 	 *@since    April 18, 2002
 	 */
 	public void broadcastEOF() {
-		Iterator iterator = getOutPorts().iterator();
-		OutputPort port;
-
-		while (iterator.hasNext()) {
-			port = (OutputPort) iterator.next();
-
-			try {
-				port.close();
-			} catch (IndexOutOfBoundsException ex) {
-				ex.printStackTrace();
-			}
-		}
+		closeAllOutputPorts();
 	}
 
 
 	/**
-	 *  Closes specified output port. Will cause IOException in Node connected to
-	 *  the other side of port
+	 *  Closes specified output port - sends EOF signal. 
 	 *
 	 *@param  portNum  Which port to close
 	 *@since           April 11, 2002
@@ -852,6 +820,18 @@ public abstract class Node extends Thread {
     public void setPassThroughOutputPort(int passThroughOutputPort) {
         this.passThroughOutputPort = passThroughOutputPort;
     }
+    
+    protected void resetBufferedValues(){
+        outPortList = null;
+        outPortsArray=null;
+        outPortsSize=0;
+    }
+    
+    protected void refreshBufferedValues(){
+        outPortsArray = getOutPortsArray(getOutPorts());
+        outPortsSize = outPortsArray.length;
+    }
+    
 }
 /*
  *  end class Node
