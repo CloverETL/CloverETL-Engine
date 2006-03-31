@@ -19,6 +19,7 @@
 package org.jetel.test;
 import java.io.*;
 import org.jetel.metadata.*;
+import org.jetel.component.ComponentFactory;
 import org.jetel.data.*;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.JetelException;
@@ -31,6 +32,10 @@ public class testDataParsing {
 	PrintStream out=null;
 	DataRecord record;
 	
+    //initialization; must be present
+    Defaults.init();
+    ComponentFactory.init();
+    
 	System.out.println("Input file: "+args[0]);
 	System.out.println("Output file: "+args[1]);
 	

@@ -29,7 +29,11 @@ public class testGraphSort {
 	private static final int _PHASE_2=1;
 
 	public static void main(String args[]){
-		
+	
+	//initialization; must be present
+    Defaults.init();
+    ComponentFactory.init();
+    
 	DataRecord record;
 
 	int counter=0;
