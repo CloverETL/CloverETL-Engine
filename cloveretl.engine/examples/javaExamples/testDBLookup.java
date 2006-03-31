@@ -20,7 +20,9 @@ package org.jetel.test;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import org.jetel.component.ComponentFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.database.DBConnection;
 import org.jetel.database.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -35,6 +37,10 @@ public class testDBLookup{
 
 	int counter=0;
 	
+    //initialization; must be present
+    Defaults.init();
+    ComponentFactory.init();
+
 	if (args.length!=3){
 		System.out.println("Usage: testDBLookup <driver properties file> <sql query> <key> <db metadata file>");
 		System.exit(1);

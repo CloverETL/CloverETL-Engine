@@ -19,12 +19,20 @@
 package org.jetel.test;
 
 import java.io.*;
+
+import org.jetel.component.ComponentFactory;
+import org.jetel.data.Defaults;
 import org.jetel.graph.*;
 
 public class testXMLGraph{
 
 	public static void main(String args[]){
 		FileInputStream in;
+        
+        //initialization; must be present
+        Defaults.init();
+        ComponentFactory.init();
+
 		System.out.println("Graph definition file: "+args[0]);
 		
 		try{
