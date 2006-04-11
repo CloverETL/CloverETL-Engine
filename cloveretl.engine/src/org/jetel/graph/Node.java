@@ -20,16 +20,20 @@
 // FILE: c:/projects/jetel/org/jetel/graph/Node.java
 
 package org.jetel.graph;
-import java.util.*;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.jetel.graph.InputPort;
-import org.jetel.graph.OutputPort;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.TreeMap;
+
 import org.jetel.data.DataRecord;
-import org.jetel.util.StringUtils;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -657,12 +661,6 @@ public abstract class Node extends Thread {
 		return portList;
 	}
 
-    private OutputPort[] getOutPortsArray(Collection ports) {
-        OutputPort[] portsArray = new OutputPort[ports.size()];
-        portsArray = (OutputPort[])ports.toArray(new OutputPort[0]);
-        return portsArray;
-    }
-
 	/**
 	 *  Description of the Method
 	 *
@@ -672,15 +670,12 @@ public abstract class Node extends Thread {
 	 *@since                            August 13, 2002
 	 */
     public void writeRecordBroadcastDirect(ByteBuffer recordBuffer) throws IOException, InterruptedException {
-        OutputPortDirect outPortsDirectArray[];
         if (outPortsArray == null) {
             refreshBufferedValues();
         }
 
-        outPortsDirectArray=(OutputPortDirect[])outPortsArray;
-        
         for(int i=0;i<outPortsSize;i++){
-            outPortsDirectArray[i].writeRecordDirect(recordBuffer);
+            ((OutputPortDirect) outPortsArray[i]).writeRecordDirect(recordBuffer);
         }
     }
 
@@ -828,7 +823,8 @@ public abstract class Node extends Thread {
     }
     
     protected void refreshBufferedValues(){
-        outPortsArray = getOutPortsArray(getOutPorts());
+        Collection op = getOutPorts();
+        outPortsArray = (OutputPort[]) op.toArray(new OutputPort[op.size()]);
         outPortsSize = outPortsArray.length;
     }
     
