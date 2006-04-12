@@ -26,8 +26,14 @@ package org.jetel.util;
 
 import java.net.URLClassLoader;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.util.logging.Logger;
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 
 /**
@@ -39,6 +45,9 @@ import java.lang.reflect.Method;
  */
 
 public class ClassLoaderUtils {
+    
+    static Log logger = LogFactory.getLog(ClassLoaderUtils.class);
+    
     public static String getClasspath(ClassLoader loader) {
         String classpath = "";
         URL[] urls = null;
@@ -85,7 +94,12 @@ public class ClassLoaderUtils {
     private static String getCheckedFileName(URL url) {
         String fileName;
         
-        fileName = url.getPath();
+        try {
+            fileName = URLDecoder.decode(url.getPath(), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            logger.error("Unsupported encoding UTF-8: " + e.toString());
+            return "";
+        }
         
         if (isFileOk(fileName)) {
             return fileName;
