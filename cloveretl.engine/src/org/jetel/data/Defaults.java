@@ -69,6 +69,7 @@ public final class Defaults {
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		
 		Record.init();
+        DataFieldMetadata.init();
 		DataParser.init();
 		DataFormatter.init();
 		Component.init();
