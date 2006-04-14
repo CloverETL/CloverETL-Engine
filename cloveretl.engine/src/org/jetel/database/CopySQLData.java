@@ -30,13 +30,13 @@ import java.util.ListIterator;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
-import org.jetel.data.Decimal;
 import org.jetel.data.DecimalDataField;
-import org.jetel.data.HugeDecimal;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -582,7 +582,7 @@ public abstract class CopySQLData {
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				pStatement.setBigDecimal(fieldSQL, ((Decimal) ((DecimalDataField) field).getValue()).getBigDecimal());
+				pStatement.setBigDecimal(fieldSQL, ((Decimal) ((DecimalDataField) field).getValue()).getBigDecimalOutput());
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.DECIMAL);
 			}

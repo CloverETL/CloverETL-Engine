@@ -17,12 +17,15 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data;
+package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
+
+import org.jetel.data.DecimalDataField;
+import org.jetel.data.Numeric;
 
 /**
  *  Clover internal decimal value representation interface.
@@ -53,9 +56,18 @@ public interface Decimal {
 	
 	public long getLong();
 	
+	/**
+	 * @return value of decimal in BigDecimal form
+	 */
 	public BigDecimal getBigDecimal();
 
-	public void setNaN(boolean isNaN);
+    /**
+     * It is output method for all decimal implementations.
+     * @return modified value according to precision and scale
+     */
+    public BigDecimal getBigDecimalOutput();
+
+    public void setNaN(boolean isNaN);
 	
 	public boolean isNaN();
 	
