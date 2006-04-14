@@ -37,8 +37,10 @@ public class DecimalFactory {
     /**
      * How many decimal digits correspond to binary digits
      */
-    private static final double MAGIC_CONST = Math.log(10)/Math.log(2);
-    private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = (int) Math.floor((Integer.SIZE - 1) / MAGIC_CONST);
+    private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = 9;
+    //FIXME in 1.5 java we can use next two line
+    //private static final double MAGIC_CONST = Math.log(10)/Math.log(2);
+    //private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = (int) Math.floor((Integer.SIZE - 1) / MAGIC_CONST);
 	
     public static Decimal getDecimal(int value) {
 		Decimal d = getDecimal();
