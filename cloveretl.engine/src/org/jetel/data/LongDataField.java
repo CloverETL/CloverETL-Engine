@@ -25,6 +25,8 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
 
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -517,7 +519,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	}
 	
 	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
+	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
 	 */
 	public void setValue(Decimal _value) {
 		if(_value == null) {

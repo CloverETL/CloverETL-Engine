@@ -23,6 +23,8 @@
  */
 package org.jetel.data;
 
+import org.jetel.data.primitive.Decimal;
+
 /**
  * @author david
  * @since  22.6.2005

@@ -17,7 +17,11 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data;
+package org.jetel.data.primitive;
+
+import org.jetel.data.Defaults;
+import org.jetel.data.Defaults.DataFieldMetadata;
+
 
 
 
@@ -26,10 +30,17 @@ package org.jetel.data;
  *
  *@author     Martin Zatopek
  *@since      November 30, 2005
- *@see        org.jetel.data.Decimal
+ *@see        org.jetel.data.primitive.Decimal
  */
 public class DecimalFactory {
-	public static Decimal getDecimal(int value) {
+    
+    /**
+     * How many decimal digits correspond to binary digits
+     */
+    private static final double MAGIC_CONST = Math.log(10)/Math.log(2);
+    private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = (int) Math.floor((Integer.SIZE - 1) / MAGIC_CONST);
+	
+    public static Decimal getDecimal(int value) {
 		Decimal d = getDecimal();
 		d.setValue(value);
 		return d;
@@ -64,12 +75,21 @@ public class DecimalFactory {
 		d.setValue(value);
 		return d;
 	}
-	
+
+    public static Decimal getDecimal(Decimal value, int precision, int scale) {
+        Decimal d = getDecimal(precision, scale);
+        d.setValue(value);
+        return d;
+    }
+
 	public static Decimal getDecimal() {
 		return getDecimal(Defaults.DataFieldMetadata.DECIMAL_LENGTH, Defaults.DataFieldMetadata.DECIMAL_SCALE);
 	}
 
 	public static Decimal getDecimal(int precision, int scale) {
-		return new HugeDecimal(null, precision, scale, false);
+        if(precision <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION) {
+            return new IntegerDecimal(precision, scale);
+        }
+		return new HugeDecimal(null, precision, scale, true);
 	}
 }

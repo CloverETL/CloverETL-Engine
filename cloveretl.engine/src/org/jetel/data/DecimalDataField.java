@@ -27,6 +27,8 @@ import java.text.DecimalFormatSymbols;
 import java.text.NumberFormat;
 import java.util.Locale;
 
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -153,8 +155,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 			return;
 		}
 		if (_value instanceof Decimal) {
-			value.setValue((Decimal) _value);
-			if (!value.isNaN()) setNull(false); else setNull(true);
+			setValue((Decimal) _value);
 		} else {
 			if(this.metadata.isNullable()) {
 				setNull(true);
@@ -338,9 +339,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		} else {
 			try {
 				value.fromString(valueStr, numberFormat);
-				if(value.isNaN()) {
-					setNull(true);
-				}
+				setNull(value.isNaN());
 			} catch (Exception ex) {
 				throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
 			}
@@ -394,6 +393,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		value.deserialize(buffer);
+        setNull(value.isNaN());
 	}
 
 
@@ -522,27 +522,43 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 
 
 	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
+	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
 	 */
-	public void setValue(Decimal value) {
-		this.value.setValue(value);
-		if (!this.value.isNaN()) setNull(false); else setNull(true);
+	public void setValue(Decimal _value) {
+        if (_value == null) {
+            if(this.metadata.isNullable()) {
+                setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
+            }
+            return;
+        }
+        value.setValue(_value);
+        if(value.isNaN()) {
+            if(this.metadata.isNullable()) {
+                setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
+            }
+        }
+        setNull(false);
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
 	public Decimal getDecimal() {
-		//TODO
-		return value.createCopy();
+		return value;
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
 	public Decimal getDecimal(int precision, int scale) {
-		//TODO
-		return value.createCopy();
+        if(precision == this.precision && scale == this.scale) {
+            return value;
+        }
+        return DecimalFactory.getDecimal(value, precision, scale);
 	}
 
 }

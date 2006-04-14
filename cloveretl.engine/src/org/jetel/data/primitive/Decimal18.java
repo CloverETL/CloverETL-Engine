@@ -17,12 +17,14 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data;
+package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
+
+import org.jetel.data.Numeric;
 
 /**
  *  Clover internal decimal value representation.
@@ -30,7 +32,7 @@ import java.text.NumberFormat;
  *
  *@author     Martin Zatopek
  *@since      November 30, 2005
- *@see        org.jetel.data.Decimal
+ *@see        org.jetel.data.primitive.Decimal
  */
 public class Decimal18 implements Decimal {
 	private long value;
@@ -58,28 +60,28 @@ public class Decimal18 implements Decimal {
 	}
 	
 	/**
-	 * @see org.jetel.data.Decimal#getPrecision()
+	 * @see org.jetel.data.primitive.Decimal#getPrecision()
 	 */
 	public int getPrecision() {
 		return precision;
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#getScale()
+	 * @see org.jetel.data.primitive.Decimal#getScale()
 	 */
 	public int getScale() {
 		return scale;
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#createCopy()
+	 * @see org.jetel.data.primitive.Decimal#createCopy()
 	 */
 	public Decimal createCopy() {
 		return new Decimal18(value, precision, scale, nan);
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#setValue(org.jetel.data.Decimal)
+	 * @see org.jetel.data.primitive.Decimal#setValue(org.jetel.data.primitive.Decimal)
 	 */
 	public void setValue(Decimal decimal) {
 		if(decimal.isNaN()) {
@@ -100,7 +102,7 @@ public class Decimal18 implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#setValue(double)
+	 * @see org.jetel.data.primitive.Decimal#setValue(double)
 	 */
 	public void setValue(double _value) {
 		if(_value == Double.NaN) {
@@ -113,7 +115,7 @@ public class Decimal18 implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#setValue(int)
+	 * @see org.jetel.data.primitive.Decimal#setValue(int)
 	 */
 	public void setValue(int _value) {
 		if(_value == Integer.MIN_VALUE) {
@@ -126,7 +128,7 @@ public class Decimal18 implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#setValue(long)
+	 * @see org.jetel.data.primitive.Decimal#setValue(long)
 	 */
 	public void setValue(long _value) {
 		if(_value == Long.MIN_VALUE) {
@@ -138,21 +140,21 @@ public class Decimal18 implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#getDouble()
+	 * @see org.jetel.data.primitive.Decimal#getDouble()
 	 */
 	public double getDouble() {
 		return ((double) value) / scalePow;
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#getInt()
+	 * @see org.jetel.data.primitive.Decimal#getInt()
 	 */
 	public int getInt() {
 		return (int) (value / scalePow);
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#getLong()
+	 * @see org.jetel.data.primitive.Decimal#getLong()
 	 */
 	public long getLong() {
 		return value / scalePow;
@@ -167,14 +169,14 @@ public class Decimal18 implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#setNaN(boolean)
+	 * @see org.jetel.data.primitive.Decimal#setNaN(boolean)
 	 */
 	public void setNaN(boolean isNaN) {
 		this.nan = isNaN; 
 	}
 
 	/**
-	 * @see org.jetel.data.Decimal#isNaN()
+	 * @see org.jetel.data.primitive.Decimal#isNaN()
 	 */
 	public boolean isNaN() {
 		return nan;
@@ -297,6 +299,11 @@ public class Decimal18 implements Decimal {
 		// TODO Auto-generated method stub
 		return 0;
 	}
+
+    public BigDecimal getBigDecimalOutput() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
 
 }

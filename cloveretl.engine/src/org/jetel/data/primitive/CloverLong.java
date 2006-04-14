@@ -19,8 +19,6 @@
 */
 package org.jetel.data.primitive;
 
-import org.jetel.data.Decimal;
-import org.jetel.data.DecimalFactory;
 import org.jetel.data.Numeric;
 
 /**
@@ -94,7 +92,7 @@ public class CloverLong extends Number implements Numeric {
 	}
 
 	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.Decimal)
+	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
 	 */
 	public void setValue(Decimal value) {
 		this.value = value.getLong();
