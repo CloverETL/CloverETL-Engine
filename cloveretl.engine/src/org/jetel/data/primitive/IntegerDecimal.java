@@ -40,6 +40,9 @@ import org.jetel.data.NumericDataField;
  *@see        org.jetel.data.primitive.Decimal
  */
 public class IntegerDecimal implements Decimal {
+
+    private final static int FIELD_SIZE_BYTES = 4;// standard size of field
+
     private int value;
     private int precision;
     private int scale;
@@ -181,7 +184,7 @@ public class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Double.NaN;
         }
-        return ((double) value) / scale;
+        return ((double) value) / TENPOWERS[scale];
     }
 
     /**
@@ -191,7 +194,7 @@ public class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Integer.MIN_VALUE;
         }
-        return value / scale;
+        return value / TENPOWERS[scale];
     }
 
     /**
@@ -201,7 +204,7 @@ public class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Long.MIN_VALUE;
         }
-        return value / scale;
+        return value / TENPOWERS[scale];
     }
 
     /**
@@ -385,7 +388,9 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#getSizeSerialized()
      */
     public int getSizeSerialized() {
-        return Integer.SIZE / 8;
+        return FIELD_SIZE_BYTES;
+        //FIXME in 1.5 java we can use next line
+        //return Integer.SIZE / 8;
     }
 
     /**
@@ -396,10 +401,10 @@ public class IntegerDecimal implements Decimal {
             return "";
         }
         String s = Integer.toString(value);
-        StringBuffer sb = new StringBuffer()
-                .append(s.substring(0, s.length() - scale))
-                .append('.')
-                .append(s.substring(s.length() - scale, s.length()));
+        StringBuffer sb = new StringBuffer(s.substring(0, s.length() - scale));
+        if(scale > 0) {
+            sb.append('.').append(s.substring(s.length() - scale, s.length()));
+        }
         return sb.toString();
     }
 
@@ -452,7 +457,9 @@ public class IntegerDecimal implements Decimal {
             BigDecimal bd = ((Decimal) obj).getBigDecimal().setScale(scale, BigDecimal.ROUND_DOWN);
             //FIXME in 1.5 java we will call next line plus catch exception caused by rounding
             //BigDecimal bd = ((Decimal) obj).getBigDecimal().setScale(scale);
-            if(bd.precision() > precision) return -1;
+            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
+            //FIXME in 1.5 java we will use next line
+            //if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().intValue());
         } else if (obj instanceof Integer) {
             return compareTo(((Integer) obj).intValue() * TENPOWERS[scale]);
@@ -462,7 +469,9 @@ public class IntegerDecimal implements Decimal {
             BigDecimal bd = new BigDecimal(((Double) obj).doubleValue()).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
             //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
             //BigDecimal bd = BigDecimal.valueOf(((Double) obj).doubleValue()).setScale(scale);
-            if(bd.precision() > precision) return -1;
+            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
+            //FIXME in 1.5 java we will use next line
+            //if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().intValue());
         } else if (obj instanceof IntegerDataField) {
             return compareTo(((IntegerDataField) obj).getInt() * TENPOWERS[scale]);
@@ -472,7 +481,9 @@ public class IntegerDecimal implements Decimal {
             BigDecimal bd = new BigDecimal(((NumericDataField) obj).getDouble()).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
             //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
             //BigDecimal bd = BigDecimal.valueOf(((NumericDataField) obj).getDouble()).setScale(scale);
-            if(bd.precision() > precision) return -1;
+            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
+            //FIXME in 1.5 java we will use next line
+            //if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().intValue());
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());

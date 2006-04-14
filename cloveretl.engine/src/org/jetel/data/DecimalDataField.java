@@ -222,7 +222,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 			}
 			return;
 		}
-		value.setValue(value);
+		value.setValue(_value);
 		setNull(false);
 	}
 
