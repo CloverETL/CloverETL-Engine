@@ -51,8 +51,11 @@ class WatchDog extends Thread {
 	public final static int WATCH_DOG_STATUS_RUNNING = 1;
 	/**  Description of the Field */
 	public final static int WATCH_DOG_STATUS_FINISHED_OK = 2;
+    
+    public final static String TRACKING_LOGGER_NAME = "Tracking";
 
-	static Log logger = LogFactory.getLog(WatchDog.class);
+    static Log logger = LogFactory.getLog(WatchDog.class);
+    
 
 
 	/**
@@ -93,8 +96,8 @@ class WatchDog extends Thread {
 	/**  Main processing method for the WatchDog object */
 	public void run() {
 		watchDogStatus = WATCH_DOG_STATUS_RUNNING;
-		logger.info("[WatchDog] Thread started.");
-		logger.info("[WatchDog] Running on " + javaRuntime.availableProcessors() + " CPU(s)"
+		logger.info("Thread started.");
+		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
 			+ " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
 		// renice - lower the priority
 		setPriority(Thread.MIN_PRIORITY);
@@ -102,11 +105,11 @@ class WatchDog extends Thread {
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
 			if (!runPhase(phases[currentPhaseNum])) {
 				watchDogStatus = WATCH_DOG_STATUS_ERROR;
-				logger.info("[WatchDog] !!! Phase finished with error - stopping graph run !!!");
+				logger.error("!!! Phase finished with error - stopping graph run !!!");
 				return;
 			}
 			// force running of garbage collector
-			logger.info("[WatchDog] Forcing garbage collection ...");
+			logger.info("Forcing garbage collection ...");
 			javaRuntime.runFinalization();
 			javaRuntime.gc();
 		}
@@ -144,9 +147,10 @@ class WatchDog extends Thread {
 			if (leafNodes.isEmpty()) {
 				phase.setPhaseMemUtilization(phaseMemUtilizationMaxKB);
 				phase.setPhaseExecTime((int) (System.currentTimeMillis() - startTimestamp));
-				logger.info("[WatchDog] Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
+				logger.info("Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
 						+ phase.getPhaseExecTime() / 1000);
-				printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+				//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+                new Thread(new PrintTracking(phase.getNodes().iterator(), phase.getPhaseNum()),"PrintTracking").run();
 				return true;
 				// nothing else to do in this phase
 			}
@@ -172,11 +176,12 @@ class WatchDog extends Thread {
 				while (nodesIterator.hasNext()) {
 					node = (Node) nodesIterator.next();
 					if ((!node.isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
-						logger.info("[WatchDog] !!! Fatal Error !!! - graph execution is aborting");
-						logger.fatal("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
+						logger.fatal("!!! Fatal Error !!! - graph execution is aborting");
+						logger.error("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
 						watchDogStatus = WATCH_DOG_STATUS_ERROR;
 						abort();
-						printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+						//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+                        new Thread(new PrintTracking(phase.getNodes().iterator(), phase.getPhaseNum()),"PrintTracking").run();
 						return false;
 					}
 				}
@@ -184,7 +189,8 @@ class WatchDog extends Thread {
 			// Display processing status, if it is time
 			currentTimestamp = System.currentTimeMillis();
 			if ((currentTimestamp - lastTimestamp) >= trackingInterval) {
-				printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+				//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
+                new Thread(new PrintTracking(phase.getNodes().iterator(), phase.getPhaseNum()),"PrintTracking").run();
 				lastTimestamp = currentTimestamp;
 			}
 			// rest for some time
@@ -216,28 +222,29 @@ class WatchDog extends Thread {
 	 * @param  phaseNo   Description of the Parameter
 	 * @since            July 30, 2002
 	 */
+    /*
 	void printProcessingStatus(Iterator iterator, int phaseNo) {
 		int i;
 		int recCount;
 		Node node;
-		logger.debug("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
+        trackingLogger.info("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
 		// France is here just to get 24hour time format
-		logger.debug("Time: "
+        trackingLogger.info("Time: "
 			+ DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
 				format(Calendar.getInstance().getTime()));
-		logger.debug("Node                        Status         Port                          #Records");
-		logger.debug("---------------------------------------------------------------------------------");
+        trackingLogger.info("Node                        Status         Port                          #Records");
+        trackingLogger.info("---------------------------------------------------------------------------------");
 		while (iterator.hasNext()) {
 			node = (Node) iterator.next();
 			Object nodeInfo[] = {node.getID(), node.getStatus()};
 			int nodeSizes[] = {-28, -15};
-			logger.debug(StringUtils.formatString(nodeInfo, nodeSizes));
+            trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 			//in ports
 			i = 0;
 			while ((recCount = node.getRecordCount(Node.INPUT_PORT, i)) != -1) {
 				Object portInfo[] = {"In:", Integer.toString(i), Integer.toString(recCount)};
 				int portSizes[] = {47, -2, 32};
-				logger.debug(StringUtils.formatString(portInfo, portSizes));
+                trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
 				i++;
 			}
 			//out ports
@@ -245,13 +252,13 @@ class WatchDog extends Thread {
 			while ((recCount = node.getRecordCount(Node.OUTPUT_PORT, i)) != -1) {
 				Object portInfo[] = {"Out:", Integer.toString(i), Integer.toString(recCount)};
 				int portSizes[] = {47, -2, 32};
-				logger.debug(StringUtils.formatString(portInfo, portSizes));
+                trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
 				i++;
 			}
 		}
-		logger.debug("---------------------------------** End of Log **--------------------------------");
+        trackingLogger.info("---------------------------------** End of Log **--------------------------------");
 	}
-
+*/
 
 	/**  Outputs summary info about executed phases */
 	void printPhasesSummary() {
@@ -280,7 +287,7 @@ class WatchDog extends Thread {
 		while (iterator.hasNext()) {
 			node = (Node) iterator.next();
 			node.abort();
-			logger.info("[WatchDog] Interrupted node: "
+			logger.warn("Interrupted node: "
 				+ node.getID());
 		}
 	}
@@ -301,9 +308,7 @@ class WatchDog extends Thread {
 			if (node.isLeaf() || node.isPhaseLeaf()) {
 				leafNodesList.add(node);
 			}
-			logger.debug("[WatchDog]   "
-					+ node.getID() 
-					+ " ... started");
+			logger.debug(node.getID()+ " ... started");
 		}
 	}
 
@@ -324,9 +329,9 @@ class WatchDog extends Thread {
 			// something went wrong !
 			return false;
 		}
-		logger.info("[WatchDog] Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
+		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase.getNodes().iterator(), leafNodes);
-		logger.info("[WatchDog] Sucessfully started all nodes in phase!");
+		logger.info("Sucessfully started all nodes in phase!");
 		// watch running nodes in phase
 		result = watch(phase, leafNodes);
 		//end of phase, destroy it
@@ -359,5 +364,66 @@ class WatchDog extends Thread {
 	public void setTrackingInterval(int trackingInterval) {
 		this.trackingInterval = trackingInterval;
 	}
+    
+	class PrintTracking implements Runnable{
+	    Iterator iterator;
+        int phaseNo;
+        Log trackingLogger;
+        
+        PrintTracking(Iterator iterator, int phaseNo){
+            this.iterator=iterator;
+            this.phaseNo=phaseNo;
+            trackingLogger= LogFactory.getLog(TRACKING_LOGGER_NAME);
+        }
+        
+        public void run(){
+            printProcessingStatus();
+        }
+        
+        /**
+         *  Outputs basic LOG information about graph processing
+         *
+         * @param  iterator  Description of Parameter
+         * @param  phaseNo   Description of the Parameter
+         * @since            July 30, 2002
+         */
+        private void printProcessingStatus() {
+            int i;
+            int recCount;
+            Node node;
+            trackingLogger.info("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
+            // France is here just to get 24hour time format
+            trackingLogger.info("Time: "
+                + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
+                    format(Calendar.getInstance().getTime()));
+            trackingLogger.info("Node                        Status         Port                          #Records");
+            trackingLogger.info("---------------------------------------------------------------------------------");
+            while (iterator.hasNext()) {
+                node = (Node) iterator.next();
+                Object nodeInfo[] = {node.getID(), node.getStatus()};
+                int nodeSizes[] = {-28, -15};
+                trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
+                //in ports
+                i = 0;
+                while ((recCount = node.getRecordCount(Node.INPUT_PORT, i)) != -1) {
+                    Object portInfo[] = {"In:", Integer.toString(i), Integer.toString(recCount)};
+                    int portSizes[] = {47, -2, 32};
+                    trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
+                    i++;
+                }
+                //out ports
+                i = 0;
+                while ((recCount = node.getRecordCount(Node.OUTPUT_PORT, i)) != -1) {
+                    Object portInfo[] = {"Out:", Integer.toString(i), Integer.toString(recCount)};
+                    int portSizes[] = {47, -2, 32};
+                    trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
+                    i++;
+                }
+            }
+            trackingLogger.info("---------------------------------** End of Log **--------------------------------");
+        }
+
+    }
+    
 }
 
