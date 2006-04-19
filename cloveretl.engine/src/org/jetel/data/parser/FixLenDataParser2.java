@@ -209,7 +209,7 @@ public class FixLenDataParser2 implements Parser {
 				fieldStringBuffer.flip();
 				
 				// are we skipping this row/field ?
-				if (skipRows){
+				if (!skipRows){
 				    populateField(record, fieldCounter, fieldStringBuffer);
 				}
 				
