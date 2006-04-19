@@ -270,10 +270,13 @@ public class SQLDataParser implements Parser {
 			if (resultSet != null) {
 				resultSet.close();
 			}
+            // try to commit (as some DBs apparently need commit even when data is read only
+            dbConnection.getConnection().commit();
+            // close statement
 			statement.close();
 		}
 		catch (SQLException ex) {
-			ex.printStackTrace();
+            logger.warn(ex);
 		}
 	}
 
