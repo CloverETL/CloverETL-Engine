@@ -230,7 +230,7 @@ public final class TransformationGraph {
 		long timestamp = System.currentTimeMillis();
 		watchDog = new WatchDog(this, phasesArray, trackingInterval);
 
-		logger.info("[Clover] starting WatchDog thread ...");
+		logger.info("Starting WatchDog thread ...");
 		watchDog.start();
 		try {
 			watchDog.join();
@@ -238,17 +238,17 @@ public final class TransformationGraph {
 			logger.error(ex);
 			return false;
 		}
-		logger.info("[Clover] WatchDog thread finished - total execution time: " 
+		logger.info("WatchDog thread finished - total execution time: " 
 				+ (System.currentTimeMillis() - timestamp) / 1000
 				+ " (sec)");
 
 		freeResources();
 
 		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
-			logger.info("[Clover] Graph execution finished successfully");
+			logger.info("Graph execution finished successfully");
 			return true;
 		} else {
-			logger.info("[Clover] !!! Graph execution finished with errors !!!");
+			logger.error("!!! Graph execution finished with errors !!!");
 			return false;
 		}
 
@@ -303,7 +303,7 @@ public final class TransformationGraph {
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
-				logger.info("Can't connect to database: " + ex.getMessage());
+				logger.error("Can't connect to database: " + ex.getMessage(),ex);
 				return false;
 			}
 		}
@@ -318,7 +318,7 @@ public final class TransformationGraph {
 				logger.info(seq + " ... OK");
 			} catch (Exception ex) {
 				logger.info(seq + " ... !!! ERROR !!!");
-				logger.info("Can't initialize sequence: " + ex.getMessage());
+				logger.error("Can't initialize sequence: " + ex.getMessage(),ex);
 				return false;
 			}
 		}
@@ -332,7 +332,7 @@ public final class TransformationGraph {
         try {
 			nodesArray = TransformationGraphAnalyzer.enumerateNodes(nodes);
 		} catch (GraphConfigurationException ex) {
-			logger.fatal(ex.getMessage());
+			logger.fatal(ex.getMessage(),ex);
 			return false;
 		}
 		TransformationGraphAnalyzer.distributeNodes2Phases(phasesArray, nodesArray, edges);
@@ -665,14 +665,16 @@ public final class TransformationGraph {
             try {
                 url=new URL("file:"+fileURL);
             }catch(MalformedURLException ex){
-                logger.fatal("Wrong URL/filename of file specified: "+fileURL);
+                logger.error("Wrong URL/filename of file specified: "+fileURL,ex);
+                throw new RuntimeException("Wrong URL/filename of property file specified: "+fileURL,ex);
             }
         }
 		try {
 		    InputStream inStream = new BufferedInputStream(url.openStream());
 			graphProperties.load(inStream);
 		} catch (IOException ex) {
-			logger.fatal(ex.getMessage());
+			logger.error(ex.getMessage(),ex);
+            throw new RuntimeException("Can't read property file !",ex);
 		}
 	}
 
