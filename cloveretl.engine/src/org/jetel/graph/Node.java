@@ -676,6 +676,7 @@ public abstract class Node extends Thread {
 
         for(int i=0;i<outPortsSize;i++){
             ((OutputPortDirect) outPortsArray[i]).writeRecordDirect(recordBuffer);
+            recordBuffer.rewind();
         }
     }
 
