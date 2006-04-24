@@ -59,8 +59,8 @@ public class DelimitedDataParserNIO implements Parser {
 	private ReadableByteChannel reader;
 	private CharsetDecoder decoder;
 	private int recordCounter;
-	private char[] delimiters[];
-	private char fieldTypes[];
+	private char[][] delimiters;
+	private char[] fieldTypes;
 	private boolean isEof;
     private boolean skipRows=false;
 
@@ -337,7 +337,7 @@ public class DelimitedDataParserNIO implements Parser {
                             try{
                                 fieldStringBuffer.put((char) character);
                             }catch(BufferOverflowException ex){
-                                throw new IOException("Field too long or can not find delimiter ["+delimiters[fieldCounter]+"]");
+                                throw new IOException("Field too long or can not find delimiter ["+String.valueOf(delimiters[fieldCounter])+"]");
                             }
 						}
 						delimiterPosition = 0;
