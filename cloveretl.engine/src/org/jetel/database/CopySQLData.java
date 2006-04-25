@@ -67,6 +67,7 @@ public abstract class CopySQLData {
 	 */
 	protected DataField field;
 
+    protected boolean inBatchUpdate = false; // indicates whether batchMode is used when populating target DB
 
 	/**
 	 *  Constructor for the CopySQLData object
@@ -104,6 +105,20 @@ public abstract class CopySQLData {
 	    this.field=record.getField(fieldJetel);
 	}
 
+    
+     /**
+     * @return Returns the inBatchUpdate.
+     */
+    public boolean isInBatchUpdate() {
+        return inBatchUpdate;
+    }
+
+    /**
+     * @param inBatchUpdate The inBatchUpdate to set.
+     */
+    public void setInBatchUpdate(boolean inBatch) {
+        this.inBatchUpdate = inBatch;
+    }
 	
 	/**
 	 *  Sets value of Jetel/Clover data field based on value from SQL ResultSet
@@ -178,7 +193,17 @@ public abstract class CopySQLData {
 	    for(int i=0;i<transMap.length;transMap[i++].setCloverRecord(record));
 	}
 	
-	
+    /**
+     * Set on/off working in batchUpdate mode. In this mode (especially on Oracle 10)
+     * we have to create new object for each setDate(), setTimestamp() statement call.
+     * 
+     * @param transMap
+     * @param inBatch
+     */
+    public static void setBatchUpdate(CopySQLData[] transMap, boolean inBatch){
+        for(int i=0;i<transMap.length;transMap[i++].setInBatchUpdate(inBatch));
+    }
+    
 	/**
 	 *  Creates translation array for copying data from Database record into Jetel
 	 *  record
@@ -468,8 +493,12 @@ public abstract class CopySQLData {
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				dateValue.setTime(((DateDataField) field).getDate().getTime());
-				pStatement.setDate(fieldSQL, dateValue);
+			    if (inBatchUpdate){
+                    pStatement.setDate(fieldSQL, new java.sql.Date(((DateDataField) field).getDate().getTime()));
+			    }else{
+			        dateValue.setTime(((DateDataField) field).getDate().getTime());
+			        pStatement.setDate(fieldSQL, dateValue);
+			    }
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
 			}
@@ -796,8 +825,12 @@ public abstract class CopySQLData {
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
 			if (!field.isNull()) {
-				timeValue.setTime(((DateDataField) field).getDate().getTime());
-				pStatement.setTimestamp(fieldSQL, timeValue);
+			    if (inBatchUpdate){
+                    pStatement.setTimestamp(fieldSQL, new Timestamp(((DateDataField) field).getDate().getTime()));
+			    }else{
+			        timeValue.setTime(((DateDataField) field).getDate().getTime());
+			        pStatement.setTimestamp(fieldSQL, timeValue);
+			    }
 			} else {
 				pStatement.setNull(fieldSQL, java.sql.Types.TIMESTAMP);
 			}
