@@ -144,7 +144,6 @@ public class DBOutputTable extends Node {
 	private boolean useBatch;
 	private int batchSize;
 
-	private int countError;
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
 	private final static int SQL_FETCH_SIZE_ROWS = 100;
@@ -446,6 +445,9 @@ public class DBOutputTable extends Node {
 	    DataRecord[] dataRecordHolder;
 	    int holderCount=0;
 	    
+        // first, we set transMap to batchUpdateMode
+        CopySQLData.setBatchUpdate(transMap,true);
+        
 	    // if we have rejected records port connected, we will
 	    // store and report erroneous records in batch
 	    if (rejectedPort!=null){
@@ -492,7 +494,6 @@ public class DBOutputTable extends Node {
 	                if (countError>maxErrors && maxErrors!=-1){
 	                    throw new SQLException("Batch error:"+ex.getMessage());
 	                }
-	                rejectedPort.close();
 	            }
 	            batchCount = 0;
 	            holderCount=0;
