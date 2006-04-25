@@ -71,7 +71,20 @@ import org.jetel.util.SynchronizeUtils;
  *  <tr><td><b>sorterInitialCapacity</b><br><i>optional</i></td><td>the initial capacity of internal sorter used for in-memory sorting records. If the
  *   system has plenty of memory, specify high number here (5000 or more). If the system is short on memory, use low number (100).<br>
  *   The final capacity is based on following formula:<br><code>sorter_initial_capacity * (1 - grow_factor^max_num_collections)/(1 - grow_factor)</code><br>
- *   where:<br><code>grow_factor=1.6<br>max_num_collections=8<br></code><br>Default total capacity roughly is <b>140000</b> records.</td>
+ *   where:<br><code>grow_factor=1.6<br>max_num_collections=8<br>sorterInitialCapacity=2000<br></code><br>With the parameters above, the default total capacity roughly is <b>140000</b> records. The
+ *   total capacity is approximately <code>69,91 * sorterInitialCapacity</code>.<br><br>
+ *   Following tables shows Total Capacities of internal buffer for various Initial Capacity values:
+ *   <table border="1">
+ *   <tr><th>Initial Capacity</th><th>Total Capacity</th></tr>
+ *    <tr><td>10</td><td>1000</td></tr>
+ *    <tr><td>100</td><td>7000</td></tr>
+ *    <tr><td>1000</td><td>70000</td></tr>
+ *    <tr><td>2000</td><td>140000</td></tr>
+ *    <tr><td>5000</td><td>350000</td></tr>
+ *    <tr><td>10000</td><td>700000</td></tr>
+ *    <tr><td>20000</td><td>1399000</td></tr>
+ *    <tr><td>50000</td><td>3496000</td></tr>
+ *    </table>
  *  </tr>
  *  </table>
  *

@@ -89,6 +89,8 @@ import org.w3c.dom.Text;
  * <li>replace(..str expression.., ..regex_pattern.., ..str expression.. )
  * <li>num2str(..num expression.. )
  * <li>str2num(..str expression.. )
+ * <li>iif ( ..condition expression .. , ..expression.. , ..expression.. )
+ * <li>print_err ( ..str expression.. )
  * </ul> 
  * </td></tr>
  * </table>
