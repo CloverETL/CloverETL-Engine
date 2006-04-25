@@ -55,14 +55,14 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-      case 37:
+      case 43:
         ;
         break;
       default:
         jj_la1[0] = jj_gen;
         break label_1;
       }
-      jj_consume_token(37);
+      jj_consume_token(43);
       Statement();
     }
   }
@@ -500,13 +500,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case DATETIME_LITERAL:
     case FIELD_ID:
     case OPEN_PAR:
-    case 38:
-    case 40:
-    case 41:
-    case 42:
-    case 43:
     case 44:
-    case 45:
     case 46:
     case 47:
     case 48:
@@ -516,6 +510,12 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 52:
     case 53:
     case 54:
+    case 55:
+    case 56:
+    case 57:
+    case 58:
+    case 59:
+    case 60:
       PrimaryExpression();
       break;
     default:
@@ -593,13 +593,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case DATETIME_LITERAL:
       LitExp();
       break;
-    case 38:
-    case 40:
-    case 41:
-    case 42:
-    case 43:
     case 44:
-    case 45:
     case 46:
     case 47:
     case 48:
@@ -609,6 +603,12 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     case 52:
     case 53:
     case 54:
+    case 55:
+    case 56:
+    case 57:
+    case 58:
+    case 59:
+    case 60:
       BuildInFunction();
       break;
     case FIELD_ID:
@@ -628,13 +628,13 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
 
   final public void BuildInFunction() throws ParseException {
     switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-    case 38:
-      jj_consume_token(38);
+    case 44:
+      jj_consume_token(44);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
                                                                                                  CLVFSubStrNode jjtn001 = new CLVFSubStrNode(this, JJTSUBSTRNODE);
                                                                                                  boolean jjtc001 = true;
@@ -647,8 +647,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                                                                  }
       }
       break;
-    case 40:
-      jj_consume_token(40);
+    case 46:
+      jj_consume_token(46);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                                 CLVFUppercaseNode jjtn002 = new CLVFUppercaseNode(this, JJTUPPERCASENODE);
@@ -662,8 +662,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                 }
       }
       break;
-    case 41:
-      jj_consume_token(41);
+    case 47:
+      jj_consume_token(47);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                                 CLVFLowercaseNode jjtn003 = new CLVFLowercaseNode(this, JJTLOWERCASENODE);
@@ -677,8 +677,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                 }
       }
       break;
-    case 42:
-      jj_consume_token(42);
+    case 48:
+      jj_consume_token(48);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                            CLVFTrimNode jjtn004 = new CLVFTrimNode(this, JJTTRIMNODE);
@@ -692,8 +692,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                            }
       }
       break;
-    case 43:
-      jj_consume_token(43);
+    case 49:
+      jj_consume_token(49);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                              CLVFLengthNode jjtn005 = new CLVFLengthNode(this, JJTLENGTHNODE);
@@ -707,17 +707,17 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                              }
       }
       break;
-    case 52:
+    case 58:
       ConcatNode();
       break;
-    case 53:
+    case 59:
       DateAddNode();
       break;
-    case 54:
+    case 60:
       DateDiffNode();
       break;
-    case 44:
-      jj_consume_token(44);
+    case 50:
+      jj_consume_token(50);
       jj_consume_token(OPEN_PAR);
                        CLVFTodayNode jjtn006 = new CLVFTodayNode(this, JJTTODAYNODE);
                        boolean jjtc006 = true;
@@ -730,8 +730,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                        }
       }
       break;
-    case 45:
-      jj_consume_token(45);
+    case 51:
+      jj_consume_token(51);
       jj_consume_token(OPEN_PAR);
       IDExp();
                                 CLVFIsNullNode jjtn007 = new CLVFIsNullNode(this, JJTISNULLNODE);
@@ -745,11 +745,11 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                 }
       }
       break;
-    case 46:
-      jj_consume_token(46);
+    case 52:
+      jj_consume_token(52);
       jj_consume_token(OPEN_PAR);
       IDExp();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
                                                       CLVFNVLNode jjtn008 = new CLVFNVLNode(this, JJTNVLNODE);
                                                       boolean jjtc008 = true;
@@ -762,13 +762,13 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                       }
       }
       break;
-    case 47:
-      jj_consume_token(47);
+    case 53:
+      jj_consume_token(53);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
                                                                                                 CLVFReplaceNode jjtn009 = new CLVFReplaceNode(this, JJTREPLACENODE);
                                                                                                 boolean jjtc009 = true;
@@ -781,8 +781,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                                                                 }
       }
       break;
-    case 48:
-      jj_consume_token(48);
+    case 54:
+      jj_consume_token(54);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                               CLVFStr2NumNode jjtn010 = new CLVFStr2NumNode(this, JJTSTR2NUMNODE);
@@ -796,8 +796,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                               }
       }
       break;
-    case 49:
-      jj_consume_token(49);
+    case 55:
+      jj_consume_token(55);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                               CLVFNum2StrNode jjtn011 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
@@ -811,13 +811,13 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                               }
       }
       break;
-    case 50:
-      jj_consume_token(50);
+    case 56:
+      jj_consume_token(56);
       jj_consume_token(OPEN_PAR);
       ConditionalOrExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
                                                                                                  CLVFIffNode jjtn012 = new CLVFIffNode(this, JJTIFFNODE);
                                                                                                  boolean jjtc012 = true;
@@ -830,8 +830,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
                                                                                                  }
       }
       break;
-    case 51:
-      jj_consume_token(51);
+    case 57:
+      jj_consume_token(57);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
                                                 CLVFPrintErrNode jjtn013 = new CLVFPrintErrNode(this, JJTPRINTERRNODE);
@@ -977,15 +977,15 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
     try {
-      jj_consume_token(52);
+      jj_consume_token(58);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
       label_8:
       while (true) {
-        jj_consume_token(39);
+        jj_consume_token(45);
         AdditiveExpression();
         switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
-        case 39:
+        case 45:
           ;
           break;
         default:
@@ -1021,12 +1021,12 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      jj_consume_token(53);
+      jj_consume_token(59);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       t = jj_consume_token(DATE_FIELD_LITERAL);
                                                  jjtn000.setCalendarField(t.image);
       jj_consume_token(CLOSE_PAR);
@@ -1057,12 +1057,12 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);Token t;
     try {
-      jj_consume_token(54);
+      jj_consume_token(60);
       jj_consume_token(OPEN_PAR);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       AdditiveExpression();
-      jj_consume_token(39);
+      jj_consume_token(45);
       t = jj_consume_token(DATE_FIELD_LITERAL);
                                                  jjtn000.setCalendarField(t.image);
       jj_consume_token(CLOSE_PAR);
@@ -1092,28 +1092,6 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
     try { return !jj_3_1(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(0, xla); }
-  }
-
-  final private boolean jj_3R_47() {
-    if (jj_3R_48()) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
-    if (jj_scan_token(53)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_40() {
-    if (jj_scan_token(52)) return true;
-    if (jj_scan_token(OPEN_PAR)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_46() {
-    if (jj_3R_47()) return true;
-    return false;
   }
 
   final private boolean jj_3R_16() {
@@ -1181,31 +1159,31 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_38() {
-    if (jj_scan_token(51)) return true;
+    if (jj_scan_token(57)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_37() {
-    if (jj_scan_token(50)) return true;
+    if (jj_scan_token(56)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_36() {
-    if (jj_scan_token(49)) return true;
+    if (jj_scan_token(55)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_35() {
-    if (jj_scan_token(48)) return true;
+    if (jj_scan_token(54)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_34() {
-    if (jj_scan_token(47)) return true;
+    if (jj_scan_token(53)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
@@ -1216,19 +1194,19 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_33() {
-    if (jj_scan_token(46)) return true;
+    if (jj_scan_token(52)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_32() {
-    if (jj_scan_token(45)) return true;
+    if (jj_scan_token(51)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_31() {
-    if (jj_scan_token(44)) return true;
+    if (jj_scan_token(50)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
@@ -1249,7 +1227,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_27() {
-    if (jj_scan_token(43)) return true;
+    if (jj_scan_token(49)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
@@ -1260,25 +1238,25 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_26() {
-    if (jj_scan_token(42)) return true;
+    if (jj_scan_token(48)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_25() {
-    if (jj_scan_token(41)) return true;
+    if (jj_scan_token(47)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_24() {
-    if (jj_scan_token(40)) return true;
+    if (jj_scan_token(46)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
 
   final private boolean jj_3R_23() {
-    if (jj_scan_token(38)) return true;
+    if (jj_scan_token(44)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
     return false;
   }
@@ -1402,8 +1380,30 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   final private boolean jj_3R_42() {
-    if (jj_scan_token(54)) return true;
+    if (jj_scan_token(60)) return true;
     if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_47() {
+    if (jj_3R_48()) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_41() {
+    if (jj_scan_token(59)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_40() {
+    if (jj_scan_token(58)) return true;
+    if (jj_scan_token(OPEN_PAR)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_46() {
+    if (jj_3R_47()) return true;
     return false;
   }
 
@@ -1424,17 +1424,20 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x0,0x40,0x80,0x600000,0x600000,0xf800000,0xf800000,0x60000000,0x60000000,0x80000000,0x80000000,0x194200,0x100,0x194200,0x0,0x194200,0x0,};
+      jj_la1_0 = new int[] {0x0,0x1000,0x2000,0x18000000,0x18000000,0xe0000000,0xe0000000,0x0,0x0,0x0,0x0,0x6508000,0x4000,0x6508000,0x0,0x6508000,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3,0x3,0x7fff4c,0x0,0x7fff4c,0x7fff40,0x0,0x80,};
+      jj_la1_1 = new int[] {0x800,0x0,0x0,0x0,0x0,0x3,0x3,0x18,0x18,0xe0,0xe0,0x1fffd300,0x0,0x1fffd300,0x1fffd000,0x0,0x2000,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[1];
   private boolean jj_rescan = false;
   private int jj_gc = 0;
 
   public FilterExpParser(java.io.InputStream stream) {
-    jj_input_stream = new SimpleCharStream(stream, 1, 1);
+     this(stream, null);
+  }
+  public FilterExpParser(java.io.InputStream stream, String encoding) {
+    try { jj_input_stream = new SimpleCharStream(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source = new FilterExpParserTokenManager(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -1444,7 +1447,10 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   }
 
   public void ReInit(java.io.InputStream stream) {
-    jj_input_stream.ReInit(stream, 1, 1);
+     ReInit(stream, null);
+  }
+  public void ReInit(java.io.InputStream stream, String encoding) {
+    try { jj_input_stream.ReInit(stream, encoding, 1, 1); } catch(java.io.UnsupportedEncodingException e) { throw new RuntimeException(e); }
     token_source.ReInit(jj_input_stream);
     token = new Token();
     jj_ntk = -1;
@@ -1601,8 +1607,8 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[56];
-    for (int i = 0; i < 56; i++) {
+    boolean[] la1tokens = new boolean[63];
+    for (int i = 0; i < 63; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
@@ -1621,7 +1627,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
         }
       }
     }
-    for (int i = 0; i < 56; i++) {
+    for (int i = 0; i < 63; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
@@ -1647,6 +1653,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
   final private void jj_rescan_token() {
     jj_rescan = true;
     for (int i = 0; i < 1; i++) {
+    try {
       JJCalls p = jj_2_rtns[i];
       do {
         if (p.gen > jj_gen) {
@@ -1657,6 +1664,7 @@ public class FilterExpParser/*@bgen(jjtree)*/implements FilterExpParserTreeConst
         }
         p = p.next;
       } while (p != null);
+      } catch(LookaheadSuccess ls) { }
     }
     jj_rescan = false;
   }

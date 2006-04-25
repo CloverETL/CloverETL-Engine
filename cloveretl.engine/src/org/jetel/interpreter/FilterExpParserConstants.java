@@ -4,40 +4,43 @@ package org.jetel.interpreter;
 public interface FilterExpParserConstants {
 
   int EOF = 0;
-  int OR = 6;
-  int AND = 7;
-  int NOT = 8;
-  int INTEGER_LITERAL = 9;
-  int DIGIT = 10;
-  int DECIMAL_LITERAL = 11;
-  int HEX_LITERAL = 12;
-  int OCTAL_LITERAL = 13;
-  int FLOATING_POINT_LITERAL = 14;
-  int EXPONENT = 15;
-  int STRING_LITERAL = 16;
-  int QUOTED_STRING = 17;
-  int DQUOTED_STRING = 18;
-  int DATE_LITERAL = 19;
-  int DATETIME_LITERAL = 20;
-  int EQUAL = 21;
-  int NON_EQUAL = 22;
-  int LESS_THAN = 23;
-  int LESS_THAN_EQUAL = 24;
-  int GREATER_THAN = 25;
-  int GREATER_THAN_EQUAL = 26;
-  int REGEX_EQUAL = 27;
-  int CMPOPERATOR = 28;
-  int MINUS = 29;
-  int PLUS = 30;
-  int MULTIPLY = 31;
-  int DIVIDE = 32;
-  int MODULO = 33;
-  int FIELD_ID = 34;
-  int OPEN_PAR = 35;
-  int CLOSE_PAR = 36;
-  int DATE_FIELD_LITERAL = 55;
+  int OR = 12;
+  int AND = 13;
+  int NOT = 14;
+  int INTEGER_LITERAL = 15;
+  int DIGIT = 16;
+  int DECIMAL_LITERAL = 17;
+  int HEX_LITERAL = 18;
+  int OCTAL_LITERAL = 19;
+  int FLOATING_POINT_LITERAL = 20;
+  int EXPONENT = 21;
+  int STRING_LITERAL = 22;
+  int QUOTED_STRING = 23;
+  int DQUOTED_STRING = 24;
+  int DATE_LITERAL = 25;
+  int DATETIME_LITERAL = 26;
+  int EQUAL = 27;
+  int NON_EQUAL = 28;
+  int LESS_THAN = 29;
+  int LESS_THAN_EQUAL = 30;
+  int GREATER_THAN = 31;
+  int GREATER_THAN_EQUAL = 32;
+  int REGEX_EQUAL = 33;
+  int CMPOPERATOR = 34;
+  int MINUS = 35;
+  int PLUS = 36;
+  int MULTIPLY = 37;
+  int DIVIDE = 38;
+  int MODULO = 39;
+  int FIELD_ID = 40;
+  int OPEN_PAR = 41;
+  int CLOSE_PAR = 42;
+  int DATE_FIELD_LITERAL = 61;
+  int ERROR = 62;
 
   int DEFAULT = 0;
+  int WithinComment = 1;
+  int WithinLineComment = 2;
 
   String[] tokenImage = {
     "<EOF>",
@@ -46,6 +49,12 @@ public interface FilterExpParserConstants {
     "\"\\n\"",
     "\"\\r\"",
     "\"\\n\\r\"",
+    "\"/*\"",
+    "\"*/\"",
+    "<token of kind 8>",
+    "\"//\"",
+    "\"\\n\"",
+    "<token of kind 11>",
     "<OR>",
     "<AND>",
     "<NOT>",
@@ -96,6 +105,7 @@ public interface FilterExpParserConstants {
     "\"dateadd\"",
     "\"datediff\"",
     "<DATE_FIELD_LITERAL>",
+    "<ERROR>",
   };
 
 }
