@@ -19,10 +19,12 @@
 */
 package org.jetel.component;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
@@ -82,7 +84,7 @@ public class Trash extends Node {
 	private final static int READ_FROM_PORT = 0;
 	private boolean debugPrint;
 	private String debugFilename;
-	private PrintStream outStream;
+	private PrintWriter outStream;
 
 	private ByteBuffer recordBuffer;
 
@@ -184,12 +186,12 @@ public class Trash extends Node {
 		}
 		if (debugFilename != null) {
 			try {
-				outStream = new PrintStream(new FileOutputStream(debugFilename));
+				outStream = new PrintWriter(new BufferedOutputStream(new FileOutputStream(debugFilename)));
 			} catch (FileNotFoundException ex) {
 				throw new ComponentNotReadyException(ex.getMessage());
 			}
 		} else if (debugPrint) {
-			outStream = System.out;
+			outStream = new PrintWriter(System.out);
 		}
 	}
 
