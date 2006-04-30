@@ -38,7 +38,7 @@ import org.w3c.dom.Element;
 
 /**
  *  <h3>DatabaseOutputTable Component</h3>
- * <!-- his component performs append (so far) operation on specified database table.
+ * <!-- his component performs DML operation on specified database table (inser/update/delete).
  *  The metadata describing data comming in through input port[0] must be in the same
  *  structure as the target table. -->
  *
@@ -49,9 +49,9 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>This component performs append (so far) operation on specified database table.<br>
+ * <td>This component performs specified DML operation (insert/update/delete) on specified database table.<br>
  *  The metadata describing data comming in through input port[0] must be in the same
- *  structure as the target table.</td></tr>
+ *  structure as the target table. Parameter placeholder in DML statemet is [?] - questionmark</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -109,6 +109,12 @@ import org.w3c.dom.Element;
  * <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" cloverFields="FirstName;LastName"&gt;
  *  &lt;SQLCode&gt;
  *	insert into myemployee2 (FIRST_NAME,LAST_NAME,DATE,ID) values (?,?,sysdate,123)
+ *  &lt;/SQLCode&gt;
+ *  &lt;/Node&gt;</pre>
+ *  <i>Example below shows how to delete records in table using DBOutputTable component</i>
+ *  <pre>&lt;Node id="OUTPUT" type="DB_OUTPUT_TABLE" dbConnection="NorthwindDB" cloverFields="FirstName;LastName"&gt;
+ *  &lt;SQLCode&gt;
+ *  delete from myemployee2 where FIRST_NAME = ? and LAST_NAME = ?
  *  &lt;/SQLCode&gt;
  *  &lt;/Node&gt;</pre>
  * <br>
@@ -404,7 +410,7 @@ public class DBOutputTable extends Node {
 		int recCount = 0;
 		int countError=0;
 		while (inRecord != null && runIt) {
-			inRecord = readRecord(READ_FROM_PORT, inRecord);
+			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				for (i = 0; i < transMap.length; i++) {
 					transMap[i].jetel2sql(preparedStatement);
@@ -460,7 +466,7 @@ public class DBOutputTable extends Node {
 	    }
 	    
 	    while (inRecord != null && runIt) {
-	        inRecord = readRecord(READ_FROM_PORT, inRecord);
+	        inRecord = inPort.readRecord(inRecord);
 	        if (inRecord != null) {
 	            for (i = 0; i < transMap.length; i++) {
 	                transMap[i].jetel2sql(preparedStatement);
@@ -485,12 +491,8 @@ public class DBOutputTable extends Node {
 	                preparedStatement.clearBatch();
 	            } catch (BatchUpdateException ex) {
 	                preparedStatement.clearBatch();
-	                logger.error(ex);
-	                if (dataRecordHolder!=null){
-	                    for (int j=0;j<holderCount;j++) {
-	                        rejectedPort.writeRecord(dataRecordHolder[j]);
-	                    }
-	                }
+	                logger.debug(ex);
+                    flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	                if (countError>maxErrors && maxErrors!=-1){
 	                    throw new SQLException("Batch error:"+ex.getMessage());
 	                }
@@ -505,12 +507,8 @@ public class DBOutputTable extends Node {
 	                    preparedStatement.clearBatch();
 	                } catch (BatchUpdateException ex) {
 	                    preparedStatement.clearBatch();
-	                    logger.error(ex);
-	                    if (dataRecordHolder!=null){
-	                        for (int j=0;j<holderCount;j++) {
-		                        rejectedPort.writeRecord(dataRecordHolder[j]);
-		                    }
-	                    }
+	                    logger.debug(ex);
+                        flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	                    if (countError>maxErrors && maxErrors!=-1){
 	                        throw new SQLException("Batch error:"+ex.getMessage());
 	                    }
@@ -526,12 +524,9 @@ public class DBOutputTable extends Node {
 	    try{
 	        preparedStatement.executeBatch();
 	    }catch (BatchUpdateException ex) {
-	        logger.error(ex);
+	        logger.debug(ex);
+            flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	        if (dataRecordHolder!=null){
-	            for (int j=0;j<holderCount;j++) {
-                    rejectedPort.writeRecord(dataRecordHolder[j]);
-                }
-	            holderCount=0;
 	            Arrays.fill(dataRecordHolder,null);
 	        }
 	        if (countError>maxErrors && maxErrors!=-1){
@@ -546,6 +541,25 @@ public class DBOutputTable extends Node {
 	        Arrays.fill(dataRecordHolder,null);
 	}
 	
+    
+    private void flushErrorRecords(DataRecord[] records,int recCount, BatchUpdateException ex,OutputPort port) 
+    throws IOException,InterruptedException {
+        int[] updateCounts=ex.getUpdateCounts();
+        int i=0;
+
+        if (records==null) return;
+        
+        while(i<updateCounts.length){
+            if (updateCounts[i]==Statement.EXECUTE_FAILED){
+                port.writeRecord(records[i]);
+            }
+            i++;
+        }
+        // flush rest of the records for which we don't have update counts
+        while(i<recCount){
+            port.writeRecord(records[i++]);
+        }
+    }
 	
 	/**
 	 *  Description of the Method
