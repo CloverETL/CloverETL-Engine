@@ -383,7 +383,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @return    Description of the Return Value
 	 */
 	public String toString() {
-		StringBuffer str = new StringBuffer();
+		StringBuffer str = new StringBuffer(80);
 		for (int i = 0; i < fields.length; i++) {
 			str.append("#").append(i).append("|");
 			str.append(fields[i].getMetadata().getName()).append("|");
