@@ -438,12 +438,12 @@ public class DataRecordTape {
 	    /**
 		 *  Stores one data record into buffer / file.
 		 *
-		 *@param  data             ByteBuffer containing record's data
+		 *@param  recordBuffer             ByteBuffer containing record's data
 		 *@exception  IOException  In case of IO failure
 		 *@since                   September 17, 2002
 		 */
-		 void put(ByteBuffer data) throws IOException {
-			int recordSize = data.remaining();
+		 void put(ByteBuffer recordBuffer) throws IOException {
+			int recordSize = recordBuffer.remaining();
 			
 			// check that internal buffer has enough space
 			if ((recordSize + LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
@@ -452,7 +452,7 @@ public class DataRecordTape {
 			
 			try {
 				dataBuffer.putInt(recordSize);
-				dataBuffer.put(data);
+				dataBuffer.put(recordBuffer);
 			} catch (BufferOverflowException ex) {
 				throw new RuntimeException("Input Buffer is not big enough to accomodate data record !");
 			}
@@ -489,13 +489,13 @@ public class DataRecordTape {
 		/**
 		 *  Returns next record from the buffer - FIFO order.
 		 *
-		 *@param  data             ByteBuffer into which store data
+		 *@param  recordBuffer             ByteBuffer into which store data
 		 *@return                  ByteBuffer populated with record's data or NULL if
 		 *      no more record can be retrieved
 		 *@exception  IOException  Description of Exception
 		 *@since                   September 17, 2002
 		 */
-		 boolean get(ByteBuffer data) throws IOException {
+		 boolean get(ByteBuffer recordBuffer) throws IOException {
 			int recordSize;
 			if(!canRead){
 				throw new RuntimeException("Buffer has not been rewind !");
@@ -517,8 +517,9 @@ public class DataRecordTape {
 			}
 			int oldLimit = dataBuffer.limit();
 			dataBuffer.limit(dataBuffer.position() + recordSize);
-			data.put(dataBuffer);
-			data.flip();
+            recordBuffer.clear();
+			recordBuffer.put(dataBuffer);
+			recordBuffer.flip();
 			dataBuffer.limit(oldLimit);
 			
 			position+=recordSize;
