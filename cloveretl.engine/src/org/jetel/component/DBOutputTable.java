@@ -491,7 +491,7 @@ public class DBOutputTable extends Node {
 	                preparedStatement.clearBatch();
 	            } catch (BatchUpdateException ex) {
 	                preparedStatement.clearBatch();
-	                logger.debug(ex);
+	                //logger.debug(ex); this might generate a lots of messages
                     flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	                if (countError>maxErrors && maxErrors!=-1){
 	                    throw new SQLException("Batch error:"+ex.getMessage());
@@ -507,7 +507,7 @@ public class DBOutputTable extends Node {
 	                    preparedStatement.clearBatch();
 	                } catch (BatchUpdateException ex) {
 	                    preparedStatement.clearBatch();
-	                    logger.debug(ex);
+	                    //logger.debug(ex); this might generate a lots of messageslogger.debug(ex);
                         flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	                    if (countError>maxErrors && maxErrors!=-1){
 	                        throw new SQLException("Batch error:"+ex.getMessage());
@@ -524,7 +524,7 @@ public class DBOutputTable extends Node {
 	    try{
 	        preparedStatement.executeBatch();
 	    }catch (BatchUpdateException ex) {
-	        logger.debug(ex);
+	        //logger.debug(ex); this might generate a lots of messages
             flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
 	        if (dataRecordHolder!=null){
 	            Arrays.fill(dataRecordHolder,null);
