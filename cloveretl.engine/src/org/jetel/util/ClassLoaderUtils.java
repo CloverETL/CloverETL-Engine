@@ -80,7 +80,7 @@ public class ClassLoaderUtils {
                 String fileName = getCheckedFileName(urls[i]);
                 if (fileName.length() > 0) {
                     if (classPathBuff.length() > 0) {
-                        classPathBuff.append(";");
+                        classPathBuff.append(File.pathSeparatorChar);
                     }
                     classPathBuff.append(fileName);
                 }
