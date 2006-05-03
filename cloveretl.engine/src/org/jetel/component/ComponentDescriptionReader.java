@@ -20,6 +20,8 @@
 
 package org.jetel.component;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -35,7 +37,7 @@ import org.w3c.dom.NodeList;
  */
 public class ComponentDescriptionReader {
 	
-	private static final String fileName = "components.xml";
+	private static final String FILE_NAME = "components.xml";
 
 	private static final String ETL_COMPONENT_LIST_ELEMENT = "ETLComponentList";
 	
@@ -45,9 +47,23 @@ public class ComponentDescriptionReader {
 
 	private static final String TYPE_ATTR = "type";
 
-	private Document getSourceDocument() {
+    private String fileName;
+    
+    private InputStream getDefaultInputStream() {
+        return ComponentDescriptionReader.class.getResourceAsStream(FILE_NAME);
+    }
+
+    private InputStream getInputStreamFromFile(String fileName) {
+        try {
+            return new FileInputStream(fileName);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            throw new RuntimeException(this.getClass().getName() + ": Component description file (" + fileName + ") does not exist or is corrupted.");
+        }
+    }
+    
+	private Document getSourceDocument(InputStream inputStream) {
 		try {
-			InputStream inputStream = ComponentDescriptionReader.class.getResourceAsStream(fileName);
 
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 			dbf.setNamespaceAware(true);
@@ -58,17 +74,26 @@ public class ComponentDescriptionReader {
 			return doc;
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			throw new RuntimeException(this.getClass().getName() + ": Component description file (" + fileName + ") does not exist or is corrupted.");
+            throw new RuntimeException(this.getClass().getName() + ": Component description file (" + fileName + ") does not exist or is corrupted.");
 		}
 	}
-	
+    
 	public ComponentDescription[] getComponentDescriptions() {
-		Document doc = getSourceDocument();
-		
-		return buildComponentDescriptions(doc);
+		return getComponentDescriptions(getDefaultInputStream());
 	}
 
-	private ComponentDescription[] buildComponentDescriptions(Document doc) {
+    public ComponentDescription[] getComponentDescriptions(String fileName) {
+        this.fileName = fileName;
+        return getComponentDescriptions(getInputStreamFromFile(fileName));
+    }
+    
+    private ComponentDescription[] getComponentDescriptions(InputStream inputStream) {
+        Document doc = getSourceDocument(inputStream);
+        
+        return buildComponentDescriptions(doc);
+    }
+
+    private ComponentDescription[] buildComponentDescriptions(Document doc) {
 		return buildETLComponentList((Element) doc.getElementsByTagName(ETL_COMPONENT_LIST_ELEMENT).item(0));
 	}
 

@@ -21,9 +21,10 @@
 package org.jetel.component;
 
 //import org.w3c.dom.Node;
-import java.util.Map;
-import java.util.HashMap;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jetel.graph.Node;
 
 /**
@@ -40,11 +41,7 @@ public class ComponentFactory {
 	private final static Map componentMap = new HashMap();
 	
 	public static void init() {
-		ComponentDescription[] components = new ComponentDescriptionReader().getComponentDescriptions();
-		
-		for(int i = 0; i < components.length; i++) {
-			registerComponent(components[i].getType(), components[i].getClassName());
-		}
+		registerComponents(new ComponentDescriptionReader().getComponentDescriptions());
 		
 		// register known components
 		// parameters <component type>,<full class name including package>
@@ -80,6 +77,11 @@ public class ComponentFactory {
 //		registerComponent(XMLExtract.COMPONENT_TYPE,"org.jetel.component.XMLExtract");
 	}
 	
+    public final static void registerComponents(ComponentDescription[] components) {
+        for(int i = 0; i < components.length; i++) {
+            registerComponent(components[i].getType(), components[i].getClassName());
+        }
+    }
 	
 	public final static void registerComponent(Node component){
 		componentMap.put(component.getType(),component.getName());
