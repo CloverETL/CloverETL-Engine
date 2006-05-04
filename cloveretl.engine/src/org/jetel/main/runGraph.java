@@ -22,6 +22,8 @@ package org.jetel.main;
 import java.io.*;
 import java.util.Properties;
 
+import org.jetel.component.ComponentDescription;
+import org.jetel.component.ComponentDescriptionReader;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.*;
@@ -39,6 +41,7 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
+ *  <tr><td nowrap>-register <i>filename</i></td><td>load/register additional transformation components</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -48,12 +51,13 @@ import org.jetel.util.JetelVersion;
  */
 public class runGraph {
 
-	private final static String RUN_GRAPH_VERSION="1.7";
+	private final static String RUN_GRAPH_VERSION="1.8";
 	private final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	private final static String INFO_SWITCH= "-info";
+    private final static String REGISTER_SWITCH= "-register";
 	
 	/**
 	 *  Description of the Method
@@ -67,7 +71,7 @@ public class runGraph {
 		Defaults.init();
 		ComponentFactory.init();
 		
-		System.out.println("***  CloverETL framework/transformation graph runner ver"+RUN_GRAPH_VERSION+", (c) 2002-05 D.Pavlis, released under GNU Lesser General Public License  ***");
+		System.out.println("***  CloverETL framework/transformation graph runner ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
 		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
 		System.out.println();
 		if (args.length < 1) {
@@ -98,7 +102,11 @@ public class runGraph {
 			}else if (args[i].startsWith(INFO_SWITCH)){
 			    printInfo();
 			    System.exit(0);
-			}else if (args[i].startsWith("-")) {
+			}else if (args[i].startsWith(REGISTER_SWITCH)){
+                i++;
+                ComponentDescriptionReader reader = new ComponentDescriptionReader();
+                ComponentFactory.registerComponents(reader.getComponentDescriptions(args[i]));          
+            }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
 			}
@@ -171,13 +179,14 @@ public class runGraph {
 	}
 	
 	private static void printHelp(){
-		System.out.println("Usage: runGraph [-(v|log|cfg|P:|tracking|info)] <graph definition file>");
+		System.out.println("Usage: runGraph [-(v|log|cfg|P:|tracking|info|register)] <graph definition file>");
 		System.out.println("Options:");
 		System.out.println("-v\t\t\tbe verbose - print even graph layout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
-		System.out.println("-info\tprint info about Clover library version");
+		System.out.println("-info\t\t\tprint info about Clover library version");
+        System.out.println("-register\t\tload/register additional transformation components");
 	}
 
 	private static void printInfo(){
