@@ -19,6 +19,7 @@
 */
 package org.jetel.database;
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,8 +57,9 @@ import org.w3c.dom.NamedNodeMap;
  *  <tr><td><b>dbURL</b></td><td>URL of the database (aka connection string)</td></tr>
  *  <tr><td><b>user</b><br><i>optional</i></td><td>username to use when connecting to DB</td></tr>
  *  <tr><td><b>password</b><br><i>optional</i></td><td>password to use when connecting to DB</td></tr>
- *  <tr><td><b>driverLibrary</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
- *  to search for class containing JDBC driver specified in <tt>dbDriver<tt> parameter.</td></tr>
+ *  <tr><td><b>driverLibrary</b><br><i>optional</i></td><td>name(s) (full path) of Java library file(s) (.jar,.zip,...) where
+ *  to search for class containing JDBC driver specified in <tt>dbDriver</tt> parameter.<br>
+ *  In case of more libraries, use system path separator to delimit them (e.g. ";").</td></tr>
  * <tr><td><b>transactionIsolation</b><br><i>optional</i></td><td>Allows specifying certain transaction isolation level. 
  * Following are the valid options:<br><ul>
  * <li>READ_UNCOMMITTED</li>
@@ -183,20 +185,26 @@ public class DBConnection {
 	        try {
 	            dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
 	        } catch (ClassNotFoundException ex) {
-	            // let's try to load in any additional .jar library (if specified)
+	            // let's try to load in any additional .jar library (if specified) (one or more)
+                // separator of individual libraries depends on platform - UNIX - ":" Win - ";"
 	            String jdbcDriverLibrary = config
 	            .getProperty(JDBC_DRIVER_LIBRARY_NAME);
 	            if (jdbcDriverLibrary != null) {
-	                String urlString = "file:" + jdbcDriverLibrary;
-	                URL[] myURLs;
+	                String[] libraryPaths=jdbcDriverLibrary.split(File.pathSeparator);
+	                URL[] myURLs= new URL[libraryPaths.length];
 	                try {
-	                    myURLs = new URL[] { new URL(urlString) };
-	                    URLClassLoader classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
-	                    dbDriver = (Driver) Class.forName(dbDriverName, true,
-	                            classLoader).newInstance();
+	                    for(int i=0;i<libraryPaths.length;i++){
+	                        myURLs[i]=new URL("file:"+libraryPaths[i]);
+	                    }
 	                } catch (MalformedURLException ex1) {
 	                    throw new RuntimeException("Malformed URL: "
 	                            + ex1.getMessage());
+	                }
+	                
+	                try {
+	                    URLClassLoader classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
+	                    dbDriver = (Driver) Class.forName(dbDriverName, true,
+	                            classLoader).newInstance();
 	                } catch (ClassNotFoundException ex1) {
 	                    throw new RuntimeException("Can not find class: " + ex1);
 	                } catch (Exception ex1) {
@@ -204,13 +212,13 @@ public class DBConnection {
 	                            + ex1.getMessage());
 	                }
 	            } else {
+	                    throw new RuntimeException("Can't load DB driver :"
+	                            + ex.getMessage());
+	                }
+	            } catch (Exception ex) {
 	                throw new RuntimeException("Can't load DB driver :"
 	                        + ex.getMessage());
 	            }
-	        } catch (Exception ex) {
-	            throw new RuntimeException("Can't load DB driver :"
-	                    + ex.getMessage());
-	        }
 	    }
 		try {
 		    // handle encrypted password
