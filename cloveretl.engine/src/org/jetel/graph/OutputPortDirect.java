@@ -36,11 +36,14 @@ public interface OutputPortDirect {
 	// Operations
 	
 	/**
-	 * An operation that passes/writes one record through this port
+	 * An operation that passes/writes one record through this port.<br>
+     * The passed-in object (ByteBuffer) must be ready to be read - i.e.
+     * ByteBuffer.position() should be 0 and ByteBuffer.limit() should be
+     * pointing to the end of data in the buffer.
 	 *
-	 * @param  _record                   Description of Parameter
-	 * @exception  IOException           Description of Exception
-	 * @exception  InterruptedException  Description of Exception
+	 * @param  record                   ByteBuffer containing the data to be written/sent
+	 * @exception  IOException           If writing failed during method call
+	 * @exception  InterruptedException  If thread waiting to be notified was interrupted
 	 * @since                            August 13, 2002
 	 */
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException;

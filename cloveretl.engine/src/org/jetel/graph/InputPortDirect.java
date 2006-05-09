@@ -35,12 +35,15 @@ public interface InputPortDirect {
 
 	// Operations
 	/**
-	 *An operation that reads one record from this port
+	 * An operation that reads one record from this port - in its serialized (binary form).<br>
+     * The passed-in object (content) is cleared first (using ByteBuffer.clear()). When data is stored in
+     * it, ByteBuffer.flip() operation is called upon it - it is ready to be read when
+     * method call ends.
 	 *
-	 * @param  record                    Description of Parameter
+	 * @param  record                    ByteBuffer into which data should be stored
 	 * @return                           True if success, otherwise false (when no more data available)
-	 * @exception  IOException           Description of Exception
-	 * @exception  InterruptedException  Description of Exception
+	 * @exception  IOException           If reading failed during method call
+	 * @exception  InterruptedException  If thread waiting to be notified was interrupted
 	 * @since                            April 2, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
