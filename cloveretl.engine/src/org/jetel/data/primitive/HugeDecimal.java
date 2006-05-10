@@ -569,4 +569,39 @@ public class HugeDecimal implements Decimal {
         return !(HugeDecimal.precision(value.unscaledValue()) > precision);
     }
 
+    public void setValue(Numeric value) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    public Numeric duplicate() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public boolean isNull() {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    public Decimal getDecimal() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public Decimal getDecimal(int precision, int scale) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    public int compareTo(Numeric value) {
+        // TODO Auto-generated method stub
+        return 0;
+    }
+
+    public Numeric duplicateNumeric() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
 }

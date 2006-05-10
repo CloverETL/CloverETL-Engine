@@ -42,11 +42,15 @@ public interface Numeric {
     
     public void setValue(Decimal value);
     
+    public void setValue(Numeric value);
+    
     public int getInt();
     
     public long getLong();
     
     public double getDouble();
+    
+    public Numeric duplicateNumeric();
     
     /**
      * @return True if Number is considered to have NULL value

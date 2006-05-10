@@ -178,6 +178,22 @@ public class IntegerDecimal implements Decimal {
     }
 
     /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if(_value.isNull()) {
+            setNaN(true);
+            return;
+        }
+        value = (int) _value.getInt() * TENPOWERS[scale];
+        if(!satisfyPrecision()) {
+            setNaN(true);
+            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+        }
+        setNaN(false);
+    }
+    
+    /**
      * @see org.jetel.data.Decimal#getDouble()
      */
     public double getDouble() {
@@ -229,6 +245,27 @@ public class IntegerDecimal implements Decimal {
     }
     
     /**
+     * @see org.jetel.data.Numeric#getDecimal()
+     */
+    public Decimal getDecimal() {
+        return createCopy();
+    }
+    
+    /**
+     * @see org.jetel.data.Numeric#getDecimal(int, int)
+     */
+    public Decimal getDecimal(int precision, int scale) {
+        return DecimalFactory.getDecimal(this, precision, scale);
+    }
+    
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return createCopy();
+    }
+    
+    /**
      * @see org.jetel.data.Decimal#setNaN(boolean)
      */
     public void setNaN(boolean isNaN) {
@@ -239,6 +276,13 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#isNaN()
      */
     public boolean isNaN() {
+        return nan;
+    }
+    
+    /**
+     * @see org.jetel.data.Numeric#isNull()
+     */
+    public boolean isNull() {
         return nan;
     }
 
@@ -443,6 +487,10 @@ public class IntegerDecimal implements Decimal {
         setNaN(false);
     }
 
+    public int compareTo(Numeric value) {
+        return 0; //TODO kokon
+    }
+    
     /**
      * @see org.jetel.data.primitive.Decimal#compareTo(java.lang.Object)
      */

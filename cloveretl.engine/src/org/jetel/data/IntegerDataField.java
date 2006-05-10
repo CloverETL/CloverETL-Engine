@@ -24,7 +24,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
-
+import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -84,7 +84,13 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	    return newField;
 	}
 
-
+	/**
+	 * @see org.jetel.data.Numeric#duplicateNumeric()
+	 */
+	public Numeric duplicateNumeric() {
+	    return new CloverInteger(value);
+	}
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
@@ -192,6 +198,22 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		setNull(false);
 	}
 	
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if (_value.isNull()) {
+            if (this.metadata.isNullable()) {
+                this.value = Integer.MIN_VALUE;
+                super.setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
+            }
+            return;
+        }
+        this.value = _value.getInt();
+        setNull(false);
+    }
 	
 	/**
 	 *  Sets the Null value indicator
