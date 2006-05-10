@@ -2,6 +2,14 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-8-2
+---------
+Changes/bug fixes:
++ fixed FixLenDataParser2 which was discarding all records
++ fixed CopySQLData.CopyDate when used with Oracle 10 driver (DBOutputTable component) 
++ fixed	DBInputTable when used with DB2 JDBC driver - now calling commit() on result set (applies to all DBs)
+
+
 REL 1-8-1
 ---------
 Changes/bug fixes:
