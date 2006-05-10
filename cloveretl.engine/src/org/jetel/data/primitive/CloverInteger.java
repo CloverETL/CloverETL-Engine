@@ -266,4 +266,8 @@ public class CloverInteger extends Number implements Numeric {
 		value *= -1;
 	}
 
+    public String toString(){
+        return String.valueOf(value);
+    }
+    
 }
