@@ -256,5 +256,8 @@ public class CloverDouble extends Number implements Numeric {
 	public void neg() {
 		value *= -1;
 	}
-
+    
+	public String toString(){
+	    return String.valueOf(value);
+    }
 }
