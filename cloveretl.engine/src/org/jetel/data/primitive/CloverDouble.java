@@ -42,25 +42,36 @@ public class CloverDouble extends Number implements Numeric {
 		this.value = value;
 	}
 	
+    /**
+     * Constructor.
+     * @param value
+     */
+    public CloverDouble(Numeric value) {
+        setValue(value);
+    }
+    
 	/**
 	 * @see java.lang.Number#intValue()
 	 */
 	public int intValue() {
-		return (int) value;
+        return getInt();
 	}
 
 	/**
 	 * @see java.lang.Number#longValue()
 	 */
 	public long longValue() {
-		return (long) value;
+        return getLong();
 	}
 
 	/**
 	 * @see java.lang.Number#floatValue()
 	 */
 	public float floatValue() {
-		return (float) value;
+        if(value == Double.NaN)
+            return Float.MIN_VALUE;
+        else
+            return (float) value;
 	}
 
 	/**
@@ -74,16 +85,33 @@ public class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#setValue(int)
 	 */
 	public void setValue(int value) {
-		this.value = value; 
+        if(value == Integer.MIN_VALUE)
+            this.value = Double.NaN;
+        else
+            this.value = value; 
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#setValue(long)
 	 */
 	public void setValue(long value) {
-		this.value = value;
+        if(value == Long.MIN_VALUE)
+            this.value = Double.NaN;
+        else
+            this.value = value;
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric value) {
+        if(value.isNull()) {
+            this.value = Double.NaN;
+        } else {
+            this.value = value.getDouble();
+        }
+    }
+    
 	/**
 	 * @see org.jetel.data.Numeric#setValue(double)
 	 */
@@ -95,28 +123,38 @@ public class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
 	 */
 	public void setValue(Decimal value) {
-		this.value = value.getDouble();
+        if(value.isNaN()) {
+            this.value = Double.NaN;
+        } else {
+            this.value = value.getDouble();
+        }
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
 	public int getInt() {
-		return (int) value;
+        if(value == Double.NaN)
+            return Integer.MIN_VALUE;
+        else
+            return (int) value;
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getLong()
 	 */
 	public long getLong() {
-		return (long) value;
+        if(value == Double.NaN)
+            return Long.MIN_VALUE;
+        else
+            return (long) value;
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#getDouble()
 	 */
 	public double getDouble() {
-		return value;
+        return value;
 	}
 
 	/**
@@ -140,6 +178,13 @@ public class CloverDouble extends Number implements Numeric {
 		return DecimalFactory.getDecimal(value, precision, scale);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return new CloverDouble(value);
+    }
+    
 	/**
 	 * @see org.jetel.data.Numeric#compareTo(org.jetel.data.Numeric)
 	 */
@@ -159,7 +204,7 @@ public class CloverDouble extends Number implements Numeric {
 	 * @param  compInt  Description of the Parameter
 	 * @return          -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
-	public int compareTo(double compDouble) {
+	private int compareTo(double compDouble) {
 		return Double.compare(value, compDouble);
 	}
 

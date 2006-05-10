@@ -114,7 +114,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 }
 	
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate() {
@@ -123,8 +123,14 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	    return newField;
 	}
 	
-	
-	/* (non-Javadoc)
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return value.duplicateNumeric();
+    }
+    
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
 	public void copyFrom(DataField fromField){
@@ -226,6 +232,22 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		setNull(false);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if (_value.isNull()) {
+            if(this.metadata.isNullable()) {
+                setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", null);
+            }
+            return;
+        }
+        value.setValue(_value);
+        setNull(false);
+    }
+    
 	/**
 	 *  Sets the Null value indicator
 	 *

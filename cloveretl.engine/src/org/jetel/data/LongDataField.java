@@ -24,7 +24,7 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
-
+import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -84,6 +84,13 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	    return newField;
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return new CloverLong(value);
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
@@ -106,8 +113,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	public void setValue(Object _value) {
 		if (_value == null) {
 			if (this.metadata.isNullable()) {
-				this.value = Long.MIN_VALUE;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
@@ -118,8 +124,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 			if (this.value!=Long.MIN_VALUE) setNull(false); else setNull(true);
 		} else {
 			if (this.metadata.isNullable()) {
-				this.value = Long.MIN_VALUE;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 			}
@@ -137,8 +142,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	public void setValue(double value) {
 		if (value == Double.NaN) {
 			if (this.metadata.isNullable()) {
-				this.value = Long.MIN_VALUE;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
@@ -159,8 +163,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	public void setValue(int value) {
 		if (value == Integer.MIN_VALUE) {
 			if (this.metadata.isNullable()) {
-				this.value = Long.MIN_VALUE;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
@@ -180,8 +183,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	public void setValue(long value) {
 		if (value == Long.MIN_VALUE) {
 			if (this.metadata.isNullable()) {
-				this.value = Long.MIN_VALUE;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
@@ -191,6 +193,22 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		setNull(false);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if (_value.isNull()) {
+            if (this.metadata.isNullable()) {
+                setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
+            }
+            return;
+        }
+        this.value = _value.getLong();
+        setNull(false);
+    }
+    
 	/**
 	 *  Sets the Null value indicator
 	 *

@@ -18,17 +18,18 @@
 *
 */
 package org.jetel.data;
-import java.util.Locale;
-import java.text.NumberFormat;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.ParsePosition;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.NumberFormat;
+import java.text.ParsePosition;
+import java.util.Locale;
 
+import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.BadDataFormatException;
@@ -43,7 +44,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      March 27, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class NumericDataField extends DataField implements Numeric, Comparable{
+public class NumericDataField extends DataField implements Numeric, Comparable {
 
 	private double value;
 	private NumberFormat numberFormat;
@@ -137,7 +138,13 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	    return newField;
 	}
 	
-	
+	/**
+	 * @see org.jetel.data.Numeric#duplicateNumeric()
+	 */
+	public Numeric duplicateNumeric() {
+	    return new CloverDouble(value);
+	}
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
@@ -160,8 +167,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setValue(Object _value) {
 		if (_value == null) {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
 			}
@@ -172,8 +178,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 			if (value!=Double.NaN) setNull(false); else setNull(true);
 		} else {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else
 				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
 		}
@@ -190,8 +195,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setValue(double value) {
 		if (value == Double.NaN) {
 			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
 			}
@@ -212,8 +216,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setValue(int value) {
 		if (value == Integer.MIN_VALUE) {
 			if(this.metadata.isNullable()) {
-				this.value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
 			}
@@ -233,8 +236,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 	public void setValue(long value) {
 		if (value == Long.MIN_VALUE) {
 			if(this.metadata.isNullable()) {
-				this.value = Double.NaN;
-				super.setNull(true);
+				setNull(true);
 			} else {
 				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
 			}
@@ -244,6 +246,22 @@ public class NumericDataField extends DataField implements Numeric, Comparable{
 		setNull(false);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if (_value.isNull()) {
+            if(this.metadata.isNullable()) {
+                setNull(true);
+            } else {
+                throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+            }
+            return;
+        }
+        this.value = _value.getDouble();
+        setNull(false);
+    }
+    
 	/**
 	 *  Sets the Null value indicator
 	 *

@@ -34,7 +34,7 @@ import org.jetel.data.Numeric;
  *@since      November 30, 2005
  *@see        org.jetel.data.DecimalDataField
  */
-public interface Decimal {
+public interface Decimal extends Numeric {
 	
 	public int getPrecision();
 	

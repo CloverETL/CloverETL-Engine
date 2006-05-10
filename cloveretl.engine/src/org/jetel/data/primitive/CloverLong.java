@@ -42,11 +42,19 @@ public class CloverLong extends Number implements Numeric {
 		this.value = value;
 	}
 
+    /**
+     * Constructor.
+     * @param value
+     */
+    public CloverLong(Numeric value) {
+        setValue(value);
+    }
+    
 	/**
 	 * @see java.lang.Number#intValue()
 	 */
 	public int intValue() {
-		return (int) value;
+		return getInt();
 	}
 
 	/**
@@ -60,21 +68,27 @@ public class CloverLong extends Number implements Numeric {
 	 * @see java.lang.Number#floatValue()
 	 */
 	public float floatValue() {
-		return value;
+        if(value == Long.MIN_VALUE)
+            return Float.MIN_VALUE;
+        else
+            return value;
 	}
 
 	/**
 	 * @see java.lang.Number#doubleValue()
 	 */
 	public double doubleValue() {
-		return value;
+		return getDouble();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#setValue(int)
 	 */
 	public void setValue(int value) {
-		this.value = value; 
+        if(value == Integer.MIN_VALUE)
+            this.value = Long.MIN_VALUE;
+        else
+            this.value = value;
 	}
 
 	/**
@@ -88,9 +102,23 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#setValue(double)
 	 */
 	public void setValue(double value) {
-		this.value = (long) value;
+        if(value == Double.NaN)
+            this.value = Long.MIN_VALUE;
+        else
+            this.value = (long) value;
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric value) {
+        if(value.isNull()) {
+            this.value = Long.MIN_VALUE;
+        } else {
+            this.value = value.getLong();
+        }
+    }
+    
 	/**
 	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
 	 */
@@ -102,7 +130,10 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
 	public int getInt() {
-		return (int) value;
+        if(value == Long.MIN_VALUE)
+            return Integer.MIN_VALUE;
+        else
+            return (int) value;
 	}
 
 	/**
@@ -116,9 +147,19 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#getDouble()
 	 */
 	public double getDouble() {
-		return value;
+        if(value == Long.MIN_VALUE)
+            return Double.NaN;
+        else
+            return value;
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return new CloverLong(value);
+    }
+    
 	/**
 	 * @see org.jetel.data.Numeric#isNull()
 	 */
@@ -159,7 +200,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @param  compInt  Description of the Parameter
 	 * @return          -1,0,1 if internal value(less-then,equals, greather then) passed-in value
 	 */
-	public int compareTo(long compLong) {
+	private int compareTo(long compLong) {
 		if (value > compLong) {
 			return 1;
 		} else if (value < compLong) {
@@ -173,6 +214,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#add(org.jetel.data.Numeric)
 	 */
 	public void add(Numeric a) {
+        if(value == Long.MIN_VALUE) return;
 		value += a.getLong();
 	}
 
@@ -180,6 +222,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Numeric)
 	 */
 	public void sub(Numeric a) {
+        if(value == Long.MIN_VALUE) return;
 		value -= a.getLong();
 	}
 
@@ -187,6 +230,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Numeric)
 	 */
 	public void mul(Numeric a) {
+        if(value == Long.MIN_VALUE) return;
 		value *= a.getLong();
 	}
 
@@ -194,6 +238,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#div(org.jetel.data.Numeric)
 	 */
 	public void div(Numeric a) {
+        if(value == Long.MIN_VALUE) return;
 		value /= a.getLong();
 	}
 
@@ -201,6 +246,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
+        if(value == Long.MIN_VALUE) return;
 		value = Math.abs(value);
 	}
 
@@ -208,6 +254,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Numeric)
 	 */
 	public void mod(Numeric a) {
+        if(value == Long.MIN_VALUE) return;
 		value %= a.getLong();
 	}
 
@@ -215,6 +262,7 @@ public class CloverLong extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#neg()
 	 */
 	public void neg() {
+        if(value == Long.MIN_VALUE) return;
 		value *= -1;
 	}
 
