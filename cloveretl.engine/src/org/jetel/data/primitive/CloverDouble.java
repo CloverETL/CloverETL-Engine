@@ -269,6 +269,17 @@ public class CloverDouble extends Number implements Numeric {
 		value *= -1;
 	}
     
+    public boolean equals(Object obj) {
+        if(obj instanceof Numeric)
+            return compareTo((Numeric) obj) == 0;
+        else return false;
+    }
+
+    public int hashCode() {
+        long v = Double.doubleToLongBits(value);
+        return (int)(v^(v >> 32));
+    }
+    
 	public String toString(){
 	    return String.valueOf(value);
     }

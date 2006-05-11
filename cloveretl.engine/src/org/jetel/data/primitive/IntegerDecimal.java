@@ -572,4 +572,15 @@ public class IntegerDecimal implements Decimal {
         if(isNaN()) return true;
         return !(precision < HugeDecimal.intLength(value)); 
     }
+    
+    public boolean equals(Object obj) {
+        if(obj instanceof Numeric)
+            return compareTo((Numeric) obj) == 0;
+        else return false;
+    }
+
+    public int hashCode() {
+        if(isNaN()) return Integer.MIN_VALUE;
+        return value;
+    }
 }

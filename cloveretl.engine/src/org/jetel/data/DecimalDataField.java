@@ -432,8 +432,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	    
 	    if (obj instanceof DecimalDataField){
 	        return value.equals(((DecimalDataField) obj).value);
-	    } else if (obj instanceof Decimal){
-	        return value.equals((Decimal) obj);
+	    } else if (obj instanceof Numeric){
+	        return value.equals((Numeric) obj);
 	    } else {
 	        return false;
 	    }
@@ -471,9 +471,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
-		//TODO hash code
-		long v = Double.doubleToLongBits(value.getDouble());
-		return (int)(v^(v>>32));
+        return value.hashCode();
 	}
 
 	/**

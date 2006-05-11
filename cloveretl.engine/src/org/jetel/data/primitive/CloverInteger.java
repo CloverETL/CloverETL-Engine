@@ -278,6 +278,18 @@ public class CloverInteger extends Number implements Numeric {
 		value *= -1;
 	}
 
+    public boolean equals(Object obj) {
+        if(obj == this) return true;
+        
+        if(obj instanceof Numeric)
+            return compareTo((Numeric) obj) == 0;
+        else return false;
+    }
+
+    public int hashCode() {
+        return value;
+    }
+
     public String toString(){
         return String.valueOf(value);
     }
