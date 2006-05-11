@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.data;
+import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -635,6 +636,15 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		return DecimalFactory.getDecimal(value, precision, scale);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#getBigDecimal()
+     */
+    public BigDecimal getBigDecimal() {
+        if(isNull) 
+            return null;
+        else 
+            return BigDecimal.valueOf(value);
+    }
 }
 /*
  *  end class NumericDataField

@@ -488,7 +488,13 @@ public class IntegerDecimal implements Decimal {
     }
 
     public int compareTo(Numeric value) {
-        return 0; //TODO kokon
+        if (isNull()) {
+            return -1;
+        }else if (value.isNull()) {
+            return 1;
+        }else {
+            return compareTo(value.getDecimal());
+        }
     }
     
     /**
