@@ -23,6 +23,8 @@
  */
 package org.jetel.data;
 
+import java.math.BigDecimal;
+
 import org.jetel.data.primitive.Decimal;
 
 /**
@@ -49,6 +51,8 @@ public interface Numeric {
     public long getLong();
     
     public double getDouble();
+    
+    public BigDecimal getBigDecimal();
     
     public Numeric duplicateNumeric();
     

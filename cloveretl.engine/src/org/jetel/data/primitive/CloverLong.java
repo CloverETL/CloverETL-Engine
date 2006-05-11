@@ -19,6 +19,8 @@
 */
 package org.jetel.data.primitive;
 
+import java.math.BigDecimal;
+
 import org.jetel.data.Numeric;
 
 /**
@@ -180,6 +182,16 @@ public class CloverLong extends Number implements Numeric {
 	public Decimal getDecimal(int precision, int scale) {
 		return DecimalFactory.getDecimal(value, precision, scale);
 	}
+
+    /**
+     * @see org.jetel.data.Numeric#getBigDecimal()
+     */
+    public BigDecimal getBigDecimal() {
+        if(isNull()) 
+            return null;
+        else 
+            return BigDecimal.valueOf(value);
+    }
 
 	/**
 	 * @see org.jetel.data.Numeric#compareTo(org.jetel.data.Numeric)

@@ -147,6 +147,22 @@ public class HugeDecimal implements Decimal {
 		setNaN(false);
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Numeric _value) {
+        if(_value.isNull()) {
+            setNaN(true);
+            return;
+        }
+        value = _value.getBigDecimal();
+        if(!satisfyPrecision()) {
+            setNaN(true);
+            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+        }
+        setNaN(false);
+    }
+
 	/**
 	 * @see org.jetel.data.primitive.Decimal#getDouble()
 	 */
@@ -200,6 +216,27 @@ public class HugeDecimal implements Decimal {
             return value;
         else
             return value.setScale(scale, BigDecimal.ROUND_DOWN);
+    }
+
+    /**
+     * @see org.jetel.data.Numeric#getDecimal()
+     */
+    public Decimal getDecimal() {
+        return createCopy();
+    }
+
+    /**
+     * @see org.jetel.data.Numeric#getDecimal(int, int)
+     */
+    public Decimal getDecimal(int precision, int scale) {
+        return DecimalFactory.getDecimal(this, precision, scale);
+    }
+
+    /**
+     * @see org.jetel.data.Numeric#duplicateNumeric()
+     */
+    public Numeric duplicateNumeric() {
+        return createCopy();
     }
 
     /**
@@ -339,6 +376,13 @@ public class HugeDecimal implements Decimal {
 	public boolean isNaN() {
 		return nan;
 	}
+
+    /**
+     * @see org.jetel.data.Numeric#isNull()
+     */
+    public boolean isNull() {
+        return nan;
+    }
 
 	/**
 	 * @see org.jetel.data.primitive.Decimal#add(org.jetel.data.Numeric)
@@ -534,6 +578,16 @@ public class HugeDecimal implements Decimal {
 		setNaN(false);
 	}
 
+    public int compareTo(Numeric value) {
+        if (isNull()) {
+            return -1;
+        }else if (value.isNull()) {
+            return 1;
+        }else {
+            return compareTo(value.getDecimal());
+        }
+    }
+
 	/**
 	 * @see org.jetel.data.primitive.Decimal#compareTo(java.lang.Object)
 	 */
@@ -567,41 +621,6 @@ public class HugeDecimal implements Decimal {
     public boolean satisfyPrecision() {
         if(isNaN()) return true;
         return !(HugeDecimal.precision(value.unscaledValue()) > precision);
-    }
-
-    public void setValue(Numeric value) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    public Numeric duplicate() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public boolean isNull() {
-        // TODO Auto-generated method stub
-        return false;
-    }
-
-    public Decimal getDecimal() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Decimal getDecimal(int precision, int scale) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public int compareTo(Numeric value) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    public Numeric duplicateNumeric() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }
