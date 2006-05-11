@@ -278,6 +278,16 @@ public class CloverLong extends Number implements Numeric {
 		value *= -1;
 	}
 
+    public boolean equals(Object obj) {
+        if(obj instanceof Numeric)
+            return compareTo((Numeric) obj) == 0;
+        else return false;
+    }
+
+    public int hashCode() {
+        return (int)(value^value>>32);
+    }
+
     public String toString(){
         return String.valueOf(value);
     }

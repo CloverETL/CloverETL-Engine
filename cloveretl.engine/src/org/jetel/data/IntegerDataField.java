@@ -412,8 +412,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	    if (obj instanceof IntegerDataField){
 	        return value==((IntegerDataField) obj).value;
 	        //return (numValue.equals((((IntegerDataField) obj).getValue())));
-	    }else if (obj instanceof Integer){
-	        return value==((Integer)obj).intValue();
+	    }else if (obj instanceof Numeric){
+	        return value==((Numeric) obj).getInt();
 	    }else{
 	        return false;
 	    }
@@ -435,7 +435,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		}else if (obj instanceof Integer){
 			return compareTo(((Integer)obj).intValue());
 		}else if (obj instanceof Long){
-				return compareTo(((Long)obj).intValue());
+		    return compareTo(((Long)obj).intValue());
 		}else if (obj instanceof Double){
 			return compareTo(((Double)obj).intValue());
 		}else throw new ClassCastException("Can't compare IntegerDataField and "+obj.getClass().getName());

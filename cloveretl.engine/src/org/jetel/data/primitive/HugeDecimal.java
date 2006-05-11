@@ -623,4 +623,14 @@ public class HugeDecimal implements Decimal {
         return !(HugeDecimal.precision(value.unscaledValue()) > precision);
     }
 
+    public boolean equals(Object obj) {
+        if(obj instanceof Numeric)
+            return compareTo((Numeric) obj) == 0;
+        else return false;
+    }
+    
+    public int hashCode() {
+        if(isNaN()) return Integer.MIN_VALUE; //FIXME ???
+        return value.hashCode();
+    }
 }
