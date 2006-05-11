@@ -48,7 +48,7 @@ public class IntegerDecimal implements Decimal {
     private int scale;
     private boolean nan;
 
-    private static int TENPOWERS[] = {0, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+    private static int TENPOWERS[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
 
     /**
      * Constructor. New decimal is represented by integer value and on the start of his existence is not a number.
