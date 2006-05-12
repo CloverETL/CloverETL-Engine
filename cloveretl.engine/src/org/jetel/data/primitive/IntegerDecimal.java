@@ -493,7 +493,7 @@ public class IntegerDecimal implements Decimal {
         }else if (value.isNull()) {
             return 1;
         }else {
-            return compareTo(value.getDecimal());
+            return compareTo((Object) value.getDecimal());
         }
     }
     
@@ -520,7 +520,7 @@ public class IntegerDecimal implements Decimal {
         } else if(obj instanceof Long) {
             return compareTo(((Long) obj).longValue() * TENPOWERS[scale]);
         } else if (obj instanceof Double) {
-            BigDecimal bd = new BigDecimal(((Double) obj).doubleValue()).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+            BigDecimal bd = new BigDecimal(Double.toString(((Double) obj).doubleValue())).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
             //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
             //BigDecimal bd = BigDecimal.valueOf(((Double) obj).doubleValue()).setScale(scale);
             if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
@@ -532,7 +532,7 @@ public class IntegerDecimal implements Decimal {
         } else if(obj instanceof LongDataField) {
             return compareTo(((LongDataField) obj).getLong() * TENPOWERS[scale]);
         } else if (obj instanceof NumericDataField) {
-            BigDecimal bd = new BigDecimal(((NumericDataField) obj).getDouble()).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+            BigDecimal bd = new BigDecimal(Double.toString(((NumericDataField) obj).getDouble())).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
             //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
             //BigDecimal bd = BigDecimal.valueOf(((NumericDataField) obj).getDouble()).setScale(scale);
             if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;

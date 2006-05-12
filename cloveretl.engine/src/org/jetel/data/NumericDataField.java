@@ -643,7 +643,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         if(isNull) 
             return null;
         else 
-            return new BigDecimal(value); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+            return new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
     }
 }
 /*
