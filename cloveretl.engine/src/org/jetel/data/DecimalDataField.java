@@ -490,7 +490,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#add(org.jetel.data.Number)
 	 */
 	public void add(Numeric a) {
-		value.add(a);
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value.add(a);
 	}
 
 
@@ -498,7 +502,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Number)
 	 */
 	public void sub(Numeric a) {
-		value.sub(a);
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value.sub(a);
 	}
 
 
@@ -506,7 +514,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Number)
 	 */
 	public void mul(Numeric a) {
-		value.mul(a);
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value.mul(a);
 	}
 
 
@@ -514,7 +526,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#div(org.jetel.data.Number)
 	 */
 	public void div(Numeric a) {
-		value.div(a);
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value.div(a);
 	}
 
 
@@ -522,6 +538,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
+        if(isNull) return;
 		value.abs();
 	}
 
@@ -530,7 +547,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Number)
 	 */
 	public void mod(Numeric a) {
-		value.mod(a);
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value.mod(a);
 	}
 
 
@@ -538,6 +559,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.Numeric#neg()
 	 */
 	public void neg() {
+        if(isNull) return;
 		value.neg();
 	}
 

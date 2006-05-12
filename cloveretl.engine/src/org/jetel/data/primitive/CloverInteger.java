@@ -227,7 +227,10 @@ public class CloverInteger extends Number implements Numeric {
 	 */
 	public void add(Numeric a) {
         if(value == Integer.MIN_VALUE) return;
-		value += a.getInt();
+        if(a.isNull())
+            value = Integer.MIN_VALUE;
+        else
+            value += a.getInt();
 	}
 
 	/**
@@ -235,7 +238,10 @@ public class CloverInteger extends Number implements Numeric {
 	 */
 	public void sub(Numeric a) {
         if(value == Integer.MIN_VALUE) return;
-		value -= a.getInt();
+        if(a.isNull())
+            value = Integer.MIN_VALUE;
+        else
+            value -= a.getInt();
 	}
 
 	/**
@@ -243,7 +249,10 @@ public class CloverInteger extends Number implements Numeric {
 	 */
 	public void mul(Numeric a) {
         if(value == Integer.MIN_VALUE) return;
-		value *= a.getInt();
+        if(a.isNull())
+            value = Integer.MIN_VALUE;
+        else
+            value *= a.getInt();
 	}
 
 	/**
@@ -251,7 +260,10 @@ public class CloverInteger extends Number implements Numeric {
 	 */
 	public void div(Numeric a) {
         if(value == Integer.MIN_VALUE) return;
-		value /= a.getInt();
+        if(a.isNull())
+            value = Integer.MIN_VALUE;
+        else
+            value /= a.getInt();
 	}
 
 	/**
@@ -267,7 +279,10 @@ public class CloverInteger extends Number implements Numeric {
 	 */
 	public void mod(Numeric a) {
         if(value == Integer.MIN_VALUE) return;
-		value %= a.getInt();
+        if(a.isNull())
+            value = Integer.MIN_VALUE;
+        else
+            value %= a.getInt();
 	}
 
 	/**

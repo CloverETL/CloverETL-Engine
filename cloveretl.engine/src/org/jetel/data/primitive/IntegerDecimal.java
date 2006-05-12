@@ -41,14 +41,34 @@ import org.jetel.data.NumericDataField;
  */
 public class IntegerDecimal implements Decimal {
 
-    private final static int FIELD_SIZE_BYTES = 4;// standard size of field
+    private final static int FIELD_SIZE_BYTES = 8;// standard size of field
 
-    private int value;
+    private long value;
     private int precision;
     private int scale;
     private boolean nan;
 
-    private static int TENPOWERS[] = {1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000, 1000000000};
+    private static long TENPOWERS[] = {
+        1, 
+        10, 
+        100, 
+        1000, 
+        10000, 
+        100000, 
+        1000000, 
+        10000000, 
+        100000000, 
+        1000000000, 
+        10000000000L, 
+        100000000000L, 
+        1000000000000L, 
+        10000000000000L, 
+        100000000000000L, 
+        1000000000000000L, 
+        10000000000000000L, 
+        100000000000000000L, 
+        1000000000000000000L
+        };
 
     /**
      * Constructor. New decimal is represented by integer value and on the start of his existence is not a number.
@@ -66,7 +86,7 @@ public class IntegerDecimal implements Decimal {
      * @param scale
      * @param nan
      */
-    private IntegerDecimal(int value, int precision, int scale, boolean nan) {
+    private IntegerDecimal(long value, int precision, int scale, boolean nan) {
         this.value = value;
         this.precision = precision;
         this.scale = scale;
@@ -122,7 +142,7 @@ public class IntegerDecimal implements Decimal {
             if(HugeDecimal.precision(bi) > precision) {
                 throw new NumberFormatException("Number is out of available precision. (" + decimal + ")");
             }
-            value = bi.intValue();
+            value = bi.longValue();
             setNaN(false);
             //throw new RuntimeException("Incompatible type of " + this.getClass().getName() + "(" + precision + "," + scale + ") and " + dec.getClass().getName() + "(" + dec.getPrecision() + "," + dec.getScale() + ").");
             //throw new RuntimeException("Can't set value " + this.getClass().getName() + " from this Decimal implementation - " + decimal.getClass().getName());
@@ -137,7 +157,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = (int) (_value * TENPOWERS[scale]);
+        value = (long) (_value * TENPOWERS[scale]);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -153,7 +173,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = _value * TENPOWERS[scale];
+        value = ((long) _value) * TENPOWERS[scale];
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -169,7 +189,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = (int) _value * TENPOWERS[scale];
+        value = _value * TENPOWERS[scale];
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -185,7 +205,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = (int) _value.getInt() * TENPOWERS[scale];
+        value = _value.getLong() * TENPOWERS[scale];
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -193,6 +213,18 @@ public class IntegerDecimal implements Decimal {
         setNaN(false);
     }
     
+    /**
+     * @see org.jetel.data.primitive.Decimal#setValue(java.math.BigDecimal)
+     */
+    public void setValue(BigDecimal _value) {
+        BigInteger bi = _value.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue();
+        if(HugeDecimal.precision(bi) > precision) {
+            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+        }
+        value = bi.longValue();
+        setNaN(false);
+    }
+
     /**
      * @see org.jetel.data.Decimal#getDouble()
      */
@@ -210,7 +242,7 @@ public class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Integer.MIN_VALUE;
         }
-        return value / TENPOWERS[scale];
+        return (int) (value / TENPOWERS[scale]);
     }
 
     /**
@@ -290,18 +322,20 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#add(org.jetel.data.Numeric)
      */
     public void add(Numeric a) {
-        if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+        if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value += a.getInt() * TENPOWERS[scale];
-        } else  if(a instanceof LongDataField) {
-            value += (int) a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField) {
-            value += (int) a.getDouble() * TENPOWERS[scale];
-        } else if(a instanceof DecimalDataField) {
-            Decimal d = a.getDecimal();
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
+            value += a.getLong() * TENPOWERS[scale];
+        } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
+            value += a.getDouble() * TENPOWERS[scale];
+        } else if(a instanceof DecimalDataField || a instanceof Decimal) {
+            Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value += ((IntegerDecimal) d).value;
             } else {
-                value += d.getBigDecimal().intValue();
+                value += d.getBigDecimal().longValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'add' operation (" + a.getClass().getName() + ").");
@@ -312,18 +346,20 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#sub(org.jetel.data.Numeric)
      */
     public void sub(Numeric a) {
-        if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+        if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value -= a.getInt() * TENPOWERS[scale];
-        } else  if(a instanceof LongDataField) {
-            value -= (int) a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField) {
-            value -= (int) a.getDouble() * TENPOWERS[scale];
-        } else if(a instanceof DecimalDataField) {
-            Decimal d = a.getDecimal();
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
+            value -= a.getLong() * TENPOWERS[scale];
+        } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
+            value -= a.getDouble() * TENPOWERS[scale];
+        } else if(a instanceof DecimalDataField || a instanceof Decimal) {
+            Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value -= ((IntegerDecimal) d).value;
             } else {
-                value -= d.getBigDecimal().intValue();
+                value -= d.getBigDecimal().longValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'sub' operation (" + a.getClass().getName() + ").");
@@ -334,18 +370,20 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#mul(org.jetel.data.Numeric)
      */
     public void mul(Numeric a) {
-        if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+        if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value *= a.getInt() * TENPOWERS[scale];
-        } else  if(a instanceof LongDataField) {
-            value *= (int) a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField) {
-            value *= (int) a.getDouble() * TENPOWERS[scale];
-        } else if(a instanceof DecimalDataField) {
-            Decimal d = a.getDecimal();
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
+            value *= a.getLong() * TENPOWERS[scale];
+        } else if(a instanceof NumericDataField || a instanceof Decimal) {
+            value *= a.getDouble() * TENPOWERS[scale];
+        } else if(a instanceof DecimalDataField || a instanceof Decimal) {
+            Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value *= ((IntegerDecimal) d).value;
             } else {
-                value *= d.getBigDecimal().intValue();
+                value *= d.getBigDecimal().longValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mul' operation (" + a.getClass().getName() + ").");
@@ -356,18 +394,20 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#div(org.jetel.data.Numeric)
      */
     public void div(Numeric a) {
-        if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+        if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value /= a.getInt() * TENPOWERS[scale];
-        } else  if(a instanceof LongDataField) {
-            value /= (int) a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField) {
-            value /= (int) a.getDouble() * TENPOWERS[scale];
-        } else if(a instanceof DecimalDataField) {
-            Decimal d = a.getDecimal();
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
+            value /= a.getLong() * TENPOWERS[scale];
+        } else if(a instanceof NumericDataField || a instanceof Decimal) {
+            value /= a.getDouble() * TENPOWERS[scale];
+        } else if(a instanceof DecimalDataField || a instanceof Decimal) {
+            Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value /= ((IntegerDecimal) d).value;
             } else {
-                value /= d.getBigDecimal().intValue();
+                value /= d.getBigDecimal().longValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
@@ -378,6 +418,7 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#abs()
      */
     public void abs() {
+        if(isNull()) return;
         value = Math.abs(value);
     }
 
@@ -385,18 +426,20 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#mod(org.jetel.data.Numeric)
      */
     public void mod(Numeric a) {
-        if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+        if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value %= a.getInt() * TENPOWERS[scale];
-        } else  if(a instanceof LongDataField) {
-            value %= (int) a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField) {
-            value %= (int) a.getDouble() * TENPOWERS[scale];
-        } else if(a instanceof DecimalDataField) {
-            Decimal d = a.getDecimal();
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
+            value %= a.getLong() * TENPOWERS[scale];
+        } else if(a instanceof NumericDataField || a instanceof Decimal) {
+            value %= a.getDouble() * TENPOWERS[scale];
+        } else if(a instanceof DecimalDataField || a instanceof Decimal) {
+            Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value %= ((IntegerDecimal) d).value;
             } else {
-                value %= d.getBigDecimal().intValue();
+                value %= d.getBigDecimal().longValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mod' operation (" + a.getClass().getName() + ").");
@@ -407,6 +450,7 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#neg()
      */
     public void neg() {
+        if(isNull()) return;
         value = -value;
     }
 
@@ -415,17 +459,17 @@ public class IntegerDecimal implements Decimal {
      */
     public void serialize(ByteBuffer byteBuffer) {
         if(isNaN())
-            byteBuffer.putInt(Integer.MIN_VALUE);
+            byteBuffer.putLong(Long.MIN_VALUE);
         else
-            byteBuffer.putInt(value);
+            byteBuffer.putLong(value);
     }
 
     /**
      * @see org.jetel.data.Decimal#deserialize(java.nio.ByteBuffer)
      */
     public void deserialize(ByteBuffer byteBuffer) {
-        value = byteBuffer.getInt();
-        setNaN(value == Integer.MIN_VALUE);
+        value = byteBuffer.getLong();
+        setNaN(value == Long.MIN_VALUE);
     }
 
     /**
@@ -444,7 +488,7 @@ public class IntegerDecimal implements Decimal {
         if(isNaN() || !satisfyPrecision()) {
             return "";
         }
-        String s = Integer.toString(value);
+        String s = Long.toString(value);
         StringBuffer sb = new StringBuffer(s.substring(0, s.length() - scale));
         if(scale > 0) {
             sb.append('.').append(s.substring(s.length() - scale, s.length()));
@@ -470,7 +514,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = Integer.valueOf(string).intValue();
+        value = Long.valueOf(string).longValue();
         if(!satisfyPrecision()) throw new NumberFormatException(); 
         setNaN(false);
     }
@@ -483,7 +527,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = Integer.valueOf(buffer.toString()).intValue();
+        value = Long.valueOf(buffer.toString()).longValue();
         setNaN(false);
     }
 
@@ -514,7 +558,7 @@ public class IntegerDecimal implements Decimal {
             if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
             //FIXME in 1.5 java we will use next line
             //if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().intValue());
+            return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof Integer) {
             return compareTo(((Integer) obj).intValue() * TENPOWERS[scale]);
         } else if(obj instanceof Long) {
@@ -526,7 +570,7 @@ public class IntegerDecimal implements Decimal {
             if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
             //FIXME in 1.5 java we will use next line
             //if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().intValue());
+            return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof IntegerDataField) {
             return compareTo(((IntegerDataField) obj).getInt() * TENPOWERS[scale]);
         } else if(obj instanceof LongDataField) {
@@ -538,20 +582,10 @@ public class IntegerDecimal implements Decimal {
             if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
             //FIXME in 1.5 java we will use next line
             //if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().intValue());
+            return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());
         } else throw new ClassCastException("Can't compare this DecimalDataField and " + obj.getClass().getName());
-    }
-
-    private int compareTo(int compInt) {
-        if (value > compInt) {
-            return 1;
-        } else if (value < compInt) {
-            return -1;
-        } else {
-            return 0;
-        }
     }
 
     private int compareTo(long compLong) {
@@ -570,7 +604,7 @@ public class IntegerDecimal implements Decimal {
      */
     public boolean satisfyPrecision() {
         if(isNaN()) return true;
-        return !(precision < HugeDecimal.intLength(value)); 
+        return !(precision < HugeDecimal.longLength(value)); 
     }
     
     public boolean equals(Object obj) {
@@ -581,6 +615,6 @@ public class IntegerDecimal implements Decimal {
 
     public int hashCode() {
         if(isNaN()) return Integer.MIN_VALUE;
-        return value;
+        return (int)(value^value>>32);
     }
 }

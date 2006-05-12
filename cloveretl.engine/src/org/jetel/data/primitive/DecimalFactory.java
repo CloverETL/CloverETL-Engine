@@ -19,8 +19,9 @@
 */
 package org.jetel.data.primitive;
 
+import java.math.BigDecimal;
+
 import org.jetel.data.Defaults;
-import org.jetel.data.Defaults.DataFieldMetadata;
 
 
 
@@ -43,7 +44,7 @@ public class DecimalFactory {
     //private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = (int) Math.floor((Integer.SIZE - 1) / MAGIC_CONST);
 	
     public static Decimal getDecimal(int value) {
-		Decimal d = getDecimal();
+        Decimal d = getDecimal(10, 0);
 		d.setValue(value);
 		return d;
 	}
@@ -55,19 +56,21 @@ public class DecimalFactory {
 	}
 
 	public static Decimal getDecimal(double value) {
-		Decimal d = getDecimal();
-		d.setValue(value);
+        BigDecimal bd = new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble())
+        Decimal d = getDecimal(HugeDecimal.precision(bd.unscaledValue()), bd.scale()); //FIXME it's maybe bug, if scale is negative, returned precision is invalid
+        d.setValue(bd);
 		return d;
 	}
 
 	public static Decimal getDecimal(double value, int precision, int scale) {
+        BigDecimal bd = new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble())
 		Decimal d = getDecimal(precision, scale);
-		d.setValue(value);
+		d.setValue(bd);
 		return d;
 	}
 
 	public static Decimal getDecimal(long value) {
-		Decimal d = getDecimal();
+		Decimal d = getDecimal(19, 0);
 		d.setValue(value);
 		return d;
 	}

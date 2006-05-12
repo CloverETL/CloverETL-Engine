@@ -24,7 +24,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
 
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.Numeric;
 
 /**
@@ -50,6 +49,8 @@ public interface Decimal extends Numeric {
 
 	public void setValue(long value);
 	
+    public void setValue(BigDecimal _value);
+
 	public double getDouble();
 
 	public int getInt();

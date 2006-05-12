@@ -486,7 +486,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#add(org.jetel.data.Number)
 	 */
 	public void add(Numeric a) {
-		value += a.getLong();
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value += a.getLong();
 	}
 
 
@@ -494,7 +498,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Number)
 	 */
 	public void sub(Numeric a) {
-		value -= a.getLong();
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value -= a.getLong();
 	}
 
 
@@ -502,7 +510,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Number)
 	 */
 	public void mul(Numeric a) {
-		value *= a.getLong();
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value *= a.getLong();
 	}
 
 
@@ -510,7 +522,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#div(org.jetel.data.Number)
 	 */
 	public void div(Numeric a) {
-		value /= a.getLong();
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value /= a.getLong();
 	}
 
 
@@ -518,6 +534,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
+        if(isNull) return;
 		value = Math.abs(value);
 	}
 
@@ -526,7 +543,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Number)
 	 */
 	public void mod(Numeric a) {
-		value %= a.getLong();
+        if(isNull) return;
+        if(a.isNull())
+            setNull(true);
+        else
+            value %= a.getLong();
 	}
 
 
@@ -534,6 +555,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @see org.jetel.data.Numeric#neg()
 	 */
 	public void neg() {
+        if(isNull) return;
 		value *= -1;
 	}
 	

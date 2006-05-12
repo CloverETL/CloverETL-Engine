@@ -43,8 +43,8 @@ import org.jetel.data.NumericDataField;
 public class HugeDecimal implements Decimal {
     private static int roundingMode = BigDecimal.ROUND_DOWN;
 	private BigDecimal value;
-	private int precision;
-	private int scale;
+	private final int precision;
+	private final int scale;
 	private boolean nan;
 
     private static BigInteger TENPOWERS[] = {BigInteger.ONE,
@@ -163,6 +163,18 @@ public class HugeDecimal implements Decimal {
         setNaN(false);
     }
 
+    /**
+     * @see org.jetel.data.primitive.Decimal#setValue(java.math.BigDecimal)
+     */
+    public void setValue(BigDecimal _value) {
+        value = _value;
+        if(!satisfyPrecision()) {
+            setNaN(true);
+            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
+        }
+        setNaN(false);
+    }
+    
 	/**
 	 * @see org.jetel.data.primitive.Decimal#getDouble()
 	 */
@@ -388,14 +400,18 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#add(org.jetel.data.Numeric)
 	 */
 	public void add(Numeric a) {
-		if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value = value.add(BigDecimal.valueOf(a.getInt()));
-        } else  if(a instanceof LongDataField) {
+        } else  if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.add(BigDecimal.valueOf(a.getLong()));
-		} else if(a instanceof NumericDataField) {
+		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
 			value = value.add(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
             value = value.add(a.getDecimal().getBigDecimal());
+        } else if(a instanceof Decimal) {
+            value = value.add(a.getBigDecimal());
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'add' operation (" + a.getClass().getName() + ").");
 		}
@@ -405,14 +421,18 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#sub(org.jetel.data.Numeric)
 	 */
 	public void sub(Numeric a) {
-		if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value = value.subtract(BigDecimal.valueOf(a.getInt()));
-        } else if(a instanceof LongDataField) {
+        } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.subtract(BigDecimal.valueOf(a.getLong()));
-		} else if(a instanceof NumericDataField) {
+		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
 			value = value.subtract(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.subtract(a.getDecimal().getBigDecimal());
+        } else if(a instanceof Decimal) {
+            value = value.subtract(a.getBigDecimal());
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'sub' operation (" + a.getClass().getName() + ").");
 		}
@@ -422,14 +442,18 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#mul(org.jetel.data.Numeric)
 	 */
 	public void mul(Numeric a) {
-		if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value = value.multiply(BigDecimal.valueOf(a.getInt()));
-        } else if(a instanceof LongDataField) {
+        } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.multiply(BigDecimal.valueOf(a.getLong()));
-		} else if(a instanceof NumericDataField) {
+		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
 			value = value.multiply(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.multiply(a.getDecimal().getBigDecimal());
+        } else if(a instanceof Decimal) {
+            value = value.multiply(a.getBigDecimal());
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'mul' operation (" + a.getClass().getName() + ").");
 		}
@@ -439,14 +463,18 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#div(org.jetel.data.Numeric)
 	 */
 	public void div(Numeric a) {
-		if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value = value.divide(BigDecimal.valueOf(a.getInt()), roundingMode);
-        } else if(a instanceof LongDataField) {
+        } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.divide(BigDecimal.valueOf(a.getLong()), roundingMode);
-		} else if(a instanceof NumericDataField) {
+		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
 			value = value.divide(new BigDecimal(Double.toString(a.getDouble())), roundingMode); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.divide(a.getDecimal().getBigDecimal(), roundingMode);
+        } else if(a instanceof Decimal) {
+            value = value.divide(a.getBigDecimal(), roundingMode);
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
 		}
@@ -456,6 +484,7 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#abs()
 	 */
 	public void abs() {
+        if(isNull()) return;
 		value = value.abs();
 	}
 
@@ -463,14 +492,18 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#mod(org.jetel.data.Numeric)
 	 */
 	public void mod(Numeric a) {
-		if(a instanceof IntegerDataField) {
+        if(isNull()) return;
+        if(a.isNull()) setNaN(true);
+		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
             value = remainder(BigDecimal.valueOf(a.getInt()));
-        } else if(a instanceof LongDataField) {
+        } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = remainder(BigDecimal.valueOf(a.getLong()));
-		} else if(a instanceof NumericDataField) {
+		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
 			value = remainder(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = remainder(a.getDecimal().getBigDecimal());
+        } else if(a instanceof Decimal) {
+            value = remainder(a.getBigDecimal());
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'mod' operation (" + a.getClass().getName() + ").");
 		}
@@ -489,6 +522,7 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#neg()
 	 */
 	public void neg() {
+        if(isNull()) return;
 		value = value.negate();
 	}
 
