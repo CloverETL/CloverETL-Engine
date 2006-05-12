@@ -107,7 +107,7 @@ public class HugeDecimal implements Decimal {
 			setNaN(true);
 			return;
 		}
-		value = new BigDecimal(_value); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+		value = new BigDecimal(Double.toString(_value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -393,7 +393,7 @@ public class HugeDecimal implements Decimal {
         } else  if(a instanceof LongDataField) {
 			value = value.add(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField) {
-			value = value.add(new BigDecimal(a.getDouble())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.add(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
             value = value.add(a.getDecimal().getBigDecimal());
 		} else {
@@ -410,7 +410,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField) {
 			value = value.subtract(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField) {
-			value = value.subtract(new BigDecimal(a.getDouble())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.subtract(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.subtract(a.getDecimal().getBigDecimal());
 		} else {
@@ -427,7 +427,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField) {
 			value = value.multiply(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField) {
-			value = value.multiply(new BigDecimal(a.getDouble())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.multiply(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.multiply(a.getDecimal().getBigDecimal());
 		} else {
@@ -444,7 +444,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField) {
 			value = value.divide(BigDecimal.valueOf(a.getLong()), roundingMode);
 		} else if(a instanceof NumericDataField) {
-			value = value.divide(new BigDecimal(a.getDouble()), roundingMode); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.divide(new BigDecimal(Double.toString(a.getDouble())), roundingMode); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = value.divide(a.getDecimal().getBigDecimal(), roundingMode);
 		} else {
@@ -468,7 +468,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField) {
 			value = remainder(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField) {
-			value = remainder(new BigDecimal(a.getDouble())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = remainder(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if(a instanceof DecimalDataField) {
 			value = remainder(a.getDecimal().getBigDecimal());
 		} else {
@@ -584,7 +584,7 @@ public class HugeDecimal implements Decimal {
         }else if (value.isNull()) {
             return 1;
         }else {
-            return compareTo(value.getDecimal());
+            return compareTo((Object) value.getDecimal());
         }
     }
 
@@ -602,13 +602,13 @@ public class HugeDecimal implements Decimal {
         } else if(obj instanceof Long) {
 			return value.compareTo(BigDecimal.valueOf(((Long) obj).longValue()));
 		} else if (obj instanceof Double) {
-			return value.compareTo(new BigDecimal(((Double) obj).doubleValue())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			return value.compareTo(new BigDecimal(Double.toString(((Double) obj).doubleValue()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
 		} else if (obj instanceof IntegerDataField) {
             return value.compareTo(BigDecimal.valueOf(((IntegerDataField) obj).getInt()));
         } else if(obj instanceof LongDataField) {
 			return value.compareTo(BigDecimal.valueOf(((LongDataField) obj).getLong()));
 		} else if (obj instanceof NumericDataField) {
-			return value.compareTo(new BigDecimal(((NumericDataField) obj).getDouble())); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			return value.compareTo(new BigDecimal(Double.toString(((NumericDataField) obj).getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());
 		} else throw new ClassCastException("Can't compare this DecimalDataField and " + obj.getClass().getName());
