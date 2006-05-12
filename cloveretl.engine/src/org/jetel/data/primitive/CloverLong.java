@@ -227,7 +227,10 @@ public class CloverLong extends Number implements Numeric {
 	 */
 	public void add(Numeric a) {
         if(value == Long.MIN_VALUE) return;
-		value += a.getLong();
+        if(a.isNull())
+            value = Long.MIN_VALUE;
+        else
+            value += a.getLong();
 	}
 
 	/**
@@ -235,7 +238,10 @@ public class CloverLong extends Number implements Numeric {
 	 */
 	public void sub(Numeric a) {
         if(value == Long.MIN_VALUE) return;
-		value -= a.getLong();
+        if(a.isNull())
+            value = Long.MIN_VALUE;
+        else
+            value -= a.getLong();
 	}
 
 	/**
@@ -243,7 +249,10 @@ public class CloverLong extends Number implements Numeric {
 	 */
 	public void mul(Numeric a) {
         if(value == Long.MIN_VALUE) return;
-		value *= a.getLong();
+        if(a.isNull())
+            value = Long.MIN_VALUE;
+        else
+            value *= a.getLong();
 	}
 
 	/**
@@ -251,7 +260,10 @@ public class CloverLong extends Number implements Numeric {
 	 */
 	public void div(Numeric a) {
         if(value == Long.MIN_VALUE) return;
-		value /= a.getLong();
+        if(a.isNull())
+            value = Long.MIN_VALUE;
+        else
+            value /= a.getLong();
 	}
 
 	/**
@@ -267,7 +279,10 @@ public class CloverLong extends Number implements Numeric {
 	 */
 	public void mod(Numeric a) {
         if(value == Long.MIN_VALUE) return;
-		value %= a.getLong();
+        if(a.isNull())
+            value = Long.MIN_VALUE;
+        else
+            value %= a.getLong();
 	}
 
 	/**

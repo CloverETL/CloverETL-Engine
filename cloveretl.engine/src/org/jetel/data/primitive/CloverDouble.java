@@ -224,42 +224,42 @@ public class CloverDouble extends Number implements Numeric {
 	 * @see org.jetel.data.Numeric#add(org.jetel.data.Numeric)
 	 */
 	public void add(Numeric a) {
-		value += a.getDouble();
+	    value += a.getDouble();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#sub(org.jetel.data.Numeric)
 	 */
 	public void sub(Numeric a) {
-		value -= a.getDouble();
+	    value -= a.getDouble();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#mul(org.jetel.data.Numeric)
 	 */
 	public void mul(Numeric a) {
-		value *= a.getDouble();
+	    value *= a.getDouble();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#div(org.jetel.data.Numeric)
 	 */
 	public void div(Numeric a) {
-		value /= a.getDouble();
+	    value /= a.getDouble();
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#abs()
 	 */
 	public void abs() {
-		value = Math.abs(value);
+	    value = Math.abs(value);
 	}
 
 	/**
 	 * @see org.jetel.data.Numeric#mod(org.jetel.data.Numeric)
 	 */
 	public void mod(Numeric a) {
-		value %= a.getDouble();
+	    value %= a.getDouble();
 	}
 
 	/**
@@ -281,6 +281,6 @@ public class CloverDouble extends Number implements Numeric {
     }
     
 	public String toString(){
-	    return String.valueOf(value);
+	    return Double.toString(value);
     }
 }
