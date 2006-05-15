@@ -1,20 +1,32 @@
 package org.jetel.component;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.RandomAccessFile;
 
+import org.jetel.data.DataRecord;
+import org.jetel.data.parser.DelimitedDataParserNIO;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
-import org.w3c.dom.Element;
+import org.jetel.util.SynchronizeUtils;
 
 public class SystemExecute extends Node{
 	
 	private static final String XML_COMMAND = "Command";
 	public final static String COMPONENT_TYPE = "SYS_EXECUTE";
 
+	private final static int INPUT_PORT = 0;
+	private final static int OUTPUT_PORT = 0;
+
 	private String command;
 	private int exitValue;
-
+	private DelimitedDataParserNIO parser;
+	 
 	public SystemExecute(String id,String command) {
 		super(id);
 		this.command=command;
@@ -26,6 +38,25 @@ public class SystemExecute extends Node{
 		if (runIt) 
 			try{
 				Process p=r.exec(command);
+				if (outPorts.size()>0){
+					DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+					record.init();
+					parser=new DelimitedDataParserNIO();
+//					File tmp=File.createTempFile("in_",null);
+//					RandomAccessFile t=new RandomAccessFile(tmp,"rw");
+//					BufferedReader br = new BufferedReader( new InputStreamReader( p.getInputStream() ) );
+//					String line;
+//					while ((line=br.readLine())!=null){
+//						t.writeBytes(line+"\n");
+//					}
+//					t.close();
+					parser.open(p.getInputStream(), getOutputPort(OUTPUT_PORT).getMetadata());
+					while (((record = parser.getNext(record)) != null) && runIt) {
+						//broadcast the record to all connected Edges
+						writeRecordBroadcast(record);
+						SynchronizeUtils.cloverYield();
+					}
+				}
 				exitValue=p.waitFor();
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
@@ -33,6 +64,11 @@ public class SystemExecute extends Node{
 			}catch(InterruptedException ex){
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
+			}catch(Exception ex){
+			    ex.printStackTrace();
+				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+				resultCode = Node.RESULT_FATAL_ERROR;
+				return;
 			}
 		broadcastEOF();
 		if (runIt) {
