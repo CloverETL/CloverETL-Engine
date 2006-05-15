@@ -19,12 +19,14 @@
 */
 package org.jetel.component;
 
-import java.io.*;
-import org.jetel.graph.*;
+import java.io.IOException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -57,7 +59,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dedupKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
  *  <tr><td><b>keep</b></td><td>one of "First|Last|Unique" {the fist letter is sufficient, if not defined, then First}</td></tr>
- *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -87,7 +89,7 @@ public class Dedup extends Node {
 	private int keep;
 	private String[] dedupKeys;
 	private RecordKey recordKey;
-	private boolean equalNULLs;
+	private boolean equalNULLs = true;
 
 
 	/**
