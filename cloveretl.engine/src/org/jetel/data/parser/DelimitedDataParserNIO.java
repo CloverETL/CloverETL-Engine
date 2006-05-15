@@ -166,7 +166,8 @@ public class DelimitedDataParserNIO implements Parser {
         DataFieldMetadata fieldMetadata;
 		this.metadata = metadata;
 
-		reader = ((FileInputStream) in).getChannel();
+		
+		reader = Channels.newChannel((InputStream) in);
 
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];
