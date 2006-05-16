@@ -40,7 +40,7 @@ import java.util.Set;
  * @since  15.5.2006
  *
  */
-public class DuplicateValueMap implements Map {
+public class DuplicateKeyMap implements Map {
 
     private static final int DEFAULT_CONTAINER_INITIAL_SIZE=1; /* used when 1st value
     is stored under specific key*/
@@ -55,7 +55,7 @@ public class DuplicateValueMap implements Map {
     /**
      * 
      */
-    public DuplicateValueMap(Map map) {
+    public DuplicateKeyMap(Map map) {
         this.map=map;
         this.savedKey=this.savedData=null;
         this.savedIndex=-1;
@@ -92,7 +92,9 @@ public class DuplicateValueMap implements Map {
      * @see java.util.Map#clear()
      */
     public void clear() {
-       map.clear();
+        savedKey=savedData=null;
+        savedIndex=-1;
+        map.clear();
     }
 
     /* (non-Javadoc)
@@ -191,7 +193,7 @@ public class DuplicateValueMap implements Map {
      * which was used for the last get() method call.<br>
      * 
      * @return next value or null if no more values stored
-     * @see org.jetel.util.DuplicateValueMap#get(java.lang.Object)
+     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext() {
         if (savedKey!=null){
@@ -211,7 +213,7 @@ public class DuplicateValueMap implements Map {
      * 
      * 
      * @return next value 
-     * @see org.jetel.util.DuplicateValueMap#get(java.lang.Object)
+     * @see org.jetel.util.DuplicateKeyMap#get(java.lang.Object)
      */
     public Object getNext(Object key) {
         if (savedKey!=key){
@@ -226,6 +228,7 @@ public class DuplicateValueMap implements Map {
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key) {
+        savedKey=null;
         return map.remove(key);
     }
 
@@ -246,4 +249,28 @@ public class DuplicateValueMap implements Map {
         
     }
 
+    /**
+     * Determines how many values were found for specified
+     * key.<br>
+     * This method should be called after get(Object key) method.
+     * 
+     * @return number of found values or 0 if nothing was found
+     */
+    public int getNumFound(){
+        if (savedKey!=null && savedData!=null){
+            return savedData.size();
+        }else{
+            return 0;
+        }
+    }
+    
+    /**
+     * Returns the Map object wrapped by this class (passed-in)
+     * to constructor.
+     * 
+     * @return wrapped Map object
+     */
+    public Map getMapObject(){
+        return this.map;
+    }
 }
