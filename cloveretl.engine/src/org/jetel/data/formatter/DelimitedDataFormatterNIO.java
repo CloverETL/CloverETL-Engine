@@ -23,8 +23,11 @@
 package org.jetel.data.formatter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -91,7 +94,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		this.metadata = _metadata;
 		
 		// create buffered input stream reader 
-		writer = ((FileOutputStream) out).getChannel();
+		writer = Channels.newChannel((OutputStream) out);
 
 		// create array of delimiters & initialize them
 		delimiters = new String[metadata.getNumFields()];
