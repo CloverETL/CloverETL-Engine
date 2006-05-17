@@ -6,10 +6,15 @@ import java.io.OutputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
+import org.jetel.data.formatter.FixLenDataFormatter;
+import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 
@@ -23,8 +28,8 @@ public class SystemExecute extends Node{
 
 	private String command;
 	private int exitValue;
-	private DelimitedDataParserNIO parser;
-	private DelimitedDataFormatterNIO formatter;
+	private Parser parser;
+	private Formatter formatter;
 	 
 	public SystemExecute(String id,String command) {
 		super(id);
@@ -37,21 +42,33 @@ public class SystemExecute extends Node{
 		InputPort inPort = getInputPort(INPUT_PORT);
 		//If there is input port read metadadata and initialize in_record
 		try{
-			in_record = new DataRecord(inPort.getMetadata());
+			DataRecordMetadata meta=inPort.getMetadata();
+			in_record = new DataRecord(meta);
 			in_record.init();
+			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
+				formatter=new DelimitedDataFormatterNIO();
+			}else {
+				formatter=new FixLenDataFormatter();
+			}
 		}catch(NullPointerException e){
+			formatter=null;
 		}
-		formatter=new DelimitedDataFormatterNIO();
 
 		//Creating and initializing record to otput port
 		DataRecord out_record=null;
 		//If there is output port read metadadata and initialize in_record
 		try {
-			out_record= new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+			DataRecordMetadata meta=getOutputPort(OUTPUT_PORT).getMetadata();
+			out_record= new DataRecord(meta);
 			out_record.init();
+			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
+				parser=new DelimitedDataParserNIO();
+			}else {
+				parser=new FixLenDataParser();
+			}
 		}catch(NullPointerException e){
+			parser=null;
 		}
-		parser=new DelimitedDataParserNIO();
 
 		final int inPorts_size=inPorts.size();
 		final int outPorts_size=outPorts.size();
