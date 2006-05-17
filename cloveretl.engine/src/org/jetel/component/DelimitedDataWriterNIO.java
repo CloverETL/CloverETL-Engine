@@ -64,7 +64,7 @@ import org.jetel.util.SynchronizeUtils;
  * <h4>Example:</h4>
  * <pre>&lt;Node type="DELIMITED_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
  * 
- * @author     dpavlis
+ * @author     dpavlis10000
  * @since    April 4, 2002
  */
 public class DelimitedDataWriterNIO extends Node {
