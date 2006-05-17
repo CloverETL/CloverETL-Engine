@@ -672,14 +672,17 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent className="org.jetel.component.SystemExecute" type="SYS_EXECUTE">
+<ETLComponent category="others" className="org.jetel.component.SystemExecute" iconPath="icons/comp32.gif" name="System execute" smallIconPath="icons/comp16.gif" type="SYS_EXECUTE">
 <shortDescription/>
 <description>Executes system command.</description>
-<inputPorts/>
+<inputPorts>
+<singlePort name="0"/>
+</inputPorts>
 <outputPorts>
+<multiplePort/>
 </outputPorts>
 <properties>
-<property category="clover" displayName="System command" modifiable="true" name="Command" nullable="true">
+<property category="clover" displayName="System command" modifiable="true" name="command" nullable="true">
 <singleType name="string"/>
 </property>
 </properties>
