@@ -147,7 +147,7 @@ public class FixLenDataParser implements Parser {
 		CoderResult result;
 		this.metadata = _metadata;
 
-		reader = ((FileInputStream) in).getChannel();
+		reader = Channels.newChannel((InputStream)in);
 
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];
