@@ -578,6 +578,13 @@ public class HugeDecimal implements Decimal {
 		else return bd.toString();
 	}
 
+    /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return toString(null);
+    }
+    
 	/**
 	 * @see org.jetel.data.primitive.Decimal#toCharBuffer(java.text.NumberFormat)
 	 */
