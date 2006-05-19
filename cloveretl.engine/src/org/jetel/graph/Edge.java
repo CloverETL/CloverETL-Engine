@@ -56,7 +56,10 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 
 	protected DataRecordMetadata metadata;
 	protected DataRecordMetadataJDBCStub metadataStub;
-	
+
+    protected String debugFile;
+    protected EdgeDebuger edgeDebuger;
+    
 	private int edgeType;
 
 	private EdgeBase edge;
@@ -76,20 +79,25 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
-	public Edge(String id, DataRecordMetadata metadata) {
+	public Edge(String id, DataRecordMetadata metadata, String debugFile) {
 		if (!StringUtils.isValidObjectName(id)){
 			throw new InvalidGraphObjectNameException(id,"EDGE");
 		}
 		this.id = id;
 		this.metadata = metadata;
+        this.debugFile = debugFile;
 		this.graph = null;
 		reader = writer = null;
 		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
 		edge = null;
 	}
-	
-	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata){
-		this(id,metadata);
+
+    public Edge(String id, DataRecordMetadata metadata) {
+        this(id, metadata, null);
+    }
+    
+	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, String debugFile){
+		this(id,metadata, debugFile);
 		this.metadataStub=metadataStub;
 	}
 
@@ -221,6 +229,10 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 				edge = new DirectEdge(this);
 			}
 		}
+        if(debugFile != null) {
+            edgeDebuger = new EdgeDebuger(debugFile, false);
+            edgeDebuger.init();
+        }
 		edge.init();
 	}
 
@@ -266,6 +278,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @since                            April 2, 2002
 	 */
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
+        if(edgeDebuger != null) edgeDebuger.writeRecord(record);
 		edge.writeRecord(record);
 	}
 
@@ -279,6 +292,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @since                            August 13, 2002
 	 */
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+        if(edgeDebuger != null) edgeDebuger.writeRecord(record);
 		edge.writeRecordDirect(record);
 	}
 
@@ -314,6 +328,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 */
 	public void open() {
 		edge.open();
+        if(edgeDebuger != null) edgeDebuger.open();
 	}
 
 
@@ -324,6 +339,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 */
 	public void close() {
 		edge.close();
+        if(edgeDebuger != null) edgeDebuger.close();
 	}
 	
 	public boolean hasData(){
