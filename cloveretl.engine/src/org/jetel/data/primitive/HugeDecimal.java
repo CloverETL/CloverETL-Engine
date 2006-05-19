@@ -123,7 +123,7 @@ public class HugeDecimal implements Decimal {
 			setNaN(true);
 			return;
 		}
-		value = new BigDecimal(_value);
+		value = BigDecimal.valueOf(_value);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -139,7 +139,7 @@ public class HugeDecimal implements Decimal {
 			setNaN(true);
 			return;
 		}
-		value = new BigDecimal(_value);
+		value = BigDecimal.valueOf(_value);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
