@@ -1,5 +1,7 @@
 package org.jetel.data.primitive;
 
+import java.math.BigDecimal;
+
 import junit.framework.TestCase;
 
 import org.jetel.data.Defaults;
@@ -19,10 +21,10 @@ public class DecimalNumericTest extends TestCase {
 		 aDefault=DecimalFactory.getDecimal();
 		 aDoubleIntInt=DecimalFactory.getDecimal(0,9,2);
 		 aDecimalIntInt=DecimalFactory.getDecimal(aDoubleIntInt,6,1);
-		 anIntInt=DecimalFactory.getDecimal(10,4);
+		 anIntInt=DecimalFactory.getDecimal(12,4);
 	}
 	
-	public void test_values(){
+	public void test_values1(){
 		System.out.println("\nTests for integer:");
 		for (int i=0;i<5;i++){
 			int value=0;
@@ -62,7 +64,9 @@ public class DecimalNumericTest extends TestCase {
 			if (!anInt.isNaN()) assertEquals(1,anInt.compareTo(new Integer(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
+	}
 
+	public void test_values2(){
 		System.out.println("\nTests for long:");
 		for (int i=0;i<5;i++){
 			long value=0;
@@ -105,7 +109,9 @@ public class DecimalNumericTest extends TestCase {
 			if (!aLong.isNaN()) assertEquals(1,aLong.compareTo(new Long(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
-
+	}
+	
+	public void test_values3(){
 		System.out.println("\nTests for float:");
 		for (int i=0;i<7;i++){
 			float value=0;
@@ -163,8 +169,10 @@ public class DecimalNumericTest extends TestCase {
 			if (!aFloat.isNaN()) assertEquals(1,aFloat.compareTo(new Double(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
-
-		System.out.println("\nTests for double:");
+	}
+	
+	public void test_values4(){
+	System.out.println("\nTests for double:");
 		for (int i=0;i<7;i++){
 			double value=0;
 			double less=-0.1;
@@ -219,7 +227,9 @@ public class DecimalNumericTest extends TestCase {
 			if (!aDouble.isNaN()&&!(value==-Double.MAX_VALUE)) assertEquals(1,aDouble.compareTo(new Double(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
-		
+	}
+	
+	public void test_values5(){
 		System.out.println("\nTests for default:");
 		for (int i=0;i<5;i++){
 			double value=0;
@@ -269,7 +279,9 @@ public class DecimalNumericTest extends TestCase {
 			if (!aDefault.isNaN()&&!(value==-999999.99)) assertEquals(1,aDefault.compareTo(new Double(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
-
+	}
+	
+	public void test_values6(){
 			System.out.println("\nTests for (9,2):");
 			for (int i=0;i<5;i++){
 				double value=0;
@@ -319,16 +331,22 @@ public class DecimalNumericTest extends TestCase {
 				if (!aDoubleIntInt.isNaN()&&!(value==-9999999.99)) assertEquals(1,aDoubleIntInt.compareTo(new Double(less)));
 				System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 			}
-			
+	}
+	
+	public void test_values7(){
 			System.out.println("\nTests for (6,1) from Decimal:");
-			for (int i=0;i<2;i++){
+			for (int i=0;i<4;i++){
 				switch (i) {
 				case 0:aDoubleIntInt=DecimalFactory.getDecimal(0,9,2);
 					  break;
 				case 1:aDoubleIntInt=DecimalFactory.getDecimal(0,9,0);
 				  break;
+				case 2:aDoubleIntInt=DecimalFactory.getDecimal(0.1,9,2);
+				  break;
+				case 3:aDoubleIntInt=DecimalFactory.getDecimal(111.1,4,1);
+				  break;
 			}
-				 aDecimalIntInt=DecimalFactory.getDecimal(aDoubleIntInt,6,1);
+				aDecimalIntInt=DecimalFactory.getDecimal(aDoubleIntInt,6,1);
 				System.out.println("Oryginal decimal:"+aDoubleIntInt.toString());
 				System.out.println("My decimal:"+aDecimalIntInt.toString());
 				assertEquals(aDoubleIntInt.getInt(),aDecimalIntInt.getInt());
@@ -340,8 +358,8 @@ public class DecimalNumericTest extends TestCase {
 				assertEquals(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
 				System.out.println("Test for getDecimal passed (isNaN="+anInt.isNaN()+")");
 				assertNotSame(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
-				assertEquals(-1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()+0.1,6,1)));
-				assertEquals(-1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()+0.1)));
+				assertEquals(-1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()+0.2,6,1)));
+				assertEquals(-1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()+0.2)));
 				assertEquals(0,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble(),6,1)));
 				assertEquals(0,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble())));
 				assertEquals(1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()-0.1,6,1)));
@@ -351,15 +369,51 @@ public class DecimalNumericTest extends TestCase {
 			
 		}
 		
+	public void test_values8(){
+		System.out.println("\nTests for HugeDecimal:");
+		for (int i=0;i<1;i++){
+			double value;
+			switch (i) {
+			case 0:value=0;
+				  break;
+			case 1:aDoubleIntInt=DecimalFactory.getDecimal(0,9,0);
+			  break;
+			case 2:aDoubleIntInt=DecimalFactory.getDecimal(0.1,9,2);
+			  break;
+			case 3:aDoubleIntInt=DecimalFactory.getDecimal(111.1,4,1);
+			  break;
+		}
+			aDecimalIntInt=DecimalFactory.getDecimal(aDoubleIntInt,6,1);
+			System.out.println("Oryginal decimal:"+aDoubleIntInt.toString());
+			System.out.println("My decimal:"+aDecimalIntInt.toString());
+			assertEquals(aDoubleIntInt.getInt(),aDecimalIntInt.getInt());
+			System.out.println("Test for getInt passed");
+			assertEquals(new Double(aDoubleIntInt.getDouble()),new Double(aDecimalIntInt.getDouble()));
+			System.out.println("Test for getDouble passed (isNaN="+anInt.isNaN()+")");
+			assertEquals(aDoubleIntInt.getLong(),aDecimalIntInt.getLong());
+			System.out.println("Test for getLong passed");
+			assertEquals(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
+			System.out.println("Test for getDecimal passed (isNaN="+anInt.isNaN()+")");
+			assertNotSame(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
+			assertEquals(-1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()+0.2,6,1)));
+			assertEquals(-1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()+0.2)));
+			assertEquals(0,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble(),6,1)));
+			assertEquals(0,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble())));
+			assertEquals(1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()-0.1,6,1)));
+			assertEquals(1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()-0.1)));
+			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
+		}
+		
+	}
 
-//	public void test_maths(){
-//		anInt.add(DecimalFactory.getDecimal(123));
-//		assertEquals(new BigDecimal(123),anInt.getBigDecimal());
-//		aLong.sub(DecimalFactory.getDecimal(Integer.MAX_VALUE));
-//		assertEquals(new BigDecimal(Integer.MIN_VALUE),aLong.getBigDecimal());
-//		aDouble.div(anInt);
-//		assertEquals(new Double(0.00000001/123),new Double(aDouble.getDouble()));
-//	}
+	public void test_maths(){
+		anInt.add(DecimalFactory.getDecimal(123));
+		assertEquals(new BigDecimal(123),anInt.getBigDecimal());
+		aLong.sub(DecimalFactory.getDecimal(Integer.MAX_VALUE));
+		assertEquals(new BigDecimal(Integer.MIN_VALUE),aLong.getBigDecimal());
+		aDouble.div(anInt);
+		assertEquals(new Double(0.00000001/123),new Double(aDouble.getDouble()));
+	}
 
 	protected void tearDown() throws Exception {
 		super.tearDown();
