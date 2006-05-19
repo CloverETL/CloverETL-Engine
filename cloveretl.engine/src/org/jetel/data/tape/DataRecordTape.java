@@ -31,9 +31,8 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.data.Defaults;
 
 
 /**
@@ -45,7 +44,7 @@ import org.jetel.data.parser.FixLenDataParser;
  * sequentially, but particular chunk can be selected.<br><br>
  * <i>Usage:</i><br>
  * <code>
- * tape=new DataReocordTape();<br>
+ * tape=new DataRecordTape();<br>
  * tape.open();<br>
  * tape.addDataChunk();<br>
  * ..loop.. tape.put(..data..);<br>
@@ -66,8 +65,11 @@ public class DataRecordTape {
 
     private FileChannel tmpFileChannel;
 	private File tmpFile;
-	private String tmpFilePath;
+	private String tmpFileName;
 
+    private boolean deleteOnExit;
+    private boolean deleteOnStart;
+    
 	private List dataChunks;
 	
 	private ByteBuffer dataBuffer;
@@ -92,34 +94,42 @@ public class DataRecordTape {
 	/**
 	 *  Constructor for the DataRecordTape object
 	 *
-	 *@param  tmpFilePath     Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
-	 *@param  dataBufferSize  The size of internal in memory buffer. If smaller
-	 *      than DEFAULT_BUFFER_SIZE, then default is used
+	 *@param  tmpFileName      Name of the temp file or NULL (the system default temp directory and name will be used)
+	 *@param  dataBufferSize   The size of internal in memory buffer.
+     *                          If smaller than DEFAULT_BUFFER_SIZE, then default is used
 	 */
-	public DataRecordTape(String tmpFilePath, int dataBufferSize) {
-		this.tmpFilePath = tmpFilePath;
+	public DataRecordTape(String tmpFileName, int dataBufferSize, boolean deleteOnStart, boolean deleteOnExit) {
+		this.tmpFileName = tmpFileName;
+        this.deleteOnStart = deleteOnStart;
+        this.deleteOnExit = deleteOnExit;
 		dataChunks=new ArrayList();
 		isClosed=false;
 		dataBuffer = ByteBuffer.allocateDirect(dataBufferSize > DEFAULT_BUFFER_SIZE ? dataBufferSize : DEFAULT_BUFFER_SIZE);
 	}
 
+    /**
+     * Constructor.
+     * @param tmpFileName
+     * @param deleteOnExit
+     */
+    public DataRecordTape(String tmpFileName, boolean deleteOnStart, boolean deleteOnExit) {
+        this(tmpFileName,DEFAULT_BUFFER_SIZE, deleteOnStart, deleteOnExit);
+    }
 
 	/**
 	 *  Constructor for the DataRecordTape object
 	 *
-	 *@param  tmpFilePath  Name of the subdirectory where to create TMP files or
-	 *      NULL (the system default will be used)
+     *@param  tmpFileName      Name of the temp file or NULL (the system default temp directory and name will be used)
 	 */
-	public DataRecordTape(String tmpFilePath) {
-		this(tmpFilePath,DEFAULT_BUFFER_SIZE);
+	public DataRecordTape(String tmpFileName) {
+		this(tmpFileName,DEFAULT_BUFFER_SIZE, true, true);
 	}
 
 	/**
 	 * Constructor for DataRecordTape - all parameters defaulted.
 	 */
 	public DataRecordTape(){
-	    this(System.getProperty(JAVA_IO_TMPDIR_ENV_VAR_NAME,"."),DEFAULT_BUFFER_SIZE);
+	    this(null,DEFAULT_BUFFER_SIZE, true, true);
 	}
 
 	/**
@@ -129,11 +139,24 @@ public class DataRecordTape {
 	 *@since                   September 17, 2002
 	 */
 	public void open() throws IOException {
-		tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, new File(tmpFilePath));
-		tmpFile.deleteOnExit();
+        if(tmpFileName == null)
+            tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
+        else {
+            tmpFile = new File(tmpFileName);
+            if(deleteOnStart && tmpFile.exists()) {
+                if (!tmpFile.delete()) {
+                    throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
+                }
+            }
+            if(!deleteOnStart && !tmpFile.exists()) {
+                throw new IOException("Temp file does not exist.");
+            }
+        }
+        if(deleteOnExit) tmpFile.deleteOnExit();
+        
 		// we want the temp file be deleted on exit
 		tmpFileChannel = new RandomAccessFile(tmpFile, TMP_FILE_MODE).getChannel();
-		currentDataChunkIndex=-1;
+       	currentDataChunkIndex=-1;
 		currentDataChunk=null;
 	}
 
@@ -146,11 +169,13 @@ public class DataRecordTape {
 	 */
 	public void close() throws IOException {
 		isClosed=true;
-		clear();
-		tmpFileChannel.close();
-		if (!tmpFile.delete()) {
-			throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
-		}
+        if(deleteOnExit) {
+            clear();
+            if (!tmpFile.delete()) {
+                throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
+            }
+        }
+        tmpFileChannel.close();
 	}
 
 	
@@ -501,19 +526,21 @@ public class DataRecordTape {
 				throw new RuntimeException("Buffer has not been rewind !");
 			}
 			
-			if (recordsRead>=nRecords){
+			if (nRecords > 0 && recordsRead>=nRecords){
 			    return false;
 			}
 			//	check that internal buffer has enough data to read data size
-			if ((LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
-					reloadBuffer();
-				}
+			if (LEN_SIZE_SPECIFIER > dataBuffer.remaining()){
+			    reloadBuffer();
+			    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
+			}
 			recordSize = dataBuffer.getInt();
 			position+=LEN_SIZE_SPECIFIER;
 			
 			//	check that internal buffer has enough data to read data record
-			if ((recordSize) > dataBuffer.remaining()){
-					reloadBuffer();
+			if (recordSize > dataBuffer.remaining()){
+			    reloadBuffer();
+			    if(recordSize > dataBuffer.remaining()) return false;
 			}
 			int oldLimit = dataBuffer.limit();
 			dataBuffer.limit(dataBuffer.position() + recordSize);
@@ -539,19 +566,21 @@ public class DataRecordTape {
 					throw new RuntimeException("Buffer has not been rewind !");
 				}
 				
-				if (recordsRead>=nRecords){
+				if (nRecords > 0 && recordsRead>=nRecords){
 				    return false;
 				}
 				//	check that internal buffer has enough data to read data size
-				if ((LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
-						reloadBuffer();
-					}
+				if (LEN_SIZE_SPECIFIER > dataBuffer.remaining()) {
+				    reloadBuffer();
+                    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
+				}
 				recordSize = dataBuffer.getInt();
 				position+=LEN_SIZE_SPECIFIER;
 				
 				//	check that internal buffer has enough data to read data record
-				if ((recordSize) > dataBuffer.remaining()){
-						reloadBuffer();
+				if (recordSize > dataBuffer.remaining()){
+				    reloadBuffer();
+                    if(recordSize > dataBuffer.remaining()) return false;
 				}
 				data.deserialize(dataBuffer);
 				
