@@ -497,6 +497,13 @@ public class IntegerDecimal implements Decimal {
     }
 
     /**
+     * @see java.lang.Object#toString()
+     */
+    public String toString() {
+        return toString(null);
+    }
+    
+    /**
      * @see org.jetel.data.Decimal#toCharBuffer(java.text.NumberFormat)
      */
     public CharBuffer toCharBuffer(NumberFormat numberFormat) {
