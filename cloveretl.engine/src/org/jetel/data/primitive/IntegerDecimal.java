@@ -381,7 +381,7 @@ public class IntegerDecimal implements Decimal {
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value *= (double) ((IntegerDecimal) d).value / TENPOWERS[scale];
+                value *= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
             } else {
                 value *= d.getBigDecimal().doubleValue();
             }
@@ -405,7 +405,7 @@ public class IntegerDecimal implements Decimal {
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value /= ((IntegerDecimal) d).value / TENPOWERS[scale];
+                value /= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
             } else {
                 value /= d.getBigDecimal().doubleValue();
             }
