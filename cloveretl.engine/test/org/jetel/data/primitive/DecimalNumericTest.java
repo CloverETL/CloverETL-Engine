@@ -1,6 +1,7 @@
 package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
+import java.nio.ByteBuffer;
 
 import junit.framework.TestCase;
 
@@ -372,7 +373,7 @@ public class DecimalNumericTest extends TestCase {
 	public void test_values8(){
 		System.out.println("\nTests for HugeDecimal:");
 		for (int i=0;i<1;i++){
-			double value;
+			double value=0;
 			switch (i) {
 			case 0:value=0;
 				  break;
@@ -383,36 +384,106 @@ public class DecimalNumericTest extends TestCase {
 			case 3:aDoubleIntInt=DecimalFactory.getDecimal(111.1,4,1);
 			  break;
 		}
-			aDecimalIntInt=DecimalFactory.getDecimal(aDoubleIntInt,6,1);
-			System.out.println("Oryginal decimal:"+aDoubleIntInt.toString());
-			System.out.println("My decimal:"+aDecimalIntInt.toString());
-			assertEquals(aDoubleIntInt.getInt(),aDecimalIntInt.getInt());
+			anIntInt.setValue(value);
+			System.out.println("value="+value);
+			System.out.println("decimal:"+anIntInt.toString());
+			assertEquals(new Double(value).intValue(),anIntInt.getInt());
 			System.out.println("Test for getInt passed");
-			assertEquals(new Double(aDoubleIntInt.getDouble()),new Double(aDecimalIntInt.getDouble()));
+			assertEquals(new Double(aDoubleIntInt.getDouble()),new Double(anIntInt.getDouble()));
 			System.out.println("Test for getDouble passed (isNaN="+anInt.isNaN()+")");
-			assertEquals(aDoubleIntInt.getLong(),aDecimalIntInt.getLong());
+			assertEquals(aDoubleIntInt.getLong(),anIntInt.getLong());
 			System.out.println("Test for getLong passed");
-			assertEquals(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
+			assertEquals(DecimalFactory.getDecimal(aDoubleIntInt,6,1),anIntInt.getDecimal());
 			System.out.println("Test for getDecimal passed (isNaN="+anInt.isNaN()+")");
-			assertNotSame(DecimalFactory.getDecimal(aDoubleIntInt,6,1),aDecimalIntInt.getDecimal());
-			assertEquals(-1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()+0.2,6,1)));
-			assertEquals(-1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()+0.2)));
-			assertEquals(0,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble(),6,1)));
-			assertEquals(0,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble())));
-			assertEquals(1,aDecimalIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()-0.1,6,1)));
-			assertEquals(1,aDecimalIntInt.compareTo(new Double(aDoubleIntInt.getDouble()-0.1)));
+			assertNotSame(DecimalFactory.getDecimal(aDoubleIntInt,6,1),anIntInt.getDecimal());
+			assertEquals(-1,anIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()+0.2,6,1)));
+			assertEquals(-1,anIntInt.compareTo(new Double(aDoubleIntInt.getDouble()+0.2)));
+			assertEquals(0,anIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble(),6,1)));
+			assertEquals(0,anIntInt.compareTo(new Double(aDoubleIntInt.getDouble())));
+			assertEquals(1,anIntInt.compareTo(DecimalFactory.getDecimal(aDoubleIntInt.getDouble()-0.1,6,1)));
+			assertEquals(1,anIntInt.compareTo(new Double(aDoubleIntInt.getDouble()-0.1)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
 		}
 		
 	}
 
-	public void test_maths(){
-		anInt.add(DecimalFactory.getDecimal(123));
-		assertEquals(new BigDecimal(123),anInt.getBigDecimal());
-		aLong.sub(DecimalFactory.getDecimal(Integer.MAX_VALUE));
-		assertEquals(new BigDecimal(Integer.MIN_VALUE),aLong.getBigDecimal());
+	public void test_maths_add(){
+		aDouble=DecimalFactory.getDecimal(0,6,2);
+		anInt=DecimalFactory.getDecimal(123,6,3);
+		aDouble.add(anInt);
+		assertEquals(new Double(123),new Double(aDouble.getDouble()));
+	}
+	
+	public void test_maths_div(){
+		aDouble=DecimalFactory.getDecimal(-0.1,6,2);
+		aDouble.abs();
+		assertEquals(new Double(0.1),new Double(aDouble.getDouble()));
+		aDouble.abs();
+		assertEquals(new Double(0.1),new Double(aDouble.getDouble()));
+		anInt=DecimalFactory.getDecimal(2,6,3);
 		aDouble.div(anInt);
-		assertEquals(new Double(0.00000001/123),new Double(aDouble.getDouble()));
+		assertEquals(new Double(0.05),new Double(aDouble.getDouble()));
+	}
+
+	public void test_maths_mod(){
+		aDouble=DecimalFactory.getDecimal(10,6,2);
+		anInt=DecimalFactory.getDecimal(3,6,3);
+		aDouble.mod(anInt);
+		assertEquals(new Double(1),new Double(aDouble.getDouble()));
+		aDouble=DecimalFactory.getDecimal(10,6,2);
+		anInt=DecimalFactory.getDecimal(3);
+		assertEquals(new Double(1),new Double(aDouble.getDouble()));
+	}
+
+	public void test_maths_mul(){
+		aDouble=DecimalFactory.getDecimal(0.1,6,2);
+		anInt=DecimalFactory.getDecimal(3,6,3);
+		aDouble.mul(anInt);
+		assertEquals(new Double(0.3),new Double(aDouble.getDouble()));
+		aDouble.neg();
+		assertEquals(new Double(-0.3),new Double(aDouble.getDouble()));
+		aDouble.mul(DecimalFactory.getDecimal(0));
+		assertEquals(new Double(0),new Double(aDouble.getDouble()));
+	}
+
+	public void test_maths_sub(){
+		aDouble=DecimalFactory.getDecimal(0,6,2);
+		anInt=DecimalFactory.getDecimal(123,6,3);
+		aDouble.sub(anInt);
+		assertEquals(new Double(-123),new Double(aDouble.getDouble()));
+	}
+
+	public void test_fromString(){
+		aDouble.fromString("123.45",null);
+		assertEquals(new Double(123.45),new Double(aDouble.getDouble()));
+		aDouble=DecimalFactory.getDecimal(10,5);
+		aDouble.fromString(".12345",null);
+		assertEquals(new Double(0.12345),new Double(aDouble.getDouble()));
+		aDouble.fromString("12345",null);
+		assertEquals(new Double(12345),new Double(aDouble.getDouble()));
+	}
+
+	public void test_s_ds(){
+		Decimal d=DecimalFactory.getDecimal();
+		Decimal i=DecimalFactory.getDecimal(6,4);
+		Decimal l=DecimalFactory.getDecimal(18,0);
+		aDouble=DecimalFactory.getDecimal(0.2,6,2);
+		anInt=DecimalFactory.getDecimal(123,6,3);
+		aLong=DecimalFactory.getDecimal((long)Integer.MAX_VALUE+10,20,2);
+		ByteBuffer bb=ByteBuffer.allocate(1000);
+		aDouble.serialize(bb);
+		anInt.serialize(bb);
+		aLong.serialize(bb);
+		bb.rewind();
+		d.deserialize(bb);
+		System.out.println("Oryginal:"+aDouble.toString()+",copy:"+d.toString());
+		i.deserialize(bb);
+		System.out.println("Oryginal:"+anInt.toString()+",copy:"+i.toString());
+		l.deserialize(bb);
+		System.out.println("Oryginal:"+aLong.toString()+",copy:"+l.toString());
+		assertEquals(aDouble,d);
+		assertEquals(anInt,i);
+		assertEquals(aLong,l);
 	}
 
 	protected void tearDown() throws Exception {
