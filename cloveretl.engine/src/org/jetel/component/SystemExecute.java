@@ -30,7 +30,64 @@ public class SystemExecute extends Node{
 	private int exitValue;
 	private Parser parser;
 	private Formatter formatter;
-	 
+	
+	private class GetData extends Thread {
+
+		InputPort inPort;
+		DataRecord in_record;
+		OutputStream p_in; 
+		
+		GetData(InputPort inPort,DataRecord in_record,OutputStream p_in){
+			super();
+			this.in_record=in_record;
+			this.inPort=inPort;
+			this.p_in=p_in;
+		}
+		
+		public void run() {
+			try{
+				while (( in_record!= null ) && runIt) {
+					formatter.write(in_record);
+					in_record=inPort.readRecord(in_record);
+					if (in_record==null) formatter.close();
+				}
+				p_in.close();	
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}catch(InterruptedException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}
+		}
+	}
+
+	private class SendData extends Thread {
+
+		DataRecord out_record;
+		
+		SendData(DataRecord out_record){
+			super();
+			this.out_record=out_record;
+		}
+		
+		public void run() {
+			try{
+				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
+					//broadcast the record to all connected Edges
+					writeRecordBroadcast(out_record);
+					SynchronizeUtils.cloverYield();
+				}
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}catch(Exception ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}
+		}
+	}
+	
 	public SystemExecute(String id,String command) {
 		super(id);
 		this.command=command;
@@ -53,7 +110,6 @@ public class SystemExecute extends Node{
 		}catch(NullPointerException e){
 			formatter=null;
 		}
-
 		//Creating and initializing record to otput port
 		DataRecord out_record=null;
 		//If there is output port read metadadata and initialize in_record
@@ -83,22 +139,13 @@ public class SystemExecute extends Node{
 			if (inPorts_size>0) {
 				in_record=inPort.readRecord(in_record);
 				formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
+				new GetData(inPort, in_record, p_in).start();
 			}
-			while (( in_record!= null ) && runIt) {
-				formatter.write(in_record);
-				if (inPorts.size()>0) in_record=inPort.readRecord(in_record);
-				if (in_record==null) formatter.close();
-			}
-			p_in.close();
 			//If there is output port read output from process and send it to output ports
 			if (outPorts_size>0){
 				parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
 				//send all out_records to output ports
-				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
-					//broadcast the record to all connected Edges
-					writeRecordBroadcast(out_record);
-					SynchronizeUtils.cloverYield();
-				}
+				new SendData(out_record).start();
 			}
 		}catch(IOException ex){
 			resultMsg = ex.getMessage();
