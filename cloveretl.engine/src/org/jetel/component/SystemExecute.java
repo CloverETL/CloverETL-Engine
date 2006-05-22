@@ -46,11 +46,10 @@ public class SystemExecute extends Node{
 		
 		public void run() {
 			try{
-				while (( in_record!= null ) && runIt) {
+				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
 					formatter.write(in_record);
-					in_record=inPort.readRecord(in_record);
-					if (in_record==null) formatter.close();
 				}
+				formatter.close();
 				p_in.close();	
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
@@ -137,7 +136,6 @@ public class SystemExecute extends Node{
 			InputStream p_out=p.getInputStream();
 			// If there is input port read records and write them to input stream of the process
 			if (inPorts_size>0) {
-				in_record=inPort.readRecord(in_record);
 				formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
 				new GetData(inPort, in_record, p_in).start();
 			}
@@ -145,12 +143,11 @@ public class SystemExecute extends Node{
 			if (outPorts_size>0){
 				parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
 				//send all out_records to output ports
-				new SendData(out_record).start();
+				SendData s=new SendData(out_record);
+				s.start();
+				s.join();
 			}
 		}catch(IOException ex){
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-		}catch(InterruptedException ex){
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 		}catch(Exception ex){
