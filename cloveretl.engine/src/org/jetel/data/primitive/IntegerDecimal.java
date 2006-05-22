@@ -335,7 +335,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value += ((IntegerDecimal) d).value;
             } else {
-                value += d.getBigDecimal().longValue();
+                value += d.getBigDecimal().doubleValue() * TENPOWERS[scale];
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'add' operation (" + a.getClass().getName() + ").");
@@ -359,7 +359,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value -= ((IntegerDecimal) d).value;
             } else {
-                value -= d.getBigDecimal().longValue();
+                value -= d.getBigDecimal().doubleValue() * TENPOWERS[scale];
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'sub' operation (" + a.getClass().getName() + ").");
@@ -373,17 +373,17 @@ public class IntegerDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
         if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value *= a.getInt() * TENPOWERS[scale];
+            value *= a.getInt();
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
-            value *= a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField || a instanceof Decimal) {
-            value *= a.getDouble() * TENPOWERS[scale];
+            value *= a.getLong();
+        } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
+            value *= a.getDouble();
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value *= ((IntegerDecimal) d).value;
+                value *= (double) ((IntegerDecimal) d).value / TENPOWERS[scale];
             } else {
-                value *= d.getBigDecimal().longValue();
+                value *= d.getBigDecimal().doubleValue();
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mul' operation (" + a.getClass().getName() + ").");
@@ -400,14 +400,14 @@ public class IntegerDecimal implements Decimal {
             value /= a.getInt() * TENPOWERS[scale];
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
             value /= a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField || a instanceof Decimal) {
+        } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
             value /= a.getDouble() * TENPOWERS[scale];
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value /= ((IntegerDecimal) d).value;
             } else {
-                value /= d.getBigDecimal().longValue();
+                value /= d.getBigDecimal().doubleValue() * TENPOWERS[scale];
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
@@ -432,14 +432,14 @@ public class IntegerDecimal implements Decimal {
             value %= a.getInt() * TENPOWERS[scale];
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
             value %= a.getLong() * TENPOWERS[scale];
-        } else if(a instanceof NumericDataField || a instanceof Decimal) {
+        } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
             value %= a.getDouble() * TENPOWERS[scale];
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value %= ((IntegerDecimal) d).value;
             } else {
-                value %= d.getBigDecimal().longValue();
+                value %= d.getBigDecimal().doubleValue() * TENPOWERS[scale];
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mod' operation (" + a.getClass().getName() + ").");
@@ -539,12 +539,7 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
      */
     public void fromCharBuffer(CharBuffer buffer, NumberFormat numberFormat) {
-        if(buffer == null || buffer.length() == 0) {
-            setNaN(true);
-            return;
-        }
-        value = Long.valueOf(buffer.toString()).longValue();
-        setNaN(false);
+        fromString(buffer.toString(), numberFormat);
     }
 
     public int compareTo(Numeric value) {
