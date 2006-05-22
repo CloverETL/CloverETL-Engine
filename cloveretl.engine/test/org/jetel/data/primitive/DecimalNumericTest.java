@@ -412,6 +412,11 @@ public class DecimalNumericTest extends TestCase {
 		anInt=DecimalFactory.getDecimal(123,6,3);
 		aDouble.add(anInt);
 		assertEquals(new Double(123),new Double(aDouble.getDouble()));
+		double value=(long)Integer.MIN_VALUE-100;
+		aDouble=DecimalFactory.getDecimal(0,6,2);
+		aLong=DecimalFactory.getDecimal(value,20,2);
+		aLong.add(aDouble);
+		assertEquals(new Double(value),new Double(aLong.getDouble()));
 	}
 	
 	public void test_maths_div(){
@@ -432,6 +437,10 @@ public class DecimalNumericTest extends TestCase {
 		assertEquals(new Double(1),new Double(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,6,2);
 		anInt=DecimalFactory.getDecimal(3);
+		aDouble.mod(anInt);
+		assertEquals(new Double(1),new Double(aDouble.getDouble()));
+		aDouble=DecimalFactory.getDecimal(10);
+		anInt=DecimalFactory.getDecimal(3,6,2);
 		aDouble.mod(anInt);
 		assertEquals(new Double(1),new Double(aDouble.getDouble()));
 	}
@@ -465,6 +474,7 @@ public class DecimalNumericTest extends TestCase {
 	}
 
 	public void test_s_ds(){
+		System.out.println("\nTests for serialization and deserilization:");
 		Decimal d=DecimalFactory.getDecimal();
 		Decimal i=DecimalFactory.getDecimal(6,4);
 		Decimal l=DecimalFactory.getDecimal(18,0);
