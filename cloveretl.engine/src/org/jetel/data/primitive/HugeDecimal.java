@@ -611,12 +611,7 @@ public class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
 	 */
 	public void fromCharBuffer(CharBuffer buffer, NumberFormat numberFormat) {
-		if(buffer == null || buffer.length() == 0) {
-			setNaN(true);
-            return;
-		}
-		value = new BigDecimal(buffer.toString());
-		setNaN(false);
+        fromString(buffer.toString(), numberFormat);
 	}
 
     public int compareTo(Numeric value) {
@@ -661,7 +656,7 @@ public class HugeDecimal implements Decimal {
      */
     public boolean satisfyPrecision() {
         if(isNaN()) return true;
-        return !(HugeDecimal.precision(value.unscaledValue()) > precision);
+        return !(HugeDecimal.precision(value.setScale(scale, BigDecimal.ROUND_DOWN).unscaledValue()) > precision);
     }
 
     public boolean equals(Object obj) {
