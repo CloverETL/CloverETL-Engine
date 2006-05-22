@@ -432,6 +432,7 @@ public class DecimalNumericTest extends TestCase {
 		assertEquals(new Double(1),new Double(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,6,2);
 		anInt=DecimalFactory.getDecimal(3);
+		aDouble.mod(anInt);
 		assertEquals(new Double(1),new Double(aDouble.getDouble()));
 	}
 
