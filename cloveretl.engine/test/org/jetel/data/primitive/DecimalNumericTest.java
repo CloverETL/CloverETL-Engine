@@ -428,6 +428,13 @@ public class DecimalNumericTest extends TestCase {
 		anInt=DecimalFactory.getDecimal(2,6,3);
 		aDouble.div(anInt);
 		assertEquals(new Double(0.05),new Double(aDouble.getDouble()));
+		aLong=DecimalFactory.getDecimal((long)Integer.MAX_VALUE+10);
+		aDouble.div(aLong);
+		assertEquals(new Double(0),new Double(aDouble.getDouble()));
+		aDouble=DecimalFactory.getDecimal(1,6,2);
+		aLong.neg();
+		aDouble.div(aLong);
+		assertEquals(new Double(0),new Double(aDouble.getDouble()));
 	}
 
 	public void test_maths_mod(){
@@ -446,6 +453,7 @@ public class DecimalNumericTest extends TestCase {
 	}
 
 	public void test_maths_mul(){
+		System.out.println("\nTests for multipling:");
 		aDouble=DecimalFactory.getDecimal(0.1,6,2);
 		anInt=DecimalFactory.getDecimal(3,6,3);
 		aDouble.mul(anInt);
@@ -461,6 +469,13 @@ public class DecimalNumericTest extends TestCase {
 		anInt=DecimalFactory.getDecimal(123,6,3);
 		aDouble.sub(anInt);
 		assertEquals(new Double(-123),new Double(aDouble.getDouble()));
+		aLong=DecimalFactory.getDecimal((long)Integer.MAX_VALUE+100);
+		aLong.sub(anInt);
+		assertEquals(new Double(Integer.MAX_VALUE-23),new Double(aLong.getDouble()));
+		aDouble=DecimalFactory.getDecimal(0,6,2);
+		anInt=DecimalFactory.getDecimal(0,25,0);
+		aDouble.sub(anInt);
+		assertEquals(new Double(0),new Double(aDouble.getDouble()));
 	}
 
 	public void test_fromString(){
