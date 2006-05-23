@@ -1,7 +1,9 @@
 package org.jetel.component;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 
 import org.jetel.data.DataRecord;
@@ -78,6 +80,7 @@ public class SystemExecute extends Node{
 			Process p=r.exec(command);
 			OutputStream p_in=p.getOutputStream();
 			InputStream p_out=p.getInputStream();
+			InputStream p_err=p.getErrorStream();
 			// If there is input port read records and write them to input stream of the process
 			GetData gd=new GetData(inPort, in_record, formatter);
 			if (inPort!=null) {
@@ -93,6 +96,13 @@ public class SystemExecute extends Node{
 				sd.run();
 			}
 			exitValue=p.waitFor();
+			if (exitValue!=0){
+				BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
+				String line="";
+				while ((line=err.readLine())!=null)
+					resultMsg+=line+"\n";
+				err.close();
+			}
 			if (gd.isAlive()) {
 				gd.stop_it();
 				sleep(10000);
@@ -117,13 +127,13 @@ public class SystemExecute extends Node{
 		}
 		broadcastEOF();
 		if (runIt) {
-			resultMsg = "OK";
+			if (exitValue==0) resultMsg = "OK";
 		} else {
 			resultMsg = "STOPPED";
 		}
 		if (exitValue==0)
 			resultCode = Node.RESULT_OK;
-		else
+		else 
 			resultCode=Node.RESULT_ERROR;
 	}
 
