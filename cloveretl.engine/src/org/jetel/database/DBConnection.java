@@ -36,6 +36,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+
+import org.jetel.data.Defaults;
 import org.jetel.util.PasswordEncrypt;
 
 import org.jetel.util.ComponentXMLAttributes;
@@ -190,21 +192,26 @@ public class DBConnection {
 	            String jdbcDriverLibrary = config
 	            .getProperty(JDBC_DRIVER_LIBRARY_NAME);
 	            if (jdbcDriverLibrary != null) {
-	                String[] libraryPaths=jdbcDriverLibrary.split(File.pathSeparator);
+	                String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_JDBC_LIBRARY_SEPARATOR);
 	                URL[] myURLs= new URL[libraryPaths.length];
-	                try {
+	                	// try to create URL directly, if failed probably the protocol is missing, so use File.toURL
 	                    for(int i=0;i<libraryPaths.length;i++){
-	                        myURLs[i]=new URL("file:"+libraryPaths[i]);
-	                    }
-	                } catch (MalformedURLException ex1) {
-	                    throw new RuntimeException("Malformed URL: "
-	                            + ex1.getMessage());
+	                    	try {
+	                    		// valid url
+	                    		myURLs[i]=new URL(libraryPaths[i]);
+	                    	} catch (MalformedURLException ex1) {
+	                    		try {
+	                    			// probably missing protocol prefix, try to load it as a file
+	                    			myURLs[i] = new File(libraryPaths[i]).toURI().toURL();
+	                    		} catch (MalformedURLException ex2) {
+	                    			throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+	                    		}
+	                    	}
 	                }
 	                
 	                try {
 	                    URLClassLoader classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
-	                    dbDriver = (Driver) Class.forName(dbDriverName, true,
-	                            classLoader).newInstance();
+	                    dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
 	                } catch (ClassNotFoundException ex1) {
 	                    throw new RuntimeException("Can not find class: " + ex1);
 	                } catch (Exception ex1) {
