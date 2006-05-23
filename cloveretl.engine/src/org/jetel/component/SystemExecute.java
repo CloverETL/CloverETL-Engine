@@ -23,7 +23,7 @@ import org.jetel.util.SynchronizeUtils;
 
 public class SystemExecute extends Node{
 	
-	private static final String XML_COMMAND = "Command";
+	private static final String XML_COMMAND_ATTRIBUTE = "command";
 	public final static String COMPONENT_TYPE = "SYS_EXECUTE";
 
 	private final static int INPUT_PORT = 0;
@@ -82,20 +82,25 @@ public class SystemExecute extends Node{
 			InputStream p_out=p.getInputStream();
 			InputStream p_err=p.getErrorStream();
 			// If there is input port read records and write them to input stream of the process
-			GetData gd=new GetData(inPort, in_record, formatter);
+			GetData gd=null; 
 			if (inPort!=null) {
-				formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
+                formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
+                gd=new GetData(inPort, in_record, formatter);
 				if (outPort!=null) gd.start();
 				else gd.run();
 			}
 			//If there is output port read output from process and send it to output ports
-			SendData sd=new SendData(outPort,out_record,parser);
+			SendData sd=null;
 			if (outPort!=null){
-				parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
+                parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
+                sd=new SendData(outPort,out_record,parser);
 				//send all out_records to output ports
 				sd.run();
 			}
-			exitValue=p.waitFor();
+            
+            
+		
+            exitValue=p.waitFor();
 			if (exitValue!=0){
 				BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
 				String line="";
@@ -158,7 +163,7 @@ public class SystemExecute extends Node{
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		try {
-			return new SystemExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND));
+			return new SystemExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE));
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
@@ -172,7 +177,7 @@ public class SystemExecute extends Node{
 		Formatter formatter;
 		String resultMsg=null;
 		int resultCode=Node.RESULT_OK;
-		boolean runIt;
+        volatile boolean runIt;
 	
 		
 		GetData(InputPort inPort,DataRecord in_record,Formatter formatter){
@@ -191,6 +196,7 @@ public class SystemExecute extends Node{
 			try{
 				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
 					formatter.write(in_record);
+                    SynchronizeUtils.cloverYield();
 				}
 				formatter.close();
 			}catch(IOException ex){
@@ -209,8 +215,8 @@ public class SystemExecute extends Node{
 		OutputPort outPort;
 		Parser parser;
 		String resultMsg=null;
-		int resultCode=Node.RESULT_OK;
-		boolean runIt;
+		int resultCode;
+		volatile boolean runIt;
 		
 		SendData(OutputPort outPort,DataRecord out_record,Parser parser){
 			super();
@@ -225,6 +231,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
+            resultCode=Node.RESULT_RUNNING;
 			try{
 				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
 					//broadcast the record to all connected Edges
@@ -238,7 +245,15 @@ public class SystemExecute extends Node{
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 			}
+            resultCode=Node.RESULT_OK;
 		}
+
+        /**
+         * @return Returns the resultCode.
+         */
+        public int getResultCode() {
+            return resultCode;
+        }
 	}
 	
 }
