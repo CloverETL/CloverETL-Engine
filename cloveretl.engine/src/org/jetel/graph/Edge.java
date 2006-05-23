@@ -57,7 +57,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	protected DataRecordMetadata metadata;
 	protected DataRecordMetadataJDBCStub metadataStub;
 
-    protected String debugFile;
+    protected boolean debugMode;
     protected EdgeDebuger edgeDebuger;
     
 	private int edgeType;
@@ -79,13 +79,13 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
-	public Edge(String id, DataRecordMetadata metadata, String debugFile) {
+	public Edge(String id, DataRecordMetadata metadata, boolean debugMode) {
 		if (!StringUtils.isValidObjectName(id)){
 			throw new InvalidGraphObjectNameException(id,"EDGE");
 		}
 		this.id = id;
 		this.metadata = metadata;
-        this.debugFile = debugFile;
+        this.debugMode = debugMode;
 		this.graph = null;
 		reader = writer = null;
 		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
@@ -93,11 +93,11 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
-        this(id, metadata, null);
+        this(id, metadata, false);
     }
     
-	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, String debugFile){
-		this(id,metadata, debugFile);
+	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, boolean debugMode) {
+		this(id,metadata, debugMode);
 		this.metadataStub=metadataStub;
 	}
 
@@ -229,12 +229,27 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 				edge = new DirectEdge(this);
 			}
 		}
-        if(debugFile != null) {
-            edgeDebuger = new EdgeDebuger(debugFile, false);
+        if(debugMode) {
+            edgeDebuger = new EdgeDebuger(getDebugFileName(), false);
             edgeDebuger.init();
         }
 		edge.init();
 	}
+
+    /**
+     * NOTE: same implementation must be also in engine Edge.getDebugFileName()
+     * @return absoute path to debug file
+     */
+    private String getDebugFileName() {
+        String tmpFile = TransformationGraph.getReference().getDebugDirectory();
+        
+        if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
+            tmpFile += System.getProperty("file.separator");
+        }
+        tmpFile += getID() + ".dbg";
+
+        return tmpFile;
+    }
 
 
 

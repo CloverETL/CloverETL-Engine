@@ -73,7 +73,11 @@ public final class TransformationGraph {
 	private Map dataRecordMetadata;
 
 	private String name;
+    
+    private boolean debugMode = true;
 
+    private String debugDirectory;
+    
 	private Phase currentPhase;
 
 	private static TransformationGraph graph = new TransformationGraph("");
@@ -130,7 +134,41 @@ public final class TransformationGraph {
 		return name;
 	}
 
-
+	/**
+     * Sets debug mode on the edges.
+	 * @param debug
+	 */
+	public void setDebugMode(boolean debugMode) {
+	    this.debugMode = debugMode;
+    }
+    
+    /**
+     * @param debug
+     * @return <b>true</b> if is debug on; else <b>false</b>
+     */
+    public boolean isDebugMode() {
+        return debugMode;
+    }
+    
+    /**
+     * Sets debug directory. Default is System.getProperty("java.io.tmpdir").
+     * @param debugDirectory
+     */
+    public void setDebugDirectory(String debugDirectory) {
+        this.debugDirectory = debugDirectory;
+    }
+    
+    /**
+     * @return debug directory. Default is System.getProperty("java.io.tmpdir").
+     */
+    public String getDebugDirectory() {
+        if(debugDirectory == null) {
+            return System.getProperty("java.io.tmpdir");
+        } else {
+            return debugDirectory;
+        }
+    }
+    
 	/**
 	 *  Gets the DBConnection object asssociated with the name provided
 	 *
