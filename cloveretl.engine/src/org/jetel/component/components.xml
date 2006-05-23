@@ -682,6 +682,9 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <multiplePort/>
 </outputPorts>
 <properties>
+<property category="clover" displayName="Number of error lines" modifiable="true" name="errorLinesNumber" nullable="true">
+<singleType name="string"/>
+</property>
 <property category="clover" displayName="System command" modifiable="true" name="command" nullable="true">
 <singleType name="string"/>
 </property>
