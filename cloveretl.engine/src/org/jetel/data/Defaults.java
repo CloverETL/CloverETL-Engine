@@ -94,7 +94,12 @@ public final class Defaults {
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
 
 	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
-
+	
+	/**
+	 * Separator in JDBC driver library list
+	 */
+	public static String DEFAULT_JDBC_LIBRARY_SEPARATOR = ";";
+	
 	/**
 	 *  Defaults regarding DataRecord structure/manipulation
 	 *
