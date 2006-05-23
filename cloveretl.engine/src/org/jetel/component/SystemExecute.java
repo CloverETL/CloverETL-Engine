@@ -117,6 +117,7 @@ public class SystemExecute extends Node{
 				resultCode = Node.RESULT_ERROR;
 			}
 		}catch(IOException ex){
+			ex.printStackTrace();
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 		}catch(Exception ex){
@@ -133,8 +134,10 @@ public class SystemExecute extends Node{
 		}
 		if (exitValue==0)
 			resultCode = Node.RESULT_OK;
-		else 
+		else {
 			resultCode=Node.RESULT_ERROR;
+			System.out.print(resultMsg);
+		}
 	}
 
 	public void init() throws ComponentNotReadyException {
