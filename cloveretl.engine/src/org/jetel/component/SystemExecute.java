@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
 import org.jetel.data.formatter.FixLenDataFormatter;
@@ -24,19 +26,32 @@ import org.jetel.util.SynchronizeUtils;
 public class SystemExecute extends Node{
 	
 	private static final String XML_COMMAND_ATTRIBUTE = "command";
+	private static final String XML_ERROR_LINES_ATTRIBUTE = "errorLinesNumber";
 	public final static String COMPONENT_TYPE = "SYS_EXECUTE";
 
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
+	
+	private final static int ERROR_LINES=2;
 
 	private String command;
+	private int errorLinesNumber;
 	private int exitValue;
 	private Parser parser;
 	private Formatter formatter;
 	
+	static Log logger = LogFactory.getLog(SystemExecute.class);
+	
 	public SystemExecute(String id,String command) {
 		super(id);
 		this.command=command;
+		errorLinesNumber=2;
+	}
+
+	public SystemExecute(String id,String command,int errorLinesNumber) {
+		super(id);
+		this.command=command;
+		this.errorLinesNumber=errorLinesNumber;
 	}
 
 	public void run() {
@@ -97,12 +112,15 @@ public class SystemExecute extends Node{
 				sd.start();
 			}
 			BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
-			String line="";
+			String line;
 			StringBuffer errmes=new StringBuffer();
 			int i=0;
-			while (((line=err.readLine())!=null)&&i++<2)
-				errmes.append(line+"\n");
-			if (line!=null) errmes.append(".......\n");
+			while (((line=err.readLine())!=null)&&i++<errorLinesNumber){
+				logger.debug(line);
+				if (i<=ERROR_LINES)
+					errmes.append(line+"\n");
+			}
+			if (ERROR_LINES<i) errmes.append(".......\n");
 			err.close();
 			p_err.close();
 			resultMsg=errmes.toString();
@@ -149,7 +167,6 @@ public class SystemExecute extends Node{
 			resultCode = Node.RESULT_OK;
 		else {
 			resultCode=Node.RESULT_ERROR;
-			System.out.print(resultMsg);
 		}
 	}
 
@@ -171,7 +188,7 @@ public class SystemExecute extends Node{
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
 		try {
-			return new SystemExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE));
+			return new SystemExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE),xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
