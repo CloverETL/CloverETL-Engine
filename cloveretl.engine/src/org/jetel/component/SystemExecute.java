@@ -86,8 +86,7 @@ public class SystemExecute extends Node{
 			if (inPort!=null) {
                 formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
                 gd=new GetData(inPort, in_record, formatter);
-				if (outPort!=null) gd.start();
-				else gd.run();
+				gd.start();
 			}
 			//If there is output port read output from process and send it to output ports
 			SendData sd=null;
@@ -95,32 +94,41 @@ public class SystemExecute extends Node{
                 parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
                 sd=new SendData(outPort,out_record,parser);
 				//send all out_records to output ports
-				sd.run();
+				sd.start();
 			}
-            
-            
-		
+			BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
+			String line="";
+			StringBuffer errmes=new StringBuffer();
+			int i=0;
+			while (((line=err.readLine())!=null)&&i++<2)
+				errmes.append(line+"\n");
+			if (line!=null) errmes.append(".......\n");
+			err.close();
+			p_err.close();
+			resultMsg=errmes.toString();
             exitValue=p.waitFor();
-			if (exitValue!=0){
-				BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
-				String line="";
-				while ((line=err.readLine())!=null)
-					resultMsg+=line+"\n";
-				err.close();
-			}
-			if (gd.isAlive()) {
-				gd.stop_it();
-				sleep(10000);
-				if (gd.isAlive()) gd.interrupt();
-			}
-			if (!(gd.resultCode==Node.RESULT_OK)) {
-				resultMsg = gd.resultMsg;
-				resultCode = Node.RESULT_ERROR;
-			}
-			if (!(sd.resultCode==Node.RESULT_OK)) {
-				resultMsg = sd.resultMsg;
-				resultCode = Node.RESULT_ERROR;
-			}
+            if (gd!=null || sd!=null){
+            	boolean stoped=false;
+				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) {
+					gd.stop_it();
+					stoped=true;
+				}
+				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) {
+					sd.stop_it();
+					stoped=true;
+				}
+				if (stoped) sleep(10000);
+				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
+				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
+				if (gd!=null && !(gd.resultCode==Node.RESULT_OK)) {
+					resultMsg = gd.getResultMsg();
+					resultCode = Node.RESULT_ERROR;
+				}
+				if (sd!=null && !(sd.resultCode==Node.RESULT_OK)) {
+					resultMsg = sd.getResultMsg();
+					resultCode = Node.RESULT_ERROR;
+				}
+	         }
 		}catch(IOException ex){
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
@@ -193,6 +201,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
+           resultCode=Node.RESULT_RUNNING;
 			try{
 				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
 					formatter.write(in_record);
@@ -206,6 +215,15 @@ public class SystemExecute extends Node{
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 			}
+           resultCode=Node.RESULT_OK;
+		}
+
+		public int getResultCode() {
+			return resultCode;
+		}
+
+		public String getResultMsg() {
+			return resultMsg;
 		}
 	}
 	
@@ -215,7 +233,7 @@ public class SystemExecute extends Node{
 		OutputPort outPort;
 		Parser parser;
 		String resultMsg=null;
-		int resultCode;
+		int resultCode=Node.RESULT_OK;
 		volatile boolean runIt;
 		
 		SendData(OutputPort outPort,DataRecord out_record,Parser parser){
@@ -254,6 +272,10 @@ public class SystemExecute extends Node{
         public int getResultCode() {
             return resultCode;
         }
+
+		public String getResultMsg() {
+			return resultMsg;
+		}
 	}
 	
 }
