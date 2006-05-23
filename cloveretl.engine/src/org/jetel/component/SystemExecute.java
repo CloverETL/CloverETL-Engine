@@ -14,6 +14,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
@@ -31,62 +32,6 @@ public class SystemExecute extends Node{
 	private Parser parser;
 	private Formatter formatter;
 	
-	private class GetData extends Thread {
-
-		InputPort inPort;
-		DataRecord in_record;
-		OutputStream p_in; 
-		
-		GetData(InputPort inPort,DataRecord in_record,OutputStream p_in){
-			super();
-			this.in_record=in_record;
-			this.inPort=inPort;
-			this.p_in=p_in;
-		}
-		
-		public void run() {
-			try{
-				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
-					formatter.write(in_record);
-				}
-				formatter.close();
-				p_in.close();	
-			}catch(IOException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-			}catch(InterruptedException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-			}
-		}
-	}
-
-	private class SendData extends Thread {
-
-		DataRecord out_record;
-		
-		SendData(DataRecord out_record){
-			super();
-			this.out_record=out_record;
-		}
-		
-		public void run() {
-			try{
-				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
-					//broadcast the record to all connected Edges
-					writeRecordBroadcast(out_record);
-					SynchronizeUtils.cloverYield();
-				}
-			}catch(IOException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-			}catch(Exception ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-			}
-		}
-	}
-	
 	public SystemExecute(String id,String command) {
 		super(id);
 		this.command=command;
@@ -97,7 +42,7 @@ public class SystemExecute extends Node{
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
 		//If there is input port read metadadata and initialize in_record
-		try{
+		if (inPort!=null) {
 			DataRecordMetadata meta=inPort.getMetadata();
 			in_record = new DataRecord(meta);
 			in_record.init();
@@ -106,14 +51,15 @@ public class SystemExecute extends Node{
 			}else {
 				formatter=new FixLenDataFormatter();
 			}
-		}catch(NullPointerException e){
+		}else{
 			formatter=null;
 		}
 		//Creating and initializing record to otput port
 		DataRecord out_record=null;
+		OutputPort outPort=getOutputPort(OUTPUT_PORT);
 		//If there is output port read metadadata and initialize in_record
-		try {
-			DataRecordMetadata meta=getOutputPort(OUTPUT_PORT).getMetadata();
+		if (outPort!=null) {
+			DataRecordMetadata meta=outPort.getMetadata();
 			out_record= new DataRecord(meta);
 			out_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
@@ -121,12 +67,10 @@ public class SystemExecute extends Node{
 			}else {
 				parser=new FixLenDataParser();
 			}
-		}catch(NullPointerException e){
+		}else{
 			parser=null;
 		}
 
-		final int inPorts_size=inPorts.size();
-		final int outPorts_size=outPorts.size();
 		
 		Runtime r=Runtime.getRuntime();
 		
@@ -135,17 +79,32 @@ public class SystemExecute extends Node{
 			OutputStream p_in=p.getOutputStream();
 			InputStream p_out=p.getInputStream();
 			// If there is input port read records and write them to input stream of the process
-			if (inPorts_size>0) {
+			GetData gd=new GetData(inPort, in_record, formatter);
+			if (inPort!=null) {
 				formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
-				new GetData(inPort, in_record, p_in).start();
+				if (outPort!=null) gd.start();
+				else gd.run();
 			}
 			//If there is output port read output from process and send it to output ports
-			if (outPorts_size>0){
+			SendData sd=new SendData(outPort,out_record,parser);
+			if (outPort!=null){
 				parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
 				//send all out_records to output ports
-				SendData s=new SendData(out_record);
-				s.start();
-				s.join();
+				sd.run();
+			}
+			exitValue=p.waitFor();
+			if (gd.isAlive()) {
+				gd.stop_it();
+				sleep(10000);
+				if (gd.isAlive()) gd.interrupt();
+			}
+			if (!(gd.resultCode==Node.RESULT_OK)) {
+				resultMsg = gd.resultMsg;
+				resultCode = Node.RESULT_ERROR;
+			}
+			if (!(sd.resultCode==Node.RESULT_OK)) {
+				resultMsg = sd.resultMsg;
+				resultCode = Node.RESULT_ERROR;
 			}
 		}catch(IOException ex){
 			resultMsg = ex.getMessage();
@@ -169,8 +128,10 @@ public class SystemExecute extends Node{
 	}
 
 	public void init() throws ComponentNotReadyException {
-		if (inPorts.size()>1) 
+		if (getInPorts().size()>1) 
 			throw new ComponentNotReadyException(getID() + ": too many input ports");
+		if (getOutPorts().size()>1) 
+			throw new ComponentNotReadyException(getID() + ": too many otput ports");
 	}
 
 	public String getType(){
@@ -191,6 +152,82 @@ public class SystemExecute extends Node{
 		}
 	}
 
+	private static class GetData extends Thread {
+
+		InputPort inPort;
+		DataRecord in_record;
+		Formatter formatter;
+		String resultMsg=null;
+		int resultCode=Node.RESULT_OK;
+		boolean runIt;
+	
+		
+		GetData(InputPort inPort,DataRecord in_record,Formatter formatter){
+			super();
+			this.in_record=in_record;
+			this.inPort=inPort;
+			this.formatter=formatter;
+			runIt=true;
+		}
+		
+		public void stop_it(){
+			runIt=false;	
+		}
+		
+		public void run() {
+			try{
+				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
+					formatter.write(in_record);
+				}
+				formatter.close();
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}catch(InterruptedException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}
+		}
+	}
+	
+	private static class SendData extends Thread {
+
+		DataRecord out_record;
+		OutputPort outPort;
+		Parser parser;
+		String resultMsg=null;
+		int resultCode=Node.RESULT_OK;
+		boolean runIt;
+		
+		SendData(OutputPort outPort,DataRecord out_record,Parser parser){
+			super();
+			this.out_record=out_record;
+			this.outPort=outPort;
+			this.parser=parser;
+			this.runIt=true;
+		}
+		
+		public void stop_it(){
+			runIt=false;	
+		}
+		
+		public void run() {
+			try{
+				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
+					//broadcast the record to all connected Edges
+					outPort.writeRecord(out_record);
+					SynchronizeUtils.cloverYield();
+				}
+			}catch(IOException ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}catch(Exception ex){
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+			}
+		}
+	}
+	
 }
 
 
