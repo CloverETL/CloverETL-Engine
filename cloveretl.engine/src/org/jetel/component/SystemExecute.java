@@ -115,8 +115,9 @@ public class SystemExecute extends Node{
 			String line;
 			StringBuffer errmes=new StringBuffer();
 			int i=0;
-			while (((line=err.readLine())!=null)&&i++<errorLinesNumber){
-				logger.debug(line);
+			while (((line=err.readLine())!=null)&&i++<Math.max(errorLinesNumber,ERROR_LINES)){
+				if (i<=errorLinesNumber)
+					logger.debug(line);
 				if (i<=ERROR_LINES)
 					errmes.append(line+"\n");
 			}
