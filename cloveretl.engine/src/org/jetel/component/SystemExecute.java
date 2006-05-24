@@ -139,11 +139,11 @@ public class SystemExecute extends Node{
 				if (stoped) sleep(10000);
 				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
 				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
-				if (gd!=null && !(gd.resultCode==Node.RESULT_OK)) {
+				if (gd!=null && !(gd.getResultCode()==Node.RESULT_OK)) {
 					resultMsg = gd.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
-				if (sd!=null && !(sd.resultCode==Node.RESULT_OK)) {
+				if (sd!=null && !(sd.getResultCode()==Node.RESULT_OK)) {
 					resultMsg = sd.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
