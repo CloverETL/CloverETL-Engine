@@ -41,7 +41,9 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.DBConnection;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.NotFoundException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.PropertyRefResolver;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -75,7 +77,9 @@ public final class TransformationGraph {
 	private String name;
     
     private boolean debugMode = true;
-
+    
+    private String debugModeStr;
+    
     private String debugDirectory;
     
 	private Phase currentPhase;
@@ -138,15 +142,36 @@ public final class TransformationGraph {
      * Sets debug mode on the edges.
 	 * @param debug
 	 */
+    private boolean isDebugModeResolved;
+    
 	public void setDebugMode(boolean debugMode) {
 	    this.debugMode = debugMode;
+        isDebugModeResolved = true;
     }
-    
+
+    public void setDebugMode(String debugModeStr) {
+        if(debugModeStr == null || debugModeStr.length() == 0) {
+            isDebugModeResolved = true;
+        } else {
+            this.debugModeStr = debugModeStr;
+            isDebugModeResolved = false;
+        }
+    }
+
     /**
      * @param debug
      * @return <b>true</b> if is debug on; else <b>false</b>
      */
     public boolean isDebugMode() {
+        if(!isDebugModeResolved) {
+            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
+            try {
+                debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
+            } catch (Exception ex) {
+                throw new NotFoundException("Attribute debug mode not found!");
+            }
+            isDebugModeResolved = true;
+        }
         return debugMode;
     }
     
@@ -154,14 +179,31 @@ public final class TransformationGraph {
      * Sets debug directory. Default is System.getProperty("java.io.tmpdir").
      * @param debugDirectory
      */
+    private boolean isDebugDirectoryResolved;
+
     public void setDebugDirectory(String debugDirectory) {
-        this.debugDirectory = debugDirectory;
+        if(debugDirectory == null || debugDirectory.length() == 0) {
+            this.debugDirectory = null;
+            isDebugDirectoryResolved = true;
+        } else {
+            this.debugDirectory = debugDirectory;
+            isDebugDirectoryResolved = false;
+        }
     }
     
     /**
      * @return debug directory. Default is System.getProperty("java.io.tmpdir").
      */
     public String getDebugDirectory() {
+        if(!isDebugDirectoryResolved) {
+            PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
+            try {
+                debugDirectory = prr.resolveRef(debugDirectory);
+            } catch (Exception ex) {
+                throw new NotFoundException("Attribute debug directory not found!");
+            }
+            isDebugDirectoryResolved = true;
+        }
         if(debugDirectory == null) {
             return System.getProperty("java.io.tmpdir");
         } else {
