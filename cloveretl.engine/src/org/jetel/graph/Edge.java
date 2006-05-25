@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.sql.SQLException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataJDBCStub;
@@ -44,6 +46,8 @@ import org.jetel.exception.InvalidGraphObjectNameException;
  * @revision   $Revision$
  */
 public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
+
+    private static Log logger = LogFactory.getLog(Edge.class);
 
 	protected TransformationGraph graph;
 	protected String id;
@@ -230,14 +234,16 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 			}
 		}
         if(debugMode) {
-            edgeDebuger = new EdgeDebuger(getDebugFileName(), false);
+            String debugFileName = getDebugFileName();
+            logger.debug("Edge '" + getID() + "' is running in debug mode. (" + debugFileName + ")");
+            edgeDebuger = new EdgeDebuger(debugFileName, false);
             edgeDebuger.init();
         }
 		edge.init();
 	}
 
     /**
-     * NOTE: same implementation must be also in engine Edge.getDebugFileName()
+     * NOTE: same implementation must be also in clover gui Connector.getDebugFileName()
      * @return absoute path to debug file
      */
     private String getDebugFileName() {

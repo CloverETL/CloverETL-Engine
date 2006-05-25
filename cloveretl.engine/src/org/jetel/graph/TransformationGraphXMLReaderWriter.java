@@ -249,10 +249,12 @@ public class TransformationGraphXMLReaderWriter {
 				throw new RuntimeException("Attribute at Graph node is missing - "+ex.getMessage());
 			}
 			//get debug mode
-            graph.setDebugMode(grfAttributes.getBoolean("debugMode", true));
+            grfAttributes.setResolveReferences(false);
+            graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
 
             //get debug directory
-            graph.setDebugDirectory(grfAttributes.getString("debugDirecotry", null));
+            graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
+            grfAttributes.setResolveReferences(true);
 
 			// handle all defined Properties
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
