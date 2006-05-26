@@ -21,15 +21,17 @@ public class StringAproxComparator {
 	private final static int  IDENTICAL=4;
 	private final static int TERTIARY=3; //upper case = lower case
 	private final static int SECONDARY=2;//diacrtic letters = letters witout diacrityk (locale dependent)
-			// now done only for CZ and PL
+			// now done only for CZ
 	private final static int PRIMARY=1;// mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
 	
 	private int strenth;
 	private int substCost=1;
 	private int delCost=1;
 	private int changCost=1;
-	private String[] rules;
+	private String[] rules={};
 
+	char[] schars;
+	char[] tchars;
 	int[] slast = null;
 	int[] tlast = null;
 	int[] tblast = null;
@@ -84,7 +86,11 @@ public class StringAproxComparator {
 	}
 	
 	public StringAproxComparator(String locale) {
-		rules=StringAproxComparatorLocaleRules.getRules(locale);
+		try {
+			rules=StringAproxComparatorLocaleRules.getRules(locale);
+		}catch(NoSuchFieldException e){
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	private int getRules(char c,String[] rules){
@@ -96,7 +102,7 @@ public class StringAproxComparator {
 		return i;
 	}
 	
-	public boolean charEquals(char c1,char c2){
+	public boolean charEquals(char c1,char c2,int strenth){
 		int c;
 		switch (strenth) {
 			case IDENTICAL:
@@ -109,19 +115,17 @@ public class StringAproxComparator {
 				if (c<rules.length)
 				   return (rules[c].indexOf(c2)!=-1);
 				else {
-				   c=Math.min((int)c1+32,(int)c2+32);
-				   return (c1==c2 || Math.max((int)c1,(int)c2)==c);
+				   return (charEquals(c1,c2,StringAproxComparator.TERTIARY));
 				}
 			case PRIMARY:
 				boolean p1=col.compare(String.valueOf(c1),String.valueOf(c2))==0;
-				c=getRules(c1,rules);
-				return (p1 || (c<rules.length && rules[c].indexOf(c2)!=-1));
+				return (p1 || charEquals(c1,c2,StringAproxComparator.SECONDARY));
 		}
 		return false;
 	}
 	
 	private int subst_cost(char c1,char c2){
-		return (charEquals(c1,c2) ? 0 : substCost);
+		return (charEquals(c1,c2,strenth) ? 0 : substCost);
 	}
 	
 	private int min(int i1,int i2,int i3){
@@ -158,13 +162,16 @@ public class StringAproxComparator {
 		for (int i=0;i<tlent;i++)
 			tlast[i]=i;
 
+		schars=s.toCharArray();
+		tchars=t.toCharArray();
+		
 		for (int i=1;i<slenth;i++) {
 			now[0]=slast[i];
 			tlast[0]=slast[i-1];
 			for (int j=1;j<tlent;j++){
-				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+subst_cost(s.charAt(i-1),t.charAt(j-1)));
+				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+subst_cost(schars[i-1],tchars[j-1]));
 				if (i>1 && j>1)
-					if (s.charAt(i-2)==t.charAt(j-1)&&s.charAt(i-1)==t.charAt(j-2))
+					if (schars[i-2]==tchars[j-1]&&schars[i-1]==tchars[j-2])
 						m=Math.min(m,tblast[j-2]+changCost);
 				now[j]=m;
 			}
