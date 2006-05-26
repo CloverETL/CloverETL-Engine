@@ -70,11 +70,7 @@ public class StringAproxComparatorLocaleRules {
 	/**
 	 * This method prints out avaible locale
 	 */
-	public static void getAvaibleLocales(){
-		String[] l=new String[2];
-		rules.keySet().toArray(l);
-		for (int i=0;i<l.length;i++){
-			System.out.println(l[i]);
-		}
+	public static String[] getAvaibleLocales(){
+		return (String[]) rules.keySet().toArray(new String[0]);
 	}
 }
