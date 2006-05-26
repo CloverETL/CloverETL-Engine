@@ -3,10 +3,18 @@ package org.jetel.util;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * In this class are stored rules for StringAproxComparator for difrent locale
+ * Rules for given locale are stored in array of Strings: 
+ * 	each String in the array have to be like "c1=c2=..=cn", where c1,c2,...,cn are chars which will be considered as equivalent (no white space is allowed)
+ * After definition new rules don't forget to put it in the HashMap rules
+ * @author avackova
+ *
+ */
 public class StringAproxComparatorLocaleRules {
 
 	private static Map rules=new HashMap();
-	
+
 	public static final String[] CZ_RULES={
 		"a=á=A=Á",
 		"c=č=C=Č",
@@ -33,11 +41,23 @@ public class StringAproxComparatorLocaleRules {
 		"s=ś=S=Ś",
 		"z=ż=ź=Z=Ż=Ź"
 	};
- 	
-	
-	public static String[] getRules(String locale) throws NoSuchFieldException{
+
+	/**
+	 * Static initalization for rules HashMap
+	 */
+	static {
 		rules.put("CZ.cz",CZ_RULES);
 		rules.put("PL.pl",PL_RULES);
+	}
+	
+	
+	/**
+	 * Method for getting rules for given locale
+	 * @param locale
+	 * @return
+	 * @throws NoSuchFieldException
+	 */
+	public static String[] getRules(String locale) throws NoSuchFieldException{
 		String[] r=(String[])rules.get(locale);
 		if (r!=null){
 			return r;
@@ -47,4 +67,14 @@ public class StringAproxComparatorLocaleRules {
 		
 	}
 
+	/**
+	 * This method prints out avaible locale
+	 */
+	public static void getAvaibleLocales(){
+		String[] l=new String[2];
+		rules.keySet().toArray(l);
+		for (int i=0;i<l.length;i++){
+			System.out.println(l[i]);
+		}
+	}
 }
