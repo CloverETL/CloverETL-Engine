@@ -12,14 +12,14 @@ import java.util.Locale;
 
 public class StringAproxComparator {
 
-	//strenth fields
+	//strentgh fields
 	private final static int  IDENTICAL=4;
 	private final static int TERTIARY=3; //upper case = lower case
 	private final static int SECONDARY=2;//diacrtic letters = letters witout diacrityk (locale dependent)
 			// now done only for CZ
 	private final static int PRIMARY=1;// mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
 	
-	private int strenth;
+	private int strentgh;
 	private int substCost=1;
 	private int delCost=1;
 	private int changCost=1;
@@ -36,13 +36,13 @@ public class StringAproxComparator {
 	Collator col;
 
 	/**
-	 * @param strenth = comparison level
+	 * @param strentgh = comparison level
 	 * @param changCost = cost of char change operation
 	 * @param delCost = cost of char deletion operation
 	 * @param substCost = cost of char substitution operation
 	 */
 	public StringAproxComparator(int strenth, int changCost, int delCost, int substCost) {
-		this.setStrenth(strenth);
+		this.setStrentgh(strenth);
 		this.changCost=changCost;
 		this.delCost=delCost;
 		this.substCost=substCost;
@@ -50,44 +50,44 @@ public class StringAproxComparator {
 
 	/**
 	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
-	 * @param strenth = comparison level
+	 * @param strentgh = comparison level
 	 * @param changCost = cost of char change operation
 	 * @param delCost = cost of char deletion operation
 	 * @param substCost = cost of char substitution operation
 	 */
 	public StringAproxComparator(String locale,int strenth, int changCost, int delCost, int substCost) {
 		this(locale);
-		this.setStrenth(strenth);
+		this.setStrentgh(strenth);
 		this.changCost=changCost;
 		this.delCost=delCost;
 		this.substCost=substCost;
 	}
 
 	public StringAproxComparator(int changCost, int delCost, int substCost) {
-		strenth = IDENTICAL;
+		strentgh = IDENTICAL;
 		this.changCost=changCost;
 		this.delCost=delCost;
 		this.substCost=substCost ;
 	}
 
 	/**
-	 * @param strenth = comparison level
+	 * @param strentgh = comparison level
 	 */
 	public StringAproxComparator(int strenth) {
-		this.setStrenth(strenth);
+		this.setStrentgh(strenth);
 	}
 
 	/**
 	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
-	 * @param strenth = comparison level
+	 * @param strentgh = comparison level
 	 */
 	public StringAproxComparator(String locale,int strenth) {
 		this(locale);
-		this.setStrenth(strenth);
+		this.setStrentgh(strenth);
 	}
 
 	public StringAproxComparator() {
-		strenth = IDENTICAL;
+		strentgh = IDENTICAL;
 	}
 	
 	public StringAproxComparator(String locale) {
@@ -114,30 +114,30 @@ public class StringAproxComparator {
 		return i;
 	}
 	
-	public boolean charEquals(char c1,char c2,int strenth){
-		int c;
-		switch (strenth) {
-			case IDENTICAL:
-				return c1==c2;
-			case TERTIARY:
-				c=Math.min((int)c1+32,(int)c2+32);
-				return (c1==c2 || Math.max((int)c1,(int)c2)==c);
-			case SECONDARY:
-				c=getRules(c1,rules);
-				if (c<rules.length)
-				   return (rules[c].indexOf(c2)!=-1);
-				else {
-				   return (charEquals(c1,c2,StringAproxComparator.TERTIARY));
-				}
-			case PRIMARY:
-				boolean p1=col.compare(String.valueOf(c1),String.valueOf(c2))==0;
-				return (p1 || charEquals(c1,c2,StringAproxComparator.SECONDARY));
-		}
-		return false;
-	}
+	public boolean charEquals(char c1, char c2, int strenth) {
+        int c;
+        switch (strenth) {
+        case IDENTICAL:
+            return c1 == c2;
+        case TERTIARY:
+            c = Math.min((int) c1 + 32, (int) c2 + 32);
+            return (c1 == c2 || Math.max((int) c1, (int) c2) == c);
+        case SECONDARY:
+            c = getRules(c1, rules);
+            if (c < rules.length)
+                return (rules[c].indexOf(c2) != -1);
+            else {
+                return (charEquals(c1, c2, StringAproxComparator.TERTIARY));
+            }
+        case PRIMARY:
+            return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || charEquals(
+                    c1, c2, StringAproxComparator.SECONDARY));
+        }
+        return false;
+    }
 	
 	private int subst_cost(char c1,char c2){
-		return (charEquals(c1,c2,strenth) ? 0 : substCost);
+		return (charEquals(c1,c2,strentgh) ? 0 : substCost);
 	}
 	
 	private int min(int i1,int i2,int i3){
@@ -216,12 +216,12 @@ public class StringAproxComparator {
 		this.substCost = substCost;
 	}
 
-	public int getStrenth() {
-		return strenth;
+	public int getStrentgh() {
+		return strentgh;
 	}
 
-	public void setStrenth(int strenth) {
-		this.strenth = strenth;
+	public void setStrentgh(int strenth) {
+		this.strentgh = strenth;
 		if (strenth==StringAproxComparator.PRIMARY&&col==null){
 			col=Collator.getInstance(new Locale("US"));
 			col.setStrength(Collator.PRIMARY);
