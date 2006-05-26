@@ -4,11 +4,6 @@ import java.text.Collator;
 import java.util.Locale;
 
 /**
- * 
- */
-
-
-/**
  * Class for aproximative string comparison
  * 
  * @author avackova
@@ -30,6 +25,7 @@ public class StringAproxComparator {
 	private int changCost=1;
 	private String[] rules={};
 
+	//arrays for method distance
 	char[] schars;
 	char[] tchars;
 	int[] slast = null;
@@ -40,10 +36,10 @@ public class StringAproxComparator {
 	Collator col;
 
 	/**
-	 * @param cost
-	 * @param cost2
-	 * @param strenth
-	 * @param cost3
+	 * @param strenth = comparison level
+	 * @param changCost = cost of char change operation
+	 * @param delCost = cost of char deletion operation
+	 * @param substCost = cost of char substitution operation
 	 */
 	public StringAproxComparator(int strenth, int changCost, int delCost, int substCost) {
 		this.setStrenth(strenth);
@@ -52,6 +48,13 @@ public class StringAproxComparator {
 		this.substCost=substCost;
 	}
 
+	/**
+	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
+	 * @param strenth = comparison level
+	 * @param changCost = cost of char change operation
+	 * @param delCost = cost of char deletion operation
+	 * @param substCost = cost of char substitution operation
+	 */
 	public StringAproxComparator(String locale,int strenth, int changCost, int delCost, int substCost) {
 		this(locale);
 		this.setStrenth(strenth);
@@ -60,11 +63,6 @@ public class StringAproxComparator {
 		this.substCost=substCost;
 	}
 
-	/**
-	 * @param cost
-	 * @param cost2
-	 * @param cost3
-	 */
 	public StringAproxComparator(int changCost, int delCost, int substCost) {
 		strenth = IDENTICAL;
 		this.changCost=changCost;
@@ -72,10 +70,17 @@ public class StringAproxComparator {
 		this.substCost=substCost ;
 	}
 
+	/**
+	 * @param strenth = comparison level
+	 */
 	public StringAproxComparator(int strenth) {
 		this.setStrenth(strenth);
 	}
 
+	/**
+	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
+	 * @param strenth = comparison level
+	 */
 	public StringAproxComparator(String locale,int strenth) {
 		this(locale);
 		this.setStrenth(strenth);
@@ -93,6 +98,13 @@ public class StringAproxComparator {
 		}
 	}
 	
+	/**
+	 * Method for geting rules for one character - locale dependent  
+	 *  
+	 * @param c char for witch the rules are to be
+	 * @param rules set of rule for given locale
+	 * @return
+	 */
 	private int getRules(char c,String[] rules){
 		int i;
 		for (i=0;i<rules.length;i++){
