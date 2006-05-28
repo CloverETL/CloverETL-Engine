@@ -2,6 +2,19 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-8-3
+---------
+Changes/bug fixes:
+
++ loading definition of custom transformaton components in org.jetel.main.runGraph()
+  (added option to load/register additional transformation components)
++ fixed bug in fromXML() method which caused "Can't find <SQLCode> node !" error in graphs developed in GUI
++ set equalNulls parameter of dedup component to be true as default.
++ DBConnection now supports drivers consisting of multiple Java libraries
+  (added option to specify more than one library when loading JDBC driver  - in connection definitions (driverLibrary) )
++ re-tested and fixed many problems in org.jetel.data.DecimalDataField and related classes
+
+
 REL 1-8-2
 ---------
 Changes/bug fixes:
