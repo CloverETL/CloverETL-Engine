@@ -68,7 +68,7 @@ public class StringAproxComparatorLocaleRules {
 	}
 
 	/**
-	 * This method prints out avaible locale
+	 * This method gets out avaible locale
 	 */
 	public static String[] getAvaibleLocales(){
 		return (String[]) rules.keySet().toArray(new String[0]);
