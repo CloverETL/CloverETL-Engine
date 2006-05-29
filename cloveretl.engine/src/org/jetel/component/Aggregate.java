@@ -126,10 +126,13 @@ public class Aggregate extends Node {
 			while (currentRecord != null && runIt) {
 				try {
 					currentRecord = inPort.readRecord(currentRecord);
-					if (currentRecord == null || recordKey.compare(currentRecord, previousRecord) != 0) { //next group founded
-						if(!firstLoop) writeRecordBroadcast(aggregateFunction.getRecordForGroup(previousRecord, outRecord));
-						else firstLoop = false;
-					}
+                    if(!firstLoop) {
+                        if (currentRecord == null || recordKey.compare(currentRecord, previousRecord) != 0) { //next group founded
+                            writeRecordBroadcast(aggregateFunction.getRecordForGroup(previousRecord, outRecord));
+                        }
+					} else {
+					    firstLoop = false;
+                    }
 					//switch previous and current record
 					if(currentRecord != null) {
 						aggregateFunction.addSortedRecord(currentRecord);
@@ -233,13 +236,23 @@ public class Aggregate extends Node {
 	 */
 	public static Node fromXML(org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
-
+		String[] aggregateKey = new String[0];
+        boolean sorted = true;
 		try {
+            //read aggregate key attribute
+            if(xattribs.exists("aggregateKey")) {
+                aggregateKey = xattribs.getString("aggregateKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
+            }
+            //read sorted attribute
+            if(xattribs.exists("sorted")) {
+                sorted = xattribs.getString("sorted").matches("^[Tt].*");                
+            }
+            //make instance of aggregate component
 		    Aggregate agg;
 			agg = new Aggregate(xattribs.getString("id"),
-					xattribs.getString("aggregateKey").split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					aggregateKey,
 					xattribs.getString("aggregateFunctions"),
-					xattribs.getString("sorted").matches("^[Tt].*"));
+                    sorted);
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 			    agg.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 			}
