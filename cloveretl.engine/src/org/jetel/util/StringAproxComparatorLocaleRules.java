@@ -58,7 +58,7 @@ public class StringAproxComparatorLocaleRules {
 	 * @throws NoSuchFieldException
 	 */
 	public static String[] getRules(String locale) throws NoSuchFieldException{
-		String[] r=(String[])rules.get(locale.toUpperCase());
+		String[] r=(String[])rules.get(locale.substring(0,1).toUpperCase());
 		if (r!=null){
 			return r;
 		}else {
