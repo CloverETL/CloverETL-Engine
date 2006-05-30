@@ -24,6 +24,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -552,9 +553,9 @@ public class XMLExtract extends Node
 	// //////////////////////////////////////////////////////////////////////////
 	// De-Serialization
 	//
-	public static Node fromXML(org.w3c.dom.Node nodeXML)
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML)
 	{
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		XMLExtract extract;
 
 		if (xattribs.exists("id"))
@@ -580,7 +581,7 @@ public class XMLExtract extends Node
 				for (int i = 0; i < nodes.getLength(); i++)
 				{
 					org.w3c.dom.Node node = nodes.item(i);
-					processMappings(extract, null, node);
+					processMappings(graph, extract, null, node);
 				}
 
 				return extract;
@@ -593,15 +594,12 @@ public class XMLExtract extends Node
 		return null;
 	}
 
-	private static void processMappings(XMLExtract extract,
-			Mapping parentMapping, org.w3c.dom.Node nodeXML)
-	{
+	private static void processMappings(TransformationGraph graph, XMLExtract extract, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
 		if ("Mapping".equals(nodeXML.getLocalName()))
 		{
 			// for a mapping declaration, process all of the attributes
 			// element, outPort, parentKeyName, generatedKey
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(
-					nodeXML);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeXML, graph);
 			Mapping mapping = null;
 
 			if (attributes.exists("element") && attributes.exists("outPort"))
@@ -694,7 +692,7 @@ public class XMLExtract extends Node
 			for (int i = 0; i < nodes.getLength(); i++)
 			{
 				org.w3c.dom.Node node = nodes.item(i);
-				processMappings(extract, mapping, node);
+				processMappings(graph, extract, mapping, node);
 			}
 		}
 		else if (nodeXML.getNodeType() == org.w3c.dom.Node.TEXT_NODE)

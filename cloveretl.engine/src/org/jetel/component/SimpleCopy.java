@@ -19,11 +19,14 @@
 */
 package org.jetel.component;
 
-import java.io.*;
+import java.io.IOException;
 import java.nio.ByteBuffer;
-import org.jetel.graph.*;
+
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPortDirect;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -166,8 +169,8 @@ public class SimpleCopy extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
 			return new SimpleCopy(xattribs.getString(Node.XML_ID_ATTRIBUTE));

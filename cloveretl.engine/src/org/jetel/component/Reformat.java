@@ -32,15 +32,13 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>Reformat Component</h3>
@@ -338,8 +336,8 @@ public class Reformat extends Node {
 					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
 				}
 			}
-
 		}
+        transformation.setGraph(graph);
 		// init transformation
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata()};
 		// output ports metadata
@@ -373,9 +371,10 @@ public class Reformat extends Node {
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
 		} else {
-			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-			Text text = doc.createTextNode(this.dynamicTransformCode.getSourceCode());
-			xmlElement.appendChild(text);
+//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//			Text text = doc.createTextNode(this.dynamicTransformCode.getSourceCode());
+//			xmlElement.appendChild(text);
 		}
 		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
@@ -394,8 +393,8 @@ public class Reformat extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		DynamicJavaCode dynaTransCode = null;
 		Reformat reformat;
 
@@ -413,7 +412,7 @@ public class Reformat extends Node {
 				}else{
 					// do we have child node wich Java source code ?
 				    try {
-				        dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
 				    } catch(Exception ex) {
 				        //do nothing
 				    }

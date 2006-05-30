@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.util.Properties;
 import org.jetel.data.DataRecord;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -103,6 +104,13 @@ public interface RecordTransform {
 	 * any resource reserved during init() or runtime at this point. 
 	 */
 	public void finished();
+    
+    /**
+     * Method sets graph instance for this transformation implementation.
+     * This variable provides all elements of runnig graph.
+     * @param graph
+     */
+    public void setGraph(TransformationGraph graph);
 	
 }
 

@@ -40,6 +40,7 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.DOMException;
@@ -112,8 +113,6 @@ import org.xml.sax.helpers.DefaultHandler;
 public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 	// Attributes
-	private DataRecordMetadata recordMetadata;
-
 	private DocumentBuilder db;
 
 	private DocumentBuilderFactory dbf;
@@ -158,6 +157,30 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	
 	private static Log logger = LogFactory.getLog(DataRecordMetadata.class);
 
+    /**
+     * Constructor with graph to property resolving.
+     * @param graph
+     */
+    public DataRecordMetadataXMLReaderWriter() {
+        this((Properties) null);
+    }
+
+    /**
+     * Constructor with graph to property resolving.
+     * @param graph
+     */
+    public DataRecordMetadataXMLReaderWriter(TransformationGraph graph) {
+        this(graph.getGraphProperties());
+    }
+    
+    /**
+     * Constructor with properties for resolving.
+     * @param properties
+     */
+    public DataRecordMetadataXMLReaderWriter(Properties properties) {
+        refResolver = new PropertyRefResolver(properties);
+    }
+    
 	// Associations
 
 	// Operations
@@ -359,7 +382,6 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String itemName;
 		String itemValue;
 		Properties recordProperties = null;
-		PropertyRefResolver refResolver = new PropertyRefResolver();
 
 		if (topNode.getNodeName() != RECORD_ELEMENT) {
 			throw new DOMException(DOMException.NOT_FOUND_ERR,

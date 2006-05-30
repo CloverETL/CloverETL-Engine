@@ -19,30 +19,34 @@
 */
 package org.jetel.component;
 
-import java.util.*;
-import java.io.*;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.*;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
-import org.jetel.data.Defaults;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>Sorted Join Component</h3> <!-- Changes / reformats the data between
@@ -658,6 +662,7 @@ public class MergeJoin extends Node {
 				}
 			}
 		}
+        transformation.setGraph(graph);
 		// init transformation
 		Collection col = getInPorts();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];
@@ -692,9 +697,10 @@ public class MergeJoin extends Node {
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
 		} else {
-			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-			Text text = doc.createTextNode(this.dynamicTransformation.getSourceCode());
-			xmlElement.appendChild(text);
+//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//			Text text = doc.createTextNode(this.dynamicTransformation.getSourceCode());
+//			xmlElement.appendChild(text);
 		}
 		
 		
@@ -735,8 +741,8 @@ public class MergeJoin extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		MergeJoin join;
 		DynamicJavaCode dynaTransCode = null;
 
@@ -754,7 +760,7 @@ public class MergeJoin extends Node {
 				}else{
 					// do we have child node wich Java source code ?
 					try {
-					    dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+					    dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
 					} catch(Exception ex) {
 				        //do nothing
 				    }				}

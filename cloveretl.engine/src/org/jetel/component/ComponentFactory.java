@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 
 /**
  *  Description of the Class
@@ -37,7 +38,7 @@ import org.jetel.graph.Node;
 public class ComponentFactory {
 
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { org.w3c.dom.Node.class };
+	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, org.w3c.dom.Node.class };
 	private final static Map componentMap = new HashMap();
 	
 	public static void init() {
@@ -101,7 +102,7 @@ public class ComponentFactory {
 	 * @return                requested Component (Node) object or null if creation failed 
 	 * @since                 May 27, 2002
 	 */
-	public final static Node createComponent(String componentType, org.w3c.dom.Node nodeXML) {
+	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
 		
 			// try to load the component (use type as a full name)
 			Class tClass;
@@ -121,7 +122,7 @@ public class ComponentFactory {
 				throw new RuntimeException("Unknown exception: " + ex);
 			}
 			try{
-				Object[] args={nodeXML};
+				Object[] args={ graph, nodeXML };
 				//Class.forName("org.w3c.dom.Node")
 				method=tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 				//return newNode.fromXML(nodeXML);

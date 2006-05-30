@@ -169,18 +169,20 @@ public class TransformationGraphXMLReaderWriter {
 	private static final boolean putCDATAIntoText = false;
 	private static final boolean createEntityRefs = false;
 	
-	private static TransformationGraphXMLReaderWriter graphXMLReaderWriter = new TransformationGraphXMLReaderWriter();
-
 	private static Log logger = LogFactory.getLog(TransformationGraphXMLReaderWriter.class);
 	
 	private Document outputXMLDocument = null;
 	
+    private TransformationGraph graph;
+    
 	/**
 	 *Constructor for the TransformationGraphXMLReaderWriter object
 	 *
 	 * @since    May 24, 2002
 	 */
-	private TransformationGraphXMLReaderWriter() { }
+	public TransformationGraphXMLReaderWriter(TransformationGraph graph) {
+	    this.graph = graph;
+	}
 
 
 	/**
@@ -191,7 +193,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @return        Description of the Returned Value
 	 * @since         May 21, 2002
 	 */
-	public boolean read(TransformationGraph graph, InputStream in) {
+	public boolean read(InputStream in) {
 		Document document;
 		Iterator colIterator;
 		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
@@ -242,7 +244,7 @@ public class TransformationGraphXMLReaderWriter {
 			// process document
 			// get graph name
 			NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0));
+			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0), graph);
 			try{
 				graph.setName(grfAttributes.getString("name"));
 			}catch(NotFoundException ex){
@@ -258,15 +260,15 @@ public class TransformationGraphXMLReaderWriter {
 
 			// handle all defined Properties
 			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
-			instantiateProperties(PropertyElements, graph);
+			instantiateProperties(PropertyElements);
 			
 			// handle all defined DB connections
 			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
-			instantiateDBConnections(dbConnectionElements, graph);
+			instantiateDBConnections(dbConnectionElements);
 
 			// handle all defined DB connections
 			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
-			instantiateSequences(sequenceElements, graph);
+			instantiateSequences(sequenceElements);
 			
 			//create metadata
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
@@ -277,7 +279,7 @@ public class TransformationGraphXMLReaderWriter {
 
 			// handle all defined lookup tables
 			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
-			instantiateLookupTables(lookupsElements, graph);
+			instantiateLookupTables(lookupsElements);
 
 			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
 			instantiatePhases(phaseElements, phases,allNodes);
@@ -323,7 +325,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.item(i));
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.item(i), graph);
 			try{
 			// process metadata element attributes "id" & "fileURL"
 			metadataID = attributes.getString("id");
@@ -331,7 +333,7 @@ public class TransformationGraphXMLReaderWriter {
 			// process metadata from file
 			if (attributes.exists("fileURL")){
 				fileURL = attributes.getString("fileURL");
-				 recordMetadata=MetadataFactory.fromFile(fileURL);
+				 recordMetadata=MetadataFactory.fromFile(graph, fileURL);
 					if (recordMetadata==null){
 						logger.fatal("Error when reading/parsing record metadata definition file: "+fileURL);
 						throw new RuntimeException("Can't parse metadata: "+metadataID);
@@ -339,14 +341,14 @@ public class TransformationGraphXMLReaderWriter {
 			}// metadata from analyzing DB table (JDBC) - will be resolved
 			// later during Edge init - just put stub now.
 			else if (attributes.exists("sqlQuery")){
-				DBConnection dbConnection=TransformationGraph.getReference().getDBConnection(attributes.getString("dbConnection"));
+				DBConnection dbConnection=graph.getDBConnection(attributes.getString("dbConnection"));
 				if (dbConnection==null){
 					throw new RuntimeException("Can't find DBConnection "+attributes.getString("dbConnection"));
 				}
 				recordMetadata=new DataRecordMetadataJDBCStub(dbConnection,attributes.getString("sqlQuery"));
 			} // probably metadata inserted directly into graph
 			else {
-				recordMetadata=MetadataFactory.fromXML(attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
+				recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
 			}
 			}catch(NotFoundException ex){
 				throw new RuntimeException("Metadata - Attributes missing "+ex.getMessage());
@@ -360,14 +362,14 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	
-	private void instantiatePhases(NodeList phaseElements, List phases,Map allNodes) {
+	private void instantiatePhases(NodeList phaseElements, List phases, Map allNodes) {
 		org.jetel.graph.Phase phase;
 		int phaseNum;
 		NodeList nodeElements;
 		
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < phaseElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(phaseElements.item(i));
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(phaseElements.item(i), graph);
 			// process Phase element attribute "number"
 			try{
 			phaseNum = attributes.getInteger("number");
@@ -408,8 +410,7 @@ public class TransformationGraphXMLReaderWriter {
 					.getNodeName()) != 0) {
 				continue;
 			}
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(
-					nodeElements.item(i));
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeElements.item(i), graph);
 
 			// process Node element attributes "id" & "type"
 			try {
@@ -420,7 +421,7 @@ public class TransformationGraphXMLReaderWriter {
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
 				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
                         && !nodeEnabled.equalsIgnoreCase(EnabledEnum.PASS_THROUGH.toString())) {
-				    graphNode = ComponentFactory.createComponent(nodeType, nodeElements.item(i));
+				    graphNode = ComponentFactory.createComponent(graph, nodeType, nodeElements.item(i));
                 } else {
                     graphNode = new SimpleNode(nodeID);
                 }
@@ -469,7 +470,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(edgeElements.item(i));
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes(edgeElements.item(i), graph);
 
 			// process edge element attributes "id" & "fileURL"
 			try{
@@ -541,12 +542,12 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  graph                 Description of Parameter
 	 * @since                        October 1, 2002
 	 */
-	private void instantiateDBConnections(NodeList dbConnectionElements, TransformationGraph graph) {
+	private void instantiateDBConnections(NodeList dbConnectionElements) {
 		DBConnection dbConnection;
 		for (int i = 0; i < dbConnectionElements.getLength(); i++) {
-			ComponentXMLAttributes attributes=new ComponentXMLAttributes(dbConnectionElements.item(i));
+			ComponentXMLAttributes attributes=new ComponentXMLAttributes(dbConnectionElements.item(i), graph);
 			try{
-				dbConnection = DBConnection.fromXML(dbConnectionElements.item(i));
+				dbConnection = DBConnection.fromXML(graph, dbConnectionElements.item(i));
 			if (dbConnection != null) {
 				graph.addDBConnection(attributes.getString("id"), dbConnection);
 			}
@@ -563,10 +564,10 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  graph                 Description of Parameter
 	 * @since                        October 1, 2002
 	 */
-	private void instantiateSequences(NodeList sequenceElements, TransformationGraph graph) {
+	private void instantiateSequences(NodeList sequenceElements) {
 		Sequence seq;
 		for (int i = 0; i < sequenceElements.getLength(); i++) {
-			seq = SimpleSequence.fromXML(sequenceElements.item(i));
+			seq = SimpleSequence.fromXML(graph, sequenceElements.item(i));
 			if (seq != null) {
 				graph.addSequence(((Element) sequenceElements.item(i)).getAttribute("id"), seq);
 			}
@@ -580,21 +581,21 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  graph                 Description of Parameter
 	 * @since                        October 1, 2002
 	 */
-	private void instantiateLookupTables(NodeList lookupElements, TransformationGraph graph) {
+	private void instantiateLookupTables(NodeList lookupElements) {
 		LookupTable lookup;
 		for (int i = 0; i < lookupElements.getLength(); i++) {
-			lookup = LookupTableFactory.fromXML(lookupElements.item(i));
+			lookup = LookupTableFactory.fromXML(graph, lookupElements.item(i));
 			if (lookup != null) {
 				graph.addLookupTable(((Element) lookupElements.item(i)).getAttribute("id"), lookup);
 			}
 		}
 	}
 
-	private void instantiateProperties(NodeList propertyElements, TransformationGraph graph) throws IOException {
+	private void instantiateProperties(NodeList propertyElements) throws IOException {
 	    
 	    // loop through all property elements & create appropriate properties
 	    for (int i = 0; i < propertyElements.getLength(); i++) {
-	        ComponentXMLAttributes attributes = new ComponentXMLAttributes(propertyElements.item(i));
+	        ComponentXMLAttributes attributes = new ComponentXMLAttributes(propertyElements.item(i), graph);
 	        try{
 	            // process property from file
 	            if (attributes.exists("fileURL")){
@@ -619,21 +620,10 @@ public class TransformationGraphXMLReaderWriter {
 		return(this.outputXMLDocument);
 	}
 	
-	/**
-	 *  Gets the reference to GraphXMLReaderWriter static object
-	 *
-	 * @return    object reference
-	 * @since     May 28, 2002
-	 */
-	public static TransformationGraphXMLReaderWriter getReference() {
-		return graphXMLReaderWriter;
-	}
-	
-	
-	public boolean write(TransformationGraph graph, Document outputDocument) {
+	public boolean write(Document outputDocument) {
 		// store reference to allow usage of getOutputXMLDocument() function
 		this.outputXMLDocument = outputDocument;
-		return(write(graph));
+		return(write());
 	}
 	
 	/**
@@ -686,7 +676,7 @@ public class TransformationGraphXMLReaderWriter {
 	}
 	
 	
-	private boolean write(TransformationGraph graph) {
+	private boolean write() {
 		// initialize document to which all element will belong to
 		try {
 			Element rootElement = outputXMLDocument.getDocumentElement();

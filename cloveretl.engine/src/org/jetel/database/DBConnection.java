@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.PasswordEncrypt;
 
 import org.jetel.util.ComponentXMLAttributes;
@@ -404,14 +405,14 @@ public class DBConnection {
 	 * @param  nodeXML  Description of the Parameter
 	 * @return          Description of the Return Value
 	 */
-	public static DBConnection fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static DBConnection fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		NamedNodeMap attributes = nodeXML.getAttributes();
 		DBConnection con;
 		// for resolving reference in additional parameters
 		// this should be changed in the future when ComponentXMLAttributes
 		// is enhanced to support iterating through attributes
-		PropertyRefResolver refResolver=new PropertyRefResolver();
+		PropertyRefResolver refResolver=new PropertyRefResolver(graph);
 
 		try {
 			// do we have dbConfig parameter specified ??

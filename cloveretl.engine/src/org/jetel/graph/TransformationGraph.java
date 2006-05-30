@@ -84,8 +84,6 @@ public final class TransformationGraph {
     
 	private Phase currentPhase;
 
-	private static TransformationGraph graph = new TransformationGraph("");
-
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	private WatchDog watchDog;
@@ -95,14 +93,18 @@ public final class TransformationGraph {
 	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 
 
+    public TransformationGraph() {
+        this(null);
+    }
+
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
 	 * @param  _name  Name of the graph
 	 * @since         April 2, 2002
 	 */
-	private TransformationGraph(String _name) {
-		this.name = new String(_name);
+	public TransformationGraph(String _name) {
+		this.name = _name;
 		phases = new LinkedList();
 		nodes = new LinkedList();
 		edges = new LinkedList();
@@ -124,7 +126,7 @@ public final class TransformationGraph {
 	 * @since         April 10, 2002
 	 */
 	public void setName(String _name) {
-		this.name = new String(_name);
+		this.name = _name;
 	}
 
 
@@ -653,29 +655,6 @@ public final class TransformationGraph {
 	    dataRecordMetadata.clear();
 	}
 	
-
-	/**
-	 *  Gets the reference to the TransformationGraph class
-	 *
-	 * @return    The Reference value
-	 * @since     April 10, 2002
-	 */
-	public static TransformationGraph getReference() {
-		return graph;
-	}
-
-
-	/**
-	 * Resets transformation graph - all Nodes, Edges, Metadata, etc.
-     * are forgotten.<br>
-     * Effectively creates a new instance of Transformation graph.
-	 *
-    */
-
-	public static TransformationGraph reset() {
-	    graph = new TransformationGraph("");
-	    return graph;
-	}
 
 	/**
 	 * Good for debugging. Prints out all defined phases and nodes assigned to phases. Has to be

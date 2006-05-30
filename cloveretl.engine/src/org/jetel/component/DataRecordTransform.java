@@ -39,6 +39,8 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public abstract class DataRecordTransform implements RecordTransform {
 
+    protected TransformationGraph graph;
+    
 	protected String transformName;
 	/**
 	 * Use <code>errorMessage</code> to report details of problems
@@ -52,22 +54,25 @@ public abstract class DataRecordTransform implements RecordTransform {
 	protected DataRecordMetadata[] sourceMetadata;
 	protected DataRecordMetadata[] targetMetadata;
 
+    /**Constructor for the DataRecordTransform object */
+    public DataRecordTransform() {
+        this(null, "anonymous");
+    }
 
-	/**
+    /**Constructor for the DataRecordTransform object */
+    public DataRecordTransform(TransformationGraph graph) {
+        this(graph, "anonymous");
+    }
+
+    /**
 	 *Constructor for the DataRecordTransform object
 	 *
 	 * @param  transformName  Any name assigned to this transformation.
 	 */
-	public DataRecordTransform(String transformName) {
+	public DataRecordTransform(TransformationGraph graph, String transformName) {
+        this.graph = graph;
 		this.transformName = transformName;
 	}
-
-
-	/**Constructor for the DataRecordTransform object */
-	public DataRecordTransform() {
-		this.transformName = "anonymous";
-	}
-
 
 	/**
 	 *  Performs any necessary initialization before transform() method is called
@@ -166,7 +171,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return DBConnection object if found, otherwise NULL
 	 */
 	public final DBConnection getDBConnection(String id){
-	    return TransformationGraph.getReference().getDBConnection(id);
+	    return graph.getDBConnection(id);
 	}
 	
 	/**
@@ -178,7 +183,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return DataRecordMetadata object if found, otherwise NULL
 	 */
 	public final DataRecordMetadata getDataRecordMetadata(String id){
-	    return TransformationGraph.getReference().getDataRecordMetadata(id);
+	    return graph.getDataRecordMetadata(id);
 	}
 	
 	/**
@@ -190,8 +195,14 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return LookupTable object if found, otherwise NULL
 	 */
 	public final LookupTable getLookupTable(String id){
-	    return TransformationGraph.getReference().getLookupTable(id);
+	    return graph.getLookupTable(id);
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.component.RecordTransform#setGraph(org.jetel.graph.TransformationGraph)
+     */
+    public void setGraph(TransformationGraph graph) {
+        this.graph = graph;
+    }
 }
 

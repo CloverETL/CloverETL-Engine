@@ -247,7 +247,7 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
      * @return absoute path to debug file
      */
     private String getDebugFileName() {
-        String tmpFile = TransformationGraph.getReference().getDebugDirectory();
+        String tmpFile = graph.getDebugDirectory();
         
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");

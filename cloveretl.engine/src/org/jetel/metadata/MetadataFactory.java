@@ -28,6 +28,7 @@ import java.sql.Statement;
 import java.sql.SQLException;
 
 import org.jetel.database.SQLUtil;
+import org.jetel.graph.TransformationGraph;
 import org.w3c.dom.DOMException;
 
 
@@ -50,7 +51,7 @@ public class MetadataFactory {
 	 * @throws IOException
 	 * @see	org.jetel.metadata.DataRecordMetadata
 	 */
-	public static DataRecordMetadata fromFile(String fileURL) throws IOException {
+	public static DataRecordMetadata fromFile(TransformationGraph graph, String fileURL) throws IOException {
 		URL url;
 		try{
 			url = new URL(fileURL); 
@@ -63,7 +64,7 @@ public class MetadataFactory {
 			}
 		}
 		DataRecordMetadata recordMetadata;
-		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter();
+		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter(graph);
 		try{
 		recordMetadata=metadataXMLRW.read(
 				new BufferedInputStream(url.openStream()));
@@ -102,8 +103,8 @@ public class MetadataFactory {
 	 * @param node
 	 * @return
 	 */
-	public static DataRecordMetadata fromXML(org.w3c.dom.Node node)throws DOMException{
-		DataRecordMetadataXMLReaderWriter parser=new DataRecordMetadataXMLReaderWriter();
+	public static DataRecordMetadata fromXML(TransformationGraph graph, org.w3c.dom.Node node)throws DOMException{
+		DataRecordMetadataXMLReaderWriter parser=new DataRecordMetadataXMLReaderWriter(graph);
 		return parser.parseRecordMetadata(node);
 	}
 	
