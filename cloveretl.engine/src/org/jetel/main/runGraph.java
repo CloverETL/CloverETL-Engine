@@ -19,14 +19,18 @@
  */
 package org.jetel.main;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
-import org.jetel.component.ComponentDescription;
 import org.jetel.component.ComponentDescriptionReader;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
-import org.jetel.graph.*;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.util.JetelVersion;
 
 /**
@@ -122,12 +126,12 @@ public class runGraph {
 			System.exit(-1);
 		}
 
-		TransformationGraphXMLReaderWriter graphReader = TransformationGraphXMLReaderWriter.getReference();
-		TransformationGraph graph = TransformationGraph.getReference();
+		TransformationGraph graph = new TransformationGraph();
+        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
 		graph.loadGraphProperties(properties);
 
 		try {
-			if (!graphReader.read(graph, in)) {
+			if (!graphReader.read(in)) {
 				System.err.println("Error in reading graph from XML !");
 				System.exit(-1);
 			}
@@ -139,7 +143,7 @@ public class runGraph {
 
 			if (verbose) {
 				//this can be called only after graph.init()
-				TransformationGraph.getReference().dumpGraphConfiguration();
+				graph.dumpGraphConfiguration();
 			}
 		} catch (RuntimeException ex) {
 			System.err.println("!!! Fatal error during graph initialization  !!!");

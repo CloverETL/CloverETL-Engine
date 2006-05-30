@@ -31,6 +31,7 @@ import java.nio.channels.FileLock;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 
 /**
@@ -219,8 +220,8 @@ public class SimpleSequence implements Sequence {
 		return filename;
 	}
 	
-	static public SimpleSequence fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	static public SimpleSequence fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		return new SimpleSequence(
 				xattribs.getString(XML_NAME_ATTRIBUTE),

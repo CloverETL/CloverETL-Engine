@@ -64,8 +64,8 @@ public class LookupTableFactory {
     private static final String XML_DBCONNECTION = "dbConnection";
     
     
-    public static LookupTable fromXML(org.w3c.dom.Node nodeXML){
-        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+    public static LookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         LookupTable lookupTable=null;
         
         if (xattribs.exists(XML_LOOKUP_TABLE_TYPE)){
@@ -76,7 +76,7 @@ public class LookupTableFactory {
              try{
                 int initialSize=xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE,Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
                 String[] keys=xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-                DataRecordMetadata metadata=TransformationGraph.getReference().getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
+                DataRecordMetadata metadata=graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
                 Parser parser;
                 String dataTypeStr=xattribs.getString(XML_LOOKUP_DATA_TYPE);
                 
@@ -100,9 +100,9 @@ public class LookupTableFactory {
             /******* DATABASE LOOKUP TABLE ***********/
             }else if (typeStr.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)){
                 String[] keys=xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-                DataRecordMetadata metadata=TransformationGraph.getReference().getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
+                DataRecordMetadata metadata=graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
                 
-                lookupTable =new DBLookupTable(TransformationGraph.getReference().getDBConnection(xattribs.getString(XML_DBCONNECTION)),
+                lookupTable =new DBLookupTable(graph.getDBConnection(xattribs.getString(XML_DBCONNECTION)),
                         	metadata, xattribs.getString(XML_SQL_QUERY));
                 
                 

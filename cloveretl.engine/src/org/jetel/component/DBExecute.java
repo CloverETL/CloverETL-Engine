@@ -19,18 +19,18 @@
 */
 package org.jetel.component;
 
-import java.sql.*;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.database.*;
+import org.jetel.database.DBConnection;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.*;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseExecute Component</h3>
@@ -289,16 +289,17 @@ public class DBExecute extends Node {
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
 		} else {
-			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
-			// join given SQL commands
-			StringBuffer buf = new StringBuffer(dbSQL[0]);
-			for (int i=1; i<dbSQL.length; i++) {
-				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
-			}
-			Text textElement = doc.createTextNode(buf.toString());
-			childElement.appendChild(textElement);
-			xmlElement.appendChild(childElement);
+//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
+//			// join given SQL commands
+//			StringBuffer buf = new StringBuffer(dbSQL[0]);
+//			for (int i=1; i<dbSQL.length; i++) {
+//				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
+//			}
+//			Text textElement = doc.createTextNode(buf.toString());
+//			childElement.appendChild(textElement);
+//			xmlElement.appendChild(childElement);
 		}
 	}
 
@@ -309,8 +310,8 @@ public class DBExecute extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		org.w3c.dom.Node childNode;
 		ComponentXMLAttributes xattribsChild;
 		DBExecute executeSQL;
@@ -328,7 +329,7 @@ public class DBExecute extends Node {
 				if (childNode == null) {
 					throw new RuntimeException("Can't find <SQLCode> node !");
 				}
-				xattribsChild = new ComponentXMLAttributes(childNode);
+				xattribsChild = new ComponentXMLAttributes(childNode, graph);
 				query=xattribsChild.getText(childNode);
 			}   
 			executeSQL = new DBExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),

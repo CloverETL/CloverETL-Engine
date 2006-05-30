@@ -19,16 +19,18 @@
 */
 package org.jetel.component;
 
-import java.io.*;
-import org.jetel.graph.*;
-
+import java.io.IOException;
 import java.util.HashSet;
+
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
 import org.jetel.data.Defaults;
+import org.jetel.data.RecordKey;
 import org.jetel.data.SetVal;
-import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
 /**
@@ -264,8 +266,8 @@ public class CheckForeignKey extends Node {
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		CheckForeignKey check;
 
 		try {

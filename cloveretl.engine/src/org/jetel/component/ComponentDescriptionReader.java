@@ -31,7 +31,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
- * Read component description from xml file. Used by ComopnentFactory class.
+ * Read component description from xml file. Used by ComponentFactory class.
  * @author Martin Zatopek
  *
  */

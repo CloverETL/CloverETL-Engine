@@ -18,11 +18,16 @@
 *
 */
 package org.jetel.component;
-import java.util.*;
-import java.io.*;
-import org.jetel.graph.*;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Iterator;
+
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -174,8 +179,8 @@ public class Concatenate extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
 			return new Concatenate(xattribs.getString(Node.XML_ID_ATTRIBUTE));

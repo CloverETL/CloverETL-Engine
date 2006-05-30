@@ -35,13 +35,11 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>Data Intersection Component</h3> <!-- Finds intersection of
@@ -438,6 +436,7 @@ public class DataIntersection extends Node {
 
 			}
 		}
+        transformation.setGraph(graph);
 		// init transformation
 		Collection col = getInPorts();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];
@@ -488,9 +487,10 @@ public class DataIntersection extends Node {
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
 		} else {
-			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
-			xmlElement.appendChild(textElement);
+// comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
+//			xmlElement.appendChild(textElement);
 		}
 		
 		if (transformationParameters != null) {
@@ -511,8 +511,8 @@ public class DataIntersection extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		DataIntersection intersection;
 		DynamicJavaCode dynaTransCode;
 
@@ -523,7 +523,7 @@ public class DataIntersection extends Node {
 						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
 			}else{
 				// do we have child node wich Java source code ?
-				dynaTransCode = DynamicJavaCode.fromXML(nodeXML);
+				dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
 				if (dynaTransCode == null) {
 					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 				}

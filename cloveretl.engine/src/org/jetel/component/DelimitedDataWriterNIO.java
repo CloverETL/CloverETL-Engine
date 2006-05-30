@@ -19,11 +19,16 @@
 */
 
 package org.jetel.component;
-import java.io.*;
-import org.jetel.graph.*;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 
@@ -211,8 +216,8 @@ public class DelimitedDataWriterNIO extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		DelimitedDataWriterNIO aDelimitedDataWriterNIO = null;
 		
 		try{

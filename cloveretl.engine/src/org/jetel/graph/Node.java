@@ -763,7 +763,7 @@ public abstract class Node extends Thread {
 	 *@return          Description of the Returned Value
 	 *@since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		return null;
 	}
 

@@ -54,8 +54,8 @@ public class PropertyRefResolver {
 	private boolean resolve;
 	
 	/**Constructor for the PropertyRefResolver object */
-	public PropertyRefResolver() {
-		properties = TransformationGraph.getReference().getGraphProperties();
+	public PropertyRefResolver(TransformationGraph graph) {
+		properties = graph.getGraphProperties();
 		if (properties != null) {
 			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 			regexMatcher = pattern.matcher("");

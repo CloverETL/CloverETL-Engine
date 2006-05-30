@@ -32,6 +32,7 @@ import java.util.zip.Checksum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.TransformationGraph;
 
 /**
  * Helper class for dynamic compiling of Java source code. Offers instantiating of compiled code.
@@ -191,8 +192,8 @@ public class DynamicJavaCode {
 		return(this.srcCode);
 	}
 	
-	public static DynamicJavaCode fromXML(org.w3c.dom.Node nodeXML){
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static DynamicJavaCode fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		String srcCode;
 		
 		try {

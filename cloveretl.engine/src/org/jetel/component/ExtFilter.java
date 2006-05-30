@@ -27,17 +27,15 @@ import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.Node;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.CLVFStart;
 import org.jetel.interpreter.FilterExpParser;
 import org.jetel.interpreter.FilterExpParserExecutor;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Text;
 
 /**
  *  <h3>Extended Filter Component</h3>
@@ -237,9 +235,10 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-		Text text = doc.createTextNode(this.filterExpression);
-		xmlElement.appendChild(text);
+//       comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+//		Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//		Text text = doc.createTextNode(this.filterExpression);
+//		xmlElement.appendChild(text);
 	}
 
 	/**
@@ -249,9 +248,9 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 * @return          Description of the Returned Value
 	 * @since           July 23, 2002
 	 */
-	public static org.jetel.graph.Node fromXML(org.w3c.dom.Node nodeXML) {
+	public static org.jetel.graph.Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ExtFilter filter;
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML);
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		
 		try{
 			filter = new ExtFilter(xattribs.getString(Node.XML_ID_ATTRIBUTE));

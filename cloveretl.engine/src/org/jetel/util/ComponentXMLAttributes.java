@@ -25,6 +25,7 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.jetel.exception.NotFoundException;
+import org.jetel.graph.TransformationGraph;
 import org.w3c.dom.NamedNodeMap;
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
@@ -77,13 +78,22 @@ public class ComponentXMLAttributes {
 
 	//private Map    childNodes;
 
-	/**
+    /**
+     *  Constructor for the ComponentXMLAttributes object
+     *
+     * @param  nodeXML  Description of the Parameter
+     */
+    public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
+        this(nodeXML, (Properties) null);
+    }
+
+    /**
 	 *  Constructor for the ComponentXMLAttributes object
 	 *
 	 * @param  nodeXML  Description of the Parameter
 	 */
-	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
-	    this(nodeXML,null);
+	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, TransformationGraph graph) {
+	    this(nodeXML, graph.getGraphProperties());
 	}
 
 
@@ -96,7 +106,7 @@ public class ComponentXMLAttributes {
 	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
 	   
 		this.nodeXML = nodeXML;
-		refResolver= ( properties!=null ? new PropertyRefResolver(properties) : new PropertyRefResolver());
+		refResolver= new PropertyRefResolver(properties);
 		instantiateInlinedNodeAttributes(nodeXML);
 		this.attributes = nodeXML.getAttributes();
 	}

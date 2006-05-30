@@ -27,6 +27,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -260,8 +261,8 @@ public class Dedup extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		Dedup dedup;
 		try {
 			dedup=new Dedup(xattribs.getString(Node.XML_ID_ATTRIBUTE),

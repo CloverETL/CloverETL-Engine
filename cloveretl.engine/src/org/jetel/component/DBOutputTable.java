@@ -19,18 +19,26 @@
 */
 package org.jetel.component;
 
-import java.io.*;
-import java.sql.*;
-import java.util.List;
+import java.io.IOException;
+import java.sql.BatchUpdateException;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Arrays;
+import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.database.*;
+import org.jetel.database.CopySQLData;
+import org.jetel.database.DBConnection;
+import org.jetel.database.SQLUtil;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.*;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -614,8 +622,8 @@ public class DBOutputTable extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML);
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		ComponentXMLAttributes xattribsChild;
 		org.w3c.dom.Node childNode;
 		DBOutputTable outputTable;
@@ -647,7 +655,7 @@ public class DBOutputTable extends Node {
                 if (childNode == null) {
                     throw new RuntimeException("Can't find <SQLCode> node !");
                 }
-                xattribsChild = new ComponentXMLAttributes(childNode);
+                xattribsChild = new ComponentXMLAttributes(childNode, graph);
                 outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
     					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
     					xattribsChild.getText(childNode),
