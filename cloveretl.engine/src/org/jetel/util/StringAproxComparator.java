@@ -3,14 +3,17 @@ package org.jetel.util;
 import java.text.Collator;
 import java.util.Locale;
 
+import org.jetel.exception.JetelException;
+
 /**
  * Class for aproximative string comparison
+ * For comparison level IDENTICAL 
  * 
  * @author avackova
  *
  */
 
-public class StringAproxComparator {
+public class StringAproxComparator{
 
 	//strentgh fields
 	public final static int  IDENTICAL=4;
@@ -20,14 +23,19 @@ public class StringAproxComparator {
 	public final static int PRIMARY=1;// mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
 	
 	private int strentgh;
-	private int substCost=1;
-	private int delCost=1;
-	private int changCost=1;
+	private boolean IDEN; //if comparator on level IDENTICAL works
+	private boolean TER; //if comparator on level TERTIARY works
+	private boolean SEC; //if comparator on level SECONDARY works
+
+	private int MAX_DIFFRENCE=3; 
+	private int DEL_MULTIPLIER=2;
+	private int CHANGE_MULTIPLIER=1;
+	
 	private String[] rules={};
-	private int maxDiffrence=5;
-	private int identicalDiffrenceWeight=1;
-	private int tertiaryDiffrenceWeight=1;
-	private int secondaryDiffrenceWeight=1;
+	private int substCost=1;// cost of char substituting on weakest level - depends on strenth and values of IDEN,TER,SEC fields
+	private int changeCost;// = substitution cost on strongest level * CHANGE_MULTIPLIER- depends on strenth and values of IDEN,TER,SEC fields
+	private int delCost; // = substitution cost on strongest level*DEL_MULTIPLIER
+	private int maxDiffrence;// = substitution cost on strongest level * MAX_DIFFRENCE
 
 	//arrays for method distance
 	char[] schars;
@@ -40,61 +48,65 @@ public class StringAproxComparator {
 	Collator col;
 
 	/**
-	 * @param strentgh = comparison level
-	 * @param changCost = cost of char change operation
-	 * @param delCost = cost of char deletion operation
-	 * @param substCost = cost of char substitution operation
+	 * Checks if for given parameters there are possible settings: 
+	 *  it can not be stronger field be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false
+	 * 
+	 * @param strentgh - strentgh of comparator
+	 * @param i - indicates if IDEN level works
+	 * @param t - indicates if TER level works
+	 * @param s - indicates if SEC level works
+	 * @return
 	 */
-	public StringAproxComparator(int strenth, int changCost, int delCost, int substCost) {
-		this.setStrentgh(strenth);
-		this.changCost=changCost;
-		this.delCost=delCost;
-		this.substCost=substCost;
+	private boolean checkStrentgh(int strentgh,boolean i,boolean t,boolean s){
+		if (strentgh>IDENTICAL) return false;
+		if (strentgh<PRIMARY) return false;
+		switch (strentgh) {
+			case IDENTICAL:if (!i || t || s) return false; 
+					break;
+			case TERTIARY: if (!t || s) return false;
+					break;
+			case SECONDARY:if (!s ) return false;
+						   if (!t) if (i) return false;
+					break;
+			case PRIMARY:  if (!s) if (t || i) return false;
+			               if (!t) if (i) return false;
+					break;
+		}
+		return true;
+	}
+	
+	/**
+	 * @param strentgh = comparison level
+	 * @param i - indicates if IDEN level works
+	 * @param t - indicates if TER level works
+	 * @param s - indicates if SEC level works
+	 */
+	public StringAproxComparator(int strenth,boolean i,boolean t,boolean s) throws JetelException{
+		if (checkStrentgh(strenth, i, t, s))
+			this.setStrentgh(strenth, i, t, s);
+		else throw new JetelException("not acceptable arguments");
 	}
 
 	/**
 	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
 	 * @param strentgh = comparison level
-	 * @param changCost = cost of char change operation
-	 * @param delCost = cost of char deletion operation
-	 * @param substCost = cost of char substitution operation
+	 * @param i - indicates if IDEN level works
+	 * @param t - indicates if TER level works
+	 * @param s - indicates if SEC level works
 	 */
-	public StringAproxComparator(String locale,int strenth, int changCost, int delCost, int substCost) {
+	public StringAproxComparator(String locale,int strenth,boolean i,boolean t,boolean s) throws JetelException{
 		this(locale);
-		this.setStrentgh(strenth);
-		this.changCost=changCost;
-		this.delCost=delCost;
-		this.substCost=substCost;
-	}
-
-	public StringAproxComparator(int changCost, int delCost, int substCost) {
-		this.setStrentgh(IDENTICAL);
-		this.changCost=changCost;
-		this.delCost=delCost;
-		this.substCost=substCost ;
-	}
-
-	/**
-	 * @param strentgh = comparison level
-	 */
-	public StringAproxComparator(int strenth) {
-		this.setStrentgh(strenth);
-	}
-
-	/**
-	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
-	 * @param strentgh = comparison level
-	 */
-	public StringAproxComparator(String locale,int strenth) {
-		this(locale);
-		this.setStrentgh(strenth);
+		if (checkStrentgh(strenth, i, t, s))
+			this.setStrentgh(strenth, i, t, s);
+		else throw new JetelException("not acceptable arguments");
 	}
 
 	public StringAproxComparator() {
-		strentgh = IDENTICAL;
+		this.setStrentgh(IDENTICAL,true,false,false);
 	}
 	
 	public StringAproxComparator(String locale) {
+		this();
 		try {
 			rules=StringAproxComparatorLocaleRules.getRules(locale);
 		}catch(NoSuchFieldException e){
@@ -145,11 +157,11 @@ public class StringAproxComparator {
 		else {
 			int weight=0;
 			switch (strentgh){
-				case TERTIARY: weight=identicalDiffrenceWeight;
+				case TERTIARY: weight=(IDEN ? 1 : 0);
 						  break;
-				case SECONDARY:weight=tertiaryDiffrenceWeight;
+				case SECONDARY:weight=(TER ? 1 : 0);
 						  break;
-				case PRIMARY:  weight=secondaryDiffrenceWeight;
+				case PRIMARY:  weight=(SEC ? 1 : 0);
 						  break;
 			}
 			return subst_cost(c1,c2,strentgh+1)*weight+(charEquals(c1,c2,strentgh) ? 0 : substCost);
@@ -172,7 +184,7 @@ public class StringAproxComparator {
 	 */
 	public int distance(String s,String t){
 		if (s.length()==0 || t.length()==0)
-			return Math.min(s.length(),t.length());
+			return Math.min(s.length(),t.length())*delCost;
 
 		int slenth=s.length()+1;
 		int tlent=t.length()+1;
@@ -193,9 +205,9 @@ public class StringAproxComparator {
 		}
 		 
 		for (int i=0;i<slenth;i++)
-			slast[i]=i;
+			slast[i]=i*delCost;
 		for (int i=0;i<tlent;i++)
-			tlast[i]=i;
+			tlast[i]=i*delCost;
 
 		schars=s.toCharArray();
 		tchars=t.toCharArray();
@@ -210,7 +222,7 @@ public class StringAproxComparator {
 				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+subst_cost(schars[i-1],tchars[j-1],strentgh));
 				if (i>1 && j>1)
 					if (schars[i-2]==tchars[j-1]&&schars[i-1]==tchars[j-2])
-						m=Math.min(m,tblast[j-2]+changCost);
+						m=Math.min(m,tblast[j-2]+changeCost);
 				now[j]=m;
 				if (m<cost) cost=m;
 			}
@@ -225,31 +237,23 @@ public class StringAproxComparator {
 		
 	}
 
-	/**
-	 * This method sets cost of change operation
-	 * @param changCost cost of char change
-	 */
-	public void setChangeCost(int changCost) {
-		this.changCost = changCost;
-	}
-
-	/**
-	 * @param delCost
-	 */
-	public void setDelCost(int delCost) {
-		this.delCost = delCost;
-	}
-
-	public void setSubstitutionCost(int substCost) {
-		this.substCost = substCost;
-	}
-
 	public int getStrentgh() {
 		return strentgh;
 	}
 
-	public void setStrentgh(int strenth) {
+	public void setStrentgh(int strenth,boolean i,boolean t,boolean s) {
+		IDEN=i;
+		TER=t;
+		SEC=s;
 		this.strentgh = strenth;
+		int cost=0;
+		if (IDEN) cost++;
+		if (TER) cost++;
+		if (SEC) cost++;
+		if (strentgh==1) cost++;
+		changeCost=CHANGE_MULTIPLIER*cost;
+		delCost=DEL_MULTIPLIER*cost;
+		maxDiffrence=MAX_DIFFRENCE*Math.max(delCost,changeCost);
 		if (strenth==StringAproxComparator.PRIMARY&&col==null){
 			col=Collator.getInstance(new Locale("US"));
 			col.setStrength(Collator.PRIMARY);
@@ -262,6 +266,30 @@ public class StringAproxComparator {
 
 	public void setMaxDiffrence(int maxCost) {
 		this.maxDiffrence = maxCost;
+	}
+
+	public int getCHANGE_MULTIPLIER() {
+		return CHANGE_MULTIPLIER;
+	}
+
+	public void setCHANGE_MULTIPLIER(int change_multiplier) {
+		CHANGE_MULTIPLIER = change_multiplier;
+	}
+
+	public int getDEL_MULTIPLIER() {
+		return DEL_MULTIPLIER;
+	}
+
+	public void setDEL_MULTIPLIER(int del_multiplier) {
+		DEL_MULTIPLIER = del_multiplier;
+	}
+
+	public int getMAX_DIFFRENCE() {
+		return MAX_DIFFRENCE;
+	}
+
+	public void setMAX_DIFFRENCE(int max_diffrence) {
+		MAX_DIFFRENCE = max_diffrence;
 	}
 
 }
