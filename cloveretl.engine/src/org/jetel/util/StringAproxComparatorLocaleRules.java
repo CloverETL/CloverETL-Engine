@@ -46,8 +46,8 @@ public class StringAproxComparatorLocaleRules {
 	 * Static initalization for rules HashMap
 	 */
 	static {
-		rules.put("CZ.cz",CZ_RULES);
-		rules.put("PL.pl",PL_RULES);
+		rules.put("CZ",CZ_RULES);
+		rules.put("PL",PL_RULES);
 	}
 	
 	
@@ -58,7 +58,7 @@ public class StringAproxComparatorLocaleRules {
 	 * @throws NoSuchFieldException
 	 */
 	public static String[] getRules(String locale) throws NoSuchFieldException{
-		String[] r=(String[])rules.get(locale);
+		String[] r=(String[])rules.get(locale.toUpperCase());
 		if (r!=null){
 			return r;
 		}else {
