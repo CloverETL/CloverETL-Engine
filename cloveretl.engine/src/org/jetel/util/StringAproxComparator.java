@@ -7,7 +7,6 @@ import org.jetel.exception.JetelException;
 
 /**
  * Class for aproximative string comparison
- * For comparison level IDENTICAL 
  * 
  * @author avackova
  *
@@ -49,7 +48,7 @@ public class StringAproxComparator{
 
 	/**
 	 * Checks if for given parameters there are possible settings: 
-	 *  it can not be stronger field be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false
+	 *  stronger field  can not be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false
 	 * 
 	 * @param strentgh - strentgh of comparator
 	 * @param i - indicates if IDEN level works
