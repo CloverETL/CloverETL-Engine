@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
  * [1] - (optional) rejected records </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td>It can filter on text, date, integer, numeric
- * fields with comparison <code>[&gt;, &lt;, ==, =&lt;, &gt;=, !=]</code><br>
+ * fields with comparison <code>[&gt;, &lt;, ==, &lt;=, &gt;=, !=]</code><br>
  * Text fields/expressions can also be compared to a
  * Java regexp. using <tt>~=</tt> (tilda,equal sign) characters<br>
  * A filter can be made of different parts separated by a logical
