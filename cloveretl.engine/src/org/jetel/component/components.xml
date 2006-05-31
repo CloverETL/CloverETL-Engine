@@ -690,4 +690,25 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </property>
 </properties>
 </ETLComponent>
+<ETLComponent category="transformers" className="org.jetel.component.ReferenceMatchingSort" iconPath="icons/comp32.gif" name="Reference key sort" smallIconPath="icons/comp16.gif" type="REF_MATCH_SORT">
+<shortDescription/>
+<description>Sorts data for given reference key</description>
+<inputPorts>
+<singlePort name="0"/>
+</inputPorts>
+<outputPorts>
+<multiplePort/>
+</outputPorts>
+<properties>
+<property category="clover" displayName="Sort order" modifiable="true" name="sortOrder" nullable="true">
+<enumType>
+<item displayValue="Ascending" value="Ascending"/>
+<item displayValue="Descending" value="Descending"/>
+</enumType>
+</property>
+<property category="clover" displayName="Sort key" modifiable="true" name="sortKey" nullable="true">
+<singleType name="string"/>
+</property>
+</properties>
+</ETLComponent>
 </ETLComponentList>
