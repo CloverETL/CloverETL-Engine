@@ -8,34 +8,32 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.SortDataRecordInternal;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 
 /**
+ * This component creates reference matching key which is 
+ * costructed as combination of signs from given data fields
  * @author avackova
  *
  */
-public class ReferenceMatchingSort extends Node {
+public class KeyGenerator extends Node {
 
-	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
-	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
+	private static final String XML_KEY_ATTRIBUTE = "key";
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "REF_MATCH_SORT";
+	public final static String COMPONENT_TYPE = "KEY_GEN";
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private SortDataRecordInternal sorter;
-	private boolean sortOrderAscending;
-	private Key[] sortKeys;
-	private ByteBuffer recordBuffer;
+	private Key[] keys;
+//	private ByteBuffer recordBuffer;
 	private int[][] fieldMap;
 	private int outKey;
 	private InputPort inPort;
@@ -43,19 +41,12 @@ public class ReferenceMatchingSort extends Node {
 	private OutputPort outPort;
 	private DataRecordMetadata outMetadata;
 	
-	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
-
 	/**
 	 * @param id
 	 */
-	public ReferenceMatchingSort(String id, Key[] sortKeys, boolean sortOrder) {
+	public KeyGenerator(String id, Key[] keys) {
 		super(id);
-		this.sortOrderAscending = sortOrder;
-		this.sortKeys = sortKeys;
-	}
-
-	public ReferenceMatchingSort(String id, Key[] sortKeys) {
-		this(id,sortKeys,DEFAULT_ASCENDING_SORT_ORDER);
+		this.keys = keys;
 	}
 
 	/**
@@ -98,8 +89,8 @@ public class ReferenceMatchingSort extends Node {
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
 		int j=0;
-		for (int i=0;i<sortKeys.length;i++){
-			j+=sortKeys[i].getEnd()-sortKeys[i].getStart();
+		for (int i=0;i<keys.length;i++){
+			j+=keys[i].getEnd()-keys[i].getStart();
 		}
 		StringBuffer resultString=new StringBuffer(j);
 		while (inRecord!=null && runIt) {
@@ -107,17 +98,17 @@ public class ReferenceMatchingSort extends Node {
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 				if (inRecord!=null) {
 					resultString.setLength(0);
-					for (int i=0;i<sortKeys.length;i++){
+					for (int i=0;i<keys.length;i++){
 						String pom;
 						try{
-							pom=inRecord.getField(sortKeys[i].getName()).getValue().toString();
+							pom=inRecord.getField(keys[i].getName()).getValue().toString();
 						}catch(NullPointerException ex){
 							pom="";
 						}
 						try {
-							resultString.append(pom.substring(sortKeys[i].getStart(),sortKeys[i].getEnd()));
+							resultString.append(pom.substring(keys[i].getStart(),keys[i].getEnd()));
 						}catch (StringIndexOutOfBoundsException ex){
-							for (int k=0;k<sortKeys[i].getLength();k++){
+							for (int k=0;k<keys[i].getLength();k++){
 								if (pom.length()>k)
 									resultString.append(pom.charAt(k));
 								else
@@ -126,11 +117,8 @@ public class ReferenceMatchingSort extends Node {
 						}
 					}
 					fillOutRecord(inRecord,outRecord,fieldMap,outKey,resultString.toString());
-					if(!sorter.put(outRecord)){
-					    System.err.println("Sorter "+getID()+" has no more capacity to sort additional records." +
-					    		"The output will be incomplete !");
-					    break; // no more capacity
-					}
+					outPort.writeRecord(outRecord);
+					SynchronizeUtils.cloverYield();
 				}
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -145,32 +133,6 @@ public class ReferenceMatchingSort extends Node {
 				return;
 			}
 		}
-		// --- sort the records now
-		try {
-				sorter.sort();
-		} catch (Exception ex) {
-			resultMsg = "Error when sorting: " + ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
-		}
-		// --- read sorted records
-		while (sorter.get(recordBuffer) && runIt) {
-		    try {
-		        writeRecordBroadcastDirect(recordBuffer);
-		        recordBuffer.clear();
-		    } catch (IOException ex) {
-		        resultMsg = ex.getMessage();
-		        resultCode = Node.RESULT_ERROR;
-		        closeAllOutputPorts();
-		        return;
-		    } catch (Exception ex) {
-		        resultMsg = ex.getMessage();
-		        resultCode = Node.RESULT_FATAL_ERROR;
-		        //closeAllOutputPorts();
-		        return;
-		    }
-		}
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
@@ -180,43 +142,31 @@ public class ReferenceMatchingSort extends Node {
 		resultCode = Node.RESULT_OK;
 	}
 
-	/**
-	 *  Sets the sortOrderAscending attribute of the Sort object
-	 *
-	 * @param  ascending  The new sortOrderAscending value
-	 */
-	public void setSortOrderAscending(boolean ascending) {
-		sortOrderAscending = ascending;
-	}
-
 	public void init() throws ComponentNotReadyException {
-		// test that we have at least one input port and one output
+		// test that we have at least one input port and exactly one output
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
+		} else if (outPorts.size() != 1) {
+			throw new ComponentNotReadyException("One output port has to be defined!");
 		}
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer == null) {
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-					Defaults.Record.MAX_RECORD_SIZE);
-		}
-		// create sorter
+//		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+//		if (recordBuffer == null) {
+//			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
+//					Defaults.Record.MAX_RECORD_SIZE);
+//		}
 		inPort = getInputPort(READ_FROM_PORT);
 		inMetadata=inPort.getMetadata();
 		outPort = getOutputPort(WRITE_TO_PORT);
 		outMetadata=outPort.getMetadata();
 		fieldMap=new int[inMetadata.getNumFields()][2];
 		outKey=mapFields(inMetadata,outMetadata,fieldMap);
-		String[] sortKeys={outMetadata.getField(outKey).getName()};
-		sorter = new SortDataRecordInternal(outMetadata, sortKeys, sortOrderAscending);
 	}
 
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		ReferenceMatchingSort result;
+		KeyGenerator result;		
 		try {
-			String[] keys=xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			String[] keys=xattribs.getString(XML_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 			Key[] sortKeys=new Key[keys.length];
 			for (int i=0;i<keys.length;i++){
 				String[] pom=keys[i].split(" ");
@@ -225,14 +175,11 @@ public class ReferenceMatchingSort extends Node {
 						break;
 					case 3:sortKeys[i]=new Key(pom[0],Integer.parseInt(pom[1]),Integer.parseInt(pom[2]));
 						break;
-					default:	System.err.println(COMPONENT_TYPE + ":wrong format of XML_SORTKEY_ATTRIBUTE" );
+					default:	System.err.println(COMPONENT_TYPE + ":wrong format of XML_KEY_ATTRIBUTE" );
 						return null;
 				}
 			}
-			result = new ReferenceMatchingSort(xattribs.getString(Node.XML_ID_ATTRIBUTE),sortKeys);
-			if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
-				result.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE).matches("^[Aa].*"));
-			}
+			result = new KeyGenerator(Node.XML_ID_ATTRIBUTE,sortKeys);
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
