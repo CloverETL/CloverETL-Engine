@@ -46,7 +46,8 @@ public class DirectEdge extends EdgeBase {
 	private ByteBuffer tmpDataRecord;
 	private int recordCounter;
 	private boolean isClosed=false;
-	private boolean readFull=false;
+    private boolean readFull=false;
+    private boolean writeFull=false;
 	
 	private int readBufferLimit;
 
@@ -236,6 +237,7 @@ public class DirectEdge extends EdgeBase {
 
 	private synchronized void flushWriteBuffer() throws InterruptedException{
 	    while(readFull){
+            writeFull=true;
 	        notify();
 	        wait();
 	    }
@@ -243,6 +245,7 @@ public class DirectEdge extends EdgeBase {
 	    switchBuffers();
 
 	    readFull=true;
+        writeFull=false;
 	    notify();
 	}
 	
@@ -288,7 +291,19 @@ public class DirectEdge extends EdgeBase {
 	}
 
 	public boolean hasData(){
-	    return readBuffer.hasRemaining();
+        if (!readBuffer.hasRemaining()){
+            if (writeFull){
+                try {
+                    fillReadBuffer();
+                } catch (InterruptedException e) {
+                    //do nothing, just return
+                    return false;
+                }
+            }else{
+                return false;
+            }
+        }
+        return true;
 	}
 }
 /*
