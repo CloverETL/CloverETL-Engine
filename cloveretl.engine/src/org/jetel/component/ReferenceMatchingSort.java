@@ -63,7 +63,7 @@ public class ReferenceMatchingSort extends Node {
 	 * @param out		metadata on output port
 	 * @param fieldMap	int[in.getNumFields][2] - array in which are stored field's numbers from in and field's numbers on out
 	 * @return number of field in out which does not exist in in
-	 * @throws JetelException
+	 * @throws ComponentNotReadyException
 	 */
 	private int mapFields(DataRecordMetadata in,DataRecordMetadata out,int[][] fieldMap) throws ComponentNotReadyException{
 		if (!(out.getNumFields()==in.getNumFields()+1))
@@ -102,15 +102,28 @@ public class ReferenceMatchingSort extends Node {
 			j+=sortKeys[i].getEnd()-sortKeys[i].getStart();
 		}
 		StringBuffer resultString=new StringBuffer(j);
-		int licz=0;
 		while (inRecord!=null && runIt) {
 			try {
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 				if (inRecord!=null) {
 					resultString.setLength(0);
 					for (int i=0;i<sortKeys.length;i++){
-						String pom=inRecord.getField(sortKeys[i].getName()).getValue().toString();
-						resultString.append(pom.substring(sortKeys[i].getStart(),sortKeys[i].getEnd()));
+						String pom;
+						try{
+							pom=inRecord.getField(sortKeys[i].getName()).getValue().toString();
+						}catch(NullPointerException ex){
+							pom="";
+						}
+						try {
+							resultString.append(pom.substring(sortKeys[i].getStart(),sortKeys[i].getEnd()));
+						}catch (StringIndexOutOfBoundsException ex){
+							for (int k=0;k<sortKeys[i].getLength();k++){
+								if (pom.length()>k)
+									resultString.append(pom.charAt(k));
+								else
+									resultString.append(' ');
+							}
+						}
 					}
 					fillOutRecord(inRecord,outRecord,fieldMap,outKey,resultString.toString());
 					if(!sorter.put(outRecord)){
@@ -263,6 +276,10 @@ public class ReferenceMatchingSort extends Node {
 
 		public int getStart() {
 			return start;
+		}
+		
+		public int getLength(){
+			return end-start;
 		}
 	}
 	
