@@ -4,7 +4,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -33,7 +32,6 @@ public class KeyGenerator extends Node {
 	private final static int READ_FROM_PORT = 0;
 
 	private Key[] keys;
-//	private ByteBuffer recordBuffer;
 	private int[][] fieldMap;
 	private int outKey;
 	private InputPort inPort;
