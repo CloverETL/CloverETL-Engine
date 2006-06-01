@@ -24,6 +24,7 @@ package org.jetel.graph;
 import java.io.IOException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 
@@ -46,8 +47,8 @@ public class DirectEdge extends EdgeBase {
 	private ByteBuffer tmpDataRecord;
 	private int recordCounter;
 	private boolean isClosed=false;
-    private boolean readFull=false;
-    private boolean writeFull=false;
+    private boolean readerWait=false;
+    private boolean writerWait=false;
 	
 	private int readBufferLimit;
 
@@ -178,11 +179,16 @@ public class DirectEdge extends EdgeBase {
 	
 	private synchronized boolean fillReadBuffer() throws InterruptedException{
 	    if(isClosed) return false;
-	    readFull=false;
-	    while (!readFull){
-	        notify();
-	        wait();
-	    }
+        if(writerWait) {
+            switchBuffers();
+            writerWait = false;
+            notify();
+        } else {
+            readerWait = true;
+            while(readerWait) {
+                wait();
+            }
+        }
 	    return true;
 	}
 	
@@ -236,17 +242,16 @@ public class DirectEdge extends EdgeBase {
 	}
 
 	private synchronized void flushWriteBuffer() throws InterruptedException{
-	    while(readFull){
-            writeFull=true;
-	        notify();
-	        wait();
-	    }
-	    // just switch buffers
-	    switchBuffers();
-
-	    readFull=true;
-        writeFull=false;
-	    notify();
+	    if(readerWait) {
+	        switchBuffers();
+            readerWait = false;
+            notify();
+        } else {
+            writerWait = true;
+            while(writerWait) {
+    	        wait();
+    	    }
+        }
 	}
 	
 	private final void switchBuffers(){
@@ -292,7 +297,7 @@ public class DirectEdge extends EdgeBase {
 
 	public boolean hasData(){
         if (!readBuffer.hasRemaining()){
-            if (writeFull){
+            if (writerWait){
                 try {
                     fillReadBuffer();
                 } catch (InterruptedException e) {
