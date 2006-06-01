@@ -151,12 +151,10 @@ public class SimpleGather extends Node {
 						return;
 					}
 					SynchronizeUtils.cloverYield();
-				}else{
-				    emptyLoopCounter++;
 				}
 				readFromPort=(++readFromPort)%(inputPorts.length);
 				// have we reached the maximum empty loops count ?
-				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD){
+				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD) {
 				    try{
 				        sleep(EMPTY_LOOPS_WAIT);
 				    }catch(InterruptedException ex){
@@ -169,6 +167,8 @@ public class SimpleGather extends Node {
 				        resultCode=Node.RESULT_FATAL_ERROR;
 				        return;
 				    }
+                } else {
+                    emptyLoopCounter++;
 				}
 		}
 			}catch(Exception ex){
