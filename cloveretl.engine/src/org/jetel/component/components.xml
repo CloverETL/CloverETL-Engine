@@ -692,7 +692,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </ETLComponent>
 <ETLComponent category="transformers" className="org.jetel.component.KeyGenerator" iconPath="icons/comp32.gif" name="Reference key generator" smallIconPath="icons/comp16.gif" type="KEY_GEN">
 <shortDescription/>
-<description>Sorts data for given reference key</description>
+<description>Creates referenced key from given fields</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -702,6 +702,39 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <properties>
 <property category="clover" displayName="Key" modifiable="true" name="key" nullable="true">
 <singleType name="string"/>
+</property>
+</properties>
+</ETLComponent>
+<ETLComponent category="transformers" className="org.jetel.component.AproxMergeJoin" iconPath="icons/comp32.gif" name="aproximative join" smallIconPath="icons/comp16.gif" type="APROX_MERGE_JOIN">
+<shortDescription/>
+<description>Joins data from two input ports which are similar on given fields</description>
+<inputPorts>
+<multiplePort/>
+</inputPorts>
+<outputPorts>
+<singlePort name="0"/>
+</outputPorts>
+<properties>
+<property category="clover" displayName="Join key" modifiable="true" name="joinKey" nullable="true">
+<keyType inputPortName="0"/>
+</property>
+<property category="clover" displayName="Reference key" modifiable="true" name="referenceKey" nullable="true">
+<keyType inputPortName="0"/>
+</property>
+<property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
+<singleType name="class"/>
+</property>
+<property category="clover" displayName="Library path" modifiable="true" name="libraryPath" nullable="true">
+<singleType name="file"/>
+</property>
+<property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
+</property>
+<property category="clover" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+<keyType inputPortName="1"/>
+</property>
+<property category="clover" displayName="Slave override reference key" modifiable="true" name="slaveRefOverride" nullable="true">
+<keyType inputPortName="1"/>
 </property>
 </properties>
 </ETLComponent>
