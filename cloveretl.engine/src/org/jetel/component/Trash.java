@@ -114,6 +114,9 @@ public class Trash extends Node {
 		debugPrint = print;
 	}
 
+    public boolean isDebugPrint() {
+        return debugPrint;
+    }
 
 	/**
 	 *  Sets the debugFile attribute of the Trash object
@@ -159,6 +162,10 @@ public class Trash extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
+        //close debug file
+        if(outStream != null && debugFilename != null) { //debug is route to file
+            outStream.close();
+        }
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
@@ -185,14 +192,16 @@ public class Trash extends Node {
 			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
 					Defaults.Record.MAX_RECORD_SIZE);
 		}
-		if (debugFilename != null) {
-			try {
-				outStream = new PrintWriter(new BufferedOutputStream(new FileOutputStream(debugFilename)));
-			} catch (FileNotFoundException ex) {
-				throw new ComponentNotReadyException(ex.getMessage());
-			}
-		} else if (debugPrint) {
-			outStream = new PrintWriter(System.out);
+		if (debugPrint) {
+            if(debugFilename != null) {
+          		try {
+    				outStream = new PrintWriter(new BufferedOutputStream(new FileOutputStream(debugFilename)));
+    			} catch (FileNotFoundException ex) {
+    				throw new ComponentNotReadyException(ex.getMessage());
+    			}
+            } else {
+                outStream = new PrintWriter(System.out);
+            }
 		}
 	}
 
