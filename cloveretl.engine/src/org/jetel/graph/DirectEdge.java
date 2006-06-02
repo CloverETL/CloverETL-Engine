@@ -48,7 +48,7 @@ public class DirectEdge extends EdgeBase {
 	private int recordCounter;
 	private boolean isClosed=false;
     private boolean readerWait=false;
-    private boolean writerWait=false;
+    private volatile boolean writerWait=false;
 	
 	private int readBufferLimit;
 
