@@ -13,6 +13,8 @@ Changes/bug fixes:
 + DBConnection now supports drivers consisting of multiple Java libraries
   (added option to specify more than one library when loading JDBC driver  - in connection definitions (driverLibrary) )
 + re-tested and fixed many problems in org.jetel.data.DecimalDataField and related classes
++ fixed hasData() method in DirectEdge implementation which sometimes caused component hang-on
++ fixed missing close() call on output stream in Trash component when output was directed to file
 
 
 REL 1-8-2
