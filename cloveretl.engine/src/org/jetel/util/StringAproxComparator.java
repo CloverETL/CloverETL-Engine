@@ -1,6 +1,8 @@
 package org.jetel.util;
 
 import java.text.Collator;
+import java.text.ParseException;
+import java.text.RuleBasedCollator;
 import java.util.Locale;
 
 import org.jetel.exception.JetelException;
@@ -31,7 +33,6 @@ public class StringAproxComparator{
 	private int delMultiplier=1;
 	private int changeMultiplier=1;
 	
-	private String[] rules={};
 	private int substCost=1;// cost of char substituting on weakest level - depends on strenth and values of IDEN,TER,SEC fields
 	private int changeCost;// = substitution cost on strongest level * changeMultiplier- depends on strenth and values of IDEN,TER,SEC fields
 	private int delCost; // = substitution cost on strongest level*delMultiplier
@@ -45,7 +46,7 @@ public class StringAproxComparator{
 	int[] tblast = null;
 	int[] now = null;
 
-	Collator col;
+	Collator col = Collator.getInstance();
 
 	/**
 	 * Checks if for given parameters there are possible settings: 
@@ -111,42 +112,23 @@ public class StringAproxComparator{
 	
 	public void setLocale(String locale) {
 		try {
-			rules=StringAproxComparatorLocaleRules.getRules(locale);
-		}catch(NoSuchFieldException e){
-			System.out.println(e.getMessage());
-		}
-	}
-	
-	/**
-	 * Method for geting rules for one character - locale dependent  
-	 *  
-	 * @param c char for witch the rules are to be
-	 * @param rules set of rule for given locale
-	 * @return
-	 */
-	private int getRules(char c,String[] rules){
-		int i;
-		for (i=0;i<rules.length;i++){
-			String rule=rules[i];
-			if (rule.indexOf(c)!=-1) break;
-		}
-		return i;
+			col=new RuleBasedCollator(
+					((RuleBasedCollator)Collator.getInstance()).getRules()
+					+StringAproxComparatorLocaleRules.getRules(locale));
+		}catch(ParseException ex) {}
+		 catch(NoSuchFieldException ex){
+			 col=Collator.getInstance();
+		 }
 	}
 	
 	public boolean charEquals(char c1, char c2, int strenth) {
-        int c;
         switch (strenth) {
         case IDENTICAL:
             return c1 == c2;
         case TERTIARY:
              return (Character.toLowerCase(c1)==Character.toLowerCase(c2));
         case SECONDARY:
-            c = getRules(c1, rules);
-            if (c < rules.length)
-                return (rules[c].indexOf(c2) != -1);
-            else {
-                return (Character.toLowerCase(c1)==Character.toLowerCase(c2));
-            }
+        	return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0);
         case PRIMARY:
             return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || 
             		charEquals(c1, c2, StringAproxComparator.SECONDARY));
@@ -158,7 +140,7 @@ public class StringAproxComparator{
 		int i=StringAproxComparator.IDENTICAL;
 		int cost=0;
 		int weight=0;
-		while (strentgh>=i){
+		while (strentgh<=i){
 			switch (i) {
 				case StringAproxComparator.IDENTICAL:weight = IDEN ? 1: 0;
 					break;
@@ -169,7 +151,7 @@ public class StringAproxComparator{
 				case StringAproxComparator.PRIMARY:  weight = PRIM ? 1:0;
 					break;
 			}
-			cost+=weight * substCost;
+			cost+= charEquals(c1,c2,i) ? 0 : weight * substCost;
 			i--;
 		}
 		return cost;
@@ -317,8 +299,8 @@ public class StringAproxComparator{
 		this.maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
-	public int getSubstCost() {
-		return substCost;
+	public int getMaxCostForOneLetter() {
+		return Math.max(delCost,changeCost);
 	}
 
 }
