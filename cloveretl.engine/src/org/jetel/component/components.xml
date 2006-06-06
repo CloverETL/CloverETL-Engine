@@ -730,11 +730,14 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
 <singleType name="transform"/>
 </property>
-<property category="clover" displayName="Slave override key" modifiable="true" name="slaveOverrideKey" nullable="true">
+<property category="clover" displayName="Slave overwrite key" modifiable="true" name="slaveOverwriteKey" nullable="true">
 <keyType inputPortName="1"/>
 </property>
-<property category="clover" displayName="Slave override reference key" modifiable="true" name="slaveRefOverride" nullable="true">
+<property category="clover" displayName="Slave overwrite reference key" modifiable="true" name="slaveRefOverwrite" nullable="true">
 <keyType inputPortName="1"/>
+</property>
+<property category="clover" displayName="Comparison strenght" modifiable="true" name="strenght" nullable="true">
+<singleType name="string"/>
 </property>
 </properties>
 </ETLComponent>
