@@ -88,29 +88,34 @@ public class AproxMergeJoin extends Node {
 	/**
 	 * @param id
 	 */
-	public AproxMergeJoin(String id,String[] joinKeys,int[] maxDiffrences,String referenceKey,String transformClass) {
+	public AproxMergeJoin(String id,String[] joinKeys,int[] maxDiffrences,
+			String referenceKey,String transformClass) throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
 		this.maxDiffrences=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.transformClassName = transformClass;
+		this.comparator=new StringAproxComparator();
 	}
 
-	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences, String referenceKey, DynamicJavaCode dynaTransCode) {
+	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences, 
+			String referenceKey, DynamicJavaCode dynaTransCode)  throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
 		this.maxDiffrences=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.dynamicTransformation=dynaTransCode;
+		this.comparator=new StringAproxComparator();
 	}
 
-	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences,String referenceKey, String transform, boolean distincter) {
+	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences,
+			String referenceKey, String transform, boolean distincter) throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
 		this.maxDiffrences=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.transformSource = transform;
-		// no outer join
+		this.comparator=new StringAproxComparator();
 	}
 
 	/**
@@ -381,11 +386,6 @@ public class AproxMergeJoin extends Node {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");
 		} else if (outPorts.size() != 1) {
 			throw new ComponentNotReadyException("One output port has to be defined!");
-		}
-		try {
-			comparator=new StringAproxComparator();
-		}catch(JetelException ex){
-			throw new ComponentNotReadyException(ex.getMessage());
 		}
 		if (slaveOverwriteKeys == null) {
 			slaveOverwriteKeys = joinKeys;
