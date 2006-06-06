@@ -35,15 +35,17 @@ import org.jetel.util.SynchronizeUtils;
  */
 public class AproxMergeJoin extends Node {
 
-	private static final String XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE = "slaveOverwriteKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_REFERENCE_KEY_ATTRIBUTE="referenceKey";
-	private static final String XML_SLAVE_REF_OVERWRITE_ATTRIBUTE = "slaveRefOverride";
+	private static final String XML_SLAVE_REF_OVERWRITE_ATTRIBUTE = "slaveRefOverwrite";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_LIBRARY_PATH_ATTRIBUTE = "libraryPath";
 	private static final String XML_JAVA_SOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
-	private static final String XML_COMPARISON_STRENGHT_ATTRIBUTE = "sternght";
+	private static final String XML_COMPARISON_STRENGHT_ATTRIBUTE = "strenght";
+	private static final String XML_STRONG_CONFORMITY_ATTRIBUTE = "strongConformity";
+	private static final String XML_WEAK_CONFORMITY_ATTRIBUTE = "weakConformity";
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
 
@@ -74,6 +76,9 @@ public class AproxMergeJoin extends Node {
 	private int[] maxDiffrences;
 	private int maxDiffrence; //max result can be obtained from method diffrence
 
+	private double strongConformity=0.8;
+	private double weakConformity=0.75;
+	
 	private ByteBuffer dataBuffer;
 	private FileRecordBuffer recordBuffer;
 
@@ -136,7 +141,7 @@ public class AproxMergeJoin extends Node {
 	
 	public void setComparatorStrenght(boolean[] strenght) throws JetelException{
 		this.comparator.setStrentgh(strenght[0],strenght[1],strenght[2],strenght[3]);
-		int m=Math.max(comparator.getChangeMultiplier(),comparator.getDelMultiplier())*comparator.getSubstCost();
+		int m=comparator.getMaxCostForOneLetter();
 		int max=0;
 		for (int i=0;i<maxDiffrences.length;i++){
 			max+=m*(maxDiffrences[i]+1);
@@ -542,9 +547,9 @@ public class AproxMergeJoin extends Node {
 			}
 			boolean[] strenght=new boolean[StringAproxComparator.IDENTICAL];
 			if (xattribs.exists(XML_COMPARISON_STRENGHT_ATTRIBUTE)) {
-				String[] pom=xattribs.getString(XML_COMPARISON_STRENGHT_ATTRIBUTE).split(" ");
+				String[] pom=xattribs.getString(XML_COMPARISON_STRENGHT_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 				for (int i=0;i<StringAproxComparator.IDENTICAL;i++){
-					strenght[i]=Boolean.getBoolean(pom[i]);
+					strenght[i]=pom[i].equalsIgnoreCase("true");
 				}
 			}else{
 				for (int i=0;i<StringAproxComparator.IDENTICAL;i++){
