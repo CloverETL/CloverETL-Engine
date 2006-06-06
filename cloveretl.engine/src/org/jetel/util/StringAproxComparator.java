@@ -163,10 +163,17 @@ public class StringAproxComparator{
 
 	
 	private int min(int i1,int i2,int i3){
-		int m=i1;
-		if (i2<m) m=i2;
-		if (i3<m) m=i3;
-		return m;
+		if (i1<=i2) {
+			if (i1<=i3)
+				return i1;
+			else 
+				return i3;
+		}else {
+			if (i2<=i3)
+				return i2;
+			else 
+				return i3;
+		}
 	}
 	
 	/**
@@ -202,9 +209,9 @@ public class StringAproxComparator{
 		for (int i=0;i<tlength;i++)
 			tlast[i]=i*delCost;
 
-		schars=s.toCharArray();
-		tchars=t.toCharArray();
-		
+		s.getChars(0,s.length(),schars,0);
+		t.getChars(0,t.length(),tchars,0);
+				
 		int cost=0;
 		
 		for (int i=1;i<slength;i++) {
@@ -234,30 +241,30 @@ public class StringAproxComparator{
 		return strentgh;
 	}
 
-	public void setStrentgh(boolean identical,boolean tertiary,boolean secundary,
+	public void setStrentgh(boolean identical,boolean tertiary,boolean secondary,
 			boolean primary) throws JetelException{
 		if (primary) {
-			this.setStrentgh(StringAproxComparator.PRIMARY, identical, tertiary, secundary, primary);
+			this.setStrentgh(StringAproxComparator.PRIMARY, identical, tertiary, secondary, primary);
 		}
-		else if (secundary) {
-			this.setStrentgh(StringAproxComparator.SECONDARY,identical,tertiary,secundary,primary);
+		else if (secondary) {
+			this.setStrentgh(StringAproxComparator.SECONDARY,identical,tertiary,secondary,primary);
 		}
 		else if (tertiary) {
-			this.setStrentgh(StringAproxComparator.TERTIARY,identical,tertiary,secundary,primary);
+			this.setStrentgh(StringAproxComparator.TERTIARY,identical,tertiary,secondary,primary);
 		}
 		else {
-			this.setStrentgh(StringAproxComparator.IDENTICAL,identical,tertiary,secundary,primary);
+			this.setStrentgh(StringAproxComparator.IDENTICAL,identical,tertiary,secondary,primary);
 		}
 	}
 	
 	public void setStrentgh(int strenth,boolean identical,boolean tertiary,
-			boolean secundary,boolean primary) throws JetelException{
-		if (!checkStrentgh(identical,tertiary,secundary,primary)) {
+			boolean secondary,boolean primary) throws JetelException{
+		if (!checkStrentgh(identical,tertiary,secondary,primary)) {
 			throw new JetelException("not acceptable arguments");
 		}
 		IDEN=identical;
 		TER=tertiary;
-		SEC=secundary;
+		SEC=secondary;
 		PRIM=primary;
 		this.strentgh = strenth;
 		int cost=0;
