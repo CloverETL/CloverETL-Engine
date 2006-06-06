@@ -57,10 +57,15 @@ public class StringAproxComparatorLocaleRules {
 	 * @return
 	 * @throws NoSuchFieldException
 	 */
-	public static String[] getRules(String locale) throws NoSuchFieldException{
+	public static String getRules(String locale) throws NoSuchFieldException{
 		String[] r=(String[])rules.get(locale.substring(0,1).toUpperCase());
 		if (r!=null){
-			return r;
+			StringBuffer result=new StringBuffer(6);
+			for (int i=0;i<r.length;i++){
+				result.append("& ");
+				result.append(r[i]);
+			}
+			return result.toString();
 		}else {
 			throw new NoSuchFieldException("No field for this locale or wrong locale format");
 		}
