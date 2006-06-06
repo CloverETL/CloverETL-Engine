@@ -46,7 +46,9 @@ public class StringAproxComparator{
 	int[] tblast = null;
 	int[] now = null;
 
-	Collator col = Collator.getInstance();
+	Collator en_col = Collator.getInstance(Locale.US);
+	Collator col	=Collator.getInstance();
+;
 
 	/**
 	 * Checks if for given parameters there are possible settings: 
@@ -90,6 +92,8 @@ public class StringAproxComparator{
 	public StringAproxComparator(boolean identical,boolean tertiary,
 				boolean secundary,boolean primary) throws JetelException{
 
+		col.setStrength(Collator.TERTIARY);
+		en_col.setStrength(Collator.PRIMARY);
 		setStrentgh(identical, tertiary, secundary, primary);
 	}
 
@@ -115,10 +119,10 @@ public class StringAproxComparator{
 			col=new RuleBasedCollator(
 					((RuleBasedCollator)Collator.getInstance()).getRules()
 					+StringAproxComparatorLocaleRules.getRules(locale));
-		}catch(ParseException ex) {}
-		 catch(NoSuchFieldException ex){
-			 col=Collator.getInstance();
-		 }
+		}catch(ParseException ex) {
+			ex.printStackTrace();
+		}
+		 catch(NoSuchFieldException ex) {}
 	}
 	
 	public boolean charEquals(char c1, char c2, int strenth) {
@@ -130,7 +134,7 @@ public class StringAproxComparator{
         case SECONDARY:
         	return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0);
         case PRIMARY:
-            return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || 
+            return (en_col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || 
             		charEquals(c1, c2, StringAproxComparator.SECONDARY));
         }
         return false;
@@ -264,10 +268,6 @@ public class StringAproxComparator{
 		changeCost=changeMultiplier*cost;
 		delCost=delMultiplier*cost;
 		maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
-		if (strenth==StringAproxComparator.PRIMARY&&col==null){
-			col=Collator.getInstance(new Locale("US"));
-			col.setStrength(Collator.PRIMARY);
-		}
 	}
 
 	public int getChangeMultiplier() {
