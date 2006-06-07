@@ -712,7 +712,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <multiplePort/>
 </inputPorts>
 <outputPorts>
-<singlePort name="0"/>
+<multiplePort/>
 </outputPorts>
 <properties>
 <property category="clover" displayName="Join key" modifiable="true" name="joinKey" nullable="true">
@@ -728,6 +728,15 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <singleType name="file"/>
 </property>
 <property category="clover" displayName="Transform" modifiable="true" name="transform" nullable="true">
+<singleType name="transform"/>
+</property>
+<property category="clover" displayName="Transform class for suspicious" modifiable="true" name="transformClassForSuspicious" nullable="true">
+<singleType name="class"/>
+</property>
+<property category="clover" displayName="Library path for suspicious" modifiable="true" name="libraryPathForSuspicious" nullable="true">
+<singleType name="file"/>
+</property>
+<property category="clover" displayName="Transform for suspicious" modifiable="true" name="transformForSuspicious" nullable="true">
 <singleType name="transform"/>
 </property>
 <property category="clover" displayName="Slave overwrite key" modifiable="true" name="slaveOverwriteKey" nullable="true">
