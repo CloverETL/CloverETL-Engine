@@ -48,7 +48,7 @@ public class StringAproxComparator{
 
 	Collator en_col = Collator.getInstance(Locale.US);
 	Collator col	=Collator.getInstance();
-;
+	private String locale=null;
 
 	/**
 	 * Checks if for given parameters there are possible settings: 
@@ -119,10 +119,26 @@ public class StringAproxComparator{
 			col=new RuleBasedCollator(
 					((RuleBasedCollator)Collator.getInstance()).getRules()
 					+StringAproxComparatorLocaleRules.getRules(locale));
+			this.locale=locale.substring(0,2).toUpperCase();
 		}catch(ParseException ex) {
 			ex.printStackTrace();
 		}
-		 catch(NoSuchFieldException ex) {}
+		 catch(NoSuchFieldException ex) {
+			 col=Collator.getInstance();
+			 this.locale=null;
+		 }
+		 catch(StringIndexOutOfBoundsException ex){
+			 col=Collator.getInstance();
+			 this.locale=null;
+		 }
+	}
+	
+	public void setLocale(Locale locale){
+		setLocale(locale.getCountry());
+	}
+	
+	public String getLocale(){
+		return locale;
 	}
 	
 	public boolean charEquals(char c1, char c2, int strenth) {
@@ -192,16 +208,21 @@ public class StringAproxComparator{
 		
 		 if (slast==null){
 			slast = new int[slength];
+			schars = new char[slength-1];
 			tlast = new int[tlength];
 			tblast = new int[tlength];
 			now = new int[tlength];
+			tchars = new char[tlength-1];
 		 }
-		if (slast.length<slength)
+		if (slast.length<slength){
 			slast = new int[slength];
+			schars = new char[slength-1];
+		}
 		if (tlast.length<tlength){
 			tlast = new int[tlength];
 			tblast = new int[tlength];
 			now = new int[tlength];
+			tchars = new char[tlength-1];
 		}
 		 
 		for (int i=0;i<slength;i++)
