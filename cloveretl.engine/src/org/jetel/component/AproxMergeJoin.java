@@ -44,14 +44,18 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_JAVA_SOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_COMPARISON_STRENGHT_ATTRIBUTE = "strenght";
-	private static final String XML_STRONG_CONFORMITY_ATTRIBUTE = "strongConformity";
-	private static final String XML_WEAK_CONFORMITY_ATTRIBUTE = "weakConformity";
+	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
 
-	private final static int WRITE_TO_PORT = 0;
+	private final static int CONFORMING_OUT = 0;
+	private final static int SUSPICIOUS_OUT = 1;
+	private final static int NOT_MATCH_DRIVER_OUT = 2;
+	private final static int NOT_MATCH_SLAVE_OUT = 3;
 	private final static int DRIVER_ON_PORT = 0;
 	private final static int SLAVE_ON_PORT = 1;
+	
+	private final static double CONFORMITY_LIMIT=0.75;
 
 	private final static int CURRENT = 0;
 	private final static int PREVIOUS = 1;
@@ -73,11 +77,10 @@ public class AproxMergeJoin extends Node {
 	private int[][] fieldsToCompare=new int[2][];
 	
 	private StringAproxComparator comparator;
-	private int[] maxDiffrences;
+	private int[] maxDiffrenceLetters;
 	private int maxDiffrence; //max result can be obtained from method diffrence
 
-	private double strongConformity=0.8;
-	private double weakConformity=0.75;
+	private double conformityLimit;
 	
 	private ByteBuffer dataBuffer;
 	private FileRecordBuffer recordBuffer;
@@ -97,7 +100,7 @@ public class AproxMergeJoin extends Node {
 			String referenceKey,String transformClass) throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
-		this.maxDiffrences=maxDiffrences;
+		this.maxDiffrenceLetters=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.transformClassName = transformClass;
 		this.comparator=new StringAproxComparator();
@@ -107,7 +110,7 @@ public class AproxMergeJoin extends Node {
 			String referenceKey, DynamicJavaCode dynaTransCode)  throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
-		this.maxDiffrences=maxDiffrences;
+		this.maxDiffrenceLetters=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.dynamicTransformation=dynaTransCode;
 		this.comparator=new StringAproxComparator();
@@ -117,7 +120,7 @@ public class AproxMergeJoin extends Node {
 			String referenceKey, String transform, boolean distincter) throws JetelException{
 		super(id);
 		this.joinKeys = joinKeys;
-		this.maxDiffrences=maxDiffrences;
+		this.maxDiffrenceLetters=maxDiffrences;
 		this.referenceKey[0]=referenceKey;
 		this.transformSource = transform;
 		this.comparator=new StringAproxComparator();
@@ -143,8 +146,8 @@ public class AproxMergeJoin extends Node {
 		this.comparator.setStrentgh(strenght[0],strenght[1],strenght[2],strenght[3]);
 		int m=comparator.getMaxCostForOneLetter();
 		int max=0;
-		for (int i=0;i<maxDiffrences.length;i++){
-			max+=m*(maxDiffrences[i]+1);
+		for (int i=0;i<maxDiffrenceLetters.length;i++){
+			max+=m*(maxDiffrenceLetters[i]+1);
 		}
 		maxDiffrence=max;
 	}
@@ -199,12 +202,14 @@ public class AproxMergeJoin extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey[] key)
+	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, 
+			InputPort slavePort, OutputPort outSlave, RecordKey[] key)
 			 throws IOException, InterruptedException {
 
 		while (slave != null) {
 			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave)) {
 				case 1:
+					outSlave.writeRecord(slave);
 					slave = slavePort.readRecord(slave);
 					break;
 				case 0:
@@ -240,7 +245,8 @@ public class AproxMergeJoin extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, DataRecord inter,OutputPort port)
+	private boolean flushCombinations(DataRecord driver, DataRecord slave, 
+			DataRecord out, DataRecord inter,OutputPort conforming, OutputPort suspicious)
 			 throws IOException, InterruptedException {
 		recordBuffer.rewind();
 		dataBuffer.clear();
@@ -260,9 +266,13 @@ public class AproxMergeJoin extends Node {
 			for (i=0;i<inter.getNumFields();i++){
 				out.getField(i).setValue(inter.getField(i).getValue());
 			}
-			double conformity=1-diffrence(driver,slave,fieldsToCompare,maxDiffrences);
+			double conformity=1-diffrence(driver,slave,fieldsToCompare,maxDiffrenceLetters);
 			out.getField(i).setValue(new Double(conformity));
-			port.writeRecord(out);
+			if (conformity>=conformityLimit){
+				conforming.writeRecord(out);
+			}else{
+				suspicious.writeRecord(out);
+			}
 			dataBuffer.clear();
 		}
 		return true;
@@ -291,14 +301,17 @@ public class AproxMergeJoin extends Node {
 		// get all ports involved
 		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
 		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
+		OutputPort conformingPort = getOutputPort(CONFORMING_OUT);
+		OutputPort suspiciousPort = getOutputPort(SUSPICIOUS_OUT);
+		OutputPort notMatchDriverPort = getOutputPort(NOT_MATCH_DRIVER_OUT);
+		OutputPort notMatchSlavePort = getOutputPort(NOT_MATCH_SLAVE_OUT);
 
 		//initialize input records driver & slave
 		DataRecord[] driverRecords = allocateRecords(driverPort.getMetadata(), 2);
 		DataRecord[] slaveRecords = allocateRecords(slavePort.getMetadata(), 2);
 
 		// initialize output record
-		DataRecordMetadata outMetadata = outPort.getMetadata();
+		DataRecordMetadata outMetadata = conformingPort.getMetadata();
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
 
@@ -320,10 +333,11 @@ public class AproxMergeJoin extends Node {
 			slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
 			while (runIt && driverRecords[CURRENT] != null) {
 				if (isDriverDifferent) {
-					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords[CURRENT], slavePort, recordKey)) {
+					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords[CURRENT], slavePort, notMatchSlavePort, recordKey)) {
 						case -1:
 							// driver lower
 							// no corresponding slave
+							notMatchDriverPort.writeRecord(driverRecords[CURRENT]);
 							driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
 							isDriverDifferent = true;
 							continue;
@@ -338,7 +352,7 @@ public class AproxMergeJoin extends Node {
 							break;
 					}
 				}
-				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], outRecord, interRecord, outPort);
+				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], outRecord, interRecord, conformingPort,suspiciousPort);
 				// get next driver
 				
 				driverRecords[TEMPORARY] = driverPort.readRecord(driverRecords[TEMPORARY]);
@@ -389,7 +403,7 @@ public class AproxMergeJoin extends Node {
 		// test that we have at two input ports and one output
 		if (inPorts.size() != 2) {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");
-		} else if (outPorts.size() != 1) {
+		} else if (outPorts.size() != 4) {
 			throw new ComponentNotReadyException("One output port has to be defined!");
 		}
 		if (slaveOverwriteKeys == null) {
@@ -560,6 +574,7 @@ public class AproxMergeJoin extends Node {
 				}
 			}
 			join.setComparatorStrenght(strenght);
+			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,CONFORMITY_LIMIT));
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
 			
@@ -580,6 +595,10 @@ public class AproxMergeJoin extends Node {
 	
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+
+	public void setConformityLimit(double conformityLimit) {
+		this.conformityLimit = conformityLimit;
 	}
 	
 }

@@ -739,6 +739,9 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <property category="clover" displayName="Comparison strenght" modifiable="true" name="strenght" nullable="true">
 <singleType name="string"/>
 </property>
+<property category="clover" displayName="Conformity limit" modifiable="true" name="conformity" nullable="true">
+<singleType name="string"/>
+</property>
 </properties>
 </ETLComponent>
 </ETLComponentList>
