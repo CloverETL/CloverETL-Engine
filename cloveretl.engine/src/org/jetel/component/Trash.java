@@ -164,6 +164,7 @@ public class Trash extends Node {
 		}
         //close debug file
         if(outStream != null && debugFilename != null) { //debug is route to file
+            outStream.println("EOF with result " + resultMsg);
             outStream.close();
         }
 		broadcastEOF();
