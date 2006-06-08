@@ -258,11 +258,11 @@ public class StringAproxComparator{
 		
 	}
 
-	public int getStrentgh() {
-		return strentgh;
+	public boolean[] getStrentgh() {
+		return new boolean[] {IDEN,TER,SEC,PRIM};
 	}
 
-	public void setStrentgh(boolean identical,boolean tertiary,boolean secondary,
+	private void setStrentgh(boolean identical,boolean tertiary,boolean secondary,
 			boolean primary) throws JetelException{
 		if (primary) {
 			this.setStrentgh(StringAproxComparator.PRIMARY, identical, tertiary, secondary, primary);
@@ -278,7 +278,7 @@ public class StringAproxComparator{
 		}
 	}
 	
-	public void setStrentgh(int strenth,boolean identical,boolean tertiary,
+	private void setStrentgh(int strenth,boolean identical,boolean tertiary,
 			boolean secondary,boolean primary) throws JetelException{
 		if (!checkStrentgh(identical,tertiary,secondary,primary)) {
 			throw new JetelException("not acceptable arguments");
@@ -329,6 +329,36 @@ public class StringAproxComparator{
 
 	public int getMaxCostForOneLetter() {
 		return Math.max(delCost,changeCost);
+	}
+
+	public boolean equals(Object obj) {
+		if (!(obj instanceof StringAproxComparator)) {
+			return false;
+		}
+		boolean[] objStrenght = ((StringAproxComparator)obj).getStrentgh();
+		boolean[] thisStrenght = getStrentgh();
+		boolean eq=true;
+		for (int i=0;i<objStrenght.length;i++){
+			eq = eq && (objStrenght[i]==thisStrenght[i]);
+		}
+		return eq;
+	}
+
+	public int hashCode() {
+		int hash=0;
+		if (IDEN) {
+			hash+=1;
+		}
+		if (TER){
+			hash+=2;
+		}
+		if (SEC){
+			hash+=4;
+		}
+		if (PRIM){
+			hash+=8;
+		}
+		return hash;
 	}
 
 }
