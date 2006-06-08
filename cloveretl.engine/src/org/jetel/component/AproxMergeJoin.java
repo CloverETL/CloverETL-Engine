@@ -47,7 +47,6 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_JAVA_SOURCE_FOR_SUSPICIOUS_ATTRIBUTE = "javaSourceForSuspicious";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE = "transformForSuspicious";
-	private static final String XML_COMPARISON_STRENGHT_ATTRIBUTE = "strenght";
 	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
@@ -85,8 +84,8 @@ public class AproxMergeJoin extends Node {
 	private RecordKey[] recordKey;
 	private int[][] fieldsToCompare=new int[2][];
 	
-	private StringAproxComparator comparator;
-	private int[] maxDiffrenceLetters;
+	private StringAproxComparator[] comparator;
+//	private int[] maxDiffrenceLetters;
 	private int maxDiffrence; //max result can be obtained from method diffrence
 
 	private double conformityLimit;
@@ -107,34 +106,38 @@ public class AproxMergeJoin extends Node {
 	/**
 	 * @param id
 	 */
-	public AproxMergeJoin(String id,String[] joinKeys,int[] maxDiffrences,
+	
+	public AproxMergeJoin(String id,String[] joinKeys,int[] maxDiffrences,boolean[][] strenghts,
+			String referenceKey) throws JetelException{
+		super(id);
+		this.joinKeys = joinKeys;
+		this.referenceKey[0]=referenceKey;
+		comparator=new StringAproxComparator[strenghts.length];
+		int max=0;
+		for (int i=0;i<strenghts.length;i++){
+			comparator[i]=new StringAproxComparator(strenghts[i][0],strenghts[i][1],strenghts[i][2],strenghts[i][3]);
+			comparator[i].setMaxLettersToChange(maxDiffrences[i]);
+			max+=(maxDiffrences[i]+1)*comparator[i].getMaxCostForOneLetter();
+		}
+		maxDiffrence=max;
+	}
+	
+	public AproxMergeJoin(String id,String[] joinKeys,int[] maxDiffrences,boolean[][] strenghts,
 			String referenceKey,String transformClass) throws JetelException{
-		super(id);
-		this.joinKeys = joinKeys;
-		this.maxDiffrenceLetters=maxDiffrences;
-		this.referenceKey[0]=referenceKey;
+		this(id,joinKeys,maxDiffrences,strenghts,referenceKey);
 		this.transformClassName = transformClass;
-		this.comparator=new StringAproxComparator();
 	}
 
-	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences, 
+	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences, boolean[][] strenghts,
 			String referenceKey, DynamicJavaCode dynaTransCode)  throws JetelException{
-		super(id);
-		this.joinKeys = joinKeys;
-		this.maxDiffrenceLetters=maxDiffrences;
-		this.referenceKey[0]=referenceKey;
+		this(id,joinKeys,maxDiffrences,strenghts,referenceKey);
 		this.dynamicTransformation=dynaTransCode;
-		this.comparator=new StringAproxComparator();
 	}
 
-	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences,
+	public AproxMergeJoin(String id, String[] joinKeys,int[] maxDiffrences,boolean[][] strenghts,
 			String referenceKey, String transform, boolean distincter) throws JetelException{
-		super(id);
-		this.joinKeys = joinKeys;
-		this.maxDiffrenceLetters=maxDiffrences;
-		this.referenceKey[0]=referenceKey;
+		this(id,joinKeys,maxDiffrences,strenghts,referenceKey);
 		this.transformSource = transform;
-		this.comparator=new StringAproxComparator();
 	}
 
 	/**
@@ -153,15 +156,6 @@ public class AproxMergeJoin extends Node {
 		this.slaveReferenceKey[0]=slaveRefKey;
 	}
 	
-	private void setComparatorStrenght(boolean[] strenght) throws JetelException{
-		this.comparator.setStrentgh(strenght[0],strenght[1],strenght[2],strenght[3]);
-		int m=comparator.getMaxCostForOneLetter();
-		int max=0;
-		for (int i=0;i<maxDiffrenceLetters.length;i++){
-			max+=m*(maxDiffrenceLetters[i]+1);
-		}
-		maxDiffrence=max;
-	}
 	/**
 	 *  Populates record buffer with all slave records having the same key
 	 *
@@ -233,19 +227,10 @@ public class AproxMergeJoin extends Node {
 		// no more records on slave port
 	}
 
-	private double diffrence(DataRecord r1,DataRecord r2,int[][] fieldsToCompare,int[] diff){
+	private double diffrence(DataRecord r1,DataRecord r2,int[][] fieldsToCompare){
 		int r=0;
 		for (int i=0;i<fieldsToCompare[DRIVER_ON_PORT].length;i++){
-			comparator.setMaxLettersToChange(diff[i]);
-			String locale=r1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getMetadata().getLocaleStr();
-			if (locale != null){
-				if (comparator.getLocale()==null || !locale.toUpperCase().startsWith(comparator.getLocale())){
-					comparator.setLocale(locale);
-				}
-			}else if (comparator.getLocale()!=null){
-				comparator.setLocale("");
-			}
-			r+=comparator.distance(
+			r+=comparator[i].distance(
 					r1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getValue().toString(),
 					r2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).getValue().toString());
 		}
@@ -277,7 +262,7 @@ public class AproxMergeJoin extends Node {
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
 			slave.deserialize(dataBuffer);
-			double conformity=1-diffrence(driver,slave,fieldsToCompare,maxDiffrenceLetters);
+			double conformity=1-diffrence(driver,slave,fieldsToCompare);
 			// **** call transform function here ****
 			if (conformity>=conformityLimit) {
 				if (!transformation.transform(inRecords, outConformingRecords)) {
@@ -420,7 +405,7 @@ public class AproxMergeJoin extends Node {
 
 	public void init() throws ComponentNotReadyException {
 		Class tClass;
-		// test that we have at two input ports and one output
+		// test that we have at two input ports and four output
 		if (inPorts.size() != 2) {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");
 		} else if (outPorts.size() != 4) {
@@ -572,6 +557,12 @@ public class AproxMergeJoin extends Node {
 		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
+		for (int i=0;i<comparator.length;i++){
+			String locale=inMetadata[DRIVER_ON_PORT].getField(fieldsToCompare[DRIVER_ON_PORT][i]).getLocaleStr();
+			if (locale!=null) {
+				comparator[i].setLocale(locale);
+			}
+		}
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
@@ -595,17 +586,22 @@ public class AproxMergeJoin extends Node {
 			String[] join_parameters=xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 			String[] joinKeys=new String[join_parameters.length];
 			int[] maxDiffrences=new int[join_parameters.length];;
+			boolean[][] strenght=new boolean[join_parameters.length][StringAproxComparator.IDENTICAL];
 			for (int i=0;i<join_parameters.length;i++){
 				String[] pom=join_parameters[i].split(" ");
 				joinKeys[i]=pom[0];
-				if (pom.length!=1)
+				if (Character.isDigit(pom[1].charAt(0))){
 					maxDiffrences[i]=Integer.parseInt(pom[1]);
-				else 
+				}else{ 
 					maxDiffrences[i]=1;
+				}
+				for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
+					strenght[i][j] = pom[2+j].equals("true") ? true : false;
+				}
 			}
 			if (xattribs.exists(XML_TRANSFORM_CLASS_ATTRIBUTE)){
 				join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						joinKeys,maxDiffrences,
+						joinKeys,maxDiffrences,strenght,
 						xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
 						xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE));
 				if (xattribs.exists(XML_LIBRARY_PATH_ATTRIBUTE)) {
@@ -623,13 +619,13 @@ public class AproxMergeJoin extends Node {
 				    }				}
 				if (dynaTransCode != null) {
 					join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-							joinKeys,maxDiffrences,
+							joinKeys,maxDiffrences,strenght,
 							xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
 							dynaTransCode);
 				} else { //last chance to find reformat code is in transform attribute
 					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
 						join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								joinKeys,maxDiffrences,
+								joinKeys,maxDiffrences,strenght,
 								xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
 								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true); 
 					} else {
@@ -671,21 +667,6 @@ public class AproxMergeJoin extends Node {
 			if (xattribs.exists(XML_SLAVE_REF_OVERWRITE_ATTRIBUTE)) {
 				join.setSlaveReferenceKey(xattribs.getString(XML_SLAVE_REF_OVERWRITE_ATTRIBUTE));
 			}
-			boolean[] strenght=new boolean[StringAproxComparator.IDENTICAL];
-			if (xattribs.exists(XML_COMPARISON_STRENGHT_ATTRIBUTE)) {
-				String[] pom=xattribs.getString(XML_COMPARISON_STRENGHT_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-				for (int i=0;i<StringAproxComparator.IDENTICAL;i++){
-					strenght[i]=pom[i].equalsIgnoreCase("true");
-				}
-			}else{
-				for (int i=0;i<StringAproxComparator.IDENTICAL;i++){
-					if (i==0)
-						strenght[i]=true;
-					else
-						strenght[i]=false;
-				}
-			}
-			join.setComparatorStrenght(strenght);
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
