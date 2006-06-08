@@ -745,9 +745,6 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <property category="clover" displayName="Slave overwrite reference key" modifiable="true" name="slaveRefOverwrite" nullable="true">
 <keyType inputPortName="1"/>
 </property>
-<property category="clover" displayName="Comparison strenght" modifiable="true" name="strenght" nullable="true">
-<singleType name="string"/>
-</property>
 <property category="clover" displayName="Conformity limit" modifiable="true" name="conformity" nullable="true">
 <singleType name="string"/>
 </property>
