@@ -3,6 +3,7 @@ package org.jetel.util;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.RuleBasedCollator;
+import java.util.HashMap;
 import java.util.Locale;
 
 import org.jetel.exception.JetelException;
@@ -33,7 +34,7 @@ public class StringAproxComparator{
 	private int delMultiplier=1;
 	private int changeMultiplier=1;
 	
-	private int substCost=1;// cost of char substituting on weakest level - depends on strenth and values of IDEN,TER,SEC fields
+	private int substCost;// cost of char substituting of one letter
 	private int changeCost;// = substitution cost on strongest level * changeMultiplier- depends on strenth and values of IDEN,TER,SEC fields
 	private int delCost; // = substitution cost on strongest level*delMultiplier
 	private int maxDiffrence;// = substitution cost on strongest level * maxLettersToChange
@@ -49,7 +50,41 @@ public class StringAproxComparator{
 	Collator en_col = Collator.getInstance(Locale.US);
 	Collator col	=Collator.getInstance();
 	private String locale=null;
+	
+	private static HashMap comparators = new HashMap();
+	
+	public static StringAproxComparator createComparator(String locale,boolean[] strenght)
+			throws JetelException{
+		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
+			throw new JetelException("Not allowed strenght combination");
+		}
+		ComparatorParameters cp;
+		if (locale!=null){
+			cp = new ComparatorParameters(strenght,locale);
+			if (!comparators.containsKey(cp)){
+				comparators.put(cp,new StringAproxComparator(locale,strenght));
+			}
+		}else{
+			cp = new ComparatorParameters(strenght,"");
+			if (!comparators.containsKey(cp)){
+				comparators.put(cp,new StringAproxComparator(strenght));
+			}
+		}
+		return (StringAproxComparator)comparators.get(cp);
+	}
 
+	public static StringAproxComparator createComparator(boolean[] strenght)
+			throws JetelException{
+		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
+			throw new JetelException("Not allowed strenght combination");
+		}
+		ComparatorParameters cp = new ComparatorParameters(strenght,"");
+		if (!comparators.containsKey(cp)){
+			comparators.put(cp,new StringAproxComparator(strenght));
+		}
+		return (StringAproxComparator)comparators.get(cp);
+	}
+	
 	/**
 	 * Checks if for given parameters there are possible settings: 
 	 *  stronger field  can not be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false:
@@ -62,22 +97,24 @@ public class StringAproxComparator{
 	 * @param strentgh - strentgh of comparator
 	 * @param identical - indicates if IDEN level works
 	 * @param tertiary - indicates if TER level works
-	 * @param secundary - indicates if SEC level works
+	 * @param secondary - indicates if SEC level works
 	 * @param primary - indicates if PRIM level works
 	 * @return
 	 */
-	private boolean checkStrentgh(boolean identical,boolean tertiary,
-				boolean secundary,boolean primary){
+	public static boolean checkStrentgh(boolean identical,boolean tertiary,
+				boolean secondary,boolean primary){
 		if (primary){
-			if (secundary){
-				if (tertiary && ! identical) return false;
+			if (secondary){
+				if (!tertiary && identical) return false;
 			}
 			else { 
 				if (!identical) return false;
 			}
 		}else {
-			if (!secundary && !tertiary && !identical) {
-				return false;
+			if (secondary) {
+				if (!tertiary && identical) return false;
+			}else{
+				if (!tertiary && !identical) return false;
 			}
 		}
 		return true;
@@ -89,14 +126,22 @@ public class StringAproxComparator{
 	 * @param tertiary - indicates if TER level works
 	 * @param secundary - indicates if SEC level works
 	 */
-	public StringAproxComparator(boolean identical,boolean tertiary,
-				boolean secundary,boolean primary) throws JetelException{
+	private StringAproxComparator(boolean identical,boolean tertiary,
+				boolean secundary,boolean primary) {
 
 		col.setStrength(Collator.TERTIARY);
 		en_col.setStrength(Collator.PRIMARY);
 		setStrentgh(identical, tertiary, secundary, primary);
 	}
 
+	private StringAproxComparator(boolean[] strenght)  {
+		this(strenght[0],strenght[1],strenght[2],strenght[3]);
+	}
+	
+	private StringAproxComparator(String locale,boolean[] strenght)  {
+		this(locale,strenght[0],strenght[1],strenght[2],strenght[3]);
+	}
+ 
 	/**
 	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
 	 * @param strentgh = comparison level
@@ -104,8 +149,8 @@ public class StringAproxComparator{
 	 * @param tertiary - indicates if TER level works
 	 * @param secundary - indicates if SEC level works
 	 */
-	public StringAproxComparator(String locale,boolean identical,boolean tertiary,
-				boolean secundary,boolean primary) throws JetelException{
+	private StringAproxComparator(String locale,boolean identical,boolean tertiary,
+				boolean secundary,boolean primary){
 		this( identical, tertiary, secundary, primary);
 		setLocale(locale);
 	}
@@ -114,7 +159,7 @@ public class StringAproxComparator{
 		this(true,false,false,false);
 	}
 	
-	public void setLocale(String locale) {
+	private void setLocale(String locale) {
 		try {
 			col=new RuleBasedCollator(
 					((RuleBasedCollator)Collator.getInstance()).getRules()
@@ -131,10 +176,6 @@ public class StringAproxComparator{
 			 col=Collator.getInstance();
 			 this.locale=null;
 		 }
-	}
-	
-	public void setLocale(Locale locale){
-		setLocale(locale.getCountry());
 	}
 	
 	public String getLocale(){
@@ -157,24 +198,23 @@ public class StringAproxComparator{
     }
 	
 	private int countSubstCost(char c1,char c2,int strentgh){
-		int i=StringAproxComparator.IDENTICAL;
-		int cost=0;
-		int weight=0;
-		while (strentgh<=i){
+		boolean check=true;
+		for (int i=strentgh;i<=StringAproxComparator.IDENTICAL;i++){
 			switch (i) {
-				case StringAproxComparator.IDENTICAL:weight = IDEN ? 1: 0;
-					break;
-				case StringAproxComparator.TERTIARY:	weight = TER ? 1:0;
-					break;
-				case StringAproxComparator.SECONDARY:weight = SEC ? 1:0;
-					break;
-				case StringAproxComparator.PRIMARY:  weight = PRIM ? 1:0;
-					break;
+			case StringAproxComparator.PRIMARY:check=PRIM;
+				break;
+			case StringAproxComparator.SECONDARY:check=SEC;
+				break;
+			case StringAproxComparator.TERTIARY:check=TER;
+				break;
+			case StringAproxComparator.IDENTICAL:check=IDEN;
+				break;
 			}
-			cost+= charEquals(c1,c2,i) ? 0 : weight * substCost;
-			i--;
+			if (check && !(charEquals(c1,c2,i))) {
+				return StringAproxComparator.IDENTICAL+1-i;
+			}
 		}
-		return cost;
+		return 0;
 	}
 
 	
@@ -200,7 +240,7 @@ public class StringAproxComparator{
 	 */
 	public int distance(String s,String t){
 		if (s.length()==0 || t.length()==0)
-			return Math.min(s.length(),t.length())*delCost;
+			return Math.max(s.length(),t.length())*delCost;
 
 		int slength=s.length()+1;
 		int tlength=t.length()+1;
@@ -263,7 +303,7 @@ public class StringAproxComparator{
 	}
 
 	private void setStrentgh(boolean identical,boolean tertiary,boolean secondary,
-			boolean primary) throws JetelException{
+			boolean primary){
 		if (primary) {
 			this.setStrentgh(StringAproxComparator.PRIMARY, identical, tertiary, secondary, primary);
 		}
@@ -279,22 +319,15 @@ public class StringAproxComparator{
 	}
 	
 	private void setStrentgh(int strenth,boolean identical,boolean tertiary,
-			boolean secondary,boolean primary) throws JetelException{
-		if (!checkStrentgh(identical,tertiary,secondary,primary)) {
-			throw new JetelException("not acceptable arguments");
-		}
+			boolean secondary,boolean primary){
 		IDEN=identical;
 		TER=tertiary;
 		SEC=secondary;
 		PRIM=primary;
 		this.strentgh = strenth;
-		int cost=0;
-		if (IDEN) cost++;
-		if (TER) cost++;
-		if (SEC) cost++;
-		if (PRIM) cost++;
-		changeCost=changeMultiplier*cost;
-		delCost=delMultiplier*cost;
+		substCost=StringAproxComparator.IDENTICAL+1-strentgh;
+		changeCost=changeMultiplier*substCost;
+		delCost=delMultiplier*substCost;
 		maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
@@ -331,34 +364,52 @@ public class StringAproxComparator{
 		return Math.max(delCost,changeCost);
 	}
 
-	public boolean equals(Object obj) {
-		if (!(obj instanceof StringAproxComparator)) {
-			return false;
+	private static class ComparatorParameters{
+		boolean[] strenght=new boolean[StringAproxComparator.IDENTICAL];
+		String locale;
+		
+		ComparatorParameters(boolean[] strenght,String locale){
+			this.strenght=strenght;
+			this.locale=locale;
 		}
-		boolean[] objStrenght = ((StringAproxComparator)obj).getStrentgh();
-		boolean[] thisStrenght = getStrentgh();
-		boolean eq=true;
-		for (int i=0;i<objStrenght.length;i++){
-			eq = eq && (objStrenght[i]==thisStrenght[i]);
+		
+		public boolean equals(Object obj) {
+			if (!(obj instanceof ComparatorParameters)) {
+				return false;
+			}
+			boolean[] objStrenght = ((ComparatorParameters)obj).getStrenght();
+			boolean[] thisStrenght = getStrenght();
+			boolean eq=true;
+			for (int i=0;i<objStrenght.length;i++){
+				eq = eq && (objStrenght[i]==thisStrenght[i]);
+			}
+			return eq && ((ComparatorParameters)obj).getLocale().equals(locale);
 		}
-		return eq;
-	}
 
-	public int hashCode() {
-		int hash=0;
-		if (IDEN) {
-			hash+=1;
+		public int hashCode() {
+			int hash=0;
+			if (strenght[StringAproxComparator.IDENTICAL-1]) {
+				hash+=1;
+			}
+			if (strenght[StringAproxComparator.TERTIARY-1]){
+				hash+=2;
+			}
+			if (strenght[StringAproxComparator.SECONDARY-1]){
+				hash+=4;
+			}
+			if (strenght[StringAproxComparator.PRIMARY-1]){
+				hash+=8;
+			}
+			return hash+locale.hashCode();
 		}
-		if (TER){
-			hash+=2;
+
+		public boolean[] getStrenght() {
+			return strenght;
 		}
-		if (SEC){
-			hash+=4;
+
+		public String getLocale() {
+			return locale;
 		}
-		if (PRIM){
-			hash+=8;
-		}
-		return hash;
 	}
 
 }

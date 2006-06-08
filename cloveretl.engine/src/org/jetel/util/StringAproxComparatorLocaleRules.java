@@ -47,6 +47,7 @@ public class StringAproxComparatorLocaleRules {
 	 */
 	static {
 		rules.put("CZ",CZ_RULES);
+		rules.put("CS",CZ_RULES);
 		rules.put("PL",PL_RULES);
 	}
 	
