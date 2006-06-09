@@ -73,7 +73,7 @@ import org.w3c.dom.NamedNodeMap;
  * <tr><td><b>threadSafeConnection</b><br><i>optional</i></td><td>if set, each thread gets its own connection. <i>Can be used
  * to prevent problems when multiple components conversate with DB through the same connection object which is
  * not thread safe.</i></td></tr>
- * <i>Note: If not specified, then the driver's default is used.</i></td></tr> 
+ * <i>Note: Default value of this property is true.</i></td></tr> 
  * </table>
  *  <h4>Example:</h4>
  *  <pre>&lt;DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/&gt;</pre>
@@ -94,7 +94,7 @@ import org.w3c.dom.NamedNodeMap;
  * @revision    $Revision$
  * @created     January 15, 2003
  */
-public class DBConnection {
+public class DBConnection implements IConnection {
 
 	Driver dbDriver;
 	Connection dbConnection;
@@ -135,7 +135,7 @@ public class DBConnection {
 		    }catch(NullPointerException ex){
 		        // do nothing in constructor - will probably fail later
 		    }
-		this.threadSafeConnections=false;
+		this.threadSafeConnections=true;
 		this.isPasswordEncrypted=false;
 	}
 
@@ -153,7 +153,7 @@ public class DBConnection {
 			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
 			this.config.load(stream);
 			stream.close();
-			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
 			this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
 
 		} catch (Exception ex) {
@@ -164,7 +164,7 @@ public class DBConnection {
 	public DBConnection(Properties configProperties) {
 	    this.openedConnections=new HashMap();
 		this.config = configProperties;
-		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"false"));
+		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
 		this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
 	}
 	
