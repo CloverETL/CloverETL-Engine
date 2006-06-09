@@ -30,7 +30,8 @@ import java.nio.channels.FileLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.JetelException;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 
@@ -46,7 +47,7 @@ import org.jetel.util.ComponentXMLAttributes;
  * <i>Note: by setting number of cached values to high enough value (>20) the performance
  * of SimpleSequence can be greatly increased.</i>
  */
-public class SimpleSequence implements Sequence {
+public class SimpleSequence extends GraphElement implements Sequence {
  
     public static final int DATA_SIZE = 8; //how many bytes occupy serialized value in file
     public static final String ACCESS_MODE="rwd";
@@ -54,7 +55,6 @@ public class SimpleSequence implements Sequence {
     public static Log logger = LogFactory.getLog(SimpleSequence.class);
     
     String filename;
-    String sequenceName;
     long sequenceValue;
     int step;
     int start;
@@ -65,7 +65,7 @@ public class SimpleSequence implements Sequence {
     FileChannel io;
     FileLock lock;
     ByteBuffer buffer;
-	private static final String XML_NAME_ATTRIBUTE = "name";
+    private static final String XML_NAME_ATTRIBUTE = "name";
 	private static final String XML_FILE_URL_ATTRIBUTE = "fileURL";
 	private static final String XML_START_ATTRIBUTE = "start";
 	private static final String XML_STEP_ATTRIBUTE = "step";
@@ -81,8 +81,8 @@ public class SimpleSequence implements Sequence {
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
      * available values between object reusals)
      */
-    public SimpleSequence(String sequenceName,String filename,int start,int step,int numCachedValues){
-        this.sequenceName=sequenceName;
+    public SimpleSequence(String id, String sequenceName,String filename,int start,int step,int numCachedValues){
+        super(id, sequenceName);
         this.filename=filename;
         this.start=start;
         this.sequenceValue=start;
@@ -92,17 +92,8 @@ public class SimpleSequence implements Sequence {
         this.isDefined=true;
     }
     
-    public String getName(){
-        return sequenceName;
-    }
-    
-    public void setName(String sequenceName) {
-    	this.sequenceName = sequenceName;
-    }
-    
     public long currentValueLong(){
         return sequenceValue;
-        
     }
     
     public long nextValueLong(){
@@ -119,7 +110,6 @@ public class SimpleSequence implements Sequence {
     
     public int currentValueInt(){
         return (int)sequenceValue;
-        
     }
     
     public int nextValueInt(){
@@ -143,7 +133,11 @@ public class SimpleSequence implements Sequence {
         return true;
     }
     
-    public void init() throws JetelException{
+    /**
+     * Initializes sequence object. It is called after the sequence class is instantiated.
+     * All necessary internal initialization should be performed in this method.
+     */
+    public void init() throws ComponentNotReadyException {
         buffer=ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file=new File(filename);
@@ -166,7 +160,7 @@ public class SimpleSequence implements Sequence {
                 sequenceValue=buffer.getLong();
             }
         }catch(IOException ex){
-            throw new JetelException(ex.getMessage());
+            throw new ComponentNotReadyException(ex.getMessage());
         }
     }
     
@@ -178,26 +172,30 @@ public class SimpleSequence implements Sequence {
             io.position(0);
             io.write(buffer);
         }catch(IOException ex){
-            logger.error("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
-            throw new RuntimeException("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            logger.error("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
+            throw new RuntimeException("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
         }
     }
     
-    public void close(){
+    /**
+     * Closes the sequence (current instance). All internal resources should be freed in
+     * this method.
+     */
+    public void free() {
         try{
             if (lock!=null){
                 lock.release();
             }
             io.close();
         }catch(IOException ex){
-            logger.error("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
-            throw new RuntimeException("I/O error when accessing sequence "+sequenceName+" - "+ex.getMessage());
+            logger.error("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
+            throw new RuntimeException("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
         }
     }
     
     public void delete(){
         File sequenceFile;
-        close();
+        free();
         sequenceFile=new File(filename);
         if (sequenceFile.exists()){;
             sequenceFile.delete();
@@ -224,6 +222,7 @@ public class SimpleSequence implements Sequence {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		return new SimpleSequence(
+                xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_NAME_ATTRIBUTE),
 				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
 				Integer.parseInt(xattribs.getString(XML_START_ATTRIBUTE)),
@@ -231,4 +230,9 @@ public class SimpleSequence implements Sequence {
 				Integer.parseInt(xattribs.getString(XML_CACHED_ATTRIBUTE)));
 		
 	}
+
+    public boolean checkConfig() {
+        return true;
+    }
+
 }

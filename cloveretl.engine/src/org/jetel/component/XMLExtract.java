@@ -190,7 +190,7 @@ public class XMLExtract extends Node
 					// the output port
 					// remove this mapping so we don't repeat this logic (and
 					// logging)
-					LOG.warn("XML Extract: " + getID() + " Element ("
+					LOG.warn("XML Extract: " + getId() + " Element ("
 							+ localName
 							+ ") does not have an edge mapped to that port.");
 					m_activeMapping.getParent().removeChildMapping(
@@ -328,7 +328,7 @@ public class XMLExtract extends Node
 							if (generatedField == null)
 							{
 								LOG
-										.warn(getID()
+										.warn(getId()
 												+ ": XML Extract Mapping's generatedKey field was not found. "
 												+ m_activeMapping
 														.getGeneratedKey());
@@ -338,7 +338,7 @@ public class XMLExtract extends Node
 							else if (parentKeyField == null)
 							{
 								LOG
-										.warn(getID()
+										.warn(getId()
 												+ ": XML Extract Mapping's parentKey field was not found. "
 												+ m_activeMapping
 														.getParentKey());
@@ -494,7 +494,7 @@ public class XMLExtract extends Node
 					m_outRecord = new DataRecord(new DataRecordMetadata(
 							"nonexistant"));
 					LOG
-							.warn(getID()
+							.warn(getId()
 									+ ": Port "
 									+ getOutPort()
 									+ " does not have an edge connected.  Please connect the edge or remove the mapping.");
@@ -612,7 +612,7 @@ public class XMLExtract extends Node
 				if (attributes.exists("outPort"))
 				{
 					LOG
-							.warn(extract.getID()
+							.warn(extract.getId()
 									+ ": XML Extract Mapping for element: "
 									+ mapping.getElement()
 									+ " missing a required attribute, element for outPort "
@@ -622,7 +622,7 @@ public class XMLExtract extends Node
 				else if (attributes.exists("element"))
 				{
 					LOG
-							.warn(extract.getID()
+							.warn(extract.getId()
 									+ ": XML Extract Mapping for element: "
 									+ mapping.getElement()
 									+ " missing a required attribute, outPort for element "
@@ -632,7 +632,7 @@ public class XMLExtract extends Node
 				else
 				{
 					LOG
-							.warn(extract.getID()
+							.warn(extract.getId()
 									+ ": XML Extract Mapping for element: "
 									+ mapping.getElement()
 									+ " missing required attributes, element and outPort.  Skipping this mapping and all children.");
@@ -657,7 +657,7 @@ public class XMLExtract extends Node
 			if (parentKeyPresent != generatedKeyPresent)
 			{
 				LOG
-						.warn(extract.getID()
+						.warn(extract.getId()
 								+ ": XML Extract Mapping for element: "
 								+ mapping.getElement()
 								+ " must either have both parentKey and generatedKey attributes or neither.");
@@ -679,7 +679,7 @@ public class XMLExtract extends Node
 			if (parentKeyPresent && mapping.getParent() == null)
 			{
 				LOG
-						.warn(extract.getID()
+						.warn(extract.getId()
 								+ ": XML Extact Mapping for element: "
 								+ mapping.getElement()
 								+ " may only have parentKey or generatedKey attributes if it is a nested mapping");
@@ -701,7 +701,7 @@ public class XMLExtract extends Node
 		}
 		else
 		{
-			LOG.warn(extract.getID() + ": Unknown element: "
+			LOG.warn(extract.getId() + ": Unknown element: "
 					+ nodeXML.getLocalName()
 					+ " ignoring it and all child elements.");
 		}
@@ -770,14 +770,14 @@ public class XMLExtract extends Node
 			{
 				return true; // we were stopped by a stop signal... probably
 			}
-			LOG.error("XML Extract: " + getID() + " Parse Exception", ex);
+			LOG.error("XML Extract: " + getId() + " Parse Exception", ex);
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			return false;
 		}
 		catch (Exception ex)
 		{
-			LOG.error("XML Extract: " + getID() + " Unexpected Exception", ex);
+			LOG.error("XML Extract: " + getId() + " Unexpected Exception", ex);
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return false;
@@ -796,14 +796,14 @@ public class XMLExtract extends Node
 		// test that we have at least one input port and one output
 		if (outPorts.size() < 1)
 		{
-			throw new ComponentNotReadyException(getID()
+			throw new ComponentNotReadyException(getId()
 					+ ": At least one output port has to be defined!");
 		}
 
 		if (m_elementPortMap.size() < 1)
 		{
 			throw new ComponentNotReadyException(
-					getID()
+					getId()
 							+ ": At least one mapping has to be defined.  <Mapping element=\"elementToMatch\" outPort=\"123\" [parentKey=\"key in parent\" generatedKey=\"new foreign key in target\"]/>");
 		}
 	}

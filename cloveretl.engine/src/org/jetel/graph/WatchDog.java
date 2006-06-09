@@ -19,7 +19,11 @@
 */
 package org.jetel.graph;
 import java.text.DateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -158,7 +162,7 @@ class WatchDog extends Thread {
 			while (leafNodesIterator.hasNext()) {
 				node = (Node) leafNodesIterator.next();
 				// is this Node still alive - ? doing something
-				if (!node.isAlive()) {
+				if (!node.getNodeThread().isAlive()) {
 					leafNodesIterator.remove();
 				}
 			}
@@ -175,9 +179,9 @@ class WatchDog extends Thread {
 				nodesIterator = phase.getNodes().iterator();
 				while (nodesIterator.hasNext()) {
 					node = (Node) nodesIterator.next();
-					if ((!node.isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
+					if ((!node.getNodeThread().isAlive()) && (node.getResultCode() != Node.RESULT_OK)) {
 						logger.fatal("!!! Fatal Error !!! - graph execution is aborting");
-						logger.error("Node " + node.getID() + " finished with fatal error: " + node.getResultMsg());
+						logger.error("Node " + node.getId() + " finished with fatal error: " + node.getResultMsg());
 						watchDogStatus = WATCH_DOG_STATUS_ERROR;
 						abort();
 						//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
@@ -288,7 +292,7 @@ class WatchDog extends Thread {
 			node = (Node) iterator.next();
 			node.abort();
 			logger.warn("Interrupted node: "
-				+ node.getID());
+				+ node.getId());
 		}
 	}
 
@@ -304,11 +308,15 @@ class WatchDog extends Thread {
 		Node node;
 		while (nodesIterator.hasNext()) {
 			node = (Node) nodesIterator.next();
-			node.start();
+            Thread nodeThread = new Thread(node, node.getId());
+//          // this thread is daemon - won't live if main thread ends
+            nodeThread.setDaemon(true);
+            node.setNodeThread(nodeThread);
+			nodeThread.start();
 			if (node.isLeaf() || node.isPhaseLeaf()) {
 				leafNodesList.add(node);
 			}
-			logger.debug(node.getID()+ " ... started");
+			logger.debug(node.getId()+ " ... started");
 		}
 	}
 
@@ -400,7 +408,7 @@ class WatchDog extends Thread {
             trackingLogger.info("---------------------------------------------------------------------------------");
             while (iterator.hasNext()) {
                 node = (Node) iterator.next();
-                Object nodeInfo[] = {node.getID(), node.getStatus()};
+                Object nodeInfo[] = {node.getId(), node.getStatus()};
                 int nodeSizes[] = {-28, -15};
                 trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
                 //in ports

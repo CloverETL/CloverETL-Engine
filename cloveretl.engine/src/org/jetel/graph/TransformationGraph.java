@@ -444,7 +444,7 @@ public final class TransformationGraph {
 			dbCon = (DBConnection) iterator.next();
 
 			try {
-				dbCon.close();
+				dbCon.free();
 			} catch (Exception ex) {
 			    logger.warn("Can't free DBConnection", ex);
 			}
@@ -453,7 +453,7 @@ public final class TransformationGraph {
 		iterator = lookupTables.values().iterator();
 		while (iterator.hasNext()) {
 			try {
-				((LookupTable)iterator.next()).close();
+				((LookupTable)iterator.next()).free();
 			} catch (Exception ex) {
 			    logger.warn("Can't free LookupTable", ex);
 			}
@@ -462,7 +462,7 @@ public final class TransformationGraph {
 		iterator = sequences.values().iterator();
 		while (iterator.hasNext()) {
 			try {
-				((Sequence)iterator.next()).close();
+				((Sequence)iterator.next()).free();
 			} catch (Exception ex) {
 			    logger.warn("Can't free Sequence", ex);
 			}
@@ -671,7 +671,7 @@ public final class TransformationGraph {
 			iterator = phasesArray[i].getNodes().iterator();
 			while (iterator.hasNext()) {
 				node = (Node) iterator.next();
-				logger.info("\t" + node.getID() + " : " + node.getName() + " phase: " + node.getPhase());
+				logger.info("\t" + node.getId() + " : " + node.getName() + " phase: " + node.getPhase());
 			}
 			logger.info("\t... edges ...");
 			iterator = phasesArray[i].getEdges().iterator();

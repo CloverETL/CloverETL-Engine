@@ -28,7 +28,9 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.SimpleCache;
 
@@ -43,10 +45,10 @@ import org.jetel.util.SimpleCache;
  * 
  *
  *@author     dpavlis
- *@created    25. kvìten 2003
+ *@created    25. kvï¿½ten 2003
  *@since      May 22, 2003
  */
-public class DBLookupTable implements LookupTable {
+public class DBLookupTable extends GraphElement implements LookupTable {
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection dbConnection;
@@ -73,8 +75,9 @@ public class DBLookupTable implements LookupTable {
 	 *@param  dbRecordMetadata  Description of the Parameter
 	 *@param  sqlQuery          Description of the Parameter
 	 */
-  public DBLookupTable(DBConnection dbConnection,
-                       DataRecordMetadata dbRecordMetadata, String sqlQuery) {
+  public DBLookupTable(String id, DBConnection dbConnection, 
+          DataRecordMetadata dbRecordMetadata, String sqlQuery) {
+      super(id);
 		this.dbConnection = dbConnection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
@@ -89,13 +92,14 @@ public class DBLookupTable implements LookupTable {
    *@param  sqlQuery          Description of the Parameter
    * @param dbFieldTypes      List containing the types of the final record
    */
-  public DBLookupTable(DBConnection dbConnection, DataRecordMetadata
-          dbRecordMetadata, java.lang.String sqlQuery, java.util.List dbFieldTypes){
-      this(dbConnection,dbRecordMetadata,sqlQuery);
+  public DBLookupTable(String id, DBConnection dbConnection, 
+          DataRecordMetadata dbRecordMetadata, java.lang.String sqlQuery, java.util.List dbFieldTypes) {
+      this(id, dbConnection,dbRecordMetadata,sqlQuery);
   }
   
-  public DBLookupTable(DBConnection dbConnection,
+  public DBLookupTable(String id, DBConnection dbConnection, 
           DataRecordMetadata dbRecordMetadata, String sqlQuery, int numCached) {
+      super(id);
       this.dbConnection = dbConnection;
       this.dbMetadata = dbRecordMetadata;
       this.sqlQuery = sqlQuery;
@@ -336,7 +340,7 @@ public class DBLookupTable implements LookupTable {
 	 *@exception  JetelException  Description of the Exception
 	 *@since                      May 2, 2002
 	 */
-    public void init() throws JetelException {
+    public void init() throws ComponentNotReadyException {
     	// if caching is required, crate map to store records
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
@@ -350,10 +354,8 @@ public class DBLookupTable implements LookupTable {
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
             
         } catch (SQLException ex) {
-            throw new JetelException("Can't create SQL statement: "
-                    + ex.getMessage());
+            throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
-          
     }
     
     /**
@@ -394,7 +396,7 @@ public class DBLookupTable implements LookupTable {
 	/**
 	 *  Deallocates resources
 	 */
-    public void close() {
+    public void free() {
         try {
             pStatement.close();
             resultCache = null;
@@ -412,4 +414,11 @@ public class DBLookupTable implements LookupTable {
 	          this.maxCached=numCached;
 	      }
 	}
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#checkConfig()
+     */
+    public boolean checkConfig() {
+        return true;
+    }
 }

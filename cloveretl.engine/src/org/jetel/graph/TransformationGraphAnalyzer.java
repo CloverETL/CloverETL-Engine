@@ -175,13 +175,13 @@ public class TransformationGraphAnalyzer {
 			if (port == null) {
 				// this node has no more ports (offsprings)
 				// we have to remove it from already visited nodes
-				nodesEncountered.remove(((AnalyzedNode) nodesStack.pop()).getNode().getID());
+				nodesEncountered.remove(((AnalyzedNode) nodesStack.pop()).getNode().getId());
 			} else {
 				nextNode = port.getReader();
 				//DEBUG ! System.out.println("-"+nextNode.getID());
 				if (nextNode != null) {
 					// have we seen this node before ? if yes, then it is a loop
-					if (!nodesEncountered.add(nextNode.getID())) {
+					if (!nodesEncountered.add(nextNode.getId())) {
 						dumpNodesReferences(nodesStack.iterator(), nextNode);
 						return false;
 					}
@@ -218,7 +218,7 @@ public class TransformationGraphAnalyzer {
 				if (prevNode != null) {
 					// have we seen this node before ? if yes, then we need to buffer start node (its
 					// input ports
-					if (!nodesEncountered.add(prevNode.getID())) {
+					if (!nodesEncountered.add(prevNode.getId())) {
 						for (int i=0;i<startNode.getInPorts().size();i++){
 							//TODO: potential problem if port is not backed by EDGE - this should not happen
 							Object edge=startNode.getInputPort(i);
@@ -267,8 +267,8 @@ public class TransformationGraphAnalyzer {
 				if (nextNode != null) {
 					if (currentNode.getPhase() > nextNode.getPhase()) {
 						logger.fatal("Wrong phase order between components: " +
-								currentNode.getID() + " phase: " + currentNode.getPhase() + " and " +
-								nextNode.getID() + " phase: " + nextNode.getPhase());
+								currentNode.getId() + " phase: " + currentNode.getPhase() + " and " +
+								nextNode.getId() + " phase: " + nextNode.getPhase());
 						throw new GraphConfigurationException("Wrong phase order !");
 					}
 					destination.add(nextNode);
@@ -286,15 +286,15 @@ public class TransformationGraphAnalyzer {
 	 */
 	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
 	    logger.fatal("Dump of references between nodes:");
-	    logger.fatal("Detected loop when encountered node " + problemNode.getID());
+	    logger.fatal("Detected loop when encountered node " + problemNode.getId());
 	    logger.fatal("Chain of references:");
 		StringBuffer buffer=new StringBuffer(64);
 	    while (iterator.hasNext()) {
-			buffer.append(((AnalyzedNode) iterator.next()).getNode().getID());
+			buffer.append(((AnalyzedNode) iterator.next()).getNode().getId());
 			buffer.append(" -> ");
 
 		}
-		buffer.append(problemNode.getID());
+		buffer.append(problemNode.getId());
 		logger.fatal(buffer.toString());
 	}
 
@@ -371,7 +371,7 @@ public class TransformationGraphAnalyzer {
 	 *  Description of the Class
 	 *
 	 * @author      dpavlis
-	 * @since       12. únor 2004
+	 * @since       12. ï¿½nor 2004
 	 * @revision    $Revision$
 	 */
 	private static class AnalyzedNode {

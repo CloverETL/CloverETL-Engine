@@ -44,7 +44,7 @@ public class SimpleSequenceTest extends TestCase {
     protected void setUp() throws Exception {
         // TODO Auto-generated method stub
         super.setUp();
-        sequence=new SimpleSequence("Test","c:\\tmp\\sequence4.dat",0,1,17);
+        sequence=new SimpleSequence("test", "Test","c:\\tmp\\sequence4.dat",0,1,17);
         sequence.init();
     }
 
@@ -65,7 +65,7 @@ public class SimpleSequenceTest extends TestCase {
     }
     
     protected void tearDown(){
-        sequence.close();
+        sequence.free();
     }
     
 }

@@ -128,7 +128,7 @@ public class Sort extends Node {
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 				if (inRecord!=null) {
 						if(!newSorter.put(inRecord)){
-						    System.err.println("Sorter "+getID()+" has no more capacity to sort additional records." +
+						    System.err.println("Sorter "+getId()+" has no more capacity to sort additional records." +
 						    		"The output will be incomplete !");
 						    break; // no more capacity
 						}

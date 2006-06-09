@@ -204,7 +204,7 @@ public class AnalyzeDB {
 			print = System.out;
 		}
 		// load in Database Driver & try to connect to database
-		connection=new DBConnection(config.getProperty("dbDriver"), config.getProperty("dbURL"),"","");
+		connection=new DBConnection("", config.getProperty("dbDriver"), config.getProperty("dbURL"),"","");
 		connection.setProperty(config);
 		connection.connect();
 
@@ -234,7 +234,7 @@ public class AnalyzeDB {
 			print.close();
 		}
 		resultSet.close();
-		connection.close();
+		connection.free();
 	}
 
 
@@ -281,7 +281,7 @@ public class AnalyzeDB {
 		*  this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
 		* // FORMAT (in case of currency)
 		* if (metadata.isCurrency(fieldNo)) {
-		*	strBuf.append(" format=\"¤#.#\"");
+		*	strBuf.append(" format=\"ï¿½#.#\"");
 		* }
 		*/
 

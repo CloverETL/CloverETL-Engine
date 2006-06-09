@@ -23,7 +23,8 @@
  */
 package org.jetel.data.sequence;
 
-import org.jetel.exception.JetelException;
+import org.jetel.exception.ComponentNotReadyException;
+
 
 /**
  * @author david
@@ -80,14 +81,22 @@ public interface Sequence {
     public boolean isPersistent();
     
     /**
+     * NOTE: copy from GraphElement
+     */
+    public abstract boolean checkConfig();
+
+    /**
      * Initializes sequence object. It is called after the sequence class is instantiated.
      * All necessary internal initialization should be performed in this method.
+     * NOTE: copy from GraphElement
      */
-    public void init() throws JetelException;
-    
+    public abstract void init() throws ComponentNotReadyException;
+
     /**
      * Closes the sequence (current instance). All internal resources should be freed in
      * this method.
+     * NOTE: copy from GraphElement
      */
-    public void close();
+    public abstract void free();
+
 }

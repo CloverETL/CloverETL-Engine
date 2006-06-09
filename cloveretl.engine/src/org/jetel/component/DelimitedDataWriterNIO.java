@@ -178,7 +178,7 @@ public class DelimitedDataWriterNIO extends Node {
 			formatter.open(new FileOutputStream(fileURL, appendData), getInputPort(READ_FROM_PORT).getMetadata());
 		}
 		catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
+			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
 //		catch (IOException ex){
 //			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());

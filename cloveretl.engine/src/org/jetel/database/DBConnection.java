@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.PasswordEncrypt;
 
@@ -94,7 +96,7 @@ import org.w3c.dom.NamedNodeMap;
  * @revision    $Revision$
  * @created     January 15, 2003
  */
-public class DBConnection implements IConnection {
+public class DBConnection extends GraphElement implements IConnection {
 
 	Driver dbDriver;
 	Connection dbConnection;
@@ -124,7 +126,8 @@ public class DBConnection implements IConnection {
 	 * @param  user      Description of the Parameter
 	 * @param  password  Description of the Parameter
 	 */
-	public DBConnection(String dbDriver, String dbURL, String user, String password) {
+	public DBConnection(String id, String dbDriver, String dbURL, String user, String password) {
+        super(id);
 	    this.openedConnections=new HashMap();
 	    this.config = new Properties();
 		try{
@@ -145,7 +148,8 @@ public class DBConnection implements IConnection {
 	 *
 	 * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
 	 */
-	public DBConnection(String configFilename) {
+	public DBConnection(String id, String configFilename) {
+        super(id);
 	    this.openedConnections=new HashMap();
 	    this.config = new Properties();
 
@@ -162,6 +166,7 @@ public class DBConnection implements IConnection {
 	}
 
 	public DBConnection(Properties configProperties) {
+        super(configProperties.getProperty(XML_ID_ATTRIBUTE));
 	    this.openedConnections=new HashMap();
 		this.config = configProperties;
 		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
@@ -275,9 +280,13 @@ public class DBConnection implements IConnection {
 	 *
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public void close() throws SQLException {
+	public void free() {
 	    for(Iterator i=openedConnections.values().iterator();i.hasNext();){
-	        ((Connection)i.next()).close();
+	        try {
+                ((Connection)i.next()).close();
+            } catch (SQLException e) {
+                //What can I do?
+            }
 	    }
 	}
 
@@ -415,9 +424,10 @@ public class DBConnection implements IConnection {
 		PropertyRefResolver refResolver=new PropertyRefResolver(graph);
 
 		try {
+            String id = xattribs.getString(XML_ID_ATTRIBUTE);
 			// do we have dbConfig parameter specified ??
 			if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
-				return new DBConnection(xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
+				return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
 			} else {
 
 				String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE);
@@ -425,7 +435,7 @@ public class DBConnection implements IConnection {
 				String user = "";
 				String password = "";
 
-				con = new DBConnection(dbDriver, dbURL, user, password);
+				con = new DBConnection(id, dbDriver, dbURL, user, password);
 
 				//check thread safe option
 				if (xattribs.exists(XML_THREAD_SAFE_CONNECTIONS)){
@@ -526,5 +536,20 @@ public class DBConnection implements IConnection {
     public void setPasswordEncrypted(boolean isPasswordEncrypted) {
         this.isPasswordEncrypted = isPasswordEncrypted;
     }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#checkConfig()
+     */
+    public boolean checkConfig() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#init()
+     */
+    public void init() throws ComponentNotReadyException {
+        connect();
+    }
+
 }
 

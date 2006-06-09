@@ -156,7 +156,7 @@ public class SimpleGather extends Node {
 				// have we reached the maximum empty loops count ?
 				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD) {
 				    try{
-				        sleep(EMPTY_LOOPS_WAIT);
+				        Thread.sleep(EMPTY_LOOPS_WAIT);
 				    }catch(InterruptedException ex){
 				        // end processing of data
 				        resultMsg="Interrputed !";
@@ -194,9 +194,9 @@ public class SimpleGather extends Node {
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one input port and one output
 		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException(getID() + " at least one input port has to be defined!");
+			throw new ComponentNotReadyException(getId() + " at least one input port has to be defined!");
 		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException(getID() + " at least one output port has to be defined!");
+			throw new ComponentNotReadyException(getId() + " at least one output port has to be defined!");
 		}
 	}
 

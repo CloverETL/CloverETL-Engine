@@ -31,7 +31,6 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
@@ -48,14 +47,13 @@ import org.w3c.dom.Element;
  *@see         org.jetel.component
  *@revision    $Revision$
  */
-public abstract class Node extends Thread {
+public abstract class Node extends GraphElement implements Runnable {
 
-	protected TransformationGraph graph;
-	protected String id;
+    protected Thread nodeThread;
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
     protected int passThroughOutputPort;
-
+    
     
 	protected TreeMap outPorts;
 	protected TreeMap inPorts;
@@ -103,7 +101,6 @@ public abstract class Node extends Thread {
 	/**
 	 * XML attributes of every cloverETL component
 	 */
-	public final static String XML_ID_ATTRIBUTE="id";
 	public final static String XML_TYPE_ATTRIBUTE="type";
 
 	/**
@@ -121,8 +118,6 @@ public abstract class Node extends Thread {
 		outPorts = new TreeMap();
 		inPorts = new TreeMap();
 		logPort = null;
-		setDaemon(true);
-		// this thread is daemon - won't live if main thread ends
 		phase = 0;
 	}
 
@@ -189,17 +184,6 @@ public abstract class Node extends Thread {
 	 *@since     April 4, 2002
 	 */
 	public abstract String getType();
-
-
-	/**
-	 *  Returns the unique ID of this Node
-	 *
-	 *@return    The ID value
-	 *@since     April 2, 2002
-	 */
-	public String getID() {
-		return id;
-	}
 
 
 	/**
@@ -270,27 +254,7 @@ public abstract class Node extends Thread {
 		return phase;
 	}
 
-
-	/**
-	 *  Check the Node configuration.<br>
-	 *  This method is called for each graph node before the graph is executed. This method should
-	 * verify that all required parameters are set and the Node/Component may be run.<br>
-	 * The order in which Node is brought to life is:<ol>
-	 * <li>checkConfig()</li>
-	 * <li>initialize()</li>
-	 * <li>run()</li>
-	 * </ol> 
-	 *
-	 *@return    True if Node configuration is OK, otherwise False
-	 */
-	public abstract boolean checkConfig();
-
-
-	/**  Frees all internally allocated resources - such as buffers, etc. */
-	public void freeResources(){
-	}
-
-
+    
 	/**
 	 *  Gets the OutPorts attribute of the Node object
 	 *
@@ -411,29 +375,55 @@ public abstract class Node extends Thread {
 
 
 	/**
-	 *  Initialization of Node
-	 *
-	 *@exception  ComponentNotReadyException  Error when trying to initialize
-	 *      Node/Component
-	 *@since                                  April 2, 2002
-	 */
-	public abstract void init() throws ComponentNotReadyException;
-
-
-	/**
 	 *  Abort execution of Node - brutal force
 	 *
 	 *@since    April 4, 2002
 	 */
 	public void abort() {
 		runIt = false;
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            //EMPTY
+        }
+        
 		if (resultCode==RESULT_RUNNING){
 			resultCode = RESULT_ABORTED;
-			interrupt();
+			getNodeThread().interrupt();
 		}
 	}
 
+    /**
+     * @return thread of running node; <b>null</b> if node does not runnig
+     */
+    public Thread getNodeThread() {
+        if(nodeThread == null) {
+            ThreadGroup defaultThreadGroup = Thread.currentThread().getThreadGroup();
+            Thread[] activeThreads = new Thread[defaultThreadGroup.activeCount() * 2];
+            int numThreads = defaultThreadGroup.enumerate(activeThreads, false);
+            
+            for(int i = 0; i < numThreads; i++) {
+                if(activeThreads[i].getName().equals(getId())) {
+                    nodeThread = activeThreads[i];
+                }
+            }
+        } else {
+            if(!nodeThread.isAlive()) {
+                nodeThread = null;
+            }
+        }
+        
+        return nodeThread;
+    }
 
+    /**
+     * Sets actual thread in which this node current running.
+     * @param nodeThread
+     */
+    public void setNodeThread(Thread nodeThread) {
+        this.nodeThread = nodeThread;
+    }
+    
 	/**
 	 *  End execution of Node - let Node finish gracefully
 	 *
@@ -726,7 +716,13 @@ public abstract class Node extends Thread {
 		}
 	}
 
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#free()
+	 */
+	public void free() {
+	    //EMPTY
+	}
+    
 	/**
 	 *  Compares this Node to specified Object
 	 *
@@ -735,7 +731,7 @@ public abstract class Node extends Thread {
 	 *@since       April 18, 2002
 	 */
 	public boolean equals(Object obj) {
-		if (this.id.equals(((Node) obj).getID())) {
+		if (this.id.equals(((Node) obj).getId())) {
 			return true;
 		} else {
 			return false;
@@ -751,7 +747,7 @@ public abstract class Node extends Thread {
 	 */
 	public void toXML(Element xmlElement) {
 		// set basic XML attributes of all graph components
-		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getID());
+		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
 		xmlElement.setAttribute(XML_TYPE_ATTRIBUTE, getType());
 	}
 
