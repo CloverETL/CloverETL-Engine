@@ -541,14 +541,11 @@ public class AproxMergeJoin extends Node {
 		maxDiffrenceLetters = new int[joinParameters.length];
 		boolean[][] strenght=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
 		weights = new double[joinParameters.length];
+		String[] pom=new String[7];
 		for (int i=0;i<joinParameters.length;i++){
-			String[] pom=joinParameters[i].split(" ");
+			pom=joinParameters[i].split(" ");
 			joinKeys[i]=pom[0];
-			if (Character.isDigit(pom[1].charAt(0))){
-				maxDiffrenceLetters[i]=Integer.parseInt(pom[1]);
-			}else{ 
-				maxDiffrenceLetters[i]=1;
-			}
+			maxDiffrenceLetters[i]=Integer.parseInt(pom[1]);
 			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
 				strenght[i][j] = pom[2+j].equals("true") ? true : false;
 			}
