@@ -20,6 +20,7 @@
 package org.jetel.data.lookup;
 
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -53,9 +54,10 @@ public interface LookupTable {
 	 * be secured that initialization (allocation, etc.) is performed only once or
 	 * every time close() method was called prior to this method.<br>
 	 * 
-	 * @throws JetelException
+	 * @throws ComponentNotReadyException
+     * NOTE: copy from GraphElement
 	 */
-	public void init() throws JetelException;
+	public void init() throws ComponentNotReadyException;
 	
 	
 	/**
@@ -127,7 +129,13 @@ public interface LookupTable {
 	 * Can be also called from user's transformation method. If close() is called, then
 	 * continuation in using lookup table should not be permitted - till init() is called
 	 * again.
+     * NOTE: copy from GraphElement
 	 */
-	public void close() throws JetelException;
+	public void free();
 	
+    /**
+     * NOTE: copy from GraphElement
+     */
+    public abstract boolean checkConfig();
+
 }

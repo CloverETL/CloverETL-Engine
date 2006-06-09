@@ -28,7 +28,9 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.HashKey;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -38,7 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author     dpavlis
  * @since    May 2, 2002
  */
-public class SimpleLookupTable implements LookupTable {
+public class SimpleLookupTable extends GraphElement implements LookupTable {
 
 	protected DataRecordMetadata metadata;
 	protected Parser dataParser;
@@ -64,12 +66,12 @@ public class SimpleLookupTable implements LookupTable {
 	 * @param  keys      Names of fields which comprise indexKey to lookup table
 	 * @since            May 2, 2002
 	 */
-	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser) {
-		this(metadata,keys,parser,null);
+	public SimpleLookupTable(String id, DataRecordMetadata metadata, String[] keys, Parser parser) {
+		this(id,metadata,keys,parser,null);
 	}
 
-	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser, int initialSize) {
-		this(metadata,keys,parser,null);
+	public SimpleLookupTable(String id, DataRecordMetadata metadata, String[] keys, Parser parser, int initialSize) {
+		this(id,metadata,keys,parser,null);
 		this.tableInitialSize=initialSize;
 	}
 
@@ -83,7 +85,8 @@ public class SimpleLookupTable implements LookupTable {
 	 * @param  mapObject  Object implementing Map interface. It will be used to hold indexKey->data pairs
 	 * @since             May 2, 2002
 	 */
-	public SimpleLookupTable(DataRecordMetadata metadata, String[] keys, Parser parser, Map mapObject) {
+	public SimpleLookupTable(String id, DataRecordMetadata metadata, String[] keys, Parser parser, Map mapObject) {
+        super(id);
 		this.dataParser = parser;
 		this.metadata = metadata;
 		lookupTable = mapObject;
@@ -134,7 +137,7 @@ public class SimpleLookupTable implements LookupTable {
 	 * @exception  IOException  Description of Exception
 	 * @since                   May 2, 2002
 	 */
-	public void init() throws JetelException {
+	public void init() throws ComponentNotReadyException {
 	    DataRecord record=new DataRecord(metadata);
 	    record.init();
 		
@@ -146,10 +149,14 @@ public class SimpleLookupTable implements LookupTable {
 	        }
 	    }
 		// populate the lookupTable (Map) with data
-		while (dataParser.getNext(record) != null) {
-		    DataRecord storeRecord=record.duplicate();
-			lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
-		}
+		try {
+            while (dataParser.getNext(record) != null) {
+                DataRecord storeRecord=record.duplicate();
+            	lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+            }
+        } catch (JetelException e) {
+            throw new ComponentNotReadyException(e.getMessage());
+        }
 		dataParser.close();
 		numFound=0;
 	}
@@ -195,7 +202,7 @@ public class SimpleLookupTable implements LookupTable {
 	    }
 	}
 	
-	public void close(){
+	public void free() {
 	    if (lookupTable!=null){
 	    	lookupTable.clear();
 	    	lookupTable=null;
@@ -217,5 +224,13 @@ public class SimpleLookupTable implements LookupTable {
 	public int getSize(){
 	    return lookupTable.size();
 	}
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#checkConfig()
+     */
+    public boolean checkConfig() {
+        return true;
+    }
+
 }
 

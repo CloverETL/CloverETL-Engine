@@ -47,7 +47,7 @@ protected void setUp() {
 				
 	try {
 		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));
-		aDBConnection = new DBConnection("config\\test\\msaccess.clover_test.txt");
+		aDBConnection = new DBConnection("", "config\\test\\msaccess.clover_test.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}

@@ -18,12 +18,10 @@
 *
 */
 package org.jetel.graph;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -151,12 +149,12 @@ public class Phase implements Comparable {
 				node = (Node) nodeIterator.next();
 				// if logger exists, print some out information
 				node.init();
-				logger.debug("\t" + node.getID() + " ...OK");
+				logger.debug("\t" + node.getId() + " ...OK");
 			} catch (ComponentNotReadyException ex) {
-				logger.error("\t" + node.getID() + " ...FAILED !", ex);
+				logger.error("\t" + node.getId() + " ...FAILED !", ex);
 				return false;
 			} catch (Exception ex) {
-				logger.error("\t" + node.getID() + " ...FATAL ERROR !", ex);
+				logger.error("\t" + node.getId() + " ...FATAL ERROR !", ex);
 				return false;
 			}
 		}

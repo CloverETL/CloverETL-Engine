@@ -161,13 +161,13 @@ public class DBFDataReader extends Node {
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one output port
 		if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException(getID() + ": atleast one output port has to be defined!");
+			throw new ComponentNotReadyException(getId() + ": atleast one output port has to be defined!");
 		}
 		// try to open file & initialize data parser
 		try {
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
+			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
 
 	}

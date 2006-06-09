@@ -510,7 +510,7 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			// check whether port isn't already assigned
 			if (graphNode.getOutputPort(fromPort)!=null){
-				throw new RuntimeException("Output port ["+fromPort+"] of "+graphNode.getID()+" already assigned !");
+				throw new RuntimeException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
 			}
 			graphNode.addOutputPort(fromPort, graphEdge);
 			// assign edge to toNode
@@ -526,7 +526,7 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			// check whether port isn't already assigned
 			if (graphNode.getInputPort(toPort)!=null){
-				throw new RuntimeException("Input port ["+toPort+"] of "+graphNode.getID()+" already assigned !");
+				throw new RuntimeException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");
 			}
 			graphNode.addInputPort(toPort, graphEdge);
 
@@ -703,7 +703,7 @@ public class TransformationGraphXMLReaderWriter {
 				while (iter.hasNext()) {
 					Node graphNode = (Node)iter.next();
 					HashMap nodeAtts = new HashMap();
-					nodeAtts.put(Node.XML_ID_ATTRIBUTE, graphNode.getID());
+					nodeAtts.put(Node.XML_ID_ATTRIBUTE, graphNode.getId());
 					nodeAtts.put(Node.XML_TYPE_ATTRIBUTE, graphNode.getType());
 					Element xmlElement = (Element)xmlElementInDocument(NODE_ELEMENT,nodeAtts); 
 					if (xmlElement == null) {
@@ -738,6 +738,10 @@ public class TransformationGraphXMLReaderWriter {
         public void run() { }
 
         public void init() throws ComponentNotReadyException { }
+
+        public void free() {
+            
+        }
     }
 }
 

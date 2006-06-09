@@ -137,7 +137,7 @@ public class SystemExecute extends Node{
 					sd.stop_it();
 					stoped=true;
 				}
-				if (stoped) sleep(10000);
+				if (stoped) Thread.sleep(10000);
 				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
 				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
 				if (gd!=null && !(gd.getResultCode()==Node.RESULT_OK)) {
@@ -174,9 +174,9 @@ public class SystemExecute extends Node{
 
 	public void init() throws ComponentNotReadyException {
 		if (getInPorts().size()>1) 
-			throw new ComponentNotReadyException(getID() + ": too many input ports");
+			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 
-			throw new ComponentNotReadyException(getID() + ": too many otput ports");
+			throw new ComponentNotReadyException(getId() + ": too many otput ports");
 	}
 
 	public String getType(){

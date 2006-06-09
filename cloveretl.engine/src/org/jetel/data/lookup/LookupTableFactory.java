@@ -32,6 +32,7 @@ import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.data.parser.Parser;
 import org.jetel.database.DBLookupTable;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.NotFoundException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -67,6 +68,12 @@ public class LookupTableFactory {
     public static LookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         LookupTable lookupTable=null;
+        String id;
+        try {
+            id = xattribs.getString(XML_LOOKUP_TABLE_ID);
+        }catch(NotFoundException ex){
+            throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+        }
         
         if (xattribs.exists(XML_LOOKUP_TABLE_TYPE)){
             String typeStr=xattribs.getString(XML_LOOKUP_TABLE_TYPE);
@@ -90,7 +97,7 @@ public class LookupTableFactory {
                 }
                 parser.open(new FileInputStream(xattribs.getString(XML_FILE_URL)),metadata);
                 
-                lookupTable=new SimpleLookupTable(metadata, keys, parser, initialSize);
+                lookupTable=new SimpleLookupTable(id, metadata, keys, parser, initialSize);
                 
              }catch(FileNotFoundException ex){
                  throw new RuntimeException("Can't create lookup table - "+ex.getMessage());
@@ -102,7 +109,7 @@ public class LookupTableFactory {
                 String[] keys=xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
                 DataRecordMetadata metadata=graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
                 
-                lookupTable =new DBLookupTable(graph.getDBConnection(xattribs.getString(XML_DBCONNECTION)),
+                lookupTable = new DBLookupTable(id, graph.getDBConnection(xattribs.getString(XML_DBCONNECTION)),
                         	metadata, xattribs.getString(XML_SQL_QUERY));
                 
                 
