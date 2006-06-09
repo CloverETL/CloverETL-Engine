@@ -407,10 +407,6 @@ public abstract class Node extends GraphElement implements Runnable {
                     nodeThread = activeThreads[i];
                 }
             }
-        } else {
-            if(!nodeThread.isAlive()) {
-                nodeThread = null;
-            }
         }
         
         return nodeThread;
