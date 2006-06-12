@@ -33,11 +33,14 @@ public class KeyGenerator extends Node {
 	
 	private final static int LOWER = 0;
 	private final static int UPPER = 1;
+	private final static int ALPHA = 0;
+	private final static int NUMRIC = 1; 
 
 	private String[] key;
 	private Key[] keys;
 	private boolean[][] lowerUpperCase;
 	private boolean[] removeBlankSpace;
+	private boolean[][] onlyAlpfaNumeric;
 	private int[][] fieldMap;
 	private int outKey;
 	private InputPort inPort;
@@ -48,9 +51,9 @@ public class KeyGenerator extends Node {
 	int lenght=0;
 	StringBuffer resultString;	
 	String pom=null;
-	StringBuffer toRemBlankSpace = new StringBuffer();
-	StringBuffer afterRemBlankSpace = new StringBuffer();
+	StringBuffer toRemove = new StringBuffer();
 	char[] pomChars;
+	int charRemoved;
 
 	/**
 	 * @param id
@@ -98,23 +101,37 @@ public class KeyGenerator extends Node {
 		resultString.setLength(0);
 		for (int i=0;i<keys.length;i++){
 			try{
-				toRemBlankSpace.setLength(0);
-				toRemBlankSpace.append(inRecord.getField(keys[i].getName()).getValue().toString());
-				if (removeBlankSpace[i]) {
-					if (pomChars==null || pomChars.length<toRemBlankSpace.length()) {
-						pomChars=new char[toRemBlankSpace.length()];
+				toRemove.setLength(0);
+				toRemove.append(inRecord.getField(keys[i].getName()).getValue().toString());
+				if (onlyAlpfaNumeric[i][ALPHA] || onlyAlpfaNumeric[i][NUMRIC]){
+					charRemoved=0;
+					lenght=toRemove.length();
+					if (pomChars==null || pomChars.length<lenght) {
+						pomChars=new char[lenght];
 					}
-					afterRemBlankSpace.setLength(0);
-					toRemBlankSpace.getChars(0,toRemBlankSpace.length(),pomChars,0);
-					for (int j=0;j<toRemBlankSpace.length();j++){
-						if (!Character.isWhitespace(pomChars[j])) {
-							afterRemBlankSpace.append(pomChars[j]);
+					toRemove.getChars(0,lenght,pomChars,0);
+					for (int j=0;j<lenght;j++){
+						if (onlyAlpfaNumeric[i][ALPHA] && !Character.isLetter(pomChars[j])) {
+							toRemove.deleteCharAt(j-charRemoved++);
+						}else if (onlyAlpfaNumeric[i][NUMRIC] && !Character.isDigit(pomChars[j])){
+							toRemove.deleteCharAt(j-charRemoved++);
 						}
 					}
-					pom=afterRemBlankSpace.toString();
-				}else{
-					pom=toRemBlankSpace.toString();
 				}
+				if (removeBlankSpace[i]) {
+					charRemoved=0;
+					lenght=toRemove.length();
+					if (pomChars==null || pomChars.length<lenght) {
+						pomChars=new char[lenght];
+					}
+					toRemove.getChars(0,lenght,pomChars,0);
+					for (int j=0;j<lenght;j++){
+						if (Character.isWhitespace(pomChars[j])) {
+							toRemove.deleteCharAt(j-charRemoved++);
+						}
+					}
+				}
+				pom=toRemove.toString();
 				if (lowerUpperCase[i][LOWER]){
 					pom=pom.toLowerCase();
 				}
@@ -150,7 +167,7 @@ public class KeyGenerator extends Node {
 				}else{
 					offset=shortPom.length();
 				}
-				for (int k=shortPom.length();k<keys[i].lenght;k++){
+				for (int k=shortPom.length();k<keys[i].getLenght();k++){
 					shortPom.insert(offset,' ');
 				}
 				resultString.append(shortPom);
@@ -234,12 +251,15 @@ public class KeyGenerator extends Node {
 		while (j<keyParam.length()){
 			c=Character.toLowerCase(keyParam.charAt(j));
 			switch (c) {
-			case 'l':lowerUpperCase[i][LOWER]=true;
+			case 'l':lowerUpperCase[i][LOWER] = true;
 				break;
-			case 'u':lowerUpperCase[i][UPPER]=true;
+			case 'u':lowerUpperCase[i][UPPER] = true;
 				break;
 			case 's':removeBlankSpace[i] = true;
 				break;
+			case 'a':onlyAlpfaNumeric[i][ALPHA] = true;
+				break;
+			case 'n':onlyAlpfaNumeric[i][NUMRIC] = true;
 			}
 			j++;
 		}
@@ -262,6 +282,7 @@ public class KeyGenerator extends Node {
 		keys=new Key[length];
 		lowerUpperCase = new boolean[length][2];
 		removeBlankSpace = new boolean[length];
+		onlyAlpfaNumeric = new boolean[length][2];
 		for (int i=0;i<length;i++){
 			getParam(key[i],i);
 		}
