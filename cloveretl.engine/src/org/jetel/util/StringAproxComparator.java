@@ -1,5 +1,6 @@
 package org.jetel.util;
 
+import java.text.CollationKey;
 import java.text.Collator;
 import java.text.ParseException;
 import java.text.RuleBasedCollator;
@@ -73,6 +74,13 @@ public class StringAproxComparator{
 		return (StringAproxComparator)comparators.get(cp);
 	}
 
+	public static StringAproxComparator createComparator(String locale,
+			boolean s1,boolean s2,boolean s3,boolean s4) throws JetelException{
+		boolean[] strenght={s1,s2,s3,s4};
+		return createComparator(locale,strenght);
+	}
+
+	
 	public static StringAproxComparator createComparator(boolean[] strenght)
 			throws JetelException{
 		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
@@ -85,6 +93,12 @@ public class StringAproxComparator{
 		return (StringAproxComparator)comparators.get(cp);
 	}
 	
+	public static StringAproxComparator createComparator(boolean s1,boolean s2,boolean s3,boolean s4) 
+			throws JetelException{
+		boolean[] strenght={s1,s2,s3,s4};
+		return createComparator(strenght);
+	}
+
 	/**
 	 * Checks if for given parameters there are possible settings: 
 	 *  stronger field  can not be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false:
@@ -182,16 +196,16 @@ public class StringAproxComparator{
 		return locale;
 	}
 	
-	public boolean charEquals(char c1, char c2, int strenth) {
+	public boolean charEquals(char c1, char c2, int strenth ) {
         switch (strenth) {
         case IDENTICAL:
             return c1 == c2;
         case TERTIARY:
              return (Character.toLowerCase(c1)==Character.toLowerCase(c2));
         case SECONDARY:
-        	return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0);
+         	return (col.compare(String.valueOf(c1), String.valueOf(c2)) == 0);
         case PRIMARY:
-            return (en_col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || 
+         	return (en_col.compare(String.valueOf(c1), String.valueOf(c2)) == 0 || 
             		charEquals(c1, c2, StringAproxComparator.SECONDARY));
         }
         return false;
@@ -412,4 +426,7 @@ public class StringAproxComparator{
 		}
 	}
 
+	public CollationKey getCollationKey(String source){
+		return col.getCollationKey(source);
+	}
 }
