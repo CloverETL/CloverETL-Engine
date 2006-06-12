@@ -16,6 +16,8 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 
+import sun.text.Normalizer;
+
 /**
  * This component creates reference matching key which is 
  * costructed as combination of signs from given data fields
@@ -41,6 +43,7 @@ public class KeyGenerator extends Node {
 	private boolean[][] lowerUpperCase;
 	private boolean[] removeBlankSpace;
 	private boolean[][] onlyAlpfaNumeric;
+	private boolean[] removeDiacritic;
 	private int[][] fieldMap;
 	private int outKey;
 	private InputPort inPort;
@@ -132,6 +135,9 @@ public class KeyGenerator extends Node {
 					}
 				}
 				pom=toRemove.toString();
+				if (removeDiacritic[i]){
+					pom=Normalizer.decompose(pom, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+				}
 				if (lowerUpperCase[i][LOWER]){
 					pom=pom.toLowerCase();
 				}
@@ -260,6 +266,8 @@ public class KeyGenerator extends Node {
 			case 'a':onlyAlpfaNumeric[i][ALPHA] = true;
 				break;
 			case 'n':onlyAlpfaNumeric[i][NUMRIC] = true;
+				break;
+			case 'd':removeDiacritic[i] = true;
 			}
 			j++;
 		}
