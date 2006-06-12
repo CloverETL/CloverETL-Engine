@@ -165,8 +165,8 @@ public class DBConnection extends GraphElement implements IConnection {
 		}
 	}
 
-	public DBConnection(Properties configProperties) {
-        super(configProperties.getProperty(XML_ID_ATTRIBUTE));
+	public DBConnection(String id, Properties configProperties) {
+        super(id);
 	    this.openedConnections=new HashMap();
 		this.config = configProperties;
 		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
