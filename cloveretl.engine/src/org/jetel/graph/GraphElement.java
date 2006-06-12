@@ -6,6 +6,8 @@
 package org.jetel.graph;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.StringUtils;
 
 /**
  * Ascendant of all elements, which can be put into transformation graph.
@@ -25,11 +27,11 @@ public abstract class GraphElement {
      */
     public final static String XML_ID_ATTRIBUTE = "id";
 
-    protected String id;
+    final private String id;
 
-    protected TransformationGraph graph;
+    private TransformationGraph graph;
     
-    protected String name;
+    private String name;
 
     /**
      * Constructor.
@@ -64,6 +66,9 @@ public abstract class GraphElement {
      * @param name
      */
     public GraphElement(String id, TransformationGraph graph, String name) {
+        if (!StringUtils.isValidObjectName(id)){
+            throw new InvalidGraphObjectNameException(id, "GRAPH_ELEMENT");
+        }
         this.id = id;
         this.graph = graph;
         this.name = name;
@@ -101,10 +106,6 @@ public abstract class GraphElement {
 
     public String getId() {
         return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
     }
 
     public String getName() {

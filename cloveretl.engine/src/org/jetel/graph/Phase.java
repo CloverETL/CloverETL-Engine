@@ -18,7 +18,6 @@
 *
 */
 package org.jetel.graph;
-import java.io.IOException;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -134,7 +133,7 @@ public class Phase implements Comparable {
 			try {
 				edge = (Edge) edgeIterator.next();
 				edge.init();
-			} catch (IOException ex) {
+			} catch (ComponentNotReadyException ex) {
 				logger.error(ex);
 				return false;
 			}

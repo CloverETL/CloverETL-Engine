@@ -227,7 +227,7 @@ public class TransformationGraphAnalyzer {
 								((Edge)edge).setType(Edge.EDGE_TYPE_BUFFERED);
 								// DEBUG
 								//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
-								logger.debug(((Edge)edge).getID()+" edge has been set to TYPE_BUFFERED.");
+								logger.debug(((Edge)edge).getId()+" edge has been set to TYPE_BUFFERED.");
 							}
 						}
 					}

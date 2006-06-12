@@ -31,6 +31,7 @@ import org.jetel.metadata.MetadataFactory;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.OutputPort;
 import org.jetel.util.StringUtils;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 
 /**
@@ -45,12 +46,9 @@ import org.jetel.exception.InvalidGraphObjectNameException;
  * @see        org.jetel.graph.OutputPort
  * @revision   $Revision$
  */
-public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
+public class Edge extends GraphElement implements InputPort, OutputPort, InputPortDirect, OutputPortDirect {
 
     private static Log logger = LogFactory.getLog(Edge.class);
-
-	protected TransformationGraph graph;
-	protected String id;
 
 	protected Node reader;
 	protected Node writer;
@@ -84,13 +82,9 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @since            April 2, 2002
 	 */
 	public Edge(String id, DataRecordMetadata metadata, boolean debugMode) {
-		if (!StringUtils.isValidObjectName(id)){
-			throw new InvalidGraphObjectNameException(id,"EDGE");
-		}
-		this.id = id;
+        super(id);
 		this.metadata = metadata;
         this.debugMode = debugMode;
-		this.graph = null;
 		reader = writer = null;
 		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
 		edge = null;
@@ -113,28 +107,6 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 */
 	public void setType(int edgeType) {
 		this.edgeType = edgeType;
-	}
-
-
-	/**
-	 *  Sets the Graph attribute of the Edge object
-	 *
-	 * @param  graph  The new Graph value
-	 * @since         April 11, 2002
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
-	}
-
-
-	/**
-	 *  An operation that does ...
-	 *
-	 * @return    The ID value
-	 * @since     April 2, 2002
-	 */
-	public String getID() {
-		return id;
 	}
 
 
@@ -210,18 +182,18 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 	 * @exception  IOException  Description of Exception
 	 * @since                   April 2, 2002
 	 */
-	public void init() throws IOException {
+	public void init() throws ComponentNotReadyException {
 		/* if metadata is null and we have metadata stub, try to
 		 * load metadata from JDBC
 		 */
 		if (metadata==null){
 			if (metadataStub==null){
-				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getID());
+				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getId());
 			}
 			try{
 				metadata=MetadataFactory.fromJDBC(metadataStub);
 			}catch(SQLException ex){
-				throw new IOException(ex.getMessage());
+				throw new ComponentNotReadyException(ex.getMessage());
 			}
 		}
 		if (edge == null) {
@@ -235,11 +207,19 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 		}
         if(debugMode) {
             String debugFileName = getDebugFileName();
-            logger.debug("Edge '" + getID() + "' is running in debug mode. (" + debugFileName + ")");
+            logger.debug("Edge '" + getId() + "' is running in debug mode. (" + debugFileName + ")");
             edgeDebuger = new EdgeDebuger(debugFileName, false);
-            edgeDebuger.init();
+            try{
+                edgeDebuger.init();
+            }catch(IOException ex){
+                throw new ComponentNotReadyException(ex.getMessage());
+            }
         }
-		edge.init();
+        try{
+            edge.init();
+        }catch(IOException ex){
+            throw new ComponentNotReadyException(ex.getMessage());
+        }
 	}
 
     /**
@@ -247,12 +227,12 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
      * @return absoute path to debug file
      */
     private String getDebugFileName() {
-        String tmpFile = graph.getDebugDirectory();
+        String tmpFile = getGraph().getDebugDirectory();
         
         if(!tmpFile.endsWith(System.getProperty("file.separator"))) {
             tmpFile += System.getProperty("file.separator");
         }
-        tmpFile += getID() + ".dbg";
+        tmpFile += getId() + ".dbg";
 
         return tmpFile;
     }
@@ -373,6 +353,20 @@ public class Edge implements InputPort, OutputPort, InputPortDirect, OutputPortD
 
     public int getOutputPortNumber() {
         return writerPort;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#checkConfig()
+     */
+    public boolean checkConfig() {
+        return true;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#free()
+     */
+    public void free() {
+        close();
     }
 }
 /*
