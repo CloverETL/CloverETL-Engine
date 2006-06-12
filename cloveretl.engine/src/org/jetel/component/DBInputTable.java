@@ -147,7 +147,7 @@ public class DBInputTable extends Node {
 		//set fetch size (if defined)
 		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
-		parser.open(this.graph.getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
+		parser.open(getGraph().getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
 		
 	}
 

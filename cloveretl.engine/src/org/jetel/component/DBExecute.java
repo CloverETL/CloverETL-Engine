@@ -163,7 +163,7 @@ public class DBExecute extends Node {
 		//}
 		// get dbConnection from graph
 	    if (dbConnection == null){
-	        dbConnection = this.graph.getDBConnection(dbConnectionName);
+	        dbConnection = getGraph().getDBConnection(dbConnectionName);
 	    }
 		if (dbConnection == null) {
 			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);

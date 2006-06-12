@@ -333,7 +333,7 @@ public class HashJoin extends Node {
 			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
 					codeParser.setSourceCode(transformSource);
 					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+this.id);
+					codeParser.addTransformCodeStub("Transform"+ getId());
 					// DEBUG
 					//System.out.println(codeParser.getSourceCode());
 			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
@@ -357,7 +357,7 @@ public class HashJoin extends Node {
 				}
 			}
 		}
-        transformation.setGraph(graph);
+        transformation.setGraph(getGraph());
 		// init transformation
 		Collection col = getInPorts();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];

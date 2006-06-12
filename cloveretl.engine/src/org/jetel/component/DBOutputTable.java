@@ -261,7 +261,7 @@ public class DBOutputTable extends Node {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
 		// get dbConnection from graph
-		dbConnection = this.graph.getDBConnection(dbConnectionName);
+		dbConnection = getGraph().getDBConnection(dbConnectionName);
 		if (dbConnection == null) {
 			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
 		}

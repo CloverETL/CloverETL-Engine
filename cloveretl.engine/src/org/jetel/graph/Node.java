@@ -31,8 +31,6 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
-import org.jetel.exception.InvalidGraphObjectNameException;
-import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -111,27 +109,10 @@ public abstract class Node extends GraphElement implements Runnable {
 	 */
 	public Node(String id) {
 		super(id);
-		if (!StringUtils.isValidObjectName(id)){
-			throw new InvalidGraphObjectNameException(id,"NODE");
-		}
-		this.id = id;
 		outPorts = new TreeMap();
 		inPorts = new TreeMap();
 		logPort = null;
 		phase = 0;
-	}
-
-
-	/**
-	 *  Assigns reference to Graph object which holds this Node. The reference
-	 * can be used by Node (subclass/Component) to access various data object
-	 * stored within graph.
-	 *
-	 *@param  graph  The new Graph value
-	 *@since         April 5, 2002
-	 */
-	public void setGraph(TransformationGraph graph) {
-		this.graph = graph;
 	}
 
 
@@ -727,7 +708,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since       April 18, 2002
 	 */
 	public boolean equals(Object obj) {
-		if (this.id.equals(((Node) obj).getId())) {
+		if (getId().equals(((Node) obj).getId())) {
 			return true;
 		} else {
 			return false;

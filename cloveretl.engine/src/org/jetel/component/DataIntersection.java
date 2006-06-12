@@ -436,7 +436,7 @@ public class DataIntersection extends Node {
 
 			}
 		}
-        transformation.setGraph(graph);
+        transformation.setGraph(getGraph());
 		// init transformation
 		Collection col = getInPorts();
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];

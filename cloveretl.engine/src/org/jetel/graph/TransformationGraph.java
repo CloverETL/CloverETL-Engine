@@ -677,7 +677,7 @@ public final class TransformationGraph {
 			iterator = phasesArray[i].getEdges().iterator();
 			while (iterator.hasNext()) {
 				edge = (Edge) iterator.next();
-				logger.info("\t" + edge.getID() + " type: "
+				logger.info("\t" + edge.getId() + " type: "
 					+ (edge.getType() == Edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct"));
 			}
 			logger.info("--- end phase ---");
