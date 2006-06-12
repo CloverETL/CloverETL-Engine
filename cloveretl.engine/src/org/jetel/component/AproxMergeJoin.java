@@ -440,7 +440,7 @@ public class AproxMergeJoin extends Node {
 			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
 					codeParser.setSourceCode(transformSource);
 					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+this.id+"ForConforming");
+					codeParser.addTransformCodeStub("Transform"+this.getId()+"ForConforming");
 					// DEBUG
 					// System.out.println(codeParser.getSourceCode());
 			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
@@ -465,7 +465,7 @@ public class AproxMergeJoin extends Node {
 				}
 			}
 		}
-        transformation.setGraph(graph);
+        transformation.setGraph(getGraph());
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
 		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
@@ -507,7 +507,7 @@ public class AproxMergeJoin extends Node {
 			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
 					codeParser.setSourceCode(transformSourceForSuspicious);
 					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+this.id+"ForSuspicious");
+					codeParser.addTransformCodeStub("Transform"+this.getId()+"ForSuspicious");
 					// DEBUG
 					// System.out.println(codeParser.getSourceCode());
 			        dynamicTransformationForSuspicious = new DynamicJavaCode(codeParser.getSourceCode());
@@ -532,7 +532,7 @@ public class AproxMergeJoin extends Node {
 				}
 			}
 		}
-        transformationForSuspicious.setGraph(graph);
+        transformationForSuspicious.setGraph(getGraph());
 		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
