@@ -746,7 +746,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <keyType inputPortName="1"/>
 </property>
 <property category="clover" displayName="Conformity limit" modifiable="true" name="conformity" nullable="true">
-<singleType name="string"/>
+<singleType name="double"/>
 </property>
 </properties>
 </ETLComponent>
