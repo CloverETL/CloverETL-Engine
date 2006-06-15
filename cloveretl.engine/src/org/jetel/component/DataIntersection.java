@@ -20,6 +20,9 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -37,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.w3c.dom.Element;
@@ -93,12 +97,15 @@ import org.w3c.dom.Element;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
  *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input; field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *	   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming paired data (A&amp;B)<br>
- *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
- * 		below</i></td></tr>
+ *    <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *      to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
+ *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
+ *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
+ *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
+ *&lt;attr name="javaSource"&gt;
  *import org.jetel.component.DataRecordTransform;
  *import org.jetel.data.*;
  * 
@@ -112,7 +119,7 @@ import org.w3c.dom.Element;
  *		return true;
  *	}
  *}
- *
+ *&lt;/attr&gt;
  *&lt;/Node&gt;</pre>
  * @author      dpavlis
  * @since       April 29, 2005
@@ -127,7 +134,10 @@ public class DataIntersection extends Node {
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
-	
+    private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
+    private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
+    private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+
 	private final static int WRITE_TO_PORT_A = 0;
 	private final static int WRITE_TO_PORT_A_B = 1;
 	private final static int WRITE_TO_PORT_B = 2;
@@ -139,9 +149,11 @@ public class DataIntersection extends Node {
 	private final static int TEMPORARY = 1;
 
 	private String transformClassName;
+    private String transformSource = null;
+    private String libraryPath = null;
 
 	private RecordTransform transformation = null;
-	private DynamicJavaCode dynamicTransformation = null;
+	private DynamicJavaCode dynamicTransformCode = null;
 
 	private String[] joinKeys;
 	private String[] slaveOverrideKeys = null;
@@ -171,6 +183,11 @@ public class DataIntersection extends Node {
 		this.transformClassName = transformClass;
 	}
 
+    public DataIntersection(String id, String[] joinKeys, String transform, boolean distincter) {
+        super(id);
+        this.joinKeys = joinKeys;
+        this.transformSource = transform;
+    }
 
 	/**
 	 *  Constructor for the SortedJoin object
@@ -188,7 +205,7 @@ public class DataIntersection extends Node {
 	public DataIntersection(String id, String[] joinKeys, DynamicJavaCode dynaTransCode) {
 		super(id);
 		this.joinKeys = joinKeys;
-		this.dynamicTransformation=dynaTransCode;
+		this.dynamicTransformCode = dynaTransCode;
 	}
 	
 
@@ -409,33 +426,64 @@ public class DataIntersection extends Node {
 		recordKeys[0].init();
 		recordKeys[1].init();
 
-		if (transformation == null) {
-			if (transformClassName != null) {
-				// try to load in transformation class & instantiate
-				try {
-					tClass = Class.forName(transformClassName);
-				} catch (ClassNotFoundException ex) {
-					throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
-				}
-				try {
-					transformation = (RecordTransform) tClass.newInstance();
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
-				}
-			} else {
-				logger.info(" (compiling dynamic source) ");
-				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = dynamicTransformation.instantiate();
-				if (transObject instanceof RecordTransform) {
-					transformation = (RecordTransform) transObject;
-				} else {
-					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
-				}
-
-			}
-		}
+        // do we have transformation object directly specified or shall we create it ourselves
+        if (transformation == null) {
+            if (transformClassName != null) {
+                // try to load in transformation class & instantiate
+                try {
+                    tClass = Class.forName(transformClassName);
+                } catch (ClassNotFoundException ex) {
+                    // let's try to load in any additional .jar library (if specified)
+                    if(libraryPath == null) {
+                        throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+                    }
+                    String urlString = "file:" + libraryPath;
+                    URL[] myURLs;
+                    try {
+                        myURLs = new URL[] { new URL(urlString) };
+                        URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
+                        tClass = Class.forName(transformClassName, true, classLoader);
+                    } catch (MalformedURLException ex1) {
+                        throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+                    } catch (ClassNotFoundException ex1) {
+                        throw new RuntimeException("Can not find class: " + ex1);
+                    }
+                }
+                try {
+                    transformation = (RecordTransform) tClass.newInstance();
+                } catch (Exception ex) {
+                    throw new ComponentNotReadyException(ex.getMessage());
+                }
+            } else {
+                if(dynamicTransformCode == null) { //transformSource is set
+                    //creating dynamicTransformCode from internal transformation format
+                    CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
+                    codeParser.setSourceCode(transformSource);
+                    codeParser.parse();
+                    codeParser.addTransformCodeStub("Transform"+ getId());
+                    // DEBUG
+                    // System.out.println(codeParser.getSourceCode());
+                    dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode());
+                    dynamicTransformCode.setCaptureCompilerOutput(true);
+                }
+                logger.info(" (compiling dynamic source) ");
+                // use DynamicJavaCode to instantiate transformation class
+                Object transObject = null;
+                try {
+                    transObject = dynamicTransformCode.instantiate();
+                } catch(RuntimeException ex) {
+                    logger.debug(dynamicTransformCode.getCompilerOutput());
+                    logger.debug(dynamicTransformCode.getSourceCode());
+                    throw new ComponentNotReadyException("Transformation code is not compilable.\n"
+                            + "reason: " + ex.getMessage());
+                }
+                if (transObject instanceof RecordTransform) {
+                    transformation = (RecordTransform) transObject;
+                } else {
+                    throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+                }
+            }
+        }
         transformation.setGraph(getGraph());
 		// init transformation
 		Collection col = getInPorts();
@@ -514,23 +562,43 @@ public class DataIntersection extends Node {
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		DataIntersection intersection;
-		DynamicJavaCode dynaTransCode;
+		DynamicJavaCode dynaTransCode = null;
 
 		try {
-			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)){
-				intersection = new DataIntersection(xattribs.getString("id"),
-						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
-			}else{
-				// do we have child node wich Java source code ?
-				dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-				if (dynaTransCode == null) {
-					throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-				}
-				intersection= new DataIntersection(xattribs.getString("id"),
-							xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-							dynaTransCode);
-			}
+			//if transform class defined (as an attribute) use it first
+            if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
+                intersection = new DataIntersection(xattribs.getString("id"),
+                        xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                        xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
+                if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
+                    intersection.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
+                }
+            } else {
+                if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
+                    dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
+                }else{
+                    // do we have child node wich Java source code ?
+                    try {
+                        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
+                    } catch(Exception ex) {
+                        //do nothing
+                    }
+                }
+                if (dynaTransCode != null) {
+                    intersection= new DataIntersection(xattribs.getString("id"),
+                            xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                            dynaTransCode);
+                } else { //last chance to find reformat code is in transform attribute
+                    if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
+                        intersection= new DataIntersection(xattribs.getString("id"),
+                                xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                                xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
+                    } else {
+                        throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+                    }
+                }
+            }
+            
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -546,6 +614,12 @@ public class DataIntersection extends Node {
 		}
 	}
 
+    /**
+     * @param string
+     */
+    private void setLibraryPath(String libraryPath) {
+        this.libraryPath = libraryPath;
+    }
 
 	/**  Description of the Method */
 	public boolean checkConfig() {

@@ -77,6 +77,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td>
  *  </tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
+ *  <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
  *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
  * class in Properties object - as a key->value pair. There is no limit to how many optional
  * attributes can be used.</td>
@@ -88,6 +89,7 @@ import org.w3c.dom.Element;
  *  Example with transformation code embedded into graph:<br>
  *  <pre>
  * &lt;Node id="REF" type="REFORMAT"&gt;
+ * &lt;attr name="javaSource"&gt;
  * import org.jetel.component.DataRecordTransform;
  * import org.jetel.metadata.DataRecordMetadata;
  * import org.jetel.data.*;
@@ -119,6 +121,7 @@ import org.w3c.dom.Element;
  *			return true;
  *	}
  * }
+ * &lt;/attr&gt;
  * &lt;/Node&gt;
  * </pre>
  * <hr>
