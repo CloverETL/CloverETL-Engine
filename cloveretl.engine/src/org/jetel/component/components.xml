@@ -701,7 +701,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </outputPorts>
 <properties>
 <property category="clover" displayName="Key" modifiable="true" name="key" nullable="true">
-<singleType name="string"/>
+<keyType inputPortName="0"/>
 </property>
 </properties>
 </ETLComponent>
