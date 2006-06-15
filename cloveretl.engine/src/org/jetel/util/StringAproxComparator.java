@@ -143,7 +143,7 @@ public class StringAproxComparator{
 	private StringAproxComparator(boolean identical,boolean tertiary,
 				boolean secundary,boolean primary) {
 
-		col.setStrength(Collator.TERTIARY);
+		col.setStrength(Collator.PRIMARY);
 		en_col.setStrength(Collator.PRIMARY);
 		setStrentgh(identical, tertiary, secundary, primary);
 	}
@@ -183,7 +183,7 @@ public class StringAproxComparator{
 			ex.printStackTrace();
 		}
 		 catch(NoSuchFieldException ex) {
-			 col=Collator.getInstance();
+			 col=Collator.getInstance(new Locale(locale.substring(0,2)));
 			 this.locale=null;
 		 }
 		 catch(StringIndexOutOfBoundsException ex){
