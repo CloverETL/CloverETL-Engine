@@ -349,7 +349,7 @@ class WatchDog extends Thread {
             // was there an uncaught error ?
             if (node.getResultCode()==Node.RESULT_ERROR || node.getResultCode()==Node.RESULT_FATAL_ERROR){
                result=false;
-               logger.error("in node "+node.getID()+" : "+node.getResultMsg());
+               logger.error("in node "+node.getId()+" : "+node.getResultMsg());
             }
         }
 		//end of phase, destroy it
