@@ -187,9 +187,12 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		dataBuffer.clear();
 
 		do {  // Make sure we encode and output all the characters as bytes.
-
-		    result=encoder.encode(charBuffer,dataBuffer,endOfData);		
-		    dataBuffer.flip();
+		    
+            result=encoder.encode(charBuffer,dataBuffer,endOfData);
+            if (result.isError()){
+                throw new IOException(result.toString()+" when converting to "+encoder.charset());
+            }
+            dataBuffer.flip();
 		    writer.write(dataBuffer);
 		    dataBuffer.clear();
 
@@ -203,6 +206,9 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		if (endOfData) {
 		    do {
 			result = encoder.flush(dataBuffer);
+            if (result.isError()){
+                throw new IOException(result.toString()+" when converting to "+encoder.charset());
+            }
 			dataBuffer.flip();
 			writer.write(dataBuffer);
 			dataBuffer.clear();
