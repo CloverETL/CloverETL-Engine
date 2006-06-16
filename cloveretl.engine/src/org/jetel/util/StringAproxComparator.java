@@ -106,7 +106,7 @@ public class StringAproxComparator{
 	 *  identical:	 T F F F  T F F  T F  T
 	 *  tertiary:	 T T F F  T T F  T T  F
 	 *  secundary: 	 T T T F  T T T  F F  F
-	 *  primary:		 T T T T  F F F  F F  F
+	 *  primary:	 T T T T  F F F  F F  F
 	 * 
 	 * @param strentgh - strentgh of comparator
 	 * @param identical - indicates if IDEN level works
@@ -117,20 +117,12 @@ public class StringAproxComparator{
 	 */
 	public static boolean checkStrentgh(boolean identical,boolean tertiary,
 				boolean secondary,boolean primary){
-		if (primary){
-			if (secondary){
-				if (!tertiary && identical) return false;
-			}
-			else { 
-				if (!identical) return false;
-			}
-		}else {
-			if (secondary) {
-				if (!tertiary && identical) return false;
-			}else{
-				if (!tertiary && !identical) return false;
-			}
-		}
+		if (identical && !tertiary && secondary && primary) return false;
+		if (identical && tertiary && !secondary && primary) return false;
+		if (!identical && tertiary && !secondary && primary) return false;
+		if (identical && !tertiary && ! secondary && primary) return false;
+		if (identical && ! tertiary && secondary && !primary) return false;
+		if (!identical && !tertiary && !secondary && !primary) return false;
 		return true;
 	}
 	
