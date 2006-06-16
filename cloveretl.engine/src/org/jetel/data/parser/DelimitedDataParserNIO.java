@@ -229,49 +229,57 @@ public class DelimitedDataParserNIO implements Parser {
 
 
 	/**
-	 *  Description of the Method
-	 *
-	 *@return                  Description of the Returned Value
-	 *@exception  IOException  Description of Exception
-	 *@since                   May 13, 2002
-	 */
-	private int readChar() throws IOException {
-	  
-	    if (charBuffer.hasRemaining()) {
-	        return charBuffer.get();
-	    }
-	    
-	    if (isEof) return -1;
-	    
-	    charBuffer.clear();
-	    if (dataBuffer.hasRemaining()) 
-	        dataBuffer.compact();
-	    else
-	        dataBuffer.clear();
-	    
-	    if (reader.read(dataBuffer)==-1){
-	        isEof=true;
-	    }
-	    dataBuffer.flip();
-	    
-	    if (decoder.decode(dataBuffer,charBuffer,isEof)==CoderResult.UNDERFLOW){
-	        //try to load additional data
-	        dataBuffer.compact();
-	        
-	        if (reader.read(dataBuffer)==-1){
-	            isEof=true;
-	        }
-	        dataBuffer.flip();
-	        decoder.decode(dataBuffer,charBuffer,isEof);
-	    }
-	    if (isEof){
-	        decoder.flush(charBuffer);   
-	    }
-	    charBuffer.flip();
-	    return charBuffer.hasRemaining() ? charBuffer.get() : -1;
-	    
-	    
-	}
+     * Description of the Method
+     * 
+     * @return Description of the Returned Value
+     * @exception IOException
+     *                Description of Exception
+     * @since May 13, 2002
+     */
+    private int readChar() throws IOException {
+        CoderResult result;
+
+        if (charBuffer.hasRemaining()) {
+            return charBuffer.get();
+        }
+
+        if (isEof)
+            return -1;
+
+        charBuffer.clear();
+        if (dataBuffer.hasRemaining())
+            dataBuffer.compact();
+        else
+            dataBuffer.clear();
+
+        if (reader.read(dataBuffer) == -1) {
+            isEof = true;
+        }
+        dataBuffer.flip();
+
+        result = decoder.decode(dataBuffer, charBuffer, isEof);
+        if (result == CoderResult.UNDERFLOW) {
+            // try to load additional data
+            dataBuffer.compact();
+
+            if (reader.read(dataBuffer) == -1) {
+                isEof = true;
+            }
+            dataBuffer.flip();
+            decoder.decode(dataBuffer, charBuffer, isEof);
+        } else if (result.isError()) {
+            throw new IOException(result.toString()+" when converting from "+decoder.charset());
+        }
+        if (isEof) {
+            result = decoder.flush(charBuffer);
+            if (result.isError()) {
+                throw new IOException(result.toString()+" when converting from "+decoder.charset());
+            }
+        }
+        charBuffer.flip();
+        return charBuffer.hasRemaining() ? charBuffer.get() : -1;
+
+    }
 	
 
 
