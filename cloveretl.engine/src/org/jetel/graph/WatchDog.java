@@ -342,6 +342,16 @@ class WatchDog extends Thread {
 		logger.info("Sucessfully started all nodes in phase!");
 		// watch running nodes in phase
 		result = watch(phase, leafNodes);
+        // check how nodes in phase finished
+        Node node;
+        for (Iterator i=phase.getNodes().iterator();i.hasNext();){
+            node=(Node)i.next();
+            // was there an uncaught error ?
+            if (node.getResultCode()==Node.RESULT_ERROR || node.getResultCode()==Node.RESULT_FATAL_ERROR){
+               result=false;
+               logger.error("in node "+node.getID()+" : "+node.getResultMsg());
+            }
+        }
 		//end of phase, destroy it
 		phase.destroy();
 		return result;
