@@ -257,7 +257,7 @@ public class DataIntersection extends Node {
 	throws IOException, InterruptedException {
 	    inRecords[0] = driver;
 	    inRecords[1] = slave;
-	    outRecords[0]= out;
+	    outRecords[1]= out;
 	    
 	    if (!transformation.transform(inRecords, outRecords)) {
 	        resultMsg = transformation.getMessage();
