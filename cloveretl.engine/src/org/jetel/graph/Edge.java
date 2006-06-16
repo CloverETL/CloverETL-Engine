@@ -293,7 +293,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since                            August 13, 2002
 	 */
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-        if(edgeDebuger != null) edgeDebuger.writeRecord(record);
+        if(edgeDebuger != null) {
+            edgeDebuger.writeRecord(record);
+            record.rewind();
+        }
 		edge.writeRecordDirect(record);
 	}
 
