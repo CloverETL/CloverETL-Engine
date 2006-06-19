@@ -96,7 +96,7 @@ public class AproxMergeJoin extends Node {
 	// for passing data records into transform function
 	private final static DataRecord[] inRecords = new DataRecord[2];
 	private DataRecord[] outConformingRecords=new DataRecord[1];
-	private DataRecord[] outSuspiciousRcords = new DataRecord[1];
+	private DataRecord[] outSuspiciousRcords = new DataRecord[2];
 
 	private Properties transformationParameters;
 	private Properties transformationParametersForSuspicious;
@@ -252,7 +252,7 @@ public class AproxMergeJoin extends Node {
 		inRecords[0] = driver;
 		inRecords[1] = slave;
 		outConformingRecords[0] = outConforming;
-		outSuspiciousRcords[0] = outSuspicious;
+		outSuspiciousRcords[1] = outSuspicious;
 
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
@@ -546,10 +546,10 @@ public class AproxMergeJoin extends Node {
 			pom=joinParameters[i].split(" ");
 			joinKeys[i]=pom[0];
 			maxDiffrenceLetters[i]=Integer.parseInt(pom[1]);
+			weights[i]=Double.parseDouble(pom[2]);
 			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
-				strenght[i][j] = pom[2+j].equals("true") ? true : false;
+				strenght[i][j] = pom[3+j].equals("true") ? true : false;
 			}
-			weights[i]=Double.parseDouble(pom[pom.length-1]);
 		}
 		double sumOfWeights=0;
 		for (int i=0;i<weights.length;i++){
