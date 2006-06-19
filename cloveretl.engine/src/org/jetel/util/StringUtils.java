@@ -19,6 +19,8 @@
  */
 package org.jetel.util;
 
+import sun.text.Normalizer;
+
 /**
  *  Helper class with some useful methods regarding string/text manipulation
  *
@@ -63,8 +65,7 @@ public class StringUtils {
 		}
 		return copy.toString();
 	}
-
-
+	
 	/**
 	 *  Converts textual representation of control characters into control
 	 *  characters<br>
@@ -223,6 +224,59 @@ public class StringUtils {
 	            ? true : false;
 	}
 	
+	
+	/**
+	 * This method removes from the string characters which are not letters nor digits
+	 * 
+	 * @param str - input String
+	 * @param alpha - if true method leaves letters
+	 * @param numeric - if true ethod leaves digits
+	 * @return String where are only letters and (or) digits from input String
+	 */
+	public static String getOnlyAlpfaNumericChars(String str,boolean alpha,boolean numeric){
+		if (!alpha && !numeric){
+			return str;
+		}
+		int charRemoved=0;
+		int lenght=str.length();
+		char[]	pomChars=new char[lenght];
+		str.getChars(0,lenght,pomChars,0);
+		StringBuffer toRemove = new StringBuffer(str);
+		boolean isLetter, isDigit;
+		for (int j=0;j<lenght;j++){
+			isLetter = Character.isLetter(pomChars[j]);
+			isDigit = Character.isDigit(pomChars[j]);
+			if (!(isLetter || isDigit)){
+				toRemove.deleteCharAt(j-charRemoved++);
+			}else{
+				if (isLetter && !alpha){
+					toRemove.deleteCharAt(j-charRemoved++);
+				}
+				if (isDigit && !numeric){
+					toRemove.deleteCharAt(j-charRemoved++);
+				}
+			}
+		}
+		return toRemove.toString();
+	}
+	
+	public static String removeBlankSpace(String str){
+		int charRemoved=0;
+		int lenght=str.length();
+		char[]	pomChars=new char[lenght];
+		str.getChars(0,lenght,pomChars,0);
+		StringBuffer toRemove = new StringBuffer(str);
+		for (int j=0;j<lenght;j++){
+			if (Character.isWhitespace(pomChars[j])) {
+				toRemove.deleteCharAt(j-charRemoved++);
+			}
+		}
+		return toRemove.toString();
+	}
+	
+	public static String removeDiacritic(String str){
+		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+	}
 }
 /*
  *  End class StringUtils
