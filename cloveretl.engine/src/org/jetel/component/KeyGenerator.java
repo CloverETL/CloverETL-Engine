@@ -14,6 +14,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 
 import sun.text.Normalizer;
@@ -27,7 +28,7 @@ import sun.text.Normalizer;
 public class KeyGenerator extends Node {
 
 	private static final String XML_KEY_ATTRIBUTE = "key";
-	/**  Description of the Field */
+
 	public final static String COMPONENT_TYPE = "KEY_GEN";
 
 	private final static int WRITE_TO_PORT = 0;
@@ -51,12 +52,9 @@ public class KeyGenerator extends Node {
 	private OutputPort outPort;
 	private DataRecordMetadata outMetadata;
 	
-	int lenght=0;
-	StringBuffer resultString;	
-	String pom=null;
-	StringBuffer toRemove = new StringBuffer();
-	char[] pomChars;
-	int charRemoved;
+	private int lenght=0;
+	private StringBuffer resultString;	
+	private String pom=null;
 
 	/**
 	 * @param id
@@ -93,6 +91,18 @@ public class KeyGenerator extends Node {
 		return r;
 	}
 	
+	/**
+	 * This method fills outRecord with the data from inRecord. 
+	 * outRecord has one more field then inRecord; to this field is 
+	 * set given value 
+	 * 
+	 * @param inRecord
+	 * @param outRecord
+	 * @param map - in map[0] are numbers of fields in inRecord 
+	 * 				 and in map[1] are corresponding fields in outRecord
+	 * @param num - number of field in outRecord, which is lacking in inRecord
+	 * @param value - value to be set to field number "num"
+	 */
 	private void fillOutRecord(DataRecord inRecord,DataRecord outRecord,int[][] map,int num,String value){
 		for (int i=0;i<map.length;i++){
 			outRecord.getField(map[i][1]).setValue(inRecord.getField(map[i][0]).getValue());
@@ -100,43 +110,24 @@ public class KeyGenerator extends Node {
 		outRecord.getField(num).setValue(value);
 	}
 	
+	/**
+	 * This method generates refernece key for input record
+	 * 
+	 * @param inRecord
+	 * @param key - fields from which reference key is to be constructed
+	 * @return referenced key for input record
+	 */
 	private String generateKey(DataRecord inRecord, Key[] key){
 		resultString.setLength(0);
 		for (int i=0;i<keys.length;i++){
-			try{
-				toRemove.setLength(0);
-				toRemove.append(inRecord.getField(keys[i].getName()).getValue().toString());
-				if (onlyAlpfaNumeric[i][ALPHA] || onlyAlpfaNumeric[i][NUMRIC]){
-					charRemoved=0;
-					lenght=toRemove.length();
-					if (pomChars==null || pomChars.length<lenght) {
-						pomChars=new char[lenght];
-					}
-					toRemove.getChars(0,lenght,pomChars,0);
-					for (int j=0;j<lenght;j++){
-						if (onlyAlpfaNumeric[i][ALPHA] && !Character.isLetter(pomChars[j])) {
-							toRemove.deleteCharAt(j-charRemoved++);
-						}else if (onlyAlpfaNumeric[i][NUMRIC] && !Character.isDigit(pomChars[j])){
-							toRemove.deleteCharAt(j-charRemoved++);
-						}
-					}
-				}
+			try{ //get field value from inRcord
+				pom=inRecord.getField(keys[i].getName()).getValue().toString();
+				pom = StringUtils.getOnlyAlpfaNumericChars(pom,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMRIC]);
 				if (removeBlankSpace[i]) {
-					charRemoved=0;
-					lenght=toRemove.length();
-					if (pomChars==null || pomChars.length<lenght) {
-						pomChars=new char[lenght];
-					}
-					toRemove.getChars(0,lenght,pomChars,0);
-					for (int j=0;j<lenght;j++){
-						if (Character.isWhitespace(pomChars[j])) {
-							toRemove.deleteCharAt(j-charRemoved++);
-						}
-					}
+					pom = StringUtils.removeBlankSpace(pom);
 				}
-				pom=toRemove.toString();
 				if (removeDiacritic[i]){
-					pom=Normalizer.decompose(pom, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+					pom=StringUtils.removeDiacritic(pom);
 				}
 				if (lowerUpperCase[i][LOWER]){
 					pom=pom.toLowerCase();
@@ -144,10 +135,10 @@ public class KeyGenerator extends Node {
 				if (lowerUpperCase[i][UPPER]){
 					pom=pom.toUpperCase();
 				}
-			}catch(NullPointerException ex){
+			}catch(NullPointerException ex){//value of field is null
 				pom="";
 			}
-			try {
+			try {//get substring from the field
 				if (keys[i].fromBegining){
 					int start=keys[i].getStart();
 					resultString.append(pom.substring(start,start+keys[i].getLenght()));
@@ -156,6 +147,8 @@ public class KeyGenerator extends Node {
 					resultString.append(pom.substring(end-keys[i].getLenght(),end));
 				}
 			}catch (StringIndexOutOfBoundsException ex){
+				//string from the field is shorter then demanded part of the key
+				//get whole string from the field and add to it spaces
 				StringBuffer shortPom=new StringBuffer(keys[i].getLenght());
 				//when keys[i].fromBegining=false there is k=-1
 				for (int k=keys[i].getStart();k<keys[i].getStart()+pom.length();k++){
@@ -291,9 +284,11 @@ public class KeyGenerator extends Node {
 		lowerUpperCase = new boolean[length][2];
 		removeBlankSpace = new boolean[length];
 		onlyAlpfaNumeric = new boolean[length][2];
+		removeDiacritic = new boolean[length];
 		for (int i=0;i<length;i++){
 			getParam(key[i],i);
 		}
+		length = 0;
 		for (int i=0;i<keys.length;i++){
 			lenght+=keys[i].getLenght();
 		}
