@@ -51,6 +51,7 @@ public class AproxMergeJoin extends Node {
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
 
+	//Definition of input and output ports
 	private final static int CONFORMING_OUT = 0;
 	private final static int SUSPICIOUS_OUT = 1;
 	private final static int NOT_MATCH_DRIVER_OUT = 2;
@@ -142,13 +143,20 @@ public class AproxMergeJoin extends Node {
 		this.slaveOverwriteKeys = slaveKeys;
 	}
 
+	/**
+	 *  Sets specific key (string) for slave records<br>
+	 *  Can be used if slave record has different name
+	 *  for reference key field
+	 *
+	 * @param slaveRefKey
+	 */
 	private void setSlaveReferenceKey(String slaveRefKey){
 		slaveReferenceKey=new String[1];
 		this.slaveReferenceKey[0]=slaveRefKey;
 	}
 	
 	/**
-	 *  Populates record buffer with all slave records having the same key
+	 *  Populates record buffer with all slave records having the same reference key
 	 *
 	 * @param  port                      Description of the Parameter
 	 * @param  nextRecord                next record from slave
@@ -193,6 +201,7 @@ public class AproxMergeJoin extends Node {
 	 * @param  driver                    Description of the Parameter
 	 * @param  slave                     Description of the Parameter
 	 * @param  slavePort                 Description of the Parameter
+	 * @param  outSlave                  Description of the Parameter
 	 * @param  key                       Description of the Parameter
 	 * @return                           The correspondingRecord value
 	 * @exception  IOException           Description of the Exception
@@ -218,6 +227,14 @@ public class AproxMergeJoin extends Node {
 		// no more records on slave port
 	}
 
+	/**
+	 * Calculates diffrence on given fields between two records 
+	 * 
+	 * @param r1 - driver record
+	 * @param r2 - slave record
+	 * @param fieldsToCompare 
+	 * @return diffrence between two records from interval <0,1>
+	 */
 	private double diffrence(DataRecord r1,DataRecord r2,int[][] fieldsToCompare){
 		double r=0;
 		int max=0;
@@ -233,13 +250,18 @@ public class AproxMergeJoin extends Node {
 	}
 	
 	/**
-	 *  Outputs all combinations of current driver record and all slaves with the
-	 *  same key
+	 *  Outputs all combinations of current driver record and all slaves 
+	 *  with the same key. When conformity between two records is greater 
+	 *  then conformityLimit proper combination is sent to output port 
+	 *  CONFORMING_OUT, else another combination is sent to output port
+	 *  SUSPICIOUS_OUT
 	 *
 	 * @param  driver                    Description of the Parameter
 	 * @param  slave                     Description of the Parameter
-	 * @param  out                       Description of the Parameter
-	 * @param  port                      Description of the Parameter
+	 * @param  outComforming             Description of the Parameter
+	 * @param  outSuspicious             Description of the Parameter
+	 * @param  conforming                Description of the Parameter
+	 * @param  suspicious                Description of the Parameter
 	 * @return                           Description of the Return Value
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
@@ -466,10 +488,19 @@ public class AproxMergeJoin extends Node {
 			}
 		}
         transformation.setGraph(getGraph());
+        //Checking metada on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
 		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
-		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[2];
+		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata();
+		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata();
+		if (!outMetadata[0].equals(inMetadata[0])){
+			throw new ComponentNotReadyException("Wrong metadata on output port no 2 (NOT_MATCH_DRIVER_OUT)");
+		}
+		if (!outMetadata[1].equals(inMetadata[1])){
+			throw new ComponentNotReadyException("Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
+		}
 		if (!transformation.init(transformationParameters,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
@@ -536,7 +567,7 @@ public class AproxMergeJoin extends Node {
 		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, null)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
-
+		//initializing join parameters
 		joinKeys = new String[joinParameters.length];
 		maxDiffrenceLetters = new int[joinParameters.length];
 		boolean[][] strenght=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];

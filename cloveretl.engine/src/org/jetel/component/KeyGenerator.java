@@ -149,17 +149,7 @@ public class KeyGenerator extends Node {
 			}catch (StringIndexOutOfBoundsException ex){
 				//string from the field is shorter then demanded part of the key
 				//get whole string from the field and add to it spaces
-				StringBuffer shortPom=new StringBuffer(keys[i].getLenght());
-				//when keys[i].fromBegining=false there is k=-1
-				for (int k=keys[i].getStart();k<keys[i].getStart()+pom.length();k++){
-					if (pom.length()>k){
-						if (keys[i].fromBegining){
-							shortPom.append(pom.charAt(k));
-						}else{
-							shortPom.insert(0,pom.charAt(pom.length()-2-k));
-						}
-					}
-				}
+				StringBuffer shortPom=new StringBuffer(pom);
 				int offset;
 				if (!keys[i].fromBegining) {
 					offset=0;
@@ -175,6 +165,9 @@ public class KeyGenerator extends Node {
 		return resultString.toString();
 	}
 	
+	/**
+	 *  Main processing method for the KeyGerator object
+	 */
 	public void run() {
 		DataRecord inRecord = new DataRecord(inMetadata);
 		inRecord.init();
@@ -210,6 +203,15 @@ public class KeyGenerator extends Node {
 		resultCode = Node.RESULT_OK;
 	}
 
+	/**
+	 * This method fills keys[], lowerUpperCase[], removeBlankSpace[],
+	 * 	onlyAlpfaNumeric[], removeDiacritic[] from the XML_KEY_ATTRIBUTE
+	 *  for given part of the key
+	 * 
+	 * @param param - part of the key (from XML_KEY_ATTRIBUTE); 
+	 * 			it is in form: name [from][-][number of letters][l|u][sand]
+	 * @param i
+	 */
 	private void getParam(String param,int i){
 		String[] pom=param.split(" ");
 		String keyParam=pom[1];
@@ -278,13 +280,14 @@ public class KeyGenerator extends Node {
 		outPort = getOutputPort(WRITE_TO_PORT);
 		outMetadata=outPort.getMetadata();
 		fieldMap=new int[inMetadata.getNumFields()][2];
-		outKey=mapFields(inMetadata,outMetadata,fieldMap);
+		outKey=mapFields(inMetadata,outMetadata,fieldMap);//number of field which is in out metadata, but is lacking in in metadata
 		int length=key.length;
 		keys=new Key[length];
 		lowerUpperCase = new boolean[length][2];
 		removeBlankSpace = new boolean[length];
 		onlyAlpfaNumeric = new boolean[length][2];
 		removeDiacritic = new boolean[length];
+		//filling keys, lowerUpperCase, removeBlankSpace, onlyAlpfaNumeric, removeDiacritic
 		for (int i=0;i<length;i++){
 			getParam(key[i],i);
 		}
