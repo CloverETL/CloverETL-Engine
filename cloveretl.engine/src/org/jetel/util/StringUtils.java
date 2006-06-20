@@ -260,6 +260,12 @@ public class StringUtils {
 		return toRemove.toString();
 	}
 	
+	/**
+	 * This method removed from string blank space
+	 * 
+	 * @param str - input String
+	 * @return input string without blank space
+	 */
 	public static String removeBlankSpace(String str){
 		int charRemoved=0;
 		int lenght=str.length();
@@ -274,6 +280,13 @@ public class StringUtils {
 		return toRemove.toString();
 	}
 	
+	/**
+	 * This method replaces diacritic chars by theirs equivalence without diacritic.
+	 * It works only for chars for which decomposition is defined
+	 * 
+	 * @param str
+	 * @return string in which diacritc chars are replaced by theirs equivalences without diacritic
+	 */
 	public static String removeDiacritic(String str){
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
