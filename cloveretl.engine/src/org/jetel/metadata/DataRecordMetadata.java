@@ -517,6 +517,27 @@ public class DataRecordMetadata implements Serializable {
         buffer.append("]");
         return buffer.toString();
     }
+    
+    public boolean equals(Object o){
+    	if (!(o instanceof DataRecordMetadata)) {
+    		return false;
+    	}
+    	DataRecordMetadata metadata = (DataRecordMetadata)o;
+    	for (int i=0;i<this.getNumFields();i++){
+    		if (!this.getField(i).equals(metadata.getField(i))){
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
+    public int hashCode(){
+    	int result = 0;
+    	for (int i=0;i<this.getNumFields();i++){
+    		result = 37*result + this.getField(i).hashCode();
+    	}
+    	return result;
+    }
 }
 /*
  *  end class DataRecordMetadata
