@@ -552,6 +552,17 @@ public class DataFieldMetadata implements Serializable {
 		    return DataFieldMetadata.SEQUENCE_FIELD;
 		return DataFieldMetadata.UNKNOWN_FIELD;
 	}
+	
+	public boolean equals(Object o){
+		if (!(o instanceof DataFieldMetadata)){
+			return false;
+		}
+		return this.fieldType==((DataFieldMetadata)o).fieldType;
+	}
+	
+	public int hashCode(){
+		return (int)this.fieldType;
+	}
 
 }
 /*
