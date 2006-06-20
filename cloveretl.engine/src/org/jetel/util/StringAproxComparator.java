@@ -52,6 +52,7 @@ public class StringAproxComparator{
 	Collator col	=Collator.getInstance();
 	private String locale=null;
 	
+	//Comparators factory
 	private static HashMap comparators = new HashMap();
 	
 	public static StringAproxComparator createComparator(String locale,boolean[] strenght)
@@ -165,6 +166,11 @@ public class StringAproxComparator{
 		this(true,false,false,false);
 	}
 	
+	/**
+	 * Sets the locale string and appropriate collator
+	 * 
+	 * @param locale - string which represents given locale
+	 */
 	private void setLocale(String locale) {
 		try {
 			col=new RuleBasedCollator(
@@ -175,8 +181,9 @@ public class StringAproxComparator{
 			ex.printStackTrace();
 		}
 		 catch(NoSuchFieldException ex) {
-			 col=Collator.getInstance(new Locale(locale.substring(0,2)));
-			 this.locale=null;
+			 Locale l=new Locale(locale.substring(0,2));
+			 col=Collator.getInstance(l);
+			 this.locale=l.getCountry();
 		 }
 		 catch(StringIndexOutOfBoundsException ex){
 			 col=Collator.getInstance();
@@ -188,6 +195,14 @@ public class StringAproxComparator{
 		return locale;
 	}
 	
+	/**
+	 * This method checks if two chars are equal on given comparison strenght
+	 * 
+	 * @param c1 - char to compare
+	 * @param c2 - char to compare
+	 * @param strenth - comparator level
+	 * @return (true,false) if (equal, unequal)
+	 */
 	public boolean charEquals(char c1, char c2, int strenth ) {
         switch (strenth) {
         case IDENTICAL:
@@ -203,7 +218,15 @@ public class StringAproxComparator{
         return false;
     }
 	
-	private int countSubstCost(char c1,char c2,int strentgh){
+	/**
+	 * Computes substitution cost for one car to another
+	 * 
+	 * @param c1 char before substitution
+	 * @param c2 char after substitution
+	 * @param strentgh level of comparison
+	 * @return (0,1,2,3,4) depending on which level c1 equals c2
+	 */
+	private int computeSubstCost(char c1,char c2,int strentgh){
 		boolean check=true;
 		for (int i=strentgh;i<=StringAproxComparator.IDENTICAL;i++){
 			switch (i) {
@@ -224,6 +247,12 @@ public class StringAproxComparator{
 	}
 
 	
+	/**
+	 * @param i1
+	 * @param i2
+	 * @param i3
+	 * @return minimum of three int 
+	 */
 	private int min(int i1,int i2,int i3){
 		if (i1<=i2) {
 			if (i1<=i3)
@@ -239,7 +268,12 @@ public class StringAproxComparator{
 	}
 	
 	/**
-	 * This method calculates distance between Strings s and t. If the distance is greater then maxDiffrence it returns maxDiffrence+1
+	 * This method calculates distance between Strings s and t. If 
+	 * the distance is greater then maxDiffrence it returns maxDiffrence+1
+	 * Distance is calculated as sum of costs of minimum changes in 
+	 * string s to get string t. Cost of one change depends on strenght
+	 * of comparator and for substitution varies from 1 to 4.
+	 * 
 	 * @param s
 	 * @param t
 	 * @return distance between Strings s and t
@@ -251,7 +285,7 @@ public class StringAproxComparator{
 		int slength=s.length()+1;
 		int tlength=t.length()+1;
 		
-		
+		//initializing helpfull arrays
 		 if (slast==null){
 			slast = new int[slength];
 			schars = new char[slength-1];
@@ -286,7 +320,9 @@ public class StringAproxComparator{
 			tlast[0]=slast[i-1];
 			cost=now[0];
 			for (int j=1;j<tlength;j++){
-				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+countSubstCost(schars[i-1],tchars[j-1],strentgh));
+				//getting min from: deleting one letter from s, deleting one letter from t, substituting letter in s by letter from t
+				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+computeSubstCost(schars[i-1],tchars[j-1],strentgh));
+				//if t and s have at least 2 letters each maybe we can exchange last two letters
 				if (i>1 && j>1)
 					if (schars[i-2]==tchars[j-1]&&schars[i-1]==tchars[j-2])
 						m=Math.min(m,tblast[j-2]+changeCost);
@@ -294,6 +330,7 @@ public class StringAproxComparator{
 				if (m<cost) cost=m;
 			}
 			if (cost>maxDiffrence) return Math.min(cost,maxDiffrence+Math.max(delCost,changeCost));
+			//rewrite arrays for last and beforelast results
 			for (int j=0;j<tlength;j++){
 				tblast[j]=tlast[j];
 				tlast[j]=now[j];
@@ -370,6 +407,10 @@ public class StringAproxComparator{
 		return Math.max(delCost,changeCost);
 	}
 
+	public CollationKey getCollationKey(String source){
+		return col.getCollationKey(source);
+	}
+
 	private static class ComparatorParameters{
 		boolean[] strenght=new boolean[StringAproxComparator.IDENTICAL];
 		String locale;
@@ -406,7 +447,7 @@ public class StringAproxComparator{
 			if (strenght[StringAproxComparator.PRIMARY-1]){
 				hash+=8;
 			}
-			return hash+locale.hashCode();
+			return 37*hash+locale.hashCode();
 		}
 
 		public boolean[] getStrenght() {
@@ -418,7 +459,4 @@ public class StringAproxComparator{
 		}
 	}
 
-	public CollationKey getCollationKey(String source){
-		return col.getCollationKey(source);
-	}
 }
