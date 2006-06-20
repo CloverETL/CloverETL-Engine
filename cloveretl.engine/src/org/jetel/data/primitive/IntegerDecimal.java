@@ -205,12 +205,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = _value.getLong() * TENPOWERS[scale];
-        setNaN(false);
-        if(!satisfyPrecision()) {
-            setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
-        }
+        setValue(_value.getBigDecimal());
     }
     
     /**
@@ -530,7 +525,7 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = Long.valueOf(string).longValue();
+        value = Long.parseLong(string);
         if(!satisfyPrecision()) throw new NumberFormatException(); 
         setNaN(false);
     }
