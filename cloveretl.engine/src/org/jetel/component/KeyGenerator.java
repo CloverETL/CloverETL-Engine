@@ -138,7 +138,7 @@ public class KeyGenerator extends Node {
 			}catch(NullPointerException ex){//value of field is null
 				pom="";
 			}
-			try {//get substring from the field
+			if (pom.length()>=keys[i].getLenght()){
 				if (keys[i].fromBegining){
 					int start=keys[i].getStart();
 					resultString.append(pom.substring(start,start+keys[i].getLenght()));
@@ -146,7 +146,7 @@ public class KeyGenerator extends Node {
 					int end=pom.length();
 					resultString.append(pom.substring(end-keys[i].getLenght(),end));
 				}
-			}catch (StringIndexOutOfBoundsException ex){
+			}else {
 				//string from the field is shorter then demanded part of the key
 				//get whole string from the field and add to it spaces
 				StringBuffer shortPom=new StringBuffer(pom);
