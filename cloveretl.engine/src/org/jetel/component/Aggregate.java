@@ -32,6 +32,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -224,8 +225,13 @@ public class Aggregate extends Node {
 	 * @since     May 21, 2002
 	 */
     public void toXML(Element xmlElement) {
-        // TODO
         super.toXML(xmlElement);
+        xmlElement.setAttribute("aggregateFunctions",aggregateFunctionStr);
+        if (aggregateKeys.length>0){
+        	xmlElement.setAttribute("aggregateKey",StringUtils.stringArraytoString(aggregateKeys,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
+        }
+        xmlElement.setAttribute("sorted",String.valueOf(sorted));
+        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE,String.valueOf(equalNULLs));
     }
 
 	/**

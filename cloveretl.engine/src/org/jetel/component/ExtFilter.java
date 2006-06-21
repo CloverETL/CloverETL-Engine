@@ -35,7 +35,9 @@ import org.jetel.interpreter.FilterExpParser;
 import org.jetel.interpreter.FilterExpParserExecutor;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>Extended Filter Component</h3>
@@ -235,10 +237,13 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-//       comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//		Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//		Text text = doc.createTextNode(this.filterExpression);
-//		xmlElement.appendChild(text);
+		Document doc = xmlElement.getOwnerDocument();
+		Element childElement = doc.createElement("attr");
+		childElement.setAttribute("name", XML_FILTEREXPRESSION_ATTRIBUTE);
+		// join given SQL commands
+		Text textElement = doc.createTextNode(filterExpression);
+		childElement.appendChild(textElement);
+		xmlElement.appendChild(childElement);
 	}
 
 	/**
