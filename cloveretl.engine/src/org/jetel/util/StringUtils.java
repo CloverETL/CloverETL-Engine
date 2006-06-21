@@ -290,7 +290,37 @@ public class StringUtils {
 	public static String removeDiacritic(String str){
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
 	}
+
+	/**
+	 * This method concates string array to one string. Parts are delimited by given char
+	 * 
+	 * @param strings - input array of strings
+	 * @param delimiter
+	 * @return 
+	 */
+	public static String stringArraytoString(String[] strings,char delimiter){
+		int length = strings.length;
+		if (length==0) {
+			return null;
+		}
+		StringBuffer result = new StringBuffer();
+		for (int i=0;i<length;i++){
+			result.append(strings[i]);
+			if (i<length-1) {
+				result.append(delimiter);
+			}
+		}
+		return result.toString();
+	}
+	
+	public static String stringArraytoString(String[] strings){
+		return stringArraytoString(strings,' ');
+	}
+	
 }
+
+
+
 /*
  *  End class StringUtils
  */
