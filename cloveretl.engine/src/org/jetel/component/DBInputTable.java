@@ -31,7 +31,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseInputTable Component</h3>
@@ -213,13 +215,13 @@ public class DBInputTable extends Node {
 			// query specified in a file
 			xmlElement.setAttribute(XML_URL_ATTRIBUTE, this.url);
 		} else {
-//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
-//			// join given SQL commands
-//			Text textElement = doc.createTextNode(sqlQuery);
-//			childElement.appendChild(textElement);
-//			xmlElement.appendChild(childElement);
+			Document doc = xmlElement.getOwnerDocument();
+			Element childElement = doc.createElement("attr");
+			childElement.setAttribute("name", XML_SQLQUERY_ATTRIBUTE);
+			// join given SQL commands
+			Text textElement = doc.createTextNode(sqlQuery);
+			childElement.appendChild(textElement);
+			xmlElement.appendChild(childElement);
 		}
 		
 		if (fetchSize != 0) {

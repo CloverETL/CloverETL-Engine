@@ -606,7 +606,7 @@ public class ExtSort extends Node {
        
        // sortKey attribute
        String sortKeys = this.sortKeysNames[0];
-       for (int i=0; i < this.sortKeysNames.length; i++) {
+       for (int i=1; i < this.sortKeysNames.length; i++) {
        		sortKeys += Defaults.Component.KEY_FIELDS_DELIMITER + sortKeysNames[i];
        }
        xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE, sortKeys);
@@ -614,6 +614,8 @@ public class ExtSort extends Node {
        // sortOrder attribute
        if (this.sortOrderAscending == false) {
        		xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE,"Descending");
+       }else{
+    	   xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE,"Ascending");
        }
        
        // numberOfTapes attribute

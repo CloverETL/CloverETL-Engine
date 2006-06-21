@@ -16,8 +16,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
-
-import sun.text.Normalizer;
+import org.w3c.dom.Element;
 
 /**
  * This component creates reference matching key which is 
@@ -297,6 +296,12 @@ public class KeyGenerator extends Node {
 		}
 		resultString=new StringBuffer(lenght);
 	}
+	
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_KEY_ATTRIBUTE,StringUtils.stringArraytoString(key,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
+	}
+	
 
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
