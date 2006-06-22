@@ -8,6 +8,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -15,6 +16,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
+import org.jetel.data.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -22,6 +24,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
@@ -83,6 +86,8 @@ public class AproxMergeJoin extends Node {
 	private String[] referenceKey=new String[1];
 	private String[] slaveReferenceKey=null;
 	private RecordKey[] recordKey;
+	private int[] conformityFieldsForConforming;
+	private int[] conformityFieldsForSuspicious;
 	private int[][] fieldsToCompare=new int[2][];
 	private double[] weights;
 	
@@ -235,8 +240,9 @@ public class AproxMergeJoin extends Node {
 	 * @param fieldsToCompare 
 	 * @return diffrence between two records from interval <0,1>
 	 */
-	private double diffrence(DataRecord r1,DataRecord r2,int[][] fieldsToCompare){
-		double r=0;
+	private double[] conformity(DataRecord r1,DataRecord r2,int[][] fieldsToCompare){
+		double[] r=new double[fieldsToCompare[DRIVER_ON_PORT].length+1];
+		double rt=0;
 		int max=0;
 		for (int i=0;i<fieldsToCompare[DRIVER_ON_PORT].length;i++){
 			comparator[i].setMaxLettersToChange(maxDiffrenceLetters[i]);
@@ -244,8 +250,10 @@ public class AproxMergeJoin extends Node {
 			int d=comparator[i].distance(
 					r1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getValue().toString(),
 					r2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).getValue().toString());
-			r+=(double)d/(double)max*weights[i];
+			r[i+1]=1-(double)d/(double)max;
+			rt+=r[i+1]*weights[i];
 		}
+		r[0] = rt;
 		return r;
 	}
 	
@@ -279,18 +287,35 @@ public class AproxMergeJoin extends Node {
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
 			slave.deserialize(dataBuffer);
-			double conformity=1-diffrence(driver,slave,fieldsToCompare);
-			// **** call transform function here ****
-			if (conformity>=conformityLimit) {
+			double[] conformity=conformity(driver,slave,fieldsToCompare);
+			if (conformity[0]>=conformityLimit) {
+				// **** call transform function here ****
 				if (!transformation.transform(inRecords, outConformingRecords)) {
 					resultMsg = transformation.getMessage();
 					return false;
 				}
+				//fill adidional fields
+				if (conformityFieldsForConforming.length>0){
+					for (int i=0;i<conformityFieldsForConforming.length;i++){
+						if (conformityFieldsForConforming[i]>-1){
+							((Numeric)outConforming.getField(conformityFieldsForConforming[i])).setValue(conformity[i]);
+						}
+					}
+				}
 				conforming.writeRecord(outConforming);
 			}else{
+				// **** call transform function here ****
 				if (!transformationForSuspicious.transform(inRecords,outSuspiciousRcords)){
 					resultMsg = transformation.getMessage();
 					return false;
+				}
+				//fill adidional fields
+				if (conformityFieldsForSuspicious.length>0){
+					for (int i=0;i<conformityFieldsForSuspicious.length;i++){
+						if (conformityFieldsForSuspicious[i]>-1){
+							outSuspicious.getField(conformityFieldsForSuspicious[i]).setValue(new Double(conformity[i]));
+						}
+					}
 				}
 				suspicious.writeRecord(outSuspicious);
 			}
@@ -617,7 +642,39 @@ public class AproxMergeJoin extends Node {
 		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveReferenceKey, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recordKey[DRIVER_ON_PORT].init();
 		recordKey[SLAVE_ON_PORT].init();
+		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
+		conformityFieldsForSuspicious = findOutFields(slaveOverwriteKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+	}
+	
+	/**
+	 * This method finds out fields in outMetadata which are to be filled
+	 *  by computed conformity
+	 * 
+	 * @param names of fields in input metadata for which there are 
+	 * 		computed conformities
+	 * @param metadata
+	 * @return numbers of fields where are to be conformities. When 
+	 * 		such field there is not in out metdata on coresponding position 
+	 * 		there is -1. First number in array is field number for _total_conformity
+	 */
+	private int[] findOutFields(String[] names,DataRecordMetadata metadata){
+		String[] outKeyNames=new String[names.length+1];
+		outKeyNames[0] = "_total_conformity_";
+		for (int i=1;i<names.length+1;i++){
+			outKeyNames[i] = "_"+joinKeys[i-1]+"_conformity_";
+		}
+		int[] outKey = new int[outKeyNames.length];
+		DataFieldMetadata field;
+		for (int i=0;i<outKeyNames.length;i++){
+			field = metadata.getField(outKeyNames[i]);
+			if (field!=null && field.isNumeric()){
+				outKey[i] = metadata.getFieldPosition(outKeyNames[i]);
+			}else{
+				outKey[i] = -1;
+			}
+		}
+		return outKey;
 	}
 
     /**
