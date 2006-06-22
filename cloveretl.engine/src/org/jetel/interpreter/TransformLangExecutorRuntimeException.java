@@ -19,6 +19,8 @@
 
 package org.jetel.interpreter;
 
+import org.jetel.interpreter.node.SimpleNode;
+
 /**
  * @author dpavlis
  * @since  9.9.2004
@@ -26,29 +28,29 @@ package org.jetel.interpreter;
  * Exception thrown by Interpreter at runtime when error preventing
  * other run occures.
  */
-public class InterpreterRuntimeException extends RuntimeException {
+public class TransformLangExecutorRuntimeException extends RuntimeException {
 	SimpleNode nodeInError;
 	Object[] arguments;
 	
-	public InterpreterRuntimeException(SimpleNode node,Object[] arguments,String message){
+	public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message){
 		super(message);
 		this.nodeInError=node;
 		this.arguments=arguments;
 	}
 	
-	public InterpreterRuntimeException(Object[] arguments,String message){
+	public TransformLangExecutorRuntimeException(Object[] arguments,String message){
 		super(message);
 		this.nodeInError=null;
 		this.arguments=arguments;
 	}
 	
-	public InterpreterRuntimeException(SimpleNode node,String message){
+	public TransformLangExecutorRuntimeException(SimpleNode node,String message){
 		super(message);
 		this.nodeInError=node;
 		this.arguments=null;
 	}
 	
-	public InterpreterRuntimeException(String message){
+	public TransformLangExecutorRuntimeException(String message){
 		super(message);
 		this.nodeInError=null;
 		this.arguments=null;
@@ -64,7 +66,12 @@ public class InterpreterRuntimeException extends RuntimeException {
 	}
 	
 	public String getMessage(){
-		StringBuffer strBuf=new StringBuffer("Interpreter runtime exception :");
+		StringBuffer strBuf=new StringBuffer("Interpreter runtime exception");
+        if (nodeInError!=null){
+            strBuf.append(" on line ").append(nodeInError.getLineNumber());
+            strBuf.append(" column ").append(nodeInError.getColumnNumber());
+        }
+        strBuf.append(" : ");
 		strBuf.append(super.getMessage()).append("\n");
 		if (arguments !=null){
 			for(int i=0;i<arguments.length;i++){
