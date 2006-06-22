@@ -13,7 +13,8 @@ options {
    VISITOR=true; 
    NODE_USES_PARSER=true;
    NODE_PREFIX="CLVF";
-   NODE_PACKAGE="org.jetel.interpreter";
+   NODE_PACKAGE="org.jetel.interpreter.node";
+   BUILD_NODE_FILES=false; // change to True only if new Node has been added 
 }
 
 
@@ -24,8 +25,10 @@ PARSER_BEGIN(FilterExpParser)
 package org.jetel.interpreter;
 
 import org.jetel.data.DataRecord;
+import org.jetel.interpreter.node.*;
+import org.jetel.metadata.DataRecordMetadata;
 
-public class FilterExpParser {
+public class FilterExpParser extends ExpParser {
 
        DataRecord dataRecord;
 
@@ -37,6 +40,26 @@ public class FilterExpParser {
       public DataRecord getDataRecord(){
              return dataRecord;
       }
+      
+    /**
+    * Save the current line number for run-time error messages
+    */
+   void jjtreeOpenNodeScope(Node n)
+    {
+       Token t = getToken(0);
+       if (t!= null) {
+           ((SimpleNode) n).setLineNumber(t.beginLine);
+           ((SimpleNode) n).setColumnNumber(t.beginColumn);
+       }
+    }
+
+   /**
+    * Dummy routine, required because NODE_SCOPE_HOOK is true
+    */
+    void jjtreeCloseNodeScope(Node n)
+    {
+    }
+    
 }
 
 PARSER_END(FilterExpParser)
@@ -73,17 +96,23 @@ TOKEN [IGNORE_CASE]: {
 TOKEN : {
  <INTEGER_LITERAL: <DECIMAL_LITERAL> (["l","L"])? | <HEX_LITERAL> (["l","L"])? | <OCTAL_LITERAL> (["l","L"])?>
 |  <#DIGIT: ["0"-"9"]>
-|  <#DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
-|  <#HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
-|  <#OCTAL_LITERAL: "0" (["0"-"7"])*>
+|  <#LETTER: [ "a"-"z", "A"-"Z" ] >
+|  <#UNDERSCORE: [ "_" ] >
+|  <DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+|  <HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
+|  <OCTAL_LITERAL: "0" (["0"-"7"])*>
 |<FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-|  <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
+| <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
 |  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
 |  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
-// |<BOOLEAN_LITERAL: "true" | "false" >
+|<BOOLEAN_LITERAL: <TRUE> | <FALSE> >
+| <#TRUE: "true">
+| <#FALSE: "false">
 |<DATE_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? >
 |<DATETIME_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? " " <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)?>
+|<SEMICOLON: ";">
+|<NULL_LITERAL: "null">
 }
 
 /* Comparison Operators */
@@ -91,9 +120,9 @@ TOKEN: {
   < EQUAL: "==" | ".eq.">
 | < NON_EQUAL: "!=" | "<>" | ".ne." >
 | < LESS_THAN: "<" | ".lt." >
-| < LESS_THAN_EQUAL: "<=" | ".le." >
+| < LESS_THAN_EQUAL: "<=" | "=<" | ".le." >
 | < GREATER_THAN: ">" | ".gt.">
-| < GREATER_THAN_EQUAL: ">=" | ".ge." >
+| < GREATER_THAN_EQUAL: ">=" | "=>" | ".ge." >
 | < REGEX_EQUAL: "~=" | ".regex." >
 }
 
@@ -111,10 +140,17 @@ TOKEN: {
 | <MODULO: "%">
 }
 
-/* Field Identifiers */
+/* Clover Field Identifiers */
 TOKEN: {
-  < FIELD_ID: "$"(["A"-"Z", "a"-"z"])(["A"-"Z", "a"-"z", "_","0"-"9"])* >
+  < FIELD_ID: "$" (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
+
+/* Clover Record Field Identifiers */
+TOKEN: {
+  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." <LETTER> (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+}
+
 
 /* Parenthesis */
 TOKEN: {
@@ -224,7 +260,7 @@ void PrimaryExpression() #void : {}
      
      LitExp()
      |BuildInFunction()     
-     |IDExp()
+     |InputFieldExp()
      |<OPEN_PAR> Statement() <CLOSE_PAR>
 }
 
@@ -239,14 +275,15 @@ void BuildInFunction() #void : {}
 	|DateAddNode()
 	|DateDiffNode()
 	|"today" "(" ")" #TodayNode(0)
-	|"isnull" "(" IDExp() ")" #IsNullNode(1)
-	|"nvl" "(" IDExp() "," AdditiveExpression() ")" #NVLNode(2)
+	|"isnull" "("  AdditiveExpression() ")" #IsNullNode(1)
+	|"nvl" "("  AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
 	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
 	|"str2num" "(" AdditiveExpression() ")" #Str2NumNode(1)
 	|"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|"print_err" "(" AdditiveExpression() ")" #PrintErrNode(1)
-
+	|Date2StrNode()
+	|Str2DateNode()
 }
 
 void LitExp() #void :            // 
@@ -256,24 +293,32 @@ void LitExp() #void :            //
 {
  t=<FLOATING_POINT_LITERAL>
   	{ jjtThis.setVal(FLOATING_POINT_LITERAL,t.image);} #Literal
+ |t=<HEX_LITERAL>
+  	{ jjtThis.setVal(HEX_LITERAL,t.image);}   #Literal
+ |t=<OCTAL_LITERAL>
+  	{ jjtThis.setVal(OCTAL_LITERAL,t.image);}   #Literal
  |t=<INTEGER_LITERAL>
   	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
  |t=<STRING_LITERAL>
   	{ jjtThis.setVal(STRING_LITERAL,t.image.substring(1,t.image.length()-1)); }   #Literal
- //|t=<BOOLEAN_LITERAL>
- // 	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
+ |t=<BOOLEAN_LITERAL>
+  	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
  |t=<DATE_LITERAL>
  	{ jjtThis.setVal(DATE_LITERAL,t.image);}   #Literal
  |t=<DATETIME_LITERAL>
   	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
+ |t=<NULL_LITERAL>
+ 	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
 }
 
-void IDExp() #void :               // IDExp -> ID
+void InputFieldExp() #void :// IDExp -> ID
 {
-	Token t;
+  Token t;
 }
 {
-  t=<FIELD_ID> { jjtThis.setFieldName(t.image); } #JetelFieldLiteral
+  t = <FIELD_ID> { jjtThis.setFieldName(t.image); } #InputFieldLiteral
+  | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); } #InputFieldLiteral
+  | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #InputFieldLiteral
 }
 
 void RegexLiteral() #void :
@@ -304,6 +349,20 @@ void DateDiffNode() :
 	"datediff" "(" AdditiveExpression() "," AdditiveExpression() "," 
 			t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); }
 	")"
+}
+
+void Date2StrNode() :
+{ Token t; }
+{
+	"date2str" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(t.image.substring(1,t.image.length()-1)); } 
+	 ")"
+}
+
+void Str2DateNode() :
+{ Token t; }
+{
+	"str2date" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(t.image.substring(1,t.image.length()-1)); }
+	")" 
 }
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" |"sec" > }

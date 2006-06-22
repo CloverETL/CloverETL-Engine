@@ -56,6 +56,12 @@ public class ParseException extends Exception {
     super(message);
     specialConstructor = false;
   }
+  
+  public ParseException(Token token, String message) {
+      super(message);
+      currentToken = token;
+      specialConstructor = false;
+    }
 
   /**
    * This variable determines which constructor was used to create
@@ -97,7 +103,12 @@ public class ParseException extends Exception {
    */
   public String getMessage() {
     if (!specialConstructor) {
-      return super.getMessage();
+        if (currentToken!=null){
+            return super.getMessage()+ "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn
+            + "." + eol;
+        }else{
+                return super.getMessage();
+        }
     }
     String expected = "";
     int maxSize = 0;
