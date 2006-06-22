@@ -18,7 +18,6 @@ import org.jetel.data.DateDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
-import org.jetel.data.SequenceField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -904,10 +903,6 @@ public class XMLExtract extends Node
 
 				case DataFieldMetadata.BYTE_FIELD:
 					((ByteDataField) field).setValue((byte) 0);
-					break;
-
-				case DataFieldMetadata.SEQUENCE_FIELD:
-					((SequenceField) field).setValue(0);
 					break;
 
 				case DataFieldMetadata.UNKNOWN_FIELD:
