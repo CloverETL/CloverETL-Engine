@@ -30,7 +30,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Text;
 
 /**
  *  <h3>DatabaseExecute Component</h3>
@@ -277,29 +279,23 @@ public class DBExecute extends Node {
 		// set attributes of DBExecute
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
-		if (this.printStatements) {
-			xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
-		}
-		
-		if (this.oneTransaction) {
-			xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
-		}
+		xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
+		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
 		
 		// use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
 		} else {
-//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
-//			// join given SQL commands
-//			StringBuffer buf = new StringBuffer(dbSQL[0]);
-//			for (int i=1; i<dbSQL.length; i++) {
-//				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
-//			}
-//			Text textElement = doc.createTextNode(buf.toString());
-//			childElement.appendChild(textElement);
-//			xmlElement.appendChild(childElement);
+			Document doc = xmlElement.getOwnerDocument();
+			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
+			// join given SQL commands
+			StringBuffer buf = new StringBuffer(dbSQL[0]);
+			for (int i=1; i<dbSQL.length; i++) {
+				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
+			}
+			Text textElement = doc.createTextNode(buf.toString());
+			childElement.appendChild(textElement);
+			xmlElement.appendChild(childElement);
 		}
 	}
 
