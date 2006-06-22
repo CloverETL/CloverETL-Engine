@@ -63,6 +63,10 @@ public class RecordKey {
 	public RecordKey(String keyFieldNames[], DataRecordMetadata metadata) {
 		this.metadata = metadata;
 		this.keyFieldNames = keyFieldNames;
+		this.keyFields = new int[keyFieldNames.length];
+		for (int i=0;i<keyFieldNames.length;i++){
+			keyFields[i] = metadata.getFieldPosition(keyFieldNames[i]);
+		}
 	}
 
 	/**
@@ -72,6 +76,10 @@ public class RecordKey {
 	public RecordKey(int keyFields[], DataRecordMetadata metadata) {
 		this.metadata = metadata;
 		this.keyFields = keyFields;
+		this.keyFieldNames = new String[keyFields.length];
+		for (int i=0;i<keyFieldNames.length;i++){
+			keyFieldNames[i] = metadata.getField(keyFields[i]).getName();
+		}
 	}
 	
 	// end init
