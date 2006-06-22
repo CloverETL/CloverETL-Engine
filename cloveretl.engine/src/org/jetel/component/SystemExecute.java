@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -23,6 +24,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
+import org.w3c.dom.Element;
 
 public class SystemExecute extends Node{
 	
@@ -196,6 +198,13 @@ public class SystemExecute extends Node{
 			return null;
 		}
 	}
+	
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_COMMAND_ATTRIBUTE,command);
+		xmlElement.setAttribute(XML_ERROR_LINES_ATTRIBUTE,String.valueOf(errorLinesNumber));
+	}
+	
 
 	private static class GetData extends Thread {
 
