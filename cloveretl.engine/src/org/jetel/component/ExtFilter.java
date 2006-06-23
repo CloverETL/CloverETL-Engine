@@ -23,6 +23,7 @@ package org.jetel.component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Locale;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -30,9 +31,9 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.CLVFStart;
-import org.jetel.interpreter.FilterExpParser;
-import org.jetel.interpreter.FilterExpParserExecutor;
+import org.jetel.interpreter.node.CLVFStartExpression;
+import org.jetel.interpreter.TransformLangParser;
+import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
@@ -91,6 +92,8 @@ import org.w3c.dom.Text;
  * <li>str2num(..str expression.. )
  * <li>iif ( ..condition expression .. , ..expression.. , ..expression.. )
  * <li>print_err ( ..str expression.. )
+ * <li>date2str(..date expression..,..format str expression..)
+ * <li>str2date(..str expression.., .. format str expression..)
  * </ul> 
  * </td></tr>
  * </table>
@@ -142,10 +145,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 	private final static int WRITE_TO_PORT=0;
 	private final static int REJECTED_PORT=1;
 	
-	private ByteBuffer recordBuffer;
-	private CLVFStart  recordFilter;
+	private CLVFStartExpression  recordFilter;
 	private String filterExpression;
-	private DataRecord record;
 	
 	public ExtFilter(String id){
 		super(id);
@@ -162,8 +163,12 @@ public class ExtFilter extends org.jetel.graph.Node {
 		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
 		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
 		boolean isData=true;
-		FilterExpParserExecutor executor=new FilterExpParserExecutor();
-	      
+		TransformLangExecutor executor=new TransformLangExecutor();
+        DataRecord record = new DataRecord(inPort.getMetadata());
+        record.init();
+        
+	    executor.setInputRecords(new DataRecord[] {record});  
+        
 		while(isData && runIt){
 			try{
 				record=inPort.readRecord(record);
@@ -213,13 +218,11 @@ public class ExtFilter extends org.jetel.graph.Node {
 		}else if (outPorts.size()<1){
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
-		record.init();
-		FilterExpParser parser=new FilterExpParser(record,
+		TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),
 				new ByteArrayInputStream(filterExpression.getBytes()));
 		if (parser!=null){
 			try {
-				  recordFilter = parser.Start();
+				  recordFilter = parser.StartExpression();
 				  recordFilter.init();
 			}catch (Exception e) {
 				throw new ComponentNotReadyException("Error when parsing expression: "+e.getMessage());
@@ -258,7 +261,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		
 		try{
-			filter = new ExtFilter(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
 				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE));
 			}else{
@@ -266,7 +269,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 			}
 			return filter;
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}
