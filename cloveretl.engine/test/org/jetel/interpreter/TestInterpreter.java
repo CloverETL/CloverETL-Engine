@@ -25,9 +25,8 @@ import java.util.Calendar;
 import junit.framework.TestCase;
 
 import org.jetel.data.*;
-import org.jetel.interpreter.CLVFStart;
-import org.jetel.interpreter.FilterExpParser;
-import org.jetel.interpreter.FilterExpParserExecutor;
+import org.jetel.interpreter.*;
+import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.metadata.*;
 
 /**
@@ -73,14 +72,15 @@ public class TestInterpreter extends TestCase {
 		String expStr="$Age>=135 or 200>$Age and $Age>0 and 1==999999999999999 or $Name==\"HELLO\"";
 		
 		try {
-			  FilterExpParser parser = new FilterExpParser(record,
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
 			  		new ByteArrayInputStream(expStr.getBytes()));
-		      CLVFStart parseTree = parser.Start();
+		      CLVFStartExpression parseTree = parser.StartExpression();
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
-		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
+		      TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
@@ -98,16 +98,16 @@ public class TestInterpreter extends TestCase {
 	public void test_2_expression() {
 		String expStr="datediff(nvl($Born,2005-2-1),2005-1-1,month)";
 		try {
-			  FilterExpParser parser = new FilterExpParser(record,
-			  		new ByteArrayInputStream(expStr.getBytes()));
-		      CLVFStart parseTree = parser.Start();
+            TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStartExpression parseTree = parser.StartExpression();
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      parseTree.dump("");
 		      System.out.println("Interpreting parse tree..");
-		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
-		      executor.visit(parseTree,null);
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
 		      System.out.println("Finished interpreting.");
 
 		      System.out.println("result: "+executor.getResult());
@@ -125,16 +125,16 @@ public class TestInterpreter extends TestCase {
 	public void test_3_expression() {
 		String expStr="trim($Name)==\"HELLO\" or replace($Name,\".\" ,\"a\")";
 		try {
-			  FilterExpParser parser = new FilterExpParser(record,
-			  		new ByteArrayInputStream(expStr.getBytes()));
-		      CLVFStart parseTree = parser.Start();
+            TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStartExpression parseTree = parser.StartExpression();
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      parseTree.dump("");
 		      System.out.println("Interpreting parse tree..");
-		      FilterExpParserExecutor executor=new FilterExpParserExecutor();
-		      executor.visit(parseTree,null);
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
 		      System.out.println("Finished interpreting.");
 
 		      System.out.println("result: "+executor.getResult());
