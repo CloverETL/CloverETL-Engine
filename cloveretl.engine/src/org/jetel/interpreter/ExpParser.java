@@ -23,7 +23,9 @@
  */
 package org.jetel.interpreter;
 
+import java.util.Map;
 
+import org.jetel.metadata.DataRecordMetadata;
 
 
 /**
@@ -33,11 +35,21 @@ package org.jetel.interpreter;
  * This class is only the ancestor of all Parsers in
  * order to share Nodes
  */
-public class ExpParser {
+public abstract class ExpParser {
 
     public ExpParser() {
-        super();
         // TODO Auto-generated constructor stub
     }
 
+    public abstract DataRecordMetadata getInRecordMeta();
+ 
+    public abstract int getInRecordNum(String name);
+ 
+    public abstract int getOutRecordNum(String name);
+ 
+    public abstract DataRecordMetadata getInRecordMeta(int num);
+ 
+    public abstract DataRecordMetadata getOutRecordMeta(int num);
+    
+    public abstract Map getFunctions();
 }
