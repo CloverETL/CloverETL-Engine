@@ -76,6 +76,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStartExpression parseTree = parser.StartExpression();
 
+              System.out.println(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -101,7 +102,8 @@ public class TestInterpreter extends TestCase {
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));
               CLVFStartExpression parseTree = parser.StartExpression();
-
+              
+              System.out.println(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      parseTree.dump("");
@@ -129,6 +131,7 @@ public class TestInterpreter extends TestCase {
                     new ByteArrayInputStream(expStr.getBytes()));
               CLVFStartExpression parseTree = parser.StartExpression();
 
+              System.out.println(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      parseTree.dump("");
