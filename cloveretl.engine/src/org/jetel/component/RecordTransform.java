@@ -29,7 +29,15 @@ import org.jetel.metadata.DataRecordMetadata;
  * Reformat, Join, etc.<br>
  * For most transformations, it is better to start with subclassing DataRecordTransform
  * class which provides default implementation for most methods prescribed by
- * this interface.
+ * this interface.<br>
+ * <h4>Order of execution/methods call</h4>
+ * <ol>
+ * <li>setGraph()</li>
+ * <li>init()</li>
+ * <li>transform() <i>for each input&amp;output records pair</i></li>
+ * <li><i>optionally</i> getMessage() <i>or</i> signal() <i>or</i> getSemiResult()</li>
+ * <li>finished()
+ * </ol>
  *
  *@author      dpavlis
  *@created     February 4, 2003
@@ -106,8 +114,12 @@ public interface RecordTransform {
 	public void finished();
     
     /**
-     * Method sets graph instance for this transformation implementation.
-     * This variable provides all elements of runnig graph.
+     * Method which passes into transformation graph instance within
+     * which transformation will be executed.<br>
+     * Since TransformationGraph singleton pattern was removed it is
+     * NO longer POSSIBLE to access graph's parameters and other elements
+     * (e.g. metadata definitions) through TransformationGraph.getIntance().
+     * 
      * @param graph
      */
     public void setGraph(TransformationGraph graph);

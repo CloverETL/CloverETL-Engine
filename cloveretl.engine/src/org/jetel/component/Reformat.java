@@ -160,7 +160,7 @@ public class Reformat extends Node {
 	
 	static Log logger = LogFactory.getLog(Reformat.class);
 
-	/**
+    /**
 	 *Constructor for the Reformat object
 	 *
 	 * @param  id              unique identification of component
@@ -275,69 +275,26 @@ public class Reformat extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		Class tClass;
 		// test that we have at least one input port and one output
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		// do we have transformation object directly specified or shall we create it ourselves
+		// do we have transformation object directly specified or shall we
+        // create it ourselves
 		if (transformation == null) {
 			if (transformClassName != null) {
-				// try to load in transformation class & instantiate
-				try {
-					tClass = Class.forName(transformClassName);
-				} catch (ClassNotFoundException ex) {
-					// let's try to load in any additional .jar library (if specified)
-					if(libraryPath == null) {
-						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-					}
-					String urlString = "file:" + libraryPath;
-					URL[] myURLs;
-					try {
-						myURLs = new URL[] { new URL(urlString) };
-						URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-						tClass = Class.forName(transformClassName, true, classLoader);
-					} catch (MalformedURLException ex1) {
-						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-					} catch (ClassNotFoundException ex1) {
-						throw new RuntimeException("Can not find class: " + ex1);
-					}
-				}
-				try {
-					transformation = (RecordTransform) tClass.newInstance();
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
-				}
+                transformation=RecordTransformFactory.loadClass(logger,transformClassName,new String[] {libraryPath});
 			} else {
-			    if(dynamicTransformCode == null) { //transformSource is set
-			        //creating dynamicTransformCode from internal transformation format
-			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-					codeParser.setSourceCode(transformSource);
-					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+ getId());
-					// DEBUG
-					// System.out.println(codeParser.getSourceCode());
-			        dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode());
-			        dynamicTransformCode.setCaptureCompilerOutput(true);
-			    }
-				logger.info(" (compiling dynamic source) ");
-				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = null;
-				try {
-				    transObject = dynamicTransformCode.instantiate();
-				} catch(RuntimeException ex) {
-				    logger.debug(dynamicTransformCode.getCompilerOutput());
-				    logger.debug(dynamicTransformCode.getSourceCode());
-					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-					        + "reason: " + ex.getMessage());
-				}
-				if (transObject instanceof RecordTransform) {
-					transformation = (RecordTransform) transObject;
-				} else {
-					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
-				}
+                if (transformSource.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID)!=-1){
+                    transformation=new RecordTransformTL(logger,transformSource);
+                }else if(dynamicTransformCode == null) { // transformSource is set
+                    transformation=RecordTransformFactory.loadClassDynamic(logger,("Transform"+ getId()),transformSource,
+                            (DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
+			    }else{
+			        transformation=RecordTransformFactory.loadClassDynamic(logger,dynamicTransformCode);
+                }
 			}
 		}
         transformation.setGraph(getGraph());
