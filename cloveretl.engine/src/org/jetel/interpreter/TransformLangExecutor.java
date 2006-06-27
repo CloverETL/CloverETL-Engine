@@ -1,5 +1,4 @@
 /*
- *    jETeL/Clover.ETL - Java based ETL application framework.
  *    Copyright (C) 2002-2004  David Pavlis <david_pavlis@hotmail.com>
  *    
  *    This library is free software; you can redistribute it and/or
@@ -81,6 +80,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public void setOutputRecords(DataRecord[] outputRecords){
         this.outputRecords=outputRecords;
+    }
+    
+    public void setGlobalParameters(Properties parameters){
+        this.globalParameters=parameters;
     }
     
     /**
@@ -1368,5 +1371,35 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
+    public Object executeFunction(CLVFFunctionDeclaration executionNode, Object[] data) {
+        //put call parameters on stack
+        if (data==null){
+            data=new Object[0];
+        }
+        // open call frame
+        stack.pushFuncCallFrame();
+        // store call parameters from stack as local variables
+        for (int i=executionNode.numParams-1;i>=0; stack.storeLocalVar(i--,data[i]));
+       
+        // execute function body
+        // loop execution
+        Object returnData;
+        int numChildren=executionNode.jjtGetNumChildren();
+        for (int i=0;i<numChildren;i++){
+            executionNode.jjtGetChild(i).jjtAccept(this,data);
+            returnData=stack.pop(); // in case there is anything on top of stack
+            // check for break or continue statements
+            if (breakFlag){ 
+                breakFlag=false;
+                if (breakType==BREAK_RETURN){
+                    if (returnData!=null)
+                        stack.push(returnData);
+                    break;
+                }
+            }
+        }
+        stack.popFuncCallFrame();
+        return data;
+    }
     
 }
