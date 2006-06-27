@@ -371,10 +371,17 @@ public class MergeJoin extends Node {
 			dataBuffer.flip();
 			slave.deserialize(dataBuffer);
 			// **** call transform function here ****
-			if (!transformation.transform(inRecords, outRecords)) {
-				resultMsg = transformation.getMessage();
-				return false;
-			}
+            try{
+                if (!transformation.transform(inRecords, outRecords)) {
+                    resultCode = Node.RESULT_ERROR;
+                    resultMsg = transformation.getMessage();
+                    return false;
+                }              
+            }catch(NullPointerException ex){
+                logger.error("Null pointer exception when transforming input data",ex);
+                logger.info("Possibly incorrectly handled outer-join situation");
+                throw new RuntimeException("Null pointer exception when transforming input data",ex);
+            }
 			port.writeRecord(out);
 			dataBuffer.clear();
 		}
