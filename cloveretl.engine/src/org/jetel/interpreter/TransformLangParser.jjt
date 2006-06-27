@@ -208,13 +208,13 @@ TOKEN: {
 
 /* Clover Field Identifiers */
 TOKEN: {
-  < FIELD_ID: "$" (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  < FIELD_ID: "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
 /* Clover Record Field Identifiers */
 TOKEN: {
-  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
-  | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." <LETTER> (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  < REC_NAME_FIELD_ID:  "$" (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* "." (<LETTER>|<DIGIT>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
 
@@ -318,6 +318,7 @@ void FunctionDeclaration() :
 	"{"
 	  ( VarDeclaration() ";" )*
 	  ( Statement() )* 
+	  ( Mapping() ";" )*
 	 
 	 "}"
 	{
