@@ -22,6 +22,8 @@
 
 package org.jetel.exception;
 
+import org.jetel.graph.GraphElement;
+
 /** A class that represents general Jetel exception
  * 
  * @see Exception
@@ -30,12 +32,21 @@ package org.jetel.exception;
 public class ComponentNotReadyException extends Exception {
   
   // Attributes
-
+  GraphElement graphElement;
   // Associations
 
   // Operations
   public ComponentNotReadyException(String message){
 	  super(message);
   }
+  
+  public ComponentNotReadyException(Exception ex){
+      super(ex);
+  }
 
+  public ComponentNotReadyException(GraphElement element,Exception ex){
+      super(ex);
+      this.graphElement=element;
+  }
+  
 } /* end class NoMoreDataException */
