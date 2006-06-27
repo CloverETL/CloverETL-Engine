@@ -490,9 +490,30 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          The outputPort
 	 */
 	public OutputPort getOutputPort(int portNum) {
-		return (OutputPort) outPorts.get(new Integer(portNum));
+        Object outPort=outPorts.get(new Integer(portNum));
+        if (outPort instanceof OutputPort) { 
+            return (OutputPort)outPort ;
+        }else if (outPort==null) {
+            return null;
+        }
+        throw new RuntimeException("Port number \""+portNum+"\" does not implement OutputPort interface "+outPort.getClass().getName());
 	}
 
+    /**
+     *  Gets the port which has associated the num specified
+     *
+     *@param  portNum  number associated with the port
+     *@return          The outputPort
+     */
+    public OutputPortDirect getOutputPortDirect(int portNum) {
+        Object outPort=outPorts.get(new Integer(portNum));
+        if (outPort instanceof OutputPortDirect) {
+            return (OutputPortDirect)outPort ;
+        }else if (outPort==null) {
+            return null;
+        }
+        throw new RuntimeException("Port number \""+portNum+"\" does not implement OutputPortDirect interface");
+    }
 
 	/**
 	 *  Gets the port which has associated the num specified
@@ -501,9 +522,32 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          The inputPort
 	 */
 	public InputPort getInputPort(int portNum) {
-		return (InputPort) inPorts.get(new Integer(portNum));
+        Object inPort=inPorts.get(new Integer(portNum));
+        
+        if (inPort instanceof InputPort) {
+            return (InputPort)inPort ;
+        }else if (inPort==null){
+            return null;
+        }
+        throw new RuntimeException("Port number \""+portNum+"\" does not implement InputPort interface");
 	}
 
+    /**
+     *  Gets the port which has associated the num specified
+     *
+     *@param  portNum  portNum number associated with the port
+     *@return          The inputPort
+     */
+    public InputPortDirect getInputPortDirect(int portNum) {
+        Object inPort=inPorts.get(new Integer(portNum));
+        if (inPort instanceof InputPortDirect) {
+            return (InputPortDirect)inPort ;
+        }else if (inPort==null){
+            return null;
+        }
+        throw new RuntimeException("Port number \""+portNum+"\" does not implement InputPortDirect interface");
+    }
+    
     /**
      * Removes input port.
      * @param inputPort
