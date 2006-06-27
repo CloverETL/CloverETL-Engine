@@ -41,7 +41,7 @@ public class CLVFMapping extends SimpleNode {
         // get rid of leading '$' character (the 1st character)
       fieldName=fName;
       recordNo=0;
-      DataRecordMetadata record= parser.getInRecordMeta();
+      DataRecordMetadata record= parser.getOutRecordMeta(0);
       if (record==null){
           throw new ParseException("Unknown data field \""+fName+"\"");
       }
@@ -54,7 +54,12 @@ public class CLVFMapping extends SimpleNode {
           // get rid of leading '$' character (the 1st character)
           fieldName=fRecName;   
           String recFieldName[]=fRecName.substring(1).split("\\.");
-          DataRecordMetadata record=parser.getInRecordMeta(parser.getInRecordNum(recFieldName[0]));
+          DataRecordMetadata record;
+          try{
+              record=parser.getOutRecordMeta(parser.getOutRecordNum(recFieldName[0]));
+          }catch(Exception ex){
+              throw new ParseException("Error accessing record \""+recFieldName[0]+"\" "+ex.getMessage());
+          }
           if (record==null){
               throw new ParseException("Unknown record \""+recFieldName[0]+"\""); 
           }
@@ -70,7 +75,7 @@ public class CLVFMapping extends SimpleNode {
        String recFieldName[]=fRecName.substring(1).split("\\.");
        DataRecordMetadata record=null;
        try{
-           record=parser.getInRecordMeta(Integer.parseInt(recFieldName[0]));
+           record=parser.getOutRecordMeta(Integer.parseInt(recFieldName[0]));
        }catch(NumberFormatException ignore){
        }
        if (record==null){
