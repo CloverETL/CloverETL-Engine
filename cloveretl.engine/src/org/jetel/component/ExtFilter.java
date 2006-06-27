@@ -26,10 +26,13 @@ import java.nio.ByteBuffer;
 import java.util.Locale;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
+import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.interpreter.TransformLangParser;
@@ -159,28 +162,31 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 * @since    July 23, 2002
 	 */
 	public void run() {
-		InputPort inPort=getInputPort(READ_FROM_PORT);
-		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
-		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
+		InputPortDirect inPort=getInputPortDirect(READ_FROM_PORT);
+		OutputPortDirect outPort=getOutputPortDirect(WRITE_TO_PORT);
+		OutputPortDirect rejectedPort=getOutputPortDirect(REJECTED_PORT);
 		boolean isData=true;
 		TransformLangExecutor executor=new TransformLangExecutor();
-        DataRecord record = new DataRecord(inPort.getMetadata());
+        DataRecord record = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
         record.init();
+        ByteBuffer recordBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         
 	    executor.setInputRecords(new DataRecord[] {record});  
         
 		while(isData && runIt){
 			try{
-				record=inPort.readRecord(record);
-				if (record==null){
+                recordBuffer.clear();
+			    inPort.readRecordDirect(recordBuffer);
+				if (!inPort.readRecordDirect(recordBuffer)){
 					isData = false;
 					break;
 				}
+                record.deserialize(recordBuffer);
 				executor.visit(recordFilter,null);
 				if (((Boolean)executor.getResult()).booleanValue()){
-					outPort.writeRecord(record);
+					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
-					rejectedPort.writeRecord(record);
+					rejectedPort.writeRecordDirect(recordBuffer);
 				}
 
 			}catch(IOException ex){

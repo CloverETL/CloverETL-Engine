@@ -29,12 +29,21 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  *  Base class used for generating any kind of data transformation. Subclass this
  * one to create your own transformations. It implements basic stubs for all of
- * the RecordTransform interface methods.
+ * the RecordTransform interface methods.<br>
+ * <h4>Order of execution/methods call</h4>
+ * <ol>
+ * <li>setGraph()</li>
+ * <li>init()</li>
+ * <li>transform() <i>for each input&amp;output records pair</i></li>
+ * <li><i>optionally</i> getMessage() <i>or</i> signal() <i>or</i> getSemiResult()</li>
+ * <li>finished()
+ * </ol>
  *
  * @author      dpavlis
  * @since       November 1, 2003
  * @revision    $Revision$
  * @created     November 1, 2003
+ * @see         org.jetel.component.RecordTransform
  */
 
 public abstract class DataRecordTransform implements RecordTransform {

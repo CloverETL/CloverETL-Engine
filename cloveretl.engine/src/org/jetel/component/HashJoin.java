@@ -44,6 +44,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.DuplicateKeyMap;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -153,6 +154,7 @@ public class HashJoin extends Node {
 	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
 	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+    private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
@@ -171,6 +173,7 @@ public class HashJoin extends Node {
 	private String transformSource = null;
 
 	private boolean leftOuterJoin;
+    private boolean slaveDuplicates=false;
 
 	private String[] joinKeys;
 	private String[] slaveOverrideKeys = null;
@@ -276,105 +279,82 @@ public class HashJoin extends Node {
 
 
 	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 */
-	public void init() throws ComponentNotReadyException {
-		Class tClass;
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 2) {
-			throw new ComponentNotReadyException("At least two input ports have to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
-		}
-		if (slaveOverrideKeys == null) {
-			slaveOverrideKeys = joinKeys;
-		}
-		(driverKey = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata())).init();
-		(slaveKey = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata())).init();
+     * Description of the Method
+     * 
+     * @exception ComponentNotReadyException
+     *                Description of the Exception
+     */
+    public void init() throws ComponentNotReadyException {
+        // test that we have at least one input port and one output
+        if (inPorts.size() < 2) {
+            throw new ComponentNotReadyException(
+                    "At least two input ports have to be defined!");
+        } else if (outPorts.size() < 1) {
+            throw new ComponentNotReadyException(
+                    "At least one output port has to be defined!");
+        }
+        if (slaveOverrideKeys == null) {
+            slaveOverrideKeys = joinKeys;
+        }
+        (driverKey = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT)
+                .getMetadata())).init();
+        (slaveKey = new RecordKey(slaveOverrideKeys,
+                getInputPort(SLAVE_ON_PORT).getMetadata())).init();
 
-		// allocate HashMap
-		hashMap = new HashMap(hashTableInitialCapacity);
-		if (hashMap == null) {
-		    throw new ComponentNotReadyException("Can't allocate HashMap of size: " + hashTableInitialCapacity);
-		}
-		
-		if (transformation == null) {
-			if (transformClassName != null) {
-				// try to load in transformation class & instantiate
-				try {
-					tClass = Class.forName(transformClassName);
-				} catch (ClassNotFoundException ex) {
-					// let's try to load in any additional .jar library (if specified)
-					if(libraryPath == null) {
-						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-					}
-					String urlString = "file:" + libraryPath;
-					URL[] myURLs;
-					try {
-						myURLs = new URL[] { new URL(urlString) };
-						URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-						tClass = Class.forName(transformClassName, true, classLoader);
-					} catch (MalformedURLException ex1) {
-						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-					} catch (ClassNotFoundException ex1) {
-						throw new RuntimeException("Can not find class: " + ex1);
-					}
-				}
-				try {
-					transformation = (RecordTransform) tClass.newInstance();
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
-				}
-			} else {
-			    if(dynamicTransformation == null) { //transformSource is set
-			        //creating dynamicTransformCode from internal transformation format
-			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-					codeParser.setSourceCode(transformSource);
-					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+ getId());
-					// DEBUG
-					//System.out.println(codeParser.getSourceCode());
-			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
-			        dynamicTransformation.setCaptureCompilerOutput(true);
-			    }
-				logger.info(" (compiling dynamic source) ");
-				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = null;
-				try {
-				    transObject = dynamicTransformation.instantiate();
-				} catch(RuntimeException ex) {
-				    logger.debug(dynamicTransformation.getCompilerOutput());
-				    logger.debug(dynamicTransformation.getSourceCode());
-					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-					        + "reason: " + ex.getMessage());
-				}
-				if (transObject instanceof RecordTransform) {
-					transformation = (RecordTransform) transObject;
-				} else {
-					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
-				}
-			}
-		}
+        // allocate HashMap
+        try {
+            hashMap = new HashMap(hashTableInitialCapacity);
+            if (slaveDuplicates)
+                hashMap = new DuplicateKeyMap(hashMap);
+        } catch (OutOfMemoryError ex) {
+            logger.fatal(ex);
+        } finally {
+            if (hashMap == null) {
+                throw new ComponentNotReadyException(
+                        "Can't allocate HashMap of size: "
+                                + hashTableInitialCapacity);
+            }
+        }
+        if (transformation == null) {
+            if (transformClassName != null) {
+                transformation = RecordTransformFactory.loadClass(logger,
+                        transformClassName, new String[] { libraryPath });
+            } else {
+                if (transformSource
+                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
+                    transformation = new RecordTransformTL(logger,
+                            transformSource);
+                } else if (dynamicTransformation == null) { // transformSource
+                    // is set
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, ("Transform" + getId()), transformSource,
+                            (DataRecordMetadata[]) getInMetadata().toArray(
+                                    new DataRecordMetadata[0]),
+                            (DataRecordMetadata[]) getOutMetadata().toArray(
+                                    new DataRecordMetadata[0]));
+                } else {
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, dynamicTransformation);
+                }
+            }
+        }
         transformation.setGraph(getGraph());
-		// init transformation
-		Collection col = getInPorts();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];
-		int counter = 0;
-		Iterator i = col.iterator();
-		while (i.hasNext()) {
-			inMetadata[counter++] = ((InputPort) i.next()).getMetadata();
-		}
-		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
-		if (!transformation.init(transformationParameters,inMetadata, null)) {
-			throw new ComponentNotReadyException("Error when initializing reformat function !");
-		}
-	}
+        // init transformation
+        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
+                .toArray(new DataRecordMetadata[0]);
+        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
+                WRITE_TO_PORT).getMetadata() };
+        if (!transformation.init(transformationParameters, inMetadata,
+                outMetadata)) {
+            throw new ComponentNotReadyException(
+                    "Error when initializing reformat function !");
+        }
+    }
 
 
     /**
-     * @param transformationParameters The transformationParameters to set.
+     * @param transformationParameters
+     *            The transformationParameters to set.
      */
     public void setTransformationParameters(Properties transformationParameters) {
         this.transformationParameters = transformationParameters;
@@ -448,19 +428,23 @@ public class HashJoin extends Node {
 					// do we have it or is OuterJoin enabled ?
 					if ((slaveRecord != null) || (leftOuterJoin)) {
 						// call transformation function
-						inRecords[1] = slaveRecord;
+                        do {
+                            inRecords[1] = slaveRecord;
 						try{
 						    if (!transformation.transform(inRecords, outRecord)) {
 						        resultCode = Node.RESULT_ERROR;
 						        resultMsg = transformation.getMessage();
 						        return;
 						    }
+                            
 						}catch(NullPointerException ex){
 						    logger.error("Null pointer exception when transforming input data",ex);
 						    logger.info("Possibly incorrectly handled outer-join situation");
 						    throw new RuntimeException("Null pointer exception when transforming input data",ex);
 						}
 						outPort.writeRecord(outRecord[0]);
+                        }while(slaveDuplicates && 
+                                (slaveRecord = (DataRecord)((DuplicateKeyMap)hashMap).getNext())!=null);
 					}
 				}
 				SynchronizeUtils.cloverYield();
@@ -526,6 +510,10 @@ public class HashJoin extends Node {
 		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY ) {
 			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
 		}
+        
+        if (slaveDuplicates){
+            xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
+        }
 		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
@@ -593,8 +581,11 @@ public class HashJoin extends Node {
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
 			}
+            if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
+                join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
+            }
 			join.setTransformationParameters(xattribs.attributes2Properties(
-			                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_HASHTABLESIZE_ATTRIBUTE}));
+			                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
 			
 			return join;
 		} catch (Exception ex) {
@@ -622,5 +613,13 @@ public class HashJoin extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+    public boolean isSlaveDuplicates() {
+        return slaveDuplicates;
+    }
+
+    public void setSlaveDuplicates(boolean slaveDuplicates) {
+        this.slaveDuplicates = slaveDuplicates;
+    }
 }
 
