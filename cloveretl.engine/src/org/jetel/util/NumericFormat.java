@@ -21,7 +21,6 @@
 package org.jetel.util;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
@@ -29,9 +28,9 @@ import java.text.NumberFormat;
 import java.text.ParsePosition;
 import java.util.Locale;
 
-import com.sun.tools.example.debug.expr.ParseException;
-
 /**
+ * This class is equivalent of DecimalFormat for BigDecimal
+ * 
  * @author avackova
  *
  */
@@ -39,7 +38,7 @@ public class NumericFormat extends NumberFormat {
 
 	
 	private DecimalFormat dFormat;
-	private static char[] EXPONENT_SYMBOL = {'E','e'};
+	public static char[] EXPONENT_SYMBOL = {'E','e'};
 	
 	/**
 	 * 
@@ -76,40 +75,41 @@ public class NumericFormat extends NumberFormat {
 		String positivePrefix = dFormat.getPositivePrefix();
 		int charRemoved=0;
 		int lenght=source.length();
-		char[]	pomChars=new char[lenght];
+		char[]	chars=new char[lenght];
 		StringBuffer toRemove = new StringBuffer(source);
+		//filling array chars with chars from source, negative prefix is changed to "-", positive prefix is ignored
 		if (toRemove.toString().startsWith(negativePrefix)){
 			toRemove.replace(0,negativePrefix.length(),"-");
 			charRemoved = -1;
-			source.getChars(negativePrefix.length(),lenght,pomChars,0);
+			source.getChars(negativePrefix.length(),lenght,chars,0);
 		}else if (toRemove.toString().startsWith(positivePrefix)){
 			toRemove.delete(0,positivePrefix.length());
-			source.getChars(positivePrefix.length(),lenght,pomChars,0);
+			source.getChars(positivePrefix.length(),lenght,chars,0);
 		}
 		int exponentPart=0;
 		for (int j=0;j<lenght;j++){
-			if (!Character.isDigit(pomChars[j])){
-				if (pomChars[j]==decimalSeparator){
-					if (!dSeparator) {
+			if (!Character.isDigit(chars[j])){
+				if (chars[j]==decimalSeparator){
+					if (!dSeparator) {//there was not decemal separator before
 						toRemove.replace(j-charRemoved,j-charRemoved+1,".");
 						dSeparator = true;
-					}else{
+					}else{//second decimal separator found, rest of string is ignored
 						toRemove.setLength(j-charRemoved);
 						break;
 					}
-				}else if (pomChars[j]==groupingSeparator){
-					if (!dSeparator){
+				}else if (chars[j]==groupingSeparator){
+					if (!dSeparator){//there was not decimal separator before
 						toRemove.deleteCharAt(j-charRemoved++);
-					}else{
+					}else{//grouping separator is after decimal separartor, rest of string is ignored
 						toRemove.setLength(j-charRemoved);
 						break;
 					}
-				}else if (pomChars[j]==EXPONENT_SYMBOL[0] || pomChars[j]==EXPONENT_SYMBOL[1]){
+				}else if (chars[j]==EXPONENT_SYMBOL[0] || chars[j]==EXPONENT_SYMBOL[1]){
 					exponentForm = true;
 					exponentPart = getExponentPart(toRemove.toString(),j-charRemoved+1);
 					toRemove.setLength(j-charRemoved);
 					break;
-				}else{
+				}else{//unknown char, rest of string is ignored
 					toRemove.setLength(j-charRemoved);
 					break;
 				}
@@ -127,6 +127,14 @@ public class NumericFormat extends NumberFormat {
 		}
 	}
 	
+	/**
+	 * This metod gets digits from string and changes them to int. Before digitits 
+	 * can be '+' or '-'
+	 * 
+	 * @param str - input string
+	 * @param offset 
+	 * @return 
+	 */
 	private int getExponentPart(String str,int offset){
 		char ch = str.charAt(offset);
 		StringBuffer exp = new StringBuffer();
@@ -143,6 +151,7 @@ public class NumericFormat extends NumberFormat {
 			}
 		}
 		exp.append(ch);
+		//while next character is digit appends it to result string
 		while (index<str.length() && Character.isDigit((ch = str.charAt(offset+index)))){
 			exp.append(ch);
 			index++;
@@ -151,9 +160,17 @@ public class NumericFormat extends NumberFormat {
 	}
 
 	
+	/**
+	 * This method formats BigDecimal due to given patern
+	 * 
+	 * @param number BigDecimal to format
+	 * @param toAppendTo
+	 * @param pos
+	 * @return StringBuffer with formated number
+	 */
 	public StringBuffer format(BigDecimal number, StringBuffer toAppendTo,
 			FieldPosition pos) {
-		//Appending prefixes
+		//"starting" string is string representation if BigDecimal with appropriate prefix:
 		String prefix;
 		if (number.signum()==-1){
 			prefix = dFormat.getNegativePrefix();
@@ -162,8 +179,8 @@ public class NumericFormat extends NumberFormat {
 			prefix = dFormat.getPositivePrefix();
 			toAppendTo.append(prefix+number.toString());
 		}
+		//initializing temp variables
 		int start = prefix.length();
-		char zero = dFormat.getDecimalFormatSymbols().getZeroDigit();
 		int groupingSize = dFormat.getGroupingSize();
 		char groupingSeparator = dFormat.getDecimalFormatSymbols().getGroupingSeparator();
 		int maximumFractionDigits = dFormat.getMaximumFractionDigits();
@@ -171,7 +188,7 @@ public class NumericFormat extends NumberFormat {
 		int minimumFractionDigits = dFormat.getMinimumFractionDigits();
 		int minimumIntegerdigits = dFormat.getMinimumIntegerDigits();
 		int decimalPoint = toAppendTo.indexOf(".");
-		if (decimalPoint==-1) {
+		if (decimalPoint==-1) {//if input number has no fraction digits set decimal point position to the end of string
 			decimalPoint = toAppendTo.length();
 			if (minimumFractionDigits>0 || isDecimalSeparatorAlwaysShown()){
 				toAppendTo.append(dFormat.getDecimalFormatSymbols().getDecimalSeparator());
@@ -179,24 +196,25 @@ public class NumericFormat extends NumberFormat {
 		}else{
 			toAppendTo.replace(decimalPoint,decimalPoint+1,String.valueOf(dFormat.getDecimalFormatSymbols().getDecimalSeparator()));
 		}
-		//formating integer digits
-		int i=decimalPoint-1;
-		boolean end = i<start ;
+		//formating integer digits from decimal point to left
+		int index=decimalPoint-1;
+		boolean end = index<start ;
 		int groupSize;
 		int integerDigits = 0;
-		while (i>0){
+		while (index>0){
 			groupSize = 0;
+			//take all digits from one group
 			while ((groupSize<groupingSize || groupingSize==0) && !end && integerDigits<maximumIntegerDigits){
 				integerDigits++;
 				groupSize++;
-				end = --i<start;
+				end = --index<start;
 			}
-			if (!end && integerDigits<maximumIntegerDigits) {
-				toAppendTo.insert(i+1,groupingSeparator);
+			if (!end && integerDigits<maximumIntegerDigits) {//locus for grouping separator
+				toAppendTo.insert(index+1,groupingSeparator);
 			}else if (end){
 				while (integerDigits<minimumIntegerdigits){
 					if (groupSize<groupingSize || groupingSize==0){
-						toAppendTo.insert(start,zero);
+						toAppendTo.insert(start,'0');
 						groupSize++;
 						integerDigits++;
 					}else {
@@ -204,22 +222,21 @@ public class NumericFormat extends NumberFormat {
 						groupSize = 0;
 					}
 				}
-			}else break;
+			}else break;//integerDigits>=maximumIntegerDigits
 		}
 		//formating fraction digits
-		decimalPoint = toAppendTo.indexOf(".");
-		i = decimalPoint+1;
-		end = i>toAppendTo.length();
+		index = decimalPoint+1;
+		end = index>toAppendTo.length();
 		int fractionDigits = 0;
 		while (!end && fractionDigits<maximumFractionDigits){
 			fractionDigits++;
-			end = ++i>toAppendTo.length();
+			end = ++index>toAppendTo.length();
 		}
-		if (!end){
-			toAppendTo.setLength(i);
+		if (!end){//fractionDigits>=maximumFractionDigits
+			toAppendTo.setLength(index);
 		}
 		while (fractionDigits<minimumFractionDigits){
-			toAppendTo.append(zero);
+			toAppendTo.append('0');
 			fractionDigits++;
 		}
 		//appending sufixes
@@ -243,7 +260,7 @@ public class NumericFormat extends NumberFormat {
 	 */
 	public StringBuffer format(double number, StringBuffer toAppendTo,
 			FieldPosition pos) {
-		return null;
+		return dFormat.format(number,toAppendTo,pos);
 	}
 
 	/* (non-Javadoc)
@@ -251,7 +268,7 @@ public class NumericFormat extends NumberFormat {
 	 */
 	public StringBuffer format(long number, StringBuffer toAppendTo,
 			FieldPosition pos) {
-		return null;
+		return dFormat.format(number,toAppendTo,pos);
 	}
 	
 	public DecimalFormatSymbols getDecimalFormatSymbols(){

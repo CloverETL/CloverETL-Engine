@@ -239,13 +239,13 @@ public class StringUtils {
 		}
 		int charRemoved=0;
 		int lenght=str.length();
-		char[]	pomChars=new char[lenght];
-		str.getChars(0,lenght,pomChars,0);
+		char[]	chars=new char[lenght];
+		str.getChars(0,lenght,chars,0);
 		StringBuffer toRemove = new StringBuffer(str);
 		boolean isLetter, isDigit;
 		for (int j=0;j<lenght;j++){
-			isLetter = Character.isLetter(pomChars[j]);
-			isDigit = Character.isDigit(pomChars[j]);
+			isLetter = Character.isLetter(chars[j]);
+			isDigit = Character.isDigit(chars[j]);
 			if (!(isLetter || isDigit)){
 				toRemove.deleteCharAt(j-charRemoved++);
 			}else{
@@ -269,11 +269,11 @@ public class StringUtils {
 	public static String removeBlankSpace(String str){
 		int charRemoved=0;
 		int lenght=str.length();
-		char[]	pomChars=new char[lenght];
-		str.getChars(0,lenght,pomChars,0);
+		char[]	chars=new char[lenght];
+		str.getChars(0,lenght,chars,0);
 		StringBuffer toRemove = new StringBuffer(str);
 		for (int j=0;j<lenght;j++){
-			if (Character.isWhitespace(pomChars[j])) {
+			if (Character.isWhitespace(chars[j])) {
 				toRemove.deleteCharAt(j-charRemoved++);
 			}
 		}
