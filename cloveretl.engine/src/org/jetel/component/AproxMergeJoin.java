@@ -462,7 +462,6 @@ public class AproxMergeJoin extends Node {
 	}
 
 	public void init() throws ComponentNotReadyException {
-		Class tClass;
 		// test that we have at two input ports and four output
 		if (inPorts.size() != 2) {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");
@@ -471,63 +470,29 @@ public class AproxMergeJoin extends Node {
 		}
 		//Checking transformation for conforming records
 		if (transformation == null) {
-			if (transformClassName != null) {
-				// try to load in transformation class & instantiate
-				try {
-					tClass = Class.forName(transformClassName);
-				} catch (ClassNotFoundException ex) {
-					// let's try to load in any additional .jar library (if specified)
-					if(libraryPath == null) {
-						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-					}
-					String urlString = "file:" + libraryPath;
-					URL[] myURLs;
-					try {
-						myURLs = new URL[] { new URL(urlString) };
-						URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-						tClass = Class.forName(transformClassName, true, classLoader);
-					} catch (MalformedURLException ex1) {
-						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-					} catch (ClassNotFoundException ex1) {
-						throw new RuntimeException("Can not find class: " + ex1);
-					}
-				}
-				try {
-					transformation = (RecordTransform) tClass.newInstance();
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
-				}
-			} else {
-			    if(dynamicTransformation == null) { //transformSource is set
-			        //creating dynamicTransformation from internal transformation format
-			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-					codeParser.setSourceCode(transformSource);
-					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+this.getId()+"ForConforming");
-					// DEBUG
-					// System.out.println(codeParser.getSourceCode());
-			        dynamicTransformation = new DynamicJavaCode(codeParser.getSourceCode());
-			        dynamicTransformation.setCaptureCompilerOutput(true);
-			    }
-				logger.info(" (compiling dynamic source) ");
-				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = null;
-				try {
-				    transObject = dynamicTransformation.instantiate();
-				} catch(RuntimeException ex) {
-				    logger.debug(dynamicTransformation.getCompilerOutput());
-				    logger.debug(dynamicTransformation.getSourceCode());
-					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-					        + "reason: " + ex.getMessage());
-							
-				}
-				if (transObject instanceof RecordTransform) {
-					transformation = (RecordTransform) transObject;
-				} else {
-					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
-				}
-			}
-		}
+            if (transformClassName != null) {
+                transformation = RecordTransformFactory.loadClass(logger,
+                        transformClassNameForSuspicious, new String[] { libraryPathForSuspicious });
+                }
+            } else {
+                if (transformSourceForSuspicious
+                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
+                    transformation = new RecordTransformTL(logger,
+                            transformSource);
+                } else if (dynamicTransformation == null) { // transformSource
+                    // is set
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, ("Transform" + getId()+"ForConforming"), transformSourceForSuspicious,
+                            (DataRecordMetadata[]) getInMetadata().toArray(
+                                    new DataRecordMetadata[0]),
+                                    new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()});
+                } else {
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, dynamicTransformation);
+                }
+            
+            }
+            
         transformation.setGraph(getGraph());
         //Checking metada on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
@@ -542,70 +507,37 @@ public class AproxMergeJoin extends Node {
 		if (!outMetadata[1].equals(inMetadata[1])){
 			throw new ComponentNotReadyException("Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
 		}
-		if (!transformation.init(transformationParameters,inMetadata, null)) {
+		if (!transformation.init(transformationParameters,inMetadata, 
+                    new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()})) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 		//checking transformation for suspicoius records
 		if (transformationForSuspicious == null) {
 			if (transformClassNameForSuspicious != null) {
-				// try to load in transformation class & instantiate
-				try {
-					tClass = Class.forName(transformClassNameForSuspicious);
-				} catch (ClassNotFoundException ex) {
-					// let's try to load in any additional .jar library (if specified)
-					if(libraryPathForSuspicious == null) {
-						throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-					}
-					String urlString = "file:" + libraryPathForSuspicious;
-					URL[] myURLs;
-					try {
-						myURLs = new URL[] { new URL(urlString) };
-						URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-						tClass = Class.forName(transformClassNameForSuspicious, true, classLoader);
-					} catch (MalformedURLException ex1) {
-						throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-					} catch (ClassNotFoundException ex1) {
-						throw new RuntimeException("Can not find class: " + ex1);
-					}
-				}
-				try {
-					transformationForSuspicious = (RecordTransform) tClass.newInstance();
-				} catch (Exception ex) {
-					throw new ComponentNotReadyException(ex.getMessage());
+                transformationForSuspicious = RecordTransformFactory.loadClass(logger,
+                        transformClassNameForSuspicious, new String[] { libraryPathForSuspicious });
 				}
 			} else {
-			    if(dynamicTransformationForSuspicious == null) { //transformSource is set
-			        //creating dynamicTransformation from internal transformation format
-			        CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-					codeParser.setSourceCode(transformSourceForSuspicious);
-					codeParser.parse();
-					codeParser.addTransformCodeStub("Transform"+this.getId()+"ForSuspicious");
-					// DEBUG
-					// System.out.println(codeParser.getSourceCode());
-			        dynamicTransformationForSuspicious = new DynamicJavaCode(codeParser.getSourceCode());
-			        dynamicTransformationForSuspicious.setCaptureCompilerOutput(true);
-			    }
-				logger.info(" (compiling dynamic source) ");
-				// use DynamicJavaCode to instantiate transformation class
-				Object transObject = null;
-				try {
-				    transObject = dynamicTransformationForSuspicious.instantiate();
-				} catch(RuntimeException ex) {
-				    logger.debug(dynamicTransformationForSuspicious.getCompilerOutput());
-				    logger.debug(dynamicTransformationForSuspicious.getSourceCode());
-					throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-					        + "reason: " + ex.getMessage());
-							
-				}
-				if (transObject instanceof RecordTransform) {
-					transformationForSuspicious = (RecordTransform) transObject;
-				} else {
-					throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
-				}
-			}
-		}
+                if (transformSourceForSuspicious
+                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
+                    transformationForSuspicious = new RecordTransformTL(logger,
+                            transformSource);
+                } else if (dynamicTransformation == null) { // transformSource
+                    // is set
+                    transformationForSuspicious = RecordTransformFactory.loadClassDynamic(
+                            logger, ("Transform" + getId()+"ForSuspicious"), transformSourceForSuspicious,
+                            (DataRecordMetadata[]) getInMetadata().toArray(
+                                    new DataRecordMetadata[0]),
+                                    new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()});
+                } else {
+                    transformationForSuspicious = RecordTransformFactory.loadClassDynamic(
+                            logger, dynamicTransformationForSuspicious);
+                }
+            }
+        
         transformationForSuspicious.setGraph(getGraph());
-		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, null)) {
+		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, 
+                        new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()})) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
 		//initializing join parameters
@@ -613,7 +545,7 @@ public class AproxMergeJoin extends Node {
 		maxDiffrenceLetters = new int[joinParameters.length];
 		boolean[][] strenght=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
 		weights = new double[joinParameters.length];
-		String[] tmp=new String[7];
+		String[] tmp;
 		for (int i=0;i<joinParameters.length;i++){
 			tmp=joinParameters[i].split(" ");
 			joinKeys[i]=tmp[0];
@@ -633,19 +565,18 @@ public class AproxMergeJoin extends Node {
 		if (slaveOverwriteKeys == null) {
 			slaveOverwriteKeys = joinKeys;
 		}
-		RecordKey[] rk = new RecordKey[2];
-		rk[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-		rk[SLAVE_ON_PORT] = new RecordKey(slaveOverwriteKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
-		rk[DRIVER_ON_PORT].init();
-		rk[SLAVE_ON_PORT].init();
-		fieldsToCompare[DRIVER_ON_PORT]=rk[DRIVER_ON_PORT].getKeyFields();
-		fieldsToCompare[SLAVE_ON_PORT]=rk[SLAVE_ON_PORT].getKeyFields();
+		RecordKey[] recKey = new RecordKey[2];
+		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
+		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverwriteKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recKey[DRIVER_ON_PORT].init();
+		recKey[SLAVE_ON_PORT].init();
+		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
+		fieldsToCompare[SLAVE_ON_PORT]=recKey[SLAVE_ON_PORT].getKeyFields();
 		comparator = new StringAproxComparator[joinParameters.length];
 		for (int i=0;i<comparator.length;i++){
-			boolean[] str=strenght[i];
 			String locale=inMetadata[DRIVER_ON_PORT].getField(fieldsToCompare[DRIVER_ON_PORT][i]).getLocaleStr();
 			try {
-				comparator[i] = StringAproxComparator.createComparator(locale,str);
+				comparator[i] = StringAproxComparator.createComparator(locale,strenght[i]);
 			}catch(JetelException ex){
 				throw new ComponentNotReadyException(ex.getLocalizedMessage());
 			}
