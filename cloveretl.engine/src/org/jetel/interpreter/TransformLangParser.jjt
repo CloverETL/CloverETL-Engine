@@ -13,7 +13,7 @@ options {
    VISITOR=true; 
    NODE_USES_PARSER=true;
    NODE_PREFIX="CLVF";
-   NODE_PACKAGE="org.jetel.interpreter.node";
+   NODE_PACKAGE="org.jetel.interpreter";
    NODE_SCOPE_HOOK=true; // save line & column number
    BUILD_NODE_FILES=false; // change to True only if new Node has been added 
 }
@@ -635,7 +635,7 @@ void SwitchStatement() :
   "{"
   	 CaseExpression()
      ( CaseExpression() )*
-//  	 [ LOOKAHEAD(1) "default" Statement() ]
+  	 [ LOOKAHEAD(1) "default" ":" Statement() ] { jjtThis.setDefaultClause(true); }
   "}"
 }
 
