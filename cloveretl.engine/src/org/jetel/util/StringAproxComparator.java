@@ -79,24 +79,25 @@ public class StringAproxComparator{
 		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
 			throw new JetelException("Not allowed strenght combination");
 		}
-		ComparatorParameters cp;
+		ComparatorParameters comparartorPatrameters;
 		if (locale!=null){
-			cp = new ComparatorParameters(strenght,locale);
-			if (!comparators.containsKey(cp)){
-				comparators.put(cp,new StringAproxComparator(locale,strenght));
+			comparartorPatrameters = new ComparatorParameters(strenght,locale);
+			if (!comparators.containsKey(comparartorPatrameters)){
+				comparators.put(comparartorPatrameters,new StringAproxComparator(locale,strenght));
 			}
 		}else{
-			cp = new ComparatorParameters(strenght,"");
-			if (!comparators.containsKey(cp)){
-				comparators.put(cp,new StringAproxComparator(strenght));
+			comparartorPatrameters = new ComparatorParameters(strenght,"");
+			if (!comparators.containsKey(comparartorPatrameters)){
+				comparators.put(comparartorPatrameters,new StringAproxComparator(strenght));
 			}
 		}
-		return (StringAproxComparator)comparators.get(cp);
+		return (StringAproxComparator)comparators.get(comparartorPatrameters);
 	}
 
 	public static StringAproxComparator createComparator(String locale,
-			boolean s1,boolean s2,boolean s3,boolean s4) throws JetelException{
-		boolean[] strenght={s1,s2,s3,s4};
+			boolean identical,boolean tertiary,boolean secondary,boolean primary) 
+			throws JetelException{
+		boolean[] strenght={identical,tertiary,secondary,primary};
 		return createComparator(locale,strenght);
 	}
 
@@ -106,16 +107,17 @@ public class StringAproxComparator{
 		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
 			throw new JetelException("Not allowed strenght combination");
 		}
-		ComparatorParameters cp = new ComparatorParameters(strenght,"");
-		if (!comparators.containsKey(cp)){
-			comparators.put(cp,new StringAproxComparator(strenght));
+		ComparatorParameters comparartorParameters = new ComparatorParameters(strenght,"");
+		if (!comparators.containsKey(comparartorParameters)){
+			comparators.put(comparartorParameters,new StringAproxComparator(strenght));
 		}
-		return (StringAproxComparator)comparators.get(cp);
+		return (StringAproxComparator)comparators.get(comparartorParameters);
 	}
 	
-	public static StringAproxComparator createComparator(boolean s1,boolean s2,boolean s3,boolean s4) 
+	public static StringAproxComparator createComparator(boolean identical,
+			boolean tertiary,boolean secondary,boolean primary) 
 			throws JetelException{
-		boolean[] strenght={s1,s2,s3,s4};
+		boolean[] strenght={identical,tertiary,secondary,primary};
 		return createComparator(strenght);
 	}
 
