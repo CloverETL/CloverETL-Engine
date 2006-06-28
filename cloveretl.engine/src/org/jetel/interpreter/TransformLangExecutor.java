@@ -36,6 +36,7 @@ import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.util.Compare;
+import org.jetel.util.StringUtils;
 
 /**
  * Executor of FilterExpression parse tree.
@@ -291,19 +292,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 result.add(Calendar.DATE, ((Numeric) b).getInt());
                 stack.push(result.getTime());
             } else if (a instanceof CharSequence) {
-                StringBuffer buf;
                 CharSequence a1 = (CharSequence) a;
+                StringBuffer buf=new StringBuffer(a1.length()*2);
+                StringUtils.strBufAppend(buf,a1);
                 if (b instanceof CharSequence) {
-                    CharSequence b1 = (CharSequence) b;
-                    buf = new StringBuffer(a1.length() + b1.length());
-                    for (int i = 0; i < a1.length(); buf.append(a1.charAt(i++)))
-                        ;
-                    for (int i = 0; i < b1.length(); buf.append(b1.charAt(i++)))
-                        ;
+                    StringUtils.strBufAppend(buf,(CharSequence)b);
                 } else {
-                    buf = new StringBuffer(a1.length() + 10);
-                    for (int i = 0; i < a1.length(); buf.append(a1.charAt(i++)))
-                        ;
                     buf.append(b);
                 }
                 stack.push(buf);
@@ -664,11 +658,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             a = stack.pop();
 
             if (a instanceof CharSequence) {
-                CharSequence seqA = (CharSequence) a;
-                strBuf.ensureCapacity(strBuf.length() + seqA.length());
-                for (int j = 0; j < seqA.length(); j++) {
-                    strBuf.append(seqA.charAt(j));
-                }
+                StringUtils.strBufAppend(strBuf,(CharSequence) a);
             } else {
                 if (a != null) {
                     strBuf.append(a);
@@ -1066,19 +1056,28 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFSwitchStatement node, Object data) {
         // get value of switch && push/leave it on stack
+        boolean match=false;
         node.jjtGetChild(0).jjtAccept(this, data);
         Object switchVal=stack.pop();
         int numChildren = node.jjtGetNumChildren();
+        int numCases = node.hasDefaultClause ? numChildren-1 : numChildren;
         // loop over remaining case statements
-        for (int i = 1; i < numChildren; i++) {
+        for (int i = 1; i < numCases; i++) {
             stack.push(switchVal);
-            node.jjtGetChild(i).jjtAccept(this, data);
+            if (node.jjtGetChild(i).jjtAccept(this, data)==Stack.TRUE_VAL){
+                match=true;
+            }
             if (breakFlag) {
                 if (breakType == BREAK_BREAK) {
                     breakFlag = false;
                 }
                 break;
             }
+           
+        }
+        // test whether execute default branch
+        if (node.hasDefaultClause && !match){
+            node.jjtGetChild(numChildren-1).jjtAccept(this, data);
         }
         return data;
     }
@@ -1105,9 +1104,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             Object[] args=new Object[] {switchVal,value};
             throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause");
         }
-        if (match)
+        if (match){
             node.jjtGetChild(1).jjtAccept(this, data);
-        return data;
+            return Stack.TRUE_VAL;
+        }else{
+            return Stack.FALSE_VAL;
+        }
     }
 
     public Object visit(CLVFPlusPlusNode node, Object data) {
@@ -1272,11 +1274,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else if (variable instanceof StringBuffer) {
                 StringBuffer var = (StringBuffer) variable;
                 var.setLength(0);
-                CharSequence seqA = (CharSequence) value;
-                var.ensureCapacity(seqA.length());
-                for (int j = 0; j < seqA.length(); j++) {
-                    var.append(seqA.charAt(j));
-                }
+                StringUtils.strBufAppend(var,(CharSequence) value);
             } else if (variable instanceof Boolean) {
                 stack.storeVar(childNode.localVar,childNode.varSlot, (Boolean)value); // boolean is not updatable - we replace the reference
                 // stack.put(varName,((Boolean)value).booleanValue() ?
