@@ -637,7 +637,7 @@ public class CodeParser {
 
 		recordNum = (Integer) outputRecordsNames.get(fieldRef[0]);
 		if (recordNum == null) {
-			throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
+			throw new RuntimeException("Output record does not exist: " + fieldRef[0]);
 		}
 		try {
 			fieldNum = (Integer) outputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
