@@ -40,8 +40,8 @@ public class AproxMergeJoin extends Node {
 
 	private static final String XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE = "slaveOverwriteKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
-	private static final String XML_REFERENCE_KEY_ATTRIBUTE="referenceKey";
-	private static final String XML_SLAVE_REF_OVERWRITE_ATTRIBUTE = "slaveRefOverwrite";
+	private static final String XML_MATCHING_KEY_ATTRIBUTE="matchingKey";
+	private static final String XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE = "slaveMatchingOverwrite";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE = "transformClassForSuspicious";
 	private static final String XML_LIBRARY_PATH_ATTRIBUTE = "libraryPath";
@@ -83,8 +83,8 @@ public class AproxMergeJoin extends Node {
 	private String[] joinParameters;
 	private String[] joinKeys;
 	private String[] slaveOverwriteKeys = null;
-	private String[] referenceKey=new String[1];
-	private String[] slaveReferenceKey=null;
+	private String[] matchingKey=new String[1];
+	private String[] slaveMatchingKey=null;
 	private RecordKey[] recordKey;
 	private int[] conformityFieldsForConforming;
 	private int[] conformityFieldsForSuspicious;
@@ -113,27 +113,27 @@ public class AproxMergeJoin extends Node {
 	 * @param id
 	 */
 	
-	public AproxMergeJoin(String id,String[] joinParameters,	String referenceKey) throws JetelException{
+	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey) throws JetelException{
 		super(id);
 		this.joinParameters=joinParameters;
-		this.referenceKey[0]=referenceKey;
+		this.matchingKey[0]=matchingKey;
 	}
 	
-	public AproxMergeJoin(String id,String[] joinParameters, String referenceKey,
+	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
 			String transformClass) throws JetelException{
-		this(id,joinParameters,referenceKey);
+		this(id,joinParameters,matchingKey);
 		this.transformClassName = transformClass;
 	}
 
-	public AproxMergeJoin(String id, String[] joinParameters,String referenceKey, 
+	public AproxMergeJoin(String id, String[] joinParameters,String matchingKey, 
 			DynamicJavaCode dynaTransCode)  throws JetelException{
-		this(id,joinParameters,referenceKey);
+		this(id,joinParameters,matchingKey);
 		this.dynamicTransformation=dynaTransCode;
 	}
 
-	public AproxMergeJoin(String id, String[] joinParameters,String referenceKey, 
+	public AproxMergeJoin(String id, String[] joinParameters,String matchingKey, 
 			String transform, boolean distincter) throws JetelException{
-		this(id,joinParameters,referenceKey);
+		this(id,joinParameters,matchingKey);
 		this.transformSource = transform;
 	}
 
@@ -151,17 +151,17 @@ public class AproxMergeJoin extends Node {
 	/**
 	 *  Sets specific key (string) for slave records<br>
 	 *  Can be used if slave record has different name
-	 *  for reference key field
+	 *  for matching key field
 	 *
 	 * @param slaveRefKey
 	 */
-	private void setSlaveReferenceKey(String slaveRefKey){
-		slaveReferenceKey=new String[1];
-		this.slaveReferenceKey[0]=slaveRefKey;
+	private void setSlaveMatchingKey(String slaveRefKey){
+		slaveMatchingKey=new String[1];
+		this.slaveMatchingKey[0]=slaveRefKey;
 	}
 	
 	/**
-	 *  Populates record buffer with all slave records having the same reference key
+	 *  Populates record buffer with all slave records having the same matching key
 	 *
 	 * @param  port                      Description of the Parameter
 	 * @param  nextRecord                next record from slave
@@ -634,12 +634,12 @@ public class AproxMergeJoin extends Node {
 				throw new ComponentNotReadyException(ex.getLocalizedMessage());
 			}
 		}
-		if (slaveReferenceKey == null){
-			slaveReferenceKey=referenceKey;
+		if (slaveMatchingKey == null){
+			slaveMatchingKey=matchingKey;
 		}
 		recordKey = new RecordKey[2];
-		recordKey[DRIVER_ON_PORT] = new RecordKey(referenceKey, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveReferenceKey, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
+		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recordKey[DRIVER_ON_PORT].init();
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
@@ -697,7 +697,7 @@ public class AproxMergeJoin extends Node {
 			if (xattribs.exists(XML_TRANSFORM_CLASS_ATTRIBUTE)){
 				join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
+						xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
 						xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE));
 				if (xattribs.exists(XML_LIBRARY_PATH_ATTRIBUTE)) {
 					join.setLibraryPath(xattribs.getString(XML_LIBRARY_PATH_ATTRIBUTE));
@@ -715,13 +715,13 @@ public class AproxMergeJoin extends Node {
 				if (dynaTransCode != null) {
 					join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 							xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-							xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
+							xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
 							dynaTransCode);
 				} else { //last chance to find reformat code is in transform attribute
 					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
 						join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 								xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-								xattribs.getString(XML_REFERENCE_KEY_ATTRIBUTE),
+								xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
 								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true); 
 					} else {
 						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
@@ -759,8 +759,8 @@ public class AproxMergeJoin extends Node {
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
-			if (xattribs.exists(XML_SLAVE_REF_OVERWRITE_ATTRIBUTE)) {
-				join.setSlaveReferenceKey(xattribs.getString(XML_SLAVE_REF_OVERWRITE_ATTRIBUTE));
+			if (xattribs.exists(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE)) {
+				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE));
 			}
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
 			join.setTransformationParameters(xattribs.attributes2Properties(

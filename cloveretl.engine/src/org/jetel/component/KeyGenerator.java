@@ -19,8 +19,8 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- * This component creates reference matching key which is 
- * costructed as combination of signs from given data fields
+ * This component creates key which is costructed as combination of chars 
+ * from given data fields
  * @author avackova
  *
  */
@@ -113,8 +113,8 @@ public class KeyGenerator extends Node {
 	 * This method generates refernece key for input record
 	 * 
 	 * @param inRecord
-	 * @param key - fields from which reference key is to be constructed
-	 * @return referenced key for input record
+	 * @param key - fields from which the key is to be constructed
+	 * @return key for input record
 	 */
 	private String generateKey(DataRecord inRecord, Key[] key){
 		resultString.setLength(0);
