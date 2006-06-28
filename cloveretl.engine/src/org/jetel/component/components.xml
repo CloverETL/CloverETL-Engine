@@ -690,9 +690,9 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 </property>
 </properties>
 </ETLComponent>
-<ETLComponent category="transformers" className="org.jetel.component.KeyGenerator" iconPath="icons/comp32.gif" name="Reference key generator" smallIconPath="icons/comp16.gif" type="KEY_GEN">
+<ETLComponent category="transformers" className="org.jetel.component.KeyGenerator" iconPath="icons/comp32.gif" name="Key generator" smallIconPath="icons/comp16.gif" type="KEY_GEN">
 <shortDescription/>
-<description>Creates referenced key from given fields</description>
+<description>Creates key from given fields</description>
 <inputPorts>
 <singlePort name="0"/>
 </inputPorts>
@@ -718,7 +718,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <property category="clover" displayName="Join key" modifiable="true" name="joinKey" nullable="true">
 <keyType inputPortName="0"/>
 </property>
-<property category="clover" displayName="Reference key" modifiable="true" name="referenceKey" nullable="true">
+<property category="clover" displayName="Matching key" modifiable="true" name="matchingKey" nullable="true">
 <keyType inputPortName="0"/>
 </property>
 <property category="clover" displayName="Transform class" modifiable="true" name="transformClass" nullable="true">
@@ -742,7 +742,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <property category="clover" displayName="Slave overwrite key" modifiable="true" name="slaveOverwriteKey" nullable="true">
 <keyType inputPortName="1"/>
 </property>
-<property category="clover" displayName="Slave overwrite reference key" modifiable="true" name="slaveRefOverwrite" nullable="true">
+<property category="clover" displayName="Slave overwrite matching key" modifiable="true" name="slaveMatchingOverwrite" nullable="true">
 <keyType inputPortName="1"/>
 </property>
 <property category="clover" displayName="Conformity limit" modifiable="true" name="conformity" nullable="true">
