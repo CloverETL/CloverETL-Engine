@@ -250,7 +250,7 @@ public class Dedup extends Node {
 		}
 		
 		// equal NULL attribute
-		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE,(equalNULLs ? "True":"False"));
+		xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
 	}
 
 
