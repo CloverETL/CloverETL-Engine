@@ -316,7 +316,10 @@ public class StringUtils {
 	public static String stringArraytoString(String[] strings){
 		return stringArraytoString(strings,' ');
 	}
-	
+
+    public static boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
+    }
 }
 
 
