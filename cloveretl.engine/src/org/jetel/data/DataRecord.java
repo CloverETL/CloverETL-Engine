@@ -35,7 +35,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author      D.Pavlis
  * @since       March 26, 2002
  * @revision    $Revision$
- * @created     18. kvìten 2003
+ * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
 public class DataRecord implements Serializable, Comparable {
@@ -375,6 +375,25 @@ public class DataRecord implements Serializable, Comparable {
 		fields[_fieldNum].setToDefaultValue();
 	}
 
+    /**
+     *  An operation that sets value of all data fields to NULL value.
+     */
+    public void setToNull(){
+        for (int i = 0; i < fields.length; i++) {
+            fields[i].setNull(true);
+        }
+    }
+    
+    /**
+     *  An operation that sets value of the selected data field to NULL
+     *  value.
+     * @param _fieldNum
+     */
+    public void setToNull(int _fieldNum) {
+        fields[_fieldNum].setNull(true);
+    }
+    
+    
 
 	/**
 	 *  Creates textual representation of record's content based on values of individual
@@ -418,6 +437,20 @@ public class DataRecord implements Serializable, Comparable {
 	    }
 	    return hash;
 	}
+    
+    /**
+     * Test whether the whole record has NULL value - i.e.
+     * every field it contains has NULL value.
+     * @return true if all fields have NULL value otherwise false
+     */
+    
+    public boolean isNull(){
+        for (int i = 0; i < fields.length; i++) {
+            if (!fields[i].isNull()) return false;
+        }
+        return true;
+    }
+    
 }
 /*
  *  end class DataRecord
