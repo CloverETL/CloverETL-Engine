@@ -157,7 +157,7 @@ public class DataIntersection extends Node {
 	private RecordKey recordKeys[];
 
 	// for passing data records into transform function
-	private final static DataRecord[] inRecords = new DataRecord[2];
+	private DataRecord[] inRecords = new DataRecord[2];
 	private DataRecord[] outRecords=new DataRecord[2];
 
 	private Properties transformationParameters;
@@ -251,7 +251,7 @@ public class DataIntersection extends Node {
 	throws IOException, InterruptedException {
 	    inRecords[0] = driver;
 	    inRecords[1] = slave;
-	    outRecords[1]= out;
+	    outRecords[0]= out;
 	    
 	    if (!transformation.transform(inRecords, outRecords)) {
 	        resultMsg = transformation.getMessage();
