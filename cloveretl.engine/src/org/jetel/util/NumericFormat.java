@@ -1,9 +1,27 @@
-/**
- * 
- */
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-05  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
+
 package org.jetel.util;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
@@ -21,6 +39,8 @@ public class NumericFormat extends NumberFormat {
 
 	
 	private DecimalFormat dFormat;
+	private static char[] EXPONENT_SYMBOL = {'E','e'};
+	
 	/**
 	 * 
 	 */
@@ -48,6 +68,7 @@ public class NumericFormat extends NumberFormat {
 	 * @see java.text.NumberFormat#parse(java.lang.String, java.text.ParsePosition)
 	 */
 	public Number parse(String source, ParsePosition parsePosition){
+		boolean exponentForm = false;
 		char decimalSeparator = dFormat.getDecimalFormatSymbols().getDecimalSeparator();
 		boolean dSeparator = false;
 		char groupingSeparator = dFormat.getDecimalFormatSymbols().getGroupingSeparator();
@@ -65,16 +86,10 @@ public class NumericFormat extends NumberFormat {
 			toRemove.delete(0,positivePrefix.length());
 			source.getChars(positivePrefix.length(),lenght,pomChars,0);
 		}
+		int exponentPart=0;
 		for (int j=0;j<lenght;j++){
 			if (!Character.isDigit(pomChars[j])){
-				if (pomChars[j]!=decimalSeparator){
-					if (pomChars[j]==groupingSeparator && !dSeparator){
-						toRemove.deleteCharAt(j-charRemoved++);
-					}else{
-						toRemove.setLength(j-charRemoved);
-						break;
-					}
-				}else{
+				if (pomChars[j]==decimalSeparator){
 					if (!dSeparator) {
 						toRemove.replace(j-charRemoved,j-charRemoved+1,".");
 						dSeparator = true;
@@ -82,14 +97,57 @@ public class NumericFormat extends NumberFormat {
 						toRemove.setLength(j-charRemoved);
 						break;
 					}
+				}else if (pomChars[j]==groupingSeparator){
+					if (!dSeparator){
+						toRemove.deleteCharAt(j-charRemoved++);
+					}else{
+						toRemove.setLength(j-charRemoved);
+						break;
+					}
+				}else if (pomChars[j]==EXPONENT_SYMBOL[0] || pomChars[j]==EXPONENT_SYMBOL[1]){
+					exponentForm = true;
+					exponentPart = getExponentPart(toRemove.toString(),j-charRemoved+1);
+					toRemove.setLength(j-charRemoved);
+					break;
+				}else{
+					toRemove.setLength(j-charRemoved);
+					break;
 				}
 			}
 		}
-		if (toRemove.length()>0){
-			return new BigDecimal(toRemove.toString());
-		}else{
+		try {
+			BigDecimal bd = new BigDecimal(toRemove.toString());
+			if (exponentForm){
+				return bd.movePointRight(exponentPart);
+			}else{
+				return bd;
+			}
+		}catch(NumberFormatException e){
 			return null;
 		}
+	}
+	
+	private int getExponentPart(String str,int offset){
+		char ch = str.charAt(offset);
+		StringBuffer exp = new StringBuffer();
+		int index = 1;
+		if (!Character.isDigit(ch)){
+			if (!(ch=='+' || ch=='-')){
+				return Integer.MIN_VALUE;
+			}else{
+				if (ch=='-'){
+					exp.insert(0,'-');
+				}
+				ch = str.charAt(offset+1);
+				index = 2;
+			}
+		}
+		exp.append(ch);
+		while (index<str.length() && Character.isDigit((ch = str.charAt(offset+index)))){
+			exp.append(ch);
+			index++;
+		}
+		return Integer.parseInt(exp.toString());
 	}
 
 	
@@ -115,7 +173,7 @@ public class NumericFormat extends NumberFormat {
 		int decimalPoint = toAppendTo.indexOf(".");
 		if (decimalPoint==-1) {
 			decimalPoint = toAppendTo.length();
-			if (minimumFractionDigits>0){
+			if (minimumFractionDigits>0 || isDecimalSeparatorAlwaysShown()){
 				toAppendTo.append(dFormat.getDecimalFormatSymbols().getDecimalSeparator());
 			}
 		}else{
