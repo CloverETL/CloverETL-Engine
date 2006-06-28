@@ -5,6 +5,7 @@ import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserConstants;
 import org.jetel.interpreter.TransformLangParserVisitor;
 
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 
@@ -12,10 +13,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 
 public class CLVFLiteral extends SimpleNode implements TransformLangParserConstants {
 	
+    public static final String DECIMAL_DISTINCTER_LOWERCASE="d";
+    public static final String DECIMAL_DISTINCTER_UPPERCASE="D";
+    
     private static DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
     private static DateFormat dateTimeFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
     
@@ -40,7 +45,12 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 		try{
 			switch(literalType){
 			case FLOATING_POINT_LITERAL:
-				value= new CloverDouble( Double.parseDouble(valueImage));
+                if (valueImage.endsWith(DECIMAL_DISTINCTER_LOWERCASE) || 
+                        valueImage.endsWith(DECIMAL_DISTINCTER_UPPERCASE)){
+                    value=new BigDecimal(valueImage);
+                }else{
+                    value= new CloverDouble( Double.parseDouble(valueImage));
+                }
 				break;
 			case STRING_LITERAL:
 				value=valueImage;
