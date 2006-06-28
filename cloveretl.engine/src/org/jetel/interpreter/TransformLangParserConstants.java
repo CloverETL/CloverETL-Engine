@@ -54,9 +54,9 @@ public interface TransformLangParserConstants {
   int DECIMAL_VAR = 59;
   int BOOL_VAR = 60;
   int STRING_VAR = 61;
-  int DATE_FIELD_LITERAL = 99;
-  int IDENTIFIER = 100;
-  int ERROR = 101;
+  int DATE_FIELD_LITERAL = 100;
+  int IDENTIFIER = 101;
+  int ERROR = 102;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -134,8 +134,9 @@ public interface TransformLangParserConstants {
     "\"if\"",
     "\"else\"",
     "\"switch\"",
-    "\"case\"",
+    "\"default\"",
     "\":\"",
+    "\"case\"",
     "\"while\"",
     "\"for\"",
     "\"do\"",
