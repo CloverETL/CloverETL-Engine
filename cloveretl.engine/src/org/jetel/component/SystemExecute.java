@@ -114,26 +114,26 @@ public class SystemExecute extends Node{
 		Runtime r=Runtime.getRuntime();
 		
 		try{
-			Process p=r.exec(command);
-			OutputStream p_in=p.getOutputStream();
-			InputStream p_out=p.getInputStream();
-			InputStream p_err=p.getErrorStream();
+			Process process=r.exec(command);
+			OutputStream process_in=process.getOutputStream();
+			InputStream process_out=process.getInputStream();
+			InputStream process_err=process.getErrorStream();
 			// If there is input port read records and write them to input stream of the process
-			GetData gd=null; 
+			GetData getData=null; 
 			if (inPort!=null) {
-                formatter.open(p_in,getInputPort(INPUT_PORT).getMetadata());
-                gd=new GetData(inPort, in_record, formatter);
-				gd.start();
+                formatter.open(process_in,getInputPort(INPUT_PORT).getMetadata());
+                getData=new GetData(inPort, in_record, formatter);
+				getData.start();
 			}
 			//If there is output port read output from process and send it to output ports
-			SendData sd=null;
+			SendData sendData=null;
 			if (outPort!=null){
-                parser.open(p_out, getOutputPort(OUTPUT_PORT).getMetadata());
-                sd=new SendData(outPort,out_record,parser);
+                parser.open(process_out, getOutputPort(OUTPUT_PORT).getMetadata());
+                sendData=new SendData(outPort,out_record,parser);
 				//send all out_records to output ports
-				sd.start();
+				sendData.start();
 			}
-			BufferedReader err=new BufferedReader(new InputStreamReader(p_err));
+			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
 			String line;
 			StringBuffer errmes=new StringBuffer();
 			int i=0;
@@ -145,28 +145,28 @@ public class SystemExecute extends Node{
 			}
 			if (ERROR_LINES<i) errmes.append(".......\n");
 			err.close();
-			p_err.close();
+			process_err.close();
 			resultMsg=errmes.toString();
-            exitValue=p.waitFor();
-            if (gd!=null || sd!=null){
+            exitValue=process.waitFor();
+            if (getData!=null || sendData!=null){
             	boolean stoped=false;
-				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) {
-					gd.stop_it();
+				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) {
+					getData.stop_it();
 					stoped=true;
 				}
-				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) {
-					sd.stop_it();
+				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) {
+					sendData.stop_it();
 					stoped=true;
 				}
 				if (stoped) Thread.sleep(10000);
-				if (gd!=null && gd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
-				if (sd!=null && sd.getResultCode()==Node.RESULT_RUNNING) gd.interrupt();
-				if (gd!=null && !(gd.getResultCode()==Node.RESULT_OK)) {
-					resultMsg = gd.getResultMsg();
+				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
+				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
+				if (getData!=null && !(getData.getResultCode()==Node.RESULT_OK)) {
+					resultMsg = getData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
-				if (sd!=null && !(sd.getResultCode()==Node.RESULT_OK)) {
-					resultMsg = sd.getResultMsg();
+				if (sendData!=null && !(sendData.getResultCode()==Node.RESULT_OK)) {
+					resultMsg = sendData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
 	         }
