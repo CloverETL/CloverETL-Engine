@@ -176,7 +176,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 		while(isData && runIt){
 			try{
                 recordBuffer.clear();
-			    inPort.readRecordDirect(recordBuffer);
 				if (!inPort.readRecordDirect(recordBuffer)){
 					isData = false;
 					break;
@@ -184,6 +183,7 @@ public class ExtFilter extends org.jetel.graph.Node {
                 record.deserialize(recordBuffer);
 				executor.visit(recordFilter,null);
 				if (((Boolean)executor.getResult()).booleanValue()){
+                    recordBuffer.rewind();
 					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
 					rejectedPort.writeRecordDirect(recordBuffer);
