@@ -127,8 +127,6 @@ public class StringUtils {
 	 */
 	public static String formatString(Object[] messages, int[] sizes) {
 		int formatSize;
-		int stringStart;
-		int counter;
 		String message;
 		StringBuffer strBuf = new StringBuffer(100);
 		for (int i = 0; i < messages.length; i++) {
@@ -315,11 +313,29 @@ public class StringUtils {
 	
 	public static String stringArraytoString(String[] strings){
 		return stringArraytoString(strings,' ');
-	}
-
+	} 
+  
     public static boolean isEmpty(String s) {
         return s == null || s.length() == 0;
     }
+
+	/**
+     * This method appends passed-in CharSequence to the end of
+     * passed-in StringBuffer;<br>
+     * It returns reference to buffer object to allow cascading
+     * of these operations.
+     * @param buf buffer to which append sequence of characters
+     * @param seq characters sequence to append
+     * @return  reference to passed-in buffer
+     */
+    public static final StringBuffer strBufAppend(StringBuffer buf,CharSequence seq){
+        int seqLen=seq.length();
+        buf.ensureCapacity(buf.length()+seqLen);
+        for(int i=0;i<seqLen;buf.append(seq.charAt(i++)));
+        return buf;
+    }
+
+
 }
 
 
