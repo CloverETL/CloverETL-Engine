@@ -144,10 +144,6 @@ public class DataIntersection extends Node {
 	private final static int DRIVER_ON_PORT = 0;
 	private final static int SLAVE_ON_PORT = 1;
 
-	private final static int CURRENT = 0;
-	private final static int PREVIOUS = 1;
-	private final static int TEMPORARY = 1;
-
 	private String transformClassName;
     private String transformSource = null;
     private String libraryPath = null;
@@ -159,8 +155,6 @@ public class DataIntersection extends Node {
 	private String[] slaveOverrideKeys = null;
 
 	private RecordKey recordKeys[];
-
-	private ByteBuffer dataBuffer;
 
 	// for passing data records into transform function
 	private final static DataRecord[] inRecords = new DataRecord[2];
@@ -232,13 +226,13 @@ public class DataIntersection extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey key[]){
-
-		if (slave != null) {
-			return key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave);
-		}
-		return -1;
-	}
+//	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey key[]){
+//
+//		if (slave != null) {
+//			return key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave);
+//		}
+//		return -1;
+//	}
 
 
 	/**
@@ -308,15 +302,15 @@ public class DataIntersection extends Node {
 	 * @param  count     Description of the Parameter
 	 * @return           Description of the Return Value
 	 */
-	private DataRecord[] allocateRecords(DataRecordMetadata metadata, int count) {
-		DataRecord[] data = new DataRecord[count];
-
-		for (int i = 0; i < count; i++) {
-			data[i] = new DataRecord(metadata);
-			data[i].init();
-		}
-		return data;
-	}
+//	private DataRecord[] allocateRecords(DataRecordMetadata metadata, int count) {
+//		DataRecord[] data = new DataRecord[count];
+//
+//		for (int i = 0; i < count; i++) {
+//			data[i] = new DataRecord(metadata);
+//			data[i].init();
+//		}
+//		return data;
+//	}
 	
 	/**
 	 *  Main processing method for the SimpleCopy object
@@ -324,7 +318,6 @@ public class DataIntersection extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		boolean isDriverDifferent;
 
 		// get all ports involved
 		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
@@ -410,7 +403,6 @@ public class DataIntersection extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		Class tClass;
 		// test that we have at least two input ports and three output ports
 		if (inPorts.size() < 2) {
 			throw new ComponentNotReadyException("At least two input ports have to be defined!");
@@ -429,75 +421,37 @@ public class DataIntersection extends Node {
         // do we have transformation object directly specified or shall we create it ourselves
         if (transformation == null) {
             if (transformClassName != null) {
-                // try to load in transformation class & instantiate
-                try {
-                    tClass = Class.forName(transformClassName);
-                } catch (ClassNotFoundException ex) {
-                    // let's try to load in any additional .jar library (if specified)
-                    if(libraryPath == null) {
-                        throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
-                    }
-                    String urlString = "file:" + libraryPath;
-                    URL[] myURLs;
-                    try {
-                        myURLs = new URL[] { new URL(urlString) };
-                        URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-                        tClass = Class.forName(transformClassName, true, classLoader);
-                    } catch (MalformedURLException ex1) {
-                        throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-                    } catch (ClassNotFoundException ex1) {
-                        throw new RuntimeException("Can not find class: " + ex1);
-                    }
-                }
-                try {
-                    transformation = (RecordTransform) tClass.newInstance();
-                } catch (Exception ex) {
-                    throw new ComponentNotReadyException(ex.getMessage());
-                }
+                transformation = RecordTransformFactory.loadClass(logger,
+                        transformClassName, new String[] { libraryPath });
             } else {
-                if(dynamicTransformCode == null) { //transformSource is set
-                    //creating dynamicTransformCode from internal transformation format
-                    CodeParser codeParser = new CodeParser((DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-                    codeParser.setSourceCode(transformSource);
-                    codeParser.parse();
-                    codeParser.addTransformCodeStub("Transform"+ getId());
-                    // DEBUG
-                    // System.out.println(codeParser.getSourceCode());
-                    dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode());
-                    dynamicTransformCode.setCaptureCompilerOutput(true);
-                }
-                logger.info(" (compiling dynamic source) ");
-                // use DynamicJavaCode to instantiate transformation class
-                Object transObject = null;
-                try {
-                    transObject = dynamicTransformCode.instantiate();
-                } catch(RuntimeException ex) {
-                    logger.debug(dynamicTransformCode.getCompilerOutput());
-                    logger.debug(dynamicTransformCode.getSourceCode());
-                    throw new ComponentNotReadyException("Transformation code is not compilable.\n"
-                            + "reason: " + ex.getMessage());
-                }
-                if (transObject instanceof RecordTransform) {
-                    transformation = (RecordTransform) transObject;
+                if (transformSource
+                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
+                    transformation = new RecordTransformTL(logger,
+                            transformSource);
+                } else if (dynamicTransformCode == null) { // transformSource
+                    // is set
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, ("Transform" + getId()), transformSource,
+                            (DataRecordMetadata[]) getInMetadata().toArray(
+                                    new DataRecordMetadata[0]),
+                                    new DataRecordMetadata[] { getOutputPort(
+                                            WRITE_TO_PORT_A_B).getMetadata() });
                 } else {
-                    throw new ComponentNotReadyException("Provided transformation class doesn't implement RecordTransform.");
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, dynamicTransformCode);
                 }
             }
         }
         transformation.setGraph(getGraph());
 		// init transformation
-		Collection col = getInPorts();
-		DataRecordMetadata[] inMetadata = new DataRecordMetadata[col.size()];
-		int counter = 0;
-		Iterator i = col.iterator();
-		while (i.hasNext()) {
-			inMetadata[counter++] = ((InputPort) i.next()).getMetadata();
-		}
-		// put aside: getOutputPort(WRITE_TO_PORT).getMetadata()
-		if (!transformation.init(transformationParameters,inMetadata, null)) {
+        // init transformation
+        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
+                .toArray(new DataRecordMetadata[0]);
+        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
+                WRITE_TO_PORT_A_B).getMetadata() };
+		if (!transformation.init(transformationParameters,inMetadata, outMetadata)) {
 			throw new ComponentNotReadyException("Error when initializing reformat function !");
 		}
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
 
@@ -535,7 +489,7 @@ public class DataIntersection extends Node {
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
 		} else {
-// comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
+// comment by Martin Zatopek - must be changed (now I am removing TransformationGraph singleton)
 //			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
 //			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
 //			xmlElement.appendChild(textElement);
