@@ -4,6 +4,9 @@ package org.jetel.interpreter.node;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 public class CLVFSwitchStatement extends SimpleNode {
+ 
+  public boolean hasDefaultClause=false;  
+    
   public CLVFSwitchStatement(int id) {
     super(id);
   }
@@ -17,4 +20,9 @@ public class CLVFSwitchStatement extends SimpleNode {
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
+  
+  public void setDefaultClause(boolean hasDefault){
+      this.hasDefaultClause=hasDefault;
+  }
+  
 }
