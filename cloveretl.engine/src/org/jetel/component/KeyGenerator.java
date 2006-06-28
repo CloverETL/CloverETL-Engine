@@ -69,7 +69,7 @@ public class KeyGenerator extends Node {
 	
 	private int lenght=0;
 	private StringBuffer resultString;	
-	private String pom=null;
+	private String fieldString=null;
 
 	/**
 	 * @param id
@@ -80,30 +80,31 @@ public class KeyGenerator extends Node {
 	}
 
 	/**
-	 * @param in 		metadata on input port
-	 * @param out		metadata on output port
+	 * @param inMetadata 		metadata on input port
+	 * @param outMetadata		metadata on output port
 	 * @param fieldMap	int[in.getNumFields][2] - array in which are stored field's numbers from in and field's numbers on out
 	 * @return number of field in out which does not exist in in
 	 * @throws ComponentNotReadyException
 	 */
-	private int mapFields(DataRecordMetadata in,DataRecordMetadata out,int[][] fieldMap) throws ComponentNotReadyException{
-		if (!(out.getNumFields()==in.getNumFields()+1))
+	private int mapFields(DataRecordMetadata inMetadata,DataRecordMetadata outMetadata,
+			int[][] fieldMap) throws ComponentNotReadyException{
+		if (!(outMetadata.getNumFields()==inMetadata.getNumFields()+1))
 			throw new ComponentNotReadyException("Metadata on output does not correspond with metadata on input!");
-		int r=0;
-		int i;
-		for (i=0;i<out.getNumFields();i++){
-			int j;
-			for (j=0;j<in.getNumFields();j++){
-				if (out.getField(i).getName().equals(in.getField(j).getName())){
-					fieldMap[i][0]=j;
-					fieldMap[i][1]=i;
+		int fieldNumber=0;
+		int outMetadataIndex;
+		for (outMetadataIndex=0;outMetadataIndex<outMetadata.getNumFields();outMetadataIndex++){
+			int inMetadaIndex;
+			for (inMetadaIndex=0;inMetadaIndex<inMetadata.getNumFields();inMetadaIndex++){
+				if (outMetadata.getField(outMetadataIndex).getName().equals(inMetadata.getField(inMetadaIndex).getName())){
+					fieldMap[outMetadataIndex][0]=inMetadaIndex;
+					fieldMap[outMetadataIndex][1]=outMetadataIndex;
 					break;
 				}
 			}
-			if (j==in.getNumFields())
-				r=j;
+			if (inMetadaIndex==inMetadata.getNumFields())
+				fieldNumber=inMetadaIndex;
 		}
-		return r;
+		return fieldNumber;
 	}
 	
 	/**
@@ -118,7 +119,8 @@ public class KeyGenerator extends Node {
 	 * @param num - number of field in outRecord, which is lacking in inRecord
 	 * @param value - value to be set to field number "num"
 	 */
-	private void fillOutRecord(DataRecord inRecord,DataRecord outRecord,int[][] map,int num,String value){
+	private void fillOutRecord(DataRecord inRecord,DataRecord outRecord,
+			int[][] map,int num,String value){
 		for (int i=0;i<map.length;i++){
 			outRecord.getField(map[i][1]).setValue(inRecord.getField(map[i][0]).getValue());
 		}
@@ -136,45 +138,45 @@ public class KeyGenerator extends Node {
 		resultString.setLength(0);
 		for (int i=0;i<keys.length;i++){
 			try{ //get field value from inRcord
-				pom=inRecord.getField(keys[i].getName()).getValue().toString();
-				pom = StringUtils.getOnlyAlpfaNumericChars(pom,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMRIC]);
+				fieldString=inRecord.getField(keys[i].getName()).getValue().toString();
+				fieldString = StringUtils.getOnlyAlpfaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMRIC]);
 				if (removeBlankSpace[i]) {
-					pom = StringUtils.removeBlankSpace(pom);
+					fieldString = StringUtils.removeBlankSpace(fieldString);
 				}
 				if (removeDiacritic[i]){
-					pom=StringUtils.removeDiacritic(pom);
+					fieldString=StringUtils.removeDiacritic(fieldString);
 				}
 				if (lowerUpperCase[i][LOWER]){
-					pom=pom.toLowerCase();
+					fieldString=fieldString.toLowerCase();
 				}
 				if (lowerUpperCase[i][UPPER]){
-					pom=pom.toUpperCase();
+					fieldString=fieldString.toUpperCase();
 				}
 			}catch(NullPointerException ex){//value of field is null
-				pom="";
+				fieldString="";
 			}
-			if (pom.length()>=keys[i].getLenght()){
+			if (fieldString.length()>=keys[i].getLenght()){
 				if (keys[i].fromBegining){
 					int start=keys[i].getStart();
-					resultString.append(pom.substring(start,start+keys[i].getLenght()));
+					resultString.append(fieldString.substring(start,start+keys[i].getLenght()));
 				}else{
-					int end=pom.length();
-					resultString.append(pom.substring(end-keys[i].getLenght(),end));
+					int end=fieldString.length();
+					resultString.append(fieldString.substring(end-keys[i].getLenght(),end));
 				}
 			}else {
 				//string from the field is shorter then demanded part of the key
 				//get whole string from the field and add to it spaces
-				StringBuffer shortPom=new StringBuffer(pom);
+				StringBuffer newFieldString=new StringBuffer(fieldString);
 				int offset;
 				if (!keys[i].fromBegining) {
 					offset=0;
 				}else{
-					offset=shortPom.length();
+					offset=newFieldString.length();
 				}
-				for (int k=shortPom.length();k<keys[i].getLenght();k++){
-					shortPom.insert(offset,' ');
+				for (int k=newFieldString.length();k<keys[i].getLenght();k++){
+					newFieldString.insert(offset,' ');
 				}
-				resultString.append(shortPom);
+				resultString.append(newFieldString);
 			}
 		}
 		return resultString.toString();
@@ -228,45 +230,45 @@ public class KeyGenerator extends Node {
 	 * @param i
 	 */
 	private void getParam(String param,int i){
-		String[] pom=param.split(" ");
-		String keyParam=pom[1];
+		String[] paramWords=param.split(" ");
+		String keyParam=paramWords[1];
 		int start=-1;
 		int lenght=0;
 		boolean fromBegining=true;
 		StringBuffer number=new StringBuffer();
-		int j=0;
-		char c=' ';
+		int counter=0;
+		char charFromKeyParam=' ';
 		number.setLength(0);
-		while (j<keyParam.length() && Character.isDigit(c=keyParam.charAt(j))){
-			number.append(c);
-			j++;
+		while (counter<keyParam.length() && Character.isDigit(charFromKeyParam=keyParam.charAt(counter))){
+			number.append(charFromKeyParam);
+			counter++;
 		}
-		if (c=='-') {
-			if (j>0){
+		if (charFromKeyParam=='-') {
+			if (counter>0){
 				start=Integer.parseInt(number.toString())-1;
 			}else {
 				fromBegining=false;
 			}
-			j++;
+			counter++;
 		}else{
 			lenght=Integer.parseInt(number.toString());
 		}
 		number.setLength(0);
-		while (j<keyParam.length() && Character.isDigit(c=keyParam.charAt(j))){
-			number.append(c);
-			j++;
+		while (counter<keyParam.length() && Character.isDigit(charFromKeyParam=keyParam.charAt(counter))){
+			number.append(charFromKeyParam);
+			counter++;
 		}
 		if (number.length()>0) {
 			lenght=Integer.parseInt(number.toString());
 		}
 		if (start>-1){
-			keys[i] = new Key(pom[0],start,lenght);
+			keys[i] = new Key(paramWords[0],start,lenght);
 		}else{
-			keys[i] = new Key(pom[0],lenght,fromBegining);
+			keys[i] = new Key(paramWords[0],lenght,fromBegining);
 		}
-		while (j<keyParam.length()){
-			c=Character.toLowerCase(keyParam.charAt(j));
-			switch (c) {
+		while (counter<keyParam.length()){
+			charFromKeyParam=Character.toLowerCase(keyParam.charAt(counter));
+			switch (charFromKeyParam) {
 			case 'l':lowerUpperCase[i][LOWER] = true;
 				break;
 			case 'u':lowerUpperCase[i][UPPER] = true;
@@ -279,7 +281,7 @@ public class KeyGenerator extends Node {
 				break;
 			case 'd':removeDiacritic[i] = true;
 			}
-			j++;
+			counter++;
 		}
 	}
 		

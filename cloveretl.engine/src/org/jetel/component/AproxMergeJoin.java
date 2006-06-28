@@ -169,17 +169,17 @@ public class AproxMergeJoin extends Node {
 	 *  Can be used if slave record has different name
 	 *  for matching key field
 	 *
-	 * @param slaveRefKey
+	 * @param slaveMatchingKey
 	 */
-	private void setSlaveMatchingKey(String slaveRefKey){
-		slaveMatchingKey=new String[1];
-		this.slaveMatchingKey[0]=slaveRefKey;
+	private void setSlaveMatchingKey(String slaveMatchingKey){
+		this.slaveMatchingKey=new String[1];
+		this.slaveMatchingKey[0]=slaveMatchingKey;
 	}
 	
 	/**
 	 *  Populates record buffer with all slave records having the same matching key
 	 *
-	 * @param  port                      Description of the Parameter
+	 * @param  inPort                      Description of the Parameter
 	 * @param  nextRecord                next record from slave
 	 * @param  key                       Description of the Parameter
 	 * @param  currRecord                Description of the Parameter
@@ -187,7 +187,7 @@ public class AproxMergeJoin extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @exception  JetelException        Description of the Exception
 	 */
-	private void fillRecordBuffer(InputPort port, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
+	private void fillRecordBuffer(InputPort inPort, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
 			 throws IOException, InterruptedException, JetelException {
 
 		recordBuffer.clear();
@@ -197,7 +197,7 @@ public class AproxMergeJoin extends Node {
 			dataBuffer.flip();
 			recordBuffer.push(dataBuffer);
 			while (nextRecord != null) {
-				nextRecord = port.readRecord(nextRecord);
+				nextRecord = inPort.readRecord(nextRecord);
 				if (nextRecord != null) {
 					switch (key.compare(currRecord, nextRecord)) {
 						case 0:
@@ -251,26 +251,26 @@ public class AproxMergeJoin extends Node {
 	/**
 	 * Calculates diffrence on given fields between two records 
 	 * 
-	 * @param r1 - driver record
-	 * @param r2 - slave record
+	 * @param record1 - driver record
+	 * @param record2 - slave record
 	 * @param fieldsToCompare 
 	 * @return diffrence between two records from interval <0,1>
 	 */
-	private double[] conformity(DataRecord r1,DataRecord r2,int[][] fieldsToCompare){
-		double[] r=new double[fieldsToCompare[DRIVER_ON_PORT].length+1];
-		double rt=0;
+	private double[] conformity(DataRecord record1,DataRecord record2,int[][] fieldsToCompare){
+		double[] result=new double[fieldsToCompare[DRIVER_ON_PORT].length+1];
+		double totalResult=0;
 		int max=0;
 		for (int i=0;i<fieldsToCompare[DRIVER_ON_PORT].length;i++){
 			comparator[i].setMaxLettersToChange(maxDiffrenceLetters[i]);
 			max=(maxDiffrenceLetters[i]+1)*comparator[i].getMaxCostForOneLetter();
-			int d=comparator[i].distance(
-					r1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getValue().toString(),
-					r2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).getValue().toString());
-			r[i+1]=1-(double)d/(double)max;
-			rt+=r[i+1]*weights[i];
+			int distance=comparator[i].distance(
+					record1.getField(fieldsToCompare[DRIVER_ON_PORT][i]).getValue().toString(),
+					record2.getField(fieldsToCompare[SLAVE_ON_PORT][i]).getValue().toString());
+			result[i+1]=1-(double)distance/(double)max;
+			totalResult+=result[i+1]*weights[i];
 		}
-		r[0] = rt;
-		return r;
+		result[0] = totalResult;
+		return result;
 	}
 	
 	/**
@@ -284,15 +284,15 @@ public class AproxMergeJoin extends Node {
 	 * @param  slave                     Description of the Parameter
 	 * @param  outComforming             Description of the Parameter
 	 * @param  outSuspicious             Description of the Parameter
-	 * @param  conforming                Description of the Parameter
-	 * @param  suspicious                Description of the Parameter
+	 * @param  conformingPort                Description of the Parameter
+	 * @param  suspiciousPort                Description of the Parameter
 	 * @return                           Description of the Return Value
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord outConforming,
-			DataRecord outSuspicious, OutputPort conforming, OutputPort suspicious)
-			 throws IOException, InterruptedException {
+	private boolean flushCombinations(DataRecord driver, DataRecord slave, 
+			DataRecord outConforming,DataRecord outSuspicious, OutputPort conformingPort, 
+			OutputPort suspiciousPort) throws IOException, InterruptedException {
 		recordBuffer.rewind();
 		dataBuffer.clear();
 		inRecords[0] = driver;
@@ -318,7 +318,7 @@ public class AproxMergeJoin extends Node {
 						}
 					}
 				}
-				conforming.writeRecord(outConforming);
+				conformingPort.writeRecord(outConforming);
 			}else{
 				// **** call transform function here ****
 				if (!transformationForSuspicious.transform(inRecords,outSuspiciousRcords)){
@@ -333,7 +333,7 @@ public class AproxMergeJoin extends Node {
 						}
 					}
 				}
-				suspicious.writeRecord(outSuspicious);
+				suspiciousPort.writeRecord(outSuspicious);
 			}
 			dataBuffer.clear();
 		}
@@ -613,14 +613,14 @@ public class AproxMergeJoin extends Node {
 		maxDiffrenceLetters = new int[joinParameters.length];
 		boolean[][] strenght=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
 		weights = new double[joinParameters.length];
-		String[] pom=new String[7];
+		String[] tmp=new String[7];
 		for (int i=0;i<joinParameters.length;i++){
-			pom=joinParameters[i].split(" ");
-			joinKeys[i]=pom[0];
-			maxDiffrenceLetters[i]=Integer.parseInt(pom[1]);
-			weights[i]=Double.parseDouble(pom[2]);
+			tmp=joinParameters[i].split(" ");
+			joinKeys[i]=tmp[0];
+			maxDiffrenceLetters[i]=Integer.parseInt(tmp[1]);
+			weights[i]=Double.parseDouble(tmp[2]);
 			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
-				strenght[i][j] = pom[3+j].equals("true") ? true : false;
+				strenght[i][j] = tmp[3+j].equals("true") ? true : false;
 			}
 		}
 		double sumOfWeights=0;
