@@ -137,6 +137,7 @@ public class DataIntersection extends Node {
     private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
     private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
     private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 
 	private final static int WRITE_TO_PORT_A = 0;
 	private final static int WRITE_TO_PORT_A_B = 1;
@@ -155,6 +156,7 @@ public class DataIntersection extends Node {
 	private String[] slaveOverrideKeys = null;
 
 	private RecordKey recordKeys[];
+    private boolean equalNULLs = true;
 
 	// for passing data records into transform function
 	private DataRecord[] inRecords = new DataRecord[2];
@@ -417,6 +419,10 @@ public class DataIntersection extends Node {
 		recordKeys[1] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recordKeys[0].init();
 		recordKeys[1].init();
+		//specify whether two fields with NULL value indicator set
+        // are considered equal
+        recordKeys[0].setEqualNULLs(equalNULLs);
+        recordKeys[1].setEqualNULLs(equalNULLs);
 
         // do we have transformation object directly specified or shall we create it ourselves
         if (transformation == null) {
@@ -494,6 +500,9 @@ public class DataIntersection extends Node {
 //			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
 //			xmlElement.appendChild(textElement);
 		}
+        
+		// equal NULL attribute
+        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
 		
 		if (transformationParameters != null) {
 			Enumeration propertyAtts = transformationParameters.propertyNames();
@@ -558,8 +567,11 @@ public class DataIntersection extends Node {
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
+            if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+                intersection.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+            }
 			intersection.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
+	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
 			
 			return intersection;
 		} catch (Exception ex) {
@@ -583,5 +595,9 @@ public class DataIntersection extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+    
+    public void setEqualNULLs(boolean equal){
+        this.equalNULLs=equal;
+    }
 }
 
