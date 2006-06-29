@@ -294,9 +294,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else if (a instanceof CharSequence) {
                 CharSequence a1 = (CharSequence) a;
                 StringBuffer buf=new StringBuffer(a1.length()*2);
-                StringUtils.strBufAppend(buf,a1);
+                StringUtils.strBuffAppend(buf,a1);
                 if (b instanceof CharSequence) {
-                    StringUtils.strBufAppend(buf,(CharSequence)b);
+                    StringUtils.strBuffAppend(buf,(CharSequence)b);
                 } else {
                     buf.append(b);
                 }
@@ -658,7 +658,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             a = stack.pop();
 
             if (a instanceof CharSequence) {
-                StringUtils.strBufAppend(strBuf,(CharSequence) a);
+                StringUtils.strBuffAppend(strBuf,(CharSequence) a);
             } else {
                 if (a != null) {
                     strBuf.append(a);
@@ -1274,7 +1274,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else if (variable instanceof StringBuffer) {
                 StringBuffer var = (StringBuffer) variable;
                 var.setLength(0);
-                StringUtils.strBufAppend(var,(CharSequence) value);
+                StringUtils.strBuffAppend(var,(CharSequence) value);
             } else if (variable instanceof Boolean) {
                 stack.storeVar(childNode.localVar,childNode.varSlot, (Boolean)value); // boolean is not updatable - we replace the reference
                 // stack.put(varName,((Boolean)value).booleanValue() ?
