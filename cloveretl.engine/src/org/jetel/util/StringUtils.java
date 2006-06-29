@@ -223,40 +223,32 @@ public class StringUtils {
 	}
 	
 	
-	/**
-	 * This method removes from the string characters which are not letters nor digits
-	 * 
-	 * @param str - input String
-	 * @param alpha - if true method leaves letters
-	 * @param numeric - if true method leaves digits
-	 * @return String where are only letters and (or) digits from input String
-	 */
-	public static String getOnlyAlphaNumericChars(String str,boolean alpha,boolean numeric){
-		if (!alpha && !numeric){
-			return str;
-		}
-		int charRemoved=0;
-		int length=str.length();
-		char[]	chars=new char[length];
-		str.getChars(0,length,chars,0);
-		StringBuffer toRemove = new StringBuffer(str);
-		boolean isLetter, isDigit;
-		for (int j=0;j<length;j++){
-			isLetter = Character.isLetter(chars[j]);
-			isDigit = Character.isDigit(chars[j]);
-			if (!(isLetter || isDigit)){
-				toRemove.deleteCharAt(j-charRemoved++);
-			}else{
-				if (isLetter && !alpha){
-					toRemove.deleteCharAt(j-charRemoved++);
-				}
-				if (isDigit && !numeric){
-					toRemove.deleteCharAt(j-charRemoved++);
-				}
-			}
-		}
-		return toRemove.toString();
-	}
+    /**
+     * This method removes from the string characters which are not letters nor digits
+     * 
+     * @param str - input String
+     * @param takeAlpha - if true method leaves letters
+     * @param takeNumeric - if true method leaves digits
+     * @return String where are only letters and (or) digits from input String
+     */
+    public static String getOnlyAlphaNumericChars(String str,boolean takeAlpha,boolean takeNumeric){
+        if (!takeAlpha && !takeNumeric){
+            return str;
+        }
+        int counter=0;
+        int length=str.length();
+        char[] chars=str.toCharArray();
+        char[] result=new char[length];
+        char character;
+        for (int j=0;j<length;j++){
+            character=chars[j];
+            if ( (Character.isLetter(character) && takeAlpha) || 
+                    (Character.isDigit(character) && takeNumeric) ){
+                result[counter++]=chars[j];
+            }
+        }
+        return new String(result,0,counter);
+    }
 	
 	/**
 	 * This method removed from string blank space
