@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * In this class are stored rules for StringAproxComparator for difrent locale
+ * In this class are stored rules for StringAproxComparator for different locale
  * Rules for given locale are stored in array of Strings: 
  * 	each String in the array have to be like "c1=c2=..=cn", where c1,c2,...,cn are chars which will be considered as equivalent (no white space is allowed)
  * After definition new rules don't forget to put it in the HashMap rules
