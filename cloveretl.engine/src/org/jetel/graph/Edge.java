@@ -25,14 +25,10 @@ import java.sql.SQLException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataJDBCStub;
 import org.jetel.metadata.MetadataFactory;
-import org.jetel.graph.InputPort;
-import org.jetel.graph.OutputPort;
-import org.jetel.util.StringUtils;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.InvalidGraphObjectNameException;
 
 /**
  *  A class that represents Edge Proxy - surrogate which directs calls to
@@ -64,6 +60,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     
 	private int edgeType;
 
+    /**
+     * Distinct DirectEdge and DirectEdgeFastPropagate inner implementation of the edge.
+     * Used only for EDGE_TYPE_DIRECT.
+     */
+    private boolean fastPropagate = false;
+    
 	private EdgeBase edge;
 
 	/**  Proxy represents Direct Edge */
@@ -81,21 +83,22 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
-	public Edge(String id, DataRecordMetadata metadata, boolean debugMode) {
+	public Edge(String id, DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
         super(id);
 		this.metadata = metadata;
         this.debugMode = debugMode;
 		reader = writer = null;
 		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
 		edge = null;
+        this.fastPropagate = fastPropagate;
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
-        this(id, metadata, false);
+        this(id, metadata, false, false);
     }
     
-	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, boolean debugMode) {
-		this(id,metadata, debugMode);
+	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
+		this(id,metadata, debugMode, fastPropagate);
 		this.metadataStub=metadataStub;
 	}
 
@@ -202,7 +205,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			} else if (edgeType == EDGE_TYPE_PHASE_CONNECTION ){
 			    edge = new PhaseConnectionEdge(this);
 			} else {
-				edge = new DirectEdge(this);
+				edge = fastPropagate ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
 			}
 		}
         if(debugMode) {
@@ -370,6 +373,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     public void free() {
         close();
+    }
+
+    public boolean isFastPropagate() {
+        return fastPropagate;
+    }
+
+    public void setFastPropagate(boolean fastPropagate) {
+        this.fastPropagate = fastPropagate;
     }
 }
 /*

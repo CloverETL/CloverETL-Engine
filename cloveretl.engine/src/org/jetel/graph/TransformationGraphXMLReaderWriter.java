@@ -462,6 +462,7 @@ public class TransformationGraphXMLReaderWriter {
 		String fromNodeAttr;
 		String toNodeAttr;
         boolean debugMode = false;
+        boolean fastPropagate = false;
 		String[] specNodePort;
 		int fromPort;
 		int toPort;
@@ -483,6 +484,7 @@ public class TransformationGraphXMLReaderWriter {
 			}
             if(graphDebugMode)
                 debugMode = attributes.getBoolean("debugMode", false);
+            fastPropagate = attributes.getBoolean("fastPropagate", false);
 			Object metadataObj=metadata.get(edgeMetadataID);
 			if (metadataObj == null) {
 				throw new RuntimeException("Can't find metadata ID: " + edgeMetadataID);
@@ -490,10 +492,10 @@ public class TransformationGraphXMLReaderWriter {
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
 				// real
-				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj, debugMode);
+				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj, debugMode, fastPropagate);
 			}else{ 
 				// stub
-				graphEdge = new Edge(edgeID, (DataRecordMetadataJDBCStub) metadataObj, null, debugMode);
+				graphEdge = new Edge(edgeID, (DataRecordMetadataJDBCStub) metadataObj, null, debugMode, fastPropagate);
 			}
 			if (edges.put(edgeID, graphEdge)!=null){
 				throw new RuntimeException("Duplicate EdgeID detected: "+edgeID);
