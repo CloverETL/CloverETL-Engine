@@ -1,6 +1,6 @@
 /*
 *    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-05  Javlin Consulting <info@javlinconsulting.cz>
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
 *    
 *    This library is free software; you can redistribute it and/or
 *    modify it under the terms of the GNU Lesser General Public
@@ -35,14 +35,92 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- * This component creates key which is costructed as combination of chars 
- * from given data fields
+ *  <h3>Key Generator Component</h3> 
+ *  <!-- This component creates key which is costructed as combination of chars 
+ * from given data fields.-->
+ * 
+ *  <table border="1">
+ *
+ *    <th>
+ *      Component:
+ *    </th>
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>KeyGenerator</td>
+ *    </tr>
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
+ *    </tr>
+ *    <tr><td><h4><i>Description:</i> </h4></td>
+ *      <td>
+ * Finds intersection of data flows (sets) <b>A (in-port0)</b> and <b>B (in-port1)</b> 
+ * based on specified key. Both inputs <u><b>must be sorted</b></u> according to specified key. DataRecords only in flow <b>A</b>
+ * are sent out through <b>out-port[0]</b>.
+ * DataRecords in both <b>A&amp;B</b> are sent to specified <b>transformation</b> function and the result is 
+ * sent through <b>out-port[1]</b>.
+ * DataRecords present only in flow <b>B</b> are sent through <b>out-port[2]</b>.<br>
+ *      </td>
+ *    </tr>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0] - records from set A - <i>sorted according to specified key</i><br>
+ *    [1] - records from set B - <i>sorted according to specified key</i><br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
+ *      </td>
+ *      <td>
+ *        [0] - records only in set A<br>
+ *        [1] - records in set A&amp;B<br>
+ *        [2] - records only in set B   
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
+ *      </td>
+ *      <td></td>
+ *    </tr>
+ *  </table>
+ *  <br>
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>"KEY_GEN"</td></tr>
+ *    <tr><td><b>key</b></td><td>   </td></tr>
+ *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input; field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *      to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
+ *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
+ *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
+ *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
+ *    </table>
+ *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
+ *&lt;attr name="javaSource"&gt;
+ *import org.jetel.component.DataRecordTransform;
+ *import org.jetel.data.*;
+ * 
+ *public class intersectionTest extends DataRecordTransform{
+ *
+ *  public boolean transform(DataRecord[] source, DataRecord[] target){
+ *      
+ *      target[0].getField(0).setValue(source[0].getField(0).getValue());
+ *      target[0].getField(1).setValue(source[0].getField(1).getValue());
+ *      target[0].getField(2).setValue(source[1].getField(2).getValue());
+ *      return true;
+ *  }
+ *}
+ *&lt;/attr&gt;
+ *&lt;/Node&gt;</pre>
+ *
  * @author avackova
  *
  */
 public class KeyGenerator extends Node {
 
-	private static final String XML_KEY_ATTRIBUTE = "key";
+	public static final char SWITCH_REMOVE_DIACRITIC = 'd';
+    public static final char SWITCH_ONLY_NUMERIC = 'n';
+    public static final char SWITCH_ONLY_ALPHA = 'a';
+    public static final char SWITCH_REMOVE_BLANKS = 's';
+    public static final char SWITCH_UPPERCASE = 'u';
+    public static final char SWITCH_LOWERCASE = 'l';
+
+    private static final String XML_KEY_EXPRESSION_ATTRIBUTE = "keyExpression";
 
 	public final static String COMPONENT_TYPE = "KEY_GEN";
 
@@ -52,7 +130,7 @@ public class KeyGenerator extends Node {
 	private final static int LOWER = 0;
 	private final static int UPPER = 1;
 	private final static int ALPHA = 0;
-	private final static int NUMRIC = 1; 
+	private final static int NUMERIC = 1; 
 
 	private String[] key;
 	private Key[] keys;
@@ -139,7 +217,7 @@ public class KeyGenerator extends Node {
 		for (int i=0;i<keys.length;i++){
 			try{ //get field value from inRcord
 				fieldString=inRecord.getField(keys[i].getName()).getValue().toString();
-				fieldString = StringUtils.getOnlyAlpfaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMRIC]);
+				fieldString = StringUtils.getOnlyAlpfaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMERIC]);
 				if (removeBlankSpace[i]) {
 					fieldString = StringUtils.removeBlankSpace(fieldString);
 				}
@@ -222,10 +300,10 @@ public class KeyGenerator extends Node {
 
 	/**
 	 * This method fills keys[], lowerUpperCase[], removeBlankSpace[],
-	 * 	onlyAlpfaNumeric[], removeDiacritic[] from the XML_KEY_ATTRIBUTE
+	 * 	onlyAlpfaNumeric[], removeDiacritic[] from the XML_KEY_EXPRESSION_ATTRIBUTE
 	 *  for given part of the key
 	 * 
-	 * @param param - part of the key (from XML_KEY_ATTRIBUTE); 
+	 * @param param - part of the key (from XML_KEY_EXPRESSION_ATTRIBUTE); 
 	 * 			it is in form: name [from][-][number of letters][l|u][sand]
 	 * @param i
 	 */
@@ -269,17 +347,17 @@ public class KeyGenerator extends Node {
 		while (counter<keyParam.length()){
 			charFromKeyParam=Character.toLowerCase(keyParam.charAt(counter));
 			switch (charFromKeyParam) {
-			case 'l':lowerUpperCase[i][LOWER] = true;
+			case SWITCH_LOWERCASE:lowerUpperCase[i][LOWER] = true;
 				break;
-			case 'u':lowerUpperCase[i][UPPER] = true;
+			case SWITCH_UPPERCASE:lowerUpperCase[i][UPPER] = true;
 				break;
-			case 's':removeBlankSpace[i] = true;
+			case SWITCH_REMOVE_BLANKS:removeBlankSpace[i] = true;
 				break;
-			case 'a':onlyAlpfaNumeric[i][ALPHA] = true;
+			case SWITCH_ONLY_ALPHA:onlyAlpfaNumeric[i][ALPHA] = true;
 				break;
-			case 'n':onlyAlpfaNumeric[i][NUMRIC] = true;
+			case SWITCH_ONLY_NUMERIC:onlyAlpfaNumeric[i][NUMERIC] = true;
 				break;
-			case 'd':removeDiacritic[i] = true;
+			case SWITCH_REMOVE_DIACRITIC:removeDiacritic[i] = true;
 			}
 			counter++;
 		}
@@ -317,14 +395,14 @@ public class KeyGenerator extends Node {
 	
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_KEY_ATTRIBUTE,StringUtils.stringArraytoString(key,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
+		xmlElement.setAttribute(XML_KEY_EXPRESSION_ATTRIBUTE,StringUtils.stringArraytoString(key,Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
 	}
 	
 
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		try {
-			return new KeyGenerator(Node.XML_ID_ATTRIBUTE,xattribs.getString(XML_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			return new KeyGenerator(Node.XML_ID_ATTRIBUTE,xattribs.getString(XML_KEY_EXPRESSION_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
