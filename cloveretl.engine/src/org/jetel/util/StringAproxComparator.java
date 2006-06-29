@@ -29,7 +29,7 @@ import java.util.Locale;
 import org.jetel.exception.JetelException;
 
 /**
- * Class for aproximative string comparison
+ * Class for approximative string comparison
  * 
  * @author avackova
  *
@@ -37,14 +37,14 @@ import org.jetel.exception.JetelException;
 
 public class StringAproxComparator{
 
-	//strentgh fields
+	//strength fields
 	public final static int  IDENTICAL=4;
 	public final static int TERTIARY=3; //upper case = lower case
-	public final static int SECONDARY=2;//diacrtic letters = letters witout diacrityk (locale dependent)
+	public final static int SECONDARY=2;//diacritic letters = letters without diacritic (locale dependent)
 			// now done only for CZ and PL
 	public final static int PRIMARY=1;// mistakes acceptable (Collator.PRIMARY,new Locale("en","UK"))
 	
-	private int strentgh;
+	private int strength;
 	private boolean IDEN; 	//if comparator on level IDENTICAL works
 	private boolean TER; 	//if comparator on level TERTIARY works
 	private boolean SEC; 	//if comparator on level SECONDARY works
@@ -55,9 +55,9 @@ public class StringAproxComparator{
 	private int changeMultiplier=1;
 	
 	private int substCost;// cost of char substituting of one letter
-	private int changeCost;// = substitution cost on strongest level * changeMultiplier- depends on strenth and values of IDEN,TER,SEC fields
+	private int changeCost;// = substitution cost on strongest level * changeMultiplier- depends on strength and values of IDEN,TER,SEC fields
 	private int delCost; // = substitution cost on strongest level*delMultiplier
-	private int maxDiffrence;// = substitution cost on strongest level * maxLettersToChange
+	private int maxDifference;// = substitution cost on strongest level * maxLettersToChange
 
 	//arrays for method distance
 	char[] schars;
@@ -74,70 +74,70 @@ public class StringAproxComparator{
 	//Comparators factory
 	private static HashMap comparators = new HashMap();
 	
-	public static StringAproxComparator createComparator(String locale,boolean[] strenght)
+	public static StringAproxComparator createComparator(String locale,boolean[] strength)
 			throws JetelException{
-		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
-			throw new JetelException("Not allowed strenght combination");
+		if (!checkStrength(strength[0],strength[1],strength[2],strength[3])){
+			throw new JetelException("Not allowed strength combination");
 		}
-		ComparatorParameters comparartorPatrameters;
+		ComparatorParameters comparatorParameters;
 		if (locale!=null){
-			comparartorPatrameters = new ComparatorParameters(strenght,locale);
-			if (!comparators.containsKey(comparartorPatrameters)){
-				comparators.put(comparartorPatrameters,new StringAproxComparator(locale,strenght));
+			comparatorParameters = new ComparatorParameters(strength,locale);
+			if (!comparators.containsKey(comparatorParameters)){
+				comparators.put(comparatorParameters,new StringAproxComparator(locale,strength));
 			}
 		}else{
-			comparartorPatrameters = new ComparatorParameters(strenght,"");
-			if (!comparators.containsKey(comparartorPatrameters)){
-				comparators.put(comparartorPatrameters,new StringAproxComparator(strenght));
+			comparatorParameters = new ComparatorParameters(strength,"");
+			if (!comparators.containsKey(comparatorParameters)){
+				comparators.put(comparatorParameters,new StringAproxComparator(strength));
 			}
 		}
-		return (StringAproxComparator)comparators.get(comparartorPatrameters);
+		return (StringAproxComparator)comparators.get(comparatorParameters);
 	}
 
 	public static StringAproxComparator createComparator(String locale,
 			boolean identical,boolean tertiary,boolean secondary,boolean primary) 
 			throws JetelException{
-		boolean[] strenght={identical,tertiary,secondary,primary};
-		return createComparator(locale,strenght);
+		boolean[] strength={identical,tertiary,secondary,primary};
+		return createComparator(locale,strength);
 	}
 
 	
-	public static StringAproxComparator createComparator(boolean[] strenght)
+	public static StringAproxComparator createComparator(boolean[] strength)
 			throws JetelException{
-		if (!checkStrentgh(strenght[0],strenght[1],strenght[2],strenght[3])){
-			throw new JetelException("Not allowed strenght combination");
+		if (!checkStrength(strength[0],strength[1],strength[2],strength[3])){
+			throw new JetelException("Not allowed strength combination");
 		}
-		ComparatorParameters comparartorParameters = new ComparatorParameters(strenght,"");
-		if (!comparators.containsKey(comparartorParameters)){
-			comparators.put(comparartorParameters,new StringAproxComparator(strenght));
+		ComparatorParameters comparatorParameters = new ComparatorParameters(strength,"");
+		if (!comparators.containsKey(comparatorParameters)){
+			comparators.put(comparatorParameters,new StringAproxComparator(strength));
 		}
-		return (StringAproxComparator)comparators.get(comparartorParameters);
+		return (StringAproxComparator)comparators.get(comparatorParameters);
 	}
 	
 	public static StringAproxComparator createComparator(boolean identical,
 			boolean tertiary,boolean secondary,boolean primary) 
 			throws JetelException{
-		boolean[] strenght={identical,tertiary,secondary,primary};
-		return createComparator(strenght);
+		boolean[] strength={identical,tertiary,secondary,primary};
+		return createComparator(strength);
 	}
 
 	/**
 	 * Checks if for given parameters there are possible settings: 
-	 *  stronger field  can not be true for whole comparator weaker eg. when comparator has strentgh TERTIARY field SEC has to be false:
+	 *  stronger field  can not be true for whole comparator weaker eg. when comparator has strength TERTIARY field SEC has to be false:
 	 *  allowed configuration:
 	 *  identical:	 T F F F  T F F  T F  T
 	 *  tertiary:	 T T F F  T T F  T T  F
-	 *  secundary: 	 T T T F  T T T  F F  F
+	 *  secondary: 	 T T T F  T T T  F F  F
 	 *  primary:	 T T T T  F F F  F F  F
 	 * 
-	 * @param strentgh - strentgh of comparator
+	 * @param strength - strength of comparator
 	 * @param identical - indicates if IDEN level works
 	 * @param tertiary - indicates if TER level works
 	 * @param secondary - indicates if SEC level works
 	 * @param primary - indicates if PRIM level works
 	 * @return
 	 */
-	public static boolean checkStrentgh(boolean identical,boolean tertiary,
+	public static boolean checkStrength(boolean identical,boolean tertiary,
 				boolean secondary,boolean primary){
 		if (identical && !tertiary && secondary && primary) return false;
 		if (identical && tertiary && !secondary && primary) return false;
@@ -149,37 +149,37 @@ public class StringAproxComparator{
 	}
 	
 	/**
-	 * @param strentgh = comparison level
+	 * @param strength = comparison level
 	 * @param identical - indicates if IDEN level works
 	 * @param tertiary - indicates if TER level works
-	 * @param secundary - indicates if SEC level works
+	 * @param secondary - indicates if SEC level works
 	 */
 	private StringAproxComparator(boolean identical,boolean tertiary,
-				boolean secundary,boolean primary) {
+				boolean secondary,boolean primary) {
 
 		col.setStrength(Collator.PRIMARY);
 		en_col.setStrength(Collator.PRIMARY);
-		setStrentgh(identical, tertiary, secundary, primary);
+		setStrength(identical, tertiary, secondary, primary);
 	}
 
-	private StringAproxComparator(boolean[] strenght)  {
-		this(strenght[0],strenght[1],strenght[2],strenght[3]);
+	private StringAproxComparator(boolean[] strength)  {
+		this(strength[0],strength[1],strength[2],strength[3]);
 	}
 	
-	private StringAproxComparator(String locale,boolean[] strenght)  {
-		this(locale,strenght[0],strenght[1],strenght[2],strenght[3]);
+	private StringAproxComparator(String locale,boolean[] strength)  {
+		this(locale,strength[0],strength[1],strength[2],strength[3]);
 	}
  
 	/**
 	 * @param locale = parameter for getting rules from StringAproxComparatorLocaleRules
-	 * @param strentgh = comparison level
+	 * @param strength = comparison level
 	 * @param identical - indicates if IDEN level works
 	 * @param tertiary - indicates if TER level works
-	 * @param secundary - indicates if SEC level works
+	 * @param secondary - indicates if SEC level works
 	 */
 	private StringAproxComparator(String locale,boolean identical,boolean tertiary,
-				boolean secundary,boolean primary){
-		this( identical, tertiary, secundary, primary);
+				boolean secondary,boolean primary){
+		this( identical, tertiary, secondary, primary);
 		setLocale(locale);
 	}
 
@@ -217,15 +217,15 @@ public class StringAproxComparator{
 	}
 	
 	/**
-	 * This method checks if two chars are equal on given comparison strenght
+	 * This method checks if two chars are equal on given comparison strength
 	 * 
 	 * @param c1 - char to compare
 	 * @param c2 - char to compare
-	 * @param strenth - comparator level
+	 * @param strength - comparator level
 	 * @return (true,false) if (equal, unequal)
 	 */
-	public boolean charEquals(char c1, char c2, int strenth ) {
-        switch (strenth) {
+	public boolean charEquals(char c1, char c2, int strength ) {
+        switch (strength) {
         case IDENTICAL:
             return c1 == c2;
         case TERTIARY:
@@ -244,12 +244,12 @@ public class StringAproxComparator{
 	 * 
 	 * @param c1 char before substitution
 	 * @param c2 char after substitution
-	 * @param strentgh level of comparison
+	 * @param strength level of comparison
 	 * @return (0,1,2,3,4) depending on which level c1 equals c2
 	 */
-	private int computeSubstCost(char c1,char c2,int strentgh){
+	private int computeSubstCost(char c1,char c2,int strength){
 		boolean check=true;
-		for (int i=strentgh;i<=StringAproxComparator.IDENTICAL;i++){
+		for (int i=strength;i<=StringAproxComparator.IDENTICAL;i++){
 			switch (i) {
 			case StringAproxComparator.PRIMARY:check=PRIM;
 				break;
@@ -290,9 +290,9 @@ public class StringAproxComparator{
 	
 	/**
 	 * This method calculates distance between Strings s and t. If 
-	 * the distance is greater then maxDiffrence it returns maxDiffrence+1
+	 * the distance is greater then maxDifference it returns maxDifference+1
 	 * Distance is calculated as sum of costs of minimum changes in 
-	 * string s to get string t. Cost of one change depends on strenght
+	 * string s to get string t. Cost of one change depends on strength
 	 * of comparator and for substitution varies from 1 to 4.
 	 * 
 	 * @param s
@@ -306,7 +306,7 @@ public class StringAproxComparator{
 		int slength=s.length()+1;
 		int tlength=t.length()+1;
 		
-		//initializing helpfull arrays
+		//initializing helpful arrays
 		 if (slast==null){
 			slast = new int[slength];
 			schars = new char[slength-1];
@@ -342,7 +342,7 @@ public class StringAproxComparator{
 			cost=now[0];
 			for (int j=1;j<tlength;j++){
 				//getting min from: deleting one letter from s, deleting one letter from t, substituting letter in s by letter from t
-				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+computeSubstCost(schars[i-1],tchars[j-1],strentgh));
+				int m=min(now[j-1]+delCost,tlast[j]+delCost,tlast[j-1]+computeSubstCost(schars[i-1],tchars[j-1],strength));
 				//if t and s have at least 2 letters each maybe we can exchange last two letters
 				if (i>1 && j>1)
 					if (schars[i-2]==tchars[j-1]&&schars[i-1]==tchars[j-2])
@@ -350,49 +350,49 @@ public class StringAproxComparator{
 				now[j]=m;
 				if (m<cost) cost=m;
 			}
-			if (cost>maxDiffrence) return Math.min(cost,maxDiffrence+Math.max(delCost,changeCost));
-			//rewrite arrays for last and beforelast results
+			if (cost>maxDifference) return Math.min(cost,maxDifference+Math.max(delCost,changeCost));
+			//rewrite arrays for last and before last results
 			for (int j=0;j<tlength;j++){
 				tblast[j]=tlast[j];
 				tlast[j]=now[j];
 			}
 		}
 		
-		return Math.min(tlast[tlength-1],maxDiffrence+Math.max(delCost,changeCost));
+		return Math.min(tlast[tlength-1],maxDifference+Math.max(delCost,changeCost));
 		
 	}
 
-	public boolean[] getStrentgh() {
+	public boolean[] getStrength() {
 		return new boolean[] {IDEN,TER,SEC,PRIM};
 	}
 
-	private void setStrentgh(boolean identical,boolean tertiary,boolean secondary,
+	private void setStrength(boolean identical,boolean tertiary,boolean secondary,
 			boolean primary){
 		if (primary) {
-			this.setStrentgh(StringAproxComparator.PRIMARY, identical, tertiary, secondary, primary);
+			this.setStrength(StringAproxComparator.PRIMARY, identical, tertiary, secondary, primary);
 		}
 		else if (secondary) {
-			this.setStrentgh(StringAproxComparator.SECONDARY,identical,tertiary,secondary,primary);
+			this.setStrength(StringAproxComparator.SECONDARY,identical,tertiary,secondary,primary);
 		}
 		else if (tertiary) {
-			this.setStrentgh(StringAproxComparator.TERTIARY,identical,tertiary,secondary,primary);
+			this.setStrength(StringAproxComparator.TERTIARY,identical,tertiary,secondary,primary);
 		}
 		else {
-			this.setStrentgh(StringAproxComparator.IDENTICAL,identical,tertiary,secondary,primary);
+			this.setStrength(StringAproxComparator.IDENTICAL,identical,tertiary,secondary,primary);
 		}
 	}
 	
-	private void setStrentgh(int strenth,boolean identical,boolean tertiary,
+	private void setStrength(int strength,boolean identical,boolean tertiary,
 			boolean secondary,boolean primary){
 		IDEN=identical;
 		TER=tertiary;
 		SEC=secondary;
 		PRIM=primary;
-		this.strentgh = strenth;
-		substCost=StringAproxComparator.IDENTICAL+1-strentgh;
+		this.strength = strength;
+		substCost=StringAproxComparator.IDENTICAL+1-strength;
 		changeCost=changeMultiplier*substCost;
 		delCost=delMultiplier*substCost;
-		maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
+		maxDifference=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
 	public int getChangeMultiplier() {
@@ -402,7 +402,7 @@ public class StringAproxComparator{
 	public void setChangeMultiplier(int change_multiplier) {
 		changeMultiplier = change_multiplier;
 		changeCost=changeMultiplier*substCost;
-		this.maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
+		this.maxDifference=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
 	public int getDelMultiplier() {
@@ -412,16 +412,16 @@ public class StringAproxComparator{
 	public void setDelMultiplier(int del_multiplier) {
 		delMultiplier = del_multiplier;
 		delCost=delMultiplier*substCost;
-		this.maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
+		this.maxDifference=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
 	public int getMaxLettersToChange() {
 		return maxLettersToChange;
 	}
 
-	public void setMaxLettersToChange(int max_diffrence) {
-		maxLettersToChange = max_diffrence;
-		this.maxDiffrence=maxLettersToChange*Math.max(delCost,changeCost);
+	public void setMaxLettersToChange(int max_difference) {
+		maxLettersToChange = max_difference;
+		this.maxDifference=maxLettersToChange*Math.max(delCost,changeCost);
 	}
 
 	public int getMaxCostForOneLetter() {
@@ -433,11 +433,11 @@ public class StringAproxComparator{
 	}
 
 	private static class ComparatorParameters{
-		boolean[] strenght=new boolean[StringAproxComparator.IDENTICAL];
+		boolean[] strength=new boolean[StringAproxComparator.IDENTICAL];
 		String locale;
 		
-		ComparatorParameters(boolean[] strenght,String locale){
-			this.strenght=strenght;
+		ComparatorParameters(boolean[] strength,String locale){
+			this.strength=strength;
 			this.locale=locale;
 		}
 		
@@ -445,34 +445,34 @@ public class StringAproxComparator{
 			if (!(obj instanceof ComparatorParameters)) {
 				return false;
 			}
-			boolean[] objStrenght = ((ComparatorParameters)obj).getStrenght();
-			boolean[] thisStrenght = getStrenght();
+			boolean[] objStrength = ((ComparatorParameters)obj).getStrength();
+			boolean[] thisStrength = getStrength();
 			boolean eq=true;
-			for (int i=0;i<objStrenght.length;i++){
-				eq = eq && (objStrenght[i]==thisStrenght[i]);
+			for (int i=0;i<objStrength.length;i++){
+				eq = eq && (objStrength[i]==thisStrength[i]);
 			}
 			return eq && ((ComparatorParameters)obj).getLocale().equals(locale);
 		}
 
 		public int hashCode() {
 			int hash=0;
-			if (strenght[StringAproxComparator.IDENTICAL-1]) {
+			if (strength[StringAproxComparator.IDENTICAL-1]) {
 				hash+=1;
 			}
-			if (strenght[StringAproxComparator.TERTIARY-1]){
+			if (strength[StringAproxComparator.TERTIARY-1]){
 				hash+=2;
 			}
-			if (strenght[StringAproxComparator.SECONDARY-1]){
+			if (strength[StringAproxComparator.SECONDARY-1]){
 				hash+=4;
 			}
-			if (strenght[StringAproxComparator.PRIMARY-1]){
+			if (strength[StringAproxComparator.PRIMARY-1]){
 				hash+=8;
 			}
 			return 37*hash+locale.hashCode();
 		}
 
-		public boolean[] getStrenght() {
-			return strenght;
+		public boolean[] getStrength() {
+			return strength;
 		}
 
 		public String getLocale() {
