@@ -700,7 +700,7 @@ The key is name (or combination of names) of field(s) from input record. Data fl
 <multiplePort/>
 </outputPorts>
 <properties>
-<property category="clover" displayName="Key" modifiable="true" name="key" nullable="true">
+<property category="clover" displayName="Key" modifiable="true" name="keyExpression" nullable="true">
 <keyType inputPortName="0"/>
 </property>
 </properties>
