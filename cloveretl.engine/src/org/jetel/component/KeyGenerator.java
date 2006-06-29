@@ -51,25 +51,19 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- * Finds intersection of data flows (sets) <b>A (in-port0)</b> and <b>B (in-port1)</b> 
- * based on specified key. Both inputs <u><b>must be sorted</b></u> according to specified key. DataRecords only in flow <b>A</b>
- * are sent out through <b>out-port[0]</b>.
- * DataRecords in both <b>A&amp;B</b> are sent to specified <b>transformation</b> function and the result is 
- * sent through <b>out-port[1]</b>.
- * DataRecords present only in flow <b>B</b> are sent through <b>out-port[2]</b>.<br>
+ * This component creates key which is costructed as combination of chars 
+ * from given data fields.<br>
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
  *    <td>
- *        [0] - records from set A - <i>sorted according to specified key</i><br>
- *    [1] - records from set B - <i>sorted according to specified key</i><br>
+ *        [0]- input records<br>
  *    </td></tr>
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - records only in set A<br>
- *        [1] - records in set A&amp;B<br>
- *        [2] - records only in set B   
+ *        [0] - record as in input port, but with addidtional field with generated 
+ *        		key
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
@@ -80,32 +74,15 @@ import org.w3c.dom.Element;
  *  <table border="1">
  *    <th>XML attributes:</th>
  *    <tr><td><b>type</b></td><td>"KEY_GEN"</td></tr>
- *    <tr><td><b>key</b></td><td>   </td></tr>
- *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input; field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
- *      to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
- *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
- *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
- *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
+ *    <tr><td><b>keyExpression</b></td><td> field names with the way of generating
+ *    	 the key from them, separated by :;|  {colon, semicolon, pipe}. String,
+ *    	 which descripts creating of key for each field has form: 
+ *    	 [from][-]how many[d|n|a|s|u|l]. When there is no "from" it means key
+ *    	 is created from chars from the begining of string or if there is 
+ *    	 "-from" the end of string</td></tr>
  *    </table>
- *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
- *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
- *&lt;attr name="javaSource"&gt;
- *import org.jetel.component.DataRecordTransform;
- *import org.jetel.data.*;
- * 
- *public class intersectionTest extends DataRecordTransform{
- *
- *  public boolean transform(DataRecord[] source, DataRecord[] target){
- *      
- *      target[0].getField(0).setValue(source[0].getField(0).getValue());
- *      target[0].getField(1).setValue(source[0].getField(1).getValue());
- *      target[0].getField(2).setValue(source[1].getField(2).getValue());
- *      return true;
- *  }
- *}
- *&lt;/attr&gt;
+ *    <h4>Example:</h4> <pre>&lt;Node id="KEY_GEN0" type="KEY_GEN"&gt;
+ *&lt;attr name="keyExpression">lname 2d;fname -2ad&lt/attr&gt;
  *&lt;/Node&gt;</pre>
  *
  * @author avackova
@@ -217,7 +194,7 @@ public class KeyGenerator extends Node {
 		for (int i=0;i<keys.length;i++){
 			try{ //get field value from inRcord
 				fieldString=inRecord.getField(keys[i].getName()).getValue().toString();
-				fieldString = StringUtils.getOnlyAlpfaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMERIC]);
+				fieldString = StringUtils.getOnlyAlphaNumericChars(fieldString,onlyAlpfaNumeric[i][ALPHA],onlyAlpfaNumeric[i][NUMERIC]);
 				if (removeBlankSpace[i]) {
 					fieldString = StringUtils.removeBlankSpace(fieldString);
 				}
