@@ -102,6 +102,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
  *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
  *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
@@ -570,6 +571,7 @@ public class DataIntersection extends Node {
             if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
                 intersection.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
             }
+
 			intersection.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
 			
@@ -599,5 +601,6 @@ public class DataIntersection extends Node {
     public void setEqualNULLs(boolean equal){
         this.equalNULLs=equal;
     }
+
 }
 
