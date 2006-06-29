@@ -49,6 +49,47 @@ import org.jetel.util.StringAproxComparator;
 import org.jetel.util.SynchronizeUtils;
 
 /**
+ * <h3>Approximate Merge Join Component</h3>
+ *
+ * <!-- Joins records on port 0 (Master records) with records on por 1 (Slave records).
+ * Joining is based on specified key fields and their similarity - with defined
+ * maximum disimilarity/distance - computed as edit distance - aka "Levenshtein distance"-->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td> <td>Approximate Merge Join</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Joins records on port 0 (Master records) with records on por 1 (Slave records).
+ * Joining is based on specified key fields and their similarity - with defined
+ * maximum disimilarity/distance - computed as edit distance - aka "Levenshtein distance"</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td> [0] - driver records<br>
+ *    [1] - slave records<br></td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>[0] - records only in set A<br>
+ *        [1] - records in set A&amp;B<br>
+ *        [2] - records only in set B   
+ *        [3] - records in set A&amp;B<br></td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"AGGREGATE"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
+ *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev</td>
+ *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node id="AGGREGATE_NODE" type="AGGREGATE" aggregateKey="FirstName" aggregateFunctions="count(); min(Age); avg(Salery); min(HireDate)" sorted="false" /&gt;</pre>
+ *
  * @author avackova
  *
  */
