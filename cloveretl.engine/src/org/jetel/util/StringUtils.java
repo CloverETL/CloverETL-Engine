@@ -257,17 +257,16 @@ public class StringUtils {
 	 * @return input string without blank space
 	 */
 	public static String removeBlankSpace(String str){
-		int charRemoved=0;
 		int length=str.length();
-		char[]	chars=new char[length];
-		str.getChars(0,length,chars,0);
-		StringBuffer toRemove = new StringBuffer(str);
+		int counter = 0;
+		char[]	chars=str.toCharArray();
+		char[] result = new char[length];
 		for (int j=0;j<length;j++){
-			if (Character.isWhitespace(chars[j])) {
-				toRemove.deleteCharAt(j-charRemoved++);
+			if (!Character.isWhitespace(chars[j])) {
+				result[counter++] = chars[j];
 			}
 		}
-		return toRemove.toString();
+        return new String(result,0,counter);
 	}
 	
 	/**
