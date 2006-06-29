@@ -1,6 +1,6 @@
 /*
  *  jETeL/Clover - Java based ETL application framework.
- *  Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ *  Copyright (C) 2002-04  Javlin Consulting <info@javlinconsulting.cz>
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -128,24 +128,24 @@ public class StringUtils {
 	public static String formatString(Object[] messages, int[] sizes) {
 		int formatSize;
 		String message;
-		StringBuffer strBuf = new StringBuffer(100);
+		StringBuffer strBuff = new StringBuffer(100);
 		for (int i = 0; i < messages.length; i++) {
 			message = messages[i].toString();
 			// left or right justified ?
 			if (sizes[i] < 0) {
 				formatSize = sizes[i] * (-1);
-				fillString(strBuf, message, 0, formatSize);
+				fillString(strBuff, message, 0, formatSize);
 			} else {
 				formatSize = sizes[i];
 				if (message.length() < formatSize) {
-					fillBlank(strBuf, formatSize - message.length());
-					fillString(strBuf, message, 0, message.length());
+					fillBlank(strBuff, formatSize - message.length());
+					fillString(strBuff, message, 0, message.length());
 				} else {
-					fillString(strBuf, message, 0, formatSize);
+					fillString(strBuff, message, 0, formatSize);
 				}
 			}
 		}
-		return strBuf.toString();
+		return strBuff.toString();
 	}
 
 
@@ -157,13 +157,13 @@ public class StringUtils {
 	 * @param  start   Description of the Parameter
 	 * @param  length  Description of the Parameter
 	 */
-	private static void fillString(StringBuffer strBuf, String source, int start, int length) {
+	private static void fillString(StringBuffer strBuff, String source, int start, int length) {
 		int srcLength = source.length();
 		for (int i = start; i < start + length; i++) {
 			if (i < srcLength) {
-				strBuf.append(source.charAt(i));
+				strBuff.append(source.charAt(i));
 			} else {
-				strBuf.append(' ');
+				strBuff.append(' ');
 			}
 		}
 	}
@@ -175,9 +175,9 @@ public class StringUtils {
 	 * @param  strBuf  Description of the Parameter
 	 * @param  length  Description of the Parameter
 	 */
-	private static void fillBlank(StringBuffer strBuf, int length) {
+	private static void fillBlank(StringBuffer strBuff, int length) {
 		for (int i = 0; i < length; i++) {
-			strBuf.append(' ');
+			strBuff.append(' ');
 		}
 	}
 
@@ -228,20 +228,20 @@ public class StringUtils {
 	 * 
 	 * @param str - input String
 	 * @param alpha - if true method leaves letters
-	 * @param numeric - if true ethod leaves digits
+	 * @param numeric - if true method leaves digits
 	 * @return String where are only letters and (or) digits from input String
 	 */
-	public static String getOnlyAlpfaNumericChars(String str,boolean alpha,boolean numeric){
+	public static String getOnlyAlphaNumericChars(String str,boolean alpha,boolean numeric){
 		if (!alpha && !numeric){
 			return str;
 		}
 		int charRemoved=0;
-		int lenght=str.length();
-		char[]	chars=new char[lenght];
-		str.getChars(0,lenght,chars,0);
+		int length=str.length();
+		char[]	chars=new char[length];
+		str.getChars(0,length,chars,0);
 		StringBuffer toRemove = new StringBuffer(str);
 		boolean isLetter, isDigit;
-		for (int j=0;j<lenght;j++){
+		for (int j=0;j<length;j++){
 			isLetter = Character.isLetter(chars[j]);
 			isDigit = Character.isDigit(chars[j]);
 			if (!(isLetter || isDigit)){
@@ -266,11 +266,11 @@ public class StringUtils {
 	 */
 	public static String removeBlankSpace(String str){
 		int charRemoved=0;
-		int lenght=str.length();
-		char[]	chars=new char[lenght];
-		str.getChars(0,lenght,chars,0);
+		int length=str.length();
+		char[]	chars=new char[length];
+		str.getChars(0,length,chars,0);
 		StringBuffer toRemove = new StringBuffer(str);
-		for (int j=0;j<lenght;j++){
+		for (int j=0;j<length;j++){
 			if (Character.isWhitespace(chars[j])) {
 				toRemove.deleteCharAt(j-charRemoved++);
 			}
@@ -283,7 +283,7 @@ public class StringUtils {
 	 * It works only for chars for which decomposition is defined
 	 * 
 	 * @param str
-	 * @return string in which diacritc chars are replaced by theirs equivalences without diacritic
+	 * @return string in which diacritic chars are replaced by theirs equivalences without diacritic
 	 */
 	public static String removeDiacritic(String str){
 		return Normalizer.decompose(str, false, 0).replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
@@ -324,15 +324,15 @@ public class StringUtils {
      * passed-in StringBuffer;<br>
      * It returns reference to buffer object to allow cascading
      * of these operations.
-     * @param buf buffer to which append sequence of characters
+     * @param buff buffer to which append sequence of characters
      * @param seq characters sequence to append
      * @return  reference to passed-in buffer
      */
-    public static final StringBuffer strBufAppend(StringBuffer buf,CharSequence seq){
+    public static final StringBuffer strBuffAppend(StringBuffer buff,CharSequence seq){
         int seqLen=seq.length();
-        buf.ensureCapacity(buf.length()+seqLen);
-        for(int i=0;i<seqLen;buf.append(seq.charAt(i++)));
-        return buf;
+        buff.ensureCapacity(buff.length()+seqLen);
+        for(int i=0;i<seqLen;buff.append(seq.charAt(i++)));
+        return buff;
     }
 
 
