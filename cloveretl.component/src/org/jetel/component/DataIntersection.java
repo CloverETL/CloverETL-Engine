@@ -1,0 +1,606 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
+package org.jetel.component;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.ByteBuffer;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.Properties;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.RecordKey;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.InputPort;
+import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CodeParser;
+import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.DynamicJavaCode;
+import org.w3c.dom.Element;
+
+/**
+ *  <h3>Data Intersection Component</h3> <!-- Finds intersection of
+ * flow A (in-port0) and B (in-port1) based on specified key. Both inputs
+ * must be sorted according to specified key. DataRecords only in flow A
+ * are sent out through out-port0. DataRecords in both A & B are sent to
+ * specified transformation function and the result is sent through out-port1.
+ * DataRecords present only in flow B are sent through out-port2.-->
+ * 
+ *  <table border="1">
+ *
+ *    <th>
+ *      Component:
+ *    </th>
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>DataIntersection</td>
+ *    </tr>
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
+ *    </tr>
+ *    <tr><td><h4><i>Description:</i> </h4></td>
+ *      <td>
+ * Finds intersection of data flows (sets) <b>A (in-port0)</b> and <b>B (in-port1)</b> 
+ * based on specified key. Both inputs <u><b>must be sorted</b></u> according to specified key. DataRecords only in flow <b>A</b>
+ * are sent out through <b>out-port[0]</b>.
+ * DataRecords in both <b>A&amp;B</b> are sent to specified <b>transformation</b> function and the result is 
+ * sent through <b>out-port[1]</b>.
+ * DataRecords present only in flow <b>B</b> are sent through <b>out-port[2]</b>.<br>
+ *      </td>
+ *    </tr>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0] - records from set A - <i>sorted according to specified key</i><br>
+ *	  [1] - records from set B - <i>sorted according to specified key</i><br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
+ *      </td>
+ *      <td>
+ *        [0] - records only in set A<br>
+ * 		  [1] - records in set A&amp;B<br>
+ * 		  [2] - records only in set B	
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
+ *      </td>
+ *      <td></td>
+ *    </tr>
+ *  </table>
+ *  <br>
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>"DATA_INTERSECTION"</td></tr>
+ *    <tr><td><b>id</b></td><td>component identification</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input; field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *      to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
+ *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
+ *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
+ *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
+ *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
+ *    </table>
+ *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
+ *<pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="EmployeeID"&gt;
+ *&lt;attr name="javaSource"&gt;
+ *import org.jetel.component.DataRecordTransform;
+ *import org.jetel.data.*;
+ * 
+ *public class intersectionTest extends DataRecordTransform{
+ *
+ *	public boolean transform(DataRecord[] source, DataRecord[] target){
+ *		
+ *		target[0].getField(0).setValue(source[0].getField(0).getValue());
+ *		target[0].getField(1).setValue(source[0].getField(1).getValue());
+ *		target[0].getField(2).setValue(source[1].getField(2).getValue());
+ *		return true;
+ *	}
+ *}
+ *&lt;/attr&gt;
+ *&lt;/Node&gt;</pre>
+ * @author      dpavlis
+ * @since       April 29, 2005
+ * @revision    $Revision$
+ * @created     29. April 2005
+ */
+public class DataIntersection extends Node {
+
+	/**  Description of the Field */
+	public final static String COMPONENT_TYPE = "DATA_INTERSECTION";
+
+	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
+	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
+    private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
+    private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
+    private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+    private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+
+	private final static int WRITE_TO_PORT_A = 0;
+	private final static int WRITE_TO_PORT_A_B = 1;
+	private final static int WRITE_TO_PORT_B = 2;
+	private final static int DRIVER_ON_PORT = 0;
+	private final static int SLAVE_ON_PORT = 1;
+
+	private String transformClassName;
+    private String transformSource = null;
+    private String libraryPath = null;
+
+	private RecordTransform transformation = null;
+	private DynamicJavaCode dynamicTransformCode = null;
+
+	private String[] joinKeys;
+	private String[] slaveOverrideKeys = null;
+
+	private RecordKey recordKeys[];
+    private boolean equalNULLs = true;
+
+	// for passing data records into transform function
+	private DataRecord[] inRecords = new DataRecord[2];
+	private DataRecord[] outRecords=new DataRecord[2];
+
+	private Properties transformationParameters;
+	
+	static Log logger = LogFactory.getLog(DataIntersection.class);
+	
+	/**
+	 *  Constructor for the SortedJoin object
+	 *
+	 * @param  id              id of component
+	 * @param  joinKeys        field names composing key
+	 * @param  transformClass  class (name) to be used for transforming data
+	 */
+	public DataIntersection(String id, String[] joinKeys, String transformClass) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.transformClassName = transformClass;
+	}
+
+    public DataIntersection(String id, String[] joinKeys, String transform, boolean distincter) {
+        super(id);
+        this.joinKeys = joinKeys;
+        this.transformSource = transform;
+    }
+
+	/**
+	 *  Constructor for the SortedJoin object
+	 *
+	 * @param  id              id of component
+	 * @param  joinKeys        field names composing key
+	 * @param  transformClass  class (name) to be used for transforming data
+	 */
+	public DataIntersection(String id, String[] joinKeys, RecordTransform transformClass) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.transformation = transformClass;
+	}
+
+	public DataIntersection(String id, String[] joinKeys, DynamicJavaCode dynaTransCode) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.dynamicTransformCode = dynaTransCode;
+	}
+	
+
+	/**
+	 *  Sets specific key (string) for slave records<br>
+	 *  Can be used if slave record has different names
+	 *  for fields composing the key
+	 *
+	 * @param  slaveKeys  The new slaveOverrideKey value
+	 */
+	public void setSlaveOverrideKey(String[] slaveKeys) {
+		this.slaveOverrideKeys = slaveKeys;
+	}
+
+
+	/**
+	 *  Finds corresponding slave record for current driver (if there is some)
+	 *
+	 * @param  driver                    Description of the Parameter
+	 * @param  slave                     Description of the Parameter
+	 * @param  slavePort                 Description of the Parameter
+	 * @param  key                       Description of the Parameter
+	 * @return                           The correspondingRecord value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 */
+//	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey key[]){
+//
+//		if (slave != null) {
+//			return key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave);
+//		}
+//		return -1;
+//	}
+
+
+	/**
+	 *  Outputs all combinations of current driver record and all slaves with the
+	 *  same key
+	 *
+	 * @param  driver                    Description of the Parameter
+	 * @param  slave                     Description of the Parameter
+	 * @param  out                       Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 */
+	private final boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
+	throws IOException, InterruptedException {
+	    inRecords[0] = driver;
+	    inRecords[1] = slave;
+	    outRecords[0]= out;
+	    
+	    if (!transformation.transform(inRecords, outRecords)) {
+	        resultMsg = transformation.getMessage();
+	        return false;
+	    }
+	    port.writeRecord(out);
+	    return true;
+}
+
+
+	/**
+	 *  If there is no corresponding slave record and is defined left outer join, then
+	 *  output driver only.
+	 *
+	 * @param  driver                    Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 */
+	private final boolean flushDriverOnly(DataRecord driver, OutputPort port) 
+			throws IOException,InterruptedException{
+		port.writeRecord(driver);
+		return true;
+	}
+
+	/**
+	 *  If there is no corresponding driver record and is defined full outer join, then
+	 *  output slave only.
+	 *
+	 * @param  driver                    Description of the Parameter
+	 * @param  port                      Description of the Parameter
+	 * @return                           Description of the Return Value
+	 * @exception  IOException           Description of the Exception
+	 * @exception  InterruptedException  Description of the Exception
+	 */
+	private final boolean flushSlaveOnly(DataRecord slave, OutputPort port)
+				throws IOException,InterruptedException{
+	    port.writeRecord(slave);
+	    return true;
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  metadata  Description of the Parameter
+	 * @param  count     Description of the Parameter
+	 * @return           Description of the Return Value
+	 */
+//	private DataRecord[] allocateRecords(DataRecordMetadata metadata, int count) {
+//		DataRecord[] data = new DataRecord[count];
+//
+//		for (int i = 0; i < count; i++) {
+//			data[i] = new DataRecord(metadata);
+//			data[i].init();
+//		}
+//		return data;
+//	}
+	
+	/**
+	 *  Main processing method for the SimpleCopy object
+	 *
+	 * @since    April 4, 2002
+	 */
+	public void run() {
+
+		// get all ports involved
+		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
+		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
+		OutputPort outPortA = getOutputPort(WRITE_TO_PORT_A);
+		OutputPort outPortB = getOutputPort(WRITE_TO_PORT_B);
+		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
+
+		//initialize input records driver & slave
+		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
+		driverRecord.init();
+		DataRecord slaveRecord = new DataRecord(slavePort.getMetadata());
+		slaveRecord.init();
+		
+		// initialize output record
+		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
+		outRecord.init();
+
+		try {
+			// first initial load of records
+			driverRecord = driverPort.readRecord(driverRecord);
+			slaveRecord = slavePort.readRecord(slaveRecord);
+			// main processing loop
+			while (runIt && driverRecord != null && slaveRecord!=null) {
+					switch (recordKeys[DRIVER_ON_PORT].compare(recordKeys[SLAVE_ON_PORT], driverRecord, slaveRecord)) {
+						case -1:
+							// driver lower
+							// no corresponding slave
+							flushDriverOnly(driverRecord,outPortA);
+							driverRecord = driverPort.readRecord(driverRecord);
+							break;
+						case 0:
+							// match - perform transformation
+						    flushCombinations(driverRecord,slaveRecord,outRecord,outPortAB);
+						    //	load in new driver & slave
+						    driverRecord = driverPort.readRecord(driverRecord);
+							slaveRecord = slavePort.readRecord(slaveRecord);
+							break;
+						case 1:
+							// slave lover - no corresponding master
+						    flushSlaveOnly(slaveRecord, outPortB);
+						    slaveRecord=slavePort.readRecord(slaveRecord);
+						    break;
+					}
+				}
+			//flush remaining driver records
+			while(driverRecord!=null){
+	    	    flushDriverOnly(driverRecord, outPortA);
+	    	    driverRecord=driverPort.readRecord(driverRecord);
+	    	}
+			// flush remaining slave records
+			while(slaveRecord!=null){
+	    	    flushSlaveOnly(slaveRecord, outPortB);
+	    	    slaveRecord=slavePort.readRecord(slaveRecord);
+	    	}
+		} catch (IOException ex) {
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
+			closeAllOutputPorts();
+			return;
+		} catch (Exception ex) {
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			//closeAllOutputPorts();
+			return;
+		}
+		// signal end of records stream to transformation function
+		transformation.finished();
+		broadcastEOF();
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @exception  ComponentNotReadyException  Description of the Exception
+	 * @since                                  April 4, 2002
+	 */
+	public void init() throws ComponentNotReadyException {
+		// test that we have at least two input ports and three output ports
+		if (inPorts.size() < 2) {
+			throw new ComponentNotReadyException("At least two input ports have to be defined!");
+		} else if (outPorts.size() < 3) {
+			throw new ComponentNotReadyException("At least three output port has to be defined!");
+		}
+		if (slaveOverrideKeys == null) {
+			slaveOverrideKeys = joinKeys;
+		}
+		recordKeys = new RecordKey[2];
+		recordKeys[0] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
+		recordKeys[1] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recordKeys[0].init();
+		recordKeys[1].init();
+		//specify whether two fields with NULL value indicator set
+        // are considered equal
+        recordKeys[0].setEqualNULLs(equalNULLs);
+        recordKeys[1].setEqualNULLs(equalNULLs);
+
+        // do we have transformation object directly specified or shall we create it ourselves
+        if (transformation == null) {
+            if (transformClassName != null) {
+                transformation = RecordTransformFactory.loadClass(logger,
+                        transformClassName, new String[] { libraryPath });
+            } else {
+                if (transformSource
+                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
+                    transformation = new RecordTransformTL(logger,
+                            transformSource);
+                } else if (dynamicTransformCode == null) { // transformSource
+                    // is set
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, ("Transform" + getId()), transformSource,
+                            (DataRecordMetadata[]) getInMetadata().toArray(
+                                    new DataRecordMetadata[0]),
+                                    new DataRecordMetadata[] { getOutputPort(
+                                            WRITE_TO_PORT_A_B).getMetadata() });
+                } else {
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                            logger, dynamicTransformCode);
+                }
+            }
+        }
+        transformation.setGraph(getGraph());
+		// init transformation
+        // init transformation
+        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
+                .toArray(new DataRecordMetadata[0]);
+        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
+                WRITE_TO_PORT_A_B).getMetadata() };
+		if (!transformation.init(transformationParameters,inMetadata, outMetadata)) {
+			throw new ComponentNotReadyException("Error when initializing reformat function !");
+		}
+	}
+
+
+    /**
+     * @param transformationParameters The transformationParameters to set.
+     */
+    public void setTransformationParameters(Properties transformationParameters) {
+        this.transformationParameters = transformationParameters;
+    }
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     May 21, 2002
+	 */
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (joinKeys != null) {
+			StringBuffer buf = new StringBuffer(joinKeys[0]);
+			for (int i=1; i< joinKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (slaveOverrideKeys!= null) {
+			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
+			for (int i=1; i< slaveOverrideKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
+		} else {
+// comment by Martin Zatopek - must be changed (now I am removing TransformationGraph singleton)
+//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
+//			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
+//			xmlElement.appendChild(textElement);
+		}
+        
+		// equal NULL attribute
+        xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
+		
+		if (transformationParameters != null) {
+			Enumeration propertyAtts = transformationParameters.propertyNames();
+			while (propertyAtts.hasMoreElements()) {
+				String attName = (String)propertyAtts.nextElement();
+				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+			}
+		}
+		
+	}
+
+
+	/**
+	 *  Description of the Method
+	 *
+	 * @param  nodeXML  Description of Parameter
+	 * @return          Description of the Returned Value
+	 * @since           May 21, 2002
+	 */
+	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+		DataIntersection intersection;
+		DynamicJavaCode dynaTransCode = null;
+
+		try {
+			//if transform class defined (as an attribute) use it first
+            if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
+                intersection = new DataIntersection(xattribs.getString("id"),
+                        xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                        xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
+                if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
+                    intersection.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
+                }
+            } else {
+                if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
+                    dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
+                }else{
+                    // do we have child node wich Java source code ?
+                    try {
+                        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
+                    } catch(Exception ex) {
+                        //do nothing
+                    }
+                }
+                if (dynaTransCode != null) {
+                    intersection= new DataIntersection(xattribs.getString("id"),
+                            xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                            dynaTransCode);
+                } else { //last chance to find reformat code is in transform attribute
+                    if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
+                        intersection= new DataIntersection(xattribs.getString("id"),
+                                xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                                xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
+                    } else {
+                        throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+                    }
+                }
+            }
+            
+			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
+						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+
+			}
+            if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
+                intersection.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
+            }
+
+			intersection.setTransformationParameters(xattribs.attributes2Properties(
+	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
+			
+			return intersection;
+		} catch (Exception ex) {
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			return null;
+		}
+	}
+
+    /**
+     * @param string
+     */
+    private void setLibraryPath(String libraryPath) {
+        this.libraryPath = libraryPath;
+    }
+
+	/**  Description of the Method */
+	public boolean checkConfig() {
+		return true;
+	}
+	
+	public String getType(){
+		return COMPONENT_TYPE;
+	}
+    
+    public void setEqualNULLs(boolean equal){
+        this.equalNULLs=equal;
+    }
+
+}
+
