@@ -116,7 +116,7 @@ public class ComponentDescriptionReader {
 
 		String className = etlComponent.getAttribute(CLASS_NAME_ATTR);
 		
-		ComponentDescription component = new ComponentDescription(type, className);
+		ComponentDescription component = new ComponentDescription(type, className, null);
 		
 		return component;
 	}
