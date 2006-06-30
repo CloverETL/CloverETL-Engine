@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatterNIO;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
@@ -45,6 +44,55 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
+/**
+ *  <h3>System Execute Component</h3> 
+ *  <!-- This component executes system command.-->
+ * 
+ *  <table border="1">
+ *
+ *    <th>
+ *      Component:
+ *    </th>
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>SystemExecute</td>
+ *    </tr>
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
+ *    </tr>
+ *    <tr><td><h4><i>Description:</i> </h4></td>
+ *      <td>
+ *  This component executes system command.<br>
+ *      </td>
+ *    </tr>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0]- input records for system command<br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
+ *      </td>
+ *      <td>
+ *        [0] - output stream from system command
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
+ *      </td>
+ *      <td></td>
+ *    </tr>
+ *  </table>
+ *  <br>
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>SYS_EXECUTE</td></tr>
+ *    <tr><td><b>command</b></td><td> command to be execute by system</td></tr>
+ *    <tr><td><b>errorLinesNumber</b></td><td> number of lines that are print
+ *    	 out if command finishes with errors</td></tr>
+ *    </table>
+ *    <h4>Example:</h4> <pre>&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
+ * &lt;attr name="errorLinesNumber"&gt;3&lt;/attr&gt;
+ * &lt;attr name="command"&gt;rm test.txt &lt;/attr&gt;
+ * &lt;/Node&gt;</pre>
+ *
+ * @author avackova
+ *
+ */
 public class SystemExecute extends Node{
 	
 	private static final String XML_COMMAND_ATTRIBUTE = "command";
