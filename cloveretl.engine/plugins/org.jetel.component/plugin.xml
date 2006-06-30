@@ -1,0 +1,16 @@
+<plugin
+   id="org.jetel.component"
+   version="1.8.3"
+   provider-name="Javlin Consulting s.r.o.">
+	<runtime>
+		<library path="../../../cloveretl.component.public/bin"/>
+     	</runtime> 
+	<extension point-id="component">
+		<parameter id="type" value="DELIMITED_DATA_READER_NIO"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataReaderNIO"/>
+	</extension>
+	<extension point-id="component">
+		<parameter id="type" value="DELIMITED_DATA_WRITER_NIO"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataWriterNIO"/>
+	</extension>
+</plugin>
