@@ -47,7 +47,7 @@ public class NumericFormat extends NumberFormat {
 		super();
 		dFormat =(DecimalFormat) super.getNumberInstance();
 	}
-	
+	//
 	public NumericFormat(Locale locale){
 		super();
 		dFormat =(DecimalFormat) super.getNumberInstance(locale);
@@ -73,54 +73,44 @@ public class NumericFormat extends NumberFormat {
 		char groupingSeparator = dFormat.getDecimalFormatSymbols().getGroupingSeparator();
 		String negativePrefix = dFormat.getNegativePrefix();
 		String positivePrefix = dFormat.getPositivePrefix();
-		int charRemoved=0;
-		int lenght=source.length();
-		char[]	chars=new char[lenght];
-		StringBuffer toRemove = new StringBuffer(source);
-		//filling array chars with chars from source, negative prefix is changed to "-", positive prefix is ignored
-		if (toRemove.toString().startsWith(negativePrefix)){
-			toRemove.replace(0,negativePrefix.length(),"-");
-			charRemoved = -1;
-			source.getChars(negativePrefix.length(),lenght,chars,0);
-		}else if (toRemove.toString().startsWith(positivePrefix)){
-			toRemove.delete(0,positivePrefix.length());
-			source.getChars(positivePrefix.length(),lenght,chars,0);
+		int start=0;
+		int counter = 0;
+		int length=source.length();
+		char[]	chars=source.toCharArray();
+		char[] result = new char[length];
+		if (source.startsWith(negativePrefix)){
+			result[counter++]='-';
+			start = negativePrefix.length();
+		}else if (source.startsWith(positivePrefix)){
+			start = positivePrefix.length();
 		}
 		int exponentPart=0;
-		for (int j=0;j<lenght;j++){
-			if (!Character.isDigit(chars[j])){
-				if (chars[j]==decimalSeparator){
-					if (!dSeparator) {//there was not decemal separator before
-						toRemove.replace(j-charRemoved,j-charRemoved+1,".");
-						dSeparator = true;
-					}else{//second decimal separator found, rest of string is ignored
-						toRemove.setLength(j-charRemoved);
-						break;
-					}
-				}else if (chars[j]==groupingSeparator){
-					if (!dSeparator){//there was not decimal separator before
-						toRemove.deleteCharAt(j-charRemoved++);
-					}else{//grouping separator is after decimal separartor, rest of string is ignored
-						toRemove.setLength(j-charRemoved);
-						break;
-					}
-				}else if (chars[j]==EXPONENT_SYMBOL[0] || chars[j]==EXPONENT_SYMBOL[1]){
-					exponentForm = true;
-					exponentPart = getExponentPart(toRemove.toString(),j-charRemoved+1);
-					toRemove.setLength(j-charRemoved);
-					break;
-				}else{//unknown char, rest of string is ignored
-					toRemove.setLength(j-charRemoved);
+		for (int j=start;j<length;j++){
+			if (Character.isDigit(chars[j])){
+				result[counter++]=chars[j];
+			}else if (chars[j]==decimalSeparator){
+				if (!dSeparator){//there was not decimal separator before
+					result[counter++]='.';
+					dSeparator = true;
+				}else{//second decimal separator found, rest of string is ignored
 					break;
 				}
+			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
+				continue;
+			}else if (chars[j]==EXPONENT_SYMBOL[0] || chars[j]==EXPONENT_SYMBOL[1]){
+				exponentForm = true;
+				exponentPart = getExponentPart(chars,counter+1);
+				break;
+			}else{//unknown char or grouping separator is after decimal separator, rest of string is ignored 
+				break;
 			}
 		}
 		try {
-			BigDecimal bd = new BigDecimal(toRemove.toString());
+			BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
 			if (exponentForm){
-				return bd.movePointRight(exponentPart);
+				return bigDecimal.movePointRight(exponentPart);
 			}else{
-				return bd;
+				return bigDecimal;
 			}
 		}catch(NumberFormatException e){
 			return null;
@@ -128,40 +118,39 @@ public class NumericFormat extends NumberFormat {
 	}
 	
 	/**
-	 * This metod gets digits from string and changes them to int. Before digitits 
+	 * This method gets digits from string and changes them to int. Before digits 
 	 * can be '+' or '-'
 	 * 
 	 * @param str - input string
 	 * @param offset 
 	 * @return 
 	 */
-	private int getExponentPart(String str,int offset){
-		char ch = str.charAt(offset);
-		StringBuffer exp = new StringBuffer();
+	private int getExponentPart(char[] str,int offset){
+		char ch = str[offset];
+		char[] exp = new char[str.length-offset];
 		int index = 1;
 		if (!Character.isDigit(ch)){
 			if (!(ch=='+' || ch=='-')){
 				return Integer.MIN_VALUE;
 			}else{
 				if (ch=='-'){
-					exp.insert(0,'-');
+					exp[0]='-';
 				}
-				ch = str.charAt(offset+1);
+				ch = str[offset+1];
 				index = 2;
 			}
 		}
-		exp.append(ch);
+		exp[index-1]=ch;
 		//while next character is digit appends it to result string
-		while (index<str.length() && Character.isDigit((ch = str.charAt(offset+index)))){
-			exp.append(ch);
-			index++;
+		while (index<exp.length && Character.isDigit((ch = str[offset+index]))){
+			exp[index++]=ch;
 		}
-		return Integer.parseInt(exp.toString());
+		return Integer.parseInt(String.copyValueOf(exp,0,index));
 	}
 
 	
 	/**
-	 * This method formats BigDecimal due to given patern
+	 * This method formats BigDecimal due to given pattern
 	 * 
 	 * @param number BigDecimal to format
 	 * @param toAppendTo
@@ -186,7 +175,7 @@ public class NumericFormat extends NumberFormat {
 		int maximumFractionDigits = dFormat.getMaximumFractionDigits();
 		int maximumIntegerDigits = dFormat.getMaximumIntegerDigits();
 		int minimumFractionDigits = dFormat.getMinimumFractionDigits();
-		int minimumIntegerdigits = dFormat.getMinimumIntegerDigits();
+		int minimumIntegerDigits = dFormat.getMinimumIntegerDigits();
 		int decimalPoint = toAppendTo.indexOf(".");
 		if (decimalPoint==-1) {//if input number has no fraction digits set decimal point position to the end of string
 			decimalPoint = toAppendTo.length();
@@ -212,7 +201,7 @@ public class NumericFormat extends NumberFormat {
 			if (!end && integerDigits<maximumIntegerDigits) {//locus for grouping separator
 				toAppendTo.insert(index+1,groupingSeparator);
 			}else if (end){
-				while (integerDigits<minimumIntegerdigits){
+				while (integerDigits<minimumIntegerDigits){
 					if (groupSize<groupingSize || groupingSize==0){
 						toAppendTo.insert(start,'0');
 						groupSize++;
@@ -239,7 +228,7 @@ public class NumericFormat extends NumberFormat {
 			toAppendTo.append('0');
 			fractionDigits++;
 		}
-		//appending sufixes
+		//appending suffixes
 		if (number.signum()==-1){
 			toAppendTo.append(dFormat.getNegativeSuffix());
 		}else{
