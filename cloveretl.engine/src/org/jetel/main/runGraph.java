@@ -31,6 +31,7 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.plugin.Plugins;
 import org.jetel.util.JetelVersion;
 
 /**
@@ -62,6 +63,7 @@ public class runGraph {
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	private final static String INFO_SWITCH= "-info";
     private final static String REGISTER_SWITCH= "-register";
+    private final static String PLUGINS_SWITCH= "-plugins";
 	
 	/**
 	 *  Description of the Method
@@ -72,8 +74,8 @@ public class runGraph {
 		boolean verbose = false;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
-		Defaults.init();
-		ComponentFactory.init();
+		String pluginsRootDirectory = "./plugins";
+        Defaults.init();
 		
 		System.out.println("***  CloverETL framework/transformation graph runner ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
 		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
@@ -106,15 +108,22 @@ public class runGraph {
 			}else if (args[i].startsWith(INFO_SWITCH)){
 			    printInfo();
 			    System.exit(0);
-			}else if (args[i].startsWith(REGISTER_SWITCH)){
+            }else if (args[i].startsWith(REGISTER_SWITCH)){
                 i++;
                 ComponentDescriptionReader reader = new ComponentDescriptionReader();
                 ComponentFactory.registerComponents(reader.getComponentDescriptions(args[i]));          
+            }else if (args[i].startsWith(PLUGINS_SWITCH)){
+                i++;
+                pluginsRootDirectory = args[i];
             }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
 			}
 		}
+		
+        //init all static factory
+        Plugins.init(pluginsRootDirectory);
+        ComponentFactory.init();
 
 		FileInputStream in=null;
 		System.out.println("Graph definition file: " + args[args.length - 1]);
