@@ -19,20 +19,42 @@
 */
 package org.jetel.component;
 
+import org.jetel.plugin.Extension;
+
 /**
  * @author Martin Zatopek
  *
  */
 public class ComponentDescription {
-	
+
+    public final static String EXTENSION_POINT_ID = "component";
+    private final static String TYPE = "type";
+    private final static String CLASS = "className";
+
+    
 	private String type;
 	
 	private String className;
 	
-	public ComponentDescription(String componentType, String className) {
+    private ClassLoader classLoader;
+    
+	public ComponentDescription(String componentType, String className, ClassLoader classLoader) {
 		this.type = componentType;
 		this.className = className;
+        this.classLoader = classLoader;
 	}
+
+    public ComponentDescription(Extension componentExtension) {
+        if(!componentExtension.getPointId().equals(EXTENSION_POINT_ID)) {
+            throw new IllegalArgumentException();
+        }
+        this.type = componentExtension.getParameter(TYPE);
+        this.className = componentExtension.getParameter(CLASS);
+        this.classLoader = componentExtension.getPlugin().getClassLoader();
+        if(type == null || className == null) {
+            throw new IllegalArgumentException();
+        }
+    }
 
 	public String getClassName() {
 		return className;
@@ -49,4 +71,12 @@ public class ComponentDescription {
 	public void setType(String componentType) {
 		this.type = componentType;
 	}
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 }
