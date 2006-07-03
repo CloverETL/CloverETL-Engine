@@ -30,6 +30,7 @@ import java.util.Map;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
+import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
 
 /**
@@ -85,14 +86,23 @@ public class ComponentFactory {
 		Class tClass;
 		Method method;
         ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
+        PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
+        
+        //activate plugin if necessary
+        if(!pluginDescriptor.isActive()) {
+            pluginDescriptor.activatePlugin();
+        }
+        
+        //find class of component
 		try{
-			tClass = Class.forName(componentDescription.getClassName(), true, componentDescription.getClassLoader());
+			tClass = Class.forName(componentDescription.getClassName(), true, pluginDescriptor.getClassLoader());
 		} catch(ClassNotFoundException ex) {
 			throw new RuntimeException("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
 		} catch(Exception ex) {
             throw new RuntimeException("Unknown component type: " + componentType);
 		}
 		try {
+            //create instance of component
 			method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
 		} catch(Exception ex) {
