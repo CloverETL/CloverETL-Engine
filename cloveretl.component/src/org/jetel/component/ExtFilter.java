@@ -23,20 +23,17 @@ package org.jetel.component;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Locale;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.graph.InputPort;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
-import org.jetel.graph.OutputPort;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.node.CLVFStartExpression;
-import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.TransformLangExecutor;
+import org.jetel.interpreter.TransformLangParser;
+import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
@@ -186,6 +183,7 @@ public class ExtFilter extends org.jetel.graph.Node {
                     recordBuffer.rewind();
 					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
+                    recordBuffer.rewind();
 					rejectedPort.writeRecordDirect(recordBuffer);
 				}
 
