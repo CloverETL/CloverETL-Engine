@@ -39,7 +39,7 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.Sequence;
-import org.jetel.data.sequence.SimpleSequence;
+import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.DBConnection;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
@@ -568,11 +568,27 @@ public class TransformationGraphXMLReaderWriter {
 	 */
 	private void instantiateSequences(NodeList sequenceElements) {
 		Sequence seq;
+        String sequenceId = null;
+        String sequenceType;
+        
 		for (int i = 0; i < sequenceElements.getLength(); i++) {
-			seq = SimpleSequence.fromXML(graph, sequenceElements.item(i));
-			if (seq != null) {
-				graph.addSequence(((Element) sequenceElements.item(i)).getAttribute("id"), seq);
-			}
+            Element sequenceElement = (Element) sequenceElements.item(i);
+            ComponentXMLAttributes attributes = new ComponentXMLAttributes(sequenceElement, graph);
+
+            // process Sequence element attributes "id" & "type"
+            try {
+                sequenceId = attributes.getString("id");
+                sequenceType = attributes.getString("type");
+
+                //create sequence
+                seq = SequenceFactory.createSequence(graph, sequenceType, sequenceElement);
+    			if (seq != null) {
+                    //register sequence in transformation graph
+    				graph.addSequence(sequenceId, seq);
+    			}
+            } catch (NotFoundException ex) {
+                throw new RuntimeException("Attribute at Sequence " + sequenceId + " is missing - " + ex.getMessage());
+            }
 		}
 	}
 

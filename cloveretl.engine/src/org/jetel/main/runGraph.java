@@ -29,6 +29,7 @@ import java.util.Properties;
 import org.jetel.component.ComponentDescriptionReader;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
+import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
@@ -124,6 +125,7 @@ public class runGraph {
         //init all static factory
         Plugins.init(pluginsRootDirectory);
         ComponentFactory.init();
+        SequenceFactory.init();
 
 		FileInputStream in=null;
 		System.out.println("Graph definition file: " + args[args.length - 1]);

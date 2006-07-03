@@ -60,4 +60,7 @@ public class Extension {
         return pointId;
     }
 
+    public String toString() {
+        return "Extension point id: " + getPointId() + "\nParameters:\n" + getParameters();
+    }
 }
