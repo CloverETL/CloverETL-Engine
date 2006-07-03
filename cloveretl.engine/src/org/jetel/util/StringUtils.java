@@ -189,6 +189,8 @@ public class StringUtils {
 	 * @return      The validObjectName value
 	 */
 	public static boolean isValidObjectName(CharSequence seq) {
+        if(seq == null) return false;
+        
 		for (int i = 0; i < seq.length(); i++) {
 			if (!Character.isUnicodeIdentifierPart(seq.charAt(i))) {
 				return false;
