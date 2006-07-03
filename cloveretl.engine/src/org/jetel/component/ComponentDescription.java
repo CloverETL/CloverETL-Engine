@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import org.jetel.plugin.Extension;
+import org.jetel.plugin.PluginDescriptor;
 
 /**
  * @author Martin Zatopek
@@ -36,12 +37,12 @@ public class ComponentDescription {
 	
 	private String className;
 	
-    private ClassLoader classLoader;
+    private PluginDescriptor pluginDescriptor;
     
-	public ComponentDescription(String componentType, String className, ClassLoader classLoader) {
+	public ComponentDescription(String componentType, String className, PluginDescriptor pluginDescriptor) {
 		this.type = componentType;
 		this.className = className;
-        this.classLoader = classLoader;
+        this.pluginDescriptor = pluginDescriptor;
 	}
 
     public ComponentDescription(Extension componentExtension) {
@@ -50,7 +51,7 @@ public class ComponentDescription {
         }
         this.type = componentExtension.getParameter(TYPE);
         this.className = componentExtension.getParameter(CLASS);
-        this.classLoader = componentExtension.getPlugin().getClassLoader();
+        this.pluginDescriptor = componentExtension.getPlugin();
         if(type == null || className == null) {
             throw new IllegalArgumentException();
         }
@@ -72,11 +73,8 @@ public class ComponentDescription {
 		this.type = componentType;
 	}
 
-    public ClassLoader getClassLoader() {
-        return classLoader;
+    public PluginDescriptor getPluginDescriptor() {
+        return pluginDescriptor;
     }
 
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
 }
