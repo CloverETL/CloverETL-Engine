@@ -19,6 +19,7 @@
 */
 package org.jetel.component;
 
+import org.jetel.data.GraphElementDescription;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 
@@ -26,55 +27,16 @@ import org.jetel.plugin.PluginDescriptor;
  * @author Martin Zatopek
  *
  */
-public class ComponentDescription {
+public class ComponentDescription extends GraphElementDescription {
 
     public final static String EXTENSION_POINT_ID = "component";
-    private final static String TYPE = "type";
-    private final static String CLASS = "className";
-
-    
-	private String type;
-	
-	private String className;
-	
-    private PluginDescriptor pluginDescriptor;
     
 	public ComponentDescription(String componentType, String className, PluginDescriptor pluginDescriptor) {
-		this.type = componentType;
-		this.className = className;
-        this.pluginDescriptor = pluginDescriptor;
-	}
-
-    public ComponentDescription(Extension componentExtension) {
-        if(!componentExtension.getPointId().equals(EXTENSION_POINT_ID)) {
-            throw new IllegalArgumentException();
-        }
-        this.type = componentExtension.getParameter(TYPE);
-        this.className = componentExtension.getParameter(CLASS);
-        this.pluginDescriptor = componentExtension.getPlugin();
-        if(type == null || className == null) {
-            throw new IllegalArgumentException();
-        }
+	    super(EXTENSION_POINT_ID, componentType, className, pluginDescriptor);
     }
 
-	public String getClassName() {
-		return className;
-	}
-
-	public String getType() {
-		return type;
-	}
-	
-	public void setClassName(String className) {
-		this.className = className;
-	}
-	
-	public void setType(String componentType) {
-		this.type = componentType;
-	}
-
-    public PluginDescriptor getPluginDescriptor() {
-        return pluginDescriptor;
+    public ComponentDescription(Extension componentExtension) {
+        super(EXTENSION_POINT_ID, componentExtension);
     }
 
 }
