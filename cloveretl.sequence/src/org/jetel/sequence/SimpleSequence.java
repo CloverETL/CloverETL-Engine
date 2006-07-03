@@ -19,7 +19,7 @@
  * Created on 31.5.2005
  *
  */
-package org.jetel.data.sequence;
+package org.jetel.sequence;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +30,7 @@ import java.nio.channels.FileLock;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
