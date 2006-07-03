@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
@@ -42,6 +44,8 @@ import org.jetel.plugin.Plugins;
  */
 public class ComponentFactory {
 
+    private static Log logger = LogFactory.getLog(ComponentFactory.class);
+
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
 	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, org.w3c.dom.Node.class };
 	private final static Map componentMap = new HashMap();
@@ -56,7 +60,8 @@ public class ComponentFactory {
             try {
                 registerComponent(new ComponentDescription(extension));
             } catch(Exception e) {
-                //EMPTY - only if extension is not valid set
+                logger.error("Cannot create component description, extension in plugin manifest is not valid.\n"
+                        + "pluginId = " + extension.getPlugin().getId() + "\n" + extension + "\nReason: " + e.getMessage());
             }
         }
         
@@ -84,17 +89,18 @@ public class ComponentFactory {
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
 		Class tClass;
-		Method method;
-        ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
-        PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
-        
-        //activate plugin if necessary
-        if(!pluginDescriptor.isActive()) {
-            pluginDescriptor.activatePlugin();
-        }
-        
-        //find class of component
-		try{
+        ComponentDescription componentDescription = null;
+
+        try{
+            componentDescription = (ComponentDescription) componentMap.get(componentType);
+            
+            //activate plugin if necessary
+            PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
+            if(!pluginDescriptor.isActive()) {
+                pluginDescriptor.activatePlugin();
+            }
+            
+            //find class of component
 			tClass = Class.forName(componentDescription.getClassName(), true, pluginDescriptor.getClassLoader());
 		} catch(ClassNotFoundException ex) {
 			throw new RuntimeException("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
@@ -103,7 +109,7 @@ public class ComponentFactory {
 		}
 		try {
             //create instance of component
-			method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
+			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
 		} catch(Exception ex) {
 			throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
