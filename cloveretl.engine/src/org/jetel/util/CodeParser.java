@@ -868,7 +868,7 @@ public class CodeParser {
 		//definition parameters
 		for(Iterator it = parameters.values().iterator(); it.hasNext();) {
 		    final String param = (String) it.next();
-		    transCode.append("\tString ").append(PARAM_CODE_PREFIX).append(param).append(" = TransformationGraph.getReference().getGraphProperties().getProperty(\"").
+		    transCode.append("\tString ").append(PARAM_CODE_PREFIX).append(param).append(" = graph.getGraphProperties().getProperty(\"").
 		    					append(param).append("\");\n"); 
 		}
 		//init method
@@ -881,7 +881,7 @@ public class CodeParser {
 		//initialization sequeneces
 		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
 		    final String seq = (String) it.next();
-		    transCode.append("\t\t").append(seq).append(" = TransformationGraph.getReference().getSequence(\"").
+		    transCode.append("\t\t").append(seq).append(" = graph.getSequence(\"").
 		    					append(seq).append("\");\n"); 
 		}
 		transCode.append("\t\treturn true;\n");
