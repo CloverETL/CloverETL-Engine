@@ -398,7 +398,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
     public void free() {
         try {
-            pStatement.close();
+            if(pStatement != null) {
+                pStatement.close();
+            }
             resultCache = null;
             transMap = null;
         }
