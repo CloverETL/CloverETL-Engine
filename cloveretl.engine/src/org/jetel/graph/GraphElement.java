@@ -66,8 +66,10 @@ public abstract class GraphElement {
      * @param name
      */
     public GraphElement(String id, TransformationGraph graph, String name) {
-        if (!StringUtils.isValidObjectName(id)){
-            throw new InvalidGraphObjectNameException(id, "GRAPH_ELEMENT");
+        if(id != null || graph != null) {
+            if (!StringUtils.isValidObjectName(id)){
+                throw new InvalidGraphObjectNameException(id, "GRAPH_ELEMENT");
+            }
         }
         this.id = id;
         this.graph = graph;
