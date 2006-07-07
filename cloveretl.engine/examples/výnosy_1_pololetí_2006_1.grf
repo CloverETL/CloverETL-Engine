@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="kumulativní_vynosy_1_pololetí_2006">
+<Global>
+<Metadata id="Metadata2">
+<Record name="Agr_výnosy" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Agr_vynos" nullable="true" type="numeric"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="Bez_vynosu_parovani" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Klient_id_n" nullable="true" type="integer"/>
+<Field delimiter="\r\n" name="Agr_vynos" nullable="true" type="numeric"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6">
+<Record name="Dtb_výnosy" type="delimited">
+<Field delimiter=";" name="klient_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="rok_mesic" nullable="true" type="string"/>
+<Field delimiter="\n" name="vynos" nullable="true" type="numeric"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata9">
+<Record name="Nespárovaní" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Vynos" nullable="true" type="numeric"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="C_smlouvy" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record name="Párovaní" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Vynos" nullable="true" type="numeric"/>
+<Field delimiter=";" locale="cs.CZ" name="C_smlouvy" nullable="true" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Klient_id_n" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5">
+<Record name="Provize" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Vynos" nullable="true" type="numeric"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="C_smlouvy" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata10">
+<Record name="Spárovaní" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Vynos" nullable="true" type="numeric"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4">
+<Record name="Zákazníci" type="delimited">
+<Field delimiter="\r\n" locale="cs.CZ" name="Klient_id" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<DBConnection dbDriver="org.postgresql.Driver" dbURL="jdbc:postgresql://koule/foodmart" driverLibrary="file:/home/avackova/home/install/jdbcDrivers/pg74.216.jdbc3.jar" id="DBConnection0" name="FoodmartDB" password="opentech" threadSafeConnection="true" user="test"/>
+</Global>
+<Phase number="0">
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Zákazníci" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" fileURL="data/pololeti_provize_2006_01.csv" guiHeight="0" guiName="Provize" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER_NIO0" type="DELIMITED_DATA_READER_NIO"/>
+<Node append="false" enabled="enabled" fileURL="output/Vyrazeni_zakaznici.txt" guiHeight="0" guiName="Nenalezení klienti" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER_NIO2" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Klient_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="111" id="EXT_SORT1" sortKey="Klient_id" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="111" id="FILTER0" type="FILTER">
+<attr name="filterExpression">Klient_id_n&gt;0</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="28" id="FILTER1" type="FILTER">
+<attr name="filterExpression">Klient_id_n&lt;0</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="28" id="MERGE_JOIN0" joinKey="Klient_id" leftOuterJoin="true" type="MERGE_JOIN">
+<attr name="transform">${out.0.Klient_id} = ${in.0.Klient_id};&#13;
+${out.0.Vynos} = ${in.0.Vynos};&#13;
+${out.0.C_smlouvy} = ${in.0.C_smlouvy};&#13;
+${out.0.Klient_id_n} = @{in.1} != null ? ${in.1.Klient_id} : -1;&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="626" guiY="111" id="REFORMAT0" type="REFORMAT">
+<attr name="transform">${out.0.Klient_id} = ${in.0.Klient_id};&#13;
+${out.0.Vynos} = ${in.0.Vynos};&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="626" guiY="28" id="REFORMAT1" type="REFORMAT">
+<attr name="transform">${out.0.Klient_id} = ${in.0.Klient_id};&#13;
+${out.0.Vynos} = ${in.0.Vynos};&#13;
+${out.0.C_smlouvy} = ${in.0.C_smlouvy};&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="316" guiY="111" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge14" inPort="0 (Ext Sort)" metadata="Metadata4" outPort="0 (Zákazníci)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="DELIMITED_DATA_READER_NIO0:0" guiBendpoints="" id="Edge13" inPort="0 (Ext Sort)" metadata="Metadata5" outPort="0 (Provize)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge16" inPort="0 (Merge Join)" metadata="Metadata5" outPort="0 (Ext Sort)" toNode="MERGE_JOIN0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge17" inPort="1 (Merge Join)" metadata="Metadata4" outPort="0 (Ext Sort)" toNode="MERGE_JOIN0:1"/>
+<Edge fromNode="FILTER0:0" guiBendpoints="" id="Edge3" inPort="0 (Reformat)" metadata="Metadata3" outPort="0 (Filter)" toNode="REFORMAT0:0"/>
+<Edge fromNode="FILTER1:0" guiBendpoints="" id="Edge5" inPort="0 (Reformat)" metadata="Metadata3" outPort="0 (Filter)" toNode="REFORMAT1:0"/>
+<Edge fromNode="MERGE_JOIN0:0" guiBendpoints="" id="Edge0" inPort="0 (Simple Copy)" metadata="Metadata3" outPort="0 (Merge Join)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (Concatenate)" metadata="Metadata10" outPort="0 (Reformat)" toNode="CONCATENATE1:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge10" inPort="0 (Nenalezení klienti)" metadata="Metadata9" outPort="0 (Reformat)" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="0 (Filter)" metadata="Metadata3" outPort="0 (Simple Copy)" toNode="FILTER0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="0 (Filter)" metadata="Metadata3" outPort="1 (Simple Copy)" toNode="FILTER1:0"/>
+</Phase>
+<Phase number="1">
+<Node aggregateFunctions="sum(vynos)" aggregateKey="klient_id" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="221" id="AGGREGATE0" sorted="true" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="164" guiY="221" id="CONCATENATE0" type="CONCATENATE"/>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Úroky" guiWidth="0" guiX="10" guiY="191" id="DB_INPUT_TABLE0" sqlQuery="select*from pololeti_uroky" type="DB_INPUT_TABLE">
+<attr name="SQLCode">&#13;
+</attr>
+</Node>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Poplatky" guiWidth="0" guiX="10" guiY="270" id="DB_INPUT_TABLE2" sqlQuery="select*from pololeti_poplatky" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="315" guiY="221" id="SORT0" sortKey="klient_id" sortOrder="Ascending" type="SORT"/>
+<Edge fromNode="AGGREGATE0:0" guiBendpoints="" id="Edge9" inPort="1 (Concatenate)" metadata="Metadata2" outPort="0 (Aggregate)" toNode="CONCATENATE1:1"/>
+<Edge fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge8" inPort="0 (Sort)" metadata="Metadata6" outPort="0 (Concatenate)" toNode="SORT0:0"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge6" inPort="0 (Concatenate)" metadata="Metadata6" outPort="0 (Úroky)" toNode="CONCATENATE0:0"/>
+<Edge fromNode="DB_INPUT_TABLE2:0" guiBendpoints="" id="Edge7" inPort="1 (Concatenate)" metadata="Metadata6" outPort="0 (Poplatky)" toNode="CONCATENATE0:1"/>
+<Edge fromNode="SORT0:0" guiBendpoints="" id="Edge22" inPort="0 (Aggregate)" metadata="Metadata6" outPort="0 (Sort)" toNode="AGGREGATE0:0"/>
+</Phase>
+<Phase number="2">
+<Node aggregateFunctions="sum(Vynos)" aggregateKey="Klient_id" enabled="enabled" guiHeight="0" guiName="Aggregate" guiWidth="0" guiX="480" guiY="306" id="AGGREGATE1" sorted="true" type="AGGREGATE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="626" guiY="221" id="CONCATENATE1" type="CONCATENATE"/>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="26" guiName="Zákazníci" guiWidth="84" guiX="10" guiY="468" id="DB_INPUT_TABLE3" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
+<Node dbConnection="DBConnection0" dbTable="pololeti_agr_vynosy" enabled="enabled" guiHeight="74" guiName="Agregované výnosy" guiWidth="127" guiX="774" guiY="306" id="DB_OUTPUT_TABLE0" type="DB_OUTPUT_TABLE"/>
+<Node dbConnection="DBConnection0" dbTable="Pololeti_zakaznici_bez_vynosu" enabled="enabled" guiHeight="46" guiName="Klienti bez výnosů" guiWidth="81" guiX="774" guiY="468" id="DB_OUTPUT_TABLE1" type="DB_OUTPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="480" guiY="468" id="FILTER2" type="FILTER">
+<attr name="filterExpression">Klient_id_n&lt;0</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="314" guiY="468" id="MERGE_JOIN1" joinKey="Klient_id" leftOuterJoin="true" type="MERGE_JOIN">
+<attr name="transform">${out.0.Klient_id} = ${in.0.Klient_id};&#13;
+${out.0.Klient_id_n} = @{in.1} != null ? ${in.1.Klient_id} : -1;&#13;
+${out.0.Agr_vynos} = @{in.1} != null ? ${in.1.Agr_vynos} : -1;&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="626" guiY="468" id="REFORMAT2" type="REFORMAT">
+<attr name="transform">${out.0.Klient_id} = ${in.0.Klient_id};&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="626" guiY="306" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="316" guiY="306" id="SORT1" sortKey="Klient_id" sortOrder="Ascending" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="468" id="SORT2" sortKey="Klient_id" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="164" guiY="389" id="SORT3" sortKey="Klient_id" type="SORT"/>
+<Edge fromNode="AGGREGATE1:0" guiBendpoints="" id="Edge15" inPort="0 (Simple Copy)" metadata="Metadata10" outPort="0 (Aggregate)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="CONCATENATE1:0" guiBendpoints="" id="Edge11" inPort="0 (Sort)" metadata="Metadata10" outPort="0 (Concatenate)" toNode="SORT1:0"/>
+<Edge fromNode="DB_INPUT_TABLE3:0" guiBendpoints="" id="Edge20" inPort="0 (Sort)" metadata="Metadata4" outPort="0 (Zákazníci)" toNode="SORT2:0"/>
+<Edge fromNode="FILTER2:0" guiBendpoints="" id="Edge23" inPort="0 (Reformat)" metadata="Metadata0" outPort="0 (Filter)" toNode="REFORMAT2:0"/>
+<Edge fromNode="MERGE_JOIN1:0" guiBendpoints="" id="Edge21" inPort="0 (Filter)" metadata="Metadata0" outPort="0 (Merge Join)" toNode="FILTER2:0"/>
+<Edge debugMode="true" fromNode="REFORMAT2:0" guiBendpoints="" id="Edge24" inPort="0 (Klienti bez výnosů)" metadata="Metadata4" outPort="0 (Reformat)" toNode="DB_OUTPUT_TABLE1:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge18" inPort="0 (Agregované výnosy)" metadata="Metadata2" outPort="0 (Simple Copy)" toNode="DB_OUTPUT_TABLE0:0"/>
+<Edge debugMode="true" fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge25" inPort="0 (Sort)" metadata="Metadata2" outPort="1 (Simple Copy)" toNode="SORT3:0"/>
+<Edge fromNode="SORT1:0" guiBendpoints="" id="Edge12" inPort="0 (Aggregate)" metadata="Metadata10" outPort="0 (Sort)" toNode="AGGREGATE1:0"/>
+<Edge fromNode="SORT2:0" guiBendpoints="" id="Edge26" inPort="0 (Merge Join)" metadata="Metadata4" outPort="0 (Sort)" toNode="MERGE_JOIN1:0"/>
+<Edge fromNode="SORT3:0" guiBendpoints="" id="Edge27" inPort="1 (Merge Join)" metadata="Metadata2" outPort="0 (Sort)" toNode="MERGE_JOIN1:1"/>
+</Phase>
+</Graph>
