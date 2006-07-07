@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph name="TestingSort">
-<!-- This graph illustrates usage of Aggregate component. 
--->
 <Global>
-<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
-<Metadata id="OutMetadata" fileURL="metadata/ordersAggregate.fmt"/>
+<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/ordersAggregate.fmt" id="OutMetadata"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
-<Node id="SORT" type="SORT" sortKey="ShipName;ShipCity"/>
-<Node id="AGGREGATE" type="AGGREGATE" aggregateKey="ShipName;ShipCity" aggregateFunctions="count(Freight); avg(Freight)" sorted="true"/>
-<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.aggregated"/>
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="SORT:0" metadata="InMetadata"/>
-<Edge id="MIDDLE" fromNode="SORT:0" toNode="AGGREGATE:0" metadata="InMetadata"/>
-<Edge id="OUTEDGE" fromNode="AGGREGATE:0" toNode="OUTPUT:0" metadata="OutMetadata"/>
+<Node aggregateFunctions="count(Freight); avg(Freight)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="498" guiY="24" id="AGGREGATE" sorted="true" type="AGGREGATE"/>
+<Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="65" guiName="Dedup" guiWidth="89" guiX="330" guiY="24" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node enabled="enabled" fileURL="data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DELIMITED_DATA_READER_NIO"/>
+<Node append="false" enabled="enabled" fileURL="output/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="650" guiY="24" id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT" guiWidth="50" guiX="173" guiY="24" id="SORT" sortKey="ShipName;ShipCity" type="SORT"/>
+<Edge fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="OutMetadata" outPort="0 (AGGREGATE)" toNode="OUTPUT:0"/>
+<Edge debugMode="false" fromNode="DEDUP0:0" guiBendpoints="" id="Edge0" inPort="0 (AGGREGATE)" metadata="InMetadata" outPort="0 (Dedup)" toNode="AGGREGATE:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (SORT)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="SORT:0"/>
+<Edge debugMode="false" fromNode="SORT:0" guiBendpoints="" id="MIDDLE" inPort="0 (Dedup)" metadata="InMetadata" outPort="0 (SORT)" toNode="DEDUP0:0"/>
 </Phase>
 </Graph>
