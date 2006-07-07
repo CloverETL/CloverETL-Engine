@@ -157,7 +157,7 @@ ${out.0.gender1} = ${in.1.gender};</attr>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="243" guiY="42" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="244" guiY="174" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="77" guiName="Partition" guiWidth="129" guiX="784" guiY="319" id="PARTITION0" partitionKey="gender" type="PARTITION"/>
-<Node command="cut" enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="784" guiY="146" id="SYS_EXECUTE0" type="SYS_EXECUTE"/>
+<Node command="echo" enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="784" guiY="146" id="SYS_EXECUTE0" type="SYS_EXECUTE"/>
 <Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge8" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge9" inPort="0 (System execute)" metadata="Metadata5" outPort="1 (aproximative join)" toNode="SYS_EXECUTE0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge0" inPort="0 (Partition)" metadata="Metadata2" outPort="2 (aproximative join)" toNode="PARTITION0:0"/>
