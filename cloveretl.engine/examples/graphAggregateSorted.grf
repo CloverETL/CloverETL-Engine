@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph name="TestingSort">
+<!-- This graph illustrates usage of Aggregate component. 
+-->
 <Global>
 <Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
 <Metadata fileURL="metadata/ordersAggregate.fmt" id="OutMetadata"/>
