@@ -2,18 +2,45 @@
 <Graph name="Testing Filter">
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata"/>
+<Metadata id="Metadata0">
+<Record name="newMetadata" type="delimited">
+<Field delimiter=";" name="EmployeeID" nullable="true" type="string"/>
+<Field delimiter=";" name="LastName" nullable="true" type="string"/>
+<Field delimiter=";" name="FirstName" nullable="true" type="string"/>
+<Field delimiter=";" name="BirthDate" nullable="true" type="date"/>
+<Field delimiter=";" name="HireDate" nullable="true" type="date"/>
+<Field delimiter=";" name="Memo" nullable="true" type="string"/>
+</Record>
+</Metadata>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" filterExpression="$HireDate&lt;1993-12-31" guiHeight="25" guiName="FILTEREMPL1" guiWidth="50" guiX="195" guiY="20" id="FILTEREMPL1" type="EXT_FILTER"/>
-<Node enabled="enabled" filterExpression="$Memo~=&quot;.*fluent.*&quot;" guiHeight="25" guiName="FILTEREMPL2" guiWidth="50" guiX="194" guiY="200" id="FILTEREMPL2" type="EXT_FILTER"/>
-<Node DataPolicy="Strict" enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER_NIO"/>
-<Node append="false" enabled="enabled" fileURL="output/employees.filtered_1.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO"/>
-<Node append="false" enabled="enabled" fileURL="output/employees.filtered_bad_1.dat" guiHeight="65" guiName="OUTPUT11" guiWidth="124" guiX="373" guiY="112" id="OUTPUT11" type="DELIMITED_DATA_WRITER_NIO"/>
-<Node append="false" enabled="enabled" fileURL="output/employees.filtered_2.dat" guiHeight="25" guiName="OUTPUT2" guiWidth="50" guiX="367" guiY="200" id="OUTPUT2" type="DELIMITED_DATA_WRITER_NIO"/>
-<Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="0 (OUTPUT1)" metadata="InMetadata" outPort="0 (FILTEREMPL1)" toNode="OUTPUT1:0"/>
+<Node enabled="enabled" filterExpression="$HireDate&lt;1993-12-31" guiHeight="25" guiName="FILTEREMPL1" guiWidth="50" guiX="196" guiY="383" id="FILTEREMPL1" type="EXT_FILTER"/>
+<Node enabled="enabled" filterExpression="$Memo~=&quot;.*fluent.*&quot;" guiHeight="25" guiName="FILTEREMPL2" guiWidth="50" guiX="196" guiY="24" id="FILTEREMPL2" type="EXT_FILTER"/>
+<Node enabled="enabled" guiHeight="92" guiName="Hash Join" guiWidth="96" guiX="505" guiY="186" id="HASH_JOIN0" joinKey="LastName;FirstName" type="HASH_JOIN">
+<attr name="transform">${out.0.EmployeeID} = ${in.0.EmployeeID};
+${out.0.LastName} = ${in.0.LastName};
+${out.0.FirstName} = ${in.0.FirstName};
+${out.0.BirthDate} = ${in.0.BirthDate};
+${out.0.HireDate} = ${in.0.HireDate};
+${out.0.Memo} = ${in.0.Memo};
+</attr>
+</Node>
+<Node DataPolicy="Strict" enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="8" guiY="197" id="INPUT1" type="DELIMITED_DATA_READER_NIO"/>
+<Node append="false" enabled="enabled" fileURL="output/employees.filtered_1.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="657" guiY="310" id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node append="false" enabled="enabled" fileURL="output/employees.filtered_bad_1.dat" guiHeight="65" guiName="OUTPUT11" guiWidth="124" guiX="657" guiY="425" id="OUTPUT11" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node append="false" enabled="enabled" fileURL="output/employees.filtered_2.dat" guiHeight="25" guiName="OUTPUT2" guiWidth="50" guiX="657" guiY="23" id="OUTPUT2" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/employees.filtered_3.dat" guiHeight="78" guiName="OUTPUT3" guiWidth="95" guiX="657" guiY="186" id="OUTPUT3" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node enabled="enabled" guiHeight="65" guiName="Simple Copy" guiWidth="106" guiX="380" guiY="24" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="48" guiName="Simple Copy" guiWidth="104" guiX="380" guiY="310" id="SIMPLE_COPY1" type="SIMPLE_COPY"/>
 <Edge debugMode="false" fromNode="FILTEREMPL1:1" guiBendpoints="" id="Edge2" inPort="0 (OUTPUT11)" metadata="InMetadata" outPort="1 (FILTEREMPL1)" toNode="OUTPUT11:0"/>
-<Edge fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="0 (OUTPUT2)" metadata="InMetadata" outPort="0 (FILTEREMPL2)" toNode="OUTPUT2:0"/>
+<Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="Edge1" inPort="0 (Simple Copy)" metadata="InMetadata" outPort="0 (FILTEREMPL1)" toNode="SIMPLE_COPY1:0"/>
+<Edge fromNode="FILTEREMPL2:0" guiBendpoints="" id="INNEREDGE3" inPort="0 (Simple Copy)" metadata="InMetadata" outPort="0 (FILTEREMPL2)" toNode="SIMPLE_COPY0:0"/>
+<Edge debugMode="false" fromNode="HASH_JOIN0:0" guiBendpoints="" id="Edge6" inPort="0 (OUTPUT3)" metadata="Metadata0" outPort="0 (Hash Join)" toNode="OUTPUT3:0"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (FILTEREMPL1)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="FILTEREMPL1:0"/>
 <Edge fromNode="INPUT1:1" guiBendpoints="" id="INNEREDGE2" inPort="0 (FILTEREMPL2)" metadata="InMetadata" outPort="1 (INPUT1)" toNode="FILTEREMPL2:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge0" inPort="0 (Hash Join)" metadata="InMetadata" outPort="0 (Simple Copy)" toNode="HASH_JOIN0:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge3" inPort="0 (OUTPUT2)" metadata="InMetadata" outPort="1 (Simple Copy)" toNode="OUTPUT2:0"/>
+<Edge fromNode="SIMPLE_COPY1:0" guiBendpoints="" id="Edge4" inPort="0 (OUTPUT1)" metadata="InMetadata" outPort="0 (Simple Copy)" toNode="OUTPUT1:0"/>
+<Edge debugMode="false" fromNode="SIMPLE_COPY1:1" guiBendpoints="" id="Edge5" inPort="1 (Hash Join)" metadata="InMetadata" outPort="1 (Simple Copy)" toNode="HASH_JOIN0:1"/>
 </Phase>
 </Graph>
