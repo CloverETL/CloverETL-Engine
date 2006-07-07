@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="DBTest">
+<Global>
+<Metadata id="Metadata0">
+<Record name="customer" type="fixed">
+<Field name="customer_id" nullable="true" size="4" type="integer"/>
+<Field name="account_num" nullable="true" size="11" type="long"/>
+<Field name="lname" nullable="true" size="10" type="string"/>
+<Field name="fname" nullable="true" size="10" type="string"/>
+<Field name="mi" nullable="true" size="4" type="string"/>
+<Field name="address1" nullable="true" size="30" type="string"/>
+<Field name="city" nullable="true" size="7" type="string"/>
+<Field name="state_province" nullable="true" size="6" type="string"/>
+<Field name="postal_code" nullable="true" size="5" type="string"/>
+<Field name="country" nullable="true" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
+<Field name="phone1" nullable="true" size="12" type="string"/>
+<Field name="phone2" nullable="true" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="15" type="date"/>
+<Field name="marital_status" nullable="true" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" size="13" type="string"/>
+<Field name="gender" nullable="true" size="1" type="string"/>
+<Field name="total_children" nullable="true" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
+<Field name="education" nullable="true" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
+<Field name="member_card" nullable="true" size="8" type="string"/>
+<Field name="occupation" nullable="true" size="20" type="string"/>
+<Field name="houseowner" nullable="true" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="employee" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" type="string"/>
+<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="newMetadata" type="delimited">
+<Field delimiter=";" name="lname" nullable="true" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" type="string"/>
+<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<DBConnection dbConfig="koule_postgre.cfg" id="DBConnection0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="74" guiName="Data Intersection" guiWidth="118" guiX="563" guiY="273" id="DATA_INTERSECTION0" joinKey="lname;fname" slaveOverrideKey="last_name;first_name" type="DATA_INTERSECTION">
+<attr name="transform">${out.0.lname} = ${in.0.lname};
+${out.0.fname} = ${in.0.fname};
+${out.0.full_name} = ${in.1.full_name};
+</attr>
+</Node>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="74" guiName="customer from DB" guiWidth="145" guiX="57" guiY="87" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="82" guiName="DB Input Table" guiWidth="131" guiX="57" guiY="370" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output1.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="128" guiX="400" guiY="153" id="EXT_SORT0" sortKey="lname;fname" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="88" guiName="Ext Sort" guiWidth="125" guiX="400" guiY="370" id="EXT_SORT1" sortKey="last_name;first_name" type="EXT_SORT"/>
+<Node OneRecordPerLine="true" enabled="enabled" fileURL="/home/avackova/home/testEclipse/workspace/examples/data/customers.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER_NIO"/>
+<Node enabled="enabled" guiHeight="90" guiName="Simple Gather" guiWidth="177" guiX="233" guiY="153" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="74" guiName="Trash" guiWidth="106" guiX="758" guiY="153" id="TRASH0" type="TRASH"/>
+<Node debugFilename="trash.txt" debugPrint="true" enabled="enabled" guiHeight="77" guiName="Trash" guiWidth="109" guiX="758" guiY="385" id="TRASH1" type="TRASH"/>
+<Edge fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge7" inPort="0 (Trash)" metadata="Metadata0" outPort="0 (Data Intersection)" toNode="TRASH0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge6" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata2" outPort="1 (Data Intersection)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge8" inPort="0 (Trash)" metadata="Metadata1" outPort="2 (Data Intersection)" toNode="TRASH1:0"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge9" inPort="1 (Simple Gather)" metadata="Metadata0" outPort="0 (customer from DB)" toNode="SIMPLE_GATHER0:1"/>
+<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge4" inPort="0 (Ext Sort)" metadata="Metadata1" outPort="0 (DB Input Table)" toNode="EXT_SORT1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="0 (Data Intersection)" metadata="Metadata0" outPort="0 (Ext Sort)" toNode="DATA_INTERSECTION0:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge5" inPort="1 (Data Intersection)" metadata="Metadata1" outPort="0 (Ext Sort)" toNode="DATA_INTERSECTION0:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="0 (Simple Gather)" metadata="Metadata0" outPort="0 (customer from file)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge2" inPort="0 (Ext Sort)" metadata="Metadata0" outPort="0 (Simple Gather)" toNode="EXT_SORT0:0"/>
+</Phase>
+<Phase number="1">
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="75" guiName="drop customer_tmp" guiWidth="124" guiX="57" guiY="495" id="DB_EXECUTE0" type="DB_EXECUTE">
+<attr name="dbSQL">drop table customer_tmp;</attr>
+</Node>
+</Phase>
+</Graph>
