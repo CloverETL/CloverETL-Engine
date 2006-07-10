@@ -18,21 +18,21 @@
 <Field name="fname" nullable="true" size="10" type="string"/>
 <Field name="mi" nullable="true" size="4" type="string"/>
 <Field name="address1" nullable="true" size="30" type="string"/>
-<Field name="city" nullable="true" size="6" type="string"/>
+<Field name="city" nullable="true" size="7" type="string"/>
 <Field name="state_province" nullable="true" size="6" type="string"/>
 <Field name="postal_code" nullable="true" size="5" type="string"/>
 <Field name="country" nullable="true" size="5" type="string"/>
 <Field name="customer_region_id" nullable="true" size="4" type="integer"/>
 <Field name="phone1" nullable="true" size="12" type="string"/>
 <Field name="phone2" nullable="true" size="12" type="string"/>
-<Field name="birthdate" nullable="true" size="29" type="date"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="false" size="15" type="date"/>
 <Field name="marital_status" nullable="true" size="1" type="string"/>
 <Field name="yearly_income" nullable="true" size="13" type="string"/>
 <Field name="gender" nullable="true" size="1" type="string"/>
 <Field name="total_children" nullable="true" size="1" type="integer"/>
 <Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
-<Field name="education" nullable="true" size="10" type="string"/>
-<Field name="date_accnt_opened" nullable="true" size="29" type="date"/>
+<Field name="education" nullable="true" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
 <Field name="member_card" nullable="true" size="8" type="string"/>
 <Field name="occupation" nullable="true" size="20" type="string"/>
 <Field name="houseowner" nullable="true" size="1" type="string"/>
@@ -54,14 +54,14 @@
 <Field name="customer_region_id" nullable="true" size="4" type="integer"/>
 <Field name="phone1" nullable="true" size="12" type="string"/>
 <Field name="phone2" nullable="true" size="12" type="string"/>
-<Field name="birthdate" nullable="true" size="28" type="date"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="28" type="date"/>
 <Field name="marital_status" nullable="true" size="1" type="string"/>
 <Field name="yearly_income" nullable="true" size="13" type="string"/>
 <Field name="gender" nullable="true" size="1" type="string"/>
 <Field name="total_children" nullable="true" size="1" type="integer"/>
 <Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
 <Field name="education" nullable="true" size="10" type="string"/>
-<Field name="date_accnt_opened" nullable="true" size="28" type="date"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="28" type="date"/>
 <Field name="member_card" nullable="true" size="8" type="string"/>
 <Field name="occupation" nullable="true" size="20" type="string"/>
 <Field name="houseowner" nullable="true" size="1" type="string"/>
@@ -100,9 +100,9 @@
 <Field delimiter=";" name="position_title" nullable="true" type="string"/>
 <Field delimiter=";" name="store_id" nullable="true" type="integer"/>
 <Field delimiter=";" name="department_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
-<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
-<Field delimiter=";" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="end_date" nullable="true" type="date"/>
 <Field delimiter=";" name="salary" nullable="true" type="numeric"/>
 <Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
 <Field delimiter=";" name="education_level" nullable="true" type="string"/>
@@ -145,20 +145,20 @@ ${out.0.last_name} = ${in.1.last_name};
 ${out.0.birth_date} = ${in.1.birth_date};
 ${out.0.gender1} = ${in.1.gender};</attr>
 </Node>
-<Node defaultForeignKey="birth_date" enabled="enabled" foreignKey="birth_date" guiHeight="57" guiName="Check Foreign Key" guiWidth="120" guiX="934" guiY="452" id="CHECK_FOREIGN_KEY0" primaryKey="customer_id" type="CHECK_FOREIGN_KEY"/>
+<Node defaultForeignKey="Sat Aug 26 1961" enabled="enabled" foreignKey="birth_date" guiHeight="57" guiName="Check Foreign Key" guiWidth="120" guiX="934" guiY="452" id="CHECK_FOREIGN_KEY0" primaryKey="customer_id" type="CHECK_FOREIGN_KEY"/>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="35" guiY="174" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
 <Node append="false" enabled="enabled" fileURL="output/suspicoius.txt" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="146" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER_NIO"/>
 <Node append="false" enabled="enabled" fileURL="output/employee.out" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="1094" guiY="452" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER_NIO"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="440" guiY="42" id="EXT_SORT0" sortKey="key" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="440" guiY="174" id="EXT_SORT1" sortKey="key" type="EXT_SORT"/>
 <Node OneRecordPerLine="true" enabled="enabled" fileURL="data/customers.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="36" guiY="42" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER_NIO"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="42" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER_NIO"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="/home/avackova/workspace/cloveretl.engine/output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="36" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER_NIO"/>
 <Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customersGender1.txt" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="1094" guiY="277" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER_NIO"/>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="243" guiY="42" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="244" guiY="174" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="77" guiName="Partition" guiWidth="129" guiX="784" guiY="319" id="PARTITION0" partitionKey="gender" type="PARTITION"/>
-<Node command="echo" enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="784" guiY="146" id="SYS_EXECUTE0" type="SYS_EXECUTE"/>
-<Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge8" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Node command="/bin/sh -c cat" enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="784" guiY="146" id="SYS_EXECUTE0" type="SYS_EXECUTE"/>
+<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge8" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge9" inPort="0 (System execute)" metadata="Metadata5" outPort="1 (aproximative join)" toNode="SYS_EXECUTE0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge0" inPort="0 (Partition)" metadata="Metadata2" outPort="2 (aproximative join)" toNode="PARTITION0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge15" inPort="1 (Check Foreign Key)" metadata="Metadata3" outPort="3 (aproximative join)" toNode="CHECK_FOREIGN_KEY0:1"/>
