@@ -54,7 +54,7 @@ public class SequenceFactory {
         //ask plugin framework for sequences
         List sequenceExtensions = Plugins.getExtensions(SequenceDescription.EXTENSION_POINT_ID);
         
-        //register all components
+        //register all sequences
         for(Iterator it = sequenceExtensions.iterator(); it.hasNext();) {
             Extension extension = (Extension) it.next();
             try {
