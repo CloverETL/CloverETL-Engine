@@ -17,22 +17,30 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.data.lookup;
+package org.jetel.lookup;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jetel.data.Defaults;
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
+import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.NotFoundException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ComponentXMLAttributes;
 
 /**
  *  Simple lookup table which reads data from flat file and creates Map structure.
@@ -42,6 +50,15 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class SimpleLookupTable extends GraphElement implements LookupTable {
 
+    private static final String XML_LOOKUP_TYPE_SIMPLE_LOOKUP = "simpleLookup";
+    private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
+    private static final String XML_LOOKUP_KEY = "key";
+    private static final String XML_METADATA_ID ="metadata";
+    private static final String XML_LOOKUP_DATA_TYPE = "dataType";
+    private static final String XML_FILE_URL = "fileURL";
+    private static final String XML_DATA_TYPE_DELIMITED ="delimited";
+    private static final String XML_CHARSET = "charset";
+    
 	protected DataRecordMetadata metadata;
 	protected Parser dataParser;
 	protected Map lookupTable;
@@ -160,8 +177,53 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		dataParser.close();
 		numFound=0;
 	}
-
 	
+    public static SimpleLookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+        SimpleLookupTable lookupTable = null;
+        String id;
+        String type;
+        
+        //reading obligatory attributes
+        try {
+            id = xattribs.getString(XML_ID_ATTRIBUTE);
+            type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+        } catch(NotFoundException ex) {
+            throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+        }
+        
+        //check type
+        if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_SIMPLE_LOOKUP)) {
+            throw new RuntimeException("Can't create simple lookup table from type " + type);
+        }
+        
+        //create simple lookup table
+        try{
+            int initialSize = xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
+            String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
+            Parser parser;
+            String dataTypeStr = xattribs.getString(XML_LOOKUP_DATA_TYPE);
+            
+            // which data parser to use
+            if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
+                parser = new DelimitedDataParserNIO(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            } else {
+                parser = new FixLenDataParser2(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            }
+            parser.open(new FileInputStream(xattribs.getString(XML_FILE_URL)), metadata);
+            
+            lookupTable = new SimpleLookupTable(id, metadata, keys, parser, initialSize);
+            
+         }catch(FileNotFoundException ex){
+             throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+         }catch(ComponentNotReadyException ex){
+             throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+         }
+            
+        return lookupTable;
+    }
+
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
 	 */
