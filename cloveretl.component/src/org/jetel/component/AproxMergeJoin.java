@@ -272,22 +272,22 @@ public class AproxMergeJoin extends Node {
 	 * @exception  InterruptedException  Description of the Exception
 	 * @exception  JetelException        Description of the Exception
 	 */
-	private void fillRecordBuffer(InputPort inPort, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
+	private void fillRecordBuffer(InputPort inPort, DataRecord[] records, RecordKey key)
 			 throws IOException, InterruptedException, JetelException {
 
 		recordBuffer.clear();
-		if (currRecord != null) {
+		if (records[CURRENT] != null) {
 			dataBuffer.clear();
-			currRecord.serialize(dataBuffer);
+			records[CURRENT].serialize(dataBuffer);
 			dataBuffer.flip();
 			recordBuffer.push(dataBuffer);
-			while (nextRecord != null) {
-				nextRecord = inPort.readRecord(nextRecord);
-				if (nextRecord != null) {
-					switch (key.compare(currRecord, nextRecord)) {
+			while (records[TEMPORARY] != null) {
+				records[TEMPORARY] = inPort.readRecord(records[TEMPORARY]);
+				if (records[TEMPORARY] != null) {
+					switch (key.compare(records[CURRENT], records[TEMPORARY])) {
 						case 0:
 							dataBuffer.clear();
-							nextRecord.serialize(dataBuffer);
+							records[TEMPORARY].serialize(dataBuffer);
 							dataBuffer.flip();
 							recordBuffer.push(dataBuffer);
 							break;
@@ -313,15 +313,15 @@ public class AproxMergeJoin extends Node {
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
 	 */
-	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, 
+	private int getCorrespondingRecord(DataRecord driver, DataRecord[] slave, 
 			InputPort slavePort, OutputPort outSlave, RecordKey[] key)
 			 throws IOException, InterruptedException {
 
-		while (slave != null) {
-			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave)) {
+		while (slave[CURRENT] != null) {
+			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave[CURRENT])) {
 				case 1:
-					outSlave.writeRecord(slave);
-					slave = slavePort.readRecord(slave);
+					outSlave.writeRecord(slave[CURRENT]);
+					slave[CURRENT] = slavePort.readRecord(slave[CURRENT]);
 					break;
 				case 0:
 					return 0;
@@ -383,7 +383,7 @@ public class AproxMergeJoin extends Node {
 		inRecords[0] = driver;
 		inRecords[1] = slave;
 		outConformingRecords[0] = outConforming;
-		outSuspiciousRecords[1] = outSuspicious;
+		outSuspiciousRecords[0] = outSuspicious;
 
 		while (recordBuffer.shift(dataBuffer) != null) {
 			dataBuffer.flip();
@@ -479,7 +479,7 @@ public class AproxMergeJoin extends Node {
 			slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
 			while (runIt && driverRecords[CURRENT] != null) {
 				if (isDriverDifferent) {
-					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords[CURRENT], slavePort, notMatchSlavePort, recordKey)) {
+					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords, slavePort, notMatchSlavePort, recordKey)) {
 						case -1:
 							// driver lower
 							// no corresponding slave
@@ -489,7 +489,7 @@ public class AproxMergeJoin extends Node {
 							continue;
 						case 0:
 							// match
-							fillRecordBuffer(slavePort, slaveRecords[CURRENT], slaveRecords[TEMPORARY], recordKey[SLAVE_ON_PORT]);
+							fillRecordBuffer(slavePort, slaveRecords, recordKey[SLAVE_ON_PORT]);
 							// switch temporary --> current
 							tmpRec = slaveRecords[CURRENT];
 							slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
@@ -557,17 +557,16 @@ public class AproxMergeJoin extends Node {
 		if (transformation == null) {
             if (transformClassName != null) {
                 transformation = RecordTransformFactory.loadClass(logger,
-                        transformClassNameForSuspicious, new String[] { libraryPathForSuspicious });
-                }
-            } else {
-                if (transformSourceForSuspicious
+                        transformClassName, new String[] { libraryPath });
+             } else {
+                if (transformSource
                         .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
                     transformation = new RecordTransformTL(logger,
                             transformSource);
                 } else if (dynamicTransformation == null) { // transformSource
                     // is set
                     transformation = RecordTransformFactory.loadClassDynamic(
-                            logger, ("Transform" + getId()+"ForConforming"), transformSourceForSuspicious,
+                            logger, ("Transform" + getId()+"ForConforming"), transformSource,
                             (DataRecordMetadata[]) getInMetadata().toArray(
                                     new DataRecordMetadata[0]),
                                     new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()});
@@ -577,6 +576,7 @@ public class AproxMergeJoin extends Node {
                 }
             
             }
+		}
             
         transformation.setGraph(getGraph());
         //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
@@ -601,12 +601,11 @@ public class AproxMergeJoin extends Node {
 			if (transformClassNameForSuspicious != null) {
                 transformationForSuspicious = RecordTransformFactory.loadClass(logger,
                         transformClassNameForSuspicious, new String[] { libraryPathForSuspicious });
-				}
 			} else {
                 if (transformSourceForSuspicious
                         .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
                     transformationForSuspicious = new RecordTransformTL(logger,
-                            transformSource);
+                            transformSourceForSuspicious);
                 } else if (dynamicTransformation == null) { // transformSource
                     // is set
                     transformationForSuspicious = RecordTransformFactory.loadClassDynamic(
@@ -619,6 +618,7 @@ public class AproxMergeJoin extends Node {
                             logger, dynamicTransformationForSuspicious);
                 }
             }
+		}
         
         transformationForSuspicious.setGraph(getGraph());
 		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, 
