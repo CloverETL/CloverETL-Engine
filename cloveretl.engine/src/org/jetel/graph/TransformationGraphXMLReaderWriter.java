@@ -600,13 +600,29 @@ public class TransformationGraphXMLReaderWriter {
 	 * @since                        October 1, 2002
 	 */
 	private void instantiateLookupTables(NodeList lookupElements) {
-		LookupTable lookup;
-		for (int i = 0; i < lookupElements.getLength(); i++) {
-			lookup = LookupTableFactory.fromXML(graph, lookupElements.item(i));
-			if (lookup != null) {
-				graph.addLookupTable(((Element) lookupElements.item(i)).getAttribute("id"), lookup);
-			}
-		}
+        LookupTable lookup;
+        String lookupTableId = null;
+        String lookupTableType;
+        
+        for (int i = 0; i < lookupElements.getLength(); i++) {
+            Element lookupElement = (Element) lookupElements.item(i);
+            ComponentXMLAttributes attributes = new ComponentXMLAttributes(lookupElement, graph);
+
+            // process Lookup table element attributes "id" & "type"
+            try {
+                lookupTableId = attributes.getString("id");
+                lookupTableType = attributes.getString("type");
+
+                //create lookup table
+                lookup = LookupTableFactory.createLookupTable(graph, lookupTableType, lookupElement);
+                if(lookup != null) {
+                    //register lookup table in transformation graph
+                    graph.addLookupTable(lookupTableId, lookup);
+                }
+            } catch (NotFoundException ex) {
+                throw new RuntimeException("Attribute at Lookup table " + lookupTableId + " is missing - " + ex.getMessage());
+            }
+        }
 	}
 
 	private void instantiateProperties(NodeList propertyElements) throws IOException {
