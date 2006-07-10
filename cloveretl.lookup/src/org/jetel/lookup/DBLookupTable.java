@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database;
+package org.jetel.lookup;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,10 +28,16 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.database.CopySQLData;
+import org.jetel.database.DBConnection;
+import org.jetel.database.SQLUtil;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.NotFoundException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SimpleCache;
 
 /**
@@ -49,6 +55,12 @@ import org.jetel.util.SimpleCache;
  *@since      May 22, 2003
  */
 public class DBLookupTable extends GraphElement implements LookupTable {
+
+    private static final String XML_LOOKUP_TYPE_DB_LOOKUP = "dbLookup"; 
+    //private static final String XML_LOOKUP_KEY = "key";
+    private static final String XML_METADATA_ID ="metadata";
+    private static final String XML_SQL_QUERY = "sqlQuery";
+    private static final String XML_DBCONNECTION = "dbConnection";
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection dbConnection;
@@ -391,6 +403,35 @@ public class DBLookupTable extends GraphElement implements LookupTable {
                     + ex.getMessage());
         }
 
+    }
+
+    public static DBLookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+        DBLookupTable lookupTable = null;
+        String id;
+        String type;
+        
+        //reading obligatory attributes
+        try {
+            id = xattribs.getString(XML_ID_ATTRIBUTE);
+            type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+        } catch(NotFoundException ex) {
+            throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+        }
+        
+        //check type
+        if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)) {
+            throw new RuntimeException("Can't create db lookup table from type " + type);
+        }
+        
+        //create db lookup table
+        //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
+        
+        lookupTable = new DBLookupTable(id, graph.getDBConnection(xattribs.getString(XML_DBCONNECTION)),
+                    metadata, xattribs.getString(XML_SQL_QUERY));
+
+        return lookupTable;
     }
 
 	/**
