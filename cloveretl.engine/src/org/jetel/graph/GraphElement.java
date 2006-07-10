@@ -26,6 +26,7 @@ public abstract class GraphElement {
      * XML attribute of every cloverETL element.
      */
     public final static String XML_ID_ATTRIBUTE = "id";
+    public final static String XML_TYPE_ATTRIBUTE = "type";
 
     final private String id;
 

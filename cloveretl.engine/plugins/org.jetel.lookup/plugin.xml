@@ -1,0 +1,20 @@
+<plugin
+   id="org.jetel.lookup"
+   version="1.9.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<runtime>
+		<library path="../../../cloveretl.lookup/bin"/>
+   	</runtime> 
+
+	<extension point-id="lookup">
+		<parameter id="type" value="simpleLookup"/>
+		<parameter id="className" value="org.jetel.sequence.SimpleLookupTable"/>
+	</extension>
+	
+	<extension point-id="lookup">
+		<parameter id="type" value="dbLookup"/>
+		<parameter id="className" value="org.jetel.sequence.DBLookupTable"/>
+	</extension>
+	
+</plugin>
