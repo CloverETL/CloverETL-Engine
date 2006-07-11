@@ -24,7 +24,8 @@ import java.sql.Statement;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.database.DBConnection;
+import org.jetel.connection.DBConnection;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -165,11 +166,15 @@ public class DBExecute extends Node {
 		//}
 		// get dbConnection from graph
 	    if (dbConnection == null){
-	        dbConnection = getGraph().getDBConnection(dbConnectionName);
+	        IConnection conn = getGraph().getConnection(dbConnectionName);
+            if(conn == null) {
+                throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+            }
+            if(!(conn instanceof DBConnection)) {
+                throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+            }
+            dbConnection = (DBConnection) conn;
 	    }
-		if (dbConnection == null) {
-			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
-		}
 	}
 
 

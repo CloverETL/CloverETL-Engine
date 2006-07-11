@@ -21,9 +21,8 @@ package org.jetel.component;
 
 import java.io.IOException;
 
+import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.SQLDataParser;
-import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -107,7 +106,6 @@ public class DBInputTable extends Node {
 	
 	private SQLDataParser parser;
 
-	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String sqlQuery;
 	
@@ -149,7 +147,7 @@ public class DBInputTable extends Node {
 		//set fetch size (if defined)
 		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
-		parser.open(getGraph().getDBConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
+		parser.open(getGraph().getConnection(dbConnectionName), getOutputPort(WRITE_TO_PORT).getMetadata());
 		
 	}
 
