@@ -19,13 +19,12 @@
 */
 package org.jetel.util;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.database.SQLUtil;
 
 /**
  * @author Wes Maciorowski
