@@ -7,6 +7,10 @@
 		<library path="../../../cloveretl.component.public/bin"/>
    	</runtime> 
 
+	<requires>
+		<import plugin-id="org.jetel.connection"/>
+	</requires>
+
 	<extension point-id="component">
 		<parameter id="type" value="DELIMITED_DATA_READER_NIO"/>
 		<parameter id="className" value="org.jetel.component.DelimitedDataReaderNIO"/>

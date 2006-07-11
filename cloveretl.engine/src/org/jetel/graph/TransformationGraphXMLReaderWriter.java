@@ -40,12 +40,13 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
-import org.jetel.database.DBConnection;
+import org.jetel.database.ConnectionFactory;
+import org.jetel.database.IConnection;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.NotFoundException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataJDBCStub;
+import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Document;
@@ -340,12 +341,12 @@ public class TransformationGraphXMLReaderWriter {
 					}
 			}// metadata from analyzing DB table (JDBC) - will be resolved
 			// later during Edge init - just put stub now.
-			else if (attributes.exists("sqlQuery")){
-				DBConnection dbConnection=graph.getDBConnection(attributes.getString("dbConnection"));
-				if (dbConnection==null){
-					throw new RuntimeException("Can't find DBConnection "+attributes.getString("dbConnection"));
+			else if (attributes.exists("connection")){
+				IConnection connection = graph.getConnection(attributes.getString("connection"));
+				if(connection == null) {
+					throw new RuntimeException("Can't find Connection id - " + attributes.getString("connection") + ".");
 				}
-				recordMetadata=new DataRecordMetadataJDBCStub(dbConnection,attributes.getString("sqlQuery"));
+				recordMetadata = new DataRecordMetadataStub(connection, attributes.attributes2Properties(null));
 			} // probably metadata inserted directly into graph
 			else {
 				recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
@@ -495,7 +496,7 @@ public class TransformationGraphXMLReaderWriter {
 				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj, debugMode, fastPropagate);
 			}else{ 
 				// stub
-				graphEdge = new Edge(edgeID, (DataRecordMetadataJDBCStub) metadataObj, null, debugMode, fastPropagate);
+				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj, null, debugMode, fastPropagate);
 			}
 			if (edges.put(edgeID, graphEdge)!=null){
 				throw new RuntimeException("Duplicate EdgeID detected: "+edgeID);
@@ -544,19 +545,30 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  graph                 Description of Parameter
 	 * @since                        October 1, 2002
 	 */
-	private void instantiateDBConnections(NodeList dbConnectionElements) {
-		DBConnection dbConnection;
-		for (int i = 0; i < dbConnectionElements.getLength(); i++) {
-			ComponentXMLAttributes attributes=new ComponentXMLAttributes(dbConnectionElements.item(i), graph);
-			try{
-				dbConnection = DBConnection.fromXML(graph, dbConnectionElements.item(i));
-			if (dbConnection != null) {
-				graph.addDBConnection(attributes.getString("id"), dbConnection);
-			}
-			}catch(NotFoundException ex1){
-				throw new RuntimeException("Attribute is missing at DBConnection -"+ex1.getMessage());
-			}
-		}
+	private void instantiateDBConnections(NodeList connectionElements) {
+        IConnection connection;
+        String connectionId = null;
+        String connectionType;
+        
+        for (int i = 0; i < connectionElements.getLength(); i++) {
+            Element connectionElement = (Element) connectionElements.item(i);
+            ComponentXMLAttributes attributes = new ComponentXMLAttributes(connectionElement, graph);
+
+            // process IConnection element attributes "id" & "type"
+            try {
+                connectionId = attributes.getString("id");
+                connectionType = attributes.getString("type");
+
+                //create connection
+                connection = ConnectionFactory.createConnection(graph, connectionType, connectionElement);
+                if (connection != null) {
+                    //register connection in transformation graph
+                    graph.addConnection(connectionId, connection);
+                }
+            } catch (NotFoundException ex) {
+                throw new RuntimeException("Attribute at Connection " + connectionId + " is missing - " + ex.getMessage());
+            }
+        }
 	}
 
 	/**

@@ -20,14 +20,13 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.sql.SQLException;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.metadata.DataRecordMetadataJDBCStub;
+import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
 
 /**
@@ -53,7 +52,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     protected int writerPort;
 
 	protected DataRecordMetadata metadata;
-	protected DataRecordMetadataJDBCStub metadataStub;
+	protected DataRecordMetadataStub metadataStub;
 
     protected boolean debugMode;
     protected EdgeDebuger edgeDebuger;
@@ -97,7 +96,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         this(id, metadata, false, false);
     }
     
-	public Edge(String id, DataRecordMetadataJDBCStub metadataStub,DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
+	public Edge(String id, DataRecordMetadataStub metadataStub,DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
 		this(id,metadata, debugMode, fastPropagate);
 		this.metadataStub=metadataStub;
 	}
@@ -194,8 +193,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 				throw new RuntimeException("No metadata and no metadata stub defined for edge: "+getId());
 			}
 			try{
-				metadata=MetadataFactory.fromJDBC(metadataStub);
-			}catch(SQLException ex){
+				metadata=MetadataFactory.fromStub(metadataStub);
+			}catch(Exception ex){
 				throw new ComponentNotReadyException(ex.getMessage());
 			}
 		}

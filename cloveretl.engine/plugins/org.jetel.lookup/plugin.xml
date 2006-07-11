@@ -6,7 +6,11 @@
 	<runtime>
 		<library path="../../../cloveretl.lookup/bin"/>
    	</runtime> 
-
+	
+	<requires>
+		<import plugin-id="org.jetel.connection"/>
+	</requires>
+	
 	<extension point-id="lookup">
 		<parameter id="type" value="simpleLookup"/>
 		<parameter id="className" value="org.jetel.sequence.SimpleLookupTable"/>

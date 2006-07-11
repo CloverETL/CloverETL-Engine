@@ -19,31 +19,39 @@
 
 package org.jetel.metadata;
 
-import org.jetel.database.DBConnection;
+import java.util.Properties;
+
+import org.jetel.database.IConnection;
+
 
 /**
  * @author dpavlis
  * @since  20.10.2004
  *
  * Stub class to keep certain parameters for metadata generation
- * based on JDBC ResultSetMetadata. Used during loading graph definition
+ * based on IConnection. Used during loading graph definition
  * from XML.
  */
-public class DataRecordMetadataJDBCStub {
+public class DataRecordMetadataStub {
 	
-	DBConnection dbConnection;
-	String sqlQuery;
+	private IConnection connection;
+    
+	private Properties parameters;
 
-	public DataRecordMetadataJDBCStub(DBConnection dbConnection,String sqlQuery){
-		this.dbConnection=dbConnection;
-		this.sqlQuery=sqlQuery;
+	public DataRecordMetadataStub(IConnection connection, Properties parameters){
+		this.connection = connection;
+		this.parameters = parameters;
 	}
 	
-	public DBConnection getDBConnection(){
-		return dbConnection;
+	public IConnection getConnection() {
+		return connection;
 	}
 	
-	public String getSQLQuery(){
-		return sqlQuery;
+	public Properties getParameters() {
+		return parameters;
 	}
+    
+    public DataRecordMetadata createMetadata() throws Exception {
+        return connection.createMetadata(parameters);
+    }
 }

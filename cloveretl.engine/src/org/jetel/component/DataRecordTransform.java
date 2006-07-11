@@ -20,10 +20,11 @@
 package org.jetel.component;
 
 import java.util.Properties;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.database.DBConnection;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.database.IConnection;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -172,15 +173,15 @@ public abstract class DataRecordTransform implements RecordTransform {
 	}
 	
 	/**
-	 * Returns DBConnection object registered with transformation
+	 * Returns IConnection object registered with transformation
 	 * graph under specified name (ID).
 	 * 
-	 * @param id ID of DBConnection under which it was registered with graph. It
+	 * @param id ID of IConnection under which it was registered with graph. It
 	 * translates to ID if graph is loaded from XML
-	 * @return DBConnection object if found, otherwise NULL
+	 * @return IConnection object if found, otherwise NULL
 	 */
-	public final DBConnection getDBConnection(String id){
-	    return graph.getDBConnection(id);
+	public final IConnection getConnection(String id){
+	    return graph.getConnection(id);
 	}
 	
 	/**

@@ -23,11 +23,8 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.sql.ResultSet;
-import java.sql.Statement;
 import java.sql.SQLException;
 
-import org.jetel.database.SQLUtil;
 import org.jetel.graph.TransformationGraph;
 import org.w3c.dom.DOMException;
 
@@ -78,7 +75,7 @@ public class MetadataFactory {
 	}
 	
 	/**
-	 * Generates DataRecordMetadata based on DBConnection and SQL query.<br>
+	 * Generates DataRecordMetadata based on IConnection and its parameters.<br>
 	 * The sql query is executed against
 	 * database and metadata of result set is obtained. This metadata is translated
 	 * to corresponding Clover metadata.
@@ -86,15 +83,11 @@ public class MetadataFactory {
 	 * @param dbConnection database connection to use
 	 * @param sqlQuery sql query to use. 
 	 * @return
+	 * @throws Exception 
 	 * @throws SQLException
 	 */
-	public static DataRecordMetadata fromJDBC(DataRecordMetadataJDBCStub metadataStub) throws SQLException{
-		Statement statement;
-		ResultSet resultSet;
-		
-		statement = metadataStub.getDBConnection().getStatement();
-		resultSet = statement.executeQuery(metadataStub.getSQLQuery());
-		return SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
+	public static DataRecordMetadata fromStub(DataRecordMetadataStub metadataStub) throws Exception {
+        return metadataStub.createMetadata();
 	}
 
 	/**
