@@ -150,7 +150,7 @@ public class TransformationGraphXMLReaderWriter {
 	private final static String EDGE_ELEMENT = "Edge";
 	private final static String METADATA_ELEMENT = "Metadata";
 	private final static String PHASE_ELEMENT = "Phase";
-	private final static String DBCONNECTION_ELEMENT = "DBConnection";
+	private final static String CONNECTION_ELEMENT = "Connection";
 	private final static String SEQUENCE_ELEMENT = "Sequence";
 	private final static String LOOKUP_TABLE_ELEMENT = "LookupTable";
 	private final static String METADATA_RECORD_ELEMENT = "Record";
@@ -264,7 +264,7 @@ public class TransformationGraphXMLReaderWriter {
 			instantiateProperties(PropertyElements);
 			
 			// handle all defined DB connections
-			NodeList dbConnectionElements = document.getElementsByTagName(DBCONNECTION_ELEMENT);
+			NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
 			instantiateDBConnections(dbConnectionElements);
 
 			// handle all defined DB connections
