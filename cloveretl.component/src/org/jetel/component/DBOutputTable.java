@@ -29,11 +29,12 @@ import java.util.List;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.connection.CopySQLData;
+import org.jetel.connection.DBConnection;
+import org.jetel.connection.SQLUtil;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.database.CopySQLData;
-import org.jetel.database.DBConnection;
-import org.jetel.database.SQLUtil;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -261,10 +262,14 @@ public class DBOutputTable extends Node {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
 		// get dbConnection from graph
-		dbConnection = getGraph().getDBConnection(dbConnectionName);
-		if (dbConnection == null) {
-			throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
-		}
+        IConnection conn = getGraph().getConnection(dbConnectionName);
+        if(conn == null) {
+            throw new ComponentNotReadyException("Can't find DBConnection ID: " + dbConnectionName);
+        }
+        if(!(conn instanceof DBConnection)) {
+            throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
+        }
+        dbConnection = (DBConnection) conn;
 	}
 
 
