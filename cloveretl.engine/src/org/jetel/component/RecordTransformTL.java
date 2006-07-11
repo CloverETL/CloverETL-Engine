@@ -20,22 +20,18 @@
 package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
 import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
-import org.jetel.graph.TransformationGraph;
-import org.jetel.database.DBConnection;
 import org.jetel.data.DataRecord;
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFFunctionDeclaration;
+import org.jetel.interpreter.node.CLVFStart;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  

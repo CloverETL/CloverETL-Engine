@@ -39,7 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
-import org.jetel.database.DBConnection;
+import org.jetel.database.IConnection;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.NotFoundException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -66,7 +66,7 @@ public final class TransformationGraph {
 	private Phase[] phasesArray;
 	private List edges;
 
-	private Map dbConnections;
+	private Map connections;
 
 	private Map sequences;
 
@@ -108,7 +108,7 @@ public final class TransformationGraph {
 		phases = new LinkedList();
 		nodes = new LinkedList();
 		edges = new LinkedList();
-		dbConnections = new HashMap();
+		connections = new HashMap();
 		sequences = new HashMap();
 		lookupTables = new HashMap();
 		dataRecordMetadata = new HashMap();
@@ -214,14 +214,14 @@ public final class TransformationGraph {
     }
     
 	/**
-	 *  Gets the DBConnection object asssociated with the name provided
+	 *  Gets the IConnection object asssociated with the name provided
 	 *
-	 * @param  name  The DBConnection name under which the connection was registered.
-	 * @return       The DBConnection object (if found) or null
+	 * @param  name  The IConnection name under which the connection was registered.
+	 * @return       The IConnection object (if found) or null
 	 * @since        October 1, 2002
 	 */
-	public DBConnection getDBConnection(String name) {
-		return (DBConnection) dbConnections.get(name);
+	public IConnection getConnection(String name) {
+		return (IConnection) connections.get(name);
 	}
 
 	/**
@@ -235,14 +235,14 @@ public final class TransformationGraph {
 	}
 
 	/**
-	 * Gets the Iterator which can be used to go through all DBConnection objects
+	 * Gets the Iterator which can be used to go through all IConnection objects
 	 * (their names) registered with graph.<br>
 	 * 
-	 * @return	Iterator with DBConnections names
-	 * @see		getDBConnection
+	 * @return	Iterator with IConnections names
+	 * @see		getConnection
 	 */
-	public Iterator getDBConnections(){
-	    return dbConnections.keySet().iterator();
+	public Iterator getConnections(){
+	    return connections.keySet().iterator();
 	}
 	
 	/**
@@ -371,16 +371,16 @@ public final class TransformationGraph {
 	 */
 	public boolean init() {
 		Iterator iterator;
-		DBConnection dbCon = null;
+		IConnection dbCon = null;
 		Sequence seq = null;
 		
 		// initialize DB Connections
 		// iterate through all dbConnection(s) and initialize them - try to connect to db
-		iterator = dbConnections.values().iterator();
+		iterator = connections.values().iterator();
 		while (iterator.hasNext()) {
 			logger.info("Initializing DB connection: ");
 			try {
-				dbCon = (DBConnection) iterator.next();
+				dbCon = (IConnection) iterator.next();
 				dbCon.connect();
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
@@ -438,10 +438,10 @@ public final class TransformationGraph {
 		// this thread sometimes won't die when the main thread is finished - hence
 		// this code
 		Iterator iterator;
-		DBConnection dbCon;
-		iterator = dbConnections.values().iterator();
+		IConnection dbCon;
+		iterator = connections.values().iterator();
 		while (iterator.hasNext()) {
-			dbCon = (DBConnection) iterator.next();
+		    dbCon = (IConnection) iterator.next();
 
 			try {
 				dbCon.free();
@@ -573,14 +573,14 @@ public final class TransformationGraph {
 
 
 	/**
-	 *  Adds a feature to the DBConnection attribute of the TransformationGraph object
+	 *  Adds a feature to the IConnection attribute of the TransformationGraph object
 	 *
-	 * @param  name        Name(ID) under which the DBConnection is registered
-	 * @param  connection  DBConnection object to associate with ID
+	 * @param  name        Name(ID) under which the IConnection is registered
+	 * @param  connection  IConnection object to associate with ID
 	 * @since              October 1, 2002
 	 */
-	public void addDBConnection(String name, DBConnection connection) {
-		dbConnections.put(name, connection);
+	public void addConnection(String name, IConnection connection) {
+		connections.put(name, connection);
 	}
 
 	/**
@@ -630,7 +630,7 @@ public final class TransformationGraph {
 	 * @since    October 1, 2002
 	 */
 	public void deleteDBConnections() {
-		dbConnections.clear();
+		connections.clear();
 	}
 
 	/**

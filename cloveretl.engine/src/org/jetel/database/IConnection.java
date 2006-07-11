@@ -5,7 +5,10 @@
  */
 package org.jetel.database;
 
+import java.util.Properties;
+
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.metadata.DataRecordMetadata;
 
 public interface IConnection {
 
@@ -41,5 +44,13 @@ public interface IConnection {
      */
     public abstract void free();
 
+    /**
+     * Creates clover metadata from this connection. Used by DataRecordMetadataStub
+     * for definition metadata from connection.
+     * For example - in JDBC connection is expected parameter sqlQuery for definition metadata.
+     * @param parameters
+     * @return
+     */
+    public DataRecordMetadata createMetadata(Properties parameters) throws Exception;
 
 }
