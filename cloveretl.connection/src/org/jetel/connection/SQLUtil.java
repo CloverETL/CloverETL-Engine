@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database;
+package org.jetel.connection;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ParameterMetaData;
@@ -151,7 +151,7 @@ public class SQLUtil {
 			/*
 			 *  this is not safe - at least Oracle JDBC driver reports NUMBER to be currency
 			 *  if (dbMetadata.isCurrency(i)) {
-			 *  fieldMetadata.setFormatStr("¤#.#");
+			 *  fieldMetadata.setFormatStr("ï¿½#.#");
 			 *  }
 			 */
 			jetelMetadata.addField(fieldMetadata);

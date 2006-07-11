@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database;
+package org.jetel.connection;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -30,6 +30,7 @@ import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
@@ -38,13 +39,16 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.data.Defaults;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.PasswordEncrypt;
 
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.PropertyRefResolver;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.NamedNodeMap;
 
 
@@ -549,6 +553,24 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public void init() throws ComponentNotReadyException {
         connect();
+    }
+
+
+    /* (non-Javadoc)
+     * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)
+     */
+    public DataRecordMetadata createMetadata(Properties parameters) throws SQLException {
+        Statement statement;
+        ResultSet resultSet;
+
+        String sqlQuery = parameters.getProperty("sqlQuery");
+        if(StringUtils.isEmpty(sqlQuery)) {
+            throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
+        }
+        
+        statement = getStatement();
+        resultSet = statement.executeQuery(sqlQuery);
+        return SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
     }
 
 }

@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.database;
+package org.jetel.connection;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +50,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author      dpavlis
  * @since       October 7, 2002
  * @revision    $Revision$
- * @created     8. èervenec 2003
+ * @created     8. ï¿½ervenec 2003
  */
 public abstract class CopySQLData {
 
@@ -451,7 +451,7 @@ public abstract class CopySQLData {
 	 * @author      dpavlis
 	 * @since       October 7, 2002
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyDate extends CopySQLData {
 
@@ -512,7 +512,7 @@ public abstract class CopySQLData {
 	 * @author      dpavlis
 	 * @since       October 7, 2002
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyNumeric extends CopySQLData {
 		/**
@@ -569,7 +569,7 @@ public abstract class CopySQLData {
 	 * @author      dpavlis
 	 * @since       October 7, 2002
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyDecimal extends CopySQLData {
 		/**
@@ -623,9 +623,9 @@ public abstract class CopySQLData {
 	 *  Description of the Class
 	 *
 	 * @author      dpavlis
-	 * @since       2. bøezen 2004
+	 * @since       2. bï¿½ezen 2004
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyInteger extends CopySQLData {
 		/**
@@ -729,7 +729,7 @@ public abstract class CopySQLData {
 	 * @author      dpavlis
 	 * @since       October 7, 2002
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyString extends CopySQLData {
 		/**
@@ -782,7 +782,7 @@ public abstract class CopySQLData {
 	 * @author      dpavlis
 	 * @since       October 7, 2002
 	 * @revision    $Revision$
-	 * @created     8. èervenec 2003
+	 * @created     8. ï¿½ervenec 2003
 	 */
 	static class CopyTimestamp extends CopySQLData {
 
