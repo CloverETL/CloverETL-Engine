@@ -237,6 +237,10 @@ public class PluginDescriptor {
      * This method is called only from Plugins.activatePlugin() method.
      */
     protected void activate() {
+        //first, we activate all prerequisites plugins
+        for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
+            Plugins.activatePlugin(((PluginPrerequisite) it.next()).pluginId);
+        }
         isActive = true;
         instantiatePlugin();
         if(plugin != null) {
