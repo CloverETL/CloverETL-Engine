@@ -18,7 +18,7 @@
 *
 */
 
-package org.jetel.data.parser;
+package org.jetel.connection;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,9 +27,7 @@ import java.sql.Statement;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.database.CopySQLData;
-import org.jetel.database.SQLUtil;
-import org.jetel.database.DBConnection;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
