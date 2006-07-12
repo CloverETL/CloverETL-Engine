@@ -368,16 +368,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
-        // obtain dbMetadata info if needed
-        if (dbMetadata == null) {
-            try {
-                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
-            } catch (SQLException ex) {
-                throw new RuntimeException(
-                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
-                        + ex.getMessage());
-            }
-        }
     }
     
     /**
@@ -388,6 +378,16 @@ public class DBLookupTable extends GraphElement implements LookupTable {
      * @throws JetelException
      */
     private void initInternal()  {
+        // obtain dbMetadata info if needed
+        if (dbMetadata == null) {
+            try {
+                dbMetadata = SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
+            } catch (SQLException ex) {
+                throw new RuntimeException(
+                        "Can't automatically obtain dbMetadata (use other constructor and provide metadat for output record): "
+                        + ex.getMessage());
+            }
+        }
         // create data record for fetching data from DB
         dbDataRecord = new DataRecord(dbMetadata);
         dbDataRecord.init();
