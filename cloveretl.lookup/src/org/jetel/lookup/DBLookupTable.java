@@ -368,16 +368,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
-    }
-    
-    /**
-     * We assume that query has already been executed and
-     * we have resultSet available to get metadata.
-     * 
-     * 
-     * @throws JetelException
-     */
-    private void initInternal()  {
         // obtain dbMetadata info if needed
         if (dbMetadata == null) {
             try {
@@ -388,6 +378,16 @@ public class DBLookupTable extends GraphElement implements LookupTable {
                         + ex.getMessage());
             }
         }
+    }
+    
+    /**
+     * We assume that query has already been executed and
+     * we have resultSet available to get metadata.
+     * 
+     * 
+     * @throws JetelException
+     */
+    private void initInternal()  {
         // create data record for fetching data from DB
         dbDataRecord = new DataRecord(dbMetadata);
         dbDataRecord.init();
