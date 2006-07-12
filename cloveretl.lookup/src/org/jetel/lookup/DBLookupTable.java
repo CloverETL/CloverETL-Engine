@@ -24,13 +24,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Map;
 
+import org.jetel.connection.CopySQLData;
+import org.jetel.connection.DBConnection;
+import org.jetel.connection.SQLUtil;
 import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.database.CopySQLData;
-import org.jetel.database.DBConnection;
-import org.jetel.database.SQLUtil;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotFoundException;
@@ -428,7 +428,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
         
-        lookupTable = new DBLookupTable(id, graph.getDBConnection(xattribs.getString(XML_DBCONNECTION)),
+        lookupTable = new DBLookupTable(id, (DBConnection) graph.getConnection(xattribs.getString(XML_DBCONNECTION)),
                     metadata, xattribs.getString(XML_SQL_QUERY));
 
         return lookupTable;
