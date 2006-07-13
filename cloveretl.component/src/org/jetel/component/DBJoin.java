@@ -67,7 +67,6 @@ public class DBJoin extends Node {
 	private String transformSource = null;
 	
 	private String[] joinKey;
-	private String[] slaveKey = null;
 	private String connectionName;
 	private String query;
 	private String metadataName;
@@ -241,9 +240,6 @@ public class DBJoin extends Node {
         }
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+XML_ID_ATTRIBUTE,(DBConnection) conn,dbMetadata,query);
 		lookupTable.init();
-		if (slaveKey==null){
-			slaveKey = joinKey;
-		}
 		recordKey = new RecordKey(joinKey,inMetadata[0]);
 		recordKey.init();
 		lookupTable.setLookupKey(recordKey);
