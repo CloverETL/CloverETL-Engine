@@ -13,12 +13,12 @@
 	
 	<extension point-id="lookup">
 		<parameter id="type" value="simpleLookup"/>
-		<parameter id="className" value="org.jetel.sequence.SimpleLookupTable"/>
+		<parameter id="className" value="org.jetel.lookup.SimpleLookupTable"/>
 	</extension>
 	
 	<extension point-id="lookup">
 		<parameter id="type" value="dbLookup"/>
-		<parameter id="className" value="org.jetel.sequence.DBLookupTable"/>
+		<parameter id="className" value="org.jetel.lookup.DBLookupTable"/>
 	</extension>
 	
 </plugin>
