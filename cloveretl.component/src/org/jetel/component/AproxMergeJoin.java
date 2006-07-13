@@ -551,7 +551,7 @@ public class AproxMergeJoin extends Node {
 		if (inPorts.size() != 2) {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");
 		} else if (outPorts.size() != 4) {
-			throw new ComponentNotReadyException("One output port has to be defined!");
+			throw new ComponentNotReadyException("Four output ports have to be defined!");
 		}
 		//Checking transformation for conforming records
 		if (transformation == null) {
