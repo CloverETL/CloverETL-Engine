@@ -48,7 +48,6 @@ public class DBJoin extends Node {
 
     private static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
     private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE = "slaveKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_LIBRARY_PATH_ATTRIBUTE = "libraryPath";
@@ -60,9 +59,6 @@ public class DBJoin extends Node {
 	
 	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
-	
-	private final static int DB_INPUT = 0;
-	private final static int PORT_INPUT = 1;
 	
 	private String transformClassName = null;
 	private DynamicJavaCode dynamicTransformCode = null;
@@ -79,10 +75,8 @@ public class DBJoin extends Node {
 	private Properties transformationParameters=null;
 	
 	private DBLookupTable lookupTable;
-	private DataRecord keyRecord;
-	private RecordKey[] recordKey = new RecordKey[2];
+	private RecordKey recordKey;
 	private DataRecordMetadata dbMetadata;
-	private int[][] fieldMap = new int[2][];
 	
 	static Log logger = LogFactory.getLog(Reformat.class);
 	
@@ -140,10 +134,6 @@ public class DBJoin extends Node {
 		this.dynamicTransformCode = dynamicCode;
 	}
 	
-	private void setSlaveKey(String[] slaveKey){
-		this.slaveKey = slaveKey;
-	}
-	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
@@ -151,13 +141,6 @@ public class DBJoin extends Node {
 		return COMPONENT_TYPE;
 	}
 	
-	private void fillKeyRecord(DataRecord data){
-		for (int i=0;i<recordKey[0].getLenght();i++){
-			keyRecord.getField(fieldMap[DB_INPUT][i]).setValue(
-					data.getField(fieldMap[PORT_INPUT][i]).getValue());
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#run()
 	 */
@@ -167,17 +150,14 @@ public class DBJoin extends Node {
 		inRecord.init();
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
 		outRecord[0].init();
-		DataRecord tmpRecord ;
-//		= new DataRecord(dbMetadata);
-//		tmpRecord.init();
-//		DataRecord[] inRecords = {inRecord,tmpRecord};
-		DataRecord[] inRecords = {inRecord};
+		DataRecord tmpRecord = new DataRecord(dbMetadata);
+		tmpRecord.init();
+		DataRecord[] inRecords = {inRecord,tmpRecord};
 		while (inRecord!=null && runIt) {
 			try {
 				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
 				if (inRecord!=null) {
-					fillKeyRecord(inRecord);
-					tmpRecord = lookupTable.get(keyRecord);
+					tmpRecord = lookupTable.get(inRecord);
 					while (tmpRecord!=null){
 						if (transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT,outRecord[0]);
@@ -264,15 +244,9 @@ public class DBJoin extends Node {
 		if (slaveKey==null){
 			slaveKey = joinKey;
 		}
-		recordKey[PORT_INPUT] = new RecordKey(joinKey,inMetadata[0]);
-		recordKey[PORT_INPUT].init();
-		recordKey[DB_INPUT] = new RecordKey(slaveKey,dbMetadata);
-		recordKey[DB_INPUT].init();
-		fieldMap[PORT_INPUT] = recordKey[PORT_INPUT].getKeyFields();
-		fieldMap[DB_INPUT] = recordKey[DB_INPUT].getKeyFields();
-		lookupTable.setLookupKey(recordKey[DB_INPUT]);
-		keyRecord = new DataRecord(dbMetadata);
-		keyRecord.init();
+		recordKey = new RecordKey(joinKey,inMetadata[0]);
+		recordKey.init();
+		lookupTable.setLookupKey(recordKey);
 	}
 	
 	private void setLibraryPath(String libraryPath) {
@@ -333,10 +307,10 @@ public class DBJoin extends Node {
 				}
 			}
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
-			if (xattribs.exists(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE)){
-				dbjoin.setSlaveKey(xattribs.getString(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
-			
+//			if (xattribs.exists(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE)){
+//				dbjoin.setSlaveKey(xattribs.getString(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+//			}
+//			
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
