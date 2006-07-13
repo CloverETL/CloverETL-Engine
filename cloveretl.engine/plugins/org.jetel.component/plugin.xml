@@ -4,11 +4,12 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.component.public/bin"/>
+		<library path="../../../cloveretl.component/bin"/>
    	</runtime> 
 
 	<requires>
 		<import plugin-id="org.jetel.connection"/>
+		<import plugin-id="org.jetel.lookup"/>
 	</requires>
 
 	<extension point-id="component">
@@ -160,4 +161,10 @@
 	    <parameter id="className" value="org.jetel.component.AproxMergeJoin"/>
 	    <parameter id="type" value="APROX_MERGE_JOIN"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBJoin"/>
+	    <parameter id="type" value="DBJOIN"/>
+	</extension>
+	
 </plugin>
