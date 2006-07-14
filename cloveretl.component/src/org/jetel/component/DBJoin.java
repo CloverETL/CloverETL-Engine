@@ -1,7 +1,7 @@
 
 /*
 *    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2005-06  David Pavlis <david_pavlis@hotmail.com>
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
 *    
 *    This library is free software; you can redistribute it and/or
 *    modify it under the terms of the GNU Lesser General Public
@@ -39,6 +39,78 @@ import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+/**
+ *  <h3>DBJoin Component</h3> <!--  Joins records from input port and database
+ *   based on specified key. The flow on port 0 is the driver, record from database
+ *   is the slave. For every record from driver flow, corresponding record from
+ * slave flow is looked up (if it exists). -->
+ *
+ * <table border="1">
+ *
+ *    <th>
+ *      Component:
+ *    </th>
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>DBJoin</td>
+ *    </tr>
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
+ *    </tr>
+ *    <tr><td><h4><i>Description:</i> </h4></td>
+ *      <td>
+ *	Joins records on input port and from database. It expects that on port [0],
+ *  there is a driver and from database is a slave<br>
+ *	For each driver record, slave record is looked up in database.
+ *	Pair of driver and slave records is sent to transformation class.<br>
+ *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
+ *	It skips driver records for which there is no corresponding slave.
+ *      </td>
+ *    </tr>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0] - primary records<br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
+ *      </td>
+ *      <td>
+ *        [0] - one output port
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
+ *      </td>
+ *      <td></td>
+ *    </tr>
+ *  </table>
+ *  <br>
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>"DBJOIN"</td></tr>
+ *    <tr><td><b>id</b></td><td>component identification</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
+ *    </td></tr>
+ *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
+ *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td>
+ *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
+ *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
+ * below</i></td></tr>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation for
+ *  	 joined records which has conformity greater then conformity limit in
+ *  	 internal clover format</td>
+ *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
+ *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>metadata</b><td>metadata for data from database</td>
+ *    </table>
+ *    <h4>Example:</h4> <pre>
+ *    &lt;Node id="dbjoin0" type="DBJOIN"&gt;
+&lt;attr name="metadata"&gt;Metadata3&lt;/attr&gt;
+&lt;attr name="transformClass"&gt;TransformTransformdbjoin0&lt;/attr&gt;
+&lt;attr name="sqlQuery"&gt;select * from employee where Employee_ID=?&lt;/attr&gt;
+&lt;attr name="joinKey"&gt;EmployeeID&lt;/attr&gt;
+&lt;attr name="dbConnection"&gt;DBConnection0&lt;/attr&gt;
+&lt;/Node&gt;
+</pre>
+ *
+ *  @since March 27, 2004
+ */
 
 /**
  * @author avackova
@@ -80,7 +152,13 @@ public class DBJoin extends Node {
 	static Log logger = LogFactory.getLog(Reformat.class);
 	
 	/**
-	 * @param id
+	 * Basic constructor
+	 * 
+	 * @param id of component
+	 * @param connectionName id of connection used for connecting with database
+	 * @param query for getting data from database
+	 * @param joinKey fields from input port which defines joing records with record from database
+	 * @param metadata defining data from database
 	 */
 	public DBJoin(String id,String connectionName,String query,String[] joinKey,
 			String metadata){
@@ -90,6 +168,12 @@ public class DBJoin extends Node {
 		this.joinKey = joinKey;
 		this.metadataName = metadata;
 	}
+	/**
+	 *Constructor for the DBJoin object
+	 *
+	 * @param  id              unique identification of component
+	 * @param  transformClass  Name of transformation CLASS (e.g. org.jetel.test.DemoTrans)
+	 */
 	
 	public DBJoin(String id,String connectionName,String query, String[] joinKey, 
 			String metadata, String transformClass) {
@@ -144,25 +228,25 @@ public class DBJoin extends Node {
 	 * @see org.jetel.graph.Node#run()
 	 */
 	public void run() {
+		//initialize in and out records
 		InputPort inPort=getInputPort(WRITE_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
 		outRecord[0].init();
-		DataRecord tmpRecord = new DataRecord(dbMetadata);
-		tmpRecord.init();
-		DataRecord[] inRecords = {inRecord,tmpRecord};
+		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		while (inRecord!=null && runIt) {
 			try {
-				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
+				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
-					tmpRecord = lookupTable.get(inRecord);
-					while (tmpRecord!=null){
+					//find slave record in database
+					inRecords[1] = lookupTable.get(inRecord);
+					while (inRecords[1]!=null){
 						if (transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT,outRecord[0]);
 						}
-						tmpRecord = lookupTable.getNext();
-					}
+						//get next record from database with the same key
+						inRecords[1] = lookupTable.getNext();					}
 				}
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -238,7 +322,7 @@ public class DBJoin extends Node {
         if (dbMetadata == null){
             throw new ComponentNotReadyException("Can't find Metadta ID: " + metadataName);
         }
-        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+XML_ID_ATTRIBUTE,(DBConnection) conn,dbMetadata,query);
+        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query);
 		lookupTable.init();
 		recordKey = new RecordKey(joinKey,inMetadata[0]);
 		recordKey.init();
@@ -258,7 +342,7 @@ public class DBJoin extends Node {
 		String query;
 		String[] joinKey;
 		String metadata;
-		
+		//get necessary parameters
 		try{
 			connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
 			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
@@ -303,10 +387,6 @@ public class DBJoin extends Node {
 				}
 			}
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
-//			if (xattribs.exists(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE)){
-//				dbjoin.setSlaveKey(xattribs.getString(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-//			}
-//			
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
