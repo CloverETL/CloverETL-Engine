@@ -161,4 +161,9 @@
 	    <parameter id="className" value="org.jetel.component.AproxMergeJoin"/>
 	    <parameter id="type" value="APROX_MERGE_JOIN"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.DBJoin"/>
+	    <parameter id="type" value="DBJOIN"/>
+	</extension>
 </plugin>
