@@ -20,9 +20,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -34,7 +31,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
@@ -140,23 +136,19 @@ import org.w3c.dom.Element;
 public class Reformat extends Node {
 
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
-	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
-	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "REFORMAT";
 
-	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 
-	private String transformClassName = null;
+    private String transform = null;
+	private String transformClass = null;
 	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
-	private String libraryPath = null;
-	private String transformSource = null;
 
-	private Properties transformationParameters=null;
+	private Properties transformationParameters = null;
 	
 	static Log logger = LogFactory.getLog(Reformat.class);
 
@@ -166,45 +158,11 @@ public class Reformat extends Node {
 	 * @param  id              unique identification of component
 	 * @param  transformClass  Name of transformation CLASS (e.g. org.jetel.test.DemoTrans)
 	 */
-	public Reformat(String id, String transformClass) {
+	public Reformat(String id, String transform, String transformClass) {
 		super(id);
-		this.transformClassName = transformClass;
+        this.transform = transform;
+        this.transformClass = transformClass;
 	}
-
-	/**
-	 *Constructor for the Reformat object
-	 *
-	 * @param  id              unique identification of component
-	 * @param  transform       source of transformation in internal format
-	 */
-	public Reformat(String id, String transform, boolean distincter) {
-		super(id);
-		this.transformSource = transform;
-	}
-
-	/**
-	 *Constructor for the Reformat object
-	 *
-	 * @param  id              unique identification of component
-	 * @param  transformClass  Object of class implementing RecordTransform interface
-	 */
-	public Reformat(String id, RecordTransform transformClass) {
-		super(id);
-		this.transformation = transformClass;
-	}
-
-
-	/**
-	 *Constructor for the Reformat object
-	 *
-	 * @param  id           unique identification of component
-	 * @param  dynamicCode  DynamicJavaCode object
-	 */
-	public Reformat(String id, DynamicJavaCode dynamicCode) {
-		super(id);
-		this.dynamicTransformCode = dynamicCode;
-	}
-
 
 	/**
 	 *  Main processing method for the reformat object
@@ -281,34 +239,23 @@ public class Reformat extends Node {
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		// do we have transformation object directly specified or shall we
-        // create it ourselves
-		if (transformation == null) {
-			if (transformClassName != null) {
-                transformation=RecordTransformFactory.loadClass(logger,transformClassName,new String[] {libraryPath});
-			} else {
-                if (transformSource.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID)!=-1){
-                    transformation=new RecordTransformTL(logger,transformSource);
-                }else if(dynamicTransformCode == null) { // transformSource is set
-                    transformation=RecordTransformFactory.loadClassDynamic(logger,("Transform"+ getId()),transformSource,
-                            (DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-			    }else{
-			        transformation=RecordTransformFactory.loadClassDynamic(logger,dynamicTransformCode);
-                }
-			}
-		}
-        transformation.setGraph(getGraph());
-		// init transformation
-		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata()};
-		// output ports metadata
-		int outPortsNum=getOutPorts().size();
-		DataRecordMetadata outMetadata[]=new DataRecordMetadata[outPortsNum];
-		for (int i=0;i<outPortsNum;i++){
-		    outMetadata[i]=getOutputPort(i).getMetadata();
-		}
-		if (!transformation.init(transformationParameters,inMetadata,outMetadata)) {
-			throw new ComponentNotReadyException("Error when initializing reformat function !");
-		}
+        
+        //create input metadata
+        DataRecordMetadata inMetadata[] = {getInputPort(READ_FROM_PORT).getMetadata()};
+
+        //create output metadata
+        int outPortsNum = getOutPorts().size();
+        DataRecordMetadata outMetadata[] = new DataRecordMetadata[outPortsNum];
+        for(int i = 0; i < outPortsNum; i++) {
+            outMetadata[i] = getOutputPort(i).getMetadata();
+        }
+
+		//create instance of record transformation
+        try {
+            transformation = RecordTransformFactory.createTransform(transform, transformClass, this, inMetadata, outMetadata, transformationParameters);
+        } catch(Exception e) {
+            throw new ComponentNotReadyException(this, e);
+        }
 	}
 
 	
@@ -328,8 +275,8 @@ public class Reformat extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
+		if (transformClass != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClass);
 		} else {
 //        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
 //			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
@@ -359,34 +306,38 @@ public class Reformat extends Node {
 		Reformat reformat;
 
 		try {
-			//if transform class defined (as an attribute) use it first
-			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
-				reformat= new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
-				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
-					reformat.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
-				}
-			} else {
-				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
-					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
-				}else{
-					// do we have child node wich Java source code ?
-				    try {
-				        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-				    } catch(Exception ex) {
-				        //do nothing
-				    }
-				}
-				if (dynaTransCode != null) {
-					reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
-				} else { //last chance to find reformat code is in transform attribute
-					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-						reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
-					} else {
-						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-					}
-				}
-			}
+            reformat = new Reformat(
+                            xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                            xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                            xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
+//			//if transform class defined (as an attribute) use it first
+//			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
+//				reformat= new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+//						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
+//				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
+//					reformat.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
+//				}
+//			} else {
+//				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
+//					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
+//				}else{
+//					// do we have child node wich Java source code ?
+//				    try {
+//				        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
+//				    } catch(Exception ex) {
+//				        //do nothing
+//				    }
+//				}
+//				if (dynaTransCode != null) {
+//					reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
+//				} else { //last chance to find reformat code is in transform attribute
+//					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
+//						reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
+//					} else {
+//						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
+//					}
+//				}
+//			}
 			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
 			
 		} catch (Exception ex) {
@@ -394,14 +345,6 @@ public class Reformat extends Node {
 			return null;
 		}
 		return reformat;
-	}
-
-
-	/**
-	 * @param string
-	 */
-	private void setLibraryPath(String libraryPath) {
-		this.libraryPath = libraryPath;
 	}
 
 
