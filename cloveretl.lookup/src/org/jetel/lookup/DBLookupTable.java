@@ -22,6 +22,8 @@ package org.jetel.lookup;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jetel.connection.CopySQLData;
@@ -77,7 +79,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected Map resultCache;
 	protected int maxCached;
 	protected HashKey cacheKey;
-	
+	protected Iterator iterator;
+	protected ArrayList records;
 	
   
 	/**
@@ -142,59 +145,61 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
 	        cacheKey.setDataRecord(keyRecord);
-	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
-	        if (data!=null){
-	            return data;
-	        }
+	        records=(ArrayList)resultCache.get(cacheKey);
+	    }else{
+	    	records = null;
 	    }
 	    
-	    try {
-	        pStatement.clearParameters();
-	        
-	        // initialization of trans map if it was not already done
-	        if (keyTransMap==null){
-	            if (lookupKey == null) {
-	                throw new RuntimeException("RecordKey was not defined for lookup !");
-	            }
-	            
-	            try {
-	                keyTransMap = CopySQLData.jetel2sqlTransMap(
-	                        SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
-	                        keyRecord,lookupKey.getKeyFields());
-	            } catch (JetelException ex){
-	                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
-	            }catch (Exception ex) {
-	                // PreparedStatement parameterMetadata probably not implemented - use work-around
-	                // we only guess the correct data types on JDBC side
-	                try{
-	                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields());
-	                }catch(JetelException ex1){
-	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
-	                }catch(Exception ex1){
-	                    // some serious problem
-	                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
-	                }
-	            }
-	        }
-	        // set prepared statement parameters
-	        for (int i = 0; i < keyTransMap.length; i++) {
-	            keyTransMap[i].jetel2sql(pStatement);
-	        }
-	        
-	    //execute query
-	    resultSet = pStatement.executeQuery();
-	    fetch();
-	} catch (SQLException ex) {
-	    throw new RuntimeException(ex.getMessage());
+	    if (records==null){
+		    try {
+		        pStatement.clearParameters();
+		        
+		        // initialization of trans map if it was not already done
+		        if (keyTransMap==null){
+		            if (lookupKey == null) {
+		                throw new RuntimeException("RecordKey was not defined for lookup !");
+		            }
+		            
+		            try {
+		                keyTransMap = CopySQLData.jetel2sqlTransMap(
+		                        SQLUtil.getFieldTypes(pStatement.getParameterMetaData()),
+		                        keyRecord,lookupKey.getKeyFields());
+		            } catch (JetelException ex){
+		                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
+		            }catch (Exception ex) {
+		                // PreparedStatement parameterMetadata probably not implemented - use work-around
+		                // we only guess the correct data types on JDBC side
+		                try{
+		                    keyTransMap = CopySQLData.jetel2sqlTransMap(keyRecord,lookupKey.getKeyFields());
+		                }catch(JetelException ex1){
+		                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getMessage());
+		                }catch(Exception ex1){
+		                    // some serious problem
+		                    throw new RuntimeException("Can't create keyRecord transmap: "+ex1.getClass().getName()+":"+ex1.getMessage());
+		                }
+		            }
+		        }
+		        // set prepared statement parameters
+		        for (int i = 0; i < keyTransMap.length; i++) {
+		            keyTransMap[i].jetel2sql(pStatement);
+		        }
+		        
+		    //execute query
+		    resultSet = pStatement.executeQuery();
+		    fetch();
+		} catch (SQLException ex) {
+		    throw new RuntimeException(ex.getMessage());
+		}
+		
+		// if cache exists, add this newly found to cache
+		if (resultCache!=null){
+		    resultCache.put(new HashKey(lookupKey, keyRecord), records);
+		}
 	}
+	    
+    iterator = records.iterator();
 	
-	// if cache exists, add this newly found to cache
-	if (resultCache!=null){
-	    DataRecord storeRecord=dbDataRecord.duplicate();
-	    resultCache.put(new HashKey(lookupKey, storeRecord), storeRecord);
-	}
-	
-	return dbDataRecord;
+	return getNext();
 }
 
 	/**
@@ -214,14 +219,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 			//execute query
 			resultSet = pStatement.executeQuery();
-			if (!fetch()) {
-				return null;
-			}
-    }
-    catch (SQLException ex) {
-			throw new RuntimeException(ex.getMessage());
+			fetch();
+	    }
+	    catch (SQLException ex) {
+				throw new RuntimeException(ex.getMessage());
 		}
-		return dbDataRecord;
+	    
+	    iterator = records.iterator();
+		return getNext();
 	}
 
 	/**
@@ -235,55 +240,52 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
 	public DataRecord get(String keyStr) {
 	    if (resultCache!=null){
-	        DataRecord data=(DataRecord)resultCache.get(keyStr);
-	        if (data!=null){
-	            return data;
-	        }
+	        records=(ArrayList)resultCache.get(keyStr);
+	    }else{
+	    	records = null;
 	    }
 	    
-	    try {
-	        // set up parameters for query
-	        // statement uses indexing from 1
-	        pStatement.clearParameters();
-	        pStatement.setString(1, keyStr);
-	        //execute query
-	        resultSet = pStatement.executeQuery();
-	        if (!fetch()) {
-	            return null;
-	        }
+	    if (records==null){
+		    try {
+		        // set up parameters for query
+		        // statement uses indexing from 1
+		        pStatement.clearParameters();
+		        pStatement.setString(1, keyStr);
+		        //execute query
+		        resultSet = pStatement.executeQuery();
+		        fetch();
+		    }
+		    catch (SQLException ex) {
+		        throw new RuntimeException(ex.getMessage());
+		    }
 	    }
-	    catch (SQLException ex) {
-	        throw new RuntimeException(ex.getMessage());
-	    }
-	    if (resultCache!=null){
-	        DataRecord storeRecord=dbDataRecord.duplicate();
-	        resultCache.put(keyStr, storeRecord);
-	    }
+		if (resultCache!=null){
+		    resultCache.put(keyStr, records);
+		}
 	    
-		return dbDataRecord;
+		iterator = records.iterator();
+		return getNext();
 	}
 
 	/**
-	 *  Executes query and returns data record (statement must be initialized with
+	 *  Executes query and fills list of data records (statement must be initialized with
 	 *  parameters prior to calling this function
 	 *
 	 *@return                   DataRecord obtained from DB or null if not found
 	 *@exception  SQLException  Description of the Exception
 	 */
-	private boolean fetch() throws SQLException {
-		if (!resultSet.next()) {
-			return false;
-		}
+	private void fetch() throws SQLException {
 		// initialize trans map if needed
 		if (transMap==null){
 		    initInternal();
 		}
-		
-		//get data from results
-		for (int i = 0; i < transMap.length; i++) {
-			transMap[i].sql2jetel(resultSet);
+		records = new ArrayList();
+		while (resultSet.next()){
+			for (int i = 0; i < transMap.length; i++) {
+				transMap[i].sql2jetel(resultSet);
+			}
+			records.add(dbDataRecord);
 		}
-		return true;
 	}
 
 	/**
@@ -294,15 +296,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@exception  JetelException  Description of the Exception
 	 */
 	public DataRecord getNext() {
-        try {
-            if (!fetch()) {
-                return null;
-            } else {
-                return dbDataRecord;
-            }
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex.getMessage());
-        }
+		if (iterator.hasNext()){
+			return (DataRecord)iterator.next();
+		}else{
+			return null;
+		}
     }
 
     /* (non-Javadoc)
