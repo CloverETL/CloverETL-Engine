@@ -1,0 +1,14 @@
+<plugin
+   id="org.jetel.connection"
+   version="1.9.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<runtime>
+		<library path="cloveretl.connection.jar"/>
+   	</runtime> 
+
+	<extension point-id="connection">
+		<parameter id="type" value="JDBC"/>
+		<parameter id="className" value="org.jetel.connection.DBConnection"/>
+	</extension>
+</plugin>
