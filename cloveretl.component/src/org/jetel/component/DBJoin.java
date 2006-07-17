@@ -158,15 +158,12 @@ public class DBJoin extends Node {
 	 * @param connectionName id of connection used for connecting with database
 	 * @param query for getting data from database
 	 * @param joinKey fields from input port which defines joing records with record from database
-	 * @param metadata defining data from database
 	 */
-	public DBJoin(String id,String connectionName,String query,String[] joinKey,
-			String metadata){
+	public DBJoin(String id,String connectionName,String query,String[] joinKey){
 		super(id);
 		this.connectionName = connectionName;
 		this.query = query;
 		this.joinKey = joinKey;
-		this.metadataName = metadata;
 	}
 	/**
 	 *Constructor for the DBJoin object
@@ -176,8 +173,8 @@ public class DBJoin extends Node {
 	 */
 	
 	public DBJoin(String id,String connectionName,String query, String[] joinKey, 
-			String metadata, String transformClass) {
-		this(id,connectionName,query,joinKey,metadata);
+			String transformClass) {
+		this(id,connectionName,query,joinKey);
 		this.transformClassName = transformClass;
 	}
 
@@ -188,8 +185,8 @@ public class DBJoin extends Node {
 	 * @param  transform       source of transformation in internal format
 	 */
 	public DBJoin(String id, String connectionName,String query, String[] joinKey,
-			String metadata, String transform, boolean distincter) {
-		this(id,connectionName,query,joinKey,metadata);
+			String transform, boolean distincter) {
+		this(id,connectionName,query,joinKey);
 		this.transformSource = transform;
 	}
 
@@ -200,8 +197,8 @@ public class DBJoin extends Node {
 	 * @param  transformClass  Object of class implementing RecordTransform interface
 	 */
 	public DBJoin(String id,String connectionName,String query, String[] joinKey, 
-			String metadata, RecordTransform transformClass) {
-		this(id,connectionName,query,joinKey,metadata);
+			RecordTransform transformClass) {
+		this(id,connectionName,query,joinKey);
 		this.transformation = transformClass;
 	}
 
@@ -212,8 +209,8 @@ public class DBJoin extends Node {
 	 * @param  dynamicCode  DynamicJavaCode object
 	 */
 	public DBJoin(String id,String connectionName,String query, String[] joinKey, 
-			String metadata, DynamicJavaCode dynamicCode) {
-		this(id,connectionName,query,joinKey,metadata);
+			DynamicJavaCode dynamicCode) {
+		this(id,connectionName,query,joinKey);
 		this.dynamicTransformCode = dynamicCode;
 	}
 	
@@ -319,9 +316,6 @@ public class DBJoin extends Node {
             throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
         }
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
-        if (dbMetadata == null){
-            throw new ComponentNotReadyException("Can't find Metadta ID: " + metadataName);
-        }
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query);
 		lookupTable.init();
 		recordKey = new RecordKey(joinKey,inMetadata[0]);
@@ -341,13 +335,11 @@ public class DBJoin extends Node {
 		String connectionName;
 		String query;
 		String[] joinKey;
-		String metadata;
 		//get necessary parameters
 		try{
 			connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
 			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
 			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-			metadata = xattribs.getString(XML_DB_METADATA_ATTRIBUTE);
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + ex.getMessage());
 			return null;
@@ -357,7 +349,7 @@ public class DBJoin extends Node {
 			//if transform class defined (as an attribute) use it first
 			if (xattribs.exists(XML_TRANSFORM_CLASS_ATTRIBUTE)) {
 				dbjoin= new DBJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						connectionName,query,joinKey,metadata,
+						connectionName,query,joinKey,
 						xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE));
 				if (xattribs.exists(XML_LIBRARY_PATH_ATTRIBUTE)) {
 					dbjoin.setLibraryPath(xattribs.getString(XML_LIBRARY_PATH_ATTRIBUTE));
@@ -375,11 +367,11 @@ public class DBJoin extends Node {
 				}
 				if (dynaTransCode != null) {
 					dbjoin = new DBJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-							connectionName,query,joinKey,metadata,dynaTransCode);
+							connectionName,query,joinKey,dynaTransCode);
 				} else { //last chance to find reformat code is in transform attribute
 					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
 						dbjoin = new DBJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								connectionName,query,joinKey,metadata,
+								connectionName,query,joinKey,
 								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
 					} else {
 						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
@@ -387,6 +379,9 @@ public class DBJoin extends Node {
 				}
 			}
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
+			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
+				dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
@@ -400,5 +395,11 @@ public class DBJoin extends Node {
     public void setTransformationParameters(Properties transformationParameters) {
         this.transformationParameters = transformationParameters;
     }
+	/**
+	 * @param dbMetadata The dbMetadata to set.
+	 */
+	private void setDbMetadata(String dbMetadata) {
+		this.metadataName = dbMetadata;
+	}
 	
 }
