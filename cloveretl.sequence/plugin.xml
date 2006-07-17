@@ -1,0 +1,14 @@
+<plugin
+   id="org.jetel.sequence"
+   version="1.9.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<runtime>
+		<library path="cloveretl.sequence.jar"/>
+   	</runtime> 
+
+	<extension point-id="sequence">
+		<parameter id="type" value="SIMPLE_SEQUENCE"/>
+		<parameter id="className" value="org.jetel.sequence.SimpleSequence"/>
+	</extension>
+</plugin>

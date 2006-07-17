@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="us-ascii"?>
+<project name="cloveretl.sequence" default="build" basedir=".">
+
+	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
+	<property name="plugin.name" value="cloveretl.sequence"/>
+	<property name="plugin.dir.name" value="org.jetel.sequence"/>
+	<property name="dir.bin.default" value="${basedir}/bin"/>
+	<property name="dir.doc.default" value="${basedir}/doc"/>
+	<property name="dir.dist.default" value="${basedir}/dist"/>
+	<property name="dir.src" value="${basedir}/src"/>
+	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
+	<property name="engine.dist.default" value="${basedir}/../cloveretl.engine.berlios/dist/cloveretl.engine.jar"/>
+	
+	<!-- =========================== LIBRARIES ============================= -->
+	<property name="jdk.home" value="C:/Program Files (x86)/Java/j2sdk1.4.2_08"/>
+	<fileset id="tools" file="${jdk.home}/lib/tools.jar"/>
+	<fileset id="commons-logging" file="c:/Martin/install/eclipse/commons-logging.jar"/>
+	<fileset id="junit" file="c:/Martin/install/junit.jar"/>
+	
+	<!-- =========================== TARGETS ============================== -->
+	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
+
+	<!-- The "clean" target deletes previously compiled files. -->
+	<target name="clean" depends="checkproperties" description="Delete old compiled files">
+		<delete dir="${dir.bin}"/>
+	</target>
+
+	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->
+	<target name="checkproperties" description="Sets properties unless they have been defined in parent ant build">
+		<tstamp>
+			<format property="TODAY" pattern="dd/MM/yyyy HH:mm:ss" locale="en" />
+		</tstamp>
+		
+		<condition property="dir.bin" value="${dir.bin.default}">
+			<not>
+				<isset property="dir.bin"/>
+			</not>
+		</condition>
+		
+		<condition property="dir.doc" value="${dir.doc.default}">
+			<not>
+				<isset property="dir.doc"/>
+			</not>
+		</condition>
+		
+		<condition property="dir.dist" value="${dir.dist.default}">
+			<not>
+				<isset property="dir.dist"/>
+			</not>
+		</condition>
+
+		<condition property="engine.dist" value="${engine.dist.default}">
+			<not>
+				<isset property="engine.dist"/>
+			</not>
+		</condition>
+
+		<echo message="Using directory for classes: ${dir.bin}"/> 
+		<echo message="Using directory for javadoc: ${dir.doc}"/>
+		<echo message="Using directory for dist: ${dir.dist}"/>
+	</target>
+	
+	<!-- compile temp copy of source -->
+	<target name="compile" depends="checkproperties,copy_src" description="Compile sources">
+		<!-- Create directory for binaries. -->
+		<mkdir dir="${dir.bin}"/>
+		
+		<!-- Compile sources -->
+		<javac debug="true" destdir="${dir.bin}"
+			target="1.4" source="1.4" 
+			classpath="${engine.dist}">
+			<classpath>
+				<fileset refid="tools"/>			
+				<fileset refid="commons-logging"/>
+				
+			</classpath>
+			<src path="${dir.src.tmp}"/>
+			<exclude name="test/**/*"/>
+		</javac>
+		
+		<!-- copy resources -->
+		<copy todir="${dir.bin}">
+		    <fileset dir="${dir.src}">
+			      <exclude name="**/*.java"/>
+			      <exclude name="**/svn/**"/>
+		    </fileset>
+		  </copy>
+		
+		<!-- delete source temp directory -->
+		<delete dir="${dir.src.tmp}"/>
+	</target>
+
+	<!-- pack binary result of compile to jar file -->
+	<target name="package" depends="compile">
+		<!-- Create plugin directory. -->
+		<mkdir dir="${dir.dist}/plugins/${plugin.dir.name}"/>
+
+		<jar destfile="${dir.dist}/plugins/${plugin.dir.name}/${plugin.name}.jar" basedir="${dir.bin}">
+			<include name="**/*"/>
+			<exclude name="test/**/*"/>
+		</jar>
+		<!-- copy plugin manifest -->
+		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
+	</target>
+	
+	<!-- ask user for MAJOR and MINOR release number -->
+	<target name="set_revision">
+		<buildnumber file="build.number" />
+		<input message="Components - Please enter MAJOR release number:"	addproperty="major_version" />
+		<input message="Components - Please enter MINOR release number:"	addproperty="minor_version" />
+	</target>
+	
+	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
+	<target name="copy_src" depends="set_revision">
+		<echo message="Copying source code.." />
+		<copy todir="${dir.src.tmp}">
+			<fileset dir="${dir.src}" />
+			<filterset>
+				<filter token="MAJOR_VERSION" value="${major_version}" />
+				<filter token="MINOR_VERSION" value="${minor_version}" />
+				<filter token="BUILD_NUMBER" value="build.number" />
+				<filter token="BUILD_TIME" value="${TODAY}" />
+			</filterset>
+		</copy>
+	</target>
+	
+	<!-- The "javadoc" target generates JavaDoc documentation. -->
+	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
+        <javadoc destdir="${dir.doc}" access="public" use="true"
+        	notree="false" nonavbar="false" noindex="false" splitindex="true"
+        	author="true" version="true" nodeprecatedlist="false"
+        	nodeprecated="false" packagenames="org.jetel.*"
+        	sourcepath="${dir.src}">
+			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
+			<bottom>
+				<![CDATA[Copyright &#169; 2002-2005 Opentech s.r.o]]>
+			</bottom>
+		</javadoc>
+	</target>
+
+	
+</project>
