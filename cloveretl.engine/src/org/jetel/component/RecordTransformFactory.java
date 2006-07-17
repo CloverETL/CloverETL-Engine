@@ -27,15 +27,74 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.Properties;
+
 import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.DynamicJavaCode;
 
 public class RecordTransformFactory {
 
+    
+    public static RecordTransform createTransform(String transform, String transformClass, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Properties transformationParameters) throws ComponentNotReadyException {
+        RecordTransform transformation = null;
+        Log logger = LogFactory.getLog(node.getClass());
+        
+        //without these parameters we cannot create transformation
+        if(transform == null && transformClass == null) {
+            throw new ComponentNotReadyException("Record transformation is not defined.");
+        }
+        
+        if (transformClass != null) {
+            //get transformation from link to the compiled class
+            transformation = RecordTransformFactory.loadClass(logger, transformClass);
+        } else {
+            //try compile transform parameter as java code
+            try {
+                DynamicJavaCode dynaTransCode = new DynamicJavaCode(transform);
+                transformation = RecordTransformFactory.loadClassDynamic(logger, dynaTransCode);
+            } catch(Exception e) {
+                logger.info("Transform parameter is not valid java code (Reason: " + e.getMessage() + ")");
+                logger.info("Trying to parse transform parameter as internal clover script language.");
+            }
+         
+            //trying to parse transform parameter as internal clover script language
+            if(transformation == null) {
+                if (transform.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1){
+                    transformation = new RecordTransformTL(logger, transform);
+                } else {
+                    transformation = RecordTransformFactory.loadClassDynamic(
+                                        logger,
+                                        "Transform" + node.getId(),
+                                        transform,
+                                        inMetadata,
+                                        outMetadata);
+                }
+            }
+        }
+
+        transformation.setGraph(node.getGraph());
+
+        // init transformation
+        if (!transformation.init(transformationParameters, inMetadata, outMetadata)) {
+            throw new ComponentNotReadyException("Error when initializing tranformation function !");
+        }
+        
+        return transformation;
+    }
+    
+    
+    public static RecordTransform loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
+        //TODO parsing url from transformClass parameter
+        return loadClass(logger, transformClass, null);
+    }
+    
     /**
      * @param logger
      * @param transformClassName
