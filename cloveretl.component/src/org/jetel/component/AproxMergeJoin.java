@@ -145,10 +145,6 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE = "slaveMatchingOverwrite";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE = "transformClassForSuspicious";
-	private static final String XML_LIBRARY_PATH_ATTRIBUTE = "libraryPath";
-	private static final String XML_LIBRARY_PATH_FOR_SUSPICIOUS_ATTRIBUTE = "libraryPathForSuspicious";
-	private static final String XML_JAVA_SOURCE_ATTRIBUTE = "javaSource";
-	private static final String XML_JAVA_SOURCE_FOR_SUSPICIOUS_ATTRIBUTE = "javaSourceForSuspicious";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE = "transformForSuspicious";
 	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
@@ -170,16 +166,12 @@ public class AproxMergeJoin extends Node {
 	private final static int TEMPORARY = 1;
 
 	private String transformClassName;
-	private String libraryPath = null;
 	private String transformSource = null;
 	private String transformClassNameForSuspicious;
-	private String libraryPathForSuspicious = null;
 	private String transformSourceForSuspicious = null;
 
 	private RecordTransform transformation = null;
-	private DynamicJavaCode dynamicTransformation = null;
 	private RecordTransform transformationForSuspicious = null;
-	private DynamicJavaCode dynamicTransformationForSuspicious = null;
 
 	private String[] joinParameters;
 	private String[] joinKeys;
@@ -214,30 +206,18 @@ public class AproxMergeJoin extends Node {
 	 * @param id
 	 */
 	
-	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey) throws JetelException{
+	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
+			String transform, String transformClass, String transformForSusp, 
+			String transformClassForSus) throws JetelException{
 		super(id);
 		this.joinParameters=joinParameters;
 		this.matchingKey[0]=matchingKey;
+		this.transformSource = transform;
+		this.transformClassName = transformClass;
+		this.transformSourceForSuspicious = transformForSusp;
+		this.transformClassNameForSuspicious = transformClassForSus;
 	}
 	
-	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
-			String transformClass) throws JetelException{
-		this(id,joinParameters,matchingKey);
-		this.transformClassName = transformClass;
-	}
-
-	public AproxMergeJoin(String id, String[] joinParameters,String matchingKey, 
-			DynamicJavaCode dynaTransCode)  throws JetelException{
-		this(id,joinParameters,matchingKey);
-		this.dynamicTransformation=dynaTransCode;
-	}
-
-	public AproxMergeJoin(String id, String[] joinParameters,String matchingKey, 
-			String transform, boolean distincter) throws JetelException{
-		this(id,joinParameters,matchingKey);
-		this.transformSource = transform;
-	}
-
 	/**
 	 *  Sets specific key (string) for slave records<br>
 	 *  Can be used if slave record has different names
@@ -553,32 +533,6 @@ public class AproxMergeJoin extends Node {
 		} else if (outPorts.size() != 4) {
 			throw new ComponentNotReadyException("Four output ports have to be defined!");
 		}
-		//Checking transformation for conforming records
-		if (transformation == null) {
-            if (transformClassName != null) {
-                transformation = RecordTransformFactory.loadClass(logger,
-                        transformClassName, new String[] { libraryPath });
-             } else {
-                if (transformSource
-                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
-                    transformation = new RecordTransformTL(logger,
-                            transformSource);
-                } else if (dynamicTransformation == null) { // transformSource
-                    // is set
-                    transformation = RecordTransformFactory.loadClassDynamic(
-                            logger, ("Transform" + getId()+"ForConforming"), transformSource,
-                            (DataRecordMetadata[]) getInMetadata().toArray(
-                                    new DataRecordMetadata[0]),
-                                    new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()});
-                } else {
-                    transformation = RecordTransformFactory.loadClassDynamic(
-                            logger, dynamicTransformation);
-                }
-            
-            }
-		}
-            
-        transformation.setGraph(getGraph());
         //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
@@ -592,39 +546,22 @@ public class AproxMergeJoin extends Node {
 		if (!outMetadata[1].equals(inMetadata[1])){
 			throw new ComponentNotReadyException("Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
 		}
-		if (!transformation.init(transformationParameters,inMetadata, 
-                    new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()})) {
-			throw new ComponentNotReadyException("Error when initializing reformat function !");
-		}
-		//checking transformation for suspicious records
-		if (transformationForSuspicious == null) {
-			if (transformClassNameForSuspicious != null) {
-                transformationForSuspicious = RecordTransformFactory.loadClass(logger,
-                        transformClassNameForSuspicious, new String[] { libraryPathForSuspicious });
-			} else {
-                if (transformSourceForSuspicious
-                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
-                    transformationForSuspicious = new RecordTransformTL(logger,
-                            transformSourceForSuspicious);
-                } else if (dynamicTransformation == null) { // transformSource
-                    // is set
-                    transformationForSuspicious = RecordTransformFactory.loadClassDynamic(
-                            logger, ("Transform" + getId()+"ForSuspicious"), transformSourceForSuspicious,
-                            (DataRecordMetadata[]) getInMetadata().toArray(
-                                    new DataRecordMetadata[0]),
-                                    new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()});
-                } else {
-                    transformationForSuspicious = RecordTransformFactory.loadClassDynamic(
-                            logger, dynamicTransformationForSuspicious);
-                }
-            }
-		}
-        
-        transformationForSuspicious.setGraph(getGraph());
-		if (!transformationForSuspicious.init(transformationParametersForSuspicious,inMetadata, 
-                        new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()})) {
-			throw new ComponentNotReadyException("Error when initializing reformat function !");
-		}
+		outMetadata = new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()};
+        try {
+            transformation = RecordTransformFactory.createTransform(
+            		transformSource, transformClassName, this, inMetadata, outMetadata, 
+            		transformationParameters);
+        } catch(Exception e) {
+            throw new ComponentNotReadyException(this, e);
+        }
+        outMetadata = new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()};
+        try {
+            transformationForSuspicious = RecordTransformFactory.createTransform(
+            		transformSourceForSuspicious, transformClassNameForSuspicious, 
+            		this, inMetadata, outMetadata, transformationParametersForSuspicious);
+        } catch(Exception e) {
+            throw new ComponentNotReadyException(this, e);
+        }
 		//initializing join parameters
 		joinKeys = new String[joinParameters.length];
 		maxDifferenceLetters = new int[joinParameters.length];
@@ -723,69 +660,16 @@ public class AproxMergeJoin extends Node {
     public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		AproxMergeJoin join;
-		DynamicJavaCode dynaTransCode = null;
 
 		try {
-			if (xattribs.exists(XML_TRANSFORM_CLASS_ATTRIBUTE)){
-				join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
-						xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE));
-				if (xattribs.exists(XML_LIBRARY_PATH_ATTRIBUTE)) {
-					join.setLibraryPath(xattribs.getString(XML_LIBRARY_PATH_ATTRIBUTE));
-				}
-			}else{
-				if (xattribs.exists(XML_JAVA_SOURCE_ATTRIBUTE)){
-					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVA_SOURCE_ATTRIBUTE));
-				}else{
-					// do we have child node with Java source code ?
-					try {
-					    dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-					} catch(Exception ex) {
-				        //do nothing
-				    }				}
-				if (dynaTransCode != null) {
-					join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-							xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-							xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
-							dynaTransCode);
-				} else { //last chance to find reformat code is in transform attribute
-					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-						join = new AproxMergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-								xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
-								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true); 
-					} else {
-						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-					}
-				}
-			}
-			dynaTransCode = null;
-			if (xattribs.exists(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE)){
-				join.setTransformClassNameForSuspicious(xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE));
-				if (xattribs.exists(XML_LIBRARY_PATH_FOR_SUSPICIOUS_ATTRIBUTE)) {
-					join.setLibraryPathForSuspicious(xattribs.getString(XML_LIBRARY_PATH_FOR_SUSPICIOUS_ATTRIBUTE));
-				}
-			}else{
-				if (xattribs.exists(XML_JAVA_SOURCE_FOR_SUSPICIOUS_ATTRIBUTE)){
-					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVA_SOURCE_FOR_SUSPICIOUS_ATTRIBUTE));
-				}else{
-					// do we have child node with Java source code ?
-					try {
-					    dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-					} catch(Exception ex) {
-				        //do nothing
-				    }				}
-				if (dynaTransCode != null) {
-					join.setDynamicTransformationForSuspicious(dynaTransCode);
-				} else { //chance to find reformat code is in transform attribute
-					if (xattribs.exists(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE)) {
-						join.setTransformSourceForSuspicious(	xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE), true); 
-					}else{ //get transformation from output port 0
-						
-					}
-				}
-			}
+            join = new AproxMergeJoin(
+                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                    xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
+                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+                    xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
+                    xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null));
 			if (xattribs.exists(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -807,10 +691,6 @@ public class AproxMergeJoin extends Node {
 		}
 	}
  
-	private void setLibraryPath(String libraryPath) {
-		this.libraryPath = libraryPath;
-	}
-
 	public boolean checkConfig() {
 		return true;
 	}
@@ -821,24 +701,6 @@ public class AproxMergeJoin extends Node {
 
 	private void setConformityLimit(double conformityLimit) {
 		this.conformityLimit = conformityLimit;
-	}
-
-	private void setTransformClassNameForSuspicious(
-			String transformClassNameForSuspicious) {
-		this.transformClassNameForSuspicious = transformClassNameForSuspicious;
-	}
-
-	private void setDynamicTransformationForSuspicious(
-			DynamicJavaCode dynamicTransformationForSuspicious) {
-		this.dynamicTransformationForSuspicious = dynamicTransformationForSuspicious;
-	}
-
-	private void setTransformSourceForSuspicious(String transformSourceForSuspicious, boolean distincter) {
-		this.transformSourceForSuspicious = transformSourceForSuspicious;
-	}
-
-	private void setLibraryPathForSuspicious(String libraryPathForSuspicious) {
-		this.libraryPathForSuspicious = libraryPathForSuspicious;
 	}
 		
 }
