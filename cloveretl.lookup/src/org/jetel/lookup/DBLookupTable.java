@@ -313,23 +313,30 @@ public class DBLookupTable extends GraphElement implements LookupTable {
      * calls to getNext() will start reading the data found from
      * the first record.
      */
-    public int getNumFound() {
-        if (resultSet != null) {
-            try {
-                int curRow=resultSet.getRow();
-                resultSet.last();
-                int count=resultSet.getRow();
-                resultSet.first();
-                resultSet.absolute(curRow);
-                return count;
-            } catch (SQLException ex) {
-                return -1;
-            }
-        }
-        return -1;
-    }
+//    public int getNumFound() {
+//        if (resultSet != null) {
+//            try {
+//                int curRow=resultSet.getRow();
+//                resultSet.last();
+//                int count=resultSet.getRow();
+//                resultSet.first();
+//                resultSet.absolute(curRow);
+//                return count;
+//            } catch (SQLException ex) {
+//                return -1;
+//            }
+//        }
+//        return -1;
+//    }
 
-    
+    public int getNumFound() {
+    	if (records!=null) {
+    		return records.size();
+    	}else {
+    		return -1;
+    	}
+    }
+   
     /* (non-Javadoc)
      * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
      */
