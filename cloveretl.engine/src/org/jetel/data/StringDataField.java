@@ -131,40 +131,19 @@ public class StringDataField extends DataField implements CharSequence{
 	/**
 	 *  Sets the Value attribute of the StringDataField object
 	 *
-	 * @param  value                       The new value value
-	 * @exception  BadDataFormatException  Description of the Exception
+	 * @param  value                       The new value to set. Valid types are char[] or CharSequence descendant, or <code>null</code>
+	 * @exception  BadDataFormatException  When <code>null</code> value was set, but metadata definition requires field not-nullability
+     * @exception  IllegalArgumentException When value of types other then char[], CharSequence descendant is passed to the function <code>value</code>
 	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object value) throws BadDataFormatException {
-	    this.value.setLength(0);
-		if (value instanceof StringDataField){
-		    this.value.append(((StringDataField)value).value);
-		}else if (value instanceof String){
-		    this.value.append((String)value);
-		}else if (value instanceof StringBuffer){
-		    this.value.append((StringBuffer)value);
-		}else if (value instanceof char[]){
-		    this.value.append((char[])value);
-		}else if (value instanceof CharSequence){
-		    CharSequence str=(CharSequence)value;
-		    for (int i=0;i<str.length();this.value.append(str.charAt(i++)));
-		}else if (value==null){
-		    if (this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-			return;
-		}
-		if (this.value.length()!=0){
-		    	setNull(false);
-		}else{
-		    if (this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-		}
+        if(value instanceof CharSequence || value == null) {
+            setValue((CharSequence) value);
+        } else if (value instanceof char[]) {
+            setValue(new String((char[]) value));
+        } else {
+            throw new IllegalArgumentException(getMetadata().getName() + " field can not be set from class " + value.getClass().getName());
+        }
 	}
 
 
@@ -175,10 +154,10 @@ public class StringDataField extends DataField implements CharSequence{
 	 *      String, StringBuffer or Char Buffer)
 	 * @since       October 29, 2002
 	 */
-	public void setValue(CharSequence seq) {
+	void setValue(CharSequence seq) {
 		value.setLength(0);
 		if (seq != null && seq.length() > 0) {
-				value.append(seq.toString());
+		    value.append(seq.toString());
 			setNull(false);
 		} else {
 			if (this.metadata.isNullable()) {
@@ -186,7 +165,6 @@ public class StringDataField extends DataField implements CharSequence{
 			} else {
 				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
 			}
-			return;
 		}
 	}
 
