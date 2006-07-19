@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.jetel.graph.Node;
+
 /**
  * Plugin class loader is descendant of URLClassLoader and is used for particular plugins.
  * Added value is in loading classes from siblings plugins.
@@ -42,8 +44,9 @@ public class PluginClassLoader extends URLClassLoader {
 
     private PluginDescriptor[] importPlugins;
     
-    public PluginClassLoader(PluginDescriptor pluginDescriptor, URL[] urls) {
-        super(urls);
+    public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor, URL[] urls) {
+        super(urls, parent);
+        
         this.pluginDescriptor = pluginDescriptor;
         collectImports();
     }

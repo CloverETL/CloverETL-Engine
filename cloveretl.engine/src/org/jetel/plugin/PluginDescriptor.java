@@ -186,8 +186,7 @@ public class PluginDescriptor {
                     logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
                 }
             }
-            
-            classLoader = new PluginClassLoader(this, urls);
+            classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this, urls);
         }
         return classLoader;
     }
