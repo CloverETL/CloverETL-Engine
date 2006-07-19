@@ -20,13 +20,8 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collection;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
@@ -42,10 +37,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DuplicateKeyMap;
-import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -151,8 +144,6 @@ public class HashJoin extends Node {
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
-	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
-	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
     private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 
@@ -166,10 +157,8 @@ public class HashJoin extends Node {
 	private final static int SLAVE_ON_PORT = 1;
 
 	private String transformClassName;
-	private String libraryPath = null;
 
 	private RecordTransform transformation = null;
-	private DynamicJavaCode dynamicTransformation = null;
 	private String transformSource = null;
 
 	private boolean leftOuterJoin;
@@ -194,67 +183,28 @@ public class HashJoin extends Node {
 	 * @param  id              Description of the Parameter
 	 * @param  joinKeys        Description of the Parameter
 	 * @param  transformClass  Description of the Parameter
-	 */
-	public HashJoin(String id, String[] joinKeys, String transformClass) {
-		this(id,joinKeys,null,false);
-		this.transformClassName = transformClass;
-		// no outer join by default
-	}
-
-	/**
-	 *Constructor for the HashJoin object
-	 *
-	 * @param  id              Description of the Parameter
-	 * @param  joinKeys        Description of the Parameter
-	 * @param  transformClass  Description of the Parameter
-	 */
-	public HashJoin(String id, String[] joinKeys, String transform, int distincter) {
-		this(id,joinKeys,null,false);
-		this.transformSource = transform;
-		// no outer join by default
-	}
-
-
-	/**
-	 *Constructor for the HashJoin object
-	 *
-	 * @param  id              Description of the Parameter
-	 * @param  joinKeys        Description of the Parameter
-	 * @param  transformClass  Description of the Parameter
 	 * @param  leftOuterJoin   Description of the Parameter
 	 */
-	public HashJoin(String id, String[] joinKeys, RecordTransform transformClass, boolean leftOuterJoin) {
+	public HashJoin(String id, String[] joinKeys, String transform,
+			String transformClass, boolean leftOuterJoin) {
 		super(id);
 		this.joinKeys = joinKeys;
-		this.transformation = transformClass;
+		this.transformSource =transform;
+		this.transformClassName = transformClass;
 		this.leftOuterJoin = leftOuterJoin;
 		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
 	}
 
 
-	/**
-	 *Constructor for the HashJoin object
-	 *
-	 * @param  id         Description of the Parameter
-	 * @param  joinKeys   Description of the Parameter
-	 * @param  dynaTrans  Description of the Parameter
-	 */
-	public HashJoin(String id, String[] joinKeys, DynamicJavaCode dynaTrans) {
-	    this(id,joinKeys,null,false);
-		this.dynamicTransformation = dynaTrans;
-		// no outer join by default
-	}
-
-
-	/**
-	 *  Sets the leftOuterJoin attribute of the HashJoin object
-	 *
-	 * @param  outerJoin  The new leftOuterJoin value
-	 */
-	public void setLeftOuterJoin(boolean outerJoin) {
-		leftOuterJoin = outerJoin;
-	}
-
+//	/**
+//	 *  Sets the leftOuterJoin attribute of the HashJoin object
+//	 *
+//	 * @param  outerJoin  The new leftOuterJoin value
+//	 */
+//	public void setLeftOuterJoin(boolean outerJoin) {
+//		leftOuterJoin = outerJoin;
+//	}
+//
 
 	/**
 	 *  Sets the slaveOverrideKey attribute of the HashJoin object
@@ -315,39 +265,16 @@ public class HashJoin extends Node {
                                 + hashTableInitialCapacity);
             }
         }
-        if (transformation == null) {
-            if (transformClassName != null) {
-                transformation = RecordTransformFactory.loadClass(logger,
-                        transformClassName, new String[] { libraryPath });
-            } else {
-                if (transformSource
-                        .indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1) {
-                    transformation = new RecordTransformTL(logger,
-                            transformSource);
-                } else if (dynamicTransformation == null) { // transformSource
-                    // is set
-                    transformation = RecordTransformFactory.loadClassDynamic(
-                            logger, ("Transform" + getId()), transformSource,
-                            (DataRecordMetadata[]) getInMetadata().toArray(
-                                    new DataRecordMetadata[0]),
-                            (DataRecordMetadata[]) getOutMetadata().toArray(
-                                    new DataRecordMetadata[0]));
-                } else {
-                    transformation = RecordTransformFactory.loadClassDynamic(
-                            logger, dynamicTransformation);
-                }
-            }
-        }
-        transformation.setGraph(getGraph());
         // init transformation
         DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
                 .toArray(new DataRecordMetadata[0]);
         DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
                 WRITE_TO_PORT).getMetadata() };
-        if (!transformation.init(transformationParameters, inMetadata,
-                outMetadata)) {
-            throw new ComponentNotReadyException(
-                    "Error when initializing reformat function !");
+        try {
+            transformation = RecordTransformFactory.createTransform(
+            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
+        } catch(Exception e) {
+            throw new ComponentNotReadyException(this, e);
         }
     }
 
@@ -533,50 +460,19 @@ public class HashJoin extends Node {
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		HashJoin join;
-		DynamicJavaCode dynaTransCode = null;
 
 		try {
-			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
-				join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
-				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
-					join.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
-				}
-			} else {
-				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
-					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
-				}else{
-					// do we have child node wich Java source code ?
-				    try {
-				        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-				    } catch(Exception ex) {
-				        //do nothing
-				    }
-				}
-				
-				if (dynaTransCode != null) {
-					join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-							xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-							dynaTransCode);
-				} else { //last chance to find reformat code is in transform attribute
-					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-						join = new HashJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), 0);
-					} else {
-						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-					}
-				}
-			}
+            join = new HashJoin(
+                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+                    xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE,false));
 
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
-			}
-			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
-				join.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
@@ -593,14 +489,6 @@ public class HashJoin extends Node {
 			return null;
 		}
 	}
-
-	/**
-	 * @param string
-	 */
-	private void setLibraryPath(String libraryPath) {
-		this.libraryPath = libraryPath;
-	}
-
 	/**
 	 *  Description of the Method
 	 *

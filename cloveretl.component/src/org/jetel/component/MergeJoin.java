@@ -20,13 +20,8 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.nio.ByteBuffer;
-import java.util.Collection;
 import java.util.Enumeration;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -42,9 +37,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.CodeParser;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -143,8 +136,6 @@ public class MergeJoin extends Node {
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
-	private static final String XML_LIBRARYPATH_ATTRIBUTE = "libraryPath";
-	private static final String XML_JAVASOURCE_ATTRIBUTE = "javaSource";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	
 	/**  Description of the Field */
@@ -159,11 +150,9 @@ public class MergeJoin extends Node {
 	private final static int TEMPORARY = 1;
 
 	private String transformClassName;
-	private String libraryPath = null;
 	private String transformSource = null;
 
 	private RecordTransform transformation = null;
-	private DynamicJavaCode dynamicTransformation = null;
 
 	private boolean leftOuterJoin = false;
 	private boolean fullOuterJoin = false;
@@ -190,60 +179,15 @@ public class MergeJoin extends Node {
 	 * @param  id              id of component
 	 * @param  joinKeys        field names composing key
 	 * @param  transformClass  class (name) to be used for transforming data
+	 * @param  leftOuterJoin   indicates, whether to perform left outer join
 	 */
-	public MergeJoin(String id, String[] joinKeys, String transformClass) {
-		super(id);
-		this.joinKeys = joinKeys;
-		this.transformClassName = transformClass;
-		this.leftOuterJoin = false;
-		// no outer join
-	}
-
-	/**
-	 *  Constructor for the SortedJoin object
-	 *
-	 * @param  id              id of component
-	 * @param  joinKeys        field names composing key
-	 * @param  transformClass  class (name) to be used for transforming data
-	 */
-	public MergeJoin(String id, String[] joinKeys, String transform, boolean distincter) {
+	public MergeJoin(String id, String[] joinKeys, String transform,
+			String transformClass, boolean leftOuterJoin) {
 		super(id);
 		this.joinKeys = joinKeys;
 		this.transformSource = transform;
-		this.leftOuterJoin = false;
-		// no outer join
-	}
-
-	/**
-	 *  Constructor for the SortedJoin object
-	 *
-	 * @param  id              id of component
-	 * @param  joinKeys        field names composing key
-	 * @param  transformClass  class (name) to be used for transforming data
-	 * @param  leftOuterJoin   indicates, whether to perform left outer join
-	 */
-	public MergeJoin(String id, String[] joinKeys, RecordTransform transformClass, boolean leftOuterJoin) {
-		super(id);
-		this.joinKeys = joinKeys;
-		this.transformation = transformClass;
+		this.transformClassName = transformClass;
 		this.leftOuterJoin = leftOuterJoin;
-	}
-
-	public MergeJoin(String id, String[] joinKeys, DynamicJavaCode dynaTransCode) {
-		super(id);
-		this.joinKeys = joinKeys;
-		this.dynamicTransformation=dynaTransCode;
-		this.leftOuterJoin = false;
-		// no outer join
-	}
-	
-	/**
-	 *  Sets on/off leftOuterJoin indicator
-	 *
-	 * @param  outerJoin  The new leftOuterJoin value
-	 */
-	public void setLeftOuterJoin(boolean outerJoin) {
-		leftOuterJoin = outerJoin;
 	}
 
 	/**
@@ -611,27 +555,15 @@ public class MergeJoin extends Node {
 		recordKeys[0].init();
 		recordKeys[1].init();
 
-		if (transformation == null) {
-			if (transformClassName != null) {
-                transformation=RecordTransformFactory.loadClass(logger,transformClassName,new String[] {libraryPath});
-			} else {
-                if (transformSource.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID)!=-1){
-                    transformation=new RecordTransformTL(logger,transformSource);
-                }else if(dynamicTransformation == null) { // transformSource is set
-                    transformation=RecordTransformFactory.loadClassDynamic(logger,("Transform"+ getId()),transformSource,
-                            (DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]), (DataRecordMetadata[]) getOutMetadata().toArray(new DataRecordMetadata[0]));
-                }else{
-                    transformation=RecordTransformFactory.loadClassDynamic(logger,dynamicTransformation);
-                }
-		}
-        }
-        transformation.setGraph(getGraph());
 		// init transformation
 		DataRecordMetadata[] inMetadata =(DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]);
         DataRecordMetadata[] outMetadata=new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
-		if (!transformation.init(transformationParameters,inMetadata, outMetadata)) {
-			throw new ComponentNotReadyException("Error when initializing reformat function !");
-		}
+        try {
+            transformation = RecordTransformFactory.createTransform(
+            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
+        } catch(Exception e) {
+            throw new ComponentNotReadyException(this, e);
+        }
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
@@ -701,47 +633,18 @@ public class MergeJoin extends Node {
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		MergeJoin join;
-		DynamicJavaCode dynaTransCode = null;
 
 		try {
-			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)){
-				join = new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
-				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
-					join.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
-				}
-			}else{
-				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
-					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
-				}else{
-					// do we have child node wich Java source code ?
-					try {
-					    dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-					} catch(Exception ex) {
-				        //do nothing
-				    }				}
-				if (dynaTransCode != null) {
-					join = new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-							xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-							dynaTransCode);
-				} else { //last chance to find reformat code is in transform attribute
-					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-						join = new MergeJoin(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-								xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-								xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true); 
-					} else {
-						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-					}
-				}
-			}
+            join = new MergeJoin(
+                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+                    xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE,false));
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
-			}
-			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
-				join.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FULLOUTERJOIN_ATTRIBUTE)) {
 				join.setFullOuterJoin(xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE));
@@ -754,13 +657,6 @@ public class MergeJoin extends Node {
 			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
-	}
-
-	/**
-	 * @param string
-	 */
-	private void setLibraryPath(String libraryPath) {
-		this.libraryPath = libraryPath;
 	}
 
 	/**  Description of the Method */
