@@ -21,11 +21,8 @@ package org.jetel.interpreter;
 
 import java.util.Arrays;
 
-import org.apache.xpath.functions.FuncId;
 import org.jetel.data.Numeric;
 import org.jetel.data.primitive.CloverInteger;
-
-import com.sun.jdi.LocalVariable;
 
 /**
  * @author dpavlis
