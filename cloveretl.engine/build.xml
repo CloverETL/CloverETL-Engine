@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="us-ascii"?>
 <project name="cloveretl.engine" default="build" basedir=".">
-
+	
+	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
+	  <classpath>
+	    <pathelement location="lib/ant-contrib.jar"/>
+	  </classpath>
+	</taskdef>
+	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/doc"/>
@@ -8,48 +14,18 @@
 	<property name="dir.src" value="src"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
 	
-	<property name="cloveretl.connection" value="${basedir}/../cloveretl.connection"/>
-	<property name="cloveretl.sequence" value="${basedir}/../cloveretl.sequence"/>
-	<property name="cloveretl.lookup" value="${basedir}/../cloveretl.lookup"/>
-	<property name="cloveretl.component" value="${basedir}/../cloveretl.component.public"/>
+	<!--load external properties-->
+	<property file="build.properties"/>
 		
-	<!-- =========================== LIBRARIES ============================= -->
-	<property name="jdk.home" value="C:/Program Files (x86)/Java/j2sdk1.4.2_08"/>
-	<fileset id="tools" file="${jdk.home}/lib/tools.jar"/>
-	<fileset id="commons-logging" file="c:/Martin/install/eclipse/commons-logging.jar"/>
-	<fileset id="junit" file="c:/Martin/install/junit.jar"/>
-	
 	<!-- =========================== TARGETS ============================== -->
-	<target name="build" depends="compile,package,connection,sequence,lookup,component" description="Compiles sources and creates a JAR file">
-			
+	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
+		<foreach list="${plugin.list}" target="plugin.build" param="plugin.dir"/>
 	</target>
 
-	<target name="connection" description="Build clovetl.connection plugin.">
-		<ant dir="${cloveretl.connection}" inheritAll="false">
-			<property name="dir.dist" value="${dir.dist}"/>
-			<property name="major_version" value="${major_version}"/>
-			<property name="minor_version" value="${minor_version}"/>
-		</ant>
-	</target>
 
-	<target name="sequence" description="Build clovetl.sequence plugin.">
-		<ant dir="${cloveretl.sequence}" inheritAll="false">
-			<property name="dir.dist" value="${dir.dist}"/>
-			<property name="major_version" value="${major_version}"/>
-			<property name="minor_version" value="${minor_version}"/>
-		</ant>
-	</target>
-
-	<target name="lookup" description="Build clovetl.lookup plugin.">
-		<ant dir="${cloveretl.lookup}" inheritAll="false">
-			<property name="dir.dist" value="${dir.dist}"/>
-			<property name="major_version" value="${major_version}"/>
-			<property name="minor_version" value="${minor_version}"/>
-		</ant>
-	</target>
-
-	<target name="component" description="Build clovetl.component plugin.">
-		<ant dir="${cloveretl.component}" inheritAll="false">
+	<target name="plugin.build" description="Private target for building usage. Don't call direct.">
+		<echo message="Building plugin - ${plugin.dir}"/>
+		<ant dir="${plugin.dir}" inheritAll="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
@@ -98,8 +74,8 @@
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}" target="1.4" source="1.4">
 			<classpath>
-				<fileset refid="tools"/>			
-				<fileset refid="commons-logging"/>
+				<pathelement path="${tools}"/>
+				<pathelement path="${commons-logging}"/>
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
