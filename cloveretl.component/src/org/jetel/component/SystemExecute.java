@@ -208,12 +208,12 @@ public class SystemExecute extends Node{
 				}
 				if (stoped) Thread.sleep(10000);
 				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
-				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
-				if (getData!=null && !(getData.getResultCode()==Node.RESULT_OK)) {
+				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) sendData.interrupt();
+				if (getData!=null && getData.getResultCode()!=Node.RESULT_OK) {
 					resultMsg = getData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
-				if (sendData!=null && !(sendData.getResultCode()==Node.RESULT_OK)) {
+				if (sendData!=null && sendData.getResultCode()!=Node.RESULT_OK) {
 					resultMsg = sendData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
