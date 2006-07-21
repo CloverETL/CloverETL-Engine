@@ -97,7 +97,7 @@ public class Plugins {
                         continue;
                     }
                     pluginDescriptors.put(pluginDescriptor.getId(), pluginDescriptor);
-                    logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.");
+                    logger.debug("Plugin " + pluginDescriptor.getId() + " loaded.\n" + pluginDescriptor.toString());
                 }
             }
         }

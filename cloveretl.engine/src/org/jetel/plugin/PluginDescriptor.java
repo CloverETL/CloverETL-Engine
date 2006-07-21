@@ -59,6 +59,11 @@ public class PluginDescriptor {
     private String version;
     
     /**
+     * Name of provider.
+     */
+    private String providerName;
+    
+    /**
      * Name of plugin root class.
      */
     private String pluginClassName;
@@ -144,6 +149,14 @@ public class PluginDescriptor {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getProviderName() {
+        return providerName;
+    }
+
+    public void setProviderName(String providerName) {
+        this.providerName = providerName;
     }
 
     public String getPluginClassName() {
@@ -282,5 +295,22 @@ public class PluginDescriptor {
             }
         }
     }
+    
+    public String toString() {
+        StringBuffer ret = new StringBuffer();
+        
+        ret.append("\tid - " + getId() + "\n");
+        ret.append("\tversion - " + getVersion() + "\n");
+        ret.append("\tprovider-name - " + getProviderName() + "\n");
+        
+        for(Iterator it = extensions.iterator(); it.hasNext();) {
+            Extension extension = (Extension) it.next();
+            
+            ret.append("\t\tpoint-id  - " + extension.getPointId() + " - " + extension.getParameters() + "\n" );
+        }
+        
+        return ret.toString();
+    }
+
 }
 
