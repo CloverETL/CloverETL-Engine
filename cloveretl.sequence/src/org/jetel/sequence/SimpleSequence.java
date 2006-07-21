@@ -222,13 +222,19 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	static public SimpleSequence fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
+        try {
 		return new SimpleSequence(
                 xattribs.getString(XML_ID_ATTRIBUTE),
 				xattribs.getString(XML_NAME_ATTRIBUTE),
 				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
-				Integer.parseInt(xattribs.getString(XML_START_ATTRIBUTE)),
-				Integer.parseInt(xattribs.getString(XML_STEP_ATTRIBUTE)),
-				Integer.parseInt(xattribs.getString(XML_CACHED_ATTRIBUTE)));
+				xattribs.getInteger(XML_START_ATTRIBUTE),
+                xattribs.getInteger(XML_STEP_ATTRIBUTE),
+                xattribs.getInteger(XML_CACHED_ATTRIBUTE));
+        }catch(Exception ex){
+            logger.fatal("while creating SimpleSequence ["+
+                    xattribs.getString(XML_ID_ATTRIBUTE,"unknown id")+"]",ex);
+            return null;
+        }
 		
 	}
 
