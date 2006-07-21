@@ -41,6 +41,8 @@ public class PluginDescriptionBuilder {
 
     private static final String VERSION_ATTR = "version";
 
+    private static final String PROVIDER_NAME = "provider-name";
+
     private static final String CLASS_ATTR = "class";
 
     private static final String RUNTIME_ELEMENT = "runtime";
@@ -95,6 +97,11 @@ public class PluginDescriptionBuilder {
         }
         plugin.setVersion(pluginElement.getAttribute(VERSION_ATTR));
         
+        //provider-name attribute
+        if(!pluginElement.hasAttribute(PROVIDER_NAME)) {
+            plugin.setProviderName(pluginElement.getAttribute(PROVIDER_NAME));
+        }
+
         //class attribute
         plugin.setPluginClassName(pluginElement.getAttribute(CLASS_ATTR));
         
