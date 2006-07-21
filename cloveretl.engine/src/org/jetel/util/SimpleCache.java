@@ -23,8 +23,10 @@
  */
 package org.jetel.util;
 
-import java.util.LinkedHashMap;
+import java.awt.Stroke;
 import java.util.*;
+import java.util.Map.Entry;
+
 
 /**
  * Simple cached based on LinkedHashMap.<br>
@@ -36,20 +38,22 @@ import java.util.*;
  * @since  24.11.2005
  *
  */
-public class SimpleCache extends LinkedHashMap {
+public class SimpleCache {
     
-    private static final int DEFAULT_MAX_ENTRIES = 100;
+    private static final int DEFAULT_MAX_ENTRIES = 15;
     private static final boolean ACCESS_ORDER=true;
     
-    protected int max_entries;
+    protected LinkedHashMap map;
+    protected DuplicateKeyMap keyMap = null;
+    
+    protected transient int totalSize = 0;
 
     /**
      * Creates cache with initial size of 16 entries.
      * Maximum size is defaulted to 100.
      */
     public SimpleCache(){
-        super(16,(float)0.75,ACCESS_ORDER);
-        max_entries=DEFAULT_MAX_ENTRIES;
+    	map = new StoreMap();
     }
     
     /**
@@ -59,8 +63,7 @@ public class SimpleCache extends LinkedHashMap {
      * @param initialCapacity
      */
     public SimpleCache(int initialCapacity){
-        super(initialCapacity,(float)0.75,ACCESS_ORDER);
-        max_entries= (initialCapacity > DEFAULT_MAX_ENTRIES ? initialCapacity : DEFAULT_MAX_ENTRIES);
+    	map = new StoreMap(initialCapacity);
     }
     
     /**
@@ -71,14 +74,63 @@ public class SimpleCache extends LinkedHashMap {
      * @param maxCapacity
      */
     public SimpleCache(int initialCapacity,int maxCapacity){
-        super((initialCapacity > 16 ? initialCapacity : 16),(float)0.75,ACCESS_ORDER);
-        max_entries= maxCapacity;
+    	map = new StoreMap(initialCapacity,maxCapacity);
+    }
+    
+    public void enableDuplicity(){
+    	keyMap = new DuplicateKeyMap(map);
+    }
+    
+    public Object get(Object key){
+    	return (keyMap == null ? map.get(key) : keyMap.get(key) );
+    }
+    
+    public Object getNext(){
+    	return (keyMap == null ? null :keyMap.getNext() );
+    }
+    
+    public Object put(Object key, Object value){
+		totalSize++;
+      	if (totalSize<((StoreMap)map).getMaxEntries()){
+    		return (keyMap == null ? 
+    				map.put(key,value) : keyMap.put(key,value) );
+    	}else if (keyMap==null){
+    		return map.put(key,value);
+    	}
+     	map.put(" "," ");
+    	map.remove(" ");
+    	totalSize = keyMap.totalSize();
+    	totalSize++;
+    	return keyMap.put(key,value);
     }
     
     
-    protected boolean removeEldestEntry(Map.Entry eldest) {
-       return size() > max_entries;
+    class StoreMap extends LinkedHashMap{
+    	
+    	int max_entries;
+
+    	StoreMap(){
+            super(16,(float)0.75,ACCESS_ORDER);
+            max_entries=DEFAULT_MAX_ENTRIES;
+    	}
+    	
+    	StoreMap(int initialCapacity){
+            super(initialCapacity,(float)0.75,ACCESS_ORDER);
+            max_entries= (initialCapacity > DEFAULT_MAX_ENTRIES ? initialCapacity : DEFAULT_MAX_ENTRIES);
+        }
+    	
+    	StoreMap(int initialCapacity,int maxCapacity){
+            super((initialCapacity > 16 ? initialCapacity : 16),(float)0.75,ACCESS_ORDER);
+            max_entries= maxCapacity;
+        }
+    	
+        protected boolean removeEldestEntry(Map.Entry eldest) {
+            return totalSize > max_entries;
+         }
+     	
+        int getMaxEntries(){
+        	return max_entries;
+        }
     }
-
-
 }
+
