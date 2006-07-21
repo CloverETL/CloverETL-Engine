@@ -19,10 +19,13 @@
 */
 package org.jetel.util;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Map.Entry;
 
 import org.jetel.exception.NotFoundException;
 import org.jetel.graph.TransformationGraph;
@@ -182,6 +185,21 @@ public class ComponentXMLAttributes {
 		}
 	}
 
+    /**
+     * Sets value of specified attribute
+     * 
+     * @param key   attribute name
+     * @param value attribute value
+     */
+    public void setString(String key,String value) {
+        try {
+            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
+            attrib.setNodeValue(value);
+        } catch (Exception ex) {
+            throw new NotFoundException("Attribute " + key + " not found!");
+        }
+    }
+    
 
 	/**
 	 *  Returns the int value of specified XML attribute
@@ -226,6 +244,21 @@ public class ComponentXMLAttributes {
 			return defaultValue;
 		}
 	}
+    
+    /**
+     * Sets value of specified attribute
+     * 
+     * @param key   attribute name
+     * @param value value to be set
+     */
+    public void setInteger(String key,int value) {
+        try {
+            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
+            attrib.setNodeValue(String.valueOf(value));
+        } catch (Exception ex) {
+            throw new NotFoundException("Attribute " + key + " not found!");
+        }
+    }
 
 
 	/**
@@ -262,6 +295,21 @@ public class ComponentXMLAttributes {
 		}
 
 	}
+
+    /**
+     * Sets value of specified attribute
+     * 
+     * @param key   attribute name
+     * @param value value to be set
+     */
+    public void setBoolean(String key,boolean value) {
+        try {
+            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
+            attrib.setNodeValue(String.valueOf(value));
+        } catch (Exception ex) {
+            throw new NotFoundException("Attribute " + key + " not found!");
+        }
+    }
 
 
 	/**
@@ -309,6 +357,22 @@ public class ComponentXMLAttributes {
 	}
 
 
+    /**
+     * Sets value of specified attribute
+     * 
+     * @param key   attribute name
+     * @param value value to be set
+     */
+    public void setDouble(String key,double value) {
+        try {
+            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
+            attrib.setNodeValue(String.valueOf(value));
+        } catch (Exception ex) {
+            throw new NotFoundException("Attribute " + key + " not found!");
+        }
+    }
+
+    
 	/**
 	 *  Checks whether specified attribute exists (XML node has such attribute defined)
 	 *
@@ -426,6 +490,21 @@ public class ComponentXMLAttributes {
 	    return properties;
 	}
 
+    public void Properties2Attributes(Properties properties){
+        org.w3c.dom.Node node;
+        for (Iterator iter=properties.entrySet().iterator();iter.hasNext();){
+            Map.Entry entry=(Map.Entry)iter.next();
+            // check whether attribute of certain name already exists
+            if ((node=attributes.getNamedItem((String)entry.getKey())) != null){
+               node.setNodeValue((String)entry.getValue()); // just set the value
+            }else{
+                // create new attribute
+                org.w3c.dom.Attr attr=node.getOwnerDocument().createAttribute((String)entry.getKey());
+                attr.setValue((String)entry.getValue());
+                node.appendChild(attr);
+            }
+        }
+    }
 	
 	/**
 	 * Replaces references to parameters in string with parameters' values.
