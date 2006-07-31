@@ -23,7 +23,6 @@
  */
 package org.jetel.util;
 
-import java.awt.Stroke;
 import java.util.*;
 import java.util.Map.Entry;
 
@@ -40,13 +39,15 @@ import java.util.Map.Entry;
  */
 public class SimpleCache {
     
-    private static final int DEFAULT_MAX_ENTRIES = 15;
+    private static final int DEFAULT_MAX_ENTRIES = 100;
     private static final boolean ACCESS_ORDER=true;
     
     protected LinkedHashMap map;
     protected DuplicateKeyMap keyMap = null;
     
     protected transient int totalSize = 0;
+    
+    private Iterator iterator;
 
     /**
      * Creates cache with initial size of 16 entries.
@@ -91,16 +92,16 @@ public class SimpleCache {
     
     public Object put(Object key, Object value){
 		totalSize++;
-      	if (totalSize<((StoreMap)map).getMaxEntries()){
+      	if (totalSize<=((StoreMap)map).getMaxEntries()){
     		return (keyMap == null ? 
     				map.put(key,value) : keyMap.put(key,value) );
     	}else if (keyMap==null){
     		return map.put(key,value);
     	}
-     	map.put(" "," ");
-    	map.remove(" ");
-    	totalSize = keyMap.totalSize();
-    	totalSize++;
+      	iterator = map.entrySet().iterator();
+      	Entry eldest = (Entry)iterator.next();
+      	map.remove(eldest.getKey());
+    	totalSize = totalSize - ((ArrayList)eldest.getValue()).size();
     	return keyMap.put(key,value);
     }
     
@@ -125,7 +126,8 @@ public class SimpleCache {
         }
     	
         protected boolean removeEldestEntry(Map.Entry eldest) {
-            return totalSize > max_entries;
+//            return totalSize > max_entries;
+        	return size() > max_entries;
          }
      	
         int getMaxEntries(){
