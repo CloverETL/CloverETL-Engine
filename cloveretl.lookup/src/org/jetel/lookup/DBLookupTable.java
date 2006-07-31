@@ -80,8 +80,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected int maxCached;
 	protected HashKey cacheKey;
 	
-//	public int fromCache = 0;
-	
 	
   
 	/**
@@ -148,7 +146,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        cacheKey.setDataRecord(keyRecord);
 	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
 	        if (data!=null){
-//	        	fromCache++;
 	            return data;
 	        }
 	    }
@@ -195,17 +192,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			    resultCache.put(hashKey, storeRecord);
 		    }
 	    }else {
-	    	if (!fetch()) {
-	    		dbDataRecord = null;
-	    	}
-//	    	dbDataRecord = getNext();
+	    	return getNext();
 	    }
 	} catch (SQLException ex) {
 	    throw new RuntimeException(ex.getMessage());
 	}
 	
-	return (resultCache==null ? 
-			dbDataRecord : (DataRecord)resultCache.get(cacheKey) );
+	return (DataRecord)resultCache.get(cacheKey) ;
 }
 
 	/**
@@ -265,15 +258,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 				    resultCache.put(keyStr, storeRecord);
 			    }
 		    }else {
-		    	dbDataRecord = getNext();
+		    	return getNext();
 		    }
 	    }
 	    catch (SQLException ex) {
 	        throw new RuntimeException(ex.getMessage());
 	    }
 
-	    return (resultCache==null ? 
-				dbDataRecord : (DataRecord)resultCache.get(cacheKey) );
+	    return (DataRecord)resultCache.get(cacheKey) ;
 	}
 
 	/**
