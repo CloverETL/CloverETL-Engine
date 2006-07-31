@@ -77,11 +77,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 //	protected Map resultCache;
 	protected SimpleCache resultCache;
 	
-	protected SimpleCache testCache;
-	private Integer nr = new Integer(0);
-	
 	protected int maxCached;
 	protected HashKey cacheKey;
+	
+//	public int fromCache = 0;
 	
 	
   
@@ -149,6 +148,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        cacheKey.setDataRecord(keyRecord);
 	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
 	        if (data!=null){
+//	        	fromCache++;
 	            return data;
 	        }
 	    }
@@ -188,21 +188,24 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        
 	    //execute query
 	    resultSet = pStatement.executeQuery();
-	    while (fetch()) {
-	    	DataRecord storeRecord=dbDataRecord.duplicate();
-		    resultCache.put(new HashKey(lookupKey, keyRecord), storeRecord);
+	    if (resultCache!=null){
+		    HashKey hashKey = new HashKey(lookupKey, keyRecord.duplicate());
+		    while (fetch()) {
+		    	DataRecord storeRecord=dbDataRecord.duplicate();
+			    resultCache.put(hashKey, storeRecord);
+		    }
+	    }else {
+	    	if (!fetch()) {
+	    		dbDataRecord = null;
+	    	}
+//	    	dbDataRecord = getNext();
 	    }
 	} catch (SQLException ex) {
 	    throw new RuntimeException(ex.getMessage());
 	}
 	
-//	// if cache exists, add this newly found to cache
-//	if (resultCache!=null){
-//	    DataRecord storeRecord=dbDataRecord.duplicate();
-//	    resultCache.put(new HashKey(lookupKey, storeRecord), storeRecord);
-//	}
-	
-	return (DataRecord)resultCache.get(cacheKey);
+	return (resultCache==null ? 
+			dbDataRecord : (DataRecord)resultCache.get(cacheKey) );
 }
 
 	/**
@@ -256,19 +259,21 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        pStatement.setString(1, keyStr);
 	        //execute query
 	        resultSet = pStatement.executeQuery();
-	        if (!fetch()) {
-	            return null;
-	        }
+		    if (resultCache!=null){
+			    while (fetch()) {
+			    	DataRecord storeRecord=dbDataRecord.duplicate();
+				    resultCache.put(keyStr, storeRecord);
+			    }
+		    }else {
+		    	dbDataRecord = getNext();
+		    }
 	    }
 	    catch (SQLException ex) {
 	        throw new RuntimeException(ex.getMessage());
 	    }
-	    if (resultCache!=null){
-	        DataRecord storeRecord=dbDataRecord.duplicate();
-	        resultCache.put(keyStr, storeRecord);
-	    }
-	    
-		return dbDataRecord;
+
+	    return (resultCache==null ? 
+				dbDataRecord : (DataRecord)resultCache.get(cacheKey) );
 	}
 
 	/**
@@ -302,16 +307,19 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@exception  JetelException  Description of the Exception
 	 */
 	public DataRecord getNext() {
-		return (DataRecord)((SimpleCache)resultCache).getNext();
-//        try {
-//            if (!fetch()) {
-//                return null;
-//            } else {
-//                return dbDataRecord;
-//            }
-//        } catch (SQLException ex) {
-//            throw new RuntimeException(ex.getMessage());
-//        }
+		if (resultCache!=null){
+			return (DataRecord)resultCache.getNext();
+		}else {
+	        try {
+	            if (!fetch()) {
+	                return null;
+	            } else {
+	                return dbDataRecord;
+	            }
+	        } catch (SQLException ex) {
+	            throw new RuntimeException(ex.getMessage());
+	        }
+		}
     }
 
     /* (non-Javadoc)
@@ -366,8 +374,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
             resultCache.enableDuplicity();
-            this.testCache = new SimpleCache(maxCached);
-            
+             
         }
         // first try to connect to db
         try {
