@@ -125,6 +125,7 @@ public class SystemExecute extends Node{
 	}
 
 	public void run() {
+		resultCode = Node.RESULT_OK;
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
@@ -210,11 +211,11 @@ public class SystemExecute extends Node{
 				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
 				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) sendData.interrupt();
 				if (getData!=null && getData.getResultCode()!=Node.RESULT_OK) {
-					resultMsg = getData.getResultMsg();
+					resultMsg = resultMsg + "\n" + getData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
 				if (sendData!=null && sendData.getResultCode()!=Node.RESULT_OK) {
-					resultMsg = sendData.getResultMsg();
+					resultMsg = resultMsg + "\n" + sendData.getResultMsg();
 					resultCode = Node.RESULT_ERROR;
 				}
 	         }
@@ -229,15 +230,15 @@ public class SystemExecute extends Node{
 			return;
 		}
 		broadcastEOF();
-		if (runIt) {
-			if (exitValue==0) resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		if (exitValue==0)
-			resultCode = Node.RESULT_OK;
-		else {
+		if (!runIt) {
+			resultMsg = resultMsg + "\n" + "STOPPED";
 			resultCode=Node.RESULT_ERROR;
+		}
+		if (exitValue!=0){
+			resultCode = Node.RESULT_ERROR;
+		}
+		if (resultCode==Node.RESULT_OK){
+			resultMsg = "OK";
 		}
 	}
 
