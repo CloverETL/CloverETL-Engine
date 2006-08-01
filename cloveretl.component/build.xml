@@ -14,7 +14,7 @@
 	<property name="lookup.dist.default" value="${basedir}/../cloveretl.lookup/dist/plugins/org.jetel.lookup/cloveretl.lookup.jar"/>
 	
 	<!-- =========================== LIBRARIES ============================= -->
-	<property name="jdk.home" value="C:/Program Files (x86)/Java/j2sdk1.4.2_08"/>
+	<property name="jdk.home" value="C:/Program Files (x86)/Java/jdk1.5.0_04"/>
 	<fileset id="tools" file="${jdk.home}/lib/tools.jar"/>
 	<fileset id="commons-logging" file="c:/Martin/install/eclipse/commons-logging.jar"/>
 	<fileset id="junit" file="c:/Martin/install/junit.jar"/>
@@ -82,7 +82,7 @@
 		
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
-			target="1.4" source="1.4" 
+			target="1.5" source="1.5" 
 			classpath="${engine.dist};${connection.dist};${lookup.dist}">
 			<classpath>
 				<fileset refid="tools"/>			
