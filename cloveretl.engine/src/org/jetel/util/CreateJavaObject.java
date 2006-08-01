@@ -116,8 +116,8 @@ public class CreateJavaObject{
 				someMethod = classDefinition.getMethod(aMethodName, parameterTypes);
 				result = someMethod.invoke(actOnObject, argumentsMethod);
 			} else {
-				someMethod = classDefinition.getMethod(aMethodName, null);
-				result = someMethod.invoke(actOnObject, null);
+				someMethod = classDefinition.getMethod(aMethodName, (Class[]) null);
+				result = someMethod.invoke(actOnObject, (Object[]) null);
 			}
 	   } catch (NoSuchMethodException e) {
 		   logger.error(e);
