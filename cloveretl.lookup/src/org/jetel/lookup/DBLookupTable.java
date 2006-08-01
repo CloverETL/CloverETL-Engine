@@ -43,9 +43,7 @@ import org.jetel.util.SimpleCache;
 /**
  *  Database table/SQLquery based lookup table which gets data by performing SQL
  *  query. Caching of found values can be provided - if the constructor with
- *  <code>numCached</code> parameter is used. The caching is performed by WeakHashMap so
- * it can happend that even the frequently used entry (key-value pair) is garbage collected - thus
- * removed from cache.
+ *  <code>numCached</code> parameter is used. 
  * 
  *  Example using DBLookupTable:
  * 
@@ -74,13 +72,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected CopySQLData[] keyTransMap;
 	protected DataRecord dbDataRecord;
 	protected DataRecord keyDataRecord = null;
-//	protected Map resultCache;
 	protected SimpleCache resultCache;
 	
 	protected int maxCached;
 	protected HashKey cacheKey;
 	
-	
+	protected int cacheNumber = 0;
+	protected int totalNumber = 0;
   
 	/**
 	 *  Constructor for the DBLookupTable object
@@ -141,11 +139,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
 	public DataRecord get(DataRecord keyRecord) {
+		totalNumber++;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
 	        cacheKey.setDataRecord(keyRecord);
 	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
 	        if (data!=null){
+	        	cacheNumber++;
 	            return data;
 	        }
 	    }
@@ -185,6 +185,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        
 	    //execute query
 	    resultSet = pStatement.executeQuery();
+	    //put found records to cache
 	    if (resultCache!=null){
 		    HashKey hashKey = new HashKey(lookupKey, keyRecord.duplicate());
 		    while (fetch()) {
@@ -197,7 +198,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	} catch (SQLException ex) {
 	    throw new RuntimeException(ex.getMessage());
 	}
-	
+
 	return (DataRecord)resultCache.get(cacheKey) ;
 }
 
@@ -209,6 +210,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(Object keys[]) {
+		totalNumber++;
 		try {
 			// set up parameters for query
 			// statement uses indexing from 1
@@ -238,9 +240,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@return                     found DataRecord or NULL
 	 */
 	public DataRecord get(String keyStr) {
+		totalNumber++;
+	    // if cached, then try to query cache first
 	    if (resultCache!=null){
 	        DataRecord data=(DataRecord)resultCache.get(keyStr);
 	        if (data!=null){
+	        	cacheNumber++;
 	            return data;
 	        }
 	    }
@@ -252,6 +257,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        pStatement.setString(1, keyStr);
 	        //execute query
 	        resultSet = pStatement.executeQuery();
+		    //put found records to cache
 		    if (resultCache!=null){
 			    while (fetch()) {
 			    	DataRecord storeRecord=dbDataRecord.duplicate();
@@ -264,7 +270,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    catch (SQLException ex) {
 	        throw new RuntimeException(ex.getMessage());
 	    }
-
 	    return (DataRecord)resultCache.get(cacheKey) ;
 	}
 
@@ -325,6 +330,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
      * the first record.
      */
     public int getNumFound() {
+    	if (resultCache!=null){
+    		return resultCache.getNumFound();
+    	}
         if (resultSet != null) {
             try {
                 int curRow=resultSet.getRow();
@@ -474,4 +482,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     public boolean checkConfig() {
         return true;
     }
+
+	public int getCacheNumber() {
+		return cacheNumber;
+	}
+
+	public int getTotalNumber() {
+		return totalNumber;
+	}
 }
