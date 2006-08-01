@@ -48,6 +48,7 @@ public class SimpleCache {
     
     protected Iterator iterator;
     protected Entry eldest;
+    protected Object savedKey;
 
     /**
      * Creates cache with initial size of 16 entries.
@@ -74,7 +75,7 @@ public class SimpleCache {
      * equal to specified parameters
      * 
      * @param initialCapacity
-     * @param maxCapacity
+     * @param maxCapacity		
      */
     public SimpleCache(int initialCapacity,int maxCapacity){
     	map = new StoreMap(initialCapacity,maxCapacity);
@@ -95,6 +96,7 @@ public class SimpleCache {
      * @return first entry upon the given key
      */
     public Object get(Object key){
+    	savedKey = key;
     	return (keyMap == null ? map.get(key) : keyMap.get(key) );
     }
     
@@ -116,6 +118,7 @@ public class SimpleCache {
      * @return
      */
     public Object put(Object key, Object value){
+    	savedKey = key;
 		totalSize++;
       	if (totalSize<=maxSize){
     		return (keyMap == null ? 
@@ -133,7 +136,16 @@ public class SimpleCache {
 //		return (keyMap == null ? map.put(key,value) : keyMap.put(key,value) );
    }
     
-    
+    /**
+     * @return number of records found for last used key
+     */
+    public int getNumFound(){
+    	if (keyMap==null){
+    		return map.containsKey(savedKey) ? 1 : 0; 
+    	}else{
+    		return keyMap.getNumFound();
+    	}
+    }
     /**
      * Class for storing limited numbers of entries
      * 
