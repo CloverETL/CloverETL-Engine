@@ -231,6 +231,15 @@ public class PluginDescriptor {
         return prerequisites;
     }
     
+    public void checkDependences() {
+        for(Iterator it = prerequisites.iterator(); it.hasNext();) {
+            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+            if(Plugins.getPluginDescriptor(prerequisite.getPluginId()) == null) {
+                logger.error("Plugin " + getId() + " depend on unknown plugin " + prerequisite.getPluginId());
+            }
+        }
+    }
+
     /**
      * Activate this plugin. Method registers this plugin description in Plugins class as active plugin.
      */
@@ -251,7 +260,10 @@ public class PluginDescriptor {
     protected void activate() {
         //first, we activate all prerequisites plugins
         for(Iterator it = getPrerequisites().iterator(); it.hasNext();) {
-            Plugins.activatePlugin(((PluginPrerequisite) it.next()).pluginId);
+            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+            if(!Plugins.isActive(prerequisite.getPluginId())) {
+                Plugins.activatePlugin(prerequisite.pluginId);
+            }
         }
         isActive = true;
         instantiatePlugin();
