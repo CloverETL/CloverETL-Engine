@@ -117,8 +117,9 @@ public class Plugins {
     }
     
     private static void checkDependences() {
-        // TODO Auto-generated method stub
-        
+        for(Iterator it = pluginDescriptors.values().iterator(); it.hasNext();) {
+            ((PluginDescriptor) it.next()).checkDependences();
+        }
     }
 
     public static File getPluginDirectory() {
@@ -170,4 +171,12 @@ public class Plugins {
         pluginDescriptor.deactivate();
     }
 
+    /**
+     * Checks whether plugin with given pluginId is active.
+     * @param pluginId
+     * @return
+     */
+    public static boolean isActive(String pluginId) {
+        return getPluginDescriptor(pluginId).isActive();
+    }
 }
