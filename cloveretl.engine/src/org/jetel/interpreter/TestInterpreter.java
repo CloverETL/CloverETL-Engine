@@ -24,7 +24,9 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 
 import junit.framework.TestCase;
@@ -250,7 +252,7 @@ public class TestInterpreter extends TestCase {
 						"string fieldName; fieldName=$Name; print_err(fieldName);\n"+
 						"string fieldCity; fieldCity=$City; print_err(fieldCity);\n"+
 						"string longString; longString=\""+tmp+"\"; print_err(longString);\n"+
-						"string specialChars; specialChars=\"\"\"; print_err(specialChars);";
+						"string specialChars; specialChars=\u0104; print_err(specialChars);";
 		
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -269,13 +271,14 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
+		      
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals("0",((StringBuffer)result[0]).toString());
 		      assertEquals("hello",((StringBuffer)result[1]).toString());
 		      assertEquals(record.getField("Name").getValue().toString(),((StringBuffer)result[2]).toString());
 		      assertEquals(record.getField("City").getValue().toString(),((StringBuffer)result[3]).toString());
 		      assertEquals(tmp.toString(),((StringBuffer)result[4]).toString());
-		      assertEquals("\"",((StringBuffer)result[5]).toString());
+		      assertEquals(new String("\u0104"),((StringBuffer)result[5]).toString());
 		      
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
@@ -285,12 +288,12 @@ public class TestInterpreter extends TestCase {
 
 	public void test_date(){
 		System.out.println("\ndate test:");
-		GregorianCalendar date=new GregorianCalendar();
-		String expStr = "date d1; i=\"01-08-06\"; print_err(d1); \n"+
-						"date d2; d2='01-08-06'; print_err(d2);\n"+
-						"date d3; d3=01-08-06; print_err(d3);\n"+
-						"date d4; d4="+date+"; print_err(d4);\n"+
+		String expStr = "date d3; d3=2006-08-01; print_err(d3);\n"+
+						"date d2; d2=2006-08-02 15:15:00 ; print_err(d2);\n"+
+						"date d1; d1=2006-1-1 1:2:3; print_err(d1);\n"+
 						"date born; born=$Born; print_err(born);";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
 		
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -310,11 +313,80 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("0",((StringBuffer)result[0]).toString());
-		      assertEquals("hello",((StringBuffer)result[1]).toString());
-		      assertEquals(record.getField("Name").getValue().toString(),((StringBuffer)result[2]).toString());
-		      assertEquals(record.getField("City").getValue().toString(),((StringBuffer)result[3]).toString());
-		      assertEquals("\"",((StringBuffer)result[5]).toString());
+		      assertEquals(new GregorianCalendar(2006,7,01).getTime(),((Date)result[0]));
+		      assertEquals(new GregorianCalendar(2006,7,02,15,15).getTime(),((Date)result[1]));
+		      assertEquals(new GregorianCalendar(2006,0,01,01,02,03),((Date)result[2]));
+		      assertEquals((Date)record.getField("Born").getValue(),((Date)result[3]));
+		      
+		    } catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_boolean(){
+		System.out.println("\nboolean test:");
+		String expStr = "boolean b1; b1=true; print_err(b1);\n"+
+						"boolean b2; b2=false ; print_err(b2);\n"+
+						"boolean b4; print_err(b4);";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+		
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(true,((Boolean)result[0]).booleanValue());
+		      assertEquals(false,((Boolean)result[1]).booleanValue());
+		      assertEquals(false,((Boolean)result[2]).booleanValue());
+		      
+		    } catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_variables(){
+		System.out.println("\nvariable test:");
+		String expStr = "boolean b1; boolean b2; b1=true; print_err(b1);\n"+
+						"b2=false ; print_err(b2);\n"+
+						"string b4; b4=\"hello\"; print_err(b4);\n"+
+						"b2 = true; print_err(b2);";
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(true,((Boolean)result[0]).booleanValue());
+		      assertEquals(true,((Boolean)result[1]).booleanValue());
+		      assertEquals("hello",((StringBuffer)result[2]).toString());
 		      
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
