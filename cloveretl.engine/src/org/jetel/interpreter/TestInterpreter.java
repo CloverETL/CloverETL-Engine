@@ -32,6 +32,7 @@ import java.util.GregorianCalendar;
 import junit.framework.TestCase;
 
 import org.jetel.data.*;
+import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
@@ -125,7 +126,7 @@ public class TestInterpreter extends TestCase {
 						"long minLong; minLong="+(Long.MIN_VALUE+1)+"; print_err(minLong);\n"+
 						"long maxLong; maxLong="+(Long.MAX_VALUE)+"; print_err(maxLong);\n"+
 						"long field; field=$Value; print_err(field);\n"+
-						"wrong="+Long.MAX_VALUE+"; print_err(wrong);";
+						"wrong="+Long.MAX_VALUE+"; print_err(wrong);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -150,7 +151,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(Long.MIN_VALUE+1,((CloverLong)result[2]).longValue());
 		      assertEquals(Long.MAX_VALUE,((CloverLong)result[3]).longValue());
 		      assertEquals(((Integer)record.getField("Value").getValue()).longValue(),((CloverLong)result[4]).longValue());
-//		      assertEquals(Long.MAX_VALUE,((CloverLong)result[5]).longValue());
+//		      assertEquals(Integer.MAX_VALUE,((CloverInteger)result[5]).intValue());
 		      
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
@@ -252,7 +253,7 @@ public class TestInterpreter extends TestCase {
 						"string fieldName; fieldName=$Name; print_err(fieldName);\n"+
 						"string fieldCity; fieldCity=$City; print_err(fieldCity);\n"+
 						"string longString; longString=\""+tmp+"\"; print_err(longString);\n"+
-						"string specialChars; specialChars=\u0104; print_err(specialChars);";
+						"string specialChars; specialChars=\"\"\"; print_err(specialChars);";
 		
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -278,7 +279,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(record.getField("Name").getValue().toString(),((StringBuffer)result[2]).toString());
 		      assertEquals(record.getField("City").getValue().toString(),((StringBuffer)result[3]).toString());
 		      assertEquals(tmp.toString(),((StringBuffer)result[4]).toString());
-		      assertEquals(new String("\u0104"),((StringBuffer)result[5]).toString());
+		      assertEquals("\"",((StringBuffer)result[5]).toString());
 		      
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
@@ -365,7 +366,9 @@ public class TestInterpreter extends TestCase {
 		String expStr = "boolean b1; boolean b2; b1=true; print_err(b1);\n"+
 						"b2=false ; print_err(b2);\n"+
 						"string b4; b4=\"hello\"; print_err(b4);\n"+
-						"b2 = true; print_err(b2);";
+						"b2 = true; print_err(b2);\n"+
+						"{int in; in=2; print_err(in)};\n";
+//						"print_err(in)";
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
 			  		new ByteArrayInputStream(expStr.getBytes()));
@@ -387,7 +390,49 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(true,((Boolean)result[0]).booleanValue());
 		      assertEquals(true,((Boolean)result[1]).booleanValue());
 		      assertEquals("hello",((StringBuffer)result[2]).toString());
+//		      assertEquals(2,((CloverInteger)result[3]).getInt());
 		      
+		    } catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_operators(){
+		System.out.println("\noperators test:");
+		String expStr = "int i; i=10;\n"+
+						"int j; j=100;\n" +
+						"int iplusj;iplusj=i+j; print_err(\"plus int:\"+iplusj);\n" +
+						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
+						"long m;m=1;print_err(m)\n" +
+						"long lplusm;lplusm=l+m;print_err(\"plus long:\"+lplusm);\n" +
+						"number n; n=0;print_err(n);\n" +
+						"number m1; m1=0.001;print_err(m1);\n" +
+						"number nplusm1; nplusm1=n+m1;print_err(\"plus number:\"+nplusm1);\n" +
+						"number nplusj;nplusj=n+j;print_err(\"number plus int:\"+nplusj);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(110,((CloverInteger)result[2]).getInt());
+		      assertEquals((long)Integer.MAX_VALUE+11,((CloverLong)result[5]).getLong());
+		      assertEquals(new Double(0.001),new Double(((Decimal)result[8]).getDouble()));
+		      assertEquals(new Double(100),new Double(((Decimal)result[9]).getDouble()));
 		    } catch (Exception e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
