@@ -20,6 +20,8 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 	
     public static final String DECIMAL_DISTINCTER_LOWERCASE="d";
     public static final String DECIMAL_DISTINCTER_UPPERCASE="D";
+    public static final String LONG_DISTINCTER_LOWERCASE="l";
+    public static final String LONG_DISTINCTER_UPPERCASE="L";
     
     private static DateFormat dateFormat=new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
     private static DateFormat dateTimeFormat=new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
@@ -56,12 +58,18 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 				value=valueImage;
 				break;
 			case INTEGER_LITERAL:
-			    // try to parse as INT first, if error then LONG
-			    try{
-			        value= new CloverInteger(  Integer.parseInt(valueImage));
-			    }catch(NumberFormatException ex){
-			        value= new CloverLong( Long.parseLong(valueImage));
-			    }
+                // determine size of Integere literal
+                if (valueImage.endsWith(LONG_DISTINCTER_UPPERCASE) || 
+                        valueImage.endsWith(LONG_DISTINCTER_LOWERCASE)) {
+                    value = new CloverLong(Long.parseLong(valueImage));
+                } else {
+                    // try to parse as INT first, if error then LONG
+                    try {
+                        value = new CloverInteger(Integer.parseInt(valueImage));
+                    } catch (NumberFormatException ex) {
+                        value = new CloverLong(Long.parseLong(valueImage));
+                    }
+                }
 				break;
             case HEX_LITERAL:
                 // try to parse as INT first, if error then LONG
