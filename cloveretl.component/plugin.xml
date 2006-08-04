@@ -7,7 +7,7 @@
 		<library path="cloveretl.component.jar"/>
    	</runtime> 
 
-	<requires>
+	<requires engine-version="1.9.0">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.lookup"/>
 	</requires>
