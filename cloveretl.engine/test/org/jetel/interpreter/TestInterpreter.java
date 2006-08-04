@@ -205,7 +205,7 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nnumber test:");
 		String expStr = "number i; i=0; print_err(i); \n"+
 						"number j; j=-1.0; print_err(j);\n"+
-						"number minLong; minLong=999999.999; print_err(minLong);\n"+
+						"number minLong; minLong=999999.999; print_err(minLong); print_err(999999.999); \n"+
 						"number fieldValue; fieldValue=$Value; print_err(fieldValue);\n"+
 						"number fieldAge; fieldAge=$Age; print_err(fieldAge);\n"+
 						"number minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble)";
