@@ -94,9 +94,28 @@ public class TransformLangParser extends ExpParser {
              return outRecordsMetadata[num];
       }
       
+      
+     /**
+      *  Returns map of function symbols where
+      *  under function name is saved reference to appropriate 
+      *  function definition/declaration node - upon that node
+      *  visit() method of TransformationLangExecutor can be called to
+      *  execute function's body. 
+      */
+      
       public final Map getFunctions(){
         return parserHelper.functionSymbol;
     }
+      
+     
+     /**
+      *  Returns map of global variable symbols where
+      *  under variable name is saved appropriate slot in 
+      *  which variable's value is saved. 
+      */
+      public final Map getGlobalVariables(){
+     	return parserHelper.globalVariableSymbol;
+     }
       
    /**
     * Save the current line number for run-time error messages
@@ -180,7 +199,7 @@ TOKEN [IGNORE_CASE]: {
 
 
 /* Comparison Operators */
-TOKEN: {
+TOKEN [IGNORE_CASE]: {
   < EQUAL: "==" | ".eq.">
 | < NON_EQUAL: "!=" | "<>" | ".ne." >
 | < LESS_THAN: "<" | ".lt." >
@@ -248,13 +267,22 @@ TOKEN : /* variable Types */
  
  }
 
-/* The start nonterminal and its productions. */
+/* 
+ *  The start nonterminal and its productions. 
+ *  Nonterminal & productions for transformation language
+ */
 
 CLVFStart Start() : {}        // Start -> Exp
 {
   CompilationUnit() <EOF>
   { return jjtThis; }
 }
+
+/* 
+ *  The start expression nonterminal and its productions. 
+ *  Nonterminal & productions for expressions only
+ */
+
 
 CLVFStartExpression StartExpression() : {}
 {
@@ -436,20 +464,21 @@ void MultiplicativeExpression() #void : {}
 void UnaryExpression() #void :
 {}
 {
-	LOOKAHEAD(2)
-	 (PrimaryExpression()
+	 LOOKAHEAD(2) PrimaryExpression()
 	 | "-" PrimaryExpression() #MinusNode(1)
 	 | <PLUS_PLUS> PrimaryExpression()     #PlusPlusNode(1)
+	 | LOOKAHEAD(2) PrimaryExpression() <PLUS_PLUS>      #PlusPlusNode(1)
 	 | <MINUS_MINUS> PrimaryExpression()     #MinusMinusNode(1)
-	 )
+	 | LOOKAHEAD(2) PrimaryExpression() <MINUS_MINUS>     #MinusMinusNode(1)
 	 | <NOT> UnaryExpression() #Negation(1)
-	 | BuildInFunction()
+	 
+	 
 } 
 
 
 void PrimaryExpression() #void : {}
 {
-	LOOKAHEAD (2) FunctionCallStatement()
+	 LOOKAHEAD(2) FunctionCall()
      |LitExp()
      |VarExp()
      |InputFieldExp()
@@ -457,6 +486,12 @@ void PrimaryExpression() #void : {}
      |<OPEN_PAR> Expression() <CLOSE_PAR>
    
   
+}
+
+void FunctionCall() #void : {}
+{
+ 	BuildInFunction()
+ 	|FunctionCallStatement()
 }
 
 void LitExp() #void :            // 
@@ -729,7 +764,14 @@ void BuildInFunction() #void : {}
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|Date2StrNode()
 	|Str2DateNode()
-/* TODO:	|"trunc_date" "(" AdditiveExpression() ")" #TruncDateNode(1) */
+	|"sqrt" "(" AdditiveExpression() ")" #SqrtNode(1)
+	|"log" "(" AdditiveExpression() ")" #LogNode(1)
+	|"log10" "(" AdditiveExpression() ")" #Log10Node(1)
+	|"exp" "(" AdditiveExpression() ")" #ExpNode(1)
+	|"pow" "(" AdditiveExpression()"," AdditiveExpression() ")" #PowNode(2)
+	|"pi" "(" ")" #PINode(0)
+	|"round" "(" AdditiveExpression() ")" #RoundNode(1)
+	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
 	
 }
 

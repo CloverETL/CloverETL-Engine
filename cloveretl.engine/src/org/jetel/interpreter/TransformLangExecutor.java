@@ -18,6 +18,7 @@
 
 package org.jetel.interpreter;
 
+import java.lang.Math;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
@@ -75,14 +76,35 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         this(null);
     }
     
+    /**
+     * Set input data records for processing.<br>
+     * Referenced input data fields will be resolved from
+     * these data records.
+     * 
+     * @param inputRecords array of input data records carrying values
+     */
     public void setInputRecords(DataRecord[] inputRecords){
         this.inputRecords=inputRecords;
     }
     
+    /**
+     * Set output data records for processing.<br>
+     * Referenced output data fields will be resolved from
+     * these data records - assigment (in code) to output data field
+     * will result in assigment to one of these data records.
+     * 
+     * @param outputRecords array of output data records for setting values
+     */
     public void setOutputRecords(DataRecord[] outputRecords){
         this.outputRecords=outputRecords;
     }
     
+    /**
+     * Set global parameters which may be reference from within the
+     * transformation source code
+     * 
+     * @param parameters
+     */
     public void setGlobalParameters(Properties parameters){
         this.globalParameters=parameters;
     }
@@ -97,6 +119,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object getResult() {
         return stack.pop();
     }
+    
+    public Object getGlobalVariable(int varSlot){
+        return stack.getGlobalVar(varSlot);
+    }
+    
+
+    public void setGlobalVariable(int varSlot,Object value){
+        stack.storeGlobalVar(varSlot,value);
+    }
+
+    
 
     /* *********************************************************** */
 
@@ -1397,6 +1430,132 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             }
         }
         stack.popFuncCallFrame();
+        return data;
+    }
+    
+    /*
+     * MATH functions log,log10,exp,pow,sqrt,round
+     */
+   
+    public Object visit(CLVFSqrtNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+
+        if (a instanceof Number) {
+            stack.push(new CloverDouble(Math.sqrt(((Number)a).doubleValue()) ));
+        }else {
+            Object[] arguments = { a};
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "sqrt - wrong type of literal(s)");
+        }
+
+        return data;
+    }
+    
+    public Object visit(CLVFLogNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+
+        if (a instanceof Number) {
+            stack.push(new CloverDouble(Math.log(((Number)a).doubleValue()) ));
+        }else {
+            Object[] arguments = { a};
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "log - wrong type of literal(s)");
+        }
+
+        return data;
+    }
+    
+    public Object visit(CLVFLog10Node node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+
+        if (a instanceof Number) {
+            stack.push(new CloverDouble( Math.log10(((Number)a).doubleValue())));
+        }else {
+            Object[] arguments = { a};
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "log10 - wrong type of literal(s)");
+        }
+
+        return data;
+    }
+    
+    public Object visit(CLVFExpNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+
+        if (a instanceof Number) {
+            stack.push(new CloverDouble( Math.exp(((Number)a).doubleValue())));
+        }else {
+            Object[] arguments = { a};
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "exp - wrong type of literal(s)");
+        }
+
+        return data;
+    }
+    
+    public Object visit(CLVFRoundNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+
+        if (a instanceof Number) {
+            stack.push(new CloverLong(Math.round(((Number)a).doubleValue())));
+        }else {
+            Object[] arguments = { a};
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "round - wrong type of literal(s)");
+        }
+
+
+        return data;
+    }
+    
+    public Object visit(CLVFPowNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+        node.jjtGetChild(1).jjtAccept(this, data);
+        Object b = stack.pop();
+
+        if (a instanceof Number && b instanceof Number) {
+            stack.push(new CloverDouble(Math.pow(((Number)a).doubleValue(),
+                    ((Number)b).doubleValue())));
+        }else {
+            Object[] arguments = { a, b };
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "pow - wrong type of literal(s)");
+        }
+
+        return data;
+    }
+    
+    public Object visit(CLVFPINode node, Object data) {
+        stack.push(Stack.NUM_PI);
+        return data;
+    }
+    
+    public Object visit(CLVFTruncNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+        
+        if (a instanceof Date ) {
+            Calendar calendar=Calendar.getInstance();
+            calendar.setTime((Date)a);
+            calendar.set(Calendar.HOUR_OF_DAY, 0);
+            calendar.set(Calendar.MINUTE , 0);
+            calendar.set(Calendar.SECOND , 0);
+            calendar.set(Calendar.MILLISECOND , 0);
+            stack.push( calendar.getTime() );
+        }else if (a instanceof Number){
+            stack.push(new CloverLong(((Number)a).longValue()));
+        }else {
+            Object[] arguments = { a };
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "trunc - wrong type of literal(s)");
+        }
+
         return data;
     }
     
