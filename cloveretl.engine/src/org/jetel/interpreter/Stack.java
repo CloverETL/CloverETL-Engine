@@ -23,6 +23,7 @@ import java.util.Arrays;
 
 import org.jetel.data.Numeric;
 import org.jetel.data.primitive.CloverInteger;
+import org.jetel.data.primitive.CloverDouble;
 
 /**
  * @author dpavlis
@@ -45,7 +46,10 @@ public class Stack {
 	public static final Numeric NUM_ZERO = new CloverInteger(0);
     public static final Numeric NUM_ONE = new CloverInteger(1); 
     public static final Numeric NUM_MINUS_ONE = new CloverInteger(-1); 
-	
+	public static final Numeric NUM_PI = new CloverDouble(Math.PI);
+    public static final Numeric NUM_E = new CloverDouble(Math.E);
+    
+    
     Object[] stack;
     Object[] globalVarSlot;
     Object[] localVarSlot;
