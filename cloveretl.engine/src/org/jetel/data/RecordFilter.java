@@ -120,7 +120,7 @@ public class RecordFilter {
 			}
 
 			filterField = filterPart.substring(0, operatorIndex).trim();
-			filterValueStr = filterPart.substring(operatorIndex + operatorStrLen, filterPart.length()).trim();
+			filterValueStr = filterPart.substring(operatorIndex + operatorStrLen, filterPart.length());
 
 			DataFieldMetadata fieldMetadata = recordMetadata.getField(filterField);
 			if (fieldMetadata == null) {
