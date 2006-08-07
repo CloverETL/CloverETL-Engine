@@ -15,7 +15,8 @@ public class CLVFMapping extends SimpleNode {
     public DataField field;
     public int recordNo;
     public int fieldNo;
-    public String fieldName;    
+    public String fieldName;
+    public int arity;
     
   public CLVFMapping(int id) {
     super(id);
@@ -94,5 +95,9 @@ public class CLVFMapping extends SimpleNode {
        }catch(NullPointerException ex){
            throw new TransformLangExecutorRuntimeException("can't determine "+fieldName);
        }
+   }
+   
+   public void setArity(int arity){
+       this.arity=arity;
    }
 }
