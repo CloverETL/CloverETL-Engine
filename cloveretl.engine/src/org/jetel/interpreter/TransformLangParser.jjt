@@ -394,7 +394,7 @@ void Mapping() : // assignment of value to Clover field
   	)
   	":=" 
   	
-  	Expression()
+  	Expression() (":" Expression())* {jjtThis.setArity(jjtree.nodeArity());}
 }
 
 /* Other nonterminals and their productions */
