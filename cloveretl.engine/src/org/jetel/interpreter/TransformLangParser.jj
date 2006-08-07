@@ -548,7 +548,13 @@ void Mapping() : // assignment of value to Clover field
   	)
   	":=" 
   	
-  	Expression()/*@bgen(jjtree)*/
+  	Expression() (":" Expression())*/*@bgen(jjtree)*/
+                                         {
+                                           jjtree.closeNodeScope(jjtn000, true);
+                                           jjtc000 = false;
+                                           jjtreeCloseNodeScope(jjtn000);
+                                         }
+/*@egen*/ {jjtn000.setArity(jjtree.nodeArity());}/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
