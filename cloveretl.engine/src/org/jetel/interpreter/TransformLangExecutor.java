@@ -1329,17 +1329,36 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     
     public Object visit(CLVFMapping node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        Object value=stack.pop();
         DataField field=outputRecords[node.recordNo].getField(node.fieldNo);
+        int arity=node.arity; // how many children we have defined
+        Object value=null;
         try{
-            //TODO: small hack
-            if (field instanceof Numeric){
-                    ((Numeric)field).setValue((Numeric)value);
-            }else{
-                field.setValue(value);
+            // we try till success or no more options
+            for (int i=0;i<arity;i++){
+                node.jjtGetChild(i).jjtAccept(this, data);
+                value=stack.pop();
+                try{
+                    // TODO: small hack
+                    if (field instanceof Numeric){
+                        ((Numeric)field).setValue((Numeric)value);
+                    }else{
+                        field.setValue(value);
+                    }
+                }catch(BadDataFormatException ex){
+                    if (i == arity)
+                        throw ex;
+                    else
+                        continue;
+                    
+                }catch(Exception ex){
+                    if (i == arity)
+                        throw ex;
+                    else
+                        continue;
+                }
+                break; // success during assignment, finish looping
             }
-            //outputRecords[node.recordNo].getField(node.fieldNo).setValue(value);
+            
         }catch(BadDataFormatException ex){
             if (!outputRecords[node.recordNo].getField(node.fieldNo).getMetadata().isNullable()){
                 throw new TransformLangExecutorRuntimeException(node,"can't assign NULL to \"" + node.fieldName + "\"");
