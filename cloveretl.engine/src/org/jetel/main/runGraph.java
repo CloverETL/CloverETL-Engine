@@ -32,6 +32,8 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
+import org.jetel.exception.GraphConfigurationException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
@@ -137,7 +139,7 @@ public class runGraph {
 		try {
 			in = new FileInputStream(args[args.length - 1]);
 		} catch (FileNotFoundException e) {
-			System.err.println("File not found: "+e.getMessage());
+			System.err.println("Error - graph definition file not found: "+e.getMessage());
 			System.exit(-1);
 		}
 
@@ -146,26 +148,30 @@ public class runGraph {
 		graph.loadGraphProperties(properties);
 
 		try {
-			if (!graphReader.read(in)) {
-				System.err.println("Error in reading graph from XML !");
-				System.exit(-1);
-			}
-
-			if (!graph.init()) {
-				System.err.println("Graph initialization failed !");
-				System.exit(-1);
-			}
-
+			graphReader.read(in);
+			graph.init();
 			if (verbose) {
 				//this can be called only after graph.init()
 				graph.dumpGraphConfiguration();
 			}
+        }catch(XMLConfigurationException ex){
+            System.err.println("Error in reading graph from XML !");
+            if (verbose) {
+                ex.printStackTrace(System.err);
+            }
+            System.exit(-1);
+        }catch(GraphConfigurationException ex){
+            System.err.println("Error - graph's configuration invalid !");
+            if (verbose) {
+                ex.printStackTrace(System.err);
+            }
+            System.exit(-1);
 		} catch (RuntimeException ex) {
-			System.err.println("!!! Fatal error during graph initialization  !!!");
+			System.err.println("Error during graph initialization !");
 			System.err.println(ex.getCause().getMessage());
-			if (verbose) {
-				ex.printStackTrace();
-			}
+            if (verbose) {
+                ex.printStackTrace(System.err);
+            }
 			System.exit(-1);
 		}
 		// set tracking interval
@@ -178,7 +184,7 @@ public class runGraph {
 		try {
 			finishedOK = graph.run();
 		} catch (RuntimeException ex) {
-			System.err.println("!!! Fatal error during graph run !!!");
+			System.err.println("Fatal error during graph run !");
 			System.err.println(ex.getCause().getMessage());
 			if (verbose) {
 				ex.printStackTrace();
@@ -187,16 +193,17 @@ public class runGraph {
 		}
 		if (finishedOK) {
 			// everything O.K.
-			System.out.println("Execution of graph finished !");
+			System.out.println("Execution of graph successful !");
 			System.exit(0);
 		} else {
 			// something FAILED !!
-			System.err.println("Failed starting graph !");
+			System.err.println("Execution of graph failed !");
 			System.exit(-1);
 		}
 
 	}
-	
+    
+    
 	private static void printHelp(){
 		System.out.println("Usage: runGraph [-(v|log|cfg|P:|tracking|info|register)] <graph definition file>");
 		System.out.println("Options:");
@@ -206,6 +213,7 @@ public class runGraph {
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
 		System.out.println("-info\t\t\tprint info about Clover library version");
         System.out.println("-register\t\tload/register additional transformation components");
+        System.out.println("-plugins\t\tdirectory where to look for plugins/components");
 	}
 
 	private static void printInfo(){
