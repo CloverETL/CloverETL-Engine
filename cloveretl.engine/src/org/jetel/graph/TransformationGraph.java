@@ -28,11 +28,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,20 +61,23 @@ import org.jetel.util.PropertyRefResolver;
 
 public final class TransformationGraph {
 
-	private List phases;
+	private Map <Integer,Phase> phases;
 
-	private List nodes;
-
+	private Set <Node> nodes;
+    private Set <Edge> edges;
+    
+    // auxiliary variables
 	private Phase[] phasesArray;
-	private List edges;
+    private List <Node> nodesList;
+    private List <Edge> edgesList;
 
-	private Map connections;
+	private Map <String,IConnection> connections;
 
-	private Map sequences;
+	private Map <String, Sequence> sequences;
 
-	private Map lookupTables;
+	private Map <String, LookupTable> lookupTables;
 	
-	private Map dataRecordMetadata;
+	private Map <String, DataRecordMetadata> dataRecordMetadata;
 
 	private String name;
     
@@ -82,8 +87,6 @@ public final class TransformationGraph {
     
     private String debugDirectory;
     
-	private Phase currentPhase;
-
 	static Log logger = LogFactory.getLog(TransformationGraph.class);
 
 	private WatchDog watchDog;
@@ -96,7 +99,7 @@ public final class TransformationGraph {
     public TransformationGraph() {
         this(null);
     }
-
+    
 	/**
 	 *Constructor for the TransformationGraph object
 	 *
@@ -105,16 +108,15 @@ public final class TransformationGraph {
 	 */
 	public TransformationGraph(String _name) {
 		this.name = _name;
-		phases = new LinkedList();
-		nodes = new LinkedList();
-		edges = new LinkedList();
-		connections = new HashMap();
-		sequences = new HashMap();
-		lookupTables = new HashMap();
-		dataRecordMetadata = new HashMap();
+		phases = new HashMap<Integer,Phase>();
+		nodes = new HashSet<Node>();
+		edges = new HashSet<Edge>();
+		connections = new HashMap <String,IConnection> ();
+		sequences = new HashMap<String,Sequence> ();
+		lookupTables = new HashMap<String,LookupTable> ();
+		dataRecordMetadata = new HashMap<String,DataRecordMetadata> ();
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
-		currentPhase = null;
 		graphProperties = null;
 	}
 
@@ -221,7 +223,7 @@ public final class TransformationGraph {
 	 * @since        October 1, 2002
 	 */
 	public IConnection getConnection(String name) {
-		return (IConnection) connections.get(name);
+		return  connections.get(name);
 	}
 
 	/**
@@ -231,7 +233,7 @@ public final class TransformationGraph {
 	 * @return       The sequence object (if found) or null
 	 */
 	public Sequence getSequence(String name) {
-		return (Sequence) sequences.get(name);
+		return  sequences.get(name);
 	}
 
 	/**
@@ -263,7 +265,7 @@ public final class TransformationGraph {
 	 * @return The LookupTable object (if found) or null
 	 */
 	public LookupTable getLookupTable(String name){
-	    return (LookupTable)lookupTables.get(name);
+	    return lookupTables.get(name);
 	}
 
 	/**
@@ -283,7 +285,7 @@ public final class TransformationGraph {
 	 * @return
 	 */
 	public DataRecordMetadata getDataRecordMetadata(String name){
-	    return (DataRecordMetadata)dataRecordMetadata.get(name);
+	    return dataRecordMetadata.get(name);
 	}
 	
 	/**
@@ -297,10 +299,15 @@ public final class TransformationGraph {
 	}
 	
 	/**
+     * Return array of Phases defined within graph sorted (ascentially)
+     * according phase numbers.
+     * 
 	 * @return Returns the Phases array.
 	 */
 	public Phase[] getPhases() {
-		return phasesArray;
+        Phase[] array=phases.values().toArray(new Phase[0]);
+        Arrays.sort(array);
+		return array; 
 	}
 	/**
 	 * An operation that starts execution of graph
@@ -359,7 +366,7 @@ public final class TransformationGraph {
 	 * @deprecated The OutputStream is now ignored, please call init().  The logging is
 	 * sent to commons-logging.
 	 */
-	public boolean init(OutputStream out) {
+	@Deprecated public boolean init(OutputStream out) {
 		return init();
 	}
 	
@@ -404,29 +411,33 @@ public final class TransformationGraph {
 				return false;
 			}
 		}
+		
+        // initialize phases array (it is sorted according to phase number)
+        phasesArray = getPhases();
         
         //remove disabled components and their edges
-        TransformationGraphAnalyzer.disableComponents(nodes);
-        
-		// initialize phases
-        phasesArray = (Phase[]) phases.toArray(new Phase[phases.size()]);
-        Node[] nodesArray;
+        TransformationGraphAnalyzer.disableNodesInPhases(phasesArray);
+       
+        // assemble new list of all Nodes (after disabling some)
+        nodesList = new LinkedList<Node> ();
+        for(int i=0;i<phasesArray.length;i++){
+            nodesList.addAll(phasesArray[i].getNodes());
+        }
+        // list of edges - so they can be further analyzed
+        edgesList = Arrays.asList(edges.toArray(new Edge[0]));
+     
+        // analyze graph's topology
         try {
-			nodesArray = TransformationGraphAnalyzer.enumerateNodes(nodes);
+            nodesList = TransformationGraphAnalyzer.analyzeGraphTopology(nodesList);
 		} catch (GraphConfigurationException ex) {
-			logger.fatal(ex.getMessage(),ex);
+			logger.error(ex.getMessage(),ex);
 			return false;
 		}
-		TransformationGraphAnalyzer.distributeNodes2Phases(phasesArray, nodesArray, edges);
-		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodes);
-		// remove reference of nodes and edges from graph - it is now
-		// held by phases
-		deleteEdges();
-		deleteNodes();
-		nodesArray = null;// delete references to nodes (only phases contain them)
-		// sort phases (the array containing phases) so we
-		// can next execute them in proper order (by WatchDog)
-		Arrays.sort(phasesArray);
+		TransformationGraphAnalyzer.analyzeEdges(edgesList);
+		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodesList);
+		
+        edgesList.clear();
+        nodesList.clear();
 		// initialized OK
 		return true;
 	}
@@ -478,48 +489,42 @@ public final class TransformationGraph {
 	 * @param  phase  The phase reference
 	 * @since         August 3, 2003
 	 */
-	public void addPhase(Phase phase) {
-		phases.add(phase);
+	public void addPhase(Phase phase) throws GraphConfigurationException {
+		if (phases.put(phase.getPhaseNum(),phase)!=null){
+		    throw new GraphConfigurationException("Phase already exists in graph "+phase);
+        }
 		phase.setGraph(this);
-		currentPhase = phase;
-		// assign this graph referenco to Phase
+        getPhases(); // update array of phases
 	}
 
 
 	/**
-	 *  Adds a feature to the Node attribute of the TransformationGraph object
+	 *  Adds Node to transformation graph - just for registration
 	 *
 	 * @param  node   The feature to be added to the Node attribute
-	 * @deprecated
 	 */
-	public void addNode(Node node) {
-		nodes.add(node);
+	void addNode(Node node,Phase phase) throws GraphConfigurationException {
+		if (phase==null){
+		    throw new IllegalArgumentException("Phase parameter can NOT be null !");
+        }
+        if (!nodes.add(node)){
+            throw new GraphConfigurationException("Node already exists in graph "+node);
+        }
 		node.setGraph(this);
-		if (currentPhase == null) {
-			addPhase(new Phase(0));// default phase (at least one must be created) - number is 0)
-		}
-		node.setPhase(currentPhase.getPhaseNum());
+        node.setPhase(phase);
 	}
-
-
-	/**
-	 *  Adds a feature to the Node attribute of the TransformationGraph object
-	 *
-	 * @param  node   The feature to be added to the Node attribute
-	 * @param  phase  The feature to be added to the Node attribute
-	 */
-	public void addNode(Node node, int phase) {
-		nodes.add(node);
-		node.setGraph(this);
-		//node.setPhase(phase); //relict code
-	}
+    
+    
 
 
 	/**  Description of the Method */
 	public void deleteNodes() {
 		nodes.clear();
 	}
-
+    
+    public void deleteNode(Node node){
+        nodes.remove(node);
+    }
 
 	/**
 	 * An operation that registeres Edge within current graph
@@ -527,10 +532,11 @@ public final class TransformationGraph {
 	 * @param  edge  The feature to be added to the Edge attribute
 	 * @since        April 2, 2002
 	 */
-	public void addEdge(Edge edge) {
-		edges.add(edge);
-		edge.setGraph(this);
-		// assign this graph reference to Edge
+	public void addEdge(Edge edge) throws GraphConfigurationException  {
+		if (!edges.add(edge)){
+            throw new GraphConfigurationException("Edge already exists in graph "+edge); 
+        }
+		edge.setGraph(this); // assign this graph reference to Edge
 	}
 
 
@@ -543,6 +549,9 @@ public final class TransformationGraph {
 		edges.clear();
 	}
 
+    public void deleteEdge(Edge edge){
+        edges.remove(edge);
+    }
 
 	/**
 	 *  Removes all Nodes from graph
@@ -561,14 +570,7 @@ public final class TransformationGraph {
 	 * @return          Description of the Return Value
 	 */
 	public boolean deletePhase(int phaseNo) {
-		Iterator iterator = phases.iterator();
-		while (iterator.hasNext()) {
-			if (((Phase) (iterator.next())).getPhaseNum() == phaseNo) {
-				iterator.remove();
-				return true;
-			}
-		}
-		return false;
+		return phases.remove(phaseNo)!=null ? true : false;
 	}
 
 
@@ -712,7 +714,7 @@ public final class TransformationGraph {
 	 *
 	 * @param  filename  Description of the Parameter
 	 */
-	public void loadGraphProperties(String fileURL) {
+	public void loadGraphProperties(String fileURL) throws IOException {
 		if (graphProperties == null) {
 			graphProperties = new Properties();
 		}
@@ -725,16 +727,11 @@ public final class TransformationGraph {
                 url=new URL("file:"+fileURL);
             }catch(MalformedURLException ex){
                 logger.error("Wrong URL/filename of file specified: "+fileURL,ex);
-                throw new RuntimeException("Wrong URL/filename of property file specified: "+fileURL,ex);
+                throw new IOException(ex.getMessage());
             }
         }
-		try {
-		    InputStream inStream = new BufferedInputStream(url.openStream());
-			graphProperties.load(inStream);
-		} catch (IOException ex) {
-			logger.error(ex.getMessage(),ex);
-            throw new RuntimeException("Can't read property file !",ex);
-		}
+        InputStream inStream = new BufferedInputStream(url.openStream());
+		graphProperties.load(inStream);
 	}
 
 
@@ -771,6 +768,22 @@ public final class TransformationGraph {
 	public void setTrackingInterval(int trackingInterval) {
 		this.trackingInterval = trackingInterval;
 	}
+    
+    
+    /**
+     * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
+     * 
+     */
+    public void clear(){
+        freeResources();
+        deleteEdges();
+        deleteNodes();
+        deletePhases();
+        deleteDBConnections();
+        deleteSequences();
+        deleteLookupTables();
+        deleteDataRecordMetadata();
+    }
 }
 /*
  *  end class TransformationGraph

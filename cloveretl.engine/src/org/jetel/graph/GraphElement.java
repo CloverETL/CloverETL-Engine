@@ -6,8 +6,10 @@
 package org.jetel.graph;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
+
 
 /**
  * Ascendant of all elements, which can be put into transformation graph.
@@ -119,5 +121,8 @@ public abstract class GraphElement {
         this.name = name;
     }
     
+    public static GraphElement fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) throws XMLConfigurationException {
+        throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
+    }
     
 }

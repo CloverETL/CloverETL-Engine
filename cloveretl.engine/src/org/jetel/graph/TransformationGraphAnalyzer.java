@@ -21,6 +21,7 @@
 
 package org.jetel.graph;
 import java.io.PrintStream;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -65,7 +66,7 @@ public class TransformationGraphAnalyzer {
 	 * @exception  GraphConfigurationException  Description of the Exception
 	 * @since                                   July 29, 2002
 	 */
-	public static Node[] enumerateNodes(List nodes) throws GraphConfigurationException {
+	public static List analyzeGraphTopology(List nodes) throws GraphConfigurationException {
 		Set set1 = new HashSet();
 		Set set2 = new HashSet();
 		Set actualSet;
@@ -123,7 +124,7 @@ public class TransformationGraphAnalyzer {
 		// returning nodes ordered by their appearance in the graph -> not really guratanteed that it
 		// works for all configurations, but should be sufficient
 
-		return (Node[]) enumerationOfNodes.toArray(new Node[0]);
+		return Arrays.asList(enumerationOfNodes.toArray(new Node[0]));
 	}
 
 	
@@ -265,7 +266,7 @@ public class TransformationGraphAnalyzer {
 				// is some Node reading data produced by our source node ?
 				nextNode = outPort.getReader();
 				if (nextNode != null) {
-					if (currentNode.getPhase() > nextNode.getPhase()) {
+					if (currentNode.getPhase().getPhaseNum() > nextNode.getPhase().getPhaseNum()) {
 						logger.fatal("Wrong phase order between components: " +
 								currentNode.getId() + " phase: " + currentNode.getPhase() + " and " +
 								nextNode.getId() + " phase: " + nextNode.getPhase());
@@ -285,9 +286,9 @@ public class TransformationGraphAnalyzer {
 	 * @param  problemNode  Description of the Parameter
 	 */
 	protected static void dumpNodesReferences(Iterator iterator, Node problemNode) {
-	    logger.fatal("Dump of references between nodes:");
-	    logger.fatal("Detected loop when encountered node " + problemNode.getId());
-	    logger.fatal("Chain of references:");
+	    logger.debug("Dump of references between nodes:");
+	    logger.debug("Detected loop when encountered node " + problemNode.getId());
+	    logger.debug("Chain of references:");
 		StringBuffer buffer=new StringBuffer(64);
 	    while (iterator.hasNext()) {
 			buffer.append(((AnalyzedNode) iterator.next()).getNode().getId());
@@ -295,7 +296,7 @@ public class TransformationGraphAnalyzer {
 
 		}
 		buffer.append(problemNode.getId());
-		logger.fatal(buffer.toString());
+        logger.debug(buffer.toString());
 	}
 
 
@@ -309,59 +310,26 @@ public class TransformationGraphAnalyzer {
 	 * @param  edges       Description of the Parameter
 	 * @param  phases      Description of the Parameter
 	 */
-	public static void distributeNodes2Phases(Phase[] phases, Node[] nodes, List edges) {
-		Map phaseMap = new HashMap(phases.length);
-		Iterator iterator;
-		Phase phase;
-		Phase phaseTmp;
+	public static void analyzeEdges(List edges) {
+		Phase readerPhase;
+		Phase writerPhase;
 		Edge edge;
-		Integer currentPhase;
 
-		// create map of Phases so we can easily get appropriate phase number
-		for (int i = 0; i < phases.length; i++) {
-			if (phaseMap.put(new Integer(phases[i].getPhaseNum()), phases[i]) != null) {
-				// we have two phases with the same number - wrong !!
-				logger.fatal("Phase number not unique: " + phases[i].getPhaseNum());
-				throw new RuntimeException("Phase number not unique: " + phases[i].getPhaseNum());
-			}
-		}
-
-		// put nodes into proper phases
-		currentPhase = new Integer(0);
-		phase = (Phase) phaseMap.get(currentPhase);
-		for (int i = 0; i < nodes.length; i++) {
-			if (currentPhase.intValue() != nodes[i].getPhase()) {
-				currentPhase = new Integer(nodes[i].getPhase());
-				phase = (Phase) phaseMap.get(currentPhase);
-
-			}
-			if (phase == null) {
-				throw new RuntimeException("Phase doesn't exist -" + nodes[i].getPhase());
-			}
-			phase.assignNode(nodes[i]);
-		}
 		// analyze edges (whether they need to be buffered and put them into proper phases
 		// edges connecting nodes from two different phases has to be put into both phases
-		iterator = edges.iterator();
-		currentPhase = new Integer(0);
-		phase = (Phase) phaseMap.get(currentPhase);
-		while (iterator.hasNext()) {
+		for (Iterator iterator=edges.iterator();iterator.hasNext();) {
 			edge = (Edge) iterator.next();
-			int readerPhase = edge.getReader().getPhase();
-			if (currentPhase.intValue() != readerPhase) {
-				currentPhase = new Integer(readerPhase);
-				phase = (Phase) phaseMap.get(currentPhase);
-			}
-			phase.assignEdge(edge);
-			if (readerPhase != edge.getWriter().getPhase()) {
+			readerPhase = edge.getReader().getPhase();
+            writerPhase = edge.getWriter().getPhase();
+            readerPhase.getEdgesInPhase().add(edge); // assign edge to its reader phase
+			if (readerPhase != writerPhase ) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
 				edge.setType(Edge.EDGE_TYPE_PHASE_CONNECTION);
 				// because at the end of each phase, edges from that phase
 				// are destroyed (their references), we need to preserve
 				// references for those, which span two phases
-				phaseTmp = (Phase) phaseMap.get(new Integer(edge.getWriter().getPhase()));
-				phaseTmp.assignEdge(edge);
+                writerPhase.getEdgesInPhase().add(edge);
 			}
 		}
 	}
@@ -426,34 +394,39 @@ public class TransformationGraphAnalyzer {
     /**
      * Apply disabled property of node to graph. Called in graph inital phase. 
      */
-    public static void disableComponents(List nodes) {
+    public static void disableNodesInPhases(Phase[] phases) {
         Set nodesToRemove = new HashSet();
         
-        for (Iterator it = nodes.iterator(); it.hasNext();) {
-            Node node = (Node) it.next();
-            if(node.getEnabled() == EnabledEnum.DISABLED) {
-                nodesToRemove.add(node);
-                disconnectAllEdges(node);
-            } else if(node.getEnabled() == EnabledEnum.PASS_THROUGH) {
-                nodesToRemove.add(node);
-                final Edge inEdge = (Edge) node.getInputPort(node.getPassThroughInputPort());
-                final Edge outEdge = (Edge) node.getOutputPort(node.getPassThroughOutputPort());
-                if(inEdge == null || outEdge == null) {
+        for (int i = 0; i < phases.length; i++) {
+            nodesToRemove.clear();
+            for (Iterator it = phases[i].getNodes().iterator(); it.hasNext();) {
+                Node node = (Node) it.next();
+                if (node.getEnabled() == EnabledEnum.DISABLED) {
+                    nodesToRemove.add(node);
                     disconnectAllEdges(node);
-                    continue;
-                }
-                final Node sourceNode = inEdge.getWriter();
-                final Node targetNode = outEdge.getReader();
-                final int sourceIdx = inEdge.getOutputPortNumber();
-                final int targetIdx = outEdge.getInputPortNumber();
-                disconnectAllEdges(node);
-                if(inEdge != null && targetNode != null) {
-                    sourceNode.addOutputPort(sourceIdx, inEdge);
-                    targetNode.addInputPort(targetIdx, inEdge);
+                } else if (node.getEnabled() == EnabledEnum.PASS_THROUGH) {
+                    nodesToRemove.add(node);
+                    final Edge inEdge = (Edge) node.getInputPort(node
+                            .getPassThroughInputPort());
+                    final Edge outEdge = (Edge) node.getOutputPort(node
+                            .getPassThroughOutputPort());
+                    if (inEdge == null || outEdge == null) {
+                        disconnectAllEdges(node);
+                        continue;
+                    }
+                    final Node sourceNode = inEdge.getWriter();
+                    final Node targetNode = outEdge.getReader();
+                    final int sourceIdx = inEdge.getOutputPortNumber();
+                    final int targetIdx = outEdge.getInputPortNumber();
+                    disconnectAllEdges(node);
+                    if (inEdge != null && targetNode != null) {
+                        sourceNode.addOutputPort(sourceIdx, inEdge);
+                        targetNode.addInputPort(targetIdx, inEdge);
+                    }
                 }
             }
+            phases[i].getNodes().removeAll(nodesToRemove);
         }
-        nodes.removeAll(nodesToRemove);
     }
     
     /**

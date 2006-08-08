@@ -25,6 +25,7 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.GraphConfigurationException;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -43,25 +44,26 @@ public class Phase implements Comparable {
 	/**
 	 * @since    April 2, 2002
 	 */
-	private List nodesInPhase;
-	private List edgesInPhase;
+	private List <Node> nodesInPhase;
+	private List <Edge> edgesInPhase;
 
 	// specifies the order of this phase within graph
 	private int phaseNum;
 
 	private int phaseExecTime;
 	private int phaseMemUtilization;
-	//private int result;
+	private int result;
+    private boolean isCheckPoint;
 
 	protected TransformationGraph graph;
 
 	static Log logger = LogFactory.getLog(Phase.class);
 
 	/**  Description of the Field */
+    public final static int RESULT_CREATED = -2;
+    public final static int RESULT_INITIALIZED = -1;
 	public final static int RESULT_RUNNING = 0;
-	/**  Description of the Field */
 	public final static int RESULT_OK = 1;
-	/**  Description of the Field */
 	public final static int RESULT_ERROR = 2;
 
 	// Operations
@@ -74,9 +76,9 @@ public class Phase implements Comparable {
 	 */
 	public Phase(int phaseNum) {
 		this.phaseNum = phaseNum;
-		nodesInPhase = new LinkedList();
-		edgesInPhase = new LinkedList();
-		//result = RESULT_RUNNING;
+		nodesInPhase = new LinkedList<Node> ();
+		edgesInPhase = new LinkedList<Edge> ();
+		result = RESULT_CREATED;
 	}
 
 
@@ -161,6 +163,7 @@ public class Phase implements Comparable {
 			+ phaseNum 
 			+ " initialized successfully.");
 		
+        result = RESULT_INITIALIZED;
 		return true;
 		// initialized OK
 	}
@@ -177,45 +180,53 @@ public class Phase implements Comparable {
 
 
 	/**
-	 * An operation that registers Node within current Phase
+	 * An operation that registers Node within current Phase.
+     * 
 	 *
 	 * @param  node  The feature to be added to the Node attribute
 	 * @since        April 2, 2002
 	 */
-	public void assignNode(Node node) {
+	protected void assignNode(Node node) {
 		nodesInPhase.add(node);
-
+        node.setPhase(this);
 	}
 
 
 	/**
-	 *  Adds a feature to the Edge attribute of the Phase object
+	 *  Assigns Edge to belong (also) to this phase.<br> Needed
+     *  for cross-phase edges mostly
 	 *
 	 * @param  edge  The feature to be added to the Edge attribute
 	 */
-	public void assignEdge(Edge edge) {
-		edgesInPhase.add(edge);
+	@Deprecated protected void assignEdge(Edge edge) {
+        edgesInPhase.add(edge);
 	}
 
 
 	/**
-	 *  Adds node to the graph (through this Phase)
-	 *  Auxiliary method.
+	 *  Adds node to the graph (through this Phase).<br>
+     *  Node is registered to belong to this phase and also
+     *  is globally registered within graph
 	 *
 	 * @param  node  The feature to be added to the Node attribute
+     * @throws GraphConfigurationException in case node with the same ID has already
+     * been registered withing graph
 	 */
-	public void addNode(Node node) {
-		graph.addNode(node,phaseNum);
+	public void addNode(Node node) throws GraphConfigurationException{
+	    assignNode(node);
+        graph.addNode(node,this);
 	}
 
 
 	/**
-	 *  Adds edge to the graph (through this Phase)
-	 *  Auxiliary method.
+	 *  Adds edge to the graph (through this Phase).<br>
+     *  Edge is registered globally within Graph 
 	 *
 	 * @param  edge  The feature to be added to the Edge attribute
+     * @throws GraphConfigurationException in case node with the same ID has already
+     * been registered withing graph
 	 */
-	public void addEdge(Edge edge) {
+	public void addEdge(Edge edge) throws GraphConfigurationException {
 		graph.addEdge(edge);
 	}
 
@@ -227,7 +238,7 @@ public class Phase implements Comparable {
 	 */
 	public void destroy() {
 		nodesInPhase.clear();
-		edgesInPhase.clear();
+        edgesInPhase.clear();
 	}
 
 
@@ -237,7 +248,7 @@ public class Phase implements Comparable {
 	 * @return    The nodes value
 	 * @since     July 29, 2002
 	 */
-	public List getNodes() {
+	public List<Node> getNodes() {
 		return nodesInPhase;
 	}
 
@@ -247,7 +258,7 @@ public class Phase implements Comparable {
 	 *
 	 * @return    The edges value
 	 */
-	public List getEdges() {
+	@Deprecated public List<Edge> getEdges() {
 		return edgesInPhase;
 	}
 
@@ -268,8 +279,19 @@ public class Phase implements Comparable {
 			return 0;
 		}
 	}
+    
+    @Override public int hashCode(){
+        return phaseNum;
+    }
 
-
+    @Override public boolean equals(Object obj){
+        if (obj instanceof Phase){
+            return ((Phase)obj).getPhaseNum()==phaseNum;
+        }else{
+            return false;
+        }
+    }
+    
 	/**
 	 *  Sets the phaseExecTime attribute of the Phase object
 	 *
@@ -308,6 +330,36 @@ public class Phase implements Comparable {
 	public int getPhaseMemUtilization() {
 		return phaseMemUtilization;
 	}
+
+
+    public int getResult() {
+        return result;
+    }
+
+
+    public void setResult(int result) {
+        this.result = result;
+    }
+
+
+    public boolean isCheckPoint() {
+        return isCheckPoint;
+    }
+
+
+    public void setCheckPoint(boolean isCheckPoint) {
+        this.isCheckPoint = isCheckPoint;
+    }
+
+
+    public List<Edge> getEdgesInPhase() {
+        return edgesInPhase;
+    }
+
+
+    public void setEdgesInPhase(List<Edge> edgesInPhase) {
+        this.edgesInPhase = edgesInPhase;
+    }
 }
 /*
  *  end class Phase
