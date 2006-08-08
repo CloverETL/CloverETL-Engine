@@ -367,8 +367,8 @@ public class TestInterpreter extends TestCase {
 						"b2=false ; print_err(b2);\n"+
 						"string b4; b4=\"hello\"; print_err(b4);\n"+
 						"b2 = true; print_err(b2);\n"+
-						"{int in; in=2; print_err(in)};\n";
-//						"print_err(in)";
+						"{int in; in=2; print_err(in);}\n";
+//						"print_err(b2)";
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
 			  		new ByteArrayInputStream(expStr.getBytes()));
@@ -672,6 +672,7 @@ public class TestInterpreter extends TestCase {
 	public void test_increment_decrement(){
 		System.out.println("\nincrement-decrement test:");
 		String expStr = "int i; i=10;print_err(++i);\n" +
+						"--i;" +
 						"print_err(--i);\n"+
 						"long j;j="+(Long.MAX_VALUE-10)+";print_err(++j);\n" +
 						"print_err(--j);\n"+
@@ -772,8 +773,137 @@ public class TestInterpreter extends TestCase {
 		    }
 	}
 
+	public void test_non_equal(){
+		System.out.println("\nNon equal test:");
+		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
+						"int j;j=9;print_err(\"j=\"+j);\n" +
+						"boolean eq1; eq1=(i!=j);print_err(\"eq1=\");print_err(eq1);\n" +
+						"long l;l=10;print_err(\"l=\"+l);\n" +
+						"boolean eq2;eq2=(l<>j);print_err(\"eq2=\");print_err(eq2);\n" +
+						"decimal d;d=10;print_err(\"d=\"+d);\n" +
+						"boolean eq3;eq3=d.ne.i;print_err(\"eq3=\");print_err(eq3);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(true,((Boolean)result[2]).booleanValue());
+		      assertEquals(true,((Boolean)result[4]).booleanValue());
+		      assertEquals(false,((Boolean)result[6]).booleanValue());
+
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_greater_less(){
+		System.out.println("\nGreater and less test:");
+		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
+						"int j;j=9;print_err(\"j=\"+j);\n" +
+						"boolean eq1; eq1=(i>j);print_err(\"eq1=\");print_err(eq1);\n" +
+						"long l;l=10;print_err(\"l=\"+l);\n" +
+						"boolean eq2;eq2=(l>=j);print_err(\"eq2=\");print_err(eq2);\n" +
+						"decimal d;d=10;print_err(\"d=\"+d);\n" +
+						"boolean eq3;eq3=d=>i;print_err(\"eq3=\");print_err(eq3);\n" +
+						"number n;n=10;print_err(\"n=\"+n);\n" +
+						"boolean eq4;eq4=n.gt.l;print_err(\"eq4=\");print_err(eq4);\n" +
+						"boolean eq5;eq5=n.ge.d;print_err(\"eq5=\");print_err(eq5);\n" +
+						"string s;s='hello';print_err(\"s=\"+s);\n" +
+						"string s1;s1=\"hello\";print_err(\"s1=\"+s1);\n" +
+						"boolean eq6;eq6=s<s1;print_err(\"eq6=\");print_err(eq6);\n" +
+						"date mydate;mydate=2006-01-01;print_err(\"mydate=\");print_err(mydate)\n" +
+						"date anothermydate;print_err(\"anothermydate=\");print_err(anothermydate);\n" +
+						"boolean eq7;eq7=mydate.lt.anothermydate;print_err(\"eq7=\");print_err(eq7);\n" +
+						"anothermydate=2006-1-1 0:0:0;print_err(\"anothermydate=\");print_err(anothermydate);\n" +
+						"boolean eq8;eq8=mydate<=anothermydate;print_err(\"eq8=\");print_err(eq8);\n" +
+						"boolean eq9;eq9=eq7>eq6;print_err(\"eq9=\");print_err(eq9);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals("eq1",true,((Boolean)result[2]).booleanValue());
+		      assertEquals("eq2",true,((Boolean)result[4]).booleanValue());
+		      assertEquals("eq3",true,((Boolean)result[6]).booleanValue());
+		      assertEquals("eq4",false,((Boolean)result[8]).booleanValue());
+		      assertEquals("eq5",true,((Boolean)result[9]).booleanValue());
+		      assertEquals("eq6",false,((Boolean)result[12]).booleanValue());
+		      assertEquals("eq7",true,((Boolean)result[15]).booleanValue());
+		      assertEquals("eq8",true,((Boolean)result[16]).booleanValue());
+		      assertEquals("eq9",false,((Boolean)result[17]).booleanValue());
+
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_regex(){
+		System.out.println("\nRegex test:");
+		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
+						"int j;j=9;print_err(\"j=\"+j);\n" +
+						"boolean eq1; eq1=(i~=j);print_err(\"eq1=\");print_err(eq1);\n" +
+						"string s;s='Hej';print_err(s);\n" +
+						"boolean eq2;eq2=(s~=\"[A-Za-z]{3}\");print_err(\"eq2=\");print_err(eq2);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(false,((Boolean)result[2]).booleanValue());
+		      assertEquals(true,((Boolean)result[4]).booleanValue());
+
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
 	public void test_1_expression() {
-		String expStr="$Age>=135 or 200>$Age and $Age>0 and 1==999999999999999 or $Name==\"HELLO\"";
+		String expStr="$Age>=135 or 200>$Age and not $Age<=0 and 1==999999999999999 or $Name==\"HELLO\"";
 		
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -830,7 +960,7 @@ public class TestInterpreter extends TestCase {
 	}
 		
 	public void test_3_expression() {
-		String expStr="trim($Name)==\"HELLO\" or replace($Name,\".\" ,\"a\")";
+		String expStr="not (trim($Name).ne.\"HELLO\" || replace($Name,\".\" ,\"a\"))";
 		try {
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));
@@ -858,4 +988,163 @@ public class TestInterpreter extends TestCase {
 		
 	}
 	
+	public void test_if(){
+		System.out.println("\nIf statement test:");
+		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
+						"int j;j=9;print_err(\"j=\"+j);\n" +
+						"long l;" +
+						"if (i>j) l=1; else l=0;\n" +
+						"print_err(l);\n" +
+						"decimal d;" +
+						"if (i.gt.j and l.eq.1) {d=0;print_err('d rovne 0');}\n" +
+						"else d=0.1;\n" +
+						"number n;" +
+						"if (d==0.1 || l<=1) n=0;\n" +
+						"else {n=-1;print_err('n rovne -1')}\n" +
+						"date date1; date1=2006-01-01;print_err(date1);\n" +
+						"date date2; date2=2006-02-01;print_err(date2);\n" +
+						"boolean result;result=false;\n" +
+						"boolean compareDates;compareDates=date1<=date2;print_err(compareDates);\n" +
+						"if (date1<=date2) \n" +
+						"{  print_err('before if (i<jj)');\n" +
+						"	if (i<j) print_err('date1<today and i<j') else print_err('date1<date2 only')\n" +
+						"	result=true;}\n" +
+						"result=false;" +
+						"if (i<j) result=true;\n" +
+						"else if (not result) result=true;\n" +
+						"else print_err('last else');\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(1,((CloverLong)result[2]).getLong());
+		      assertEquals(new Double(0),new Double(((Decimal)result[3]).getDouble()));
+		      assertEquals(new Double(0),new Double(((Decimal)result[4]).getDouble()));
+		      assertEquals(true,((Boolean)result[7]).booleanValue());
+
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
+	public void test_switch(){
+		System.out.println("\nSwitch test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"int n;n=datediff(born,1900-01-01,month)%12;print_err(n);\n" +
+						"string mont;\n" +
+						"decimal april;april=4;\n" +
+						"switch (n) {\n" +
+						"	case 0.0:mont='january';\n" +
+						"	case 1.0:mont='february';\n" +
+						"	case 2.0:mont='march';\n" +
+						"	case 3:mont='april';\n" +
+						"	case april:mont='may';\n" +
+						"	case 5.0:mont='june';\n" +
+						"	case 6.0:mont='july';\n" +
+						"	case 7.0:mont='august';\n" +
+						"	case 3:print_err('a kuku')\n" +
+						"	case 8.0:mont='september';\n" +
+						"	case 9.0:mont='october';\n" +
+						"	case 10.0:mont='november';\n" +
+						"	case 11.0:mont='december';\n" +
+						"	default: mont='unknown';};\n"+
+						"print_err('month:'+mont);\n" +
+						"boolean ok;ok=(n.ge.0)and(n.lt.12);\n" +
+						"switch (ok) {\n" +
+						"	case true:print_err('OK')\n" +
+						"	case false:print_err('WRONG')};\n" +
+						"switch (born) {\n" +
+						"	case 2006-01-01:{mont='January';print_err('january);}\n" +
+						"	case 1973-04-23:{mont='April';print_err('april');}\n" +
+						"	default:print_err('other')};\n"+
+						"switch (born<1996-08-01) {\n" +
+						"	case true:{print_err('older then ten');}\n" +
+						"	default:print_err('younger then ten')};\n";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(3,((CloverInteger)result[1]).getInt());
+		      assertEquals("April",((StringBuffer)result[2]).toString());
+		      assertEquals(true,((Boolean)result[4]).booleanValue());
+		      
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+	
+	public void test_while(){
+		System.out.println("\nWhile test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"date now;now=today();print_err(now);\n" +
+						"int yer;yer=0;\n" +
+						"while (born<now) {\n" +
+						"	born=dateadd(born,1,year);\n " +
+						"	while (yer<5) yer=yer+1;" +
+						"	yer=yer+1;}\n" +
+						"print_err('years:'+yer);\n" +
+						"decimal april;april=4;\n";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(39,((CloverInteger)result[2]).getInt());
+		      
+		} catch (Exception e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    }
+	}
+
 }
