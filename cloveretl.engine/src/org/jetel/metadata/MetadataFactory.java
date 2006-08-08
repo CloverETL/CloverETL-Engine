@@ -66,8 +66,10 @@ public class MetadataFactory {
 		recordMetadata=metadataXMLRW.read(
 				new BufferedInputStream(url.openStream()));
 			if (recordMetadata==null){
-				throw new RuntimeException("Can't parse metadata definitio file: "+fileURL);
+				throw new RuntimeException("Can't parse metadata definition file: "+fileURL);
 			}
+        }catch(IOException ex){
+            throw new IOException("Can't read metadata definition file: "+ex.getMessage());
 		}catch(Exception ex){
 			throw new RuntimeException("Can't get metadata file "+fileURL+" - "+ex.getClass().getName()+" : "+ex.getMessage()); 
 		}
