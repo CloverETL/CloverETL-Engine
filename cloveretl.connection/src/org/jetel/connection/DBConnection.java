@@ -301,7 +301,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	 *
 	 * @return    The database connection (JDBC)
 	 */
-	public Connection getConnection() {
+	public synchronized Connection getConnection() {
 	    Connection con=null;
 	    if (threadSafeConnections){
 	        con=(Connection)openedConnections.get(Thread.currentThread());
