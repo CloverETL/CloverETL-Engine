@@ -381,6 +381,18 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     public void setFastPropagate(boolean fastPropagate) {
         this.fastPropagate = fastPropagate;
     }
+    
+    @Override public int hashCode(){
+        return getId().hashCode();
+    }
+
+    @Override public boolean equals(Object obj){
+        if (obj instanceof Edge){
+            return ((Edge)obj).getId().equals(getId());
+        }else{
+            return false;
+        }
+    }
 }
 /*
  *  end class EdgeStub

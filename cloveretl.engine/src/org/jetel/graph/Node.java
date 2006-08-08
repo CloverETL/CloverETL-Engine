@@ -31,6 +31,7 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.XMLConfigurationException;
 import org.w3c.dom.Element;
 
 
@@ -62,7 +63,8 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	protected int resultCode;
 	protected String resultMsg;
-	protected int phase = 0;// default phase is 0
+	
+    protected Phase phase;
 
     // buffered values
     protected List outPortList;
@@ -107,15 +109,26 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@param  id  Unique ID of the Node
 	 *@since      April 4, 2002
 	 */
-	public Node(String id) {
-		super(id);
+	public Node(String id, TransformationGraph graph) {
+		super(id,graph);
 		outPorts = new TreeMap();
 		inPorts = new TreeMap();
 		logPort = null;
-		phase = 0;
+        phase = null;
 	}
 
+    /**
+     *  Standard constructor.
+     *
+     *@param  id  Unique ID of the Node
+     *@since      April 4, 2002
+     */
+    public Node(String id){
+        this(id,null);
+    }
 
+    
+    
 	/**
 	 *  Sets the EOF for particular output port. EOF indicates that no more data
 	 * will be sent throught the output port.
@@ -221,7 +234,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@param  phase  The new phase number
 	 */
-	public void setPhase(int phase) {
+	public void setPhase(Phase phase) {
 		this.phase = phase;
 	}
 
@@ -231,10 +244,14 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@return    The phase value
 	 */
-	public int getPhase() {
+	public Phase getPhase() {
 		return phase;
 	}
 
+    
+    public int getPhaseNum(){
+        return phase.getPhaseNum();
+    }
     
 	/**
 	 *  Gets the OutPorts attribute of the Node object
@@ -751,7 +768,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return      True if obj represents node with the same ID
 	 *@since       April 18, 2002
 	 */
-	public boolean equals(Object obj) {
+	@Override public boolean equals(Object obj) {
 		if (getId().equals(((Node) obj).getId())) {
 			return true;
 		} else {
@@ -759,6 +776,9 @@ public abstract class Node extends GraphElement implements Runnable {
 		}
 	}
 
+    @Override public int hashCode(){
+        return getId().hashCode();
+    }
 
 	/**
 	 *  Description of the Method
@@ -780,8 +800,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          Description of the Returned Value
 	 *@since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		return null;
+	@Override public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML)throws XMLConfigurationException {
+        throw new  UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
 	}
 
 
