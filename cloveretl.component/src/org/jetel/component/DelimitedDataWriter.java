@@ -187,7 +187,7 @@ public class DelimitedDataWriter extends Node {
 		DelimitedDataWriter aDelimitedDataWriter = null;
 
 		try {
-			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			aDelimitedDataWriter = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILEURL_ATTRIBUTE),
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE));
 			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)) {
@@ -201,7 +201,7 @@ public class DelimitedDataWriter extends Node {
 			}
 
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		return aDelimitedDataWriter;

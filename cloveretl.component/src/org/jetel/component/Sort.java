@@ -247,13 +247,13 @@ public class Sort extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		Sort sort;
 		try {
-			sort = new Sort(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			sort = new Sort(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_SORTKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
 				sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE).matches("^[Aa].*"));
 			}
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		return sort;

@@ -636,7 +636,7 @@ public class MergeJoin extends Node {
 
 		try {
             join = new MergeJoin(
-                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
@@ -654,7 +654,7 @@ public class MergeJoin extends Node {
 			
 			return join;
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}

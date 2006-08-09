@@ -271,7 +271,7 @@ public class CheckForeignKey extends Node {
 		CheckForeignKey check;
 
 		try {
-			check = new CheckForeignKey(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			check = new CheckForeignKey(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_PRIMARYKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString(XML_FOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString(XML_DEFAULTFOREIGNKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -280,7 +280,7 @@ public class CheckForeignKey extends Node {
 			}
 			return check;
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}

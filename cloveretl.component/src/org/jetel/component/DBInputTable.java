@@ -26,6 +26,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
@@ -237,9 +238,8 @@ public class DBInputTable extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) 
-        {
-            ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+            ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
             ComponentXMLAttributes xattribsChild;
             DBInputTable aDBInputTable = null;
             org.w3c.dom.Node childNode;
@@ -256,17 +256,17 @@ public class DBInputTable extends Node {
                     query = xattribs.getString(XML_SQLCODE_ELEMENT);
                 }else{
                     
-                    childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
+                    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
                     if (childNode == null) {
-                        throw new RuntimeException("Can't find <SQLCode> node !");
+                        throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
                     }
-                    xattribsChild = new ComponentXMLAttributes(childNode, graph);
+                    xattribsChild = new ComponentXMLAttributes(xmlElement, graph);
                     query=xattribsChild.getText(childNode);
 
         			
                 }
 
-                aDBInputTable = new DBInputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                aDBInputTable = new DBInputTable(xattribs.getString(XML_ID_ATTRIBUTE),
                         xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
                         query);
                 
@@ -283,11 +283,9 @@ public class DBInputTable extends Node {
                 if (xattribs.exists(XML_URL_ATTRIBUTE)) {
                 	aDBInputTable.setURL(XML_URL_ATTRIBUTE);
                 }
-            } 
-            catch (Exception ex) 
-            {
-    			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-                return null;
+                
+            }catch (Exception ex) {
+                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
             }
 
             return aDBInputTable;

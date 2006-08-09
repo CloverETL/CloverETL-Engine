@@ -36,6 +36,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -580,7 +581,7 @@ public class DBOutputTable extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     September 27, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		if (dbConnectionName != null) {
 			xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, dbConnectionName);
@@ -627,8 +628,8 @@ public class DBOutputTable extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		ComponentXMLAttributes xattribsChild;
 		org.w3c.dom.Node childNode;
 		DBOutputTable outputTable;
@@ -636,32 +637,32 @@ public class DBOutputTable extends Node {
 		try {
 			// allows specifying parameterized SQL (with ? - questionmarks)
 			if (xattribs.exists(XML_SQLQUERY_ATRIBUTE)) {
-					outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+					outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 					xattribs.getString(XML_SQLQUERY_ATRIBUTE),	null);
 			}else if(xattribs.exists(XML_URL_ATTRIBUTE)){
-				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 						xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE))),	
 						null);
 			    
 			}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
-				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 						xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 				
 			}else if(xattribs.exists(XML_DBTABLE_ATTRIBUTE)){
-				outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
 						xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 				
 			}else{
-			    childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
+			    childNode = xattribs.getChildNode(xmlElement, XML_SQLCODE_ELEMENT);
                 if (childNode == null) {
-                    throw new RuntimeException("Can't find <SQLCode> node !");
+                    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
                 }
                 xattribsChild = new ComponentXMLAttributes(childNode, graph);
-                outputTable = new DBOutputTable(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
     					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
     					xattribsChild.getText(childNode),
     					null);
@@ -696,9 +697,8 @@ public class DBOutputTable extends Node {
 			return outputTable;
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 	}
 
 

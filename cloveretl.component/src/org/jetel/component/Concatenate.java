@@ -24,6 +24,7 @@ import java.util.Iterator;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -167,7 +168,7 @@ public class Concatenate extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 	}
 
@@ -179,15 +180,14 @@ public class Concatenate extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
-			return new Concatenate(xattribs.getString(Node.XML_ID_ATTRIBUTE));
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+			return new Concatenate(xattribs.getString(XML_ID_ATTRIBUTE));
+        }catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 	}
 
 

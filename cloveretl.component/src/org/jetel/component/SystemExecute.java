@@ -260,9 +260,9 @@ public class SystemExecute extends Node{
 	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		try {
-			return new SystemExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE),xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
+			return new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE),xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}

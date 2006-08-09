@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -228,7 +229,7 @@ public class Dedup extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		// dedupKeys attribute
 		if (dedupKeys != null) {
@@ -261,11 +262,11 @@ public class Dedup extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Dedup dedup;
 		try {
-			dedup=new Dedup(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			dedup=new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_DEDUPKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
 					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
 					    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
@@ -274,9 +275,8 @@ public class Dedup extends Node {
 			}
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 		return dedup;
 	}
 

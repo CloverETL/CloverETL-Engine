@@ -222,12 +222,12 @@ public class DelimitedDataWriterNIO extends Node {
 		
 		try{
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
 										xattribs.getString(XML_CHARSET_ATTRIBUTE),
 										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}else{
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
 										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}
@@ -246,7 +246,7 @@ public class DelimitedDataWriterNIO extends Node {
 			}
 			
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		

@@ -267,7 +267,7 @@ public class Partition extends Node {
 		Partition partition;
 		
 		try {
-		    partition = new Partition(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE));
 		    if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)){
 					partition.setPartitionKeyNames(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 		    }
@@ -276,7 +276,7 @@ public class Partition extends Node {
 		    }
 		    return partition;
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}
