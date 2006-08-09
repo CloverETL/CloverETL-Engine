@@ -437,11 +437,10 @@ public class DataIntersection extends Node {
 		
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE,transformClassName);
-		} else {
-// comment by Martin Zatopek - must be changed (now I am removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Text textElement = doc.createTextNode(dynamicTransformation.getSourceCode());
-//			xmlElement.appendChild(textElement);
+		} 
+		
+		if (transformSource!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
         
 		// equal NULL attribute
@@ -485,7 +484,9 @@ public class DataIntersection extends Node {
             }
 
 			intersection.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
+	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
+	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
+	                		XML_SLAVEOVERRIDEKEY_ATTRIBUTE,XML_EQUAL_NULL_ATTRIBUTE}));
 			
 			return intersection;
 		} catch (Exception ex) {

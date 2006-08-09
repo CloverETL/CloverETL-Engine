@@ -410,11 +410,10 @@ public class HashJoin extends Node {
 		
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
-		} else {
-//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Text text = doc.createTextNode(dynamicTransformation.getSourceCode());
-//			xmlElement.appendChild(text);
+		} 
+		
+		if (transformSource!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
 		
 		if (joinKeys != null) {
@@ -482,7 +481,10 @@ public class HashJoin extends Node {
                 join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
             }
 			join.setTransformationParameters(xattribs.attributes2Properties(
-			                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE,XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
+			                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
+			                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
+			                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
+			                		XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
 			
 			return join;
 		} catch (Exception ex) {

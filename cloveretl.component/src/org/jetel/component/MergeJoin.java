@@ -586,13 +586,11 @@ public class MergeJoin extends Node {
 		
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
-		} else {
-//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Text text = doc.createTextNode(this.dynamicTransformation.getSourceCode());
-//			xmlElement.appendChild(text);
-		}
+		} 
 		
+		if (transformSource!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		}
 		
 		if (joinKeys != null) {
 			StringBuffer buf = new StringBuffer(joinKeys[0]);
@@ -651,7 +649,10 @@ public class MergeJoin extends Node {
 				join.setFullOuterJoin(xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE));
 			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
+	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
+	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
+	                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
+	                		XML_FULLOUTERJOIN_ATTRIBUTE}));
 			
 			return join;
 		} catch (Exception ex) {

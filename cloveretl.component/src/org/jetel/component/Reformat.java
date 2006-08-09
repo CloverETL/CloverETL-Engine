@@ -276,14 +276,13 @@ public class Reformat extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
+		if (transform!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transform);
+		}
+		
 		if (transformClass != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClass);
-		} else {
-//        comment by Martin Zatopek - must be changed (now I removing TransformationGraph singleton)
-//			Document doc = TransformationGraphXMLReaderWriter.getReference().getOutputXMLDocumentReference();
-//			Text text = doc.createTextNode(this.dynamicTransformCode.getSourceCode());
-//			xmlElement.appendChild(text);
-		}
+		} 
 		
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
@@ -310,7 +309,8 @@ public class Reformat extends Node {
                             xattribs.getString(XML_ID_ATTRIBUTE),
                             xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                             xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
-			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
+			reformat.setTransformationParameters(xattribs.attributes2Properties(
+					new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
 			
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
