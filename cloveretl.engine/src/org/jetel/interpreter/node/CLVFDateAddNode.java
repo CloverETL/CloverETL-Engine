@@ -26,21 +26,23 @@ public class CLVFDateAddNode extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 	
-	public void setCalendarField(String fieldName){
-		if (fieldName.equalsIgnoreCase("year")){
-			calendarField=Calendar.YEAR;
-		}else if (fieldName.equalsIgnoreCase("month")){
-			calendarField=Calendar.MONTH;
-		}else if (fieldName.equalsIgnoreCase("week")){
-			calendarField=Calendar.WEEK_OF_YEAR;
-		}else if (fieldName.equalsIgnoreCase("day")){
-				calendarField=Calendar.DAY_OF_MONTH;
-		}else if (fieldName.equalsIgnoreCase("hour")){
-		     calendarField=Calendar.HOUR_OF_DAY;
-		}else if (fieldName.equalsIgnoreCase("minute")){
-		     calendarField=Calendar.MINUTE;
-		}else{
-			calendarField=Calendar.SECOND;
-		}
-	}
+    public void setCalendarField(String fieldName){
+        if (fieldName.equalsIgnoreCase("year")){
+            calendarField=Calendar.YEAR;
+        }else if (fieldName.equalsIgnoreCase("month")){
+            calendarField=Calendar.MONTH;
+        }else if (fieldName.equalsIgnoreCase("week")){
+            calendarField=Calendar.WEEK_OF_YEAR;
+        }else if (fieldName.equalsIgnoreCase("day")){
+                calendarField=Calendar.DAY_OF_MONTH;
+        }else if (fieldName.equalsIgnoreCase("hour")){
+             calendarField=Calendar.HOUR_OF_DAY;
+        }else if (fieldName.equalsIgnoreCase("minute")){
+             calendarField=Calendar.MINUTE;
+        }else if (fieldName.equalsIgnoreCase("sec") || fieldName.equalsIgnoreCase("second") ){
+            calendarField=Calendar.SECOND;
+        }else{
+            calendarField=Calendar.MILLISECOND;
+        }
+    }
 }
