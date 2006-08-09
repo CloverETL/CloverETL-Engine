@@ -643,7 +643,7 @@ public class ExtSort extends Node {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         ExtSort sort;
         try {
-            sort = new ExtSort(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(
+            sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
                     XML_SORTKEY_ATTRIBUTE).split(
                     Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
             if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
@@ -657,7 +657,7 @@ public class ExtSort extends Node {
                 sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
             }
         } catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
             return null;
         }
         return sort;

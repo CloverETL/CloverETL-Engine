@@ -307,12 +307,12 @@ public class Reformat extends Node {
 
 		try {
             reformat = new Reformat(
-                            xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                            xattribs.getString(XML_ID_ATTRIBUTE),
                             xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                             xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
 //			//if transform class defined (as an attribute) use it first
 //			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
-//				reformat= new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+//				reformat= new Reformat(xattribs.getString(XML_ID_ATTRIBUTE),
 //						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
 //				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
 //					reformat.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
@@ -329,10 +329,10 @@ public class Reformat extends Node {
 //				    }
 //				}
 //				if (dynaTransCode != null) {
-//					reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), dynaTransCode);
+//					reformat = new Reformat(xattribs.getString(XML_ID_ATTRIBUTE), dynaTransCode);
 //				} else { //last chance to find reformat code is in transform attribute
 //					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-//						reformat = new Reformat(xattribs.getString(Node.XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
+//						reformat = new Reformat(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
 //					} else {
 //						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
 //					}
@@ -341,7 +341,7 @@ public class Reformat extends Node {
 			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		return reformat;

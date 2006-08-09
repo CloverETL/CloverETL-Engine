@@ -265,11 +265,11 @@ public class FixLenDataReaderNIO extends Node {
 		
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
@@ -290,7 +290,7 @@ public class FixLenDataReaderNIO extends Node {
 			}
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 

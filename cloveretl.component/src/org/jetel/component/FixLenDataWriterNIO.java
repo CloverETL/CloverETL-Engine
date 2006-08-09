@@ -260,13 +260,13 @@ public class FixLenDataWriterNIO extends Node {
 		
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
 				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
-						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
+						xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE),
 						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 			}else{
 				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
-						xattribs.getString(Node.XML_ID_ATTRIBUTE), 
+						xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 			}
@@ -284,7 +284,7 @@ public class FixLenDataWriterNIO extends Node {
 			
 			
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		

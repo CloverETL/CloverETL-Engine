@@ -29,6 +29,7 @@ import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
@@ -179,7 +180,7 @@ public class DBFDataReader extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
 		String charSet = this.parser.getCharset();
@@ -201,17 +202,17 @@ public class DBFDataReader extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		DBFDataReader dbfDataReader = null;
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				dbfDataReader = new DBFDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
-				dbfDataReader = new DBFDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+				dbfDataReader = new DBFDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
@@ -219,10 +220,9 @@ public class DBFDataReader extends Node {
 					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
 			
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+        } catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 
 		return dbfDataReader;
 	}

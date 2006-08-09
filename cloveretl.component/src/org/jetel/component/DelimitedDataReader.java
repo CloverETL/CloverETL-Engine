@@ -183,14 +183,14 @@ public class DelimitedDataReader extends Node {
 		DelimitedDataReader aDelimitedDataReader = null;
 
 		try {
-			aDelimitedDataReader = new DelimitedDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			aDelimitedDataReader = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 				aDelimitedDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
 						xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		return aDelimitedDataReader;

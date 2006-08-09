@@ -202,14 +202,14 @@ public class Filter extends Node {
 		
 
 		try{
-			filter = new Filter(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			filter = new Filter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
 				filterExpression=xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE);
 				filter.setRecordFilter(new RecordFilter(filterExpression));
 			}
 			return filter;
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 	}

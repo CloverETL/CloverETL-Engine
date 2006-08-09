@@ -32,6 +32,7 @@ import org.jetel.data.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -42,6 +43,7 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.StringAproxComparator;
 import org.jetel.util.SynchronizeUtils;
+import org.w3c.dom.Element;
 
 /**
  * <h3>Approximate Merge Join Component</h3>
@@ -657,13 +659,13 @@ public class AproxMergeJoin extends Node {
         this.transformationParametersForSuspicious = transformationParameters;
     }
 
-    public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		AproxMergeJoin join;
 
 		try {
             join = new AproxMergeJoin(
-                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     xattribs.getString(XML_MATCHING_KEY_ATTRIBUTE),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
@@ -685,10 +687,9 @@ public class AproxMergeJoin extends Node {
 	                new String[]{XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE}));
 			
 			return join;
-		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+        }catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 	}
  
 	public boolean checkConfig() {

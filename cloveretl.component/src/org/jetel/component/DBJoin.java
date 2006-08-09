@@ -32,12 +32,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 /**
  *  <h3>DBJoin Component</h3> <!--  Joins records from input port and database
  *   based on specified key. The flow on port 0 is the driver, record from database
@@ -255,8 +257,8 @@ public class DBJoin extends Node {
         }
 	}
 	
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DBJoin dbjoin;
 		String connectionName;
 		String query;
@@ -266,14 +268,9 @@ public class DBJoin extends Node {
 			connectionName = xattribs.getString(XML_DBCONNECTION_ATTRIBUTE);
 			query = xattribs.getString(XML_SQL_QUERY_ATTRIBUTE);
 			joinKey = xattribs.getString(XML_JOIN_KEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ex.getMessage());
-			return null;
-		}
-
-		try {
+		
             dbjoin = new DBJoin(
-                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_ID_ATTRIBUTE),
                     connectionName,query,joinKey,
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null));
@@ -283,9 +280,9 @@ public class DBJoin extends Node {
 			}
 			dbjoin.setMaxCashed(xattribs.getInteger(XML_MAX_CASHED_ATTRIBUTE,100));
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
+        
 		return dbjoin;
 	}
 

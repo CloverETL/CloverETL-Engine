@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -415,7 +416,7 @@ public class DataIntersection extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     May 21, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
 		if (joinKeys != null) {
@@ -464,13 +465,13 @@ public class DataIntersection extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DataIntersection intersection;
 
 		try{
 			intersection = new DataIntersection(
-                    xattribs.getString(Node.XML_ID_ATTRIBUTE),
+                    xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
@@ -488,9 +489,8 @@ public class DataIntersection extends Node {
 			
 			return intersection;
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
-		}
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 	}
 
 	/**  Description of the Method */

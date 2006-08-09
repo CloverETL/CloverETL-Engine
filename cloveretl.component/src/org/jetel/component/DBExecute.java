@@ -27,6 +27,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.DBConnection;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
@@ -279,7 +280,7 @@ public class DBExecute extends Node {
 	 * @return    Description of the Returned Value
 	 * @since     September 27, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		
 		// set attributes of DBExecute
 		super.toXML(xmlElement);
@@ -311,52 +312,59 @@ public class DBExecute extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		org.w3c.dom.Node childNode;
-		ComponentXMLAttributes xattribsChild;
-		DBExecute executeSQL;
-		String query=null;	
-		
-		try {
-		    if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
-			    query=xattribs.getString(XML_DBSQL_ATTRIBUTE);
-			}else if (xattribs.exists(XML_URL_ATTRIBUTE)){
-			    query=xattribs.resloveReferences(FileUtils.getStringFromURL(xattribs.getString(XML_URL_ATTRIBUTE)));
-			}else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
-                query=xattribs.getString(XML_SQLCODE_ELEMENT);
-            }else {//we try to get it from child text node - slightly obsolete now
-				childNode = xattribs.getChildNode(nodeXML, XML_SQLCODE_ELEMENT);
-				if (childNode == null) {
-					throw new RuntimeException("Can't find <SQLCode> node !");
-				}
-				xattribsChild = new ComponentXMLAttributes(childNode, graph);
-				query=xattribsChild.getText(childNode);
-			}   
-			executeSQL = new DBExecute(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
-						query.split(SQL_STATEMENT_DELIMITER));
+    @Override
+    public static Node fromXML(TransformationGraph graph, Element xmlElement)
+            throws XMLConfigurationException {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(
+                xmlElement, graph);
+        org.w3c.dom.Node childNode;
+        ComponentXMLAttributes xattribsChild;
+        DBExecute executeSQL;
+        String query = null;
 
-			} catch (Exception ex) {
-				System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-				return null;
-			}
+        try {
+            if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
+                query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
+            } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+                query = xattribs
+                        .resloveReferences(FileUtils.getStringFromURL(xattribs
+                                .getString(XML_URL_ATTRIBUTE)));
+            } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
+                query = xattribs.getString(XML_SQLCODE_ELEMENT);
+            } else {// we try to get it from child text node - slightly obsolete
+                    // now
+                childNode = xattribs.getChildNode(xmlElement,
+                        XML_SQLCODE_ELEMENT);
+                if (childNode == null) {
+                    throw new RuntimeException("Can't find <SQLCode> node !");
+                }
+                xattribsChild = new ComponentXMLAttributes(childNode, graph);
+                query = xattribsChild.getText(childNode);
+            }
+            executeSQL = new DBExecute(xattribs
+                    .getString(XML_ID_ATTRIBUTE), xattribs
+                    .getString(XML_DBCONNECTION_ATTRIBUTE), query
+                    .split(SQL_STATEMENT_DELIMITER));
 
-		if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
-			executeSQL.setTransaction(xattribs.getBoolean(XML_INTRANSACTION_ATTRIBUTE));
-		}
+            if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
+                executeSQL.setTransaction(xattribs
+                        .getBoolean(XML_INTRANSACTION_ATTRIBUTE));
+            }
 
-		if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
-			executeSQL.setPrintStatements(xattribs.getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
-		}
-		
-		if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-			executeSQL.setURL(xattribs.getString(XML_URL_ATTRIBUTE));
-		}
-		
-		
-		return executeSQL;
-	}
+            if (xattribs.exists(XML_PRINTSTATEMENTS_ATTRIBUTE)) {
+                executeSQL.setPrintStatements(xattribs
+                        .getBoolean(XML_PRINTSTATEMENTS_ATTRIBUTE));
+            }
+
+            if (xattribs.exists(XML_URL_ATTRIBUTE)) {
+                executeSQL.setURL(xattribs.getString(XML_URL_ATTRIBUTE));
+            }
+        } catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
+
+        return executeSQL;
+    }
 
 
 	/**

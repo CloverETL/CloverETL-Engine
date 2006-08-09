@@ -234,7 +234,7 @@ public class Trash extends Node {
 		Trash trash;
 
 		try {
-			trash = new Trash(xattribs.getString(Node.XML_ID_ATTRIBUTE));
+			trash = new Trash(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_DEBUGPRINT_ATTRIBUTE)) {
 				trash.setDebugPrint(xattribs.getBoolean(XML_DEBUGPRINT_ATTRIBUTE));
 			}
@@ -242,7 +242,7 @@ public class Trash extends Node {
 				trash.setDebugFile(xattribs.getString(XML_DEBUGFILENAME_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
 			return null;
 		}
 		return trash;
