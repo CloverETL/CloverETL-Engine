@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -300,9 +301,8 @@ public class Reformat extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		DynamicJavaCode dynaTransCode = null;
+	   @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Reformat reformat;
 
 		try {
@@ -310,39 +310,10 @@ public class Reformat extends Node {
                             xattribs.getString(XML_ID_ATTRIBUTE),
                             xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                             xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
-//			//if transform class defined (as an attribute) use it first
-//			if (xattribs.exists(XML_TRANSFORMCLASS_ATTRIBUTE)) {
-//				reformat= new Reformat(xattribs.getString(XML_ID_ATTRIBUTE),
-//						xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE));
-//				if (xattribs.exists(XML_LIBRARYPATH_ATTRIBUTE)) {
-//					reformat.setLibraryPath(xattribs.getString(XML_LIBRARYPATH_ATTRIBUTE));
-//				}
-//			} else {
-//				if (xattribs.exists(XML_JAVASOURCE_ATTRIBUTE)){
-//					dynaTransCode = new DynamicJavaCode(xattribs.getString(XML_JAVASOURCE_ATTRIBUTE));
-//				}else{
-//					// do we have child node wich Java source code ?
-//				    try {
-//				        dynaTransCode = DynamicJavaCode.fromXML(graph, nodeXML);
-//				    } catch(Exception ex) {
-//				        //do nothing
-//				    }
-//				}
-//				if (dynaTransCode != null) {
-//					reformat = new Reformat(xattribs.getString(XML_ID_ATTRIBUTE), dynaTransCode);
-//				} else { //last chance to find reformat code is in transform attribute
-//					if (xattribs.exists(XML_TRANSFORM_ATTRIBUTE)) {
-//						reformat = new Reformat(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(XML_TRANSFORM_ATTRIBUTE), true);
-//					} else {
-//						throw new RuntimeException("Can't create DynamicJavaCode object - source code not found !");
-//					}
-//				}
-//			}
 			reformat.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORMCLASS_ATTRIBUTE}));
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 		return reformat;
 	}

@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
@@ -260,21 +261,20 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 * @return          Description of the Returned Value
 	 * @since           July 23, 2002
 	 */
-	public static org.jetel.graph.Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ExtFilter filter;
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
 		try{
 			filter = new ExtFilter(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_FILTEREXPRESSION_ATTRIBUTE)){
 				filter.setFilterExpression(xattribs.getString(XML_FILTEREXPRESSION_ATTRIBUTE));
 			}else{
-				filter.setFilterExpression(xattribs.getText(nodeXML));
+				filter.setFilterExpression(xattribs.getText(xmlElement));
 			}
 			return filter;
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 

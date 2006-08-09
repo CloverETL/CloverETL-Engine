@@ -25,6 +25,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -251,9 +252,9 @@ public class FixLenDataWriterNIO extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
-		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
+		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
 		
 		try{
@@ -284,8 +285,7 @@ public class FixLenDataWriterNIO extends Node {
 			
 			
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 		
 		
