@@ -49,7 +49,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			case FLOATING_POINT_LITERAL:
                 if (valueImage.endsWith(DECIMAL_DISTINCTER_LOWERCASE) || 
                         valueImage.endsWith(DECIMAL_DISTINCTER_UPPERCASE)){
-                    value=new BigDecimal(valueImage);
+                    value=new BigDecimal(valueImage.substring(0,valueImage.length()-1));
                 }else{
                     value= new CloverDouble( Double.parseDouble(valueImage));
                 }
@@ -61,7 +61,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
                 // determine size of Integere literal
                 if (valueImage.endsWith(LONG_DISTINCTER_UPPERCASE) || 
                         valueImage.endsWith(LONG_DISTINCTER_LOWERCASE)) {
-                    value = new CloverLong(Long.parseLong(valueImage));
+                    value = new CloverLong(Long.parseLong(valueImage.substring(0,valueImage.length()-1)));
                 } else {
                     // try to parse as INT first, if error then LONG
                     try {
