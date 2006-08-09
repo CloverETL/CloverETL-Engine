@@ -2050,7 +2050,8 @@ void FunctionCallParameter()       : {}
 
 /* !!!! INTERNAL FUNCTIONS && PROCEDURES START HERE !!!! */
 
-void BuildInFunction()       : {}
+void BuildInFunction()       :
+{ Token t;}
 {
 	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #SubStrNode( 3) */
                                                                                                {
@@ -2377,6 +2378,7 @@ void BuildInFunction()       : {}
                                             }
                                           }
 /*@egen*/
+	|Date2NumNode()
 	
 }
 
@@ -2608,7 +2610,41 @@ void Str2DateNode() :
 /*@egen*/ 
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" |"sec" > }
+void Date2NumNode() :
+{/*@bgen(jjtree) Date2NumNode */
+  CLVFDate2NumNode jjtn000 = new CLVFDate2NumNode(this, JJTDATE2NUMNODE);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
+/*@egen*/ Token t; }
+{/*@bgen(jjtree) Date2NumNode */
+        try {
+/*@egen*/
+	"date2num" "(" AdditiveExpression() "," t=<DATE_FIELD_LITERAL> { jjtn000.setCalendarField(t.image); } ")"/*@bgen(jjtree)*/
+        } catch (Throwable jjte000) {
+          if (jjtc000) {
+            jjtree.clearNodeScope(jjtn000);
+            jjtc000 = false;
+          } else {
+            jjtree.popNode();
+          }
+          if (jjte000 instanceof RuntimeException) {
+            throw (RuntimeException)jjte000;
+          }
+          if (jjte000 instanceof ParseException) {
+            throw (ParseException)jjte000;
+          }
+          throw (Error)jjte000;
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+            jjtreeCloseNodeScope(jjtn000);
+          }
+        }
+/*@egen*/ 
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 
 
 TOKEN : /* IDENTIFIERS */

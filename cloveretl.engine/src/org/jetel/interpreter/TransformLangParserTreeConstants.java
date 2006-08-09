@@ -68,6 +68,7 @@ public interface TransformLangParserTreeConstants
   public int JJTDATEDIFFNODE = 61;
   public int JJTDATE2STRNODE = 62;
   public int JJTSTR2DATENODE = 63;
+  public int JJTDATE2NUMNODE = 64;
 
 
   public String[] jjtNodeName = {
@@ -135,5 +136,6 @@ public interface TransformLangParserTreeConstants
     "DateDiffNode",
     "Date2StrNode",
     "Str2DateNode",
+    "Date2NumNode",
   };
 }
