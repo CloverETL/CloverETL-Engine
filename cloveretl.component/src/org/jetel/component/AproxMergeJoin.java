@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -682,9 +683,17 @@ public class AproxMergeJoin extends Node {
 			}
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
 			join.setTransformationParameters(xattribs.attributes2Properties(
-	                new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
+	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
+	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
+	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
+	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,
+	                		XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
 			join.setTransformationParametersForSuspicious(xattribs.attributes2Properties(
-	                new String[]{XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE}));
+	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
+	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
+	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
+	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,
+	                		XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
 			
 			return join;
         }catch (Exception ex) {
@@ -692,6 +701,53 @@ public class AproxMergeJoin extends Node {
         }
 	}
  
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		
+		if (joinKeys != null) {
+			StringBuffer buf = new StringBuffer(joinKeys[0]);
+			for (int i=1; i< joinKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (slaveOverwriteKeys!= null) {
+			StringBuffer buf = new StringBuffer(slaveOverwriteKeys[0]);
+			for (int i=1; i< slaveOverwriteKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverwriteKeys[i]); 
+			}
+			xmlElement.setAttribute(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,buf.toString());
+		}
+		
+		if (matchingKey!=null){
+			xmlElement.setAttribute(XML_MATCHING_KEY_ATTRIBUTE,matchingKey[0]);
+		}
+		
+		if (slaveMatchingKey!=null){
+			xmlElement.setAttribute(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,slaveMatchingKey[0]);
+		}
+		
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORM_CLASS_ATTRIBUTE,transformClassName);
+		} 
+		
+		if (transformSource!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		}
+		
+		xmlElement.setAttribute(XML_CONFORMITY_ATTRIBUTE,String.valueOf(conformityLimit));
+        
+		if (transformationParameters != null) {
+			Enumeration propertyAtts = transformationParameters.propertyNames();
+			while (propertyAtts.hasMoreElements()) {
+				String attName = (String)propertyAtts.nextElement();
+				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+			}
+		}
+		
+	}
+    
 	public boolean checkConfig() {
 		return true;
 	}
