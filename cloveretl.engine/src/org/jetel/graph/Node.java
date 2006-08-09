@@ -786,7 +786,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return    Description of the Returned Value
 	 *@since     May 21, 2002
 	 */
-	public void toXML(Element xmlElement) {
+	@Override public void toXML(Element xmlElement) {
 		// set basic XML attributes of all graph components
 		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
 		xmlElement.setAttribute(XML_TYPE_ATTRIBUTE, getType());
@@ -800,7 +800,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return          Description of the Returned Value
 	 *@since           May 21, 2002
 	 */
-	@Override public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML)throws XMLConfigurationException {
+	@Override public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
         throw new  UnsupportedOperationException("not implemented in org.jetel.graph.Node"); 
 	}
 

@@ -9,6 +9,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
+import org.w3c.dom.Element;
 
 
 /**
@@ -121,8 +122,9 @@ public abstract class GraphElement {
         this.name = name;
     }
     
-    public static GraphElement fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) throws XMLConfigurationException {
+    public static GraphElement fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
     }
     
+    public abstract void toXML(Element xmlElement);
 }
