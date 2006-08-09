@@ -21,12 +21,14 @@ import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
@@ -552,9 +554,8 @@ public class XMLExtract extends Node
 	// //////////////////////////////////////////////////////////////////////////
 	// De-Serialization
 	//
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML)
-	{
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+	   @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		XMLExtract extract;
 
 		if (xattribs.exists("id"))
@@ -576,7 +577,7 @@ public class XMLExtract extends Node
 							.getString("sourceUri")));
 				}
 				// Process the mappings
-				NodeList nodes = nodeXML.getChildNodes();
+				NodeList nodes = xmlElement.getChildNodes();
 				for (int i = 0; i < nodes.getLength(); i++)
 				{
 					org.w3c.dom.Node node = nodes.item(i);
@@ -587,7 +588,7 @@ public class XMLExtract extends Node
 			}
 			catch (Exception ex)
 			{
-				System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+		           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 			}
 		}
 		return null;

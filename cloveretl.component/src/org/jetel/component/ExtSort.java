@@ -31,11 +31,13 @@ import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
+import org.w3c.dom.Element;
 /**
  *  <h3>Sort Component</h3>
  *
@@ -639,8 +641,8 @@ public class ExtSort extends Node {
      * @return          Description of the Returned Value
      * @since           May 21, 2002
      */
-    public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
-        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         ExtSort sort;
         try {
             sort = new ExtSort(xattribs.getString(XML_ID_ATTRIBUTE), xattribs.getString(
@@ -657,8 +659,7 @@ public class ExtSort extends Node {
                 sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
             }
         } catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-            return null;
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
         return sort;
     }

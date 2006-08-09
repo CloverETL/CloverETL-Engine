@@ -34,6 +34,7 @@ import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
@@ -259,9 +260,9 @@ public class FixLenDataReaderNIO extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		FixLenDataReaderNIO aFixLenDataReaderNIO = null;
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
@@ -290,8 +291,7 @@ public class FixLenDataReaderNIO extends Node {
 			}
 			
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
-			return null;
+	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 
 		return aFixLenDataReaderNIO;
