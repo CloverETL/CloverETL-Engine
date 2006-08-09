@@ -734,6 +734,23 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
+    public Object visit(CLVFDate2NumNode node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object date = stack.pop();
+
+        if (date instanceof Date) {
+            node.calendar.setTime((Date) date);
+            stack.push(new CloverInteger(node.calendar.get(node.calendarField)));
+        } else {
+            Object arguments[] = { date };
+            throw new TransformLangExecutorRuntimeException(arguments,
+                    "date2num - no Date expression");
+        }
+
+        return data;
+    }
+
+    
     public Object visit(CLVFDateDiffNode node, Object data) {
         Object date1, date2;
 

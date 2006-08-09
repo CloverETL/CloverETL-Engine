@@ -745,7 +745,8 @@ void FunctionCallParameter() #void : {}
 
 /* !!!! INTERNAL FUNCTIONS && PROCEDURES START HERE !!!! */
 
-void BuildInFunction() #void : {}
+void BuildInFunction() #void :
+{ Token t;}
 {
 	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #SubStrNode(3) // (string,from index,length)
 	|"uppercase" "(" AdditiveExpression() ")" #UppercaseNode(1)
@@ -772,6 +773,7 @@ void BuildInFunction() #void : {}
 	|"pi" "(" ")" #PINode(0)
 	|"round" "(" AdditiveExpression() ")" #RoundNode(1)
 	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
+	|Date2NumNode()
 	
 }
 
@@ -818,7 +820,13 @@ void Str2DateNode() :
 	")" 
 }
 
-TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" |"sec" > }
+void Date2NumNode() :
+{ Token t; }
+{
+	"date2num" "(" AdditiveExpression() "," t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); } ")" 
+}
+
+TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 
 
 TOKEN : /* IDENTIFIERS */

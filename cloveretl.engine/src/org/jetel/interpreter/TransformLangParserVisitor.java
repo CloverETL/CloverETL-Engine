@@ -70,4 +70,5 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFDateDiffNode node, Object data);
   public Object visit(CLVFDate2StrNode node, Object data);
   public Object visit(CLVFStr2DateNode node, Object data);
+  public Object visit(CLVFDate2NumNode node, Object data);
 }

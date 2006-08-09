@@ -54,9 +54,9 @@ public interface TransformLangParserConstants {
   int DECIMAL_VAR = 59;
   int BOOL_VAR = 60;
   int STRING_VAR = 61;
-  int DATE_FIELD_LITERAL = 108;
-  int IDENTIFIER = 109;
-  int ERROR = 110;
+  int DATE_FIELD_LITERAL = 109;
+  int IDENTIFIER = 110;
+  int ERROR = 111;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -171,6 +171,7 @@ public interface TransformLangParserConstants {
     "\"datediff\"",
     "\"date2str\"",
     "\"str2date\"",
+    "\"date2num\"",
     "<DATE_FIELD_LITERAL>",
     "<IDENTIFIER>",
     "<ERROR>",
