@@ -19,28 +19,24 @@
 
 package org.jetel.interpreter;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 
 import junit.framework.TestCase;
 
-import org.jetel.data.*;
-import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.data.SetVal;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.interpreter.*;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
-import org.jetel.metadata.*;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * @author dpavlis
@@ -112,11 +108,12 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(Integer.MIN_VALUE,((CloverInteger)result[2]).intValue());
 		      assertEquals(Integer.MAX_VALUE,((CloverInteger)result[3]).intValue());
 		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),((CloverInteger)result[4]).intValue());
+	    } catch (ParseException e) {
+	    	System.err.println(e.getMessage());
+	    	e.printStackTrace();
+	    	throw new RuntimeException("Parse exception");
+	    }
 		      
-		    } catch (Exception e) {
-		    	System.err.println(e.getMessage());
-		    	e.printStackTrace();
-		    }
 	}
 	
 	public void test_long(){
@@ -153,9 +150,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(((Integer)record.getField("Value").getValue()).longValue(),((CloverLong)result[4]).longValue());
 //		      assertEquals(Integer.MAX_VALUE,((CloverInteger)result[5]).intValue());
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -195,9 +193,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals((Double)record.getField("Age").getValue(),new Double(((Decimal)result[5]).getDouble()));
 		      assertEquals(new Double(Double.MIN_VALUE),new Double(((Decimal)result[6]).getDouble()));
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -235,9 +234,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals((Double)record.getField("Age").getValue(),new Double(((Decimal)result[4]).getDouble()));
 		      assertEquals(new Double(Double.MIN_VALUE),new Double(((Decimal)result[5]).getDouble()));
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -281,9 +281,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(tmp.toString(),((StringBuffer)result[4]).toString());
 		      assertEquals("\"",((StringBuffer)result[5]).toString());
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -319,9 +320,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new GregorianCalendar(2006,0,01,01,02,03).getTime(),((Date)result[2]));
 		      assertEquals((Date)record.getField("Born").getValue(),((Date)result[3]));
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -355,9 +357,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(false,((Boolean)result[1]).booleanValue());
 		      assertEquals(false,((Boolean)result[2]).booleanValue());
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -392,9 +395,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("hello",((StringBuffer)result[2]).toString());
 //		      assertEquals(2,((CloverInteger)result[3]).getInt());
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 	}
 
@@ -403,8 +407,8 @@ public class TestInterpreter extends TestCase {
 		String expStr = "int i; i=10;\n"+
 						"int j; j=100;\n" +
 						"int iplusj;iplusj=i+j; print_err(\"plus int:\"+iplusj);\n" +
-						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
-						"long m;m=1;print_err(m)\n" +
+						"long l;l="+Integer.MAX_VALUE/10+"l;print_err(l);\n" +
+						"long m;m="+(Integer.MAX_VALUE)+"l;print_err(m)\n" +
 						"long lplusm;lplusm=l+m;print_err(\"plus long:\"+lplusm);\n" +
 //						"number m; m=0.001;print_err(m);\n" +
 //						"number nplusm; nplusm=n+m;print_err(\"plus number:\"+nplusm);\n" +
@@ -443,7 +447,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals(110,((CloverInteger)result[2]).getInt());
-		      assertEquals((long)Integer.MAX_VALUE+11,((CloverLong)result[5]).getLong());
+		      assertEquals((long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,((CloverLong)result[5]).getLong());
 		      assertEquals(new Double(0.01),new Double(((Decimal)result[8]).getDouble()));
 		      assertEquals(new Double(100),new Double(((Decimal)result[9]).getDouble()));
 		      assertEquals(new Double(0.11),new Double(((Decimal)result[12]).getDouble()));
@@ -453,10 +457,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("hello0.01",(((StringBuffer)result[18]).toString()));
 		      assertEquals(new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_minus(){
@@ -506,10 +511,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(0.1),new Double(((Decimal)result[12]).getDouble()));
 		      assertEquals(new GregorianCalendar(2004,0,20,15,00,30).getTime(),(Date)result[13]);
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_multiply(){
@@ -556,10 +562,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(10),new Double(((Decimal)result[11]).getDouble()));
 		      assertEquals(new Double(0),new Double(((Decimal)result[12]).getDouble()));
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_division(){
@@ -613,10 +620,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(0.001),new Double(((Decimal)result[17]).getDouble()));
 		      assertEquals(new Double(0.01),new Double(((Decimal)result[18]).getDouble()));
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_modulus(){
@@ -663,10 +671,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(10),new Double(((Decimal)result[11]).getDouble()));
 		      assertEquals(new Double(0),new Double(((Decimal)result[12]).getDouble()));
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_increment_decrement(){
@@ -706,10 +715,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(2),new Double(((Decimal)result[2]).getDouble()));
 		      assertEquals(new Double(5.5),new Double(((Decimal)result[3]).getDouble()));
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_equal(){
@@ -767,10 +777,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(true,((Boolean)result[17]).booleanValue());
 		      assertEquals(false,((Boolean)result[18]).booleanValue());
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_non_equal(){
@@ -805,10 +816,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(true,((Boolean)result[4]).booleanValue());
 		      assertEquals(false,((Boolean)result[6]).booleanValue());
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_greater_less(){
@@ -861,10 +873,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("eq8",true,((Boolean)result[16]).booleanValue());
 		      assertEquals("eq9",false,((Boolean)result[17]).booleanValue());
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_regex(){
@@ -896,10 +909,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(false,((Boolean)result[2]).booleanValue());
 		      assertEquals(true,((Boolean)result[4]).booleanValue());
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_1_expression() {
@@ -924,9 +938,10 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 		}
 	
@@ -952,9 +967,10 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 		
 	}
@@ -981,9 +997,10 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		    } catch (Exception e) {
+		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
 		    }
 		
 	}
@@ -998,8 +1015,9 @@ public class TestInterpreter extends TestCase {
 						"decimal d;" +
 						"if (i.gt.j and l.eq.1) {d=0;print_err('d rovne 0');}\n" +
 						"else d=0.1;\n" +
-						"number n;" +
-						"if (d==0.1 || l<=1) n=0;\n" +
+						"number n;\n" +
+						"if (d==0.1) n=0;\n" +
+						"if (d=0.1 || l<=1) n=0;\n" +
 						"else {n=-1;print_err('n rovne -1')}\n" +
 						"date date1; date1=2006-01-01;print_err(date1);\n" +
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
@@ -1037,10 +1055,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(new Double(0),new Double(((Decimal)result[4]).getDouble()));
 		      assertEquals(true,((Boolean)result[7]).booleanValue());
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
 	public void test_switch(){
@@ -1101,10 +1120,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("April",((StringBuffer)result[2]).toString());
 		      assertEquals(true,((Boolean)result[4]).booleanValue());
 		      
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 	
 	public void test_while(){
@@ -1114,10 +1134,9 @@ public class TestInterpreter extends TestCase {
 						"int yer;yer=0;\n" +
 						"while (born<now) {\n" +
 						"	born=dateadd(born,1,year);\n " +
-						"	while (yer<5) yer=yer+1;" +
+						"	while (yer<5) yer=yer+1;\n" +
 						"	yer=yer+1;}\n" +
-						"print_err('years:'+yer);\n" +
-						"decimal april;april=4;\n";
+						"print_err('years:'+yer);\n";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
 
@@ -1141,10 +1160,101 @@ public class TestInterpreter extends TestCase {
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals(39,((CloverInteger)result[2]).getInt());
 		      
-		} catch (Exception e) {
+		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    }
+		    	throw new RuntimeException("Parse exception");
+	    }
 	}
 
+	public void test_do_while(){
+		System.out.println("\nDo-while test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"date now;now=today();print_err(now);\n" +
+						"int yer;yer=0;\n" +
+						"do {\n" +
+						"	born=dateadd(born,1,year);\n " +
+						"	print_err('years:'+yer);\n" +
+						"	print_err(born);\n" +
+						"	do yer=yer+1; while (yer<5);\n" +
+						"	print_err('years:'+yer);\n" +
+						"	print_err(born);\n" +
+						"	yer=yer+1;}\n" +
+						"while (born<now)\n" +
+						"print_err('years on the end:'+yer);\n";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(72,((CloverInteger)result[2]).getInt());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_for(){
+		System.out.println("\nDo-while test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"date now;now=today();print_err(now);\n" +
+						"int yer;yer=0;\n" +
+						"for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
+						"print_err('years on the end:'+yer);\n" +
+						"boolean b;\n" +
+						"if (yer=100) b=true;\n" +
+						"for (b=false;!b;yer=yer+1) \n" +
+						"	if (yer==100) b=true;" +
+						"print_err('years on the end:'+yer);\n"+
+						"int i;\n" +
+						"for (i=0;i.le.10;i=i+1) ;\n" +
+						"print_err('on the end i='+i);\n";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(34,((CloverInteger)result[2]).getInt());
+		      assertEquals(11,((CloverInteger)result[3]).getInt());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
 }
