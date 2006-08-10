@@ -34,6 +34,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
 import org.jetel.plugin.PluginDescriptor;
 import org.jetel.plugin.Plugins;
+import org.w3c.dom.Element;
 
 /**
  *  Description of the Class
@@ -47,7 +48,7 @@ public class ComponentFactory {
     private static Log logger = LogFactory.getLog(ComponentFactory.class);
 
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
-	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, org.w3c.dom.Node.class };
+	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
 	private final static Map componentMap = new HashMap();
 	
 	public static void init() {
