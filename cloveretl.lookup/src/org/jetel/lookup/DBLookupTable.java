@@ -34,11 +34,14 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.NotFoundException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SimpleCache;
+import org.w3c.dom.Element;
 
 /**
  *  Database table/SQLquery based lookup table which gets data by performing SQL
@@ -423,8 +426,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
-    public static DBLookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
-        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+	   public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
         String type;
@@ -489,5 +492,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 	public int getTotalNumber() {
 		return totalNumber;
+	}
+
+	public void toXML(Element xmlElement) {
+		// TODO Auto-generated method stub
+		
 	}
 }
