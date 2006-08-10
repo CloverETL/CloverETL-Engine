@@ -168,7 +168,7 @@ public class runGraph {
             System.exit(-1);
 		} catch (RuntimeException ex) {
 			System.err.println("Error during graph initialization !");
-			System.err.println(ex.getCause().getMessage());
+			System.err.println(ex.getCause()!=null ? ex.getCause().getMessage():"");
             if (verbose) {
                 ex.printStackTrace(System.err);
             }
