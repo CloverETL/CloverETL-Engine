@@ -200,9 +200,9 @@ public class TransformationGraphXMLReaderWriter {
 		Document document;
 		Iterator colIterator;
 		Map metadata = new HashMap(ALLOCATE_MAP_SIZE);
-		List phases = new LinkedList();
-		Map allNodes = new LinkedHashMap(ALLOCATE_MAP_SIZE);
-		Map edges = new HashMap(ALLOCATE_MAP_SIZE);
+	//	List<Phase> phases = new LinkedList<Phase>();
+	//	Map<String,Node> allNodes = new LinkedHashMap<String,Node>(ALLOCATE_MAP_SIZE);
+	//	Map<String,Edge> edges = new HashMap<String,Edge>(ALLOCATE_MAP_SIZE);
 
 		// delete all Nodes & Edges possibly held by TransformationGraph
 		graph.clear();
@@ -270,7 +270,7 @@ public class TransformationGraphXMLReaderWriter {
 			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
 			instantiateMetadata(metadataElements, metadata);
 
-			// register metadata (DataRecordMetadata) within transformation graph
+			// register all metadata (DataRecordMetadata) within transformation graph
 			graph.addDataRecordMetadata(metadata);
 
 			// handle all defined lookup tables
@@ -278,27 +278,13 @@ public class TransformationGraphXMLReaderWriter {
 			instantiateLookupTables(lookupsElements);
 
 			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
-			instantiatePhases(phaseElements, phases,allNodes);
+			instantiatePhases(phaseElements);
 
 			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-			instantiateEdges(edgeElements, edges, metadata, allNodes, graph.isDebugMode());
+			instantiateEdges(edgeElements, metadata, graph.isDebugMode());
 		}
 		catch (Exception ex) {
 			throw new XMLConfigurationException("Failed for unknown reason: ",ex);
-		}
-		// register all PHASEs, NODEs & EDGEs within transformation graph;
-		colIterator = phases.iterator();
-		while (colIterator.hasNext()) {
-			graph.addPhase((org.jetel.graph.Phase) colIterator.next());
-		}
-		colIterator = allNodes.values().iterator();
-		while (colIterator.hasNext()) {
-			Node node=(org.jetel.graph.Node) colIterator.next();
-			graph.addNode(node,node.getPhase());
-		}
-		colIterator = edges.values().iterator();
-		while (colIterator.hasNext()) {
-			graph.addEdge((org.jetel.graph.Edge) colIterator.next());
 		}
 
 	}
@@ -312,7 +298,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @exception  IOException   Description of Exception
 	 * @since                    May 24, 2002
 	 */
-	private void instantiateMetadata(NodeList metadataElements, Map metadata) throws XMLConfigurationException {
+	private void instantiateMetadata(NodeList metadataElements,Map metadata) throws XMLConfigurationException {
 		String metadataID;
 		String fileURL=null;
 		Object recordMetadata;
@@ -353,7 +339,7 @@ public class TransformationGraphXMLReaderWriter {
 			}catch(NotFoundException ex){
 				throw new XMLConfigurationException("Metadata - Attributes missing "+ex.getMessage());
 			}
-			// register metadata object with Transformation graph
+			// register metadata object
 			if (metadata.put(metadataID, recordMetadata)!=null){
 				throw new XMLConfigurationException("Metadata "+metadataID+" already defined - duplicate ID detected!");
 			}
@@ -362,7 +348,7 @@ public class TransformationGraphXMLReaderWriter {
 	}
 
 	
-	private void instantiatePhases(NodeList phaseElements, List phases, Map allNodes) throws XMLConfigurationException{
+	private void instantiatePhases(NodeList phaseElements) throws XMLConfigurationException,GraphConfigurationException{
 		org.jetel.graph.Phase phase;
 		int phaseNum;
 		NodeList nodeElements;
@@ -374,7 +360,7 @@ public class TransformationGraphXMLReaderWriter {
 			try{
 			phaseNum = attributes.getInteger("number");
 			phase=new Phase(phaseNum);
-			phases.add(phase);
+			graph.addPhase(phase);
 			}catch(NotFoundException ex) {
 				throw new XMLConfigurationException("Attribute is missing for phase - "+ex.getMessage());
 			}catch(NumberFormatException ex1){
@@ -384,7 +370,7 @@ public class TransformationGraphXMLReaderWriter {
 			// we expect that all childern of phase are Nodes
 			//phaseElements.item(i).normalize();
 			nodeElements=phaseElements.item(i).getChildNodes();
-			instantiateNodes(phase,nodeElements,allNodes);
+			instantiateNodes(phase,nodeElements);
 		}
 	}
 
@@ -396,10 +382,10 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateNodes(Phase phase, NodeList nodeElements, Map nodes) throws XMLConfigurationException {
+	private void instantiateNodes(Phase phase, NodeList nodeElements) throws XMLConfigurationException,GraphConfigurationException {
 		org.jetel.graph.Node graphNode;
 		String nodeType;
-		String nodeID="";
+		String nodeID="unknown";
 		String nodeEnabled;
         int nodePassThroughInputPort;
         int nodePassThroughOutputPort;
@@ -414,9 +400,9 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process Node element attributes "id" & "type"
 			try {
-				nodeID = attributes.getString("id");
-				nodeType = attributes.getString("type");
-                nodeEnabled = attributes.getString("enabled", EnabledEnum.ENABLED.toString());
+				nodeID = attributes.getString(GraphElement.XML_ID_ATTRIBUTE);
+				nodeType = attributes.getString(GraphElement.XML_TYPE_ATTRIBUTE);
+                nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.ENABLED.toString());
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
 				if(!nodeEnabled.equalsIgnoreCase(EnabledEnum.DISABLED.toString()) 
@@ -426,20 +412,16 @@ public class TransformationGraphXMLReaderWriter {
                     graphNode = new SimpleNode(nodeID);
                 }
 				if (graphNode != null) {
-                    graphNode.setPhase(phase);
+                    phase.addNode(graphNode);
                     graphNode.setEnabled(nodeEnabled);
                     graphNode.setPassThroughInputPort(nodePassThroughInputPort);
                     graphNode.setPassThroughOutputPort(nodePassThroughOutputPort);
-					if (nodes.put(nodeID, graphNode) != null) {
-						throw new XMLConfigurationException(
-								"Duplicate NodeID detected: " + nodeID);
-					}
 				} else {
 					throw new XMLConfigurationException(
 							"Error when creating Component type :" + nodeType);
 				}
 			} catch (NotFoundException ex) {
-				throw new XMLConfigurationException("Attribute at Node "+nodeID+" is missing - "
+				throw new XMLConfigurationException("Missing attribute at node "+nodeID+" - "
 						+ ex.getMessage());
 			}
 		}
@@ -456,7 +438,7 @@ public class TransformationGraphXMLReaderWriter {
 	 * @param  nodes         Description of Parameter
 	 * @since                May 24, 2002
 	 */
-	private void instantiateEdges(NodeList edgeElements, Map edges, Map metadata, Map nodes, boolean graphDebugMode) throws XMLConfigurationException {
+	private void instantiateEdges(NodeList edgeElements, Map metadata, boolean graphDebugMode) throws XMLConfigurationException,GraphConfigurationException {
 		String edgeID="unknown";
 		String edgeMetadataID;
 		String fromNodeAttr;
@@ -475,12 +457,12 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process edge element attributes "id" & "fileURL"
 			try{
-			edgeID = attributes.getString("id");
+			edgeID = attributes.getString(GraphElement.XML_ID_ATTRIBUTE);
 			edgeMetadataID = attributes.getString("metadata");
 			fromNodeAttr = attributes.getString("fromNode");
 			toNodeAttr = attributes.getString("toNode");
 			}catch(NotFoundException ex){
-				throw new XMLConfigurationException("Attribute missing at edge "+edgeID+" - "+ex.getMessage());
+				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
             if(graphDebugMode)
                 debugMode = attributes.getBoolean("debugMode", false);
@@ -497,19 +479,25 @@ public class TransformationGraphXMLReaderWriter {
 				// stub
 				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj, null, debugMode, fastPropagate);
 			}
-			if (edges.put(edgeID, graphEdge)!=null){
-				throw new XMLConfigurationException("Duplicate EdgeID detected: "+edgeID);
-			}
-			// assign edge to fromNode
+            
+            // register edge within graph
+            graph.addEdge(graphEdge);
+			
+            // assign edge to fromNode
 			specNodePort = fromNodeAttr.split(":");
 			if (specNodePort.length!=2){
-				throw new XMLConfigurationException("Wrong definition of \"fromNode\" <Node>:<Port> at "+edgeID+" edge!");
+				throw new XMLConfigurationException("Wrong definition of \"fromNode\" ["+fromNodeAttr+"] <Node>:<Port> at "+edgeID+" edge !");
 			}
-			graphNode = (org.jetel.graph.Node) nodes.get(specNodePort[0]);
-			fromPort=Integer.parseInt(specNodePort[1]);
+			graphNode = graph.getNodes().get(specNodePort[0]);
 			if (graphNode == null) {
-				throw new XMLConfigurationException("Can't find node ID: " + fromNodeAttr);
+				throw new XMLConfigurationException("Can't find node with ID: " + fromNodeAttr);
 			}
+            try{
+                fromPort=Integer.parseInt(specNodePort[1]);
+            }catch(NumberFormatException ex){
+                throw new XMLConfigurationException("Can't parse \"fromNode\"  port number value at edge "+edgeID+" : "+specNodePort[1]);
+            }
+            
 			// check whether port isn't already assigned
 			if (graphNode.getOutputPort(fromPort)!=null){
 				throw new XMLConfigurationException("Output port ["+fromPort+"] of "+graphNode.getId()+" already assigned !");
@@ -518,14 +506,18 @@ public class TransformationGraphXMLReaderWriter {
 			// assign edge to toNode
 			specNodePort = toNodeAttr.split(":");
 			if (specNodePort.length!=2){
-				throw new XMLConfigurationException("Wrong definition of \"toNode\" <Node>:<Port> at edge: "+edgeID+" !");
+				throw new XMLConfigurationException("Wrong definition of \"toNode\" ["+toNodeAttr+"] <Node>:<Port> at edge: "+edgeID+" !");
 			}
 			// Node & port specified in form of: <nodeID>:<portNum>
-			graphNode = (org.jetel.graph.Node) nodes.get(specNodePort[0]);
-			toPort=Integer.parseInt(specNodePort[1]);
+			graphNode = graph.getNodes().get(specNodePort[0]);
 			if (graphNode == null) {
 				throw new XMLConfigurationException("Can't find node ID: " + fromNodeAttr);
 			}
+            try{
+                toPort=Integer.parseInt(specNodePort[1]);
+            }catch(NumberFormatException ex){
+                throw new XMLConfigurationException("Can't parse \"toNode\" number value at edge "+edgeID+" : "+specNodePort[1]);
+            }
 			// check whether port isn't already assigned
 			if (graphNode.getInputPort(toPort)!=null){
 				throw new XMLConfigurationException("Input port ["+toPort+"] of "+graphNode.getId()+" already assigned !");

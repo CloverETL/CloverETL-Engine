@@ -26,6 +26,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,8 +64,8 @@ public final class TransformationGraph {
 
 	private Map <Integer,Phase> phases;
 
-	private Set <Node> nodes;
-    private Set <Edge> edges;
+	private Map <String,Node> nodes;
+    private Map <String,Edge> edges;
     
     // auxiliary variables
 	private Phase[] phasesArray;
@@ -109,8 +110,8 @@ public final class TransformationGraph {
 	public TransformationGraph(String _name) {
 		this.name = _name;
 		phases = new HashMap<Integer,Phase>();
-		nodes = new HashSet<Node>();
-		edges = new HashSet<Edge>();
+		nodes = new HashMap<String,Node>();
+		edges = new HashMap<String,Edge>();
 		connections = new HashMap <String,IConnection> ();
 		sequences = new HashMap<String,Sequence> ();
 		lookupTables = new HashMap<String,LookupTable> ();
@@ -419,12 +420,13 @@ public final class TransformationGraph {
         TransformationGraphAnalyzer.disableNodesInPhases(phasesArray);
        
         // assemble new list of all Nodes (after disabling some)
-        nodesList = new LinkedList<Node> ();
+        nodesList = new ArrayList<Node> (nodes.size());
         for(int i=0;i<phasesArray.length;i++){
             nodesList.addAll(phasesArray[i].getNodes());
         }
         // list of edges - so they can be further analyzed
-        edgesList = Arrays.asList(edges.toArray(new Edge[0]));
+        edgesList = new ArrayList<Edge>(edges.size());
+        edgesList.addAll(edges.values());  //.toArray(new Edge[0]));
      
         // analyze graph's topology
         try {
@@ -436,8 +438,8 @@ public final class TransformationGraph {
 		TransformationGraphAnalyzer.analyzeEdges(edgesList);
 		TransformationGraphAnalyzer.analyzeMultipleFeeds(nodesList);
 		
-        edgesList.clear();
-        nodesList.clear();
+        edgesList=null;
+        nodesList=null;
 		// initialized OK
 		return true;
 	}
@@ -499,15 +501,18 @@ public final class TransformationGraph {
 
 
 	/**
-	 *  Adds Node to transformation graph - just for registration
+	 *  Adds Node to transformation graph - just for registration.<br>
+     *  This method should never be called directly - only from Phase class as
+     *  a result of phase.addNode() !.
 	 *
-	 * @param  node   The feature to be added to the Node attribute
+	 * @param  node   The Node to be registered within graph attribute
+     * @param  phase    The Phase to which node belongs
 	 */
 	void addNode(Node node,Phase phase) throws GraphConfigurationException {
 		if (phase==null){
 		    throw new IllegalArgumentException("Phase parameter can NOT be null !");
         }
-        if (!nodes.add(node)){
+        if (nodes.put(node.getId(),node)!=null){
             throw new GraphConfigurationException("Node already exists in graph "+node);
         }
 		node.setGraph(this);
@@ -527,13 +532,13 @@ public final class TransformationGraph {
     }
 
 	/**
-	 * An operation that registeres Edge within current graph
+	 * An operation that registeres Edge within current graph.
 	 *
 	 * @param  edge  The feature to be added to the Edge attribute
 	 * @since        April 2, 2002
 	 */
 	public void addEdge(Edge edge) throws GraphConfigurationException  {
-		if (!edges.add(edge)){
+		if (edges.put(edge.getId(),edge)!=null){
             throw new GraphConfigurationException("Edge already exists in graph "+edge); 
         }
 		edge.setGraph(this); // assign this graph reference to Edge
@@ -673,10 +678,10 @@ public final class TransformationGraph {
 			iterator = phasesArray[i].getNodes().iterator();
 			while (iterator.hasNext()) {
 				node = (Node) iterator.next();
-				logger.info("\t" + node.getId() + " : " + node.getName() + " phase: " + node.getPhase());
+				logger.info("\t" + node.getId() + " : " + (node.getName() !=null ? node.getName() : "") + " phase: " + node.getPhase().getPhaseNum());
 			}
 			logger.info("\t... edges ...");
-			iterator = phasesArray[i].getEdges().iterator();
+			iterator = phasesArray[i].getEdgesInPhase().iterator();
 			while (iterator.hasNext()) {
 				edge = (Edge) iterator.next();
 				logger.info("\t" + edge.getId() + " type: "
@@ -783,6 +788,14 @@ public final class TransformationGraph {
         deleteSequences();
         deleteLookupTables();
         deleteDataRecordMetadata();
+    }
+
+    public Map<String, Node> getNodes() {
+        return nodes;
+    }
+
+    public Map<String, Edge> getEdges() {
+        return edges;
     }
 }
 /*
