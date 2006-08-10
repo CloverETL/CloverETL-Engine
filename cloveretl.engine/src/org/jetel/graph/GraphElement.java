@@ -122,9 +122,4 @@ public abstract class GraphElement {
         this.name = name;
     }
     
-    public static GraphElement fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-        throw new UnsupportedOperationException("not implemented in org.jetel.graph.GraphElement"); 
-    }
-    
-    public abstract void toXML(Element xmlElement);
 }
