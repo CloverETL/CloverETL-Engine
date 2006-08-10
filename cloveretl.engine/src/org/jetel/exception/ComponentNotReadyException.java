@@ -49,14 +49,22 @@ public class ComponentNotReadyException extends Exception {
       this.graphElement=element;
   }
   
+  public ComponentNotReadyException(GraphElement element,String message){
+      super(message);
+      this.graphElement=element;
+  }
+  
   public GraphElement getGraphElement(){
       return graphElement;
   }
 
     public String toString() {
         StringBuffer message = new StringBuffer(80);
-        message.append("Element [").append(graphElement.getId()).append(':');
-        message.append(graphElement.getName()).append("]-");
+        if (graphElement!=null){
+            message.append("Element [").append(graphElement.getId()).append(':');
+            if (graphElement.getName()!=null) message.append(graphElement.getName());
+            message.append("]-");
+        }
         message.append(super.getMessage());
         return message.toString();
     }
