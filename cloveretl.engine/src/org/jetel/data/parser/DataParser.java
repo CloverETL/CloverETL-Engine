@@ -1,0 +1,657 @@
+/*
+ *    jETeL/Clover - Java based ETL application framework.
+ *    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ *    
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *    
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ *    Lesser General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
+package org.jetel.data.parser;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
+
+import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+
+/**
+ * Parsing plain text data.
+ * 
+ * @author Martin Zatopek, David Pavlis
+ * @since September 29, 2005
+ * @see Parser
+ * @see org.jetel.data.Defaults
+ * @revision $Revision: 1.9 $
+ */
+public class DataParser implements Parser {
+	public final static String STRICT = "strict";
+
+	public final static String CONTROLLED = "controlled";
+
+	public final static String LENIENT = "lenient";
+
+	private String policyType = STRICT;
+
+	private DataRecordMetadata metadata;
+
+	private ReadableByteChannel reader;
+
+	private CharBuffer charBuffer;
+
+	private ByteBuffer byteBuffer;
+
+	private StringBuffer fieldBuffer;
+
+	private StringBuffer recordBuffer;
+
+	private CharsetDecoder decoder;
+
+	private int fieldLengths[];
+
+	private int recordCounter;
+	
+	private StringBuffer logString;
+	
+	private AhoCorasick delimiterSearcher;
+
+	private boolean skipLeadingBlanks = true;
+	
+	private boolean quotedStrings = false;
+
+	private StringBuffer tempReadBuffer;
+	
+	private boolean treatMultipleDelimitersAsOne = false;
+	
+	public DataParser() {
+		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+
+	}
+	
+	public DataParser(String charset) {
+		decoder = Charset.forName(charset).newDecoder();
+	}
+	
+	/**
+	 * @see org.jetel.data.parser.Parser#getNext()
+	 */
+	public DataRecord getNext() throws JetelException {
+		DataRecord record = new DataRecord(metadata);
+		record.init();
+
+		record = parseNext(record);
+
+		return record;
+	}
+
+	/**
+	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
+	 */
+	public DataRecord getNext(DataRecord record) throws JetelException {
+		record = parseNext(record);
+
+		return record;
+	}
+
+	/**
+	 * @see org.jetel.data.parser.Parser#open(java.lang.Object,
+	 *      org.jetel.metadata.DataRecordMetadata)
+	 */
+	public void open(Object inputDataSource, DataRecordMetadata metadata) throws ComponentNotReadyException {
+		//init private variables
+		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		charBuffer.flip(); // initially empty 
+		fieldBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		recordBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		tempReadBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+
+		//save metadata
+		this.metadata = metadata;
+
+		//save inputDataSource
+		if (!(inputDataSource instanceof ReadableByteChannel))
+			throw new ComponentNotReadyException("Input stream is not ReadableByteChannel type.");
+		reader = (ReadableByteChannel) inputDataSource;
+
+		//aho-corasick initialize
+		delimiterSearcher = new AhoCorasick();
+
+		// create array of delimiters & initialize them
+		String[] delimiters;
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			if(metadata.getField(i).isDelimited()) {
+				delimiters = metadata.getField(i).getDelimiters();
+				for(int j = 0; j < delimiters.length; j++) {
+					delimiterSearcher.addPattern(delimiters[j], i);
+				}
+			}
+		}
+
+		//aho-corasick initialize
+		if(metadata.isSpecifiedRecordDelimiter()) {
+			delimiters = metadata.getRecordDelimiters();
+			for(int j = 0; j < delimiters.length; j++) {
+				delimiterSearcher.addPattern(delimiters[j], -1);
+				delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
+			}
+		} else {
+			//delimiterSearcher.addPattern(System.getProperty("line.separator"), -2); //separator for skipping first line
+			delimiters = metadata.getField(metadata.getFields().length - 1).getDelimiters();
+			for(int j = 0; j < delimiters.length; j++) {
+			    delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
+			}
+		}
+		delimiterSearcher.createFailureFunction();
+	
+		// create array of field sizes & initialize them
+		fieldLengths = new int[metadata.getNumFields()];
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			if(metadata.getField(i).isFixed()) {
+				fieldLengths[i] = metadata.getField(i).getSize();
+			}
+		}
+
+		//decoder reset
+		decoder.reset();
+
+		//record counter reset
+		recordCounter = 0;
+	}
+
+	/**
+	 * @see org.jetel.data.parser.Parser#close()
+	 */
+	public void close() {
+		if(reader != null) {
+			try {
+				reader.close();
+			} catch(IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * @throws IllegalAccessException
+	 * @see org.jetel.data.parser.Parser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
+	 */
+	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
+		throw new IllegalArgumentException();
+	}
+
+	private DataRecord parseNext(DataRecord record) {
+		int result;
+		int fieldCounter;
+		int character = -1;
+		int mark;
+		long size = 0;
+		boolean inQuote;
+		boolean skipBlanks = skipLeadingBlanks;
+		
+		recordCounter++;
+		recordBuffer.setLength(0);
+		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
+			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
+				// field
+				// read data till we reach field delimiter, record delimiter,
+				// end of file or exceed buffer size
+				// exceeded buffer is indicated by BufferOverflowException
+				fieldBuffer.setLength(0);
+				inQuote = false;
+				try {
+					while ((character = readChar()) != -1) {
+						//end of file
+						if (character == -1) {
+							break;
+						}
+						//delimiter update
+						delimiterSearcher.update((char) character);
+						
+						//quotedStrings
+						if (quotedStrings 
+								&& metadata.getField(fieldCounter).getType() == DataFieldMetadata.STRING_FIELD) {
+							if (fieldBuffer.length() == 0) {
+								if (isCharacterQuote((char) character)) {
+									inQuote = true;
+									continue;
+								}
+							} else {
+								if (inQuote && isCharacterQuote((char) character)) {
+									if (!followFieldDelimiter(fieldCounter)) { //after ending quote can i find delimiter
+										findFirstRecordDelimiter();
+										return parsingErrorFound("Bad quote format", record, fieldCounter);
+									}
+									break;
+								}
+							}
+						}
+						//test record delimiter
+						if (!inQuote && metadata.isSpecifiedRecordDelimiter()) {
+							if (isRecordDelimiter()) {
+								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
+							}
+						}
+						//fieldDelimiter update
+						fieldBuffer.append((char) character);
+						//test field delimiter
+						if (!inQuote) {
+							if(delimiterSearcher.isPattern(fieldCounter)) {
+								fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getDepth());
+								if(treatMultipleDelimitersAsOne)
+									while(followFieldDelimiter(fieldCounter));
+								break;
+							}
+						}
+					}
+				} catch (Exception ex) {
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
+				}
+			} else { //fixlen data field
+				fieldBuffer.setLength(0);
+				mark = 0;
+				try {
+					for(int i = 0; i < fieldLengths[fieldCounter]; i++) {
+						//end of file
+						if ((character = readChar()) == -1) {
+							break;
+						}
+
+						//skip leading blanks
+						if(skipBlanks) 
+							if(character == ' ') continue; 
+							else skipBlanks = false;
+
+						//keep track of trailing blanks
+						if(character != ' ') {
+							mark = i;
+						} 
+
+						fieldBuffer.append((char) character);
+					}
+					if(fieldBuffer.length() > 0) fieldBuffer.setLength(fieldBuffer.length() - (fieldLengths[fieldCounter] - mark - 1));
+				} catch (Exception ex) {
+					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
+				}
+			}
+
+			// did we have EOF situation ?
+			if (character == -1) {
+				try {
+                    //hack for data files without last row delimiter (for example last record without new-line character)
+                    if(fieldCounter + 1 == metadata.getNumFields()
+                            && populateField(record, fieldCounter, fieldBuffer)
+                            && (fieldCounter != 0 || recordBuffer.length() > 0)) { //hack for hack for one column table
+                        reader.close();
+                        return record;
+                    }
+    				if(recordBuffer.length() == 0) {
+                        reader.close();
+    				    return null;
+                    } else {
+                        return parsingErrorFound("Unexpected end of file", record, fieldCounter);
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+			}
+
+			//populate field
+			if(!populateField(record, fieldCounter, fieldBuffer)) {
+				//policyType == CONTROLLED
+				if(metadata.isSpecifiedRecordDelimiter()) {
+					findFirstRecordDelimiter();
+				} else {
+					findEndOfRecord(fieldCounter);
+				}
+				return null;
+			}
+		}
+		
+		if(metadata.isSpecifiedRecordDelimiter()) {
+			if(!followRecordDelimiter()) { //record delimiter is not found
+				return parsingErrorFound("Missing record delimiter", record, fieldCounter);
+			}
+		}
+		
+		return record;
+	}
+
+	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
+		if(policyType == STRICT) {
+			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " (" + recordBuffer + ")");
+		} else if(policyType == CONTROLLED) {
+			return null;
+		} else { //policyType == LENIENT
+			finishRecord(record, fieldNum);
+			return record;
+		}
+		
+	}
+	
+	private int readChar() throws IOException {
+		int size;
+		char character;
+		CoderResult decodingResult;
+		
+		if(tempReadBuffer.length() > 0) {
+			character = tempReadBuffer.charAt(0);
+			tempReadBuffer.deleteCharAt(0);
+			return character;
+		}
+		
+		if (!charBuffer.hasRemaining()) {
+			byteBuffer.clear();
+			size = reader.read(byteBuffer);
+			// if no more data, return -1
+			if (size == -1) {
+				return -1;
+			}
+			try {
+				byteBuffer.flip();
+				charBuffer.clear();
+				decodingResult = decoder.decode(byteBuffer, charBuffer, true);
+				charBuffer.flip();
+			} catch (Exception ex) {
+				throw new IOException("Exception when decoding characters: " + ex.getMessage());
+			}
+		}
+		
+		character = charBuffer.get();
+		recordBuffer.append(character);
+		return character;
+	}
+
+	/**
+	 * Assembles error message when exception occures during parsing
+	 * 
+	 * @param exceptionMessage
+	 *            message from exception getMessage() call
+	 * @param recNo
+	 *            recordNumber
+	 * @param fieldNo
+	 *            fieldNumber
+	 * @return error message
+	 * @since September 19, 2002
+	 */
+	private String getErrorMessage(String exceptionMessage, CharSequence value, int fieldNo) {
+		StringBuffer message = new StringBuffer();
+		message.append(exceptionMessage);
+		message.append(" when parsing record #");
+		message.append(recordCounter);
+		message.append(" field ");
+		message.append(metadata.getField(fieldNo).getName());
+		if (value != null) {
+			message.append(" value \"").append(value).append("\"");
+		}
+		return message.toString();
+	}
+
+	/**
+	 * Finish incomplete fields <fieldNumber, metadata.getNumFields()>.
+	 * 
+	 * @param record
+	 *            incomplete record
+	 * @param fieldNumber
+	 *            first incomlete field in record
+	 */
+	private void finishRecord(DataRecord record, int fieldNumber) {
+		for(int i = fieldNumber; i < metadata.getNumFields(); i++) {
+			record.getField(i).setToDefaultValue();
+		}
+	}
+
+	/**
+	 * Populate field.
+	 * 
+	 * @param record
+	 * @param fieldNum
+	 * @param data
+	 */
+	private boolean populateField(DataRecord record, int fieldNum,	StringBuffer data) {
+		try {
+			record.getField(fieldNum).fromString(data.toString()); //TODO fromStringBuffer() returns boolean, i hope
+		} catch(BadDataFormatException bdfe) {
+			if(policyType.equals(STRICT)) {
+				throw new BadDataFormatException(bdfe.getMessage());
+			} else if(policyType.equals(CONTROLLED)) {
+				return false;
+			} else { //policyType.equals(LENIENT)
+				record.getField(fieldNum).setToDefaultValue();
+				return true;
+			}
+		} catch(Exception ex) {
+			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, fieldNum));
+		}
+		return true;
+	}
+
+	/**
+	 * Is character quote?
+	 * 
+	 * @param character
+	 * @return true if character is quote; false else
+	 */
+	private boolean isCharacterQuote(char character) {
+		return (character == '\'' || character == '"');
+	}
+
+	/**
+	 * Find first record delimiter in input channel.
+	 */
+	private boolean findFirstRecordDelimiter() {
+		int character;
+		try {
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				//test record delimiter
+				if (isRecordDelimiter()) {
+					return true;
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+		}
+		//end of file
+		return false;
+	}
+
+	/**
+	 * Find end of record for metadata without record delimiter specified.
+	 */
+	private boolean findEndOfRecord(int fieldNum) {
+		int character = 0;
+		try {
+			for(int i = fieldNum + 1; i < metadata.getNumFields(); i++) {
+				while((character = readChar()) != -1) {
+					delimiterSearcher.update((char) character);
+					if(delimiterSearcher.isPattern(i)) {
+						break;
+					}
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+		}
+		
+		return (character != -1);
+	}
+
+	/**
+	 * Is record delimiter in the input channel?
+	 * @return
+	 */
+	private boolean isRecordDelimiter() {
+		return delimiterSearcher.isPattern(-1);
+	}
+	
+	/**
+	 * Folow field delimiter in the input channel?
+	 * @param fieldNum field delimiter identifier
+	 * @return
+	 */
+	StringBuffer temp = new StringBuffer();
+	private boolean followFieldDelimiter(int fieldNum) {
+		int character;
+		temp.setLength(0);
+		try {
+			while ((character = readChar()) != -1) {
+				temp.append((char) character);
+				delimiterSearcher.update((char) character);
+				if(delimiterSearcher.isPattern(fieldNum)) {
+					return true;
+				}
+				if(delimiterSearcher.getDepth() == 0) {
+					tempReadBuffer.append(temp);
+					return false;
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+		}
+		//end of file
+		return false;
+	}
+	
+	/**
+	 * Folow record delimiter in the input channel?
+	 * @return
+	 */
+	private boolean followRecordDelimiter() {
+		int count = 1;
+		int character;
+		try {
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				if(isRecordDelimiter()) {
+					return (count == delimiterSearcher.getDepth());
+				}
+				count++;
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(), null, -1));
+		}
+		//end of file
+		return false;
+	}
+
+	/**
+	 * Returns data policy.
+	 * @return
+	 */
+	public String getDataPolicy() {
+		return policyType;
+	}
+
+	/**
+	 * Sets data policy.
+	 * @param dataPolicy
+	 */
+	public void setDataPolicy(String dataPolicy) {
+		if(dataPolicy.equalsIgnoreCase(STRICT)) {
+			policyType = STRICT;
+		} else if(dataPolicy.equalsIgnoreCase(CONTROLLED)) {
+			policyType = CONTROLLED;
+		} else if(dataPolicy.equalsIgnoreCase(LENIENT)) {
+			policyType = LENIENT;
+		}
+	}
+	
+
+	/**
+	 * Specifies whether leading blanks at each field should be skipped
+	 * @param skippingLeadingBlanks The skippingLeadingBlanks to set.
+	 */
+	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
+		this.skipLeadingBlanks = skipLeadingBlanks;
+	}
+
+	public String getCharsetName() {
+		return decoder.charset().name();
+	}
+	
+	public boolean endOfInputChannel() {
+		return !reader.isOpen();
+	}
+	
+	public int getRecordCount() {
+		return recordCounter;
+	}
+	
+	public CharSequence getLogString() {
+		return recordBuffer; //TODO kokon
+		//return logString;
+	}
+	
+	public void setQuotedStrings(boolean quotedStrings) {
+		this.quotedStrings = quotedStrings;
+	}
+	
+	public void setTreatMultipleDelimitersAsOne(boolean treatMultipleDelimitersAsOne) {
+		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
+	}
+	
+	/**
+	 * Skip first line/record in input channel.
+	 */
+	public void skipFirstLine() {
+		int character;
+		
+		try {
+			while ((character = readChar()) != -1) {
+				delimiterSearcher.update((char) character);
+				if(delimiterSearcher.isPattern(-2)) {
+					break;
+				}
+			}
+			if(character == -1) {
+				throw new RuntimeException("Skipping first line: record delimiter not found.");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(getErrorMessage(e.getMessage(),	null, -1));
+		}		
+	}
+	
+	public void skipRecords(int count) {
+		if(metadata.isSpecifiedRecordDelimiter()) {
+			for(int i = 0; i < count - 1; i++) {
+				findFirstRecordDelimiter();
+			}
+		} else {
+			for(int i = 0; i < count - 1; i++) {
+				findEndOfRecord(0);
+			}
+		}
+	}
+}
+/*
+Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres
+metodu fromString() (v metadatech ulozeno jako retezec, neni parsovano).
+
+Pridat option umoznujici zpracovat nekolik oddelovacu za sebou
+jako jeden - tedy "treat multiple delimiters as one".
+
+Komentare.
+*/
