@@ -1016,7 +1016,7 @@ public class TestInterpreter extends TestCase {
 						"if (i.gt.j and l.eq.1) {d=0;print_err('d rovne 0');}\n" +
 						"else d=0.1;\n" +
 						"number n;\n" +
-						"if (d==0.1) n=0;\n" +
+						"if (d=0.1) n=0;\n" +
 						"if (d=0.1 || l<=1) n=0;\n" +
 						"else {n=-1;print_err('n rovne -1')}\n" +
 						"date date1; date1=2006-01-01;print_err(date1);\n" +
@@ -1213,16 +1213,16 @@ public class TestInterpreter extends TestCase {
 	}
 
 	public void test_for(){
-		System.out.println("\nDo-while test:");
+		System.out.println("\nFor test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
 						"date now;now=today();print_err(now);\n" +
 						"int yer;yer=0;\n" +
 						"for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
 						"print_err('years on the end:'+yer);\n" +
 						"boolean b;\n" +
-						"if (yer=100) b=true;\n" +
-						"for (b=false;!b;yer=yer+1) \n" +
-						"	if (yer==100) b=true;" +
+						"for (born-1000;!b;yer=yer+1) \n" +
+						"	if (yer==100) b=true;\n" +
+						"print_err(born);\n" +
 						"print_err('years on the end:'+yer);\n"+
 						"int i;\n" +
 						"for (i=0;i.le.10;i=i+1) ;\n" +
@@ -1257,4 +1257,151 @@ public class TestInterpreter extends TestCase {
 		    	throw new RuntimeException("Parse exception");
 	    }
 	}
+
+	public void test_break(){
+		System.out.println("\nBreak test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"date now;now=today();print_err(now);\n" +
+						"int yer;yer=0;\n" +
+						"int i;" +
+						"while (born<now) {\n" +
+						"	yer=yer+1;\n" +
+						"	born=dateadd(born,1,year);\n" +
+						"	for (i=0;i<20;i=i+1) \n" +
+						"		if (i==10) break\n" +
+						"}\n" +
+						"print_err('years on the end:'+yer);\n"+
+						"print_err('i after while:'+i);\n" ;
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(34,((CloverInteger)result[2]).getInt());
+		      assertEquals(10,((CloverInteger)result[3]).getInt());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_continue(){
+		System.out.println("\nContinue test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"date now;now=today();print_err(now);\n" +
+						"int yer;yer=0;\n" +
+						"int i;\n" +
+						"for (i=0;i<10;i=i+1) {\n" +
+						"	print_err('i='+i);\n" +
+						"	if (i>5) continue\n" +
+						"	print_err('After if')" +
+						"}\n" +
+						"print_err('new loop starting');\n" +
+						"while (born<now) {\n" +
+						"	print_err('i='+i);i=0;\n" +
+						"	yer=yer+1;\n" +
+						"	born=dateadd(born,1,year);\n" +
+						"	if (yer>30) continue\n" +
+						"	for (i=0;i<20;i=i+1) \n" +
+						"		if (i==10) break\n" +
+						"}\n" +
+						"print_err('years on the end:'+yer);\n"+
+						"print_err('i after while:'+i);\n" ;
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals(34,((CloverInteger)result[2]).getInt());
+		      assertEquals(0,((CloverInteger)result[3]).getInt());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_return(){
+		System.out.println("\nReturn test:");
+		String expStr = "date born; born=$Born;print_err(born);\n" +
+						"function year_before(now) {\n" +
+						"	return dateadd(now,-1,year)" +
+						"}\n" +
+						"function age(born){\n" +
+						"	date now;int yer;\n" +
+						"	now=today();yer=0;\n" +
+						"	for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
+						"	if (yer>0) return yer else return -1" +
+						"}\n" +
+//						"print_err('years on the end:'+age(born));\n";
+						"print_err('years on the end:');print_err(age(born));\n"+
+						"print_err('year before:');print_err(year_before(born));\n" +
+						"{print_err('pred return');" +
+						"return;" +
+						"print_err('po return')}" +
+						"print_err('za blokem');\n";
+		GregorianCalendar born = new GregorianCalendar(1973,03,23);
+		record.getField("Born").setValue(born.getTime());
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+	
 }
