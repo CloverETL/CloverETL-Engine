@@ -28,6 +28,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
 import org.jetel.metadata.MetadataFactory;
+import org.w3c.dom.Element;
 
 /**
  *  A class that represents Edge Proxy - surrogate which directs calls to
@@ -393,6 +394,11 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
             return false;
         }
     }
+
+	public void toXML(Element xmlElement) {
+		// TODO Auto-generated method stub
+		
+	}
 }
 /*
  *  end class EdgeStub
