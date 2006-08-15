@@ -3,13 +3,17 @@
 package org.jetel.interpreter.node;
 
 import org.jetel.interpreter.ExpParser;
+import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParserVisitor;
+
 public class CLVFVarDeclaration extends SimpleNode {
  
     public int type;
     public int varSlot; 
     public String name;
     public boolean localVar;
+    public int length;
+    public int precision;
     
     public CLVFVarDeclaration(int id) {
     super(id);
@@ -40,4 +44,21 @@ public class CLVFVarDeclaration extends SimpleNode {
   public void setLocalVariale(boolean isLocal){
       this.localVar=isLocal;
   }
+  
+  public void setLength(String lengthString) throws ParseException{
+      try{
+          this.length=Integer.parseInt(lengthString);
+      }catch(NumberFormatException ex){
+          throw new ParseException("Error when parsing \"length\" parameter value \""+lengthString+"\"");
+      }
+  }
+  
+  public void setPrecision(String precisionString) throws ParseException{
+      try{
+          this.precision=Integer.parseInt(precisionString);
+      }catch(NumberFormatException ex){
+          throw new ParseException("Error when parsing \"precision\" parameter value \""+precisionString+"\"");
+      }
+  }
+  
 }
