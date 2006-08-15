@@ -34,6 +34,7 @@ import junit.framework.TestCase;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
+import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
@@ -168,7 +169,7 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\ndecimal test:");
 		String expStr = "decimal i; i=0; print_err(i); \n"+
 						"decimal j; j=-1.0; print_err(j);\n"+
-						"decimal minLong; minLong=999999.999; print_err(minLong);\n"+
+						"decimal minLong (18,3); minLong=999999.999; print_err(minLong);print_err(999999.999d);\n"+
 						"decimal maxLong; maxLong=0000000.0000000; print_err(maxLong);\n"+
 						"decimal fieldValue; fieldValue=$Value; print_err(fieldValue);\n"+
 						"decimal fieldAge; fieldAge=$Age; print_err(fieldAge);\n"+
@@ -211,10 +212,11 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nnumber test:");
 		String expStr = "number i; i=0; print_err(i); \n"+
 						"number j; j=-1.0; print_err(j);\n"+
-						"number minLong; minLong=999999.999; print_err(minLong); print_err(999999.999); \n"+
+						"number minLong; minLong=999999.99911; print_err(minLong);  \n"+
 						"number fieldValue; fieldValue=$Value; print_err(fieldValue);\n"+
 						"number fieldAge; fieldAge=$Age; print_err(fieldAge);\n"+
-						"number minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble)";
+						"number minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble)" +
+						"number def;print_err(def);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -234,12 +236,13 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(DecimalFactory.getDecimal(0),((Decimal)result[0]));
-		      assertEquals(DecimalFactory.getDecimal(-1),((Decimal)result[1]));
-		      assertEquals(DecimalFactory.getDecimal(999999.999),((Decimal)result[2]));
-		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),((Decimal)result[3]).getInt());
-		      assertEquals((Double)record.getField("Age").getValue(),new Double(((Decimal)result[4]).getDouble()));
-		      assertEquals(new Double(Double.MIN_VALUE),new Double(((Decimal)result[5]).getDouble()));
+		      assertEquals(new CloverDouble(0),((CloverDouble)result[0]));
+		      assertEquals(new CloverDouble(-1),((CloverDouble)result[1]));
+		      assertEquals(new CloverDouble(999999.99911),((CloverDouble)result[2]));
+		      assertEquals(new CloverDouble(((Integer)record.getField("Value").getValue())),((CloverDouble)result[3]));
+		      assertEquals(new CloverDouble((Double)record.getField("Age").getValue()),((CloverDouble)result[4]));
+		      assertEquals(new CloverDouble(Double.MIN_VALUE),((CloverDouble)result[5]));
+		      assertEquals(new CloverDouble(0),((CloverDouble)result[6]));
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -417,21 +420,19 @@ public class TestInterpreter extends TestCase {
 						"long l;l="+Integer.MAX_VALUE/10+"l;print_err(l);\n" +
 						"long m;m="+(Integer.MAX_VALUE)+"l;print_err(m)\n" +
 						"long lplusm;lplusm=l+m;print_err(\"plus long:\"+lplusm);\n" +
-//						"number m; m=0.001;print_err(m);\n" +
-//						"number nplusm; nplusm=n+m;print_err(\"plus number:\"+nplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
-						"number m1; m1=0.01;print_err(m1);\n" +
+						"number m1; m1=0.001;print_err(m1);\n" +
 						"number nplusm1; nplusm1=n+m1;print_err(\"plus number:\"+nplusm1);\n" +
 						"number nplusj;nplusj=n+j;print_err(\"number plus int:\"+nplusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
-						"decimal d1; d1=0.01;print_err(d1);\n" +
+						"decimal d1; d1=0.0001;print_err(d1);\n" +
 						"decimal dplusd1; dplusd1=d+d1;print_err(\"plus decimal:\"+dplusd1);\n" +
 						"decimal dplusj;dplusj=d+j;print_err(\"decimal plus int:\"+dplusj);\n" +
 						"decimal dplusn;dplusn=d+n;print_err(\"decimal plus number:\"+dplusn);\n" +
 						"string s; s=\"hello\"; print_err(s);\n" +
 						"string s1;s1=\" world\";print_err(s1);\n " +
 						"string spluss1;spluss1=s+s1;print_err(\"adding strings:\"+spluss1);\n" +
-						"string splusd;splusd=s+m1;print_err(\"string plus decimal:\"+splusb);\n" +
+						"string splusm1;splusm1=s+m1;print_err(\"string plus decimal:\"+splusm1);\n" +
 						"date mydate; mydate=2004-01-30 15:00:30;print_err(mydate);\n" +
 						"date dateplus;dateplus=mydate+i;print_err(dateplus);\n";
 
@@ -453,16 +454,16 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(110,((CloverInteger)result[2]).getInt());
-		      assertEquals((long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,((CloverLong)result[5]).getLong());
-		      assertEquals(new Double(0.01),new Double(((Decimal)result[8]).getDouble()));
-		      assertEquals(new Double(100),new Double(((Decimal)result[9]).getDouble()));
-		      assertEquals(new Double(0.11),new Double(((Decimal)result[12]).getDouble()));
-		      assertEquals(new Double(100.1),new Double(((Decimal)result[13]).getDouble()));
-		      assertEquals(new Double(0.1),new Double(((Decimal)result[14]).getDouble()));
-		      assertEquals("hello world",(((StringBuffer)result[17]).toString()));
-		      assertEquals("hello0.01",(((StringBuffer)result[18]).toString()));
-		      assertEquals(new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
+		      assertEquals("iplusj",110,((CloverInteger)result[2]).getInt());
+		      assertEquals("lplusm",(long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,((CloverLong)result[5]).getLong());
+		      assertEquals("nplusm1",new CloverDouble(0.001),(CloverDouble)result[8]);
+		      assertEquals("nplusj",new CloverDouble(100),(CloverDouble)result[9]);
+		      assertEquals("dplusd1",new Double(0.1001),new Double(((Decimal)result[12]).getDouble()));
+		      assertEquals("dplusj",new Double(100.1),new Double(((Decimal)result[13]).getDouble()));
+		      assertEquals("dplusn",new Double(0.1),new Double(((Decimal)result[14]).getDouble()));
+		      assertEquals("spluss1","hello world",(((StringBuffer)result[17]).toString()));
+		      assertEquals("splusm1","hello0.0010",(((StringBuffer)result[18]).toString()));
+		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -472,22 +473,22 @@ public class TestInterpreter extends TestCase {
 	}
 
 	public void test_minus(){
-		System.out.println("\nplus test:");
+		System.out.println("\nminus test:");
 		String expStr = "int i; i=10;\n"+
 						"int j; j=100;\n" +
-						"int iplusj;iplusj=i-j; print_err(\"plus int:\"+iplusj);\n" +
+						"int iplusj;iplusj=i-j; print_err(\"minus int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
 						"long m;m=1;print_err(m)\n" +
-						"long lplusm;lplusm=l-m;print_err(\"plus long:\"+lplusm);\n" +
+						"long lplusm;lplusm=l-m;print_err(\"minus long:\"+lplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
-						"number m1; m1=0.01;print_err(m1);\n" +
-						"number nplusm1; nplusm1=n-m1;print_err(\"plus number:\"+nplusm1);\n" +
-						"number nplusj;nplusj=n-j;print_err(\"number plus int:\"+nplusj);\n"+
+						"number m1; m1=0.001;print_err(m1);\n" +
+						"number nplusm1; nplusm1=n-m1;print_err(\"minus number:\"+nplusm1);\n" +
+						"number nplusj;nplusj=n-j;print_err(\"number minus int:\"+nplusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
 						"decimal d1; d1=0.01;print_err(d1);\n" +
-						"decimal dplusd1; dplusd1=d-d1;print_err(\"plus decimal:\"+dplusd1);\n" +
-						"decimal dplusj;dplusj=d-j;print_err(\"decimal plus int:\"+dplusj);\n" +
-						"decimal dplusn;dplusn=d-n;print_err(\"decimal plus number:\"+dplusn);\n" +
+						"decimal dplusd1; dplusd1=d-d1;print_err(\"minus decimal:\"+dplusd1);\n" +
+						"decimal dplusj;dplusj=d-j;print_err(\"decimal minus int:\"+dplusj);\n" +
+						"decimal dplusn;dplusn=d-n;print_err(\"decimal minus number:\"+dplusn);\n" +
 						"date mydate; mydate=2004-01-30 15:00:30;print_err(mydate);\n" +
 						"date dateplus;dateplus=mydate-i;print_err(dateplus);\n";
 
@@ -509,12 +510,12 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(-90,((CloverInteger)result[2]).getInt());
-		      assertEquals((long)Integer.MAX_VALUE+9,((CloverLong)result[5]).getLong());
-		      assertEquals(new Double(-0.01),new Double(((Decimal)result[8]).getDouble()));
-		      assertEquals(new Double(-100),new Double(((Decimal)result[8]).getDouble()));
-		      assertEquals(new Double(0.09),new Double(((Decimal)result[11]).getDouble()));
-		      assertEquals(new Double(-99.9),new Double(((Decimal)result[11]).getDouble()));
+		      assertEquals("iplusj",-90,((CloverInteger)result[2]).getInt());
+		      assertEquals("lplusm",(long)Integer.MAX_VALUE+9,((CloverLong)result[5]).getLong());
+		      assertEquals("nplusm1",new CloverDouble(-0.001),(CloverDouble)result[8]);
+		      assertEquals("nplusj",new CloverDouble(-100),(CloverDouble)result[9]);
+		      assertEquals("dplusd1",new Double(0.09),new Double(((Decimal)result[12]).getDouble()));
+		      assertEquals("dplusj",new Double(-99.9),new Double(((Decimal)result[11]).getDouble()));
 		      assertEquals(new Double(0.1),new Double(((Decimal)result[12]).getDouble()));
 		      assertEquals(new GregorianCalendar(2004,0,20,15,00,30).getTime(),(Date)result[13]);
 
@@ -529,19 +530,19 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nmultiply test:");
 		String expStr = "int i; i=10;\n"+
 						"int j; j=100;\n" +
-						"int iplusj;iplusj=i*j; print_err(\"plus int:\"+iplusj);\n" +
+						"int iplusj;iplusj=i*j; print_err(\"multiply int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
 						"long m;m=1;print_err(m)\n" +
-						"long lplusm;lplusm=l*m;print_err(\"plus long:\"+lplusm);\n" +
-						"number n; n=0;print_err(n);\n" +
+						"long lplusm;lplusm=l*m;print_err(\"multiply long:\"+lplusm);\n" +
+						"number n; n=0.1;print_err(n);\n" +
 						"number m1; m1=0.01;print_err(m1);\n" +
-						"number nplusm1; nplusm1=n*m1;print_err(\"plus number:\"+nplusm1);\n" +
-						"number m1plusj;m1plusj=m1*j;print_err(\"number plus int:\"+m1plusj);\n"+
+						"number nplusm1; nplusm1=n*m1;print_err(\"multiply number:\"+nplusm1);\n" +
+						"number m1plusj;m1plusj=m1*j;print_err(\"number multiply int:\"+m1plusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
 						"decimal d1; d1=0.01;print_err(d1);\n" +
-						"decimal dplusd1; dplusd1=d*d1;print_err(\"plus decimal:\"+dplusd1);\n" +
-						"decimal dplusj;dplusj=d*j;print_err(\"decimal plus int:\"+dplusj);\n"+
-						"decimal dplusn;dplusn=d*n;print_err(\"decimal plus number:\"+dplusn);\n";
+						"decimal dplusd1; dplusd1=d*d1;print_err(\"multiply decimal:\"+dplusd1);\n" +
+						"decimal dplusj;dplusj=d*j;print_err(\"decimal multiply int:\"+dplusj);\n"+
+						"decimal dplusn;dplusn=d*n;print_err(\"decimal multiply number:\"+dplusn);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -563,7 +564,7 @@ public class TestInterpreter extends TestCase {
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals(1000,((CloverInteger)result[2]).getInt());
 		      assertEquals((long)Integer.MAX_VALUE+10,((CloverLong)result[5]).getLong());
-		      assertEquals(new Double(1),new Double(((Decimal)result[8]).getDouble()));
+		      assertEquals(new CloverDouble(0.01),new Double(((Decimal)result[8]).getDouble()));
 		      assertEquals(new Double(-100),new Double(((Decimal)result[8]).getDouble()));
 		      assertEquals(new Double(0.001),new Double(((Decimal)result[11]).getDouble()));
 		      assertEquals(new Double(10),new Double(((Decimal)result[11]).getDouble()));
@@ -580,11 +581,11 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\ndivision test:");
 		String expStr = "int i; i=10;\n"+
 						"int j; j=100;\n" +
-						"int iplusj;iplusj=i/j; print_err(\"plus int:\"+iplusj);\n" +
-						"int jdivi;jdivi=j/i; print_err(\"plus int:\"+jdivi);\n" +
+						"int iplusj;iplusj=i/j; print_err(\"div int:\"+iplusj);\n" +
+						"int jdivi;jdivi=j/i; print_err(\"div int:\"+jdivi);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
 						"long m;m=1;print_err(m)\n" +
-						"long lplusm;lplusm=l/m;print_err(\"plus long:\"+lplusm);\n" +
+						"long lplusm;lplusm=l/m;print_err(\"div long:\"+lplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
 						"number m1; m1=0.01;print_err(m1);\n" +
 						"number n1; n1=10;print_err(n1);\n" +
@@ -594,9 +595,9 @@ public class TestInterpreter extends TestCase {
 						"number m1plusj;m1plusj=m1/j;print_err(\"number division int:\"+m1plusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
 						"decimal d1; d1=0.01;print_err(d1);\n" +
-						"decimal dplusd1; dplusd1=d/d1;print_err(\"plus decimal:\"+dplusd1);\n" +
-						"decimal dplusj;dplusj=d/j;print_err(\"decimal plus int:\"+dplusj);\n"+
-						"decimal dplusn;dplusn=d/n1;print_err(\"decimal plus number:\"+dplusn);\n";
+						"decimal dplusd1; dplusd1=d/d1;print_err(\"div decimal:\"+dplusd1);\n" +
+						"decimal dplusj;dplusj=d/j;print_err(\"decimal div int:\"+dplusj);\n"+
+						"decimal dplusn;dplusn=d/n1;print_err(\"decimal div number:\"+dplusn);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -638,19 +639,19 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nmodulus test:");
 		String expStr = "int i; i=10;\n"+
 						"int j; j=103;\n" +
-						"int iplusj;iplusj=j%i; print_err(\"plus int:\"+iplusj);\n" +
+						"int iplusj;iplusj=j%i; print_err(\"mod int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
 						"long m;m=2;print_err(m)\n" +
-						"long lplusm;lplusm=l%m;print_err(\"plus long:\"+lplusm);\n" +
+						"long lplusm;lplusm=l%m;print_err(\"mod long:\"+lplusm);\n" +
 						"number n; n=10.2;print_err(n);\n" +
 						"number m1; m1=2;print_err(m1);\n" +
-						"number nplusm1; nplusm1=n%m1;print_err(\"plus number:\"+nplusm1);\n" +
-						"number m1plusj;m1plusj=n%i;print_err(\"number plus int:\"+m1plusj);\n"+
+						"number nplusm1; nplusm1=n%m1;print_err(\"mod number:\"+nplusm1);\n" +
+						"number m1plusj;m1plusj=n%i;print_err(\"number mod int:\"+m1plusj);\n"+
 						"decimal d; d=10.1;print_err(d);\n" +
 						"decimal d1; d1=10;print_err(d1);\n" +
-						"decimal dplusd1; dplusd1=d%d1;print_err(\"plus decimal:\"+dplusd1);\n" +
-						"decimal dplusj;dplusj=d%i;print_err(\"decimal plus int:\"+dplusj);\n"+
-						"decimal dplusn;dplusn=d%m1;print_err(\"decimal plus number:\"+dplusn);\n";
+						"decimal dplusd1; dplusd1=d%d1;print_err(\"mod decimal:\"+dplusd1);\n" +
+						"decimal dplusj;dplusj=d%i;print_err(\"decimal mod int:\"+dplusj);\n"+
+						"decimal dplusn;dplusn=d%m1;print_err(\"decimal mod number:\"+dplusn);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -733,8 +734,8 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nequal test:");
 		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
 						"int j;j=9;print_err(\"j=\"+j);\n" +
-//						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\"+eq1);\n" +
-						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\");print_err(eq1);\n" +
+						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\"+eq1);\n" +
+//						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\");print_err(eq1);\n" +
 						"eq1=(i.eq.j);print_err(\"eq1=\");print_err(eq1);\n" +
 						"long l;l=10;print_err(\"l=\"+l);\n" +
 						"boolean eq2;eq2=(l==j);print_err(\"eq2=\");print_err(eq2);\n" +
@@ -983,7 +984,7 @@ public class TestInterpreter extends TestCase {
 	}
 		
 	public void test_3_expression() {
-		String expStr="not (trim($Name).ne.\"HELLO\" || replace($Name,\".\" ,\"a\"))";
+		String expStr=" (trim($Name) .ne. \"HELLO\" || replace($Name,\".\" ,\"a\"))";
 		try {
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));
@@ -992,7 +993,6 @@ public class TestInterpreter extends TestCase {
               System.out.println(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
-		      parseTree.dump("");
 		      System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
@@ -1500,7 +1500,7 @@ public class TestInterpreter extends TestCase {
 
 	public void test_math_functions(){
 		System.out.println("\nMath functions test:");
-		String expStr = "decimal original;original=pi();\n" +
+		String expStr = "number original;original=pi();\n" +
 						"number result;result=sqrt(original);\n";
 
 		try {
