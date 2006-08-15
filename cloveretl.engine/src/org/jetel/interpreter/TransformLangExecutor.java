@@ -1277,6 +1277,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             break;
         case DOUBLE_VAR:
             value= new CloverDouble(0);
+            break;
         case DECIMAL_VAR:
             value= DecimalFactory.getDecimal();
             break;
