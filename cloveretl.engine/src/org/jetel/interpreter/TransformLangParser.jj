@@ -84,11 +84,19 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
       
       public final DataRecordMetadata getInRecordMeta(int num){
+      	try{
              return inRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
       }
       
       public final DataRecordMetadata getOutRecordMeta(int num){
+      	try{
              return outRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
       }
       
       
@@ -466,14 +474,18 @@ void VarDeclaration():
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
-/*@egen*/  Token t;  int varSlot;}{/*@bgen(jjtree) VarDeclaration */
+/*@egen*/  Token t,l,p;  int varSlot;}{/*@bgen(jjtree) VarDeclaration */
   try {
-/*@egen*/  try {    ("int"{      jjtn000.setType(INT_VAR);    }    | "long"{      jjtn000.setType(LONG_VAR);    }    | "number"{      jjtn000.setType(DOUBLE_VAR);    }    | "decimal"{      jjtn000.setType(DECIMAL_VAR);    }    | "string"{      jjtn000.setType(STRING_VAR);    }    | "date"{      jjtn000.setType(DATE_VAR);    }    | "boolean"{      jjtn000.setType(BOOL_VAR);    }    )t = <IDENTIFIER>/*@bgen(jjtree)*/
-                     {
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                       jjtreeCloseNodeScope(jjtn000);
-                     }
+/*@egen*/  try {    ("int"{      jjtn000.setType(INT_VAR);    }    | "long"{      jjtn000.setType(LONG_VAR);    }    | "number"{      jjtn000.setType(DOUBLE_VAR);    }    | "decimal"{      jjtn000.setType(DECIMAL_VAR);    }    | "string"{      jjtn000.setType(STRING_VAR);    }    | "date"{      jjtn000.setType(DATE_VAR);    }    | "boolean"{      jjtn000.setType(BOOL_VAR);    }    )
+    (LOOKAHEAD(2) ["(" l=<DECIMAL_LITERAL> { jjtn000.setLength(l.image); } ")"]
+      | ["(" l=<DECIMAL_LITERAL> "," p=<DECIMAL_LITERAL> { jjtn000.setLength(l.image); jjtn000.setPrecision(p.image); } ")"] )
+    
+    t = <IDENTIFIER>/*@bgen(jjtree)*/
+                    {
+                      jjtree.closeNodeScope(jjtn000, true);
+                      jjtc000 = false;
+                      jjtreeCloseNodeScope(jjtn000);
+                    }
 /*@egen*/{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");      }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtn000.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtn000.setLocalVariale(true);        }        else {          jjtn000.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtn000.setLocalVariale(false);        }        jjtn000.setName(t.image);      }    }
   }catch (ParseException e){    parseExceptions.add(e);    do {      t = getNextToken();    }    while (t.kind != SEMICOLON);  }/*@bgen(jjtree)*/
