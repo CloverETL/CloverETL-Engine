@@ -21,8 +21,6 @@ package org.jetel.interpreter;
 
 import org.jetel.interpreter.node.SimpleNode;
 
-import com.sun.tools.javac.tree.Tree.Throw;
-
 /**
  * @author dpavlis
  * @since  9.9.2004
