@@ -24,12 +24,14 @@ import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
+import java.text.ParsePosition;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.Numeric;
 import org.jetel.data.NumericDataField;
+import org.jetel.util.NumericFormat;
 
 /**
  * Clover internal decimal value representation.
@@ -525,9 +527,12 @@ public class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = Long.parseLong(string);
-        if(!satisfyPrecision()) throw new NumberFormatException(); 
-        setNaN(false);
+        NumericFormat nf = new NumericFormat();
+        BigDecimal bd = (BigDecimal) nf.parse(string, new ParsePosition(0));
+        setValue(bd);
+//        value = Long.parseLong(string);
+//        if(!satisfyPrecision()) throw new NumberFormatException(); 
+//        setNaN(false);
     }
 
     /**
