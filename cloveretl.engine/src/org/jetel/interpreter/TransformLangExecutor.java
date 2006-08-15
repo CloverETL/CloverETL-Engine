@@ -25,8 +25,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.interpreter.node.*;
 
+import org.jetel.component.DBExecute;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -62,6 +65,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     protected DataRecord[] inputRecords;
     protected DataRecord[] outputRecords;
+    
+    static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
     /**
      * Constructor
@@ -1478,7 +1483,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Number) {
-            stack.push(new CloverDouble(Math.sqrt(((Number)a).doubleValue()) ));
+            try{
+                stack.push(new CloverDouble(Math.sqrt(((Number)a).doubleValue()) ));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing SQRT function",ex);
+            }
         }else {
             Object[] arguments = { a};
             throw new TransformLangExecutorRuntimeException(arguments,
@@ -1493,7 +1502,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Number) {
-            stack.push(new CloverDouble(Math.log(((Number)a).doubleValue()) ));
+            try{
+                stack.push(new CloverDouble(Math.log(((Number)a).doubleValue()) ));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing LOG function",ex);
+            }
         }else {
             Object[] arguments = { a};
             throw new TransformLangExecutorRuntimeException(arguments,
@@ -1508,7 +1521,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Number) {
-            stack.push(new CloverDouble( Math.log10(((Number)a).doubleValue())));
+            try{
+                stack.push(new CloverDouble( Math.log10(((Number)a).doubleValue())));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing LOG10 function",ex);
+            }
         }else {
             Object[] arguments = { a};
             throw new TransformLangExecutorRuntimeException(arguments,
@@ -1523,7 +1540,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Number) {
-            stack.push(new CloverDouble( Math.exp(((Number)a).doubleValue())));
+            try{
+                stack.push(new CloverDouble( Math.exp(((Number)a).doubleValue())));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing EXP function",ex);
+            }
         }else {
             Object[] arguments = { a};
             throw new TransformLangExecutorRuntimeException(arguments,
@@ -1538,7 +1559,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Number) {
-            stack.push(new CloverLong(Math.round(((Number)a).doubleValue())));
+            try{
+                stack.push(new CloverLong(Math.round(((Number)a).doubleValue())));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing ROUND function",ex);
+            }
         }else {
             Object[] arguments = { a};
             throw new TransformLangExecutorRuntimeException(arguments,
@@ -1556,8 +1581,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object b = stack.pop();
 
         if (a instanceof Number && b instanceof Number) {
-            stack.push(new CloverDouble(Math.pow(((Number)a).doubleValue(),
+            try{
+                stack.push(new CloverDouble(Math.pow(((Number)a).doubleValue(),
                     ((Number)b).doubleValue())));
+            }catch(Exception ex){
+                throw new TransformLangExecutorRuntimeException("Error when executing POW function",ex);
+            }
         }else {
             Object[] arguments = { a, b };
             throw new TransformLangExecutorRuntimeException(arguments,

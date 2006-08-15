@@ -21,6 +21,8 @@ package org.jetel.interpreter;
 
 import org.jetel.interpreter.node.SimpleNode;
 
+import com.sun.tools.javac.tree.Tree.Throw;
+
 /**
  * @author dpavlis
  * @since  9.9.2004
@@ -56,6 +58,11 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 		this.arguments=null;
 	}
 	
+    public TransformLangExecutorRuntimeException(String message, Throwable cause){
+        super(message,cause);
+        this.nodeInError=null;
+        this.arguments=null;
+    }
 	
 	public SimpleNode getNode(){
 		return nodeInError;
