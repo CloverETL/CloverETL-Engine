@@ -87,11 +87,19 @@ public class TransformLangParser extends ExpParser {
       }
       
       public final DataRecordMetadata getInRecordMeta(int num){
+      	try{
              return inRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
       }
       
       public final DataRecordMetadata getOutRecordMeta(int num){
+      	try{
              return outRecordsMetadata[num];
+      	}catch(Exception ex){
+      		return null;
+      	}
       }
       
       
