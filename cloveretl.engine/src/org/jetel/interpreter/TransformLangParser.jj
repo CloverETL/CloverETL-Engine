@@ -478,8 +478,6 @@ void VarDeclaration():
   try {
 /*@egen*/  try {    ("int"{      jjtn000.setType(INT_VAR);    }    | "long"{      jjtn000.setType(LONG_VAR);    }    | "number"{      jjtn000.setType(DOUBLE_VAR);    }    | "decimal"{      jjtn000.setType(DECIMAL_VAR);    }    | "string"{      jjtn000.setType(STRING_VAR);    }    | "date"{      jjtn000.setType(DATE_VAR);    }    | "boolean"{      jjtn000.setType(BOOL_VAR);    }    )
 
-//	(LOOKAHEAD(2)    ["(" l=<DECIMAL_LITERAL>  ")" { jjtThis.setLength(l.image); } ]
-//    | ["(" l=<DECIMAL_LITERAL> "," p=<DECIMAL_LITERAL> ")"  { jjtThis.setLength(l.image); jjtThis.setPrecision(p.image); } ]  )
     ["(" l=<INTEGER_LITERAL> { jjtn000.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtn000.setPrecision(p.image); } ] ")"   ] 
       
     t = <IDENTIFIER>/*@bgen(jjtree)*/
@@ -488,9 +486,10 @@ void VarDeclaration():
                       jjtc000 = false;
                       jjtreeCloseNodeScope(jjtn000);
                     }
-/*@egen*/{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");      }      else {        // is it local variable declaration ?
+/*@egen*/{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");
+      }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtn000.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtn000.setLocalVariale(true);        }        else {          jjtn000.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtn000.setLocalVariale(false);        }        jjtn000.setName(t.image);      }    }
-  }catch (ParseException e){    parseExceptions.add(e);    do {      t = getNextToken();    }    while (t.kind != SEMICOLON);  }/*@bgen(jjtree)*/
+ }catch (ParseException e){    parseExceptions.add(e);//    do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);  }/*@bgen(jjtree)*/
   } finally {
     if (jjtc000) {
       jjtree.closeNodeScope(jjtn000, true);

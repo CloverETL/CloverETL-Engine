@@ -519,10 +519,11 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
       } catch (ParseException e) {
     parseExceptions.add(e);
-    do {
-      t = getNextToken();
-    }
-    while (t.kind != SEMICOLON);
+//    do {
+//      t = getNextToken();
+//    }
+//    while (t.kind != SEMICOLON);
+
       }
     } finally {
     if (jjtc000) {
@@ -3058,6 +3059,11 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(5, xla); }
   }
 
+  final private boolean jj_3R_40() {
+    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
+    return false;
+  }
+
   final private boolean jj_3R_39() {
     if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
@@ -3640,11 +3646,6 @@ void OutputFieldExp() #void :// IDExp -> ID
 
   final private boolean jj_3R_41() {
     if (jj_scan_token(DATE_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_40() {
-    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
     return false;
   }
 
