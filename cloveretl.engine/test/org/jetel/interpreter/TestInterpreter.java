@@ -19,10 +19,15 @@
 
 package org.jetel.interpreter;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -48,7 +53,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class TestInterpreter extends TestCase {
 
 	DataRecordMetadata metadata;
-	DataRecord record;
+	DataRecord record,out;
 	
 	protected void setUp() {
 	    Defaults.init();
@@ -63,6 +68,8 @@ public class TestInterpreter extends TestCase {
 		
 		record = new DataRecord(metadata);
 		record.init();
+		out = new DataRecord(metadata);
+		out.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setInt(record,1,135);
@@ -293,7 +300,7 @@ public class TestInterpreter extends TestCase {
 		String expStr = "date d3; d3=2006-08-01; print_err(d3);\n"+
 						"date d2; d2=2006-08-02 15:15:00 ; print_err(d2);\n"+
 						"date d1; d1=2006-1-1 1:2:3; print_err(d1);\n"+
-						"date born; born=$Born; print_err(born);";
+						"date born; born=$0.Born; print_err(born);";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
 		
@@ -1371,7 +1378,7 @@ public class TestInterpreter extends TestCase {
 //						"print_err('years on the end:'+age(born));\n";
 						"print_err('years on the end:');print_err(age(born));\n"+
 						"print_err('year before:');print_err(year_before(born));\n" +
-						"{print_err('pred return');" +
+						" while (true) {print_err('pred return');" +
 						"return;" +
 						"print_err('po return')}" +
 						"print_err('za blokem');\n";
@@ -1403,5 +1410,201 @@ public class TestInterpreter extends TestCase {
 		    	throw new RuntimeException("Parse exception");
 	    }
 	}
-	
+
+	public void test_buildInFunctions(){
+		System.out.println("\nBuild-in functions test:");
+		String expStr = "string s;s='hello world';\n" +
+						"number lenght;lenght=5.5;\n" +
+						"string subs;subs=substring(s,1,lenght);\n" +
+						"print_err('original string:'+s );\n" +
+						"print_err('substring:'+subs );\n" +
+						"string upper;upper=uppercase(subs);\n" +
+						"print_err('to upper case:'+upper );\n"+
+						"string lower;lower=lowercase(subs+'hI   ');\n" +
+						"print_err('to lower case:'+lower );\n"+
+						"string t;t=trim('\t  im  '+lower);\n" +
+						"print_err('after trim:'+t );\n" +
+						"breakpoint();\n"+
+						"decimal l;l=length(upper);\n" +
+						"print_err('length of '+upper+':'+l );\n"+
+						"string c;c=concat(lower,upper,2,',today is ',today());\n" +
+						"print_err('concatenation \"'+lower+'\"+\"'+upper+'\"+2+\",today is \"+today():'+c );\n"+
+						"date datum; date born;born=nvl($Born,today()-400);\n" +
+						"datum=dateadd(born,100,millisec);\n" +
+						"print_err(datum );\n"+
+						"long ddiff;date otherdate;otherdate=today();\n" +
+						"ddiff=datediff(born,otherdate,year);\n" +
+						"print_err('date diffrence:'+ddiff );\n" +
+						"boolean isn;isn=isnull(ddiff);\n" +
+						"print_err(isn );\n" +
+						"number s1;s1=nvl(l+1,1);\n" +
+						"print_err(s1 );\n" +
+						"string rep;rep=replace(c,'[lL]','t');\n" +
+						"print_err(rep );\n" +
+						"decimal stn;stn=str2num('2.5e-1');\n" +
+						"print_err(stn );\n" +
+						"string nts;nts=num2str(1);\n" +
+						"print_err(nts );\n" +
+						"date newdate;newdate=2001-12-20 16:30:04;\n" +
+						"decimal dtn;dtn=date2num(newdate,month);\n" +
+						"print_err(dtn );\n" +
+						"int ii;ii=iif(newdate<2000-01-01,20,21);\n" +
+						"print_err('ii:'+ii);\n" +
+						"print_stack();\n" +
+						"date ndate;ndate=2002-12-24;\n" +
+						"string dts;dts=date2str(ndate,'dd.MM.yy');\n" +
+						"print_err('date to string:'+dts);\n" +
+						"print_err(str2date(dts,'yy.MMM.dd');\n" ;
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals("subs","ello ",((StringBuffer)result[2]).toString());
+		      assertEquals("upper","ELLO ",((StringBuffer)result[3]).toString());
+		      assertEquals("lower","ello hi   ",((StringBuffer)result[4]).toString());
+		      assertEquals("t(=trim)","im  ello hi",((StringBuffer)result[5]).toString());
+		      assertEquals("l(=length)",5,((Decimal)result[6]).getInt());
+		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),((StringBuffer)result[7]).toString());
+//		      assertEquals("datum",record.getField("Born").getValue(),(Date)result[8]);
+		      assertEquals("ddiff",-1,((CloverLong)result[10]).getLong());
+		      assertEquals("isn",false,((Boolean)result[12]).booleanValue());
+		      assertEquals("s1",6,((Decimal)result[13]).getInt());
+		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),((StringBuffer)result[14]).toString());
+		      assertEquals("stn",0.25,((Decimal)result[15]).getDouble());
+		      assertEquals("nts","1",((StringBuffer)result[16]).toString());
+		      assertEquals("dtn",11.0,((Decimal)result[18]).getDouble());
+		      assertEquals("ii",21,((CloverInteger)result[19]).getInt());
+		      assertEquals("dts","24.12.02",((StringBuffer)result[21]).toString());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_math_functions(){
+		System.out.println("\nMath functions test:");
+		String expStr = "decimal original;original=pi();\n" +
+						"number result;result=sqrt(original);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals("sqrt",3,((Decimal)result[1]).getDouble());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_global_parameters(){
+		System.out.println("\nGlobal parameters test:");
+		String expStr = "int original;original=${G1};\n" +
+						"print_err(original);\n";
+
+		try {
+			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+			  		new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      Properties globalParameters = new Properties();
+		      globalParameters.setProperty("G1","10");
+		      executor.setGlobalParameters(globalParameters);
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals("sqrt",3,((Decimal)result[1]).getDouble());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
+
+	public void test_mapping(){
+		System.out.println("\nMapping test:");
+		String expStr = "function test(){\n" +
+						"	string result;\n" +
+						"	print_err('function');\n" +
+						"	result='result';\n" +
+						"	return result;\n" +
+						"	$Name:=result;\n" +
+						"	}\n" +
+						"test();\n" +
+						"print_err('out of function');\n" +
+						"$City:=test();\n";
+
+		try {
+		      DataRecordMetadata[] recordMetadata=new DataRecordMetadata[] {metadata};
+			  TransformLangParser parser = new TransformLangParser(recordMetadata,
+			  		recordMetadata,new ByteArrayInputStream(expStr.getBytes()));
+		      CLVFStart parseTree = parser.Start();
+
+            System.out.println(expStr);
+		      System.out.println("Initializing parse tree..");
+		      parseTree.init();
+		      System.out.println("Interpreting parse tree..");
+		      TransformLangExecutor executor=new TransformLangExecutor();
+		      executor.setInputRecords(new DataRecord[] {record});
+		      executor.setOutputRecords(new DataRecord[]{out});
+		      executor.visit(parseTree,null);
+		      System.out.println("Finished interpreting.");
+
+		      
+		      parseTree.dump("");
+		      
+		      Object[] result = executor.stack.globalVarSlot;
+		      assertEquals("result",out.getField("City").getValue().toString());
+		      assertEquals("result",out.getField("Name").getValue().toString());
+		      
+		} catch (ParseException e) {
+		    	System.err.println(e.getMessage());
+		    	e.printStackTrace();
+		    	throw new RuntimeException("Parse exception");
+	    }
+	}
 }
