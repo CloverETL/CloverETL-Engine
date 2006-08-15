@@ -364,7 +364,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "NULL value not allowed");
         }
 
-        if (!(b instanceof Number)) {
+        if (!(b instanceof Numeric)) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
                     "sub - wrong type of literal");
         }
@@ -399,7 +399,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "NULL value not allowed");
         }
 
-        if (!(b instanceof Number)) {
+        if (!(b instanceof Numeric)) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
                     "mul - wrong type of literal");
         }
@@ -428,7 +428,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "NULL value not allowed");
         }
 
-        if (!(b instanceof Number)) {
+        if (!(b instanceof Numeric)) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
                     "div - wrong type of literal");
         }
@@ -457,7 +457,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "NULL value not allowed");
         }
 
-        if (!(b instanceof Number)) {
+        if (!(b instanceof Numeric)) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
                     "mod - wrong type of literal");
         }
