@@ -29,7 +29,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.interpreter.node.*;
 
-import org.jetel.component.DBExecute;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
