@@ -1352,6 +1352,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             throw new TransformLangExecutorRuntimeException(node,
                     "invalid assignment of \"" + value + "\" to variable \""
                             + childNode.varName + "\"");
+        } catch (NumberFormatException ex){
+            throw new TransformLangExecutorRuntimeException(node,
+                    "invalid assignment of number \"" + value + "\" to variable \"" + childNode.varName + "\" : "+ex.getMessage());    
+        } catch (Exception ex){
+            throw new TransformLangExecutorRuntimeException(node,
+                    "invalid assignment of \"" + value + "\" to variable \"" + childNode.varName + "\" : "+ex.getMessage());  
         }
 
         return data;

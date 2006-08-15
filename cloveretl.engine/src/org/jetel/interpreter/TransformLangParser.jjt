@@ -371,9 +371,9 @@ void FunctionDeclaration() :
 
 void VarDeclaration():
 {  Token t,l,p;  int varSlot;}{  try {    ("int"{      jjtThis.setType(INT_VAR);    }    | "long"{      jjtThis.setType(LONG_VAR);    }    | "number"{      jjtThis.setType(DOUBLE_VAR);    }    | "decimal"{      jjtThis.setType(DECIMAL_VAR);    }    | "string"{      jjtThis.setType(STRING_VAR);    }    | "date"{      jjtThis.setType(DATE_VAR);    }    | "boolean"{      jjtThis.setType(BOOL_VAR);    }    )
-    (LOOKAHEAD(2) ["(" l=<DECIMAL_LITERAL> { jjtThis.setLength(l.image); } ")"]
-      | ["(" l=<DECIMAL_LITERAL> "," p=<DECIMAL_LITERAL> { jjtThis.setLength(l.image); jjtThis.setPrecision(p.image); } ")"] )
-    
+
+    ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
+      
     t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");      }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
   }catch (ParseException e){    parseExceptions.add(e);    do {      t = getNextToken();    }    while (t.kind != SEMICOLON);  }}
