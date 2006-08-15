@@ -1279,7 +1279,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             value= new CloverDouble(0);
             break;
         case DECIMAL_VAR:
-            value= DecimalFactory.getDecimal();
+            if (node.length>0){
+                if (node.precision>0){
+                    value = DecimalFactory.getDecimal(node.length,node.precision);
+                }else{
+                    value = DecimalFactory.getDecimal(node.length,0);
+                }
+            }else{
+                value= DecimalFactory.getDecimal();
+            }
             break;
         case STRING_VAR:
             value= new StringBuffer();

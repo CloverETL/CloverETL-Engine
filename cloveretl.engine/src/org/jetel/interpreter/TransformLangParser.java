@@ -63,11 +63,19 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
 
       public final DataRecordMetadata getInRecordMeta(int num){
+        try{
              return inRecordsMetadata[num];
+        }catch(Exception ex){
+                return null;
+        }
       }
 
       public final DataRecordMetadata getOutRecordMeta(int num){
+        try{
              return outRecordsMetadata[num];
+        }catch(Exception ex){
+                return null;
+        }
       }
 
 
@@ -430,7 +438,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
   CLVFVarDeclaration jjtn000 = new CLVFVarDeclaration(this, JJTVARDECLARATION);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
-  jjtreeOpenNodeScope(jjtn000);Token t;
+  jjtreeOpenNodeScope(jjtn000);Token t,l,p;
   int varSlot;
     try {
       try {
@@ -468,10 +476,21 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
           jj_consume_token(-1);
           throw new ParseException();
         }
+        switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
+        case OPEN_PAR:
+          jj_consume_token(OPEN_PAR);
+          l = jj_consume_token(DECIMAL_LITERAL);
+                                             jjtn000.setLength(l.image);
+          jj_consume_token(CLOSE_PAR);
+          break;
+        default:
+          jj_la1[9] = jj_gen;
+          ;
+        }
         t = jj_consume_token(IDENTIFIER);
-                       jjtree.closeNodeScope(jjtn000, true);
-                       jjtc000 = false;
-                       jjtreeCloseNodeScope(jjtn000);
+                      jjtree.closeNodeScope(jjtn000, true);
+                      jjtc000 = false;
+                      jjtreeCloseNodeScope(jjtn000);
       if (!parserHelper.addVariable(t.image)){
         {if (true) throw new ParseException(t, "variable ["+t.image+"] already declared");}
       }
@@ -556,7 +575,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ConditionalOrExpression();
         break;
       default:
-        jj_la1[9] = jj_gen;
+        jj_la1[11] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -616,7 +635,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                              jjtn000.setRecordNumFieldName(t.image);
         break;
       default:
-        jj_la1[10] = jj_gen;
+        jj_la1[12] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -629,7 +648,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
           ;
           break;
         default:
-          jj_la1[11] = jj_gen;
+          jj_la1[13] = jj_gen;
           break label_7;
         }
         jj_consume_token(68);
@@ -671,7 +690,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[14] = jj_gen;
         break label_8;
       }
       jj_consume_token(OR);
@@ -713,7 +732,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[15] = jj_gen;
         break label_9;
       }
       jj_consume_token(AND);
@@ -756,7 +775,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[14] = jj_gen;
+        jj_la1[16] = jj_gen;
         break label_10;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -799,7 +818,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
         break;
       default:
-        jj_la1[15] = jj_gen;
+        jj_la1[17] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -819,7 +838,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[16] = jj_gen;
+        jj_la1[18] = jj_gen;
         break label_11;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -919,7 +938,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
         break;
       default:
-        jj_la1[17] = jj_gen;
+        jj_la1[19] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -936,7 +955,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[18] = jj_gen;
+        jj_la1[20] = jj_gen;
         break label_12;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -999,7 +1018,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
         break;
       default:
-        jj_la1[19] = jj_gen;
+        jj_la1[21] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1017,7 +1036,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         ;
         break;
       default:
-        jj_la1[20] = jj_gen;
+        jj_la1[22] = jj_gen;
         break label_13;
       }
       switch ((jj_ntk==-1)?jj_ntk():jj_ntk) {
@@ -1109,7 +1128,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
         break;
       default:
-        jj_la1[21] = jj_gen;
+        jj_la1[23] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1180,7 +1199,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         }
         break;
       default:
-        jj_la1[22] = jj_gen;
+        jj_la1[24] = jj_gen;
         if (jj_2_3(2)) {
           PrimaryExpression();
                                               CLVFPlusPlusNode jjtn003 = new CLVFPlusPlusNode(this, JJTPLUSPLUSNODE);
@@ -1227,7 +1246,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
             }
             break;
           default:
-            jj_la1[23] = jj_gen;
+            jj_la1[25] = jj_gen;
             if (jj_2_4(2)) {
               PrimaryExpression();
                                               CLVFMinusMinusNode jjtn005 = new CLVFMinusMinusNode(this, JJTMINUSMINUSNODE);
@@ -1274,7 +1293,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
                 }
                 break;
               default:
-                jj_la1[24] = jj_gen;
+                jj_la1[26] = jj_gen;
                 jj_consume_token(-1);
                 throw new ParseException();
               }
@@ -1318,7 +1337,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
         jj_consume_token(CLOSE_PAR);
         break;
       default:
-        jj_la1[25] = jj_gen;
+        jj_la1[27] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1359,7 +1378,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       FunctionCallStatement();
       break;
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[28] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1531,7 +1550,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
       break;
     default:
-      jj_la1[27] = jj_gen;
+      jj_la1[29] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1595,7 +1614,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       }
       break;
     default:
-      jj_la1[28] = jj_gen;
+      jj_la1[30] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -1729,7 +1748,7 @@ void OutputFieldExp() #void :// IDExp -> ID
         StatementExpression();
         break;
       default:
-        jj_la1[29] = jj_gen;
+        jj_la1[31] = jj_gen;
         jj_consume_token(-1);
         throw new ParseException();
       }
@@ -1777,7 +1796,7 @@ void OutputFieldExp() #void :// IDExp -> ID
           ;
           break;
         default:
-          jj_la1[30] = jj_gen;
+          jj_la1[32] = jj_gen;
           break label_14;
         }
         Statement();
@@ -1820,7 +1839,7 @@ void OutputFieldExp() #void :// IDExp -> ID
           FunctionCallStatement();
           break;
         default:
-          jj_la1[31] = jj_gen;
+          jj_la1[33] = jj_gen;
           jj_consume_token(-1);
           throw new ParseException();
         }
@@ -1866,7 +1885,7 @@ void OutputFieldExp() #void :// IDExp -> ID
         Statement();
         break;
       default:
-        jj_la1[32] = jj_gen;
+        jj_la1[34] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -1911,7 +1930,7 @@ void OutputFieldExp() #void :// IDExp -> ID
           ;
           break;
         default:
-          jj_la1[33] = jj_gen;
+          jj_la1[35] = jj_gen;
           break label_15;
         }
         CaseExpression();
@@ -1923,7 +1942,7 @@ void OutputFieldExp() #void :// IDExp -> ID
         Statement();
         break;
       default:
-        jj_la1[34] = jj_gen;
+        jj_la1[36] = jj_gen;
         ;
       }
                                                       jjtn000.setDefaultClause(true);
@@ -2179,7 +2198,7 @@ void OutputFieldExp() #void :// IDExp -> ID
         Expression();
         break;
       default:
-        jj_la1[35] = jj_gen;
+        jj_la1[37] = jj_gen;
         ;
       }
     } catch (Throwable jjte000) {
@@ -2268,7 +2287,7 @@ void OutputFieldExp() #void :// IDExp -> ID
         FunctionCallParameter();
         break;
       default:
-        jj_la1[36] = jj_gen;
+        jj_la1[38] = jj_gen;
         ;
       }
       label_16:
@@ -2278,7 +2297,7 @@ void OutputFieldExp() #void :// IDExp -> ID
           ;
           break;
         default:
-          jj_la1[37] = jj_gen;
+          jj_la1[39] = jj_gen;
           break label_16;
         }
         jj_consume_token(63);
@@ -2693,7 +2712,7 @@ void OutputFieldExp() #void :// IDExp -> ID
       Date2NumNode();
       break;
     default:
-      jj_la1[38] = jj_gen;
+      jj_la1[40] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2751,7 +2770,7 @@ void OutputFieldExp() #void :// IDExp -> ID
       }
       break;
     default:
-      jj_la1[39] = jj_gen;
+      jj_la1[41] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -2776,7 +2795,7 @@ void OutputFieldExp() #void :// IDExp -> ID
           ;
           break;
         default:
-          jj_la1[40] = jj_gen;
+          jj_la1[42] = jj_gen;
           break label_17;
         }
       }
@@ -3027,21 +3046,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     try { return !jj_3_6(); }
     catch(LookaheadSuccess ls) { return true; }
     finally { jj_save(5, xla); }
-  }
-
-  final private boolean jj_3R_43() {
-    if (jj_scan_token(NULL_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_42() {
-    if (jj_scan_token(DATETIME_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
-    if (jj_scan_token(DATE_LITERAL)) return true;
-    return false;
   }
 
   final private boolean jj_3R_40() {
@@ -3619,6 +3623,21 @@ void OutputFieldExp() #void :// IDExp -> ID
     return false;
   }
 
+  final private boolean jj_3R_43() {
+    if (jj_scan_token(NULL_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_42() {
+    if (jj_scan_token(DATETIME_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_41() {
+    if (jj_scan_token(DATE_LITERAL)) return true;
+    return false;
+  }
+
   public TransformLangParserTokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -3628,7 +3647,7 @@ void OutputFieldExp() #void :// IDExp -> ID
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[41];
+  final private int[] jj_la1 = new int[43];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static private int[] jj_la1_2;
@@ -3640,16 +3659,16 @@ void OutputFieldExp() #void :// IDExp -> ID
       jj_la1_3();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x592e1000,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x592e1000,0x0,0x592e1000,0x0,0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x592e1000,0x592e1000,0x0,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x20000000,0x0,0x0,0x0,0x0,0x592e1000,0x0,0x0,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x592e1000,0x0,0x592e1000,0x0,0x20000000,0x20000000,0x0,0x0,0x0,0x0,0x592e1000,0x592e1000,0x0,0x0,0x0,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x7f800000,0x7f800000,0xe0000,0x0,0x80000000,0x3f800000,0x0,0xe0000,0x3f800000,0x3f8402,0xe0000,0x0,0x0,0x1,0xc,0xc,0x1f0,0x1f0,0xc00,0xc00,0x7000,0x7000,0x8400,0x10000,0x2,0x3e0000,0x0,0x0,0xe0000,0x0,0x0,0x0,0x0,0x0,0x0,0x3f8402,0x3f8402,0x80000000,0x0,0x0,0x80000000,};
+      jj_la1_1 = new int[] {0x7f800000,0x7f800000,0xe0000,0x0,0x80000000,0x3f800000,0x0,0xe0000,0x3f800000,0x200000,0x200000,0x3f8402,0xe0000,0x0,0x0,0x1,0xc,0xc,0x1f0,0x1f0,0xc00,0xc00,0x7000,0x7000,0x8400,0x10000,0x2,0x3e0000,0x0,0x0,0xe0000,0x0,0x0,0x0,0x0,0x0,0x0,0x3f8402,0x3f8402,0x80000000,0x0,0x0,0x80000000,};
    }
    private static void jj_la1_2() {
-      jj_la1_2 = new int[] {0xfca1,0xfca1,0x0,0x0,0x0,0x0,0xfca1,0x0,0x0,0xffff0000,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffff0000,0x0,0x0,0xfca1,0xfca1,0x0,0x40,0x200,0x100,0xffff0000,0xffff0000,0x0,0xffff0000,0x0,0x0,};
+      jj_la1_2 = new int[] {0xfca1,0xfca1,0x0,0x0,0x0,0x0,0xfca1,0x0,0x0,0x0,0x0,0xffff0000,0x0,0x10,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xffff0000,0x0,0x0,0xfca1,0xfca1,0x0,0x40,0x200,0x100,0xffff0000,0xffff0000,0x0,0xffff0000,0x0,0x0,};
    }
    private static void jj_la1_3() {
-      jj_la1_3 = new int[] {0x4070,0x4070,0x0,0x4000,0x0,0x0,0x4070,0x0,0x0,0x5f8f,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x5f8f,0x0,0x0,0x4070,0x4070,0x4000,0x0,0x0,0x0,0x5f8f,0x5f8f,0x0,0x1f8f,0x70,0x0,};
+      jj_la1_3 = new int[] {0x4070,0x4070,0x0,0x4000,0x0,0x0,0x4070,0x0,0x0,0x0,0x0,0x5f8f,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4000,0x5f8f,0x0,0x0,0x4070,0x4070,0x4000,0x0,0x0,0x0,0x5f8f,0x5f8f,0x0,0x1f8f,0x70,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[6];
   private boolean jj_rescan = false;
@@ -3664,7 +3683,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3678,7 +3697,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3688,7 +3707,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3699,7 +3718,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3708,7 +3727,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     token = new Token();
     jj_ntk = -1;
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3718,7 +3737,7 @@ void OutputFieldExp() #void :// IDExp -> ID
     jj_ntk = -1;
     jjtree.reset();
     jj_gen = 0;
-    for (int i = 0; i < 41; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 43; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -3837,7 +3856,7 @@ void OutputFieldExp() #void :// IDExp -> ID
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 41; i++) {
+    for (int i = 0; i < 43; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
