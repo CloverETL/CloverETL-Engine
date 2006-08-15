@@ -374,9 +374,11 @@ void VarDeclaration():
 
     ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
       
-    t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");      }      else {        // is it local variable declaration ?
+    t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");
+      }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
-  }catch (ParseException e){    parseExceptions.add(e);    do {      t = getNextToken();    }    while (t.kind != SEMICOLON);  }}
+ }catch (ParseException e){    parseExceptions.add(e);//following code causes parser to cough     
+//do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);  }}
 
 void Expression() #void : {}
 {

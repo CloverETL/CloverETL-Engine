@@ -102,14 +102,21 @@ public class ParseException extends Exception {
    * gets displayed.
    */
   public String getMessage() {
-    if (!specialConstructor) {
-        if (currentToken!=null){
-            return super.getMessage()+ "\" at line " + currentToken.next.beginLine + ", column " + currentToken.next.beginColumn
-            + "." + eol;
-        }else{
+        if (!specialConstructor) {
+            if (currentToken != null) {
+                if (currentToken.next != null) {
+                    return super.getMessage() + " at line "
+                            + currentToken.next.beginLine + ", column "
+                            + currentToken.next.beginColumn + "." + eol;
+                } else {
+                    return super.getMessage() + " at line "
+                            + currentToken.beginLine + ", column "
+                            + currentToken.beginColumn + "." + eol;
+                }
+            } else {
                 return super.getMessage();
+            }
         }
-    }
     String expected = "";
     int maxSize = 0;
     for (int i = 0; i < expectedTokenSequences.length; i++) {
