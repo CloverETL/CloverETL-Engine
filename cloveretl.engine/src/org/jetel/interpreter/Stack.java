@@ -104,6 +104,7 @@ public class Stack {
 	}
 	
 	public final Object get(){
+		if (top<0) return null;
 		return stack[top];
 	}
     
