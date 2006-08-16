@@ -65,6 +65,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     protected DataRecord[] inputRecords;
     protected DataRecord[] outputRecords;
     
+    protected Node emptyNode; // used as replacement for empty statements
+    
     static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
     /**
@@ -74,6 +76,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         stack = new Stack();
         breakFlag = false;
         this.globalParameters=globalParameters;
+        emptyNode = new SimpleNode(Integer.MAX_VALUE);
     }
     
     public TransformLangExecutor() {
@@ -143,8 +146,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     /* it seems to be necessary to define a visit() method for SimpleNode */
 
     public Object visit(SimpleNode node, Object data) {
-        throw new TransformLangExecutorRuntimeException(node,
-                "Error: Call to visit for SimpleNode");
+//        throw new TransformLangExecutorRuntimeException(node,
+//                "Error: Call to visit for SimpleNode");
+        return data;
     }
 
     public Object visit(CLVFStart node, Object data) {
@@ -171,14 +175,27 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFOr node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
 
-        if (((Boolean) (stack.pop())).booleanValue()) {
-            stack.push(Stack.TRUE_VAL);
-            return data;
+        Object a=stack.pop();
+        
+        if (! (a instanceof Boolean)){
+        	Object params[]=new Object[]{a};
+            throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
+        }else{
+        	if (((Boolean)a).booleanValue()){
+        		stack.push(Stack.TRUE_VAL);
+        		return data;
+        	}
         }
-
+        
         node.jjtGetChild(1).jjtAccept(this, data);
+        a=stack.pop();
 
-        if (((Boolean) stack.pop()).booleanValue()) {
+        if (! (a instanceof Boolean)){
+        	Object params[]=new Object[]{a};
+            throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
+        }
+        
+        if (((Boolean) a).booleanValue()) {
             stack.push(Stack.TRUE_VAL);
 
         } else {
@@ -190,14 +207,28 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFAnd node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
 
-        if (!((Boolean) (stack.pop())).booleanValue()) {
-            stack.push(Stack.FALSE_VAL);
-            return data;
+        Object a=stack.pop();
+        
+        if (! (a instanceof Boolean)){
+        	Object params[]=new Object[]{a};
+            throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
+        }else{
+        	if (!((Boolean)a).booleanValue()){
+        		stack.push(Stack.FALSE_VAL);
+        		return data;
+        	}
+        }
+        
+        node.jjtGetChild(1).jjtAccept(this, data);
+        a=stack.pop();
+
+        if (! (a instanceof Boolean)){
+        	Object params[]=new Object[]{a};
+            throw new TransformLangExecutorRuntimeException(node,params,"logical condition does not evaluate to BOOLEAN value");
         }
 
-        node.jjtGetChild(1).jjtAccept(this, data);
-
-        if (!((Boolean) (stack.pop())).booleanValue()) {
+        
+        if (!((Boolean)a).booleanValue()) {
             stack.push(Stack.FALSE_VAL);
             return data;
         } else {
@@ -250,7 +281,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     cmpResult = Compare.compare((CharSequence) a,
                             (CharSequence) b);
                 } else if (a instanceof Boolean && b instanceof Boolean) {
-                    cmpResult = ((Boolean) a).equals(b) ? 0 : -1;
+                	if (node.cmpType==EQUAL || node.cmpType==NON_EQUAL){ 
+                		cmpResult = ((Boolean) a).equals(b) ? 0 : -1;
+                	}else{
+                		Object arguments[] = { a, b };
+                		throw new TransformLangExecutorRuntimeException(arguments,
+                        "compare - unsupported cmparison operator ["+tokenImage[node.cmpType]+"] for literals/expressions");
+                	}
                 } else {
                     Object arguments[] = { a, b };
                     throw new TransformLangExecutorRuntimeException(arguments,
@@ -313,17 +350,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "NULL value not allowed");
         }
 
-        if (!(b instanceof Numeric || b instanceof CharSequence)) {
-            throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
-                    "add - wrong type of literal");
-        }
+//        if (!(b instanceof Numeric || b instanceof CharSequence)) {
+//            throw new TransformLangExecutorRuntimeException(node, new Object[] { b },
+//                    "add - wrong type of literal");
+//        }
 
         try {
-            if (a instanceof Numeric) {
+            if (a instanceof Numeric && b instanceof Numeric) {
                 Numeric result = ((Numeric) a).duplicateNumeric();
                 result.add((Numeric) b);
                 stack.push(result);
-            } else if (a instanceof Date) {
+            } else if (a instanceof Date && b instanceof Numeric) {
                 Calendar result = Calendar.getInstance();
                 result.setTime((Date) a);
                 result.add(Calendar.DATE, ((Numeric) b).getInt());
@@ -435,7 +472,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         if (a instanceof Numeric) {
             Numeric result = ((Numeric) a).duplicateNumeric();
-            result.div((Numeric) b);
+            try{
+            	result.div((Numeric) b);
+            }catch(ArithmeticException ex){
+            	Object[] arguments = { a, b };
+            	throw new TransformLangExecutorRuntimeException(node,arguments,"div - aritmetic exception - "+ex.getMessage());
+            }
             stack.push(result);
         } else {
             Object[] arguments = { a, b };
@@ -479,12 +521,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object value = stack.pop();
 
+        
         if (value instanceof Boolean) {
             stack.push(((Boolean) value).booleanValue() ? Stack.FALSE_VAL
                     : Stack.TRUE_VAL);
         } else {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { stack
-                    .get() }, "NULL value not allowed");
+                    .get() }, "logical condition does not evaluate to BOOLEAN value");
         }
 
         return data;
@@ -993,7 +1036,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(1);
         Node increment = node.jjtGetChild(2);
-        Node body = node.jjtGetChild(3);
+        Node body =  node.jjtGetNumChildren()>=3 ? node.jjtGetChild(3) : emptyNode;
 
         try {
             loopCondition.jjtAccept(this, data); // evaluate the condition
@@ -1028,7 +1071,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFWhileStatement node, Object data) {
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(0);
-        Node body = node.jjtGetChild(1);
+        Node body =  node.jjtGetNumChildren()>=2 ? node.jjtGetChild(1) : emptyNode;
 
         try {
             loopCondition.jjtAccept(this, data); // evaluate the condition
