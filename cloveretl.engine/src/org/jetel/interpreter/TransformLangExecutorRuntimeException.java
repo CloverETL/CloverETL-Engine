@@ -61,6 +61,12 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
         this.nodeInError=null;
         this.arguments=null;
     }
+    
+    public TransformLangExecutorRuntimeException(SimpleNode node,String message, Throwable cause){
+        super(message,cause);
+        this.nodeInError=node;
+        this.arguments=null;
+    }
 	
 	public SimpleNode getNode(){
 		return nodeInError;
