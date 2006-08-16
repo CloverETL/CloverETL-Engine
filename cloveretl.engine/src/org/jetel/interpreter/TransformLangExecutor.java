@@ -54,7 +54,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public static final int BREAK_BREAK=1;
     public static final int BREAK_CONTINUE=2;
-    public static final int BREAK_RETURN=2;
+    public static final int BREAK_RETURN=3;
     
     protected Stack stack;
 
@@ -256,7 +256,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 }
             } else {
                 Object[] arguments = { field1, field2 };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "regex equal - wrong type of literal(s)");
             }
 
@@ -285,17 +285,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 		cmpResult = ((Boolean) a).equals(b) ? 0 : -1;
                 	}else{
                 		Object arguments[] = { a, b };
-                		throw new TransformLangExecutorRuntimeException(arguments,
+                		throw new TransformLangExecutorRuntimeException(node,arguments,
                         "compare - unsupported cmparison operator ["+tokenImage[node.cmpType]+"] for literals/expressions");
                 	}
                 } else {
                     Object arguments[] = { a, b };
-                    throw new TransformLangExecutorRuntimeException(arguments,
+                    throw new TransformLangExecutorRuntimeException(node,arguments,
                             "compare - incompatible literals/expressions");
                 }
             } catch (ClassCastException ex) {
                 Object arguments[] = { a, b };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "compare - incompatible literals/expressions");
             }
             switch (node.cmpType) {
@@ -331,7 +331,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 break;
             default:
                 // this should never happen !!!
-                throw new RuntimeException("Unsupported cmparison operator !");
+                logger.fatal("Internal error: Unsupported comparison operator !");
+                throw new RuntimeException("Internal error - Unsupported comparison operator !");
             }
         }
         stack.push(lValue ? Stack.TRUE_VAL : Stack.FALSE_VAL);
@@ -377,12 +378,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(buf);
             } else {
                 Object[] arguments = { a, b };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "add - wrong type of literal(s)");
             }
         } catch (ClassCastException ex) {
             Object arguments[] = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "add - wrong type of literal(s)");
         }
 
@@ -417,7 +418,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(result.getTime());
         } else {
             Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "sub - wrong type of literal(s)");
         }
 
@@ -447,7 +448,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(result);
         } else {
             Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "mul - wrong type of literal(s)");
         }
         return data;
@@ -481,7 +482,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(result);
         } else {
             Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "div - wrong type of literal(s)");
         }
 
@@ -510,7 +511,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(result);
         } else {
             Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "mod - wrong type of literal(s)");
         }
 
@@ -553,7 +554,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             from = ((Numeric) fromO).getInt();
         } catch (Exception ex) {
             Object arguments[] = { lengthO, fromO, str };
-            throw new TransformLangExecutorRuntimeException(arguments, "substring - "
+            throw new TransformLangExecutorRuntimeException(node,arguments, "substring - "
                     + ex.getMessage());
         }
 
@@ -562,7 +563,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         } else {
             Object[] arguments = { lengthO, fromO, str };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "substring - wrong type of literal(s)");
         }
 
@@ -583,7 +584,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(node.strBuf);
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "uppercase - wrong type of literal");
         }
 
@@ -605,7 +606,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(node.strBuf);
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "lowercase - wrong type of literal");
         }
         return data;
@@ -636,7 +637,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(seq.subSequence(start, end + 1));
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "trim - wrong type of literal");
         }
         return data;
@@ -651,7 +652,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(new CloverInteger(((CharSequence) a).length()));
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "lenght - wrong type of literal");
         }
 
@@ -744,7 +745,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     strBuf.append(a);
                 } else {
                     Object[] arguments = { a };
-                    throw new TransformLangExecutorRuntimeException(arguments,
+                    throw new TransformLangExecutorRuntimeException(node,arguments,
                             "concat - wrong type of literal(s)");
                 }
             }
@@ -765,7 +766,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             shiftAmount = ((Numeric) amount).getInt();
         } catch (Exception ex) {
             Object arguments[] = { amount };
-            throw new TransformLangExecutorRuntimeException(arguments, "dateadd - "
+            throw new TransformLangExecutorRuntimeException(node,arguments, "dateadd - "
                     + ex.getMessage());
         }
         if (date instanceof Date) {
@@ -774,7 +775,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(node.calendar.getTime());
         } else {
             Object arguments[] = { date };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "dateadd - no Date expression");
         }
 
@@ -790,7 +791,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(new CloverInteger(node.calendar.get(node.calendarField)));
         } else {
             Object arguments[] = { date };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "date2num - no Date expression");
         }
 
@@ -845,13 +846,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 break;
             default:
                 Object arguments[] = { new Integer(node.calendarField) };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "datediff - wrong difference unit");
             }
             stack.push(new CloverInteger(diff));
         } else {
             Object arguments[] = { date1, date2 };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "datediff - no Date expression");
         }
 
@@ -905,7 +906,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         } else {
             Object[] arguments = { withO, regexO, str };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "replace - wrong type of literal(s)");
         }
 
@@ -920,7 +921,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(((Numeric) a).toString());
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "num2str - wrong type of literal");
         }
 
@@ -937,12 +938,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         .parseDouble(((CharSequence) a).toString())));
             } catch (NumberFormatException ex) {
                 Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "str2num - can't convert \"" + a + "\"");
             }
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "str2num - wrong type of literal");
         }
 
@@ -957,7 +958,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(node.dateFormat.format((Date)a));
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "date2str - wrong type of literal");
         }
 
@@ -973,12 +974,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(node.dateFormat.parse(((CharSequence)a).toString()));
             } catch (java.text.ParseException ex) {
                 Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(arguments,
+                throw new TransformLangExecutorRuntimeException(node,arguments,
                         "str2date - can't convert \"" + a + "\"");
             }
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "str2date - wrong type of literal");
         }
 
@@ -999,7 +1000,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(stack.pop());
         } else {
             Object[] arguments = { condition };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "iif - wrong type of conditional expression");
         }
 
@@ -1052,7 +1053,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             // check for break or continue statements
             if (breakFlag){ 
                 breakFlag=false;
-                if (breakType==BREAK_BREAK || breakType==BREAK_RETURN) return data;
+                if (breakType==BREAK_BREAK || breakType==BREAK_RETURN) {
+                    return data;
+                }
             }
             increment.jjtAccept(this, data);
             stack.pop(); // in case there is anything on top of stack
@@ -1262,7 +1265,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         for (int i = 0; i < childern; i++) {
             node.jjtGetChild(i).jjtAccept(this, data);
             stack.pop(); // in case there is anything on top of stack
-            // have we seen contiue/break statement ??
+            // have we seen contiue/break/return statement ??
             if (breakFlag){ 
                 return data;
             }
@@ -1543,11 +1546,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             try{
                 stack.push(new CloverDouble(Math.sqrt(((Number)a).doubleValue()) ));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing SQRT function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing SQRT function",ex);
             }
         }else {
             Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "sqrt - wrong type of literal(s)");
         }
 
@@ -1562,11 +1565,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             try{
                 stack.push(new CloverDouble(Math.log(((Number)a).doubleValue()) ));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing LOG function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG function",ex);
             }
         }else {
             Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "log - wrong type of literal(s)");
         }
 
@@ -1581,11 +1584,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             try{
                 stack.push(new CloverDouble( Math.log10(((Number)a).doubleValue())));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing LOG10 function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG10 function",ex);
             }
         }else {
             Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "log10 - wrong type of literal(s)");
         }
 
@@ -1600,11 +1603,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             try{
                 stack.push(new CloverDouble( Math.exp(((Number)a).doubleValue())));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing EXP function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing EXP function",ex);
             }
         }else {
             Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "exp - wrong type of literal(s)");
         }
 
@@ -1619,11 +1622,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             try{
                 stack.push(new CloverLong(Math.round(((Number)a).doubleValue())));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing ROUND function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing ROUND function",ex);
             }
         }else {
             Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "round - wrong type of literal(s)");
         }
 
@@ -1642,11 +1645,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(new CloverDouble(Math.pow(((Number)a).doubleValue(),
                     ((Number)b).doubleValue())));
             }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException("Error when executing POW function",ex);
+                throw new TransformLangExecutorRuntimeException(node,"Error when executing POW function",ex);
             }
         }else {
             Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "pow - wrong type of literal(s)");
         }
 
@@ -1674,7 +1677,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(new CloverLong(((Number)a).longValue()));
         }else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "trunc - wrong type of literal(s)");
         }
 
