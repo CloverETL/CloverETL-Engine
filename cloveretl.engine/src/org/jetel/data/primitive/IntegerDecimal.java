@@ -43,8 +43,6 @@ import org.jetel.util.NumericFormat;
  */
 public class IntegerDecimal implements Decimal {
 
-    private final static int FIELD_SIZE_BYTES = 8;// standard size of field
-
     private long value;
     private int precision;
     private int scale;
@@ -332,7 +330,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value += ((IntegerDecimal) d).value;
             } else {
-                value += d.getBigDecimal().doubleValue() * TENPOWERS[scale];
+                setValue(getBigDecimal().add(d.getBigDecimal()));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'add' operation (" + a.getClass().getName() + ").");
@@ -356,7 +354,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value -= ((IntegerDecimal) d).value;
             } else {
-                value -= d.getBigDecimal().doubleValue() * TENPOWERS[scale];
+                setValue(getBigDecimal().subtract(d.getBigDecimal()));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'sub' operation (" + a.getClass().getName() + ").");
@@ -380,7 +378,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value *= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
             } else {
-                value *= d.getBigDecimal().doubleValue();
+                setValue(getBigDecimal().multiply(d.getBigDecimal()));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mul' operation (" + a.getClass().getName() + ").");
@@ -404,7 +402,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value /= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
             } else {
-                value /= d.getBigDecimal().doubleValue();
+                setValue(getBigDecimal().divide(d.getBigDecimal()));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
@@ -436,7 +434,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value %= ((IntegerDecimal) d).value;
             } else {
-                value %= d.getBigDecimal().doubleValue() * TENPOWERS[scale];
+                setValue(getBigDecimal().remainder(d.getBigDecimal()));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'mod' operation (" + a.getClass().getName() + ").");
@@ -473,9 +471,7 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#getSizeSerialized()
      */
     public int getSizeSerialized() {
-        return FIELD_SIZE_BYTES;
-        //FIXME in 1.5 java we can use next line
-        //return Integer.SIZE / 8;
+        return Long.SIZE / 8;
     }
 
     /**
@@ -563,36 +559,42 @@ public class IntegerDecimal implements Decimal {
             if(obj instanceof IntegerDecimal && ((IntegerDecimal) obj).scale == scale) {
                 return compareTo(((IntegerDecimal) obj).value);
             }
-            BigDecimal bd = ((Decimal) obj).getBigDecimal().setScale(scale, BigDecimal.ROUND_DOWN);
-            //FIXME in 1.5 java we will call next line plus catch exception caused by rounding
-            //BigDecimal bd = ((Decimal) obj).getBigDecimal().setScale(scale);
-            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
-            //FIXME in 1.5 java we will use next line
-            //if(bd.precision() > precision) return -1;
+            BigDecimal bd;
+            try {
+                bd = ((Decimal) obj).getBigDecimal().setScale(scale);
+            } catch(ArithmeticException e) {
+                //change scale is impossible
+                return -1;
+            }
+            if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof Integer) {
             return compareTo(((Integer) obj).intValue() * TENPOWERS[scale]);
         } else if(obj instanceof Long) {
             return compareTo(((Long) obj).longValue() * TENPOWERS[scale]);
-        } else if (obj instanceof Double) {
-            BigDecimal bd = new BigDecimal(Double.toString(((Double) obj).doubleValue())).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
-            //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
-            //BigDecimal bd = BigDecimal.valueOf(((Double) obj).doubleValue()).setScale(scale);
-            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
-            //FIXME in 1.5 java we will use next line
-            //if(bd.precision() > precision) return -1;
+        } else if (obj instanceof Double) { 
+            BigDecimal bd;
+            try {
+                bd = BigDecimal.valueOf(((Double) obj).doubleValue()).setScale(scale);
+            } catch(ArithmeticException e) {
+                //change scale is impossible
+                return -1;
+            }
+            if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof IntegerDataField) {
             return compareTo(((IntegerDataField) obj).getInt() * TENPOWERS[scale]);
         } else if(obj instanceof LongDataField) {
             return compareTo(((LongDataField) obj).getLong() * TENPOWERS[scale]);
         } else if (obj instanceof NumericDataField) {
-            BigDecimal bd = new BigDecimal(Double.toString(((NumericDataField) obj).getDouble())).setScale(scale, BigDecimal.ROUND_DOWN); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
-            //FIXME in 1.5 java we will call next line plus catch exception caused by rounding; if we are rounding "equal" is impossible
-            //BigDecimal bd = BigDecimal.valueOf(((NumericDataField) obj).getDouble()).setScale(scale);
-            if(HugeDecimal.precision(bd.unscaledValue()) > precision) return -1;
-            //FIXME in 1.5 java we will use next line
-            //if(bd.precision() > precision) return -1;
+            BigDecimal bd;
+            try {
+                bd = BigDecimal.valueOf(((NumericDataField) obj).getDouble()).setScale(scale);
+            } catch(ArithmeticException e) {
+                //change scale is impossible
+                return -1;
+            }
+            if(bd.precision() > precision) return -1;
             return compareTo(bd.unscaledValue().longValue());
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());
