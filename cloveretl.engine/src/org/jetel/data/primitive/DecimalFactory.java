@@ -56,14 +56,14 @@ public class DecimalFactory {
 	}
 
 	public static Decimal getDecimal(double value) {
-        BigDecimal bd = new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble())
-        Decimal d = getDecimal(HugeDecimal.precision(bd.unscaledValue()), bd.scale()); //FIXME it's maybe bug, if scale is negative, returned precision is invalid
+        BigDecimal bd = BigDecimal.valueOf(value);
+        Decimal d = getDecimal(bd.precision(), bd.scale());
         d.setValue(bd);
 		return d;
 	}
 
 	public static Decimal getDecimal(double value, int precision, int scale) {
-        BigDecimal bd = new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble())
+        BigDecimal bd = BigDecimal.valueOf(value);
 		Decimal d = getDecimal(precision, scale);
 		d.setValue(bd);
 		return d;

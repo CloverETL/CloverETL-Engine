@@ -107,7 +107,7 @@ public class HugeDecimal implements Decimal {
 			setNaN(true);
 			return;
 		}
-		value = new BigDecimal(Double.toString(_value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+		value = BigDecimal.valueOf(_value);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -407,7 +407,7 @@ public class HugeDecimal implements Decimal {
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.add(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = value.add(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.add(BigDecimal.valueOf(a.getDouble()));
 		} else if(a instanceof DecimalDataField) {
             value = value.add(a.getDecimal().getBigDecimal());
         } else if(a instanceof Decimal) {
@@ -428,7 +428,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.subtract(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = value.subtract(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.subtract(BigDecimal.valueOf(a.getDouble()));
 		} else if(a instanceof DecimalDataField) {
 			value = value.subtract(a.getDecimal().getBigDecimal());
         } else if(a instanceof Decimal) {
@@ -449,7 +449,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.multiply(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = value.multiply(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.multiply(BigDecimal.valueOf(a.getDouble()));
 		} else if(a instanceof DecimalDataField) {
 			value = value.multiply(a.getDecimal().getBigDecimal());
         } else if(a instanceof Decimal) {
@@ -470,7 +470,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = value.divide(BigDecimal.valueOf(a.getLong()), roundingMode);
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = value.divide(new BigDecimal(Double.toString(a.getDouble())), roundingMode); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = value.divide(BigDecimal.valueOf(a.getDouble()), roundingMode);
 		} else if(a instanceof DecimalDataField) {
 			value = value.divide(a.getDecimal().getBigDecimal(), roundingMode);
         } else if(a instanceof Decimal) {
@@ -499,7 +499,7 @@ public class HugeDecimal implements Decimal {
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
 			value = remainder(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = remainder(new BigDecimal(Double.toString(a.getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			value = remainder(BigDecimal.valueOf(a.getDouble()));
 		} else if(a instanceof DecimalDataField) {
 			value = remainder(a.getDecimal().getBigDecimal());
         } else if(a instanceof Decimal) {
@@ -638,13 +638,13 @@ public class HugeDecimal implements Decimal {
         } else if(obj instanceof Long) {
 			return value.compareTo(BigDecimal.valueOf(((Long) obj).longValue()));
 		} else if (obj instanceof Double) {
-			return value.compareTo(new BigDecimal(Double.toString(((Double) obj).doubleValue()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			return value.compareTo(BigDecimal.valueOf(((Double) obj).doubleValue()));
 		} else if (obj instanceof IntegerDataField) {
             return value.compareTo(BigDecimal.valueOf(((IntegerDataField) obj).getInt()));
         } else if(obj instanceof LongDataField) {
 			return value.compareTo(BigDecimal.valueOf(((LongDataField) obj).getLong()));
 		} else if (obj instanceof NumericDataField) {
-			return value.compareTo(new BigDecimal(Double.toString(((NumericDataField) obj).getDouble()))); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
+			return value.compareTo(BigDecimal.valueOf(((NumericDataField) obj).getDouble()));
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());
 		} else throw new ClassCastException("Can't compare this DecimalDataField and " + obj.getClass().getName());
