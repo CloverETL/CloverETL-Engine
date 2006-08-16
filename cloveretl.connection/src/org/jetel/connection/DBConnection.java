@@ -38,15 +38,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.PasswordEncrypt;
-
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.Enigma;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.NamedNodeMap;
@@ -101,6 +103,8 @@ import org.w3c.dom.NamedNodeMap;
  * @created     January 15, 2003
  */
 public class DBConnection extends GraphElement implements IConnection {
+
+    private static Log logger = LogFactory.getLog(DBConnection.class);
 
 	Driver dbDriver;
 	Connection dbConnection;
@@ -517,14 +521,17 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     private void decryptPassword(Properties configProperties) {
         if (isPasswordEncrypted){
-            PasswordEncrypt dec = new PasswordEncrypt();
-            String decryptedPassword = dec.decrypt(configProperties
-                    .getProperty(XML_PASSWORD_ATTRIBUTE));
+            Enigma enigma = Enigma.getInstance();
+            String decryptedPassword = null;
+            try {
+                decryptedPassword = enigma.decrypt(configProperties.getProperty(XML_PASSWORD_ATTRIBUTE));
+            } catch (JetelException e) {
+                logger.error("Can't decrypt password on DBConnection (id=" + this.getId() + "). Please set the password as engine parameter -pass.");
+            }
             // If password decryption returns failure, try with the password
             // as it is.
             if (decryptedPassword != null) {
-                configProperties.setProperty(XML_PASSWORD_ATTRIBUTE,
-                        decryptedPassword);
+                configProperties.setProperty(XML_PASSWORD_ATTRIBUTE, decryptedPassword);
             }
         }
     } 
