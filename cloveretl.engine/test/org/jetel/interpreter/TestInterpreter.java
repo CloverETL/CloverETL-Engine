@@ -631,7 +631,7 @@ public class TestInterpreter extends TestCase {
 						"number m1divn1; m1divn1=m1/n1;print_err(\"deleni numbers:\"+m1divn1);\n" +
 						"number m1plusj;m1plusj=j/n1;print_err(\"number division int:\"+m1plusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
-						"decimal(10,4) d1; d1=0.0;print_err(d1);\n" +
+						"decimal(10,4) d1; d1=0.01;print_err(d1);\n" +
 						"decimal(10,4)  dplusd1; dplusd1=d/d1;print_err(\"div decimal:\"+dplusd1);\n" +
 						"decimal(10,4)  dplusj;dplusj=d/j;print_err(\"decimal div int:\"+dplusj);\n"+
 						"decimal(10,4)  dplusn;dplusn=n1/d;print_err(\"decimal div number:\"+dplusn);\n";
@@ -661,7 +661,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("m1/n",new CloverDouble(Double.POSITIVE_INFINITY),(CloverDouble)result[11]);
 		      assertEquals("m1/n1",new CloverDouble(0.001),(CloverDouble)result[12]);
 		      assertEquals("j/n1",new CloverDouble(10),(CloverDouble)result[13]);
-		      assertEquals("d/d1",DecimalFactory.getDecimal(1),(Decimal)result[16]);
+		      assertEquals("d/d1",DecimalFactory.getDecimal(0.1/0.01),(Decimal)result[16]);
 		      assertEquals("d/j",DecimalFactory.getDecimal(0.0000),(Decimal)result[17]);
 		      assertEquals("n1/d",DecimalFactory.getDecimal(100.0000),(Decimal)result[18]);
 
@@ -1026,12 +1026,21 @@ public class TestInterpreter extends TestCase {
 	}
 		
 	public void test_3_expression() {
-		String expStr="not trim($Name) .ne. \"HELLO\" || replace($Name,\".\" ,\"a\")=='aaaaaaa'";
+		String expStr="not (trim($Name) .ne. \"HELLO\") || replace($Name,\".\" ,\"a\")=='aaaaaaa'";
 		try {
+			System.out.println("in Test3expression");
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-                    new ByteArrayInputStream(expStr.getBytes()));
-              CLVFStartExpression parseTree = parser.StartExpression();
+                    new ByteArrayInputStream(expStr.getBytes()));           
+            
+            CLVFStartExpression parseTree = parser.StartExpression();
 
+            parseTree.dump("ccc");
+              
+              for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+            	  System.err.println(it.next());
+              }
+              
+              
               System.out.println(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
@@ -1065,8 +1074,8 @@ public class TestInterpreter extends TestCase {
 						"if (i.gt.j and l.eq.1) {d=0;print_err('d rovne 0');}\n" +
 						"else d=0.1;\n" +
 						"number n;\n" +
-						"if (d=0.1) n=0;\n" +
-						"if (d=0.1 || l<=1) n=0;\n" +
+						"if (d==0.1) n=0;\n" +
+						"if (d==0.1 || l<=1) n=0;\n" +
 						"else {n=-1;print_err('n rovne -1')}\n" +
 						"date date1; date1=2006-01-01;print_err(date1);\n" +
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
@@ -1100,8 +1109,8 @@ public class TestInterpreter extends TestCase {
 		      
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals(1,((CloverLong)result[2]).getLong());
-		      assertEquals(new Double(0),new Double(((Decimal)result[3]).getDouble()));
-		      assertEquals(new Double(0),new Double(((Decimal)result[4]).getDouble()));
+		      assertEquals(DecimalFactory.getDecimal(0),(Decimal)result[3]);
+		      assertEquals(new CloverDouble(0),new Double(((Decimal)result[4]).getDouble()));
 		      assertEquals(true,((Boolean)result[7]).booleanValue());
 
 		} catch (ParseException e) {
