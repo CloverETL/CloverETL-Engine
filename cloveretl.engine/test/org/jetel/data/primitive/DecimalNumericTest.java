@@ -246,9 +246,11 @@ public class DecimalNumericTest extends TestCase {
 					   break;
 				case 3:value=999999.99;
 				       d_value=value;
+				       more=999999.999;
 				  	   break;
 				case 4:value=-999999.99;
 			           d_value=value;
+			           less=-999999.999;
 				  	   break;
 			}
 			aDefault.setValue(value);
@@ -274,8 +276,8 @@ public class DecimalNumericTest extends TestCase {
 			assertNotSame(DecimalFactory.getDecimal(value),aDefault.getDecimal());
 			if (!aDefault.isNaN()&&!(value==999999.99)) assertEquals(-1,aDefault.compareTo(DecimalFactory.getDecimal(more)));
 			if (!aDefault.isNaN()&&!(value==999999.99)) assertEquals(-1,aDefault.compareTo(new Double(more)));
-			if (!aDefault.isNaN()) assertEquals(0,aDefault.compareTo(DecimalFactory.getDecimal(value)));
-			if (!aDefault.isNaN()) assertEquals(0,aDefault.compareTo(new Double(value)));
+			if (!(aDefault.isNaN() || aDefault.getDouble()==0)) assertEquals(0,aDefault.compareTo(DecimalFactory.getDecimal(value)));
+			if (!(aDefault.isNaN() || aDefault.getDouble()==0)) assertEquals(0,aDefault.compareTo(new Double(value)));
 			if (!aDefault.isNaN()&&!(value==-999999.99)) assertEquals(1,aDefault.compareTo(DecimalFactory.getDecimal(less)));
 			if (!aDefault.isNaN()&&!(value==-999999.99)) assertEquals(1,aDefault.compareTo(new Double(less)));
 			System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
@@ -326,8 +328,8 @@ public class DecimalNumericTest extends TestCase {
 				assertNotSame(DecimalFactory.getDecimal(value),aDoubleIntInt.getDecimal());
 				if (!aDoubleIntInt.isNaN()&&!(value==9999999.99)) assertEquals(-1,aDoubleIntInt.compareTo(DecimalFactory.getDecimal(more)));
 				if (!aDoubleIntInt.isNaN()&&!(value==9999999.99)) assertEquals(-1,aDoubleIntInt.compareTo(new Double(more)));
-				if (!aDoubleIntInt.isNaN()) assertEquals(0,aDoubleIntInt.compareTo(DecimalFactory.getDecimal(value)));
-				if (!aDoubleIntInt.isNaN()) assertEquals(0,aDoubleIntInt.compareTo(new Double(value)));
+				if (!(aDoubleIntInt.isNaN() || aDoubleIntInt.getDouble()==0)) assertEquals(0,aDoubleIntInt.compareTo(DecimalFactory.getDecimal(value)));
+				if (!(aDoubleIntInt.isNaN() || aDoubleIntInt.getDouble()==0)) assertEquals(0,aDoubleIntInt.compareTo(new Double(value)));
 				if (!aDoubleIntInt.isNaN()&&!(value==-9999999.99)) assertEquals(1,aDoubleIntInt.compareTo(DecimalFactory.getDecimal(less)));
 				if (!aDoubleIntInt.isNaN()&&!(value==-9999999.99)) assertEquals(1,aDoubleIntInt.compareTo(new Double(less)));
 				System.out.println("Test for compareTo passed (isNaN="+anInt.isNaN()+")");
