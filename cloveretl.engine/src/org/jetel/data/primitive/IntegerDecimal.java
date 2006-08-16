@@ -559,43 +559,19 @@ public class IntegerDecimal implements Decimal {
             if(obj instanceof IntegerDecimal && ((IntegerDecimal) obj).scale == scale) {
                 return compareTo(((IntegerDecimal) obj).value);
             }
-            BigDecimal bd;
-            try {
-                bd = ((Decimal) obj).getBigDecimal().setScale(scale);
-            } catch(ArithmeticException e) {
-                //change scale is impossible
-                return -1;
-            }
-            if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().longValue());
+            return getBigDecimal().compareTo(((Decimal) obj).getBigDecimal());
         } else if (obj instanceof Integer) {
             return compareTo(((Integer) obj).intValue() * TENPOWERS[scale]);
         } else if(obj instanceof Long) {
             return compareTo(((Long) obj).longValue() * TENPOWERS[scale]);
         } else if (obj instanceof Double) { 
-            BigDecimal bd;
-            try {
-                bd = BigDecimal.valueOf(((Double) obj).doubleValue()).setScale(scale);
-            } catch(ArithmeticException e) {
-                //change scale is impossible
-                return -1;
-            }
-            if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().longValue());
+            return getBigDecimal().compareTo(BigDecimal.valueOf((Double) obj));
         } else if (obj instanceof IntegerDataField) {
             return compareTo(((IntegerDataField) obj).getInt() * TENPOWERS[scale]);
         } else if(obj instanceof LongDataField) {
             return compareTo(((LongDataField) obj).getLong() * TENPOWERS[scale]);
         } else if (obj instanceof NumericDataField) {
-            BigDecimal bd;
-            try {
-                bd = BigDecimal.valueOf(((NumericDataField) obj).getDouble()).setScale(scale);
-            } catch(ArithmeticException e) {
-                //change scale is impossible
-                return -1;
-            }
-            if(bd.precision() > precision) return -1;
-            return compareTo(bd.unscaledValue().longValue());
+            return getBigDecimal().compareTo(BigDecimal.valueOf(((NumericDataField) obj).getDouble()));
         } else if (obj instanceof DecimalDataField) {
             return compareTo(((DecimalDataField) obj).getValue());
         } else throw new ClassCastException("Can't compare this DecimalDataField and " + obj.getClass().getName());
