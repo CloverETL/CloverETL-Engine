@@ -2,6 +2,22 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 1-9-0
+-------------
+Changes/bug fixes:
++ Removed Singleton pattern from TransformationGraph class - Clover now supports unlimited
+graphs within single JVM instance
++ Added DataReader/DataWriter - universal readers/writers of text files - support
+mixture of delimtied&fix-len fields, able to survive errors in data
++ Added Transformation language - full-fledge programming language focused on creating
+data transformations (supported by Reformat, all joiners, DataIntersection components) -
+warning - this is still very untested. Examples will follow. 
++ Added option "fastPropagate" to Edge - allows fast propagation of records between
+components connected by such edge - different kind of buffering involved when reader
+can read data just after they are sent by writer. Normally, reader waits till writer
+fills-in the buffer fully.
+
+
 REL 1-8-3
 ---------
 Changes/bug fixes:
