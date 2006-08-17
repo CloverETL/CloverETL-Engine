@@ -15,6 +15,7 @@ options {
    NODE_PREFIX="CLVF";
    NODE_PACKAGE="org.jetel.interpreter";
    NODE_SCOPE_HOOK=true; // save line & column number
+   JAVA_UNICODE_ESCAPE = true ;
    BUILD_NODE_FILES=false; // change to True only if new Node has been added 
 }
 
@@ -28,6 +29,7 @@ package org.jetel.interpreter;
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.node.*;
+import org.jetel.util.StringUtils;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,13 +47,14 @@ public class TransformLangParser extends ExpParser {
        List parseExceptions;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
-              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream);
+              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,"UTF-8");
        }
+       
        
        public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
        							DataRecordMetadata[] outRecordsMetadata,
-       							java.io.InputStream stream){
-              this(stream);
+       							java.io.InputStream stream,String encoding){
+              this(stream,encoding);
               parserHelper=new ParserHelper();
               this.inRecordsMetadata=inRecordsMetadata;
               this.outRecordsMetadata=outRecordsMetadata;
@@ -258,21 +261,14 @@ TOKEN: {
 
 
 TOKEN : /* variable Types */
-{
+{ 
    < INT_VAR: "int" >
- |
-   < LONG_VAR: "long" >
- |
-   < DATE_VAR: "date" >
- |
-   < DOUBLE_VAR: "number" >
- |
-   < DECIMAL_VAR: "decimal" >
- |
-   < BOOL_VAR: "boolean" >
- |
-   < STRING_VAR: "string" >
- 
+ |  < LONG_VAR: "long" >
+ |  < DATE_VAR: "date" >
+ |  < DOUBLE_VAR: "number" >
+ |  < DECIMAL_VAR: "decimal" >
+ |  < BOOLEAN_VAR: "boolean" >
+ |  < STRING_VAR: "string" >
  }
 
 /* 
@@ -370,7 +366,7 @@ void FunctionDeclaration() :
 */
 
 void VarDeclaration():
-{  Token t,l,p;  int varSlot;}{  try {    ("int"{      jjtThis.setType(INT_VAR);    }    | "long"{      jjtThis.setType(LONG_VAR);    }    | "number"{      jjtThis.setType(DOUBLE_VAR);    }    | "decimal"{      jjtThis.setType(DECIMAL_VAR);    }    | "string"{      jjtThis.setType(STRING_VAR);    }    | "date"{      jjtThis.setType(DATE_VAR);    }    | "boolean"{      jjtThis.setType(BOOL_VAR);    }    )
+{  Token t,l,p;  int varSlot;}{  try {    (<INT_VAR>{      jjtThis.setType(INT_VAR);    }    | <LONG_VAR>{      jjtThis.setType(LONG_VAR);    }    | <DOUBLE_VAR>{      jjtThis.setType(DOUBLE_VAR);    }    | <DECIMAL_VAR>{      jjtThis.setType(DECIMAL_VAR);    }    | <STRING_VAR>{      jjtThis.setType(STRING_VAR);    }    | <DATE_VAR>{      jjtThis.setType(DATE_VAR);    }    | <BOOLEAN_VAR>{      jjtThis.setType(BOOLEAN_VAR);    }    )
 
     ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
       
@@ -480,10 +476,10 @@ void UnaryExpression() #void :
 {
 	 LOOKAHEAD(2) PrimaryExpression()
 	 | "-" PrimaryExpression() #MinusNode(1)
-	 | <PLUS_PLUS> PrimaryExpression()     #PlusPlusNode(1)
-	 | LOOKAHEAD(2) PrimaryExpression() <PLUS_PLUS>      #PlusPlusNode(1)
+	 | ( LOOKAHEAD( PrimaryExpression() ) <PLUS_PLUS> #PlusPlusNode(1)
+	 	|<PLUS_PLUS> PrimaryExpression()     #PlusPlusNode(1) )
+	 | LOOKAHEAD(PrimaryExpression()) <MINUS_MINUS>  #MinusMinusNode(1)
 	 | <MINUS_MINUS> PrimaryExpression()     #MinusMinusNode(1)
-	 | LOOKAHEAD(2) PrimaryExpression() <MINUS_MINUS>     #MinusMinusNode(1)
 	 | <NOT> UnaryExpression() #Negation(1)
 	 
 	 
@@ -522,7 +518,7 @@ void LitExp() #void :            //
  |t=<INTEGER_LITERAL>
   	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
  |t=<STRING_LITERAL>
-  	{ jjtThis.setVal(STRING_LITERAL,t.image.substring(1,t.image.length()-1)); }   #Literal
+  	{ jjtThis.setVal(STRING_LITERAL,StringUtils.stringToSpecChar(t.image.substring(1,t.image.length()-1))); }   #Literal
  |t=<BOOLEAN_LITERAL>
   	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
  |t=<DATE_LITERAL>
@@ -657,8 +653,26 @@ void StatementExpression() :
 {}
 {
 	
-   ( LOOKAHEAD(2) Assignment() 
-   |FunctionCallStatement() ) ";"
+   (
+   	LOOKAHEAD(<PLUS_PLUS>)PlusplusStatement()
+   |LOOKAHEAD(<MINUS_MINUS>)MinusMinusStatement()
+   |LOOKAHEAD(2) Assignment() 
+   |FunctionCallStatement() 
+   ) ";"
+}
+
+void PlusplusStatement() #void:
+{}
+{
+	(  VarExp() <PLUS_PLUS>  
+	 |  <PLUS_PLUS> VarExp() )  #PlusPlusNode(1)
+}
+
+void MinusMinusStatement() #void:
+{}
+{
+	( VarExp() <MINUS_MINUS>
+	| <MINUS_MINUS> VarExp() ) #MinusMinusNode(1)
 }
 
 void IfStatement() :
@@ -774,7 +788,7 @@ void BuildInFunction() #void :
 	|"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
 	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
-	|"str2num" "(" AdditiveExpression() ")" #Str2NumNode(1)
+	|Str2NumNode()
 	|"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|Date2StrNode()
@@ -790,6 +804,7 @@ void BuildInFunction() #void :
 	|Date2NumNode()
 	
 }
+
 
 void BuildInProcedure() #void : {}
 {
@@ -839,6 +854,43 @@ void Date2NumNode() :
 {
 	"date2num" "(" AdditiveExpression() "," t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); } ")" 
 }
+
+void Str2NumNode() :
+{ 
+	Token t;
+}
+{
+	"str2num" "(" AdditiveExpression() 
+	
+	[ ","  
+	 (<INT_VAR>{
+      jjtThis.setType(INT_VAR);
+    }
+    | <LONG_VAR>{
+      jjtThis.setType(LONG_VAR);
+    }
+    | <DOUBLE_VAR>{
+      jjtThis.setType(DOUBLE_VAR);
+    }
+    | <DECIMAL_VAR>{
+      jjtThis.setType(DECIMAL_VAR);
+    }
+    | <STRING_VAR>{
+      jjtThis.setType(STRING_VAR);
+    }
+    | <DATE_VAR>{
+      jjtThis.setType(DATE_VAR);
+    }
+    | <BOOLEAN_VAR>{
+      jjtThis.setType(BOOLEAN_VAR);
+    }
+    )
+    ] 
+    
+    ")"
+}
+
+
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 

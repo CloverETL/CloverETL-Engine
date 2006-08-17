@@ -1363,7 +1363,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case DATE_VAR:
             value=new Date();
             break;
-        case BOOL_VAR:
+        case BOOLEAN_VAR:
             value=  Stack.FALSE_VAL;
             break;
         default:
