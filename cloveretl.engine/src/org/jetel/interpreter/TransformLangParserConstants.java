@@ -52,7 +52,7 @@ public interface TransformLangParserConstants {
   int DATE_VAR = 57;
   int DOUBLE_VAR = 58;
   int DECIMAL_VAR = 59;
-  int BOOL_VAR = 60;
+  int BOOLEAN_VAR = 60;
   int STRING_VAR = 61;
   int DATE_FIELD_LITERAL = 109;
   int IDENTIFIER = 110;
@@ -152,7 +152,6 @@ public interface TransformLangParserConstants {
     "\"isnull\"",
     "\"nvl\"",
     "\"replace\"",
-    "\"str2num\"",
     "\"num2str\"",
     "\"iif\"",
     "\"sqrt\"",
@@ -172,6 +171,7 @@ public interface TransformLangParserConstants {
     "\"date2str\"",
     "\"str2date\"",
     "\"date2num\"",
+    "\"str2num\"",
     "<DATE_FIELD_LITERAL>",
     "<IDENTIFIER>",
     "<ERROR>",
