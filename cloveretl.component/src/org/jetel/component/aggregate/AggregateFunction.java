@@ -26,7 +26,7 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.Numeric;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
