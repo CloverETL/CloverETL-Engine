@@ -20,6 +20,8 @@
 
 package org.jetel.data;
 
+import org.jetel.data.primitive.Numeric;
+
 /**
  *  Supporting "macros" for setting values of differend data fields
  *

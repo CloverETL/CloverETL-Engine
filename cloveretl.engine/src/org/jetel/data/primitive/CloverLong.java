@@ -21,7 +21,6 @@ package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 
-import org.jetel.data.Numeric;
 
 /**
  *  A class that represents a long integer value.<br>

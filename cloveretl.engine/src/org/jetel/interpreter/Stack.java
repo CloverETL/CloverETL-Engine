@@ -21,9 +21,9 @@ package org.jetel.interpreter;
 
 import java.util.Arrays;
 
-import org.jetel.data.Numeric;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.primitive.Numeric;
 
 /**
  * @author dpavlis

@@ -32,12 +32,12 @@ import org.jetel.interpreter.node.*;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.util.Compare;
 import org.jetel.util.StringUtils;
 

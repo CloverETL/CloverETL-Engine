@@ -28,6 +28,7 @@ import java.nio.charset.CharsetEncoder;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 

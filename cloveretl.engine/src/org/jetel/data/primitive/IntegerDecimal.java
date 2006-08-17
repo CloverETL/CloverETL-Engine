@@ -29,9 +29,7 @@ import java.text.ParsePosition;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
-import org.jetel.data.Numeric;
 import org.jetel.data.NumericDataField;
-import org.jetel.util.NumericFormat;
 
 /**
  * Clover internal decimal value representation.
