@@ -35,6 +35,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  * @author dpavlis
@@ -219,7 +220,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return filename;
 	}
 	
-	static public SimpleSequence fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         try {
