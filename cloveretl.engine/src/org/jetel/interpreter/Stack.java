@@ -20,6 +20,7 @@
 package org.jetel.interpreter;
 
 import java.util.Arrays;
+import java.util.Calendar;
 
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverDouble;
@@ -49,6 +50,8 @@ public class Stack {
 	public static final Numeric NUM_PI = new CloverDouble(Math.PI);
     public static final Numeric NUM_E = new CloverDouble(Math.E);
     
+    // useful instance variables (used when evaluating certain expressions) 
+    public Calendar calendar; 
     
     Object[] stack;
     Object[] globalVarSlot;
@@ -71,6 +74,7 @@ public class Stack {
 		top= -1;
         funcStackTop= -1;
         localVarSlotOffset =localVarCounter = 0;
+        calendar = Calendar.getInstance();
 	}
 
 	/**
