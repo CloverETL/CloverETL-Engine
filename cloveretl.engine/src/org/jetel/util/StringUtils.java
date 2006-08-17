@@ -37,7 +37,7 @@ public class StringUtils {
     
 	/**
 	 *  Converts control characters into textual representation<br>
-	 *  Note: This code handles only \n, \r and \t special chars
+	 *  Note: This code handles only \n, \r ,\t ,\f, \b special chars
 	 *
 	 * @param  controlString  string containing control characters
 	 * @return                string where control characters are replaced by their
@@ -59,6 +59,12 @@ public class StringUtils {
 				case '\r':
 					copy.append("\\r");
 					break;
+                case '\b':
+                    copy.append("\\b");
+                    break;
+                case '\f':
+                    copy.append("\\f");
+                    break;
 				default:
 					copy.append(character);
 			}
@@ -69,7 +75,7 @@ public class StringUtils {
 	/**
 	 *  Converts textual representation of control characters into control
 	 *  characters<br>
-	 *  Note: This code handles only \n, \r and \t special chars
+	 *  Note: This code handles only \n, \r , \t , \f, \" ,\', \\ special chars
 	 *
 	 * @param  controlString  Description of the Parameter
 	 * @return                String with control characters
@@ -98,6 +104,18 @@ public class StringUtils {
 					case 'r':
 						copy.append('\r');
 						break;
+                    case '"':
+                        copy.append('"');
+                        break;
+                    case '\'':
+                        copy.append('\'');
+                        break;
+                    case 'f':
+                        copy.append('\f');
+                        break;
+                    case 'b':
+                        copy.append('\b');
+                        break;
 					default:
 						copy.append('\\');
 						copy.append(character);
