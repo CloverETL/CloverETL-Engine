@@ -37,6 +37,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.Enigma;
 import org.jetel.util.JetelVersion;
 
 /**
@@ -52,6 +53,7 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
  *  <tr><td nowrap>-register <i>filename</i></td><td>load/register additional transformation components</td></tr>
+ *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting hide connections passwods</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -69,6 +71,7 @@ public class runGraph {
 	private final static String INFO_SWITCH= "-info";
     private final static String REGISTER_SWITCH= "-register";
     private final static String PLUGINS_SWITCH= "-plugins";
+    private final static String PASSWORD_SWITCH= "-pass";
 	
 	/**
 	 *  Description of the Method
@@ -120,6 +123,9 @@ public class runGraph {
             }else if (args[i].startsWith(PLUGINS_SWITCH)){
                 i++;
                 pluginsRootDirectory = args[i];
+            }else if (args[i].startsWith(PASSWORD_SWITCH)){
+                i++;
+                Enigma.getInstance().init(args[i]);
             }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
