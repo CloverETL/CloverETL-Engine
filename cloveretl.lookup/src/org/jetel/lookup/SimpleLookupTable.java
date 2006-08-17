@@ -41,6 +41,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Element;
 
 /**
  *  Simple lookup table which reads data from flat file and creates Map structure.
@@ -178,7 +179,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		numFound=0;
 	}
 	
-    public static SimpleLookupTable fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
+    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML){
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         SimpleLookupTable lookupTable = null;
         String id;
