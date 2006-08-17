@@ -26,7 +26,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.jetel.component.ComponentDescriptionReader;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
@@ -52,7 +51,6 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
- *  <tr><td nowrap>-register <i>filename</i></td><td>load/register additional transformation components</td></tr>
  *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting hide connections passwods</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
@@ -69,7 +67,6 @@ public class runGraph {
 	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
 	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
 	private final static String INFO_SWITCH= "-info";
-    private final static String REGISTER_SWITCH= "-register";
     private final static String PLUGINS_SWITCH= "-plugins";
     private final static String PASSWORD_SWITCH= "-pass";
 	
@@ -116,10 +113,6 @@ public class runGraph {
 			}else if (args[i].startsWith(INFO_SWITCH)){
 			    printInfo();
 			    System.exit(0);
-            }else if (args[i].startsWith(REGISTER_SWITCH)){
-                i++;
-                ComponentDescriptionReader reader = new ComponentDescriptionReader();
-                ComponentFactory.registerComponents(reader.getComponentDescriptions(args[i]));          
             }else if (args[i].startsWith(PLUGINS_SWITCH)){
                 i++;
                 pluginsRootDirectory = args[i];

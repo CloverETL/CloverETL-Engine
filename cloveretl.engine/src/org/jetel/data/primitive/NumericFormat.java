@@ -18,7 +18,7 @@
 *
 */
 
-package org.jetel.util;
+package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.text.DecimalFormat;

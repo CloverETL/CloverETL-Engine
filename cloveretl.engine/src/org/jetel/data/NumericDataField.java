@@ -33,6 +33,7 @@ import java.util.Locale;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 

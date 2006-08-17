@@ -21,6 +21,8 @@
 package org.jetel.data;
 
 import java.util.Date;
+
+import org.jetel.data.primitive.Numeric;
 /**
  *  Supporting "macros" for getting values of differend data fields.<br>
  * <i>Note: methods which takes field's position within record as input

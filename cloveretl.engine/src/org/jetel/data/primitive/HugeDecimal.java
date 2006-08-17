@@ -28,7 +28,6 @@ import java.text.NumberFormat;
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
-import org.jetel.data.Numeric;
 import org.jetel.data.NumericDataField;
 
 
