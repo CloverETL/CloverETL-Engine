@@ -29,7 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
-import org.jetel.data.Numeric;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
