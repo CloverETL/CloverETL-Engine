@@ -3,7 +3,11 @@
 package org.jetel.interpreter.node;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
-public class CLVFStr2NumNode extends SimpleNode {
+
+public class CLVFStr2NumNode extends SimpleNode  {
+   
+  public int numType;  
+    
   public CLVFStr2NumNode(int id) {
     super(id);
   }
@@ -16,5 +20,9 @@ public class CLVFStr2NumNode extends SimpleNode {
   /** Accept the visitor. **/
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
+  }
+  
+  public void setType(int type){
+      this.numType=type;
   }
 }
