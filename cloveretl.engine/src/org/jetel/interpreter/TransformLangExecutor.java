@@ -527,8 +527,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(((Boolean) value).booleanValue() ? Stack.FALSE_VAL
                     : Stack.TRUE_VAL);
         } else {
-            throw new TransformLangExecutorRuntimeException(node, new Object[] { stack
-                    .get() }, "logical condition does not evaluate to BOOLEAN value");
+            throw new TransformLangExecutorRuntimeException(node, new Object[] { value },
+                    "logical condition does not evaluate to BOOLEAN value");
         }
 
         return data;
@@ -869,7 +869,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.push(result);
         } else {
             Object arguments[] = { value };
-            throw new TransformLangExecutorRuntimeException(arguments,
+            throw new TransformLangExecutorRuntimeException(node,arguments,
                     "minus - not a number");
         }
 
@@ -1001,7 +1001,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         } else {
             Object[] arguments = { condition };
             throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "iif - wrong type of conditional expression");
+                    "iif - condition does not evaluate to BOOLEAN value");
         }
 
         return data;
@@ -1044,6 +1044,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             condition = ((Boolean) stack.pop()).booleanValue();
         } catch (ClassCastException ex) {
             throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
+        }catch (NullPointerException ex){
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
         }
 
         // loop execution
@@ -1081,6 +1083,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             condition = ((Boolean) stack.pop()).booleanValue();
         } catch (ClassCastException ex) {
             throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
+        }catch (NullPointerException ex){
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
         }
 
         // loop execution
@@ -1112,6 +1116,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             condition = ((Boolean) stack.pop()).booleanValue();
         } catch (ClassCastException ex) {
             throw new TransformLangExecutorRuntimeException(node,"condition does not evaluate to BOOLEAN value");
+        } catch (NullPointerException ex){
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
         }
 
         // first if
@@ -1146,8 +1152,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             loopCondition.jjtAccept(this, data);
             try {
                 condition = ((Boolean) stack.pop()).booleanValue();
-            } catch (ClassCastException ex) {
+            }catch (ClassCastException ex) {
                 throw new TransformLangExecutorRuntimeException(node,"loop condition does not evaluate to BOOLEAN value");
+            }catch (NullPointerException ex){
+                throw new TransformLangExecutorRuntimeException(node,"missing or invalid condition");
             }
         } while (condition);
 
@@ -1203,6 +1211,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         } catch (ClassCastException ex) {
             Object[] args=new Object[] {switchVal,value};
             throw new TransformLangExecutorRuntimeException(node,args,"incompatible literals in case clause");
+        }catch (NullPointerException ex){
+            throw new TransformLangExecutorRuntimeException(node,"missing or invalid case value");
         }
         if (match){
             node.jjtGetChild(1).jjtAccept(this, data);
@@ -1215,14 +1225,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFPlusPlusNode node, Object data) {
         Node childNode = node.jjtGetChild(0);
         if (childNode instanceof CLVFVariableLiteral) {
-            try {
                 CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
-                Numeric num = (Numeric) stack.getVar(varNode.localVar, varNode.varSlot);
-                num.add(Stack.NUM_ONE);
-                stack.push(num.duplicateNumeric());
-            } catch (ClassCastException ex) {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric type");
-            }
+                Object var=stack.getVar(varNode.localVar, varNode.varSlot);
+                    if (var instanceof Numeric){
+                        ((Numeric)var).add(Stack.NUM_ONE);
+                        stack.push(((Numeric)var).duplicateNumeric());
+                    }else if (var instanceof Date){
+                        stack.calendar.setTime((Date)var);
+                        stack.calendar.add(Calendar.DATE, 1);
+                        stack.push(stack.calendar.getTime());
+                    }else{
+                        throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
+                    }
         } else {
             childNode.jjtAccept(this, data);
             try {
@@ -1231,6 +1245,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(num);
             } catch (ClassCastException ex) {
                 throw new TransformLangExecutorRuntimeException(node,"expression is not of numeric type");
+            }catch (NullPointerException ex){
+                throw new TransformLangExecutorRuntimeException(node,"missing or invalid numeric expression");
             }
         }
         return data;
@@ -1239,14 +1255,18 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFMinusMinusNode node, Object data) {
         Node childNode = node.jjtGetChild(0);
         if (childNode instanceof CLVFVariableLiteral) {
-            try {
-                CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
-                Numeric num = (Numeric) stack.getVar(varNode.localVar, varNode.varSlot);
-                num.sub(Stack.NUM_ONE);
-                stack.push(num.duplicateNumeric());
-            } catch (ClassCastException ex) {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric type");
-            }
+            CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
+            Object var=stack.getVar(varNode.localVar, varNode.varSlot);
+                if (var instanceof Numeric){
+                    ((Numeric)var).add(Stack.NUM_ONE);
+                    stack.push(((Numeric)var).duplicateNumeric());
+                }else if (var instanceof Date){
+                    stack.calendar.setTime((Date)var);
+                    stack.calendar.add(Calendar.DATE, 1);
+                    stack.push(stack.calendar.getTime());
+                }else{
+                    throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
+                }
         } else {
             childNode.jjtAccept(this, data);
             try {
@@ -1255,6 +1275,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(num);
             } catch (ClassCastException ex) {
                 throw new TransformLangExecutorRuntimeException(node,"expression is not of numeric type");
+            }catch (NullPointerException ex){
+                throw new TransformLangExecutorRuntimeException(node,"missing or invalid numeric expression");
             }
         }
         return data;
@@ -1666,13 +1688,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
         
         if (a instanceof Date ) {
-            Calendar calendar=Calendar.getInstance();
-            calendar.setTime((Date)a);
-            calendar.set(Calendar.HOUR_OF_DAY, 0);
-            calendar.set(Calendar.MINUTE , 0);
-            calendar.set(Calendar.SECOND , 0);
-            calendar.set(Calendar.MILLISECOND , 0);
-            stack.push( calendar.getTime() );
+            stack.calendar.setTime((Date)a);
+            stack.calendar.set(Calendar.HOUR_OF_DAY, 0);
+            stack.calendar.set(Calendar.MINUTE , 0);
+            stack.calendar.set(Calendar.SECOND , 0);
+            stack.calendar.set(Calendar.MILLISECOND , 0);
+            stack.push( stack.calendar.getTime() );
         }else if (a instanceof Number){
             stack.push(new CloverLong(((Number)a).longValue()));
         }else {
