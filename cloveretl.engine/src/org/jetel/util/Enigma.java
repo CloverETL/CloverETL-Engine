@@ -113,16 +113,18 @@ public class Enigma {
     }
     
     public static void main(String[] args) {
+        if(args.length != 2) {
+            System.out.println("Usage: org.jetel.util.Enigma <password> <text_to_encrypt>");
+            return;
+        }
         Enigma enigma = Enigma.getInstance();
-        enigma.init("kokon");
+        String password = args[0];
+        String text = args[1];
+        
+        enigma.init(password);
         try {
-            String text = "kokon jan";
-            System.out.println(text);
-            String out = enigma.encrypt(text);
-            System.out.println(out);
-            System.out.println(enigma.decrypt(out));
+            System.out.println(enigma.encrypt(text));
         } catch (JetelException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
         }
         
