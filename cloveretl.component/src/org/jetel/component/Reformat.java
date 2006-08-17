@@ -33,7 +33,6 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -146,7 +145,6 @@ public class Reformat extends Node {
 
     private String transform = null;
 	private String transformClass = null;
-	private DynamicJavaCode dynamicTransformCode = null;
 	private RecordTransform transformation = null;
 
 	private Properties transformationParameters = null;
