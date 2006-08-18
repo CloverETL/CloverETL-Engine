@@ -398,9 +398,9 @@ public class TestInterpreter extends TestCase {
 		String expStr = "boolean b1; boolean b2; b1=true; print_err(b1);\n"+
 						"b2=false ; print_err(b2);\n"+
 						"string b4; b4=\"hello\"; print_err(b4);\n"+
-						"b2 = true; print_err(b2);\n" ;
-//						"{int in; in=2; print_err(in);}\n";
-//						"print_err(b2)";
+						"b2 = true; print_err(b2);\n" +
+						"if b2 {int in;print_err('in')}\n"+
+						"print_err(b2)";
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
 			  		new ByteArrayInputStream(expStr.getBytes()));
@@ -722,10 +722,10 @@ public class TestInterpreter extends TestCase {
 						"print_err(--i);\n"+
 						"long j;j="+(Long.MAX_VALUE-10)+";print_err(++j);\n" +
 						"print_err(--j);\n"+
-						"decimal d;d=2;print_err(++d);\n" +
+						"decimal d;d=2;++d;\n" +
 						"print_err(--d);\n;" +
 						"number n;n=3.5;print_err(++n);\n" +
-						"print_err(--n);\n" +
+						"--n;\n" +
 						"{print_err(++n);}\n" +
 						"print_err(++n);\n";
 
@@ -745,12 +745,20 @@ public class TestInterpreter extends TestCase {
 
 		      
 		      parseTree.dump("");
+
+		      if (parser.getParseExceptions().size()>0){
+		    	  //report error
+		    	  for(Iterator it=parser.getParseExceptions().iterator();it.hasNext();){
+			    	  System.out.println(it.next());
+			      }
+		    	  throw new RuntimeException("Parse exception");
+		      }
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(10,((CloverInteger)result[0]).getInt());
-		      assertEquals(Long.MAX_VALUE-10,((CloverLong)result[1]).getLong());
-		      assertEquals(new Double(2),new Double(((Decimal)result[2]).getDouble()));
-		      assertEquals(new Double(5.5),new Double(((Decimal)result[3]).getDouble()));
+		      assertEquals(9,((CloverInteger)result[0]).getInt());
+		      assertEquals(new CloverLong(Long.MAX_VALUE-10),((CloverLong)result[1]));
+		      assertEquals(DecimalFactory.getDecimal(2),(Decimal)result[2]);
+		      assertEquals(new CloverDouble(5.5),(CloverDouble)result[3]);
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1066,19 +1074,19 @@ public class TestInterpreter extends TestCase {
 						"if (i.gt.j and l.eq.1) {d=0;print_err('d rovne 0');}\n" +
 						"else d=0.1;\n" +
 						"number n;\n" +
-						"if (d=0.1) n=0;\n" +
+						"if (d==0.1) n=0;\n" +
 						"if (d==0.1 || l<=1) n=0;\n" +
 						"else {n=-1;print_err('n rovne -1')}\n" +
 						"date date1; date1=2006-01-01;print_err(date1);\n" +
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
 						"boolean result;result=false;\n" +
 						"boolean compareDates;compareDates=date1<=date2;print_err(compareDates);\n" +
-						"if (date1<=date2) \n" +
+						"if (date1<=date22) \n" +
 						"{  print_err('before if (i<jj)');\n" +
 						"	if (i<j) print_err('date1<today and i<j') else print_err('date1<date2 only')\n" +
 						"	result=true;}\n" +
 						"result=false;" +
-						"if (i<j) result=true;\n" +
+						"if (i<jj) result=true;\n" +
 						"else if (not result) result=true;\n" +
 						"else print_err('last else');\n";
 
@@ -1316,7 +1324,7 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(34,((CloverInteger)result[2]).getInt());
+		      assertEquals(101,((CloverInteger)result[2]).getInt());
 		      assertEquals(11,((CloverInteger)result[3]).getInt());
 		      
 		} catch (ParseException e) {
@@ -1639,8 +1647,10 @@ public class TestInterpreter extends TestCase {
 
 	public void test_global_parameters(){
 		System.out.println("\nGlobal parameters test:");
-		String expStr = "int original;original=${G1};\n" +
-						"print_err(original);\n";
+		String expStr = "string original;original=${G1};\n" +
+						"int num; num=str2num(original); \n"+
+						"print_err(original);\n"+
+						"print_err(num);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
