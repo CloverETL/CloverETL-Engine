@@ -493,7 +493,7 @@ public class DecimalNumericTest extends TestCase {
 	public void test_s_ds(){
 		System.out.println("\nTests for serialization and deserilization:");
 		Decimal d=DecimalFactory.getDecimal();
-		Decimal i=DecimalFactory.getDecimal(6,4);
+		Decimal i=DecimalFactory.getDecimal(6,3);
 		Decimal l=DecimalFactory.getDecimal(18,0);
 		aDouble=DecimalFactory.getDecimal(0.2,6,2);
 		anInt=DecimalFactory.getDecimal(123,6,3);
