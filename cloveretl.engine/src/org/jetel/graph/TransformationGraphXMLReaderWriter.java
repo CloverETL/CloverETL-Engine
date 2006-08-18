@@ -24,8 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -235,57 +233,51 @@ public class TransformationGraphXMLReaderWriter {
             throw new XMLConfigurationException(ex);
 		}
 
-		try {
-
-			// process document
-			// get graph name
-			NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-			ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0), graph);
-			try{
-				graph.setName(grfAttributes.getString("name"));
-			}catch(NotFoundException ex){
-				throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
-			}
-			//get debug mode
-            grfAttributes.setResolveReferences(false);
-            graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
-
-            //get debug directory
-            graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
-            grfAttributes.setResolveReferences(true);
-
-			// handle all defined Properties
-			NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
-			instantiateProperties(PropertyElements);
-			
-			// handle all defined DB connections
-			NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
-			instantiateDBConnections(dbConnectionElements);
-
-			// handle all defined DB connections
-			NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
-			instantiateSequences(sequenceElements);
-			
-			//create metadata
-			NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
-			instantiateMetadata(metadataElements, metadata);
-
-			// register all metadata (DataRecordMetadata) within transformation graph
-			graph.addDataRecordMetadata(metadata);
-
-			// handle all defined lookup tables
-			NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
-			instantiateLookupTables(lookupsElements);
-
-			NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
-			instantiatePhases(phaseElements);
-
-			NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
-			instantiateEdges(edgeElements, metadata, graph.isDebugMode());
+		// process document
+		// get graph name
+		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
+		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0), graph);
+		try{
+			graph.setName(grfAttributes.getString("name"));
+		}catch(NotFoundException ex){
+			throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
 		}
-		catch (Exception ex) {
-			throw new XMLConfigurationException("Failed for unknown reason: ",ex);
-		}
+		//get debug mode
+        grfAttributes.setResolveReferences(false);
+        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
+
+        //get debug directory
+        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
+        grfAttributes.setResolveReferences(true);
+
+		// handle all defined Properties
+		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
+		instantiateProperties(PropertyElements);
+		
+		// handle all defined DB connections
+		NodeList dbConnectionElements = document.getElementsByTagName(CONNECTION_ELEMENT);
+		instantiateDBConnections(dbConnectionElements);
+
+		// handle all defined DB connections
+		NodeList sequenceElements = document.getElementsByTagName(SEQUENCE_ELEMENT);
+		instantiateSequences(sequenceElements);
+		
+		//create metadata
+		NodeList metadataElements = document.getElementsByTagName(METADATA_ELEMENT);
+		instantiateMetadata(metadataElements, metadata);
+
+		// register all metadata (DataRecordMetadata) within transformation graph
+		graph.addDataRecordMetadata(metadata);
+
+		// handle all defined lookup tables
+		NodeList lookupsElements = document.getElementsByTagName(LOOKUP_TABLE_ELEMENT);
+		instantiateLookupTables(lookupsElements);
+
+		NodeList phaseElements = document.getElementsByTagName(PHASE_ELEMENT);
+		instantiatePhases(phaseElements);
+
+		NodeList edgeElements = document.getElementsByTagName(EDGE_ELEMENT);
+		instantiateEdges(edgeElements, metadata, graph.isDebugMode());
 
 	}
 
