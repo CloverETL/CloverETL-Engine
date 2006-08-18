@@ -83,7 +83,7 @@ public class Compiler {
             try {
                 Class.forName(COMPILER_CLASSNAME);
             } catch (ClassNotFoundException ex) {
-                logger.warn("Can't locate class " + COMPILER_CLASSNAME + " in the classpath.");
+                logger.warn("Can't locate class " + COMPILER_CLASSNAME + " in the classpath. Trying external compile...");
                 return externCompile();
             }
             return internCompile();
