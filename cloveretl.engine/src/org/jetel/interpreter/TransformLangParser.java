@@ -28,6 +28,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
 
        public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
                                                         DataRecordMetadata[] outRecordsMetadata,
+                                                        java.io.InputStream stream){
+                        this(inRecordsMetadata,outRecordsMetadata,stream,"UTF-8");
+
+       }
+
+
+       public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+                                                        DataRecordMetadata[] outRecordsMetadata,
                                                         java.io.InputStream stream,String encoding){
               this(stream,encoding);
               parserHelper=new ParserHelper();
@@ -3237,26 +3245,6 @@ void OutputFieldExp() #void :// IDExp -> ID
     finally { jj_save(7, xla); }
   }
 
-  final private boolean jj_3R_42() {
-    if (jj_scan_token(DATETIME_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_41() {
-    if (jj_scan_token(DATE_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_40() {
-    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
-    return false;
-  }
-
-  final private boolean jj_3R_39() {
-    if (jj_scan_token(STRING_LITERAL)) return true;
-    return false;
-  }
-
   final private boolean jj_3R_38() {
     if (jj_scan_token(INTEGER_LITERAL)) return true;
     return false;
@@ -4211,6 +4199,26 @@ void OutputFieldExp() #void :// IDExp -> ID
 
   final private boolean jj_3R_43() {
     if (jj_scan_token(NULL_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_42() {
+    if (jj_scan_token(DATETIME_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_41() {
+    if (jj_scan_token(DATE_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_40() {
+    if (jj_scan_token(BOOLEAN_LITERAL)) return true;
+    return false;
+  }
+
+  final private boolean jj_3R_39() {
+    if (jj_scan_token(STRING_LITERAL)) return true;
     return false;
   }
 

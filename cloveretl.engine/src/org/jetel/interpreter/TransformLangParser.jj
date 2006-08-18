@@ -50,6 +50,14 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        
        public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
        							DataRecordMetadata[] outRecordsMetadata,
+       							java.io.InputStream stream){
+			this(inRecordsMetadata,outRecordsMetadata,stream,"UTF-8");
+       							
+       }
+       
+       
+       public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+       							DataRecordMetadata[] outRecordsMetadata,
        							java.io.InputStream stream,String encoding){
               this(stream,encoding);
               parserHelper=new ParserHelper();
