@@ -21,6 +21,7 @@ package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
@@ -40,7 +41,7 @@ import org.jetel.data.NumericDataField;
  *@see        org.jetel.data.primitive.Decimal
  */
 public class HugeDecimal implements Decimal {
-    private static int roundingMode = BigDecimal.ROUND_DOWN;
+    private static RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 	private BigDecimal value;
 	private final int precision;
 	private final int scale;
@@ -465,15 +466,15 @@ public class HugeDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
 		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value = value.divide(BigDecimal.valueOf(a.getInt()), roundingMode);
+            value = value.divide(BigDecimal.valueOf(a.getInt()), scale, ROUNDING_MODE);
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
-			value = value.divide(BigDecimal.valueOf(a.getLong()), roundingMode);
+			value = value.divide(BigDecimal.valueOf(a.getLong()), scale, ROUNDING_MODE);
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = value.divide(BigDecimal.valueOf(a.getDouble()), roundingMode);
+			value = value.divide(BigDecimal.valueOf(a.getDouble()), scale, ROUNDING_MODE);
 		} else if(a instanceof DecimalDataField) {
-			value = value.divide(a.getDecimal().getBigDecimal(), roundingMode);
+			value = value.divide(a.getDecimal().getBigDecimal(), scale, ROUNDING_MODE);
         } else if(a instanceof Decimal) {
-            value = value.divide(a.getBigDecimal(), roundingMode);
+            value = value.divide(a.getBigDecimal(), scale, ROUNDING_MODE);
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
 		}
@@ -494,29 +495,20 @@ public class HugeDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
 		if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value = remainder(BigDecimal.valueOf(a.getInt()));
+            value = value.remainder(BigDecimal.valueOf(a.getInt()));
         } else if(a instanceof LongDataField || a instanceof CloverLong) {
-			value = remainder(BigDecimal.valueOf(a.getLong()));
+			value = value.remainder(BigDecimal.valueOf(a.getLong()));
 		} else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-			value = remainder(BigDecimal.valueOf(a.getDouble()));
+			value = value.remainder(BigDecimal.valueOf(a.getDouble()));
 		} else if(a instanceof DecimalDataField) {
-			value = remainder(a.getDecimal().getBigDecimal());
+			value = value.remainder(a.getDecimal().getBigDecimal());
         } else if(a instanceof Decimal) {
-            value = remainder(a.getBigDecimal());
+            value = value.remainder(a.getBigDecimal());
 		} else {
 			throw new RuntimeException("Unsupported class of parameter 'mod' operation (" + a.getClass().getName() + ").");
 		}
 	}
 
-	/**
-	 * Returns a BigDecimal whose value is (this % divisor).
-	 * @param divisor value by which this BigDecimal is to be divided
-	 * @return this % divisor
-	 */
-	private BigDecimal remainder(BigDecimal divisor) {
-	    return value.subtract(value.divide(divisor, 0, roundingMode).multiply(divisor));
-	}
-	
 	/**
 	 * @see org.jetel.data.primitive.Decimal#neg()
 	 */
