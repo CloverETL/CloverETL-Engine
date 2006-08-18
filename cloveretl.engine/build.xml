@@ -72,7 +72,7 @@
 		<mkdir dir="${dir.bin}"/>
 		
 		<!-- Compile sources -->
-		<javac debug="true" destdir="${dir.bin}" target="1.4" source="1.4">
+		<javac debug="true" destdir="${dir.bin}" target="1.5" source="1.5">
 			<classpath>
 				<pathelement path="${tools}"/>
 				<pathelement path="${commons-logging}"/>
