@@ -21,6 +21,7 @@ package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.text.NumberFormat;
@@ -400,7 +401,7 @@ public class IntegerDecimal implements Decimal {
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
                 value /= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
             } else {
-                setValue(getBigDecimal().divide(d.getBigDecimal()));
+                setValue(getBigDecimal().divide(d.getBigDecimal(), scale, RoundingMode.HALF_UP));
             }
         } else {
             throw new RuntimeException("Unsupported class of parameter 'div' operation (" + a.getClass().getName() + ").");
