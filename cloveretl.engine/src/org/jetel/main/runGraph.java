@@ -26,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
@@ -60,6 +62,7 @@ import org.jetel.util.JetelVersion;
  * @revision    $Revision$
  */
 public class runGraph {
+    private static Log logger = LogFactory.getLog(runGraph.class);
 
 	private final static String RUN_GRAPH_VERSION="1.8";
 	private final static String VERBOSE_SWITCH = "-v";
@@ -154,20 +157,19 @@ public class runGraph {
 				graph.dumpGraphConfiguration();
 			}
         }catch(XMLConfigurationException ex){
-            System.err.println("Error in reading graph from XML !");
+            logger.error("Error in reading graph from XML !", ex);
             if (verbose) {
                 ex.printStackTrace(System.err);
             }
             System.exit(-1);
         }catch(GraphConfigurationException ex){
-            System.err.println("Error - graph's configuration invalid !");
+            logger.error("Error - graph's configuration invalid !", ex);
             if (verbose) {
                 ex.printStackTrace(System.err);
             }
             System.exit(-1);
 		} catch (RuntimeException ex) {
-			System.err.println("Error during graph initialization !");
-			System.err.println(ex.getCause()!=null ? ex.getCause().getMessage():"");
+			logger.error("Error during graph initialization !", ex);
             if (verbose) {
                 ex.printStackTrace(System.err);
             }
