@@ -1564,9 +1564,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
 
-        if (a instanceof Number) {
+        if (a instanceof Numeric) {
             try{
-                stack.push(new CloverDouble(Math.sqrt(((Number)a).doubleValue()) ));
+                stack.push(new CloverDouble(Math.sqrt(((Numeric)a).getDouble()) ));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing SQRT function",ex);
             }
@@ -1583,9 +1583,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
 
-        if (a instanceof Number) {
+        if (a instanceof Numeric) {
             try{
-                stack.push(new CloverDouble(Math.log(((Number)a).doubleValue()) ));
+                stack.push(new CloverDouble(Math.log(((Numeric)a).getDouble()) ));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG function",ex);
             }
@@ -1602,9 +1602,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
 
-        if (a instanceof Number) {
+        if (a instanceof Numeric) {
             try{
-                stack.push(new CloverDouble( Math.log10(((Number)a).doubleValue())));
+                stack.push(new CloverDouble( Math.log10(((Numeric)a).getDouble())));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG10 function",ex);
             }
@@ -1621,9 +1621,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
 
-        if (a instanceof Number) {
+        if (a instanceof Numeric) {
             try{
-                stack.push(new CloverDouble( Math.exp(((Number)a).doubleValue())));
+                stack.push(new CloverDouble( Math.exp(((Numeric)a).getDouble())));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing EXP function",ex);
             }
@@ -1640,9 +1640,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
 
-        if (a instanceof Number) {
+        if (a instanceof Numeric) {
             try{
-                stack.push(new CloverLong(Math.round(((Number)a).doubleValue())));
+                stack.push(new CloverLong(Math.round(((Numeric)a).getDouble())));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing ROUND function",ex);
             }
@@ -1662,10 +1662,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         node.jjtGetChild(1).jjtAccept(this, data);
         Object b = stack.pop();
 
-        if (a instanceof Number && b instanceof Number) {
+        if (a instanceof Numeric && b instanceof Numeric) {
             try{
-                stack.push(new CloverDouble(Math.pow(((Number)a).doubleValue(),
-                    ((Number)b).doubleValue())));
+                stack.push(new CloverDouble(Math.pow(((Numeric)a).getDouble(),
+                    ((Numeric)b).getDouble())));
             }catch(Exception ex){
                 throw new TransformLangExecutorRuntimeException(node,"Error when executing POW function",ex);
             }
@@ -1694,8 +1694,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             stack.calendar.set(Calendar.SECOND , 0);
             stack.calendar.set(Calendar.MILLISECOND , 0);
             stack.push( stack.calendar.getTime() );
-        }else if (a instanceof Number){
-            stack.push(new CloverLong(((Number)a).longValue()));
+        }else if (a instanceof Numeric){
+            stack.push(new CloverLong(((Numeric)a).getLong()));
         }else {
             Object[] arguments = { a };
             throw new TransformLangExecutorRuntimeException(node,arguments,
