@@ -24,13 +24,11 @@
 
 package org.jetel.util;
 
-import java.net.URLClassLoader;
-import java.net.URL;
-import java.net.URLDecoder;
-import java.util.logging.Logger;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Method;
+import java.net.URL;
+import java.net.URLDecoder;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
