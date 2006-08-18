@@ -32,7 +32,6 @@ import java.util.zip.Checksum;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.graph.TransformationGraph;
 
 /**
  * Helper class for dynamic compiling of Java source code. Offers instantiating of compiled code.
@@ -43,41 +42,36 @@ import org.jetel.graph.TransformationGraph;
  * @revision    $Revision$
  */
 public class DynamicJavaCode {
+    private final static String SRC_PATH = System.getProperty("java.io.tmpdir", ".");
+    private final static String FILE_SEPARATOR = System.getProperty("file.separator", "/");
+    private final static Pattern PATTERN = Pattern.compile("class\\s+(\\w+)"); 
 
-	
+    private static Log logger = LogFactory.getLog(DynamicJavaCode.class);
+
+    private String srcPath;
 	private String srcCode;
-	private String srcPath;
 	private String className;
-	private String fileSeparator;
 	private String fileName;
 	private String compilerOutput;
 	
-	private boolean captureCompilerOutput=true; 
-
-	Log logger = LogFactory.getLog(DynamicJavaCode.class);
+	private boolean captureCompilerOutput = true; 
 	
 	public DynamicJavaCode(String srcCode) {
-		this.srcCode=srcCode;
-		srcPath = System.getProperty("java.io.tmpdir", ".");
-		fileSeparator = System.getProperty("file.separator", "/");
-		Pattern pattern=Pattern.compile("class\\s+(\\w+)"); 
-		Matcher matcher=pattern.matcher(srcCode);
-		if (!matcher.find()){
+		this.srcCode = srcCode;
+        this.srcPath = SRC_PATH + (SRC_PATH.endsWith(FILE_SEPARATOR) ? "" : FILE_SEPARATOR);
+		Matcher matcher = PATTERN.matcher(srcCode);
+		if (!matcher.find()) {
 			throw new RuntimeException("Can't find class name within source code !");
 		}
-		className=matcher.group(1);
-		if (className.length()==0){
+		className = matcher.group(1);
+		if (className.length() == 0) {
 			throw new RuntimeException("Can't extract class name from source code !");
 		}
 	}
 
-	private void saveSrc(){
+	private void saveSrc() {
 		long checkSumFile;
-		fileName=srcPath
-			+ (srcPath.endsWith(fileSeparator)
-			   ? ""
-			   : fileSeparator)
-			+ className + ".java";
+		fileName = srcPath + className + ".java";
 		Checksum checkSumSrc=new Adler32();
 		byte[] stringBytes=srcCode.getBytes();
 		checkSumSrc.update(stringBytes,0,stringBytes.length);
@@ -97,16 +91,15 @@ public class DynamicJavaCode {
 		}
 	}
 	
-	private void compile(){
-		Compile compiler=new Compile(fileName);
-		compiler.setCaptureSTDOUT(captureCompilerOutput);
-		int result=compiler.compile();
-		if (result!=0){
-		    compilerOutput=compiler.getCapturedOutput();
-			StringBuffer errMessage=new StringBuffer("Error(s) when compiling: ");
+	private void compile() {
+		Compiler compiler = new Compiler(fileName, captureCompilerOutput);
+		int result = compiler.compile();
+		if (result != 0) {
+		    compilerOutput = compiler.getCapturedOutput();
+			StringBuffer errMessage = new StringBuffer("Error(s) when compiling: ");
 			errMessage.append(fileName).append("\n");
 			if (!captureCompilerOutput){
-			    errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFilename());
+			    errMessage.append(" - compiler output can be found in: ").append(compiler.getErrFileName());
 			}else{
 			    errMessage.append(compilerOutput);
 			}
@@ -121,14 +114,12 @@ public class DynamicJavaCode {
 	 */
 	public Object instantiate() {
 		Class tClass;
-		String urlString = "file:" + srcPath
-			+ (srcPath.endsWith(fileSeparator)
-			  ? ""
-			  : fileSeparator);
+		String urlString = "file:" + srcPath;
 		URL[] myURLs;
 		
 		// firstly, save source
 		saveSrc();
+        
 		// secondly, try to compile it
 		compile();
 		
@@ -140,14 +131,14 @@ public class DynamicJavaCode {
 		}
 
 		URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-                // URLClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+		// URLClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 		try {
-                        logger.debug("Loading Class: "+className + "...");
+		    logger.debug("Loading Class: " + className + "...");
 			tClass = Class.forName(className, true, classLoader);
-                        logger.debug("Class: "+className + " Loaded");
+			logger.debug("Class: " + className + " Loaded");
 		} catch (ClassNotFoundException ex) {
-		    logger.error("Can not find class: "+ex);
-			throw new RuntimeException("Can not find class: "+className+" : "+ex);
+		    logger.error("Can not find class: " + ex);
+			throw new RuntimeException("Can not find class: " + className + " : " + ex);
 		} catch (Exception ex) {
 		    logger.error(ex);
 			throw new RuntimeException(ex);
@@ -157,7 +148,7 @@ public class DynamicJavaCode {
 			myObject = tClass.newInstance();
 		} catch (Exception ex) {
 			logger.error("Error when creating object of class " + className + " : " + ex.getMessage());
-			myObject = null;
+            throw new RuntimeException(ex);
 		}
 
 		return myObject;
@@ -177,8 +168,9 @@ public class DynamicJavaCode {
 	/**  Deletes dynamicaly created file. */
 	public void clean() {
 		try {
-			
-			new File(fileName).delete();
+            if(fileName != null) {
+                new File(fileName).delete();
+            }
 		} catch (Exception ex) {
 			throw new RuntimeException(ex);
 		}
@@ -190,24 +182,6 @@ public class DynamicJavaCode {
 	 */
 	public String getSourceCode() {
 		return(this.srcCode);
-	}
-	
-	public static DynamicJavaCode fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML){
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		String srcCode;
-		
-		try {
-			// do we have child TEXT node -> possibly containing Java Source code ?
-			srcCode=xattribs.getText(nodeXML);
-			if (srcCode==null){
-				throw new RuntimeException("Can't find SourceCode !");
-			}
-			
-		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
-			return null;
-		}
-		return new DynamicJavaCode(srcCode);
 	}
 	
     /**
