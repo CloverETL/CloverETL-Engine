@@ -1258,7 +1258,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
             Object var=stack.getVar(varNode.localVar, varNode.varSlot);
                 if (var instanceof Numeric){
-                    ((Numeric)var).add(Stack.NUM_ONE);
+                    ((Numeric)var).sub(Stack.NUM_ONE);
                     stack.push(((Numeric)var).duplicateNumeric());
                 }else if (var instanceof Date){
                     stack.calendar.setTime((Date)var);
