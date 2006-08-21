@@ -194,7 +194,7 @@ public class DelimitedDataReaderNIO extends Node {
 		try {
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
+			throw new ComponentNotReadyException(this," IOError: " + ex.getMessage());
 		}
 
 	}
