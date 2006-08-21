@@ -6,8 +6,8 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFStr2NumNode extends SimpleNode  {
    
-  public int numType;  
-    
+  public int numType=-1; //default is numeric type not set  
+  
   public CLVFStr2NumNode(int id) {
     super(id);
   }
