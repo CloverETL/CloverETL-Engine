@@ -131,7 +131,7 @@ public class TestInterpreter extends TestCase {
 						"long minLong; minLong="+(Long.MIN_VALUE+1)+"; print_err(minLong);\n"+
 						"long maxLong; maxLong="+(Long.MAX_VALUE)+"; print_err(maxLong);\n"+
 						"long field; field=$Value; print_err(field);\n"+
-						"wrong="+Long.MAX_VALUE+"; print_err(wrong);\n";
+						"long wrong;wrong="+Long.MAX_VALUE+"; print_err(wrong);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -399,7 +399,7 @@ public class TestInterpreter extends TestCase {
 						"b2=false ; print_err(b2);\n"+
 						"string b4; b4=\"hello\"; print_err(b4);\n"+
 						"b2 = true; print_err(b2);\n" +
-						"if b2 {int in;print_err('in')}\n"+
+						"if b2 {int in;in=2;print_err('in')}\n"+
 						"print_err(b2)";
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -456,6 +456,7 @@ public class TestInterpreter extends TestCase {
 						"decimal(10,4) dplusd1; dplusd1=d+d1;print_err(\"plus decimal:\"+dplusd1);\n" +
 						"decimal dplusj;dplusj=d+j;print_err(\"decimal plus int:\"+dplusj);\n" +
 						"decimal(10,4) dplusn;dplusn=d+m1;print_err(\"decimal plus number:\"+dplusn);\n" +
+						"dplusn=dplusn+10;\n" +
 						"string s; s=\"hello\"; print_err(s);\n" +
 						"string s1;s1=\" world\";print_err(s1);\n " +
 						"string spluss1;spluss1=s+s1;print_err(\"adding strings:\"+spluss1);\n" +
@@ -487,7 +488,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("nplusj",new CloverDouble(100),(CloverDouble)result[9]);
 		      assertEquals("dplusd1",new Double(0.1000),new Double(((Decimal)result[12]).getDouble()));
 		      assertEquals("dplusj",new Double(100.1),new Double(((Decimal)result[13]).getDouble()));
-		      assertEquals("dplusn",new Double(0.1),new Double(((Decimal)result[14]).getDouble()));
+		      assertEquals("dplusn",new Double(10.1),new Double(((Decimal)result[14]).getDouble()));
 		      assertEquals("spluss1","hello world",(((StringBuffer)result[17]).toString()));
 		      assertEquals("splusm1","hello0.0010",(((StringBuffer)result[18]).toString()));
 		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
@@ -772,26 +773,25 @@ public class TestInterpreter extends TestCase {
 		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
 						"int j;j=9;print_err(\"j=\"+j);\n" +
 						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\"+eq1);\n" +
-//						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\");print_err(eq1);\n" +
-						"eq1=(i.eq.j);print_err(\"eq1=\");print_err(eq1);\n" +
+						"boolean eq1;eq1=(i .eq. (j+1));print_err(\"eq1=\"+eq1);\n" +
 						"long l;l=10;print_err(\"l=\"+l);\n" +
-						"boolean eq2;eq2=(l==j);print_err(\"eq2=\");print_err(eq2);\n" +
+						"boolean eq2;eq2=(l==j);print_err(\"eq2=\"+eq2);\n" +
 						"eq2=(l.eq.i);print_err(\"eq2=\");print_err(eq2);\n" +
 						"decimal d;d=10;print_err(\"d=\"+d);\n" +
-						"boolean eq3;eq3=d==i;print_err(\"eq3=\");print_err(eq3);\n" +
+						"boolean eq3;eq3=d==i;print_err(\"eq3=\"+eq3);\n" +
 						"number n;n=10;print_err(\"n=\"+n);\n" +
-						"boolean eq4;eq4=n.eq.l;print_err(\"eq4=\");print_err(eq4);\n" +
-						"boolean eq5;eq5=n==d;print_err(\"eq5=\");print_err(eq5);\n" +
+						"boolean eq4;eq4=n.eq.l;print_err(\"eq4=\"+eq4);\n" +
+						"boolean eq5;eq5=n==d;print_err(\"eq5=\"+eq5);\n" +
 						"string s;s='hello';print_err(\"s=\"+s);\n" +
 						"string s1;s1=\"hello \";print_err(\"s1=\"+s1);\n" +
-						"boolean eq6;eq6=s.eq.s1;print_err(\"eq6=\");print_err(eq6);\n" +
-						"boolean eq7;eq7=s==trim(s1);print_err(\"eq7=\");print_err(eq7);\n" +
-						"date mydate;mydate=2006-01-01;print_err(\"mydate=\");print_err(mydate)\n" +
-						"date anothermydate;print_err(\"anothermydate=\");print_err(anothermydate);\n" +
-						"boolean eq8;eq8=mydate.eq.anothermydate;print_err(\"eq8=\");print_err(eq8);\n" +
-						"anothermydate=2006-1-1 0:0:0;print_err(\"anothermydate=\");print_err(anothermydate);\n" +
-						"boolean eq9;eq9=mydate==anothermydate;print_err(\"eq9=\");print_err(eq9);\n" +
-						"boolean eq10;eq10=eq9.eq.eq8;print_err(\"eq10=\");print_err(eq10);\n";
+						"boolean eq6;eq6=s.eq.s1;print_err(\"eq6=\"+eq6);\n" +
+						"boolean eq7;eq7=s==trim(s1);print_err(\"eq7=\"+eq7);\n" +
+						"date mydate;mydate=2006-01-01;print_err(\"mydate=\"+mydate)\n" +
+						"date anothermydate;print_err(\"anothermydate=\"+anothermydate);\n" +
+						"boolean eq8;eq8=mydate.eq.anothermydate;print_err(\"eq8=\"+eq8);\n" +
+						"anothermydate=2006-1-1 0:0:0;print_err(\"anothermydate=\"+anothermydate);\n" +
+						"boolean eq9;eq9=mydate==anothermydate;print_err(\"eq9=\"+eq9);\n" +
+						"boolean eq10;eq10=eq9.eq.eq8;print_err(\"eq10=\"+eq10);\n";
 
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -1081,12 +1081,12 @@ public class TestInterpreter extends TestCase {
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
 						"boolean result;result=false;\n" +
 						"boolean compareDates;compareDates=date1<=date2;print_err(compareDates);\n" +
-						"if (date1<=date22) \n" +
+						"if (date11<=date2) \n" +
 						"{  print_err('before if (i<jj)');\n" +
 						"	if (i<j) print_err('date1<today and i<j') else print_err('date1<date2 only')\n" +
 						"	result=true;}\n" +
 						"result=false;" +
-						"if (i<jj) result=true;\n" +
+						"if (i<j) result=true;\n" +
 						"else if (not result) result=true;\n" +
 						"else print_err('last else');\n";
 
@@ -1198,7 +1198,7 @@ public class TestInterpreter extends TestCase {
 	public void test_while(){
 		System.out.println("\nWhile test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"date now;now=today(+now);\n" +
+						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
 						"while (born<now) {\n" +
 						"	born=dateadd(born,1,year);\n " +
@@ -1238,7 +1238,7 @@ public class TestInterpreter extends TestCase {
 	public void test_do_while(){
 		System.out.println("\nDo-while test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"date now;now=today(+now);\n" +
+						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
 						"do {\n" +
 						"	born=dateadd(born,1,year);\n " +
@@ -1288,13 +1288,13 @@ public class TestInterpreter extends TestCase {
 						"for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
 						"print_err('years on the end:'+yer);\n" +
 						"boolean b;\n" +
-						"for (born-1000;!b;yer=yer+1) \n" +
+						"for (born;!b;++yer) \n" +
 						"	if (yer==100) b=true;\n" +
 						"print_err(born);\n" +
 						"print_err('years on the end:'+yer);\n" +
 						"print_err('norn:'+born);\n"+
 						"int i;\n" +
-						"for (i=0;i.le.10;i=i+1) ;\n" +
+						"for (i=0;i.le.10;++i) ;\n" +
 						"print_err('on the end i='+i);\n";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
@@ -1340,13 +1340,13 @@ public class TestInterpreter extends TestCase {
 	public void test_break(){
 		System.out.println("\nBreak test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"date now;now=today(+now);\n" +
+						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
 						"int i;" +
 						"while (born<now) {\n" +
-						"	yer=yer+1;\n" +
+						"	++yer;\n" +
 						"	born=dateadd(born,1,year);\n" +
-						"	for (i=0;i<20;i=i+1) \n" +
+						"	for (i=0;i<20;++i) \n" +
 						"		if (i==10) break\n" +
 						"}\n" +
 						"print_err('years on the end:'+yer);\n"+
@@ -1385,10 +1385,10 @@ public class TestInterpreter extends TestCase {
 	public void test_continue(){
 		System.out.println("\nContinue test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"date now;now=today(+now);\n" +
+						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
 						"int i;\n" +
-						"for (i=0;i<10;i=i+1) {\n" +
+						"for (i=0;i<10;++i) {\n" +
 						"	print_err('i='+i);\n" +
 						"	if (i>5) continue\n" +
 						"	print_err('After if')" +
@@ -1396,10 +1396,10 @@ public class TestInterpreter extends TestCase {
 						"print_err('new loop starting');\n" +
 						"while (born<now) {\n" +
 						"	print_err('i='+i);i=0;\n" +
-						"	yer=yer+1;\n" +
+						"	++yer;\n" +
 						"	born=dateadd(born,1,year);\n" +
 						"	if (yer>30) continue\n" +
-						"	for (i=0;i<20;i=i+1) \n" +
+						"	for (i=0;i<20;++i) \n" +
 						"		if (i==10) break\n" +
 						"}\n" +
 						"print_err('years on the end:'+yer);\n"+
@@ -1444,7 +1444,7 @@ public class TestInterpreter extends TestCase {
 						"function age(born){\n" +
 						"	date now;int yer;\n" +
 						"	now=today();yer=0;\n" +
-						"	for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
+						"	for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
 						"	if (yer>0) return yer else return -1" +
 						"}\n" +
 						"print_err('years born'+age(born));\n" +
@@ -1607,7 +1607,7 @@ public class TestInterpreter extends TestCase {
 						"int t;t=trunc(-po);\n" +
 						"print_err('truncation of '+(-po)+'='+t);\n" +
 						"date date1;date1=2004-01-02 17:13:20;\n" +
-						"/*date tdate1; tdate1=trunc(date1);*/\n" +
+						"/*date tdate1; tdate1=trunc(date1);\n*/" +
 						"print_err('truncation of '+date1+'='+tdate1)\n";
 
 		try {
