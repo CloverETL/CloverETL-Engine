@@ -19,11 +19,7 @@
 
 package org.jetel.interpreter;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
@@ -1611,7 +1607,7 @@ public class TestInterpreter extends TestCase {
 						"int t;t=trunc(-po);\n" +
 						"print_err('truncation of '+(-po)+'='+t);\n" +
 						"date date1;date1=2004-01-02 17:13:20;\n" +
-						"date tdate1; tdate1=trunc(date1);\n" +
+						"/*date tdate1; tdate1=trunc(date1);*/\n" +
 						"print_err('truncation of '+date1+'='+tdate1)\n";
 
 		try {
