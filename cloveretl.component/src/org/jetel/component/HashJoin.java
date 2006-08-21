@@ -109,6 +109,8 @@ import org.w3c.dom.Element;
  * below</i></td></tr>
  *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false  See description of the HashJoin component.</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
+ *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
+ *    duplicate records are discarded - only the last one read from port stays.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *	  
