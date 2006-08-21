@@ -24,6 +24,8 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
@@ -32,6 +34,7 @@ import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.node.CLVFStartExpression;
@@ -149,6 +152,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 	private CLVFStartExpression  recordFilter;
 	private String filterExpression;
 	
+    static Log logger = LogFactory.getLog(ExtFilter.class);
+    
 	public ExtFilter(String id){
 		super(id);
 		
@@ -228,10 +233,16 @@ public class ExtFilter extends org.jetel.graph.Node {
 		if (parser!=null){
 			try {
 				  recordFilter = parser.StartExpression();
-				  recordFilter.init();
-			}catch (Exception e) {
+			}catch (ParseException ex) {
+                throw new ComponentNotReadyException("Parser error when parsing expression: "+ex.getMessage());
+            }catch (Exception e) {
 				throw new ComponentNotReadyException("Error when parsing expression: "+e.getMessage());
 			}
+            try{
+                recordFilter.init();
+            }catch (Exception e) {
+                throw new ComponentNotReadyException("Error when initializing expression executor: "+e.getMessage());
+            }
 		}else{
 			throw new ComponentNotReadyException("Can't create filter expression parser !"); 
 		}
