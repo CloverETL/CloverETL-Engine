@@ -31,7 +31,6 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFVariableLiteral node, Object data);
   public Object visit(CLVFRegexLiteral node, Object data);
   public Object visit(CLVFBlock node, Object data);
-  public Object visit(CLVFStatementExpression node, Object data);
   public Object visit(CLVFIfStatement node, Object data);
   public Object visit(CLVFSwitchStatement node, Object data);
   public Object visit(CLVFCaseExpression node, Object data);

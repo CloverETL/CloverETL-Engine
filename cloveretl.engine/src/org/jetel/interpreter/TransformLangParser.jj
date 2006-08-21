@@ -132,6 +132,10 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
       public final Map getGlobalVariables(){
      	return parserHelper.globalVariableSymbol;
      }
+     
+     public final int getGlobalVariableSlot(String name){
+     	return parserHelper.getGlobalVariableSlot(name);
+     }
       
    /**
     * Save the current line number for run-time error messages
@@ -188,10 +192,10 @@ TOKEN : {
 |  <#DIGIT: ["0"-"9"]>
 |  <#LETTER: [ "a"-"z", "A"-"Z" ] >
 |  <#UNDERSCORE: [ "_" ] >
-|  <DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+|  <DECIMAL_LITERAL: (["+","-"])? ["1"-"9"] (["0"-"9"])*>
 |  <HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
 |  <OCTAL_LITERAL: "0" (["0"-"7"])*>
-|<FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|<FLOATING_POINT_LITERAL: (["+","-"])? (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
 | <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
 |  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
@@ -270,7 +274,7 @@ TOKEN : /* variable Types */
    < INT_VAR: "int" >
  |  < LONG_VAR: "long" >
  |  < DATE_VAR: "date" >
- |  < DOUBLE_VAR: "number" >
+ |  < DOUBLE_VAR: "number" | "double" >
  |  < DECIMAL_VAR: "decimal" >
  |  < BOOLEAN_VAR: "boolean" >
  |  < STRING_VAR: "string" >
@@ -1498,7 +1502,7 @@ void GlobalParameterExp()       :
                             jjtc001 = false;
                             jjtreeCloseNodeScope(jjtn001);
                           }
-/*@egen*/ { jjtn001.setParameterName(t.image); }/*@bgen(jjtree)*/
+/*@egen*/ { jjtn001.setParameterName(t.image.substring(2,t.image.length()-1)); }/*@bgen(jjtree)*/
                           } finally {
                             if (jjtc001) {
                               jjtree.closeNodeScope(jjtn001, true);
@@ -1623,10 +1627,8 @@ void Statement()       :
 		  )
 	}catch (ParseException e) {
 		parseExceptions.add(e);
-    Token t;
-    do {
-      t = getNextToken();
-    } while (t.kind != SEMICOLON);
+// following code causes strange behaviour in case of certain bugs
+//    Token t;//    do {//      t = getNextToken();//    } while (t.kind != SEMICOLON);
   }
 }
 
@@ -1672,48 +1674,20 @@ void Block() :
 /*@egen*/
 }
 
-void StatementExpression() :
+void StatementExpression()       :
 /*
  * The last expansion of this production accepts more than the legal
  * SPL expansions for StatementExpression.
  */
-{/*@bgen(jjtree) StatementExpression */
-  CLVFStatementExpression jjtn000 = new CLVFStatementExpression(this, JJTSTATEMENTEXPRESSION);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-  jjtreeOpenNodeScope(jjtn000);
-/*@egen*/}
-{/*@bgen(jjtree) StatementExpression */
-   try {
-/*@egen*/
+{}
+{
 	
    (
    	LOOKAHEAD(<PLUS_PLUS>)PlusplusStatement()
    |LOOKAHEAD(<MINUS_MINUS>)MinusMinusStatement()
    |LOOKAHEAD(2) Assignment() 
    |FunctionCallStatement() 
-   ) ";"/*@bgen(jjtree)*/
-   } catch (Throwable jjte000) {
-     if (jjtc000) {
-       jjtree.clearNodeScope(jjtn000);
-       jjtc000 = false;
-     } else {
-       jjtree.popNode();
-     }
-     if (jjte000 instanceof RuntimeException) {
-       throw (RuntimeException)jjte000;
-     }
-     if (jjte000 instanceof ParseException) {
-       throw (ParseException)jjte000;
-     }
-     throw (Error)jjte000;
-   } finally {
-     if (jjtc000) {
-       jjtree.closeNodeScope(jjtn000, true);
-       jjtreeCloseNodeScope(jjtn000);
-     }
-   }
-/*@egen*/
+   ) ";"
 }
 
 void PlusplusStatement()      :
@@ -1803,7 +1777,7 @@ void IfStatement() :
 {/*@bgen(jjtree) IfStatement */
   try {
 /*@egen*/
-  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(1) "else" Statement() ]/*@bgen(jjtree)*/
+  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(2) "else" Statement() ]/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
       jjtree.clearNodeScope(jjtn000);
@@ -1974,14 +1948,14 @@ void ForStatement() :
 /*@egen*/
 }
 
-void DoStatement() :
-{/*@bgen(jjtree) DoStatement */
+void DoStatement()                 :
+{/*@bgen(jjtree) #DoStatement( 2) */
   CLVFDoStatement jjtn000 = new CLVFDoStatement(this, JJTDOSTATEMENT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) DoStatement */
+{/*@bgen(jjtree) #DoStatement( 2) */
   try {
 /*@egen*/
   "do" Statement() "while" "(" Expression() ")"/*@bgen(jjtree)*/
@@ -2001,7 +1975,7 @@ void DoStatement() :
     throw (Error)jjte000;
   } finally {
     if (jjtc000) {
-      jjtree.closeNodeScope(jjtn000, true);
+      jjtree.closeNodeScope(jjtn000,  2);
       jjtreeCloseNodeScope(jjtn000);
     }
   }
@@ -2055,30 +2029,33 @@ void ReturnStatement() : {/*@bgen(jjtree) ReturnStatement */
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
 {/*@bgen(jjtree) ReturnStatement */
-        try {
+    try {
 /*@egen*/
-	"return" [ LOOKAHEAD(1) Expression() ]/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtreeCloseNodeScope(jjtn000);
-          }
-        }
-/*@egen*/ 
+    "return" [LOOKAHEAD(2) Expression()]/*@bgen(jjtree)*/
+    } catch (Throwable jjte000) {
+      if (jjtc000) {
+        jjtree.clearNodeScope(jjtn000);
+        jjtc000 = false;
+      } else {
+        jjtree.popNode();
+      }
+      if (jjte000 instanceof RuntimeException) {
+        throw (RuntimeException)jjte000;
+      }
+      if (jjte000 instanceof ParseException) {
+        throw (ParseException)jjte000;
+      }
+      throw (Error)jjte000;
+    } finally {
+      if (jjtc000) {
+        jjtree.closeNodeScope(jjtn000, true);
+        jjtreeCloseNodeScope(jjtn000);
+      }
+    }
+/*@egen*/
+	
+
+//(  [ Expression() ] ) #EmptyExpression(jjtree.nodeArity()==0)
 }
 
 void FunctionCallStatement() :
@@ -2750,15 +2727,6 @@ void Str2NumNode() :
     }
     | <DECIMAL_VAR>{
       jjtn000.setType(DECIMAL_VAR);
-    }
-    | <STRING_VAR>{
-      jjtn000.setType(STRING_VAR);
-    }
-    | <DATE_VAR>{
-      jjtn000.setType(DATE_VAR);
-    }
-    | <BOOLEAN_VAR>{
-      jjtn000.setType(BOOLEAN_VAR);
     }
     )
     ] 

@@ -29,46 +29,45 @@ public interface TransformLangParserTreeConstants
   public int JJTVARIABLELITERAL = 22;
   public int JJTREGEXLITERAL = 23;
   public int JJTBLOCK = 24;
-  public int JJTSTATEMENTEXPRESSION = 25;
-  public int JJTIFSTATEMENT = 26;
-  public int JJTSWITCHSTATEMENT = 27;
-  public int JJTCASEEXPRESSION = 28;
-  public int JJTWHILESTATEMENT = 29;
-  public int JJTFORSTATEMENT = 30;
-  public int JJTDOSTATEMENT = 31;
-  public int JJTBREAKSTATEMENT = 32;
-  public int JJTCONTINUESTATEMENT = 33;
-  public int JJTRETURNSTATEMENT = 34;
-  public int JJTFUNCTIONCALLSTATEMENT = 35;
-  public int JJTSUBSTRNODE = 36;
-  public int JJTUPPERCASENODE = 37;
-  public int JJTLOWERCASENODE = 38;
-  public int JJTTRIMNODE = 39;
-  public int JJTLENGTHNODE = 40;
-  public int JJTTODAYNODE = 41;
-  public int JJTISNULLNODE = 42;
-  public int JJTNVLNODE = 43;
-  public int JJTREPLACENODE = 44;
-  public int JJTNUM2STRNODE = 45;
-  public int JJTIFFNODE = 46;
-  public int JJTSQRTNODE = 47;
-  public int JJTLOGNODE = 48;
-  public int JJTLOG10NODE = 49;
-  public int JJTEXPNODE = 50;
-  public int JJTPOWNODE = 51;
-  public int JJTPINODE = 52;
-  public int JJTROUNDNODE = 53;
-  public int JJTTRUNCNODE = 54;
-  public int JJTPRINTERRNODE = 55;
-  public int JJTPRINTSTACKNODE = 56;
-  public int JJTBREAKPOINTNODE = 57;
-  public int JJTCONCATNODE = 58;
-  public int JJTDATEADDNODE = 59;
-  public int JJTDATEDIFFNODE = 60;
-  public int JJTDATE2STRNODE = 61;
-  public int JJTSTR2DATENODE = 62;
-  public int JJTDATE2NUMNODE = 63;
-  public int JJTSTR2NUMNODE = 64;
+  public int JJTIFSTATEMENT = 25;
+  public int JJTSWITCHSTATEMENT = 26;
+  public int JJTCASEEXPRESSION = 27;
+  public int JJTWHILESTATEMENT = 28;
+  public int JJTFORSTATEMENT = 29;
+  public int JJTDOSTATEMENT = 30;
+  public int JJTBREAKSTATEMENT = 31;
+  public int JJTCONTINUESTATEMENT = 32;
+  public int JJTRETURNSTATEMENT = 33;
+  public int JJTFUNCTIONCALLSTATEMENT = 34;
+  public int JJTSUBSTRNODE = 35;
+  public int JJTUPPERCASENODE = 36;
+  public int JJTLOWERCASENODE = 37;
+  public int JJTTRIMNODE = 38;
+  public int JJTLENGTHNODE = 39;
+  public int JJTTODAYNODE = 40;
+  public int JJTISNULLNODE = 41;
+  public int JJTNVLNODE = 42;
+  public int JJTREPLACENODE = 43;
+  public int JJTNUM2STRNODE = 44;
+  public int JJTIFFNODE = 45;
+  public int JJTSQRTNODE = 46;
+  public int JJTLOGNODE = 47;
+  public int JJTLOG10NODE = 48;
+  public int JJTEXPNODE = 49;
+  public int JJTPOWNODE = 50;
+  public int JJTPINODE = 51;
+  public int JJTROUNDNODE = 52;
+  public int JJTTRUNCNODE = 53;
+  public int JJTPRINTERRNODE = 54;
+  public int JJTPRINTSTACKNODE = 55;
+  public int JJTBREAKPOINTNODE = 56;
+  public int JJTCONCATNODE = 57;
+  public int JJTDATEADDNODE = 58;
+  public int JJTDATEDIFFNODE = 59;
+  public int JJTDATE2STRNODE = 60;
+  public int JJTSTR2DATENODE = 61;
+  public int JJTDATE2NUMNODE = 62;
+  public int JJTSTR2NUMNODE = 63;
 
 
   public String[] jjtNodeName = {
@@ -97,7 +96,6 @@ public interface TransformLangParserTreeConstants
     "VariableLiteral",
     "RegexLiteral",
     "Block",
-    "StatementExpression",
     "IfStatement",
     "SwitchStatement",
     "CaseExpression",

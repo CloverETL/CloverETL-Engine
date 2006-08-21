@@ -121,7 +121,7 @@ public interface TransformLangParserConstants {
     "\"int\"",
     "\"long\"",
     "\"date\"",
-    "\"number\"",
+    "<DOUBLE_VAR>",
     "\"decimal\"",
     "\"boolean\"",
     "\"string\"",

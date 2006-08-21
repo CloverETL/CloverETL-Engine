@@ -18,26 +18,26 @@
 
 package org.jetel.interpreter;
 
-import java.lang.Math;
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.interpreter.node.*;
-
-import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.BadDataFormatException;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.exception.BadDataFormatException;
+import org.jetel.interpreter.node.*;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.Compare;
 import org.jetel.util.StringUtils;
 
@@ -174,7 +174,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFOr node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object a=stack.pop();
         
         if (! (a instanceof Boolean)){
@@ -206,7 +205,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFAnd node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object a=stack.pop();
         
         if (! (a instanceof Boolean)){
@@ -341,14 +339,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFAddNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-        node.jjtGetChild(1).jjtAccept(this, data);
-
-        Object b = stack.pop();
         Object a = stack.pop();
+        node.jjtGetChild(1).jjtAccept(this, data);
+        Object b = stack.pop();
+        
 
         if (a == null || b == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
-                    "NULL value not allowed");
+                    "add - NULL value not allowed");
         }
 
 //        if (!(b instanceof Numeric || b instanceof CharSequence)) {
@@ -392,14 +390,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFSubNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-        node.jjtGetChild(1).jjtAccept(this, data);
-
-        Object b = stack.pop();
         Object a = stack.pop();
+        node.jjtGetChild(1).jjtAccept(this, data);
+        Object b = stack.pop();
+       
 
         if (a == null || b == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
-                    "NULL value not allowed");
+                    "sub - NULL value not allowed");
         }
 
         if (!(b instanceof Numeric)) {
@@ -427,14 +425,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFMulNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-        node.jjtGetChild(1).jjtAccept(this, data);
-
-        Object b = stack.pop();
         Object a = stack.pop();
+        node.jjtGetChild(1).jjtAccept(this, data);
+        Object b = stack.pop();
+        
 
         if (a == null || b == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
-                    "NULL value not allowed");
+                    "mul - NULL value not allowed");
         }
 
         if (!(b instanceof Numeric)) {
@@ -456,14 +454,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFDivNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-        node.jjtGetChild(1).jjtAccept(this, data);
-
-        Object b = stack.pop();
         Object a = stack.pop();
+        node.jjtGetChild(1).jjtAccept(this, data);
+        Object b = stack.pop();
+        
 
         if (a == null || b == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
-                    "NULL value not allowed");
+                    "div - NULL value not allowed");
         }
 
         if (!(b instanceof Numeric)) {
@@ -491,13 +489,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFModNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
         Object b = stack.pop();
-        Object a = stack.pop();
+        
 
         if (a == null || b == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { a, b },
-                    "NULL value not allowed");
+                    "mod - NULL value not allowed");
         }
 
         if (!(b instanceof Numeric)) {
@@ -538,15 +537,17 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         int length, from;
 
         node.jjtGetChild(0).jjtAccept(this, data);
+        Object str = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
+        Object fromO = stack.pop();
         node.jjtGetChild(2).jjtAccept(this, data);
         Object lengthO = stack.pop();
-        Object fromO = stack.pop();
-        Object str = stack.pop();
+       
+        
 
         if (lengthO == null || fromO == null || str == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { lengthO,
-                    fromO, str }, "NULL value not allowed");
+                    fromO, str }, "substring - NULL value not allowed");
         }
 
         try {
@@ -593,7 +594,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFLowercaseNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object a = stack.pop();
 
         if (a instanceof CharSequence) {
@@ -614,7 +614,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFTrimNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object a = stack.pop();
         int start, end;
 
@@ -645,7 +644,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFLengthNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object a = stack.pop();
 
         if (a instanceof CharSequence) {
@@ -660,8 +658,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFTodayNode node, Object data) {
-        java.util.Date today = Calendar.getInstance().getTime();
-        stack.push(today);
+        stack.push(stack.calendar.getTime() );
 
         return data;
     }
@@ -879,11 +876,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFReplaceNode node, Object data) {
 
         node.jjtGetChild(0).jjtAccept(this, data);
+        Object str = stack.pop();
         node.jjtGetChild(1).jjtAccept(this, data);
+        Object regexO = stack.pop();
         node.jjtGetChild(2).jjtAccept(this, data);
         Object withO = stack.pop();
-        Object regexO = stack.pop();
-        Object str = stack.pop();
+        
+        
 
         if (withO == null || regexO == null || str == null) {
             throw new TransformLangExecutorRuntimeException(node, new Object[] { withO,
@@ -934,8 +933,24 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         if (a instanceof CharSequence) {
             try {
-                stack.push(new CloverDouble(Double
-                        .parseDouble(((CharSequence) a).toString())));
+                Object value=null;
+                switch(node.numType){
+                case INT_VAR:
+                    value=new CloverInteger(Integer.parseInt(
+                            ((CharSequence) a).toString()));
+                    break;
+                case LONG_VAR:
+                    value=new CloverLong(Long.parseLong(
+                            ((CharSequence) a).toString()));
+                    break;
+                case DECIMAL_VAR:
+                    value=new  BigDecimal(((CharSequence) a).toString());
+                    break;
+                default:
+                   value=new CloverDouble(Double.parseDouble(
+                                ((CharSequence) a).toString()));
+                }
+                stack.push(value);
             } catch (NumberFormatException ex) {
                 Object[] arguments = { a };
                 throw new TransformLangExecutorRuntimeException(node,arguments,
@@ -988,7 +1003,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFIffNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
-
         Object condition = stack.pop();
 
         if (condition instanceof Boolean) {
@@ -1037,7 +1051,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(1);
         Node increment = node.jjtGetChild(2);
-        Node body =  node.jjtGetNumChildren()>=3 ? node.jjtGetChild(3) : emptyNode;
+        Node body;
+        
+        try{
+            body=node.jjtGetChild(3); 
+        }catch(ArrayIndexOutOfBoundsException ex){
+            body=emptyNode;
+        }
 
         try {
             loopCondition.jjtAccept(this, data); // evaluate the condition
@@ -1076,7 +1096,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFWhileStatement node, Object data) {
         boolean condition = false;
         Node loopCondition = node.jjtGetChild(0);
-        Node body =  node.jjtGetNumChildren()>=2 ? node.jjtGetChild(1) : emptyNode;
+        Node body;
+        try{
+            body=node.jjtGetChild(1);
+        }catch(ArrayIndexOutOfBoundsException ex){
+            body=emptyNode;
+        }
 
         try {
             loopCondition.jjtAccept(this, data); // evaluate the condition
@@ -1123,11 +1148,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         // first if
         if (condition) {
             node.jjtGetChild(1).jjtAccept(this, data);
-            stack.pop(); // in case there is anything on top of stack
+            //TODO: stack.pop(); -problem with return statement!!! // in case there is anything on top of stack 
         } else { // if else part exists
             if (node.jjtGetNumChildren() > 2) {
                 node.jjtGetChild(2).jjtAccept(this, data);
-                stack.pop(); // in case there is anything on top of stack
+                //TODO: stack.pop(); // in case there is anything on top of stack
             }
         }
 
@@ -1419,7 +1444,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         } catch (ClassCastException ex) {
             throw new TransformLangExecutorRuntimeException(node,
                     "invalid assignment of \"" + value + "\" to variable \""
-                            + childNode.varName + "\"");
+                            + childNode.varName + "\" - incompatible data types");
         } catch (NumberFormatException ex){
             throw new TransformLangExecutorRuntimeException(node,
                     "invalid assignment of number \"" + value + "\" to variable \"" + childNode.varName + "\" : "+ex.getMessage());    

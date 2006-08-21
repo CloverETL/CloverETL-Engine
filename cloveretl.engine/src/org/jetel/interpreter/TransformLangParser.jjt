@@ -135,6 +135,10 @@ public class TransformLangParser extends ExpParser {
       public final Map getGlobalVariables(){
      	return parserHelper.globalVariableSymbol;
      }
+     
+     public final int getGlobalVariableSlot(String name){
+     	return parserHelper.getGlobalVariableSlot(name);
+     }
       
    /**
     * Save the current line number for run-time error messages
@@ -191,10 +195,10 @@ TOKEN : {
 |  <#DIGIT: ["0"-"9"]>
 |  <#LETTER: [ "a"-"z", "A"-"Z" ] >
 |  <#UNDERSCORE: [ "_" ] >
-|  <DECIMAL_LITERAL: ["1"-"9"] (["0"-"9"])*>
+|  <DECIMAL_LITERAL: (["+","-"])? ["1"-"9"] (["0"-"9"])*>
 |  <HEX_LITERAL: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+>
 |  <OCTAL_LITERAL: "0" (["0"-"7"])*>
-|<FLOATING_POINT_LITERAL: (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
+|<FLOATING_POINT_LITERAL: (["+","-"])? (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
 | <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
 |  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
@@ -273,7 +277,7 @@ TOKEN : /* variable Types */
    < INT_VAR: "int" >
  |  < LONG_VAR: "long" >
  |  < DATE_VAR: "date" >
- |  < DOUBLE_VAR: "number" >
+ |  < DOUBLE_VAR: "number" | "double" >
  |  < DECIMAL_VAR: "decimal" >
  |  < BOOLEAN_VAR: "boolean" >
  |  < STRING_VAR: "string" >
@@ -555,7 +559,7 @@ void GlobalParameterExp() #void :
 	Token t;
 }
 {
-  t=<GLOBAL_PARAMETER_ID> { jjtThis.setParameterName(t.image); } #GlobalParameterLiteral
+  t=<GLOBAL_PARAMETER_ID> { jjtThis.setParameterName(t.image.substring(2,t.image.length()-1)); } #GlobalParameterLiteral
 }
 
 
@@ -632,10 +636,8 @@ void Statement() #void :
 		  )
 	}catch (ParseException e) {
 		parseExceptions.add(e);
-    Token t;
-    do {
-      t = getNextToken();
-    } while (t.kind != SEMICOLON);
+// following code causes strange behaviour in case of certain bugs
+//    Token t;//    do {//      t = getNextToken();//    } while (t.kind != SEMICOLON);
   }
 }
 
@@ -653,7 +655,7 @@ void Block() :
   "{" ( Statement() )* "}"
 }
 
-void StatementExpression() :
+void StatementExpression() #void :
 /*
  * The last expansion of this production accepts more than the legal
  * SPL expansions for StatementExpression.
@@ -691,7 +693,7 @@ void IfStatement() :
  */
 {}
 {
-  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(1) "else" Statement() ]
+  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(2) "else" Statement() ]
 }
 
 void SwitchStatement() :
@@ -729,7 +731,7 @@ void ForStatement() :
   "for" "(" Expression() ";" Expression() ";" Expression() ")" Statement()
 }
 
-void DoStatement() :
+void DoStatement() #DoStatement(2) :
 {}
 {
   "do" Statement() "while" "(" Expression() ")" 
@@ -749,7 +751,10 @@ void ContinueStatement() :
 
 void ReturnStatement() : {}
 {
-	"return" [ LOOKAHEAD(1) Expression() ] 
+    "return" [LOOKAHEAD(2) Expression()]
+	
+
+//(  [ Expression() ] ) #EmptyExpression(jjtree.nodeArity()==0)
 }
 
 void FunctionCallStatement() :
@@ -882,15 +887,6 @@ void Str2NumNode() :
     }
     | <DECIMAL_VAR>{
       jjtThis.setType(DECIMAL_VAR);
-    }
-    | <STRING_VAR>{
-      jjtThis.setType(STRING_VAR);
-    }
-    | <DATE_VAR>{
-      jjtThis.setType(DATE_VAR);
-    }
-    | <BOOLEAN_VAR>{
-      jjtThis.setType(BOOLEAN_VAR);
     }
     )
     ] 
