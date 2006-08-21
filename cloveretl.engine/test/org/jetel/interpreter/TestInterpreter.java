@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
@@ -40,6 +41,7 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.metadata.DataFieldMetadata;
@@ -100,7 +102,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -121,7 +123,7 @@ public class TestInterpreter extends TestCase {
 	    } catch (ParseException e) {
 	    	System.err.println(e.getMessage());
 	    	e.printStackTrace();
-	    	throw new RuntimeException("Parse exception");
+	    	throw new RuntimeException("Parse exception",e);
 	    }
 		      
 	}
@@ -140,7 +142,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -163,7 +165,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -184,7 +186,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -218,7 +220,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -237,7 +239,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -261,7 +263,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -281,10 +283,10 @@ public class TestInterpreter extends TestCase {
 		
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
-			  		new ByteArrayInputStream(expStr.getBytes()));
+			  		new ByteArrayInputStream(expStr.getBytes("UTF-8")));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -308,8 +310,10 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
-		    }
+		    	throw new RuntimeException("Parse exception",e);
+		    } catch (UnsupportedEncodingException ex){
+		        ex.printStackTrace();
+            }
 	}
 
 	public void test_date(){
@@ -326,7 +330,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      
@@ -352,7 +356,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -369,7 +373,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -389,7 +393,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -414,7 +418,7 @@ public class TestInterpreter extends TestCase {
 		    	  throw new RuntimeException("Parse exception");
 		      }
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -435,7 +439,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 	}
 
@@ -468,7 +472,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -495,7 +499,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -525,7 +529,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -551,7 +555,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -578,7 +582,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -602,7 +606,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -633,7 +637,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -660,7 +664,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -687,7 +691,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -711,7 +715,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -734,7 +738,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -763,7 +767,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -798,7 +802,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -825,7 +829,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -844,7 +848,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -864,7 +868,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -894,7 +898,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -919,7 +923,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -934,7 +938,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -962,7 +966,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -974,7 +978,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStartExpression parseTree = parser.StartExpression();
 
-              System.out.println(expStr);
+              print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -991,7 +995,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 		}
 	
@@ -1002,7 +1006,7 @@ public class TestInterpreter extends TestCase {
                     new ByteArrayInputStream(expStr.getBytes()));
               CLVFStartExpression parseTree = parser.StartExpression();
               
-              System.out.println(expStr);
+              print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      parseTree.dump("");
@@ -1020,7 +1024,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 		
 	}
@@ -1041,7 +1045,7 @@ public class TestInterpreter extends TestCase {
               }
               
               
-              System.out.println(expStr);
+              print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1058,7 +1062,7 @@ public class TestInterpreter extends TestCase {
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 		    }
 		
 	}
@@ -1095,7 +1099,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1125,7 +1129,8 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+                
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1170,7 +1175,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1190,7 +1195,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 	
@@ -1212,7 +1217,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1230,7 +1235,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1257,7 +1262,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1275,7 +1280,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1311,7 +1316,7 @@ public class TestInterpreter extends TestCase {
 		    	  throw new RuntimeException("Parse exception");
 		      }
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1323,14 +1328,16 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
+              int iVarSlot=parser.getGlobalVariableSlot("i");
+              int yerVarSlot=parser.getGlobalVariableSlot("yer");
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(101,((CloverInteger)result[2]).getInt());
-		      assertEquals(11,((CloverInteger)result[3]).getInt());
+		      assertEquals(101,((CloverInteger)result[yerVarSlot]).getInt());
+		      assertEquals(11,((CloverInteger)result[iVarSlot]).getInt());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1356,7 +1363,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1375,7 +1382,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1409,7 +1416,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1428,7 +1435,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1444,9 +1451,9 @@ public class TestInterpreter extends TestCase {
 						"	for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
 						"	if (yer>0) return yer else return -1" +
 						"}\n" +
-//						"print_err('years on the end:'+age(born));\n";
-						"print_err('years on the end:'+age(born));\n"+
-						"print_err('year before:'+year_before(born));\n" +
+						"print_err('years born'+age(born));\n" +
+						"print_err(\"years on the end:\"+age(born));\n"+
+						"print_err(\"year before:\"+year_before(born));\n" +
 						" while (true) {print_err('pred return');" +
 						"return;" +
 						"print_err('po return')}" +
@@ -1459,9 +1466,15 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+              print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+              parseTree.dump("");
+              
+            for(Iterator iter=parser.getParseExceptions().iterator();iter.hasNext();){
+                System.err.println(iter.next());
+            }
+              
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
@@ -1476,7 +1489,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1539,7 +1552,7 @@ public class TestInterpreter extends TestCase {
 		      }
 
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1572,7 +1585,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1606,7 +1619,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1641,7 +1654,7 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1657,7 +1670,7 @@ public class TestInterpreter extends TestCase {
 			  		new ByteArrayInputStream(expStr.getBytes()));
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+            print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1673,12 +1686,12 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("sqrt",3,((Decimal)result[1]).getDouble());
+		      assertEquals("num",10,((Numeric)result[1]).getInt());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
 
@@ -1701,7 +1714,7 @@ public class TestInterpreter extends TestCase {
 			  		recordMetadata,new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
 		      CLVFStart parseTree = parser.Start();
 
-            System.out.println(expStr);
+              print_code(expStr);
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
@@ -1721,7 +1734,14 @@ public class TestInterpreter extends TestCase {
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
 		    	e.printStackTrace();
-		    	throw new RuntimeException("Parse exception");
+		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
+    
+    public void print_code(String text){
+        String[] lines=text.split("\n");
+        for(int i=0;i<lines.length;i++){
+            System.out.println((i+1)+"\t:"+lines[i]);
+        }
+    }
 }
