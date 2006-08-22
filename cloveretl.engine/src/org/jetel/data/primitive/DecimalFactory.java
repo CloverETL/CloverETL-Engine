@@ -75,6 +75,18 @@ public class DecimalFactory {
 		return d;
 	}
 
+    public static Decimal getDecimal(BigDecimal value) {
+        Decimal d = getDecimal(value.precision(), value.scale());
+        d.setValue(value);
+        return d;
+    }
+    
+    public static Decimal getDecimal(String value) {
+        BigDecimal bd= new BigDecimal(value);
+        return getDecimal(bd);
+    }
+    
+    
 	public static Decimal getDecimal(long value, int precision, int scale) {
 		Decimal d = getDecimal(precision, scale);
 		d.setValue(value);
