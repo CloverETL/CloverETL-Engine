@@ -1082,8 +1082,8 @@ public class TestInterpreter extends TestCase {
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
 						"boolean result;result=false;\n" +
 						"boolean compareDates;compareDates=date1<=date2;print_err(compareDates);\n" +
-						"if (date11<=date2) \n" +
-						"{  print_err('before if (i<jj)');\n" +
+						"if (date1<=date2) \n" +
+						"{  print_err('before if (i<j)');\n" +
 						"	if (i<j) print_err('date1<today and i<j') else print_err('date1<date2 only')\n" +
 						"	result=true;}\n" +
 						"result=false;" +
@@ -1134,7 +1134,7 @@ public class TestInterpreter extends TestCase {
 	public void test_switch(){
 		System.out.println("\nSwitch test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"int n;n=datediff(born,1900-01-01,month)%12;print_err(n);\n" +
+						"int n;n=date2num(born,month);print_err(n);\n" +
 						"string mont;\n" +
 						"decimal april;april=4;\n" +
 						"switch (n) {\n" +
@@ -1146,7 +1146,7 @@ public class TestInterpreter extends TestCase {
 						"	case 5.0:mont='june';\n" +
 						"	case 6.0:mont='july';\n" +
 						"	case 7.0:mont='august';\n" +
-						"	case 3:print_err('a kuku')\n" +
+						"	case 3:print_err('4th month')\n" +
 						"	case 8.0:mont='september';\n" +
 						"	case 9.0:mont='october';\n" +
 						"	case 10.0:mont='november';\n" +
@@ -1158,7 +1158,7 @@ public class TestInterpreter extends TestCase {
 						"	case true:print_err('OK')\n" +
 						"	case false:print_err('WRONG')};\n" +
 						"switch (born) {\n" +
-						"	case 2006-01-01:{mont='January';print_err('january);}\n" +
+						"	case 2006-01-01:{mont='January';print_err('january');}\n" +
 						"	case 1973-04-23:{mont='April';print_err('april');}\n" +
 						"	default:print_err('other')};\n"+
 						"switch (born<1996-08-01) {\n" +
@@ -1520,7 +1520,7 @@ public class TestInterpreter extends TestCase {
 						"print_err(s1 );\n" +
 						"string rep;rep=replace(c,'[lL]','t');\n" +
 						"print_err(rep );\n" +
-						"decimal stn;stn=str2num('2.5e-1');\n" +
+						"decimal(10,5) stn;stn=str2num('2.5125e-1',decimal);\n" +
 						"print_err(stn );\n" +
 						"string nts;nts=num2str(1);\n" +
 						"print_err(nts );\n" +
