@@ -66,6 +66,8 @@ public class DataFieldMetadata implements Serializable {
 
 	private String defaultValueStr;
 
+    private Object defaultValue;
+    
 	/**
 	 * Field can be populated by execution of Java code which
 	 * can include references to fields from input records.  The
@@ -221,7 +223,7 @@ public class DataFieldMetadata implements Serializable {
 	    ret.setSize(getSize());
 		ret.setType(getType());
 		ret.setNullable(isNullable());
-		ret.setDefaultValue(getDefaultValue());
+		ret.setDefaultValueStr(getDefaultValueStr());
 		ret.setCodeStr(getCodeStr());
 		ret.setLocaleStr(getLocaleStr());
 
@@ -295,10 +297,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  defaultValue  The new DefaultValue value
 	 * @since                October 30, 2002
 	 */
-	public void setDefaultValue(String defaultValue) {
+	public void setDefaultValueStr(String defaultValue) {
 		this.defaultValueStr = defaultValue;
 	}
 
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+    }
 
 
 	// Operations
@@ -406,11 +411,21 @@ public class DataFieldMetadata implements Serializable {
 	 * @return    The DefaultValue value
 	 * @since     October 30, 2002
 	 */
-	public String getDefaultValue() {
+	public String getDefaultValueStr() {
 		return defaultValueStr;
 	}
 
-
+    public Object getDefaultValue() {
+        return defaultValue;
+    }
+    
+	/**
+	 * @return true if default value is set
+	 */
+	public boolean isDefaultValue() {
+	    return defaultValueStr != null && defaultValueStr.length() > 0;    
+    }
+    
 	/**
 	 * Sets the nullable attribute of the DataFieldMetadata object
 	 *

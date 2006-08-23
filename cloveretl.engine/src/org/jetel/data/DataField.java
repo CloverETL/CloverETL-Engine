@@ -25,6 +25,7 @@ import java.nio.*;
 import java.nio.charset.*;
 
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.StringUtils;
 
@@ -92,24 +93,23 @@ public abstract class DataField implements Serializable, Comparable {
 	 *
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
-	public void setToDefaultValue() throws BadDataFormatException {
+	public void setToDefaultValue() {
+        if(!metadata.isDefaultValue()) {
+            throw new NullDataFormatException(metadata.getName() + " has not dafault value defined!");
+        }
 		try {
-			fromString(StringUtils.stringToSpecChar(metadata.getDefaultValue()));
+            Object val;
+            if((val = metadata.getDefaultValue()) != null) {
+                setValue(val);
+                return;
+            }
+			fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
+            metadata.setDefaultValue(getValue());
 		} catch (Exception ex) {
-			String tmp = metadata.getDefaultValue();
-			if (tmp == null || tmp.equals("")) {
-				if (metadata.isNullable()) {
-					throw new BadDataFormatException(ex.getMessage());
-				} else {
-					throw new BadDataFormatException(metadata.getName() + " is not nullable and is being set to null!");
-				}
-			} else {
-				// here, the only reason to fail is bad DefaultValue
-				throw new BadDataFormatException(metadata.getName() + " has incorrect default value(" + metadata.getDefaultValue() + ")!");
-			}
+			// here, the only reason to fail is bad DefaultValue
+			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
 		}
 	}
-
 
 	/**
 	 *  Sets the Null value indicator/status. If passed-in value
@@ -122,8 +122,12 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	public void setNull(boolean isNull) {
 		if (isNull && !metadata.isNullable()) {
-			throw new BadDataFormatException(metadata.getName() + " is not nullable and is being set to null!");
-		}
+            try {
+                setToDefaultValue();
+            } catch(NullDataFormatException e) {
+                throw new NullDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable == false)");
+            }
+        }
 		this.isNull = isNull;
 	}
 

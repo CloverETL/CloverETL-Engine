@@ -328,8 +328,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getFormatStr() != null) {
 					fieldElement.setAttribute(FORMAT_ATTR, field.getFormatStr());
 				}
-				if (field.getDefaultValue() != null) {
-					fieldElement.setAttribute(DEFAULT_ATTR, field.getDefaultValue());
+				if (field.getDefaultValueStr() != null) {
+					fieldElement.setAttribute(DEFAULT_ATTR, field.getDefaultValueStr());
 				}
 				if (field.getLocaleStr() != null) {
 					fieldElement.setAttribute(LOCALE_ATTR, field.getLocaleStr());
@@ -522,7 +522,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				field.setFormatStr(format);
 			}
 			if (defaultValue != null) {
-				field.setDefaultValue(defaultValue);
+				field.setDefaultValueStr(defaultValue);
 			}
 
 			// set nullable if defined

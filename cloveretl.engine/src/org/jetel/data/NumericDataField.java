@@ -171,7 +171,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			if(this.metadata.isNullable()) {
 				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -199,7 +199,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			if(this.metadata.isNullable()) {
 				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -220,7 +220,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			if(this.metadata.isNullable()) {
 				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -240,7 +240,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			if(this.metadata.isNullable()) {
 				setNull(true);
 			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
 			}
 			return;
 		}
@@ -256,7 +256,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
             if(this.metadata.isNullable()) {
                 setNull(true);
             } else {
-                throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",null);
+                throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
             }
             return;
         }

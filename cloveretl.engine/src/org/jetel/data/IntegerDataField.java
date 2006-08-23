@@ -114,24 +114,12 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(Object _value) {
 		if (_value == null) {
-			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
-			return;
-		}
-		if (_value instanceof Integer) {
+		    setNull(true);
+		} else if (_value instanceof Integer) {
 			value = ((Integer) _value).intValue();
-			if (value!=Integer.MIN_VALUE) setNull(false); else setNull(true);
+            setNull(value == Integer.MIN_VALUE);
 		} else {
-			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
-			}
+		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}
 
@@ -145,12 +133,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(double value) {
 		if (value == Double.NaN) {
-			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
+		    setNull(true);
 			return;
 		}
 		this.value = (int) value;
@@ -167,12 +150,7 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(int value) {
 		if (value == Integer.MIN_VALUE) {
-			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
+		    setNull(true);
 			return;
 		}
 		this.value = value;
@@ -188,35 +166,37 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(long value) {
 		if (value == Long.MIN_VALUE) {
-			if (this.metadata.isNullable()) {
-				this.value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
+		    setNull(true);
 			return;
 		}
-		this.value = (int)value;
+		this.value = (int) value;
 		setNull(false);
 	}
 	
     /**
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
-    public void setValue(Numeric _value) {
-        if (_value.isNull()) {
-            if (this.metadata.isNullable()) {
-                this.value = Integer.MIN_VALUE;
-                super.setNull(true);
-            } else {
-                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-            }
+    public void setValue(Numeric value) {
+        if(value == null || value.isNull()) {
+            setNull(true);
             return;
         }
-        this.value = _value.getInt();
+        this.value = value.getInt();
         setNull(false);
     }
 	
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
+     */
+    public void setValue(Decimal value) {
+        if(value == null || value.isNull()) {
+            setNull(true);
+            return;
+        }
+        this.value = value.getInt();
+        setNull(false);
+    }
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -332,13 +312,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	 * @since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if (valueStr == null || valueStr.equals("")) {
-			if (this.metadata.isNullable()) {
-				value = Integer.MIN_VALUE;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", valueStr);
-			}
+		if (valueStr == null || valueStr.length() == 0) {
+		    setNull(true);
 			return;
 		} else {
 			try {
@@ -564,20 +539,6 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	public void neg() {
         if(isNull) return;
 		value *= -1;
-	}
-
-	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal _value) {
-		if(_value == null) {
-		    setNull(true);
-		    return;
-		}
-		if(!_value.isNaN()) {
-			value = _value.getInt();
-		}
-		setNull(_value.isNaN());
 	}
 
 	/**
