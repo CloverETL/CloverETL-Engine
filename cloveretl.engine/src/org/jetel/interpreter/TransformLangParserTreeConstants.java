@@ -48,26 +48,26 @@ public interface TransformLangParserTreeConstants
   public int JJTISNULLNODE = 41;
   public int JJTNVLNODE = 42;
   public int JJTREPLACENODE = 43;
-  public int JJTNUM2STRNODE = 44;
-  public int JJTIFFNODE = 45;
-  public int JJTSQRTNODE = 46;
-  public int JJTLOGNODE = 47;
-  public int JJTLOG10NODE = 48;
-  public int JJTEXPNODE = 49;
-  public int JJTPOWNODE = 50;
-  public int JJTPINODE = 51;
-  public int JJTROUNDNODE = 52;
-  public int JJTTRUNCNODE = 53;
-  public int JJTPRINTERRNODE = 54;
-  public int JJTPRINTSTACKNODE = 55;
-  public int JJTBREAKPOINTNODE = 56;
-  public int JJTCONCATNODE = 57;
-  public int JJTDATEADDNODE = 58;
-  public int JJTDATEDIFFNODE = 59;
-  public int JJTDATE2STRNODE = 60;
-  public int JJTSTR2DATENODE = 61;
-  public int JJTDATE2NUMNODE = 62;
-  public int JJTSTR2NUMNODE = 63;
+  public int JJTIFFNODE = 44;
+  public int JJTSQRTNODE = 45;
+  public int JJTLOGNODE = 46;
+  public int JJTLOG10NODE = 47;
+  public int JJTEXPNODE = 48;
+  public int JJTPOWNODE = 49;
+  public int JJTPINODE = 50;
+  public int JJTROUNDNODE = 51;
+  public int JJTTRUNCNODE = 52;
+  public int JJTPRINTERRNODE = 53;
+  public int JJTPRINTSTACKNODE = 54;
+  public int JJTBREAKPOINTNODE = 55;
+  public int JJTCONCATNODE = 56;
+  public int JJTDATEADDNODE = 57;
+  public int JJTDATEDIFFNODE = 58;
+  public int JJTDATE2STRNODE = 59;
+  public int JJTSTR2DATENODE = 60;
+  public int JJTDATE2NUMNODE = 61;
+  public int JJTSTR2NUMNODE = 62;
+  public int JJTNUM2STRNODE = 63;
 
 
   public String[] jjtNodeName = {
@@ -115,7 +115,6 @@ public interface TransformLangParserTreeConstants
     "IsNullNode",
     "NVLNode",
     "ReplaceNode",
-    "Num2StrNode",
     "IffNode",
     "SqrtNode",
     "LogNode",
@@ -135,5 +134,6 @@ public interface TransformLangParserTreeConstants
     "Str2DateNode",
     "Date2NumNode",
     "Str2NumNode",
+    "Num2StrNode",
   };
 }

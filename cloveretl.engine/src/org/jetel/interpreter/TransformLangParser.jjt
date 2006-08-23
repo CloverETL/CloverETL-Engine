@@ -125,6 +125,10 @@ public class TransformLangParser extends ExpParser {
       public final Map getFunctions(){
         return parserHelper.functionSymbol;
     }
+    
+     public final CLVFFunctionDeclaration getFunction(String name){
+     	return (CLVFFunctionDeclaration) parserHelper.functionSymbol.get(name);
+     }
       
      
      /**
@@ -203,6 +207,9 @@ TOKEN : {
 | <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
 |  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
 |  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
+| <UNTERMINATED_STRING_LITERAL: <UNTERMINATED_QUOTED_STRING> | <UNTERMINATED_DQUOTED_STRING> >
+|  <#UNTERMINATED_QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
+|  <#UNTERMINATED_DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* (["\n","\r"])? >
 |<BOOLEAN_LITERAL: <TRUE> | <FALSE> >
 | <#TRUE: "true">
 | <#FALSE: "false">
@@ -291,7 +298,12 @@ TOKEN : /* variable Types */
 CLVFStart Start() : {}        // Start -> Exp
 {
   CompilationUnit() <EOF>
-  { return jjtThis; }
+  { 
+  	if (parseExceptions.size()>0){
+  		throw (ParseException)parseExceptions.get(0);
+  	}	
+  	return jjtThis; 
+  }
 }
 
 /* 
@@ -303,7 +315,12 @@ CLVFStart Start() : {}        // Start -> Exp
 CLVFStartExpression StartExpression() : {}
 {
 	ConditionalOrExpression() <EOF>
-	{ return jjtThis;}
+	{ 
+		if (parseExceptions.size()>0){
+  			throw (ParseException)parseExceptions.get(0);
+  		}		
+		return jjtThis;
+	}
 }
 
 void CompilationUnit() #void :
@@ -539,6 +556,10 @@ void LitExp() #void :            //
   	{ jjtThis.setVal(DATETIME_LITERAL,t.image);}   #Literal
  |t=<NULL_LITERAL>
  	{ jjtThis.setVal(NULL_LITERAL,t.image); } #Literal
+ |t = <UNTERMINATED_STRING_LITERAL>
+  {
+       throw new ParseException(t,"unterminated string literal");
+  }
 }
 
 void InputFieldExp() #void :// IDExp -> ID
@@ -569,6 +590,7 @@ void VarExp() #void :               // IDExp -> ID
 	int varSlot;
 }
 {
+	try{
   t=<IDENTIFIER> { 
 
   		// first, look for local var reference
@@ -585,6 +607,9 @@ void VarExp() #void :               // IDExp -> ID
   	jjtThis.setVarName(t.image);
   	} 
   	#VariableLiteral
+	}catch(ParseException e){
+		parseExceptions.add(e);
+	}
 }
 
 void RegexLiteral() #void :
@@ -802,7 +827,7 @@ void BuildInFunction() #void :
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
 	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
 	|Str2NumNode()
-	|"num2str" "(" AdditiveExpression() ")" #Num2StrNode(1)
+	|Num2StrNode()
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|Date2StrNode()
 	|Str2DateNode()
@@ -889,11 +914,21 @@ void Str2NumNode() :
       jjtThis.setType(DECIMAL_VAR);
     }
     )
+    [ "," t=<INTEGER_LITERAL> {jjtThis.setRadix(t.image);}]
     ] 
     
     ")"
 }
 
+void Num2StrNode() :
+{ 
+	Token t;
+}
+{
+	"num2str" "(" AdditiveExpression() 
+    [ "," t=<INTEGER_LITERAL> {jjtThis.setRadix(t.image);}]
+    ")"
+}
 
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }

@@ -917,10 +917,28 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         Object a = stack.pop();
 
         if (a instanceof Numeric) {
-            stack.push(((Numeric) a).toString());
+            if (node.radix == 10) {
+                stack.push(((Numeric) a).toString());
+            } else {
+                if (a instanceof CloverInteger) {
+                    stack.push(Integer.toString(((CloverInteger) a).getInt(),
+                            node.radix));
+                } else if (a instanceof CloverLong) {
+                    stack.push(Long.toString(((CloverLong) a).getLong(),
+                            node.radix));
+                } else if (a instanceof CloverDouble && node.radix == 16) {
+                    stack.push(Double.toHexString(((CloverDouble) a)
+                            .getDouble()));
+                } else {
+                    Object[] arguments = { a, new Integer(node.radix) };
+                    throw new TransformLangExecutorRuntimeException(node,
+                            arguments,
+                            "num2str - can't convert number to string using specified radix");
+                }
+            }
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
+            throw new TransformLangExecutorRuntimeException(node, arguments,
                     "num2str - wrong type of literal");
         }
 
@@ -933,32 +951,51 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         if (a instanceof CharSequence) {
             try {
-                Object value=null;
-                switch(node.numType){
+                Object value = null;
+                switch (node.numType) {
                 case INT_VAR:
-                    value=new CloverInteger(Integer.parseInt(
-                            ((CharSequence) a).toString()));
+                    value = new CloverInteger(Integer.parseInt(
+                            ((CharSequence) a).toString(), node.radix));
                     break;
                 case LONG_VAR:
-                    value=new CloverLong(Long.parseLong(
-                            ((CharSequence) a).toString()));
+                    value = new CloverLong(Long.parseLong(((CharSequence) a)
+                            .toString(), node.radix));
                     break;
                 case DECIMAL_VAR:
-                    value=new  BigDecimal(((CharSequence) a).toString());
+                    if (node.radix == 10) {
+                        value = DecimalFactory.getDecimal(((CharSequence) a)
+                                .toString());
+                    } else {
+                        Object[] arguments = { a, new Integer(node.radix) };
+                        throw new TransformLangExecutorRuntimeException(node,
+                                arguments,
+                                "str2num - can't convert string to decimal number using specified radix");
+                    }
                     break;
                 default:
-                   value=new CloverDouble(Double.parseDouble(
-                                ((CharSequence) a).toString()));
+                    // get double/number type
+                    switch (node.radix) {
+                    case 10:
+                    case 16:
+                        value = new CloverDouble(Double
+                                .parseDouble(((CharSequence) a).toString()));
+                        break;
+                    default:
+                        Object[] arguments = { a, new Integer(node.radix) };
+                        throw new TransformLangExecutorRuntimeException(node,
+                                arguments,
+                                "str2num - can't convert string to number/double number using specified radix");
+                    }
                 }
                 stack.push(value);
             } catch (NumberFormatException ex) {
                 Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(node,arguments,
-                        "str2num - can't convert \"" + a + "\"");
+                throw new TransformLangExecutorRuntimeException(node,
+                        arguments, "str2num - can't convert \"" + a + "\"");
             }
         } else {
             Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
+            throw new TransformLangExecutorRuntimeException(node, arguments,
                     "str2num - wrong type of literal");
         }
 
