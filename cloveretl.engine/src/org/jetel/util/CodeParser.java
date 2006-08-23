@@ -93,7 +93,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * </td>
  * </tr>
  * </table>
- * @author                          Wes Maciorowski, David Pavlis, Martin Zatopek
+ * @author                          David Pavlis, Martin Zatopek
  * @since
  * @revision                        $Revision$
  * <h4>Example:</h4>
