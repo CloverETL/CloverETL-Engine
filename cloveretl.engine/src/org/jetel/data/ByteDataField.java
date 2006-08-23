@@ -22,6 +22,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
+
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -111,15 +113,14 @@ public class ByteDataField extends DataField  implements Comparable{
 	 *@since          October 29, 2002
 	 */
 	public void setValue(Object value) {
-		if (value instanceof byte[]) {
-		    this.value = (byte[]) value;
-			setNull(false);
-		} else if (value instanceof Byte){
-		    setValue(((Byte)value).byteValue());
-		}else if (value == null) {
-			setNull(true);
-		}else {
-		    throw new ClassCastException("Not a byte/byte_array "+value.getClass().getName());
+        if(value == null) {
+		    setNull(true);
+        } else if(value instanceof Byte) {
+            
+        } else if(value instanceof Byte[]) {
+            
+		} else {
+		    throw new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
 		}
 	}
 
@@ -132,10 +133,8 @@ public class ByteDataField extends DataField  implements Comparable{
 	 *@since         October 29, 2002
 	 */
 	public void setValue(byte[] value) {
-	    /* begin changes by FSI */
 	    this.value = value;
 		setNull(value == null);
-		/* end changes by FSI */	
 	}
 
 
@@ -231,13 +230,7 @@ public class ByteDataField extends DataField  implements Comparable{
 	 *@since            October 29, 2002
 	 */
 	public void fromString(String valueStr) {
-	    final byte[] valueStrBytes = valueStr.getBytes();
-	    
-	    int length = valueStrBytes.length;
-        if (this.value.length != length){
-            this.value = new byte[length];
-        }
-		System.arraycopy(valueStrBytes, 0, this.value, 0, length);
+        this.value = valueStr.getBytes();
 	}
 
 

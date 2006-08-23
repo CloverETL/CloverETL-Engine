@@ -21,40 +21,45 @@
 package org.jetel.exception;
 
 /**
- * Intended to capture incorrect data
- * @author maciorowski
+ * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
 public class BadDataFormatException extends RuntimeException {
-	private String offendingFormat = null;
-	/**
-	 * 
-	 */
+    
+	private String offendingValue;
+    
 	public BadDataFormatException() {
 		super();
 	}
 
-	/**
-	 * @param arg0
-	 */
-	public BadDataFormatException(String arg0) {
-		super(arg0);
+	public BadDataFormatException(String message) {
+		super(message);
 	}
 
-	/**
-	 * @param arg0
-	 * @param offendingFormat
-	 */
-	public BadDataFormatException(String arg0, String offendingFormat) {
-		super(arg0);
-		setOffendingFormat(offendingFormat);
+    public BadDataFormatException(String message, Throwable cause) {
+        super(message, cause);
+    }
+    
+	public BadDataFormatException(String message, String offendingValue) {
+		super(message);
+		this.offendingValue = offendingValue;
+	}
+    
+    public BadDataFormatException(String message, String offendingValue, Throwable cause) {
+        super(message, cause);
+        this.offendingValue = offendingValue;
+    }
+
+	public void setOffendingValue(String offendingValue) {
+		this.offendingValue = offendingValue;
 	}
 
-	public void setOffendingFormat(String offendingFormat) {
-		this.offendingFormat = offendingFormat;
+	public String getOffendingValue() {
+		return offendingValue;
 	}
-
-	public String getOffendingFormat() {
-		return offendingFormat;
-	}
+    
+    @Override
+    public String getMessage() {
+        return super.getMessage() + " : " + offendingValue;
+    }
 }

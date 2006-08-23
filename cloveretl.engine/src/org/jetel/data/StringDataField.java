@@ -22,9 +22,9 @@
 package org.jetel.data;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
@@ -157,14 +157,10 @@ public class StringDataField extends DataField implements CharSequence{
 	void setValue(CharSequence seq) {
 		value.setLength(0);
 		if (seq != null && seq.length() > 0) {
-		    value.append(seq.toString());
+		    value.append(seq);
 			setNull(false);
 		} else {
-			if (this.metadata.isNullable()) {
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", null);
-			}
+		    setNull(true);
 		}
 	}
 
