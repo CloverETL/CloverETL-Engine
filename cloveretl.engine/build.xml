@@ -19,7 +19,7 @@
 		
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
-		<foreach list="${plugin.list}" target="plugin.build" param="plugin.dir"/>
+		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
 	</target>
 
 

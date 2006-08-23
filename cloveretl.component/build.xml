@@ -9,16 +9,10 @@
 	<property name="dir.dist.default" value="${basedir}/dist"/>
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
-	<property name="engine.dist.default" value="${basedir}/../cloveretl.engine.berlios/dist/cloveretl.engine.jar"/>
-	<property name="connection.dist.default" value="${basedir}/../cloveretl.connection/dist/plugins/org.jetel.connection/cloveretl.connection.jar"/>
-	<property name="lookup.dist.default" value="${basedir}/../cloveretl.lookup/dist/plugins/org.jetel.lookup/cloveretl.lookup.jar"/>
-	
-	<!-- =========================== LIBRARIES ============================= -->
-	<property name="jdk.home" value="C:/Program Files (x86)/Java/jdk1.5.0_04"/>
-	<fileset id="tools" file="${jdk.home}/lib/tools.jar"/>
-	<fileset id="commons-logging" file="c:/Martin/install/eclipse/commons-logging.jar"/>
-	<fileset id="junit" file="c:/Martin/install/junit.jar"/>
-	
+
+	<!--load external properties-->
+	<property file="../cloveretl.engine.berlios/build.properties"/>
+
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
@@ -51,25 +45,6 @@
 			</not>
 		</condition>
 
-		<condition property="engine.dist" value="${engine.dist.default}">
-			<not>
-				<isset property="engine.dist"/>
-			</not>
-		</condition>
-
-		<condition property="connection.dist" value="${connection.dist.default}">
-			<not>
-				<isset property="connection.dist"/>
-			</not>
-		</condition>
-
-		<condition property="lookup.dist" value="${lookup.dist.default}">
-			<not>
-				<isset property="lookup.dist"/>
-			</not>
-		</condition>
-		
-			
 		<echo message="Using directory for classes: ${dir.bin}"/> 
 		<echo message="Using directory for javadoc: ${dir.doc}"/>
 		<echo message="Using directory for dist: ${dir.dist}"/>
@@ -83,11 +58,9 @@
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
-			classpath="${engine.dist};${connection.dist};${lookup.dist}">
+			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
 			<classpath>
-				<fileset refid="tools"/>			
-				<fileset refid="commons-logging"/>
-				
+				<pathelement path="${commons-logging}"/>
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
