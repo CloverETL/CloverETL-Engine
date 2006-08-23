@@ -2,9 +2,13 @@
 
 package org.jetel.interpreter.node;
 import org.jetel.interpreter.ExpParser;
+import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParserVisitor;
 public class CLVFNum2StrNode extends SimpleNode {
-  public CLVFNum2StrNode(int id) {
+  
+    public int radix=10; // default radix is 10 - decimal representation
+    
+    public CLVFNum2StrNode(int id) {
     super(id);
   }
 
@@ -17,4 +21,8 @@ public class CLVFNum2StrNode extends SimpleNode {
   public Object jjtAccept(TransformLangParserVisitor visitor, Object data) {
     return visitor.visit(this, data);
   }
+
+public void setRadix(String radix) throws ParseException {
+        this.radix = Integer.parseInt(radix);
+}
 }

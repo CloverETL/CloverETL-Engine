@@ -6,7 +6,8 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFStr2NumNode extends SimpleNode  {
    
-  public int numType=-1; //default is numeric type not set  
+  public int numType=-1; //default is numeric type not set 
+  public int radix=10; // default radix - decimal representation
   
   public CLVFStr2NumNode(int id) {
     super(id);
@@ -25,4 +26,8 @@ public class CLVFStr2NumNode extends SimpleNode  {
   public void setType(int type){
       this.numType=type;
   }
+
+public void setRadix(String radix) {
+    this.radix = Integer.parseInt(radix);
+}
 }
