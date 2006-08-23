@@ -13,6 +13,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 
@@ -49,7 +50,7 @@ public class CLVFLiteral extends SimpleNode implements TransformLangParserConsta
 			case FLOATING_POINT_LITERAL:
                 if (valueImage.endsWith(DECIMAL_DISTINCTER_LOWERCASE) || 
                         valueImage.endsWith(DECIMAL_DISTINCTER_UPPERCASE)){
-                    value=new BigDecimal(valueImage.substring(0,valueImage.length()-1));
+                    value=DecimalFactory.getDecimal(valueImage.substring(0,valueImage.length()-1));
                 }else{
                     value= new CloverDouble( Double.parseDouble(valueImage));
                 }
