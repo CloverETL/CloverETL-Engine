@@ -37,7 +37,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *@since      October 29, 2002
  *@see        org.jetel.metadata.DataFieldMetadata
  */
-public class ByteDataField extends DataField  implements Comparable{
+public class ByteDataField extends DataField implements Comparable{
 
 	// Attributes
 
@@ -116,9 +116,16 @@ public class ByteDataField extends DataField  implements Comparable{
         if(value == null) {
 		    setNull(true);
         } else if(value instanceof Byte) {
-            
+            setValue(((Byte) value).byteValue());
         } else if(value instanceof Byte[]) {
-            
+            //convert Byte[] into byte[]
+            Byte[] valueByte = (Byte[]) value;
+            byte[] result = new byte[valueByte.length];
+            int i = 0;
+            for(Byte b : valueByte) {
+                result[i++] = b.byteValue();
+            }
+            setValue(result);
 		} else {
 		    throw new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
 		}
@@ -230,7 +237,12 @@ public class ByteDataField extends DataField  implements Comparable{
 	 *@since            October 29, 2002
 	 */
 	public void fromString(String valueStr) {
+        if(valueStr == null || valueStr.length() == 0) {
+            setNull(true);
+            return;
+        }
         this.value = valueStr.getBytes();
+        setNull(false);
 	}
 
 
