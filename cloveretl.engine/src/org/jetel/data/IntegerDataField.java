@@ -315,12 +315,12 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		if (valueStr == null || valueStr.length() == 0) {
 		    setNull(true);
 			return;
-		} else {
-			try {
-				value = Integer.parseInt(valueStr);
-			} catch (Exception ex) {
-				throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
-			}
+		}
+		try {
+			value = Integer.parseInt(valueStr);
+            setNull(this.value == Integer.MIN_VALUE);
+		} catch (Exception ex) {
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
 		}
 	}
 

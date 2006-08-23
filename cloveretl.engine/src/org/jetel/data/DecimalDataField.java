@@ -155,20 +155,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(Object _value) {
 		if (_value == null) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-			}
+		    setNull(true);
 			return;
 		}
-		if (_value instanceof Decimal) {
-			setValue((Decimal) _value);
+		if (_value instanceof Numeric) {
+			setValue((Numeric) _value);
 		} else {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
+		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}
 
@@ -182,11 +175,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(double _value) {
 		if (_value == Double.NaN) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-			}
+		    setNull(true);
 			return;
 		}
 		value.setValue(_value);
@@ -203,11 +192,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(int _value) {
 		if (_value == Integer.MIN_VALUE) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-			}
+		    setNull(true);
 			return;
 		}
 		value.setValue(_value);
@@ -223,11 +208,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(long _value) {
 		if (_value == Long.MIN_VALUE) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-			}
+		    setNull(true);
 			return;
 		}
 		value.setValue(_value);
@@ -238,12 +219,8 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
     public void setValue(Numeric _value) {
-        if (_value.isNull()) {
-            if(this.metadata.isNullable()) {
-                setNull(true);
-            } else {
-                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-            }
+        if (_value == null || _value.isNull()) {
+            setNull(true);
             return;
         }
         value.setValue(_value);
@@ -355,18 +332,14 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void fromString(String valueStr) {
 		if(valueStr == null || valueStr.equals("")) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)", valueStr);
+		    setNull(true);
 			return;
-		} else {
-			try {
-				value.fromString(valueStr, numberFormat);
-				setNull(value.isNaN());
-			} catch (Exception ex) {
-				throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
-			}
+		}
+		try {
+			value.fromString(valueStr, numberFormat);
+			setNull(value.isNaN());
+		} catch (Exception ex) {
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
 		}
 	}
 

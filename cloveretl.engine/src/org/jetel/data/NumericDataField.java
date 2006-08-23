@@ -168,21 +168,14 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(Object _value) {
 		if (_value == null) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
-			}
+		    setNull(true);
 			return;
 		}
 		if (_value instanceof Double) {
 			value = ((Double) _value).doubleValue();
-			if (value!=Double.NaN) setNull(false); else setNull(true);
+            setNull(value == Double.NaN);
 		} else {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
+		    throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
 		}
 	}
 
@@ -196,11 +189,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(double value) {
 		if (value == Double.NaN) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
-			}
+		    setNull(true);
 			return;
 		}
 		this.value = value;
@@ -217,11 +206,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(int value) {
 		if (value == Integer.MIN_VALUE) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
-			}
+		    setNull(true);
 			return;
 		}
 		this.value = value;
@@ -237,14 +222,10 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setValue(long value) {
 		if (value == Long.MIN_VALUE) {
-			if(this.metadata.isNullable()) {
-				setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
-			}
+		    setNull(true);
 			return;
 		}
-		this.value = (double)value;
+		this.value = (double) value;
 		setNull(false);
 	}
 
@@ -252,12 +233,8 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
     public void setValue(Numeric _value) {
-        if (_value.isNull()) {
-            if(this.metadata.isNullable()) {
-                setNull(true);
-            } else {
-                throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)");
-            }
+        if (_value == null || _value.isNull()) {
+            setNull(true);
             return;
         }
         this.value = _value.getDouble();
@@ -394,24 +371,19 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 *@since            March 28, 2002
 	 */
 	public void fromString(String valueStr) {
-		if(valueStr == null || valueStr.equals("")) {
-			if(this.metadata.isNullable()) {
-				value = Double.NaN;
-				super.setNull(true);
-			} else
-				throw new BadDataFormatException(getMetadata().getName()+" field can not be set to null!(nullable=false)",valueStr);
+		if(valueStr == null || valueStr.length() == 0) {
+		    setNull(true);
 			return;
-		} else {
-			try {
-				if (numberFormat != null) {
-					parsePosition.setIndex(0);
-					value = numberFormat.parse(valueStr, parsePosition).doubleValue();
-				} else {
-					value = Double.parseDouble(valueStr);
-				}
-			} catch (Exception ex) {
-				throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr,valueStr);
+		}
+		try {
+			if (numberFormat != null) {
+				value = numberFormat.parse(valueStr).doubleValue();
+			} else {
+				value = Double.parseDouble(valueStr);
 			}
+            setNull(value == Double.NaN);
+		} catch (Exception ex) {
+			throw new BadDataFormatException(getMetadata().getName()+" cannot be set to " + valueStr,valueStr);
 		}
 	}
 

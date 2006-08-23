@@ -169,27 +169,24 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since                              April 23, 2002
 	 */
 	public void setValue(Object _value) throws BadDataFormatException {
-		if ( _value instanceof Date ) {
-			if (value==null){
+        if(_value == null) {
+            setNull(true);
+        } else if(_value instanceof Date) {
+			if (value == null) {
 				value = new Date(((Date) _value).getTime());
-			}else{
+			} else {
 				value.setTime(((Date) _value).getTime());
 			}
 			setNull(false);
-		}else if (_value instanceof Timestamp){
-		    if (value==null){
-				value = new Date(((Timestamp)_value).getTime());
-		    }else{
-		    	value.setTime(((Timestamp)_value).getTime());
+		} else if (_value instanceof Timestamp) {
+		    if (value == null){
+				value = new Date(((Timestamp) _value).getTime());
+		    } else {
+		    	value.setTime(((Timestamp) _value).getTime());
 		    }
-		    	setNull(false);
-		}else {
-			if (this.metadata.isNullable()) {
-				value = null;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
-			}
+		    setNull(false);
+		} else {
+		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}
 	
@@ -239,7 +236,7 @@ public class DateDataField extends DataField implements Comparable{
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
 		if (isNull) {
-			setValue(null);
+			value = null;
 		}
 	}
 
@@ -310,13 +307,8 @@ public class DateDataField extends DataField implements Comparable{
 	 */
 	public void fromString(String _valueStr) {
 		//parsePosition.setIndex(0);
-		if (_valueStr == null || _valueStr.equals("")) {
-			if (this.metadata.isNullable()) {
-				value = null;
-				super.setNull(true);
-			} else {
-				throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null!(nullable=false)", _valueStr);
-			}
+		if (_valueStr == null || _valueStr.length() == 0) {
+		    setNull(true);
 			return;
 		}
 		try {
@@ -325,9 +317,8 @@ public class DateDataField extends DataField implements Comparable{
 			} else {
 				value = SimpleDateFormat.getDateInstance().parse(_valueStr);
 			}
-			super.setNull(false);
+			setNull(false);
 		} catch (ParseException e) {
-			super.setNull(true);
 			throw new BadDataFormatException("not a Date", _valueStr);
 		}
 
