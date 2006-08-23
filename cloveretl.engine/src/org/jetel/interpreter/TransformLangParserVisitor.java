@@ -50,7 +50,6 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFIsNullNode node, Object data);
   public Object visit(CLVFNVLNode node, Object data);
   public Object visit(CLVFReplaceNode node, Object data);
-  public Object visit(CLVFNum2StrNode node, Object data);
   public Object visit(CLVFIffNode node, Object data);
   public Object visit(CLVFSqrtNode node, Object data);
   public Object visit(CLVFLogNode node, Object data);
@@ -70,4 +69,5 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFStr2DateNode node, Object data);
   public Object visit(CLVFDate2NumNode node, Object data);
   public Object visit(CLVFStr2NumNode node, Object data);
+  public Object visit(CLVFNum2StrNode node, Object data);
 }

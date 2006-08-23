@@ -16,47 +16,50 @@ public interface TransformLangParserConstants {
   int STRING_LITERAL = 21;
   int QUOTED_STRING = 22;
   int DQUOTED_STRING = 23;
-  int BOOLEAN_LITERAL = 24;
-  int TRUE = 25;
-  int FALSE = 26;
-  int DATE_LITERAL = 27;
-  int DATETIME_LITERAL = 28;
-  int SEMICOLON = 29;
-  int NULL_LITERAL = 30;
-  int OR = 31;
-  int AND = 32;
-  int NOT = 33;
-  int EQUAL = 34;
-  int NON_EQUAL = 35;
-  int LESS_THAN = 36;
-  int LESS_THAN_EQUAL = 37;
-  int GREATER_THAN = 38;
-  int GREATER_THAN_EQUAL = 39;
-  int REGEX_EQUAL = 40;
-  int CMPOPERATOR = 41;
-  int MINUS = 42;
-  int PLUS = 43;
-  int MULTIPLY = 44;
-  int DIVIDE = 45;
-  int MODULO = 46;
-  int PLUS_PLUS = 47;
-  int MINUS_MINUS = 48;
-  int FIELD_ID = 49;
-  int REC_NAME_FIELD_ID = 50;
-  int REC_NUM_FIELD_ID = 51;
-  int GLOBAL_PARAMETER_ID = 52;
-  int OPEN_PAR = 53;
-  int CLOSE_PAR = 54;
-  int INT_VAR = 55;
-  int LONG_VAR = 56;
-  int DATE_VAR = 57;
-  int DOUBLE_VAR = 58;
-  int DECIMAL_VAR = 59;
-  int BOOLEAN_VAR = 60;
-  int STRING_VAR = 61;
-  int DATE_FIELD_LITERAL = 109;
-  int IDENTIFIER = 110;
-  int ERROR = 111;
+  int UNTERMINATED_STRING_LITERAL = 24;
+  int UNTERMINATED_QUOTED_STRING = 25;
+  int UNTERMINATED_DQUOTED_STRING = 26;
+  int BOOLEAN_LITERAL = 27;
+  int TRUE = 28;
+  int FALSE = 29;
+  int DATE_LITERAL = 30;
+  int DATETIME_LITERAL = 31;
+  int SEMICOLON = 32;
+  int NULL_LITERAL = 33;
+  int OR = 34;
+  int AND = 35;
+  int NOT = 36;
+  int EQUAL = 37;
+  int NON_EQUAL = 38;
+  int LESS_THAN = 39;
+  int LESS_THAN_EQUAL = 40;
+  int GREATER_THAN = 41;
+  int GREATER_THAN_EQUAL = 42;
+  int REGEX_EQUAL = 43;
+  int CMPOPERATOR = 44;
+  int MINUS = 45;
+  int PLUS = 46;
+  int MULTIPLY = 47;
+  int DIVIDE = 48;
+  int MODULO = 49;
+  int PLUS_PLUS = 50;
+  int MINUS_MINUS = 51;
+  int FIELD_ID = 52;
+  int REC_NAME_FIELD_ID = 53;
+  int REC_NUM_FIELD_ID = 54;
+  int GLOBAL_PARAMETER_ID = 55;
+  int OPEN_PAR = 56;
+  int CLOSE_PAR = 57;
+  int INT_VAR = 58;
+  int LONG_VAR = 59;
+  int DATE_VAR = 60;
+  int DOUBLE_VAR = 61;
+  int DECIMAL_VAR = 62;
+  int BOOLEAN_VAR = 63;
+  int STRING_VAR = 64;
+  int DATE_FIELD_LITERAL = 112;
+  int IDENTIFIER = 113;
+  int ERROR = 114;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -87,6 +90,9 @@ public interface TransformLangParserConstants {
     "<STRING_LITERAL>",
     "<QUOTED_STRING>",
     "<DQUOTED_STRING>",
+    "<UNTERMINATED_STRING_LITERAL>",
+    "<UNTERMINATED_QUOTED_STRING>",
+    "<UNTERMINATED_DQUOTED_STRING>",
     "<BOOLEAN_LITERAL>",
     "\"true\"",
     "\"false\"",
@@ -152,7 +158,6 @@ public interface TransformLangParserConstants {
     "\"isnull\"",
     "\"nvl\"",
     "\"replace\"",
-    "\"num2str\"",
     "\"iif\"",
     "\"sqrt\"",
     "\"log\"",
@@ -172,6 +177,7 @@ public interface TransformLangParserConstants {
     "\"str2date\"",
     "\"date2num\"",
     "\"str2num\"",
+    "\"num2str\"",
     "<DATE_FIELD_LITERAL>",
     "<IDENTIFIER>",
     "<ERROR>",
