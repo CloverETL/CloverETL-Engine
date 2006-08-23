@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
@@ -46,6 +47,28 @@ public class FileUtils {
 	public static String getFullPath(String fileURL) {
 		return fileURL;
 	}
+    
+    /**
+     * Creates URL object based on specified fileURL string. Handles
+     * situations when <code>fileURL</code> contains only path to file
+     * <i>(without "file:" string)</i>. 
+     * 
+     * @param fileURL   string containing file URL
+     * @return  URL object or NULL if object can't be created (due to Malformed URL)
+     */
+    public static URL getFileURL(String fileURL){
+        URL url;
+        try{
+            url = new URL(fileURL);
+        }catch(MalformedURLException ex){
+            try{
+                url = new URL("file:"+fileURL);
+            }catch(MalformedURLException ex1){
+                return null;
+            }
+        }
+        return url;
+    }
 
 
 	/**
