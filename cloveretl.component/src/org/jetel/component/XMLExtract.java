@@ -912,10 +912,10 @@ public class XMLExtract extends Node
 				}
 			}
 
-			if (fieldMetadata.getDefaultValue() != null)
+			if (fieldMetadata.getDefaultValueStr() != null)
 			{
 				// Default all default values to their given defaults
-				field.fromString(fieldMetadata.getDefaultValue());
+				field.fromString(fieldMetadata.getDefaultValueStr());
 			}
 		}
 	}
