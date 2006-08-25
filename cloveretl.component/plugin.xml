@@ -23,13 +23,13 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DelimitedDataReaderNIO"/>
-		<parameter id="type" value="DELIMITED_DATA_READER_NIO"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataReader"/>
+		<parameter id="type" value="DELIMITED_DATA_READER"/>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="className" value="org.jetel.component.DelimitedDataWriterNIO"/>
-		<parameter id="type" value="DELIMITED_DATA_WRITER_NIO"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataWriter"/>
+		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
 	</extension>
 
 	<extension point-id="component">

@@ -24,7 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DelimitedDataFormatterNIO;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -58,7 +58,7 @@ import org.w3c.dom.Element;
  *  <br>  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_WRITER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
@@ -69,12 +69,12 @@ import org.w3c.dom.Element;
  *  </table>  
  *
  * <h4>Example:</h4>
- * <pre>&lt;Node type="DELIMITED_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
+ * <pre>&lt;Node type="DELIMITED_DATA_WRITER" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
  * 
  * @author     dpavlis10000
  * @since    April 4, 2002
  */
-public class DelimitedDataWriterNIO extends Node {
+public class DelimitedDataWriter extends Node {
 	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
@@ -85,10 +85,10 @@ public class DelimitedDataWriterNIO extends Node {
 	
 	private String fileURL;
 	private boolean appendData;
-	private DelimitedDataFormatterNIO formatter;
+	private DelimitedDataFormatter formatter;
 	private boolean outputFieldNames=false;
 
-	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER_NIO";
+	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
 
@@ -100,18 +100,18 @@ public class DelimitedDataWriterNIO extends Node {
 	 * @param  appendData  Description of Parameter
 	 * @since              April 16, 2002
 	 */
-	public DelimitedDataWriterNIO(String id, String fileURL, boolean appendData) {
+	public DelimitedDataWriter(String id, String fileURL, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatter = new DelimitedDataFormatterNIO();
+		formatter = new DelimitedDataFormatter();
 	}
 
-	public DelimitedDataWriterNIO(String id, String fileURL, String charset, boolean appendData) {
+	public DelimitedDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatter = new DelimitedDataFormatterNIO(charset);
+		formatter = new DelimitedDataFormatter(charset);
 	}
 
 
@@ -220,16 +220,16 @@ public class DelimitedDataWriterNIO extends Node {
 	 */
     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
-		DelimitedDataWriterNIO aDelimitedDataWriterNIO = null;
+		DelimitedDataWriter aDelimitedDataWriterNIO = null;
 		
 		try{
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aDelimitedDataWriterNIO = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
 										xattribs.getString(XML_CHARSET_ATTRIBUTE),
 										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}else{
-				aDelimitedDataWriterNIO = new DelimitedDataWriterNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aDelimitedDataWriterNIO = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 										xattribs.getString(XML_FILEURL_ATTRIBUTE),
 										xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			}
