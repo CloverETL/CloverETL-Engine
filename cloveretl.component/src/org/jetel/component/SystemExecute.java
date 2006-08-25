@@ -19,6 +19,8 @@
 */
 package org.jetel.component;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -124,6 +126,19 @@ public class SystemExecute extends Node{
 		this.command=command;
 		this.errorLinesNumber=errorLinesNumber;
 	}
+	
+	private boolean kill(Thread thread, long millisec){
+		if (!thread.isAlive()){
+			return true;
+		}
+		thread.interrupt();
+		try {
+			thread.join(millisec);
+		}catch(InterruptedException ex){
+			return true;
+		}
+		return false;
+	}
 
 	public void run() {
 		resultCode = Node.RESULT_OK;
@@ -165,21 +180,21 @@ public class SystemExecute extends Node{
 		
 		try{
 			Process process=r.exec(command);
-			OutputStream process_in=process.getOutputStream();
-			InputStream process_out=process.getInputStream();
-			InputStream process_err=process.getErrorStream();
+			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
+			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
+			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
 			// If there is input port read records and write them to input stream of the process
 			GetData getData=null; 
 			if (inPort!=null) {
                 formatter.open(process_in,getInputPort(INPUT_PORT).getMetadata());
-                getData=new GetData(inPort, in_record, formatter);
+                getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 				getData.start();
 			}
 			//If there is output port read output from process and send it to output ports
 			SendData sendData=null;
 			if (outPort!=null){
                 parser.open(process_out, getOutputPort(OUTPUT_PORT).getMetadata());
-                sendData=new SendData(outPort,out_record,parser);
+                sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 				//send all out_records to output ports
 				sendData.start();
 			}
@@ -197,29 +212,49 @@ public class SystemExecute extends Node{
 			err.close();
 			process_err.close();
 			resultMsg=errmes.toString();
-            exitValue=process.waitFor();
-            if (getData!=null || sendData!=null){
-            	boolean stoped=false;
-				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) {
-					getData.stop_it();
-					stoped=true;
+            
+			
+			// wait for executed process to finish
+			// wait for SendData and/or GetData threads to finish work
+			try{
+				exitValue=process.waitFor();
+				if (sendData!=null) sendData.join(1000);
+				if (getData!=null) getData.join(1000);
+				
+			}catch(InterruptedException ex){
+				logger.error("InterruptedException in "+this.getId(),ex);
+				process.destroy();
+				if (getData!=null) {
+					if (!kill(getData,1000)){
+						throw new RuntimeException("Can't kill "+getData.getName());
+					}
 				}
-				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) {
-					sendData.stop_it();
-					stoped=true;
+				if (sendData!=null) {
+					if (!kill(sendData,1000)){
+						throw new RuntimeException("Can't kill "+sendData.getName());
+					}
 				}
-				if (stoped) Thread.sleep(10000);
-				if (getData!=null && getData.getResultCode()==Node.RESULT_RUNNING) getData.interrupt();
-				if (sendData!=null && sendData.getResultCode()==Node.RESULT_RUNNING) sendData.interrupt();
-				if (getData!=null && getData.getResultCode()!=Node.RESULT_OK) {
-					resultMsg = resultMsg + "\n" + getData.getResultMsg();
+			}
+			
+			if (getData!=null){
+				if (!kill(getData,1000)){
+					throw new RuntimeException("Can't kill "+getData.getName());
+				}
+				if (getData.getResultCode()!=Node.RESULT_OK) {
 					resultCode = Node.RESULT_ERROR;
+					resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
 				}
-				if (sendData!=null && sendData.getResultCode()!=Node.RESULT_OK) {
-					resultMsg = resultMsg + "\n" + sendData.getResultMsg();
+			}
+			
+			if (sendData!=null){
+				if (!kill(sendData,1000)){
+					throw new RuntimeException("Can't kill "+sendData.getName());
+				}
+				if (sendData.getResultCode()!=Node.RESULT_OK){
 					resultCode = Node.RESULT_ERROR;
+					resultMsg = sendData.getResultMsg() + "\n" + sendData.getResultException();
 				}
-	         }
+			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
@@ -237,9 +272,6 @@ public class SystemExecute extends Node{
 		}
 		if (exitValue!=0){
 			resultCode = Node.RESULT_ERROR;
-		}
-		if (resultCode==Node.RESULT_OK){
-			resultMsg = "OK";
 		}
 	}
 
@@ -282,14 +314,17 @@ public class SystemExecute extends Node{
 		String resultMsg=null;
 		int resultCode=Node.RESULT_OK;
         volatile boolean runIt;
+        Thread parentThread;
+		Throwable resultException;
 	
 		
-		GetData(InputPort inPort,DataRecord in_record,Formatter formatter){
+		GetData(Thread parentThrad,InputPort inPort,DataRecord in_record,Formatter formatter){
 			super();
 			this.in_record=in_record;
 			this.inPort=inPort;
 			this.formatter=formatter;
 			runIt=true;
+			this.parentThread = parentThrad;
 		}
 		
 		public void stop_it(){
@@ -297,21 +332,39 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-           resultCode=Node.RESULT_RUNNING;
 			try{
-				while ((( in_record=inPort.readRecord(in_record))!= null ) && runIt) {
+				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
 					formatter.write(in_record);
                     SynchronizeUtils.cloverYield();
 				}
 				formatter.close();
 			}catch(IOException ex){
+				logger.error("IOError in sysexec GetData");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
-			}catch(InterruptedException ex){
+				resultException = ex;
+				parentThread.interrupt();
+				return;
+			}catch (InterruptedException ex){
+				logger.error("InterruptedError in sysexec GetData");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
+				resultException = ex;
+				parentThread.interrupt();
+				return;
+			}catch(Exception ex){
+				logger.error("Error in sysexec GetData");
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+				resultException = ex;
+				parentThread.interrupt();
+				return;
 			}
-           resultCode=Node.RESULT_OK;
+           if (runIt){
+        	   resultCode=Node.RESULT_OK;
+           }else{
+        	   resultCode = Node.RESULT_ABORTED;
+           }
 		}
 
 		public int getResultCode() {
@@ -321,6 +374,10 @@ public class SystemExecute extends Node{
 		public String getResultMsg() {
 			return resultMsg;
 		}
+
+		public Throwable getResultException() {
+			return resultException;
+		}
 	}
 	
 	private static class SendData extends Thread {
@@ -329,15 +386,18 @@ public class SystemExecute extends Node{
 		OutputPort outPort;
 		Parser parser;
 		String resultMsg=null;
-		int resultCode=Node.RESULT_OK;
+		int resultCode;
 		volatile boolean runIt;
+		Thread parentThread;
+		Throwable resultException;
 		
-		SendData(OutputPort outPort,DataRecord out_record,Parser parser){
-			super();
+		SendData(Thread parentThread,OutputPort outPort,DataRecord out_record,Parser parser){
+			super(parentThread.getName()+".SendData");
 			this.out_record=out_record;
 			this.outPort=outPort;
 			this.parser=parser;
 			this.runIt=true;
+			this.parentThread = parentThread;
 		}
 		
 		public void stop_it(){
@@ -347,19 +407,38 @@ public class SystemExecute extends Node{
 		public void run() {
             resultCode=Node.RESULT_RUNNING;
 			try{
-				while (((out_record = parser.getNext(out_record)) != null) && runIt) {
+				while (runIt && ((out_record = parser.getNext(out_record))!= null) ) {
 					//broadcast the record to all connected Edges
 					outPort.writeRecord(out_record);
 					SynchronizeUtils.cloverYield();
 				}
 			}catch(IOException ex){
+				logger.error("IOError in sysexec SendData");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
+				resultException = ex;
+				parentThread.interrupt();
+				return;
+			}catch (InterruptedException ex){
+				logger.error("InterruptedError in sysexec SendData");
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+				resultException = ex;
+				parentThread.interrupt();
+				return;
 			}catch(Exception ex){
+				logger.error("Error in sysexec SendData");
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
+				resultException = ex;
+				parentThread.interrupt();
+				return;
 			}
-            resultCode=Node.RESULT_OK;
+           if (runIt){
+        	   resultCode=Node.RESULT_OK;
+           }else{
+        	   resultCode = Node.RESULT_ABORTED;
+           }
 		}
 
         /**
@@ -371,6 +450,10 @@ public class SystemExecute extends Node{
 
 		public String getResultMsg() {
 			return resultMsg;
+		}
+
+		public Throwable getResultException() {
+			return resultException;
 		}
 	}
 	
