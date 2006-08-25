@@ -30,7 +30,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
@@ -208,7 +208,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             
             // which data parser to use
             if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
-                parser = new DelimitedDataParserNIO(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+                parser = new DelimitedDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             } else {
                 parser = new FixLenDataParser2(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             }
