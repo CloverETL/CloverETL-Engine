@@ -24,7 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -58,7 +58,7 @@ import org.w3c.dom.Element;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_READER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
@@ -68,17 +68,17 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node type="DELIMITED_DATA_READER_NIO" id="InputFile" fileURL="/tmp/mydata.dat" charset="ISO-8859-15"/&gt;</pre>
+ *  <pre>&lt;Node type="DELIMITED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" charset="ISO-8859-15"/&gt;</pre>
  *
  * @author      dpavlis
  * @since       April 4, 2002
  * @revision    $Revision$
  * @see         org.jetel.data.parser.DelimitedDataParser
  */
-public class DelimitedDataReaderNIO extends Node {
+public class DelimitedDataReader extends Node {
 
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "DELIMITED_DATA_READER_NIO";
+	public final static String COMPONENT_TYPE = "DELIMITED_DATA_READER";
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
@@ -89,7 +89,7 @@ public class DelimitedDataReaderNIO extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
-	private DelimitedDataParserNIO parser;
+	private DelimitedDataParser parser;
     private int skipRows=-1; // do not skip rows by default
 
 
@@ -99,10 +99,10 @@ public class DelimitedDataReaderNIO extends Node {
 	 * @param  id       Description of the Parameter
 	 * @param  fileURL  Description of the Parameter
 	 */
-	public DelimitedDataReaderNIO(String id, String fileURL) {
+	public DelimitedDataReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParserNIO();
+		parser = new DelimitedDataParser();
 	}
 
 
@@ -113,10 +113,10 @@ public class DelimitedDataReaderNIO extends Node {
 	 * @param  fileURL  Description of the Parameter
 	 * @param  charset  Description of the Parameter
 	 */
-	public DelimitedDataReaderNIO(String id, String fileURL, String charset) {
+	public DelimitedDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new DelimitedDataParserNIO(charset);
+		parser = new DelimitedDataParser(charset);
 	}
 
 
@@ -230,16 +230,16 @@ public class DelimitedDataReaderNIO extends Node {
 	 * @since           May 21, 2002
 	 */
     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-		DelimitedDataReaderNIO aDelimitedDataReaderNIO = null;
+		DelimitedDataReader aDelimitedDataReaderNIO = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
-				aDelimitedDataReaderNIO = new DelimitedDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
