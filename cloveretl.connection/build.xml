@@ -13,10 +13,6 @@
 	<!--load external properties-->
 	<property file="../cloveretl.engine.berlios/build.properties"/>
 
-	<!-- =========================== LIBRARIES ============================= -->
-	<fileset id="tools" file="${jdk.home}/lib/tools.jar"/>
-	<fileset id="commons-logging" file="c:/Martin/install/eclipse/commons-logging.jar"/>
-	
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
