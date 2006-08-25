@@ -21,9 +21,7 @@
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataFormatter.java
 
 package org.jetel.data.formatter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -45,7 +43,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since    July 25, 2002
  * @see        DataFormatter
  */
-public class DelimitedDataFormatterNIO implements Formatter {
+public class DelimitedDataFormatter implements Formatter {
 	
     private final static String DELIMITER_SYSTEM_PROPERTY_NAME="line.separator";
     private String charSet = null;
@@ -66,7 +64,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 
 	// Operations
 	
-	public DelimitedDataFormatterNIO(){
+	public DelimitedDataFormatter() {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
@@ -74,7 +72,7 @@ public class DelimitedDataFormatterNIO implements Formatter {
 		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
 	}
 	
-	public DelimitedDataFormatterNIO(String charEncoder){
+	public DelimitedDataFormatter(String charEncoder) {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = charEncoder;

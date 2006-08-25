@@ -20,17 +20,24 @@
 // FILE: c:/projects/jetel/org/jetel/data/DelimitedDataParser.java
 
 package org.jetel.data.parser;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.charset.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.*;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
 
 /**
@@ -48,7 +55,7 @@ import org.jetel.util.StringUtils;
  *@see 	      org.jetel.data.Defaults
  * @revision    $Revision$
  */
-public class DelimitedDataParserNIO implements Parser {
+public class DelimitedDataParser implements Parser {
 	private String charSet = null;
 	private BadDataFormatExceptionHandler handlerBDFE;
 	private ByteBuffer dataBuffer;
@@ -83,7 +90,7 @@ public class DelimitedDataParserNIO implements Parser {
 	 *
 	 *@since    March 28, 2002
 	 */
-	public DelimitedDataParserNIO() {
+	public DelimitedDataParser() {
 		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
 	}
 
@@ -95,7 +102,7 @@ public class DelimitedDataParserNIO implements Parser {
 	 *      UNICODE chars
 	 *@since                  March 28, 2002
 	 */
-	public DelimitedDataParserNIO(String charsetDecoder) {
+	public DelimitedDataParser(String charsetDecoder) {
 		this.charSet = charsetDecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
