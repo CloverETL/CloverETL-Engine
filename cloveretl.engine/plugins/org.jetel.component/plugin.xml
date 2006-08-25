@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.component/bin"/>
+		<library path="../../../cloveretl.component.public/bin"/>
    	</runtime> 
 
 	<requires>
@@ -13,13 +13,23 @@
 	</requires>
 
 	<extension point-id="component">
-		<parameter id="type" value="DELIMITED_DATA_READER_NIO"/>
-		<parameter id="className" value="org.jetel.component.DelimitedDataReaderNIO"/>
+		<parameter id="className" value="org.jetel.component.DataReader"/>
+		<parameter id="type" value="DATA_READER"/>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="DELIMITED_DATA_WRITER_NIO"/>
-		<parameter id="className" value="org.jetel.component.DelimitedDataWriterNIO"/>
+		<parameter id="className" value="org.jetel.component.DataWriter"/>
+		<parameter id="type" value="DATA_WRITER"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="DELIMITED_DATA_READER"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataReader"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="DELIMITED_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.DelimitedDataWriter"/>
 	</extension>
 
 	<extension point-id="component">
