@@ -57,7 +57,7 @@ import org.w3c.dom.Element;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_WRITER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
@@ -71,16 +71,16 @@ import org.w3c.dom.Element;
  *  </table>
  *
  * <h4>Example:</h4>
- * <pre>&lt;Node type="FIXLEN_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
+ * <pre>&lt;Node type="FIXLEN_DATA_WRITER" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
  * 
- * <pre>&lt;Node type="FIXLEN_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" OneRecordPerLine="true" LineSeparator="\r\n" /&gt;</pre>
+ * <pre>&lt;Node type="FIXLEN_DATA_WRITER" id="Writer" fileURL="/tmp/transfor.out" append="true" OneRecordPerLine="true" LineSeparator="\r\n" /&gt;</pre>
  *
  *
  * @author      dpavlis
  * @since       April 4, 2002
  * @revision    $Revision$
  */
-public class FixLenDataWriterNIO extends Node {
+public class FixLenDataWriter extends Node {
 	private static final String XML_LINESEPARATOR_ATTRIBUTE = "LineSeparator";
 	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
@@ -111,7 +111,7 @@ public class FixLenDataWriterNIO extends Node {
 	 * @param  appendData  Description of Parameter
 	 * @since              April 16, 2002
 	 */
-	public FixLenDataWriterNIO(String id, String fileURL, boolean appendData) {
+	public FixLenDataWriter(String id, String fileURL, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
@@ -127,7 +127,7 @@ public class FixLenDataWriterNIO extends Node {
 	 * @param  charset     Description of the Parameter
 	 * @param  appendData  Description of the Parameter
 	 */
-	public FixLenDataWriterNIO(String id, String fileURL, String charset, boolean appendData) {
+	public FixLenDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
@@ -253,20 +253,20 @@ public class FixLenDataWriterNIO extends Node {
 	 * @since           May 21, 2002
 	 */
     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-		FixLenDataWriterNIO aFixLenDataWriterNIO = null;
+		FixLenDataWriter aFixLenDataWriterNIO = null;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
 		
 		try{
 		
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
-				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
+				aFixLenDataWriterNIO = new FixLenDataWriter(
 						xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE),
 						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 			}else{
-				aFixLenDataWriterNIO = new FixLenDataWriterNIO(
+				aFixLenDataWriterNIO = new FixLenDataWriter(
 						xattribs.getString(XML_ID_ATTRIBUTE), 
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));

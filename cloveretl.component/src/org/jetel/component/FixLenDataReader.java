@@ -64,7 +64,7 @@ import org.w3c.dom.Element;
  *  <br>
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_READER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
  *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
@@ -81,7 +81,7 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node type="FIXED_DATA_READER_NIO" id="InputFile" fileURL="/tmp/mydata.dat" /&gt;</pre>
+ *  <pre>&lt;Node type="FIXED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" /&gt;</pre>
  *
  * @author      dpavlis, maciorowski
  * @since       April 4, 2002
@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  * @see         org.jetel.data.parser.FixLenDataParser, org.jetel.data.FixLenDataParser2
  */
 
-public class FixLenDataReaderNIO extends Node {
+public class FixLenDataReader extends Node {
 
 	private static final String XML_LINESEPARATORSIZE_ATTRIBUTE = "LineSeparatorSize";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "SkipLeadingBlanks";
@@ -100,7 +100,7 @@ public class FixLenDataReaderNIO extends Node {
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER_NIO";
+	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER";
 
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
@@ -116,7 +116,7 @@ public class FixLenDataReaderNIO extends Node {
 	 * @param  id       Description of the Parameter
 	 * @param  fileURL  Description of the Parameter
 	 */
-	public FixLenDataReaderNIO(String id, String fileURL) {
+	public FixLenDataReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
 		parser = new FixLenDataParser2();
@@ -130,7 +130,7 @@ public class FixLenDataReaderNIO extends Node {
 	 * @param  fileURL  Description of the Parameter
 	 * @param  charset  Description of the Parameter
 	 */
-	public FixLenDataReaderNIO(String id, String fileURL, String charset) {
+	public FixLenDataReader(String id, String fileURL, String charset) {
 		super(id);
 		this.fileURL = fileURL;
 		parser = new FixLenDataParser2(charset);
@@ -261,16 +261,16 @@ public class FixLenDataReaderNIO extends Node {
 	 * @since           May 21, 2002
 	 */
     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
-		FixLenDataReaderNIO aFixLenDataReaderNIO = null;
+		FixLenDataReader aFixLenDataReaderNIO = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
 		try {
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			} else {
-				aFixLenDataReaderNIO = new FixLenDataReaderNIO(xattribs.getString(XML_ID_ATTRIBUTE),
+				aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
