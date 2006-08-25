@@ -23,17 +23,15 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DelimitedDataFormatterNIO;
+import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
-import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
@@ -151,7 +149,7 @@ public class SystemExecute extends Node{
 			in_record = new DataRecord(meta);
 			in_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				formatter=new DelimitedDataFormatterNIO();
+				formatter=new DelimitedDataFormatter();
 			}else {
 				formatter=new FixLenDataFormatter();
 			}
@@ -167,7 +165,7 @@ public class SystemExecute extends Node{
 			out_record= new DataRecord(meta);
 			out_record.init();
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				parser=new DelimitedDataParserNIO();
+				parser=new DelimitedDataParser();
 			}else {
 				parser=new FixLenDataParser();
 			}
