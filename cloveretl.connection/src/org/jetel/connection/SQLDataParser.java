@@ -180,7 +180,7 @@ public class SQLDataParser implements Parser {
 
 		} catch (BadDataFormatException bdfe) {
 			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum-1,bdfe.getOffendingFormat());
+				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum-1,bdfe.getOffendingValue());
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
