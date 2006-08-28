@@ -28,6 +28,10 @@ public class BadDataFormatException extends RuntimeException {
     
 	private String offendingValue;
     
+    private int recordNumber;
+    
+    private int fieldNumber;
+    
 	public BadDataFormatException() {
 		super();
 	}
@@ -61,5 +65,21 @@ public class BadDataFormatException extends RuntimeException {
     @Override
     public String getMessage() {
         return super.getMessage() + " : " + offendingValue;
+    }
+
+    public int getFieldNumber() {
+        return fieldNumber;
+    }
+
+    public void setFieldNumber(int fieldNumber) {
+        this.fieldNumber = fieldNumber;
+    }
+
+    public int getRecordNumber() {
+        return recordNumber;
+    }
+
+    public void setRecordNumber(int recordNumber) {
+        this.recordNumber = recordNumber;
     }
 }

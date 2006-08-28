@@ -10,7 +10,9 @@ public class AhoCorasick {
 	boolean failureFunctionDone = false;
 	NodeTrie rootTrie;
 	NodeTrie currentNode;
-	
+	int minPattern;
+    int maxPattern;
+    
 	/**
 	 * Constructor of Aho-Corasick algorithm.
 	 * @param patterns searched patterns
@@ -70,6 +72,21 @@ public class AhoCorasick {
 				q.patterns.addAll(r.patterns);
 			}
 		}
+        
+        //create patternsFinal (bit array) from patterns set - for fast isPattern() method
+        currentNodes = new ArrayList();
+        currentNodes.add(rootTrie);
+        do {
+            for(Iterator i = currentNodes.iterator(); i.hasNext(); ) {
+                qa = ((NodeTrie) i.next());
+                qa.patternsFinal = new boolean[maxPattern - minPattern + 1];
+                for(Iterator it = qa.patterns.iterator(); it.hasNext();) {
+                    MyInt myInt = (MyInt) it.next();
+                    qa.patternsFinal[myInt.value - minPattern] = true;
+                }
+            }
+        } while(!(currentNodes = getNextLevelNode(currentNodes)).isEmpty());
+        
 	}
 	
 	/**
@@ -92,6 +109,8 @@ public class AhoCorasick {
 			}
 			iterator = iterator.children[s.charAt(i)]; 
 		}
+        if(idx < minPattern) minPattern = idx;
+        if(idx > maxPattern) maxPattern = idx;
 		iterator.patterns.add(new MyInt(idx));
 	}
 
@@ -110,7 +129,7 @@ public class AhoCorasick {
 	MyInt myInt = new MyInt();
 	public boolean isPattern(int idx) {
 		myInt.value = idx;
-		return currentNode.patterns.contains(myInt);
+		return currentNode.patternsFinal[idx - minPattern];
 	}
 	
 	public int getDepth() {
@@ -134,6 +153,7 @@ public class AhoCorasick {
 		char transition;
 		NodeTrie[] children;
 		Set patterns;
+        boolean[] patternsFinal;
 		NodeTrie fail;
 		
 		/**
