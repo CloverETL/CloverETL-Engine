@@ -21,14 +21,18 @@
 package org.jetel.component;
 
 //import org.w3c.dom.Node;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.ConfigurationException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
@@ -112,6 +116,8 @@ public class ComponentFactory {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
+        } catch(InvocationTargetException e) {
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
 		} catch(Exception ex) {
 			throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
 		}
