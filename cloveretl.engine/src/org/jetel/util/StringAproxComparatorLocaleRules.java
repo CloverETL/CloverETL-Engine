@@ -27,7 +27,7 @@ import java.util.Map;
  * Rules for given locale are stored in array of Strings: 
  * 	each String in the array have to be like "c1=c2=..=cn", where c1,c2,...,cn are chars which will be considered as equivalent (no white space is allowed)
  * After definition new rules don't forget to put it in the HashMap rules
- * @author avackova
+ * @author avackova, JavlinConsulting,s.r.o.
  *
  */
 public class StringAproxComparatorLocaleRules {

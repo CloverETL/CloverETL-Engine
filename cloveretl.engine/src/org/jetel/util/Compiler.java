@@ -30,6 +30,12 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * @author Martin Zatopek, JavlinConsulting,s.r.o.
+ * @since  18.8.2006
+ *
+ * Class allowing to compile Java source code into bytecode representation (.class file)
+ */
 public class Compiler {
     private final static String FILE_SEPARATOR = System.getProperty("file.separator", "/");
     private final static String COMPILER_CLASSNAME = "com.sun.tools.javac.Main";

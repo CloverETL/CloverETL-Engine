@@ -18,8 +18,7 @@
  *
  * Created on 27.3.2006
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
  */
 
 package org.jetel.util;
@@ -35,11 +34,10 @@ import org.apache.commons.logging.LogFactory;
 
 
 /**
- * @author not attributable
+ * @author David Pavlis, JavlinConsulting, s.r.o.
  * @since  27.3.2006
  *
- * TODO To change the template for this generated type comment go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * 
  */
 
 public class ClassLoaderUtils {
