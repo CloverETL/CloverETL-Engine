@@ -31,7 +31,7 @@ import org.jetel.exception.JetelException;
 /**
  * Class for approximative string comparison
  * 
- * @author avackova
+ * @author avackova, JavlinConsulting,s.r.o.
  *
  */
 
