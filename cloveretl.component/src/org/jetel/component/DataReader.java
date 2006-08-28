@@ -25,7 +25,6 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.security.InvalidParameterException;
-import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -35,6 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DataParser;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -115,7 +115,8 @@ public class DataReader extends Node {
 	private int startRecord = -1;
 	private int finalRecord = -1;
 	private int maxErrorCount = -1;
-
+	private boolean strictPolicy = true;
+    
 	private DataParser parser;
 
 
@@ -180,19 +181,25 @@ public class DataReader extends Node {
 			}
 			//parse
 			while(!parser.endOfInputChannel() && runIt) {
-				if((parser.getNext(record)) != null) {
-					writeRecord(OUTPUT_PORT, record);
-				} else if(!parser.endOfInputChannel()) {
+                try {
+    				if((parser.getNext(record)) != null) {
+    					    writeRecord(OUTPUT_PORT, record);
+    				}
+                } catch(BadDataFormatException bdfe) {
+                    if(strictPolicy) {
+                        throw bdfe;
+                    }
                     if(logging) {
-                        ((IntegerDataField) logRecord.getField(0)).setValue(parser.getRecordCount());
-                        ((StringDataField) logRecord.getField(1)).setValue(parser.getLogString());
+                        //TODO implement log port framework
+                        ((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
+                        ((StringDataField) logRecord.getField(1)).setValue(bdfe.getOffendingValue());
                         writeRecord(LOG_PORT, logRecord);
                     }
-					if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-						logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-						break;
-					}
-				}
+                    if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+                        logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+                        break;
+                    }
+                }
 				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
 					break;
 				}
@@ -299,10 +306,7 @@ public class DataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-		String policy = parser.getDataPolicy();
-		if (policy != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policy);
-		}
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, strictPolicy ? "strict" : "controlled"); //TODO change data policy setting
 		
 	}
 
@@ -314,7 +318,7 @@ public class DataReader extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		DataReader aDataReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
@@ -328,7 +332,8 @@ public class DataReader extends Node {
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				aDataReader.parser.setDataPolicy(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE));
+                aDataReader.strictPolicy = xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, "strict").equalsIgnoreCase("strict"); //TODO change data policy setting
+				aDataReader.parser.setStrictPolicy(aDataReader.strictPolicy);
 			}
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
