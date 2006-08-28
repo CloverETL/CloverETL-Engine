@@ -131,11 +131,11 @@ public class SystemExecute extends Node{
 		}
 		thread.interrupt();
 		try {
-			thread.join(millisec);
+			Thread.sleep(millisec);
+			//thread.join(millisec);
 		}catch(InterruptedException ex){
-			return true;
 		}
-		return false;
+		return !thread.isAlive();
 	}
 
 	public void run() {
