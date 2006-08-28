@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
@@ -176,6 +177,7 @@ public class DelimitedDataReader extends Node {
 			resultMsg = "STOPPED";
 		}
 		resultCode = Node.RESULT_OK;
+        
 	}
 
 
