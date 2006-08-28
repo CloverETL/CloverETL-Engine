@@ -173,7 +173,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
-		if (isNull) {
+		if (this.isNull) {
 			value.setLength(0);
 		}
 	}

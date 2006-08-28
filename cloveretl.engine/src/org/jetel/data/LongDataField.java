@@ -195,7 +195,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 */
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
-		if (isNull) {
+		if (this.isNull) {
 			this.value = Long.MIN_VALUE;
 		}
 	}
