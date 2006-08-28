@@ -46,13 +46,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * @revision $Revision: 1.9 $
  */
 public class DataParser implements Parser {
-	public final static String STRICT = "strict";
 
-	public final static String CONTROLLED = "controlled";
-
-	public final static String LENIENT = "lenient";
-
-	private String policyType = STRICT;
+	private boolean strictPolicy = true;
 
 	private DataRecordMetadata metadata;
 
@@ -62,9 +57,9 @@ public class DataParser implements Parser {
 
 	private ByteBuffer byteBuffer;
 
-	private StringBuffer fieldBuffer;
+	private StringBuilder fieldBuffer;
 
-	private StringBuffer recordBuffer;
+	private CharBuffer recordBuffer;
 
 	private CharsetDecoder decoder;
 
@@ -80,7 +75,7 @@ public class DataParser implements Parser {
 	
 	private boolean quotedStrings = false;
 
-	private StringBuffer tempReadBuffer;
+	private StringBuilder tempReadBuffer;
 	
 	private boolean treatMultipleDelimitersAsOne = false;
 	
@@ -123,9 +118,9 @@ public class DataParser implements Parser {
 		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer.flip(); // initially empty 
-		fieldBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		recordBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		tempReadBuffer = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 
 		//save metadata
@@ -212,7 +207,7 @@ public class DataParser implements Parser {
 		boolean skipBlanks = skipLeadingBlanks;
 		
 		recordCounter++;
-		recordBuffer.setLength(0);
+		recordBuffer.clear();
 		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
 			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
 				// field
@@ -256,6 +251,7 @@ public class DataParser implements Parser {
 						}
 						//fieldDelimiter update
 						fieldBuffer.append((char) character);
+
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
@@ -301,13 +297,14 @@ public class DataParser implements Parser {
 			if (character == -1) {
 				try {
                     //hack for data files without last row delimiter (for example last record without new-line character)
-                    if(fieldCounter + 1 == metadata.getNumFields()
-                            && populateField(record, fieldCounter, fieldBuffer)
-                            && (fieldCounter != 0 || recordBuffer.length() > 0)) { //hack for hack for one column table
-                        reader.close();
-                        return record;
+                    if(fieldCounter + 1 == metadata.getNumFields()) {
+                        populateField(record, fieldCounter, fieldBuffer);
+                        if((fieldCounter != 0 || recordBuffer.position() > 0)) { //hack for hack for one column table
+                            reader.close();
+                            return record;
+                        }
                     }
-    				if(recordBuffer.length() == 0) {
+    				if(recordBuffer.position() == 0) {
                         reader.close();
     				    return null;
                     } else {
@@ -319,15 +316,7 @@ public class DataParser implements Parser {
 			}
 
 			//populate field
-			if(!populateField(record, fieldCounter, fieldBuffer)) {
-				//policyType == CONTROLLED
-				if(metadata.isSpecifiedRecordDelimiter()) {
-					findFirstRecordDelimiter();
-				} else {
-					findEndOfRecord(fieldCounter);
-				}
-				return null;
-			}
+			populateField(record, fieldCounter, fieldBuffer);
 		}
 		
 		if(metadata.isSpecifiedRecordDelimiter()) {
@@ -335,18 +324,19 @@ public class DataParser implements Parser {
 				return parsingErrorFound("Missing record delimiter", record, fieldCounter);
 			}
 		}
-		
+
 		return record;
 	}
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
-		if(policyType == STRICT) {
-			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " (" + recordBuffer + ")");
-		} else if(policyType == CONTROLLED) {
-			return null;
-		} else { //policyType == LENIENT
-			finishRecord(record, fieldNum);
-			return record;
+		if(strictPolicy) {
+			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " (" + recordBuffer.toString() + ")");
+		} else {
+            recordRollback(fieldNum);
+			throw new BadDataFormatException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter, recordBuffer.toString());
+//		} else { //policyType == LENIENT
+//			finishRecord(record, fieldNum);
+//			return record;
 		}
 		
 	}
@@ -380,7 +370,8 @@ public class DataParser implements Parser {
 		}
 		
 		character = charBuffer.get();
-		recordBuffer.append(character);
+		recordBuffer.put(character);
+
 		return character;
 	}
 
@@ -430,22 +421,22 @@ public class DataParser implements Parser {
 	 * @param fieldNum
 	 * @param data
 	 */
-	private boolean populateField(DataRecord record, int fieldNum,	StringBuffer data) {
+	private void populateField(DataRecord record, int fieldNum,	StringBuilder data) {
 		try {
-			record.getField(fieldNum).fromString(data.toString()); //TODO fromStringBuffer() returns boolean, i hope
+			record.getField(fieldNum).fromString(data.toString());
 		} catch(BadDataFormatException bdfe) {
-			if(policyType.equals(STRICT)) {
-				throw new BadDataFormatException(bdfe.getMessage());
-			} else if(policyType.equals(CONTROLLED)) {
-				return false;
-			} else { //policyType.equals(LENIENT)
-				record.getField(fieldNum).setToDefaultValue();
-				return true;
+            bdfe.setRecordNumber(recordCounter);
+            bdfe.setFieldNumber(fieldNum);
+			if(strictPolicy) {
+				throw bdfe;
+			} else {
+                recordRollback(fieldNum);
+                bdfe.setOffendingValue(recordBuffer.toString());
+				throw bdfe;
 			}
 		} catch(Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, fieldNum));
 		}
-		return true;
 	}
 
 	/**
@@ -499,6 +490,13 @@ public class DataParser implements Parser {
 		return (character != -1);
 	}
 
+    private void recordRollback(int fieldNum) {
+        if(metadata.isSpecifiedRecordDelimiter()) {
+            findFirstRecordDelimiter();
+        } else {
+            findEndOfRecord(fieldNum);
+        }
+    }
 	/**
 	 * Is record delimiter in the input channel?
 	 * @return
@@ -561,22 +559,16 @@ public class DataParser implements Parser {
 	 * Returns data policy.
 	 * @return
 	 */
-	public String getDataPolicy() {
-		return policyType;
+	public boolean isStrictPolicy() {
+		return strictPolicy;
 	}
 
 	/**
 	 * Sets data policy.
 	 * @param dataPolicy
 	 */
-	public void setDataPolicy(String dataPolicy) {
-		if(dataPolicy.equalsIgnoreCase(STRICT)) {
-			policyType = STRICT;
-		} else if(dataPolicy.equalsIgnoreCase(CONTROLLED)) {
-			policyType = CONTROLLED;
-		} else if(dataPolicy.equalsIgnoreCase(LENIENT)) {
-			policyType = LENIENT;
-		}
+	public void setStrictPolicy(boolean strictPolicy) {
+	    this.strictPolicy = strictPolicy;
 	}
 	
 
@@ -601,7 +593,7 @@ public class DataParser implements Parser {
 	}
 	
 	public CharSequence getLogString() {
-		return recordBuffer; //TODO kokon
+		return recordBuffer.toString(); //TODO kokon
 		//return logString;
 	}
 	
