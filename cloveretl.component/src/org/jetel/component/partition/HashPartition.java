@@ -1,0 +1,34 @@
+package org.jetel.component.partition;
+
+import org.jetel.data.DataRecord;
+import org.jetel.data.HashKey;
+import org.jetel.data.RecordKey;
+
+/**
+ * Partition algorithm based on calculating hash value of
+ * specified key. The hash is then split to intervals. Number of
+ * intervals is based specified number
+ *  
+ * 
+ * @author david
+ * @since  1.3.2005
+ */
+public class HashPartition implements PartitionFunction{
+    int numPorts;
+    HashKey hashKey;
+    
+    public HashPartition(){
+    }
+    
+    public void init(int numPartitions, RecordKey partitionKey){
+        this.numPorts=numPartitions;
+        hashKey=new HashKey(partitionKey,null);
+    }
+    
+    public int getOutputPort(DataRecord record){
+        hashKey.setDataRecord(record);
+        //int hash=hashKey.hashCode(); 
+        //int value=(hash)&0x0FF;//// take only last 8 bits
+        return hashKey.hashCode()%numPorts;
+    }
+}
