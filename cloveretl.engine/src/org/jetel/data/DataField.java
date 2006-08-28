@@ -124,6 +124,7 @@ public abstract class DataField implements Serializable, Comparable {
 		if (isNull && !metadata.isNullable()) {
             try {
                 setToDefaultValue();
+                return;
             } catch(NullDataFormatException e) {
                 throw new NullDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable == false)");
             }

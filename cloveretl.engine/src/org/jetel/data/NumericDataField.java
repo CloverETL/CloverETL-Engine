@@ -249,7 +249,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 */
 	public void setNull(boolean isNull) {
 		super.setNull(isNull);
-		if (isNull) {
+		if (this.isNull) {
 			value = Double.NaN;
 		}
 	}
