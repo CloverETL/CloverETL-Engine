@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.util;
+import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -80,13 +81,25 @@ public class PropertyRefResolver {
 
 
 	/**
-	 *  Adds a feature to the Properties attribute of the PropertyRefResolver object
+	 * Add all properties (key=value pairs) to existing/internal set
+     * of properties
 	 *
-	 * @param  properties  The feature to be added to the Properties attribute
+	 * @param  properties  Properties set to be added
 	 */
 	public void addProperties(Properties properties) {
 		this.properties.putAll(properties);
 	}
+    
+    /**
+     * Add all key=value pairs to existing/internal set
+     * of properties
+     * 
+     * @param properties Map with properties definitions
+     */
+    public void addProperties(Map properties){
+        this.properties.putAll(properties);
+        
+    }
 
 
 	/**
