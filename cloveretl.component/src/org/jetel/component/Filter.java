@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordFilter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;

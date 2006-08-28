@@ -20,9 +20,11 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.util.Arrays;
 
-import org.jetel.data.DataField;
+import org.jetel.component.partition.HashPartition;
+import org.jetel.component.partition.PartitionFunction;
+import org.jetel.component.partition.RangePartition;
+import org.jetel.component.partition.RoundRobinPartition;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
@@ -293,130 +295,6 @@ public class Partition extends Node {
 	
 	public String getType(){
 		return COMPONENT_TYPE;
-	}
-
-	
-	
-	
-	
-	/**
-	 * RoundRobin partition algorithm.
-	 * 
-	 * @author david
-	 * @since  1.3.2005
-	 *
-	 */
-	private static class RoundRobinPartition implements PartitionFunction{
-	    int last;
-	    int numPorts;
-	    
-	    RoundRobinPartition(){
-	    }
-	    
-	    public void init(int numPartitions,RecordKey partitionKey){
-	        this.numPorts=numPartitions;
-	        this.last=-1;
-	    }
-	    
-	    public int getOutputPort(DataRecord record){
-	        last=(last+1)%numPorts;
-	        return last;
-	    }
-	    
-	}
-	
-	/**
-	 * Partition algorithm based on calculating hash value of
-	 * specified key. The hash is then split to intervals. Number of
-	 * intervals is based specified number
-	 *  
-	 * 
-	 * @author david
-	 * @since  1.3.2005
-	 */
-	private static class HashPartition implements PartitionFunction{
-	    int numPorts;
-	    HashKey hashKey;
-	    
-	    HashPartition(){
-	    }
-	    
-	    public void init(int numPartitions, RecordKey partitionKey){
-	        this.numPorts=numPartitions;
-	        hashKey=new HashKey(partitionKey,null);
-	    }
-	    
-	    public int getOutputPort(DataRecord record){
-	        hashKey.setDataRecord(record);
-	        //int hash=hashKey.hashCode(); 
-	        //int value=(hash)&0x0FF;//// take only last 8 bits
-	        return hashKey.hashCode()%numPorts;
-	    }
-	}
-	
-	/**
-	 * Partition algorithm which compares current key value with set of
-	 * intervals (defined as a set of interval upper limits - inclusive).
-	 * 
-	 * @author david
-	 * @since  5.3.2005
-	 *
-	 */
-	private static class RangePartition implements PartitionFunction{
-	    int numPorts;
-	    DataField[] boundaries;
-	    int[] keyFields;
-	    String[] boundariesStr;
-	    
-	    /**
-	     * @param boundariesStr array of strings containing definitions of ranges boundaries
-	     * @param record	DataRecord with the same structure as the one which will be used
-	     * for determining output port.
-	     */
-	    RangePartition(String[] boundariesStr){
-	        this.boundariesStr=boundariesStr;
-	    }
-	    
-	    public void init(int numPartitions, RecordKey partitionKey){
-	        this.numPorts=numPartitions;
-	        keyFields=partitionKey.getKeyFields();
-
-	    }
-	    
-	    public int getOutputPort(DataRecord record){
-	        // create boundaries the first time this method is called
-	        if (boundaries==null){
-	            boundaries = new DataField[boundariesStr.length];
-		        for (int i=0;i<boundaries.length;i++){
-		            boundaries[i]=record.getField(keyFields[0]).duplicate();
-		            boundaries[i].fromString(boundariesStr[i]);
-		        }
-		        Arrays.sort(boundaries);
-	        }
-	        
-	        // use sequential search if number of boundries is small
-	        if (boundaries.length <= 6) {
-                for (int i = 0; i < numPorts && i < boundaries.length; i++) {
-                    // current boundary is upper limit inclusive
-                    if (record.getField(keyFields[0]).compareTo(boundaries[i]) <= 0) {
-                        return i;
-                    }
-                }
-                return numPorts - 1;
-            } else {
-                int index = Arrays.binarySearch(boundaries, record
-                        .getField(keyFields[0]));
-                // DEBUG
-                // System.out.println("Index partition: "+index+" value "+record
-                //         .getField(keyFields[0]).toString());
-                // DEBUG END
-                if (index>=0){
-                    return index;
-                }else{
-                    return (index*-1)-1;
-                }
-            }
-	    }
 	}
 	
 }
