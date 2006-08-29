@@ -32,6 +32,10 @@ public enum PolicyType {
     STRICT, CONTROLLED, LENIENT;
     
     public static PolicyType valueOfIgnoreCase(String strPolicy) {
+        if(strPolicy == null) {
+            return STRICT;
+        }
+        
         for(PolicyType pt : PolicyType.values()) {
             if(strPolicy.equalsIgnoreCase(pt.toString())) {
                 return pt;

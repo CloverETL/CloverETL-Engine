@@ -23,8 +23,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.IntegerDataField;
+import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
@@ -78,19 +83,22 @@ import org.w3c.dom.Element;
  */
 public class DelimitedDataReader extends Node {
 
+    static Log logger = LogFactory.getLog(DelimitedDataReader.class);
+
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_READER";
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
-	private final static String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
 	private DelimitedDataParser parser;
+    private PolicyType policyType;
     private int skipRows=-1; // do not skip rows by default
 
 
@@ -138,7 +146,6 @@ public class DelimitedDataReader extends Node {
                 for(int i=0;i<skipRows && runIt;i++){
                 // till we skip required num of records or it reaches end of data or it is stopped from outside
                     if (parser.getNext(record) == null) break;
-                    SynchronizeUtils.cloverYield();
                 }
             } catch (Exception ex) {
                 resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
@@ -151,10 +158,20 @@ public class DelimitedDataReader extends Node {
         
 		try {
 			// till it reaches end of data or it is stopped from outside
-			while (((record = parser.getNext(record)) != null) && runIt) {
-				//broadcast the record to all connected Edges
-				writeRecordBroadcast(record);
-				SynchronizeUtils.cloverYield();
+			while (record != null && runIt) {
+                try {
+                    if((record = parser.getNext(record)) != null) {
+                        //broadcast the record to all connected Edges
+                        writeRecordBroadcast(record);
+                        SynchronizeUtils.cloverYield();
+                    }
+                } catch(BadDataFormatException bdfe) {
+                    if(policyType == PolicyType.STRICT) {
+                        throw bdfe;
+                    } else {
+                        logger.info(bdfe.getMessage());
+                    }
+                }
 			}
 		} catch (IOException ex) {
 		    ex.printStackTrace();
@@ -216,10 +233,7 @@ public class DelimitedDataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-		PolicyType policy = getPolicyType();
-		if (policy != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policy.toString());
-		}
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		
 	}
 
@@ -244,10 +258,7 @@ public class DelimitedDataReader extends Node {
 				aDelimitedDataReaderNIO = new DelimitedDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
-						xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
-			}
+			aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
                 aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
             }
@@ -259,13 +270,19 @@ public class DelimitedDataReader extends Node {
 	}
 
 
+    
+    public void setPolicyType(String strPolicyType) {
+        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    }
+    
 	/**
 	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
 	 *
 	 * @param  handler
 	 */
-	public void setExceptionHandler(IParserExceptionHandler handler) {
-		parser.setExceptionHandler(handler);
+	public void setPolicyType(PolicyType policyType) {
+        this.policyType = policyType;
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 
 

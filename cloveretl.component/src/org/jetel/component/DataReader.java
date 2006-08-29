@@ -188,7 +188,7 @@ public class DataReader extends Node {
 			while(!parser.endOfInputChannel() && runIt) {
                 try {
     				if((parser.getNext(record)) != null) {
-    					    writeRecord(OUTPUT_PORT, record);
+    				    writeRecord(OUTPUT_PORT, record);
     				}
                 } catch(BadDataFormatException bdfe) {
                     if(policyType == PolicyType.STRICT) {
@@ -331,9 +331,7 @@ public class DataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-        if(parser.getPolicyType() != null) {
-            xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, parser.getPolicyType().toString());
-        }
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		
 	}
 
@@ -358,11 +356,7 @@ public class DataReader extends Node {
 				aDataReader = new DataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-			    aDataReader.setPolicyType(PolicyType.valueOfIgnoreCase(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
-			} else {
-			    aDataReader.setPolicyType(PolicyType.STRICT);
-            }
+			aDataReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
@@ -457,6 +451,10 @@ public class DataReader extends Node {
 		}
 		this.maxErrorCount = maxErrorCount;
 	}
+    
+    public void setPolicyType(String strPolicyType) {
+        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    }
     
     public void setPolicyType(PolicyType policyType) {
         this.policyType = policyType;

@@ -95,7 +95,7 @@ public class FixLenDataReader extends Node {
 	private static final String XML_LINESEPARATORSIZE_ATTRIBUTE = "LineSeparatorSize";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "SkipLeadingBlanks";
 	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
