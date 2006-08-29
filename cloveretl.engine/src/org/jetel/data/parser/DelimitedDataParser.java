@@ -45,7 +45,7 @@ import org.jetel.util.StringUtils;
  *  Parsing delimited text data. Supports delimiters with the length of up to 32
  *  characters. Delimiter for each individual field must be specified - through
  *  metadata definition. The maximum length of one parseable field is denoted by
- *  <b>FIELD_BUFFER_LENGT</b> . Parser handles quoted strings (single or double).
+ *  <b>FIELD_BUFFER_LENGTH</b> . Parser handles quoted strings (single or double).
  *  This class is using the new IO (NIO) features
  *  introduced in Java 1.4 - directly mapped byte buffers & character
  *  encoders/decoders
@@ -131,7 +131,6 @@ public class DelimitedDataParser implements Parser {
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {
                 exceptionHandler.handleException();
-				//record.init();   //redundant
 				record = parseNext(record);
 			}
 		}
@@ -410,13 +409,17 @@ public class DelimitedDataParser implements Parser {
 	 *@since            March 28, 2002
 	 */
 	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
-		try {
-			record.getField(fieldNum).fromString(buffer2String(data, fieldNum,handleQuotedStrings));
+        String strData = buffer2String(data, fieldNum,handleQuotedStrings);
+        try {
+			record.getField(fieldNum).fromString(strData);
 		} catch (BadDataFormatException bdfe) {
 			if(exceptionHandler != null ) {  //use handler only if configured
-                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum), record, -1, fieldNum, data.toString(), bdfe);
+                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum), record, -1, fieldNum, strData, bdfe);
 			} else {
-				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
+                bdfe.setRecordNumber(recordCounter);
+                bdfe.setFieldNumber(fieldNum);
+                bdfe.setOffendingValue(strData);
+                throw bdfe;
 			}
 		} catch (Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(),null,recordCounter, fieldNum),ex);
