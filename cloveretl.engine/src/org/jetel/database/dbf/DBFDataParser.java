@@ -23,11 +23,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
+import org.jetel.data.parser.Parser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
@@ -211,7 +217,14 @@ public class DBFDataParser implements Parser {
      */
     public void open(Object inputDataSource, DataRecordMetadata _metadata)
             throws ComponentNotReadyException {
-        dbfFile = ((FileInputStream) inputDataSource).getChannel();
+        
+        if (! (inputDataSource instanceof FileInputStream) ){
+            throw new ComponentNotReadyException("Invalid input data object passed - isn't an InputStream");
+        }
+        
+        dbfFile = ((FileInputStream)inputDataSource).getChannel();
+        
+        
         metadata = _metadata;
         dbfAnalyzer = new DBFAnalyzer();
         try {
