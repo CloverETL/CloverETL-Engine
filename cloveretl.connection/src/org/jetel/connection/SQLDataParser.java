@@ -29,8 +29,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -41,7 +41,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class SQLDataParser implements Parser {
 	private final static int SQL_FETCH_SIZE_ROWS = 20;
 
-	protected BadDataFormatExceptionHandler handlerBDFE;
+	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;
 	protected int fieldCount;
@@ -89,9 +89,9 @@ public class SQLDataParser implements Parser {
 
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
-		if(handlerBDFE != null ) {  //use handler only if configured
-			while(handlerBDFE.isThrowException()) {
-				handlerBDFE.handleException(record);
+		if(exceptionHandler != null ) {  //use handler only if configured
+			while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
 				//record.init();  redundant
 				record = parseNext(record);
 			}
@@ -179,8 +179,8 @@ public class SQLDataParser implements Parser {
 			transMap[fieldNum-1].sql2jetel(resultSet);
 
 		} catch (BadDataFormatException bdfe) {
-			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum-1,bdfe.getOffendingValue());
+			if(exceptionHandler != null ) {  //use handler only if configured
+                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record, -1, fieldNum-1, bdfe.getOffendingValue(), bdfe);
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
@@ -278,17 +278,12 @@ public class SQLDataParser implements Parser {
 		}
 	}
 
-
-
-	/**
-	 * @param handler
-	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		this.handlerBDFE = handler;
-	}
-
 	public void setFetchSize(int fetchSize){
 	    this.fetchSize=fetchSize;
 	}
+
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        this.exceptionHandler = handler;
+    }
 
 }
