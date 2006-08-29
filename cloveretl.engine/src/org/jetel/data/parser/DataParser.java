@@ -33,6 +33,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -47,7 +48,7 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DataParser implements Parser {
 
-	private boolean strictPolicy = true;
+	private IParserExceptionHandler exceptionHandler;
 
 	private DataRecordMetadata metadata;
 
@@ -96,7 +97,12 @@ public class DataParser implements Parser {
 		record.init();
 
 		record = parseNext(record);
-
+        if(exceptionHandler != null ) {  //use handler only if configured
+            while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
+                record = parseNext(record);
+            }
+        }
 		return record;
 	}
 
@@ -105,7 +111,12 @@ public class DataParser implements Parser {
 	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
-
+        if(exceptionHandler != null ) {  //use handler only if configured
+            while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
+                record = parseNext(record);
+            }
+        }
 		return record;
 	}
 
@@ -321,16 +332,12 @@ public class DataParser implements Parser {
 	}
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
-		if(strictPolicy) {
-			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " (" + recordBuffer.toString() + ")");
-		} else {
-            recordRollback(fieldNum);
-			throw new BadDataFormatException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter, recordBuffer.toString());
-//		} else { //policyType == LENIENT
-//			finishRecord(record, fieldNum);
-//			return record;
+        if(exceptionHandler != null) {
+            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum, recordBuffer.toString(), null);
+            return record;
+        } else {
+			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + fieldNum + ". field (" + recordBuffer.toString() + ")");
 		}
-		
 	}
 	
 	private int readChar() throws IOException {
@@ -414,18 +421,18 @@ public class DataParser implements Parser {
 	 * @param data
 	 */
 	private void populateField(DataRecord record, int fieldNum,	StringBuilder data) {
+        String strData = data.toString();
 		try {
-			record.getField(fieldNum).fromString(data.toString());
+			record.getField(fieldNum).fromString(strData);
 		} catch(BadDataFormatException bdfe) {
-            bdfe.setRecordNumber(recordCounter);
-            bdfe.setFieldNumber(fieldNum);
-			if(strictPolicy) {
-				throw bdfe;
-			} else {
-                recordRollback(fieldNum);
-                bdfe.setOffendingValue(recordBuffer.toString());
-				throw bdfe;
-			}
+            if(exceptionHandler != null) {
+                exceptionHandler.populateHandler(bdfe.getMessage(), record, recordCounter, fieldNum, strData, bdfe);
+            } else {
+                bdfe.setRecordNumber(recordCounter);
+                bdfe.setFieldNumber(fieldNum);
+                bdfe.setOffendingValue(strData);
+                throw bdfe;
+            }
 		} catch(Exception ex) {
 			throw new RuntimeException(getErrorMessage(ex.getMessage(), null, fieldNum));
 		}
@@ -482,7 +489,7 @@ public class DataParser implements Parser {
 		return (character != -1);
 	}
 
-    private void recordRollback(int fieldNum) {
+    private void shiftToNextRecord(int fieldNum) {
         if(metadata.isSpecifiedRecordDelimiter()) {
             findFirstRecordDelimiter();
         } else {
@@ -546,23 +553,6 @@ public class DataParser implements Parser {
 		//end of file
 		return false;
 	}
-
-	/**
-	 * Returns data policy.
-	 * @return
-	 */
-	public boolean isStrictPolicy() {
-		return strictPolicy;
-	}
-
-	/**
-	 * Sets data policy.
-	 * @param dataPolicy
-	 */
-	public void setStrictPolicy(boolean strictPolicy) {
-	    this.strictPolicy = strictPolicy;
-	}
-	
 
 	/**
 	 * Specifies whether leading blanks at each field should be skipped
@@ -631,7 +621,18 @@ public class DataParser implements Parser {
 	}
 
     public void setExceptionHandler(IParserExceptionHandler handler) {
-        //TODO
+        this.exceptionHandler = handler;
+    }
+
+    public IParserExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+
+    public PolicyType getPolicyType() {
+        if(exceptionHandler != null) {
+            return exceptionHandler.getType();
+        }
+        return null;
     }
 }
 /*

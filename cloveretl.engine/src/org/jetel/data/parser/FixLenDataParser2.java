@@ -38,6 +38,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -460,7 +461,7 @@ public class FixLenDataParser2 implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
-	public String getPolicyType() {
+	public PolicyType getPolicyType() {
 		if (this.exceptionHandler != null) {
 			return this.exceptionHandler.getType();
 		} else {
@@ -506,5 +507,8 @@ public class FixLenDataParser2 implements Parser {
     }
     public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
+    }
+    public IParserExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
     }
 }

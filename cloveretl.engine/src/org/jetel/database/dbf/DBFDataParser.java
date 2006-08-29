@@ -35,6 +35,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -89,7 +90,7 @@ public class DBFDataParser implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
-	public String getPolicyType() {
+	public PolicyType getPolicyType() {
 		if (this.exceptionHandler != null) {
 			return this.exceptionHandler.getType();
 		} else {
@@ -347,5 +348,9 @@ public class DBFDataParser implements Parser {
 
     public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
+    }
+
+    public IParserExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
     }
 }

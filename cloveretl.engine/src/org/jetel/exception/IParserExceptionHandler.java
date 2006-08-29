@@ -66,6 +66,6 @@ public interface IParserExceptionHandler {
     
     public String getFieldName();
     
-    public abstract String getType();
+    public abstract PolicyType getType();
 
 }

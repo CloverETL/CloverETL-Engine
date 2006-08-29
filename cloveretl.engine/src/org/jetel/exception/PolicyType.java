@@ -19,27 +19,17 @@
 */
 package org.jetel.exception;
 
-/**
- * The factory for creating ParserExceptionHandlers from a String.
- * 
- * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
- *
- */
-public class ParserExceptionHandlerFactory {
+public enum PolicyType {
 
-    public static IParserExceptionHandler getHandler(String strPolicyType) {
-        return getHandler(PolicyType.valueOfIgnoreCase(strPolicyType));
-    }
+    STRICT, CONTROLLED, LENIENT;
     
-    public static IParserExceptionHandler getHandler(PolicyType policyType) {
-        switch(policyType) {
-            case STRICT:
-                return new StrictParserExceptionHandler(); 
-            case CONTROLLED:
-                return new StrictParserExceptionHandler(PolicyType.CONTROLLED); 
-            case LENIENT:
-                return new LenientParserExceptionHandler(); 
+    public static PolicyType valueOfIgnoreCase(String strPolicy) {
+        for(PolicyType pt : PolicyType.values()) {
+            if(strPolicy.equalsIgnoreCase(pt.toString())) {
+                return pt;
+            }
         }
-        throw new AssertionError("Unknown policy type (" + policyType + ").");
+        
+        return STRICT; //default value
     }
 }

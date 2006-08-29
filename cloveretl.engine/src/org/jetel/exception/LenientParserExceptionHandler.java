@@ -20,26 +20,21 @@
 package org.jetel.exception;
 
 /**
- * The factory for creating ParserExceptionHandlers from a String.
+ * Parser exception handler with type "lenient". Handled exception is ignored.
  * 
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class ParserExceptionHandlerFactory {
+public class LenientParserExceptionHandler extends AbstractParserExceptionHandler {
 
-    public static IParserExceptionHandler getHandler(String strPolicyType) {
-        return getHandler(PolicyType.valueOfIgnoreCase(strPolicyType));
+    @Override
+    protected void handle() {
+        //DO NOTHING
     }
-    
-    public static IParserExceptionHandler getHandler(PolicyType policyType) {
-        switch(policyType) {
-            case STRICT:
-                return new StrictParserExceptionHandler(); 
-            case CONTROLLED:
-                return new StrictParserExceptionHandler(PolicyType.CONTROLLED); 
-            case LENIENT:
-                return new LenientParserExceptionHandler(); 
-        }
-        throw new AssertionError("Unknown policy type (" + policyType + ").");
+
+    @Override
+    public PolicyType getType() {
+        return PolicyType.LENIENT;
     }
+
 }

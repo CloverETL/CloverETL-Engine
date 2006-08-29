@@ -64,7 +64,23 @@ public class BadDataFormatException extends RuntimeException {
     
     @Override
     public String getMessage() {
-        return super.getMessage() + " : " + offendingValue;
+        StringBuffer ret = new StringBuffer();
+        ret.append(super.getMessage());
+        if(offendingValue != null && offendingValue.length() > 0) {
+            ret.append(" : ");
+            ret.append(offendingValue);
+        }
+        if(recordNumber >= 0) {
+            ret.append(" in record # ");
+            ret.append(recordNumber);
+        }
+        
+        if(fieldNumber >= 0) {
+            ret.append(" in field # ");
+            ret.append(fieldNumber);
+        }
+        
+        return ret.toString();
     }
 
     public int getFieldNumber() {
