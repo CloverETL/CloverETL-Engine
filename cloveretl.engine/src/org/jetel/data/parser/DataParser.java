@@ -30,8 +30,8 @@ import java.nio.charset.CoderResult;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -187,14 +187,6 @@ public class DataParser implements Parser {
 				ex.printStackTrace();
 			}
 		}
-	}
-
-	/**
-	 * @throws IllegalAccessException
-	 * @see org.jetel.data.parser.Parser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
-	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		throw new IllegalArgumentException();
 	}
 
 	private DataRecord parseNext(DataRecord record) {
@@ -637,6 +629,10 @@ public class DataParser implements Parser {
 			}
 		}
 	}
+
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        //TODO
+    }
 }
 /*
 Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres

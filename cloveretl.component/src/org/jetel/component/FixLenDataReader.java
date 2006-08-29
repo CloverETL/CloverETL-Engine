@@ -31,9 +31,9 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenDataParser2;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -225,7 +225,7 @@ public class FixLenDataReader extends Node {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
 		
-		String dataPolicy = this.parser.getBDFHandlerPolicyType();
+		String dataPolicy = this.parser.getPolicyType();
 		if (dataPolicy != null) {
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy);
 		}
@@ -274,7 +274,7 @@ public class FixLenDataReader extends Node {
 						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				aFixLenDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+				aFixLenDataReaderNIO.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
 					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
 			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
@@ -320,8 +320,8 @@ public class FixLenDataReader extends Node {
 	 *
 	 * @param  handler
 	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		parser.addBDFHandler(handler);
+	public void setExceptionHandler(IParserExceptionHandler handler) {
+		parser.setExceptionHandler(handler);
 	}
 
 

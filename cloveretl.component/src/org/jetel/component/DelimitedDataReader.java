@@ -24,11 +24,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -245,7 +244,7 @@ public class DelimitedDataReader extends Node {
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				aDelimitedDataReaderNIO.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+				aDelimitedDataReaderNIO.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
 						xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
@@ -264,8 +263,8 @@ public class DelimitedDataReader extends Node {
 	 *
 	 * @param  handler
 	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		parser.addBDFHandler(handler);
+	public void setExceptionHandler(IParserExceptionHandler handler) {
+		parser.setExceptionHandler(handler);
 	}
 
 
@@ -275,13 +274,7 @@ public class DelimitedDataReader extends Node {
 	 * @see org.jetel.exception.BadDataFormatExceptionHandler
 	 */
 	public String getDataPolicy() {
-		String policyType = this.parser.getBDFHandlerPolicyType();
-		
-		if (policyType != null) {
-			return(policyType);
-		}
-		
-		return(null);
+		return this.parser.getPolicyType();
 	}
 	
 	/**

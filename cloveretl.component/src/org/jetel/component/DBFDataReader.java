@@ -26,9 +26,9 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.database.dbf.DBFDataParser;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -187,7 +187,7 @@ public class DBFDataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharset());
 		}
-		String policyType = this.parser.getBDFHandlerPolicyType();
+		String policyType = this.parser.getPolicyType();
 		if (policyType != null) {
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType);
 		}
@@ -216,7 +216,7 @@ public class DBFDataReader extends Node {
 						xattribs.getString(XML_FILEURL_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				dbfDataReader.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+				dbfDataReader.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
 					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
 			
@@ -236,8 +236,8 @@ public class DBFDataReader extends Node {
 	 *
 	 * @param  handler
 	 */
-	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		parser.addBDFHandler(handler);
+	private void setExceptionHandler(IParserExceptionHandler handler) {
+		parser.setExceptionHandler(handler);
 	}
 
 

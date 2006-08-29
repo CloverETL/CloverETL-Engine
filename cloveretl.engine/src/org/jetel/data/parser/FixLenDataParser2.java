@@ -36,7 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -59,7 +59,7 @@ public class FixLenDataParser2 implements Parser {
 	private boolean oneRecordPerLinePolicy = false;
 	private boolean skipLeadingBlanks = true;
 	private int lineSeparatorSize;
-	private BadDataFormatExceptionHandler handlerBDFE;
+	private IParserExceptionHandler exceptionHandler;
 	private ByteBuffer dataBuffer;
 //	private ByteBuffer fieldBuffer;
 	private CharBuffer charBuffer;
@@ -328,9 +328,9 @@ public class FixLenDataParser2 implements Parser {
 	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
-		if(handlerBDFE != null ) {  //use handler only if configured
-			while(record!=null && handlerBDFE.isThrowException()) {
-				handlerBDFE.handleException(record);
+		if(exceptionHandler != null ) {  //use handler only if configured
+			while(record!=null && exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
 				record = parseNext(record);
 			}
 		}
@@ -348,8 +348,8 @@ public class FixLenDataParser2 implements Parser {
 		try {
 			record.getField(fieldNum).fromString(buffer2String(data, fieldNum, false));
 		} catch (BadDataFormatException bdfe) {
-			if(handlerBDFE != null ) {  //use handler only if configured
-				handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum),record,fieldNum,data.toString());
+			if(exceptionHandler != null ) {  //use handler only if configured
+                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum), record, -1, fieldNum, data.toString(), bdfe);
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum));
 			}
@@ -419,16 +419,6 @@ public class FixLenDataParser2 implements Parser {
 		}
 	}
 
-
-
-	/** 
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 * @param handler
-	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		this.handlerBDFE = handler;
-	}
-
 	/**
 	 *  Sets OneRecordPerLinePolicy - if set to true, then the parser assumes that
 	 * each record is on separate line - i.e. at the end of each record, the newline
@@ -470,11 +460,11 @@ public class FixLenDataParser2 implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
-	public String getBDFHandlerPolicyType() {
-		if (this.handlerBDFE != null) {
-			return(this.handlerBDFE.getPolicyType());
+	public String getPolicyType() {
+		if (this.exceptionHandler != null) {
+			return this.exceptionHandler.getType();
 		} else {
-			return(null);
+			return null;
 		}		
 	}
 	
@@ -513,5 +503,8 @@ public class FixLenDataParser2 implements Parser {
      */
     public void setSkipRows(boolean skipRows) {
         this.skipRows = skipRows;
+    }
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        this.exceptionHandler = handler;
     }
 }
