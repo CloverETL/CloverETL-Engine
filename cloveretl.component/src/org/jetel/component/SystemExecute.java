@@ -24,6 +24,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilePermission;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -117,8 +118,7 @@ public class SystemExecute extends Node{
 
 	private String command;
 	private int errorLinesNumber;
-//	private FileWriter outputFile = null;
-	private FileOutputStream outputFile = null;
+	private FileWriter outputFile = null;
 	private boolean append;
 	private int exitValue;
 	private Parser parser;
@@ -147,14 +147,17 @@ public class SystemExecute extends Node{
 		thread.interrupt();
 		try {
 			Thread.sleep(millisec);
-			//thread.join(millisec);
 		}catch(InterruptedException ex){
 		}
 		return !thread.isAlive();
 	}
 	
-	private void createBatch(String command)throws IOException{
-		batch =  File.createTempFile("tmp","bat");
+	private String createBatch(String command)throws IOException{
+		batch =  File.createTempFile("tmp",".bat");
+		FileWriter batchWriter = new FileWriter(batch);
+		batchWriter.write(command);
+		batchWriter.close();
+		return batch.getCanonicalPath();
 	}
 
 	public void run() {
@@ -175,8 +178,8 @@ public class SystemExecute extends Node{
 		}else{
 			formatter=null;
 		}
-		//Creating and initializing record to otput port
 		DataRecord out_record=null;
+		//Creating and initializing record to otput port
 		OutputPort outPort=getOutputPort(OUTPUT_PORT);
 		//If there is output port read metadadata and initialize in_record
 		if (outPort!=null) {
@@ -196,7 +199,8 @@ public class SystemExecute extends Node{
 		Runtime r=Runtime.getRuntime();
 		
 		try{
-			Process process=r.exec(command);
+//			Process process=r.exec(command);
+			Process process = r.exec(createBatch(command));
 			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
 			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
@@ -327,8 +331,7 @@ public class SystemExecute extends Node{
 		File outFile= new File(outputFileName);
 		try{
 			outFile.createNewFile();
-//			this.outputFile = new FileWriter(outFile,append);
-			this.outputFile = new FileOutputStream(outFile,append);
+			this.outputFile = new FileWriter(outFile,append);
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
@@ -525,18 +528,15 @@ public class SystemExecute extends Node{
 	
 	private static class SendDataToFile extends Thread {
 
-	    private final static int DEFAULT_CHAR_ARRAY_BUFFER_SIZE = 512;
-
 	    InputStream process_out;
-//		FileWriter outFile;
-	    FileOutputStream outFile;
+		FileWriter outFile;
 		String resultMsg=null;
 		int resultCode;
 		volatile boolean runIt;
 		Thread parentThread;
 		Throwable resultException;
 		
-		SendDataToFile(Thread parentThread,FileOutputStream outFile,InputStream process_out){
+		SendDataToFile(Thread parentThread,FileWriter outFile,InputStream process_out){
 			super(parentThread.getName()+".SendDataToFile");
 			this.outFile = outFile;
 			this.process_out = process_out;
@@ -554,11 +554,10 @@ public class SystemExecute extends Node{
             String line;
 			try{
 				while (runIt && ((line=out.readLine())!=null))  {
-					outFile.write(line.getBytes());
-					outFile.write((int)'\n');
+					outFile.write(line+"\n");
 				};
 				out.close();
-				process_out.close();
+				outFile.close();
 			}catch(IOException ex){
 				logger.error("IOError in sysexec SendDataToFile");
 				resultMsg = ex.getMessage();
