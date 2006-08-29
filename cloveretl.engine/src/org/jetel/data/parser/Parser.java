@@ -22,9 +22,11 @@
 
 package org.jetel.data.parser;
 
+import java.io.IOException;
+
 import org.jetel.data.DataRecord;
-import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -76,7 +78,7 @@ public interface Parser {
 	/**
 	 * @param handler
 	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler);
+	public void setExceptionHandler(IParserExceptionHandler handler);
 
 }
 /*

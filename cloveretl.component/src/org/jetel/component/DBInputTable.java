@@ -23,9 +23,9 @@ import java.io.IOException;
 
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -272,7 +272,7 @@ public class DBInputTable extends Node {
                 
                 if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) 
                 {
-                    aDBInputTable.addBDFHandler(BadDataFormatExceptionHandlerFactory.getHandler(
+                    aDBInputTable.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
                                                 xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
                 }
                 
@@ -303,8 +303,8 @@ public class DBInputTable extends Node {
 	/**
 	 * @param  handler
 	 */
-	private void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		parser.addBDFHandler(handler);
+	private void setExceptionHandler(IParserExceptionHandler handler) {
+		parser.setExceptionHandler(handler);
 	}
 
 

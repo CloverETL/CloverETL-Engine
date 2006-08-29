@@ -19,20 +19,21 @@
 
 package org.jetel.database.dbf;
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
-import java.io.FileInputStream;
-import java.io.IOException;
-import org.jetel.data.parser.Parser;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.Parser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -46,7 +47,7 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class DBFDataParser implements Parser {
 
-    private BadDataFormatExceptionHandler handlerBDFE;
+    private IParserExceptionHandler exceptionHandler;
 
     private String charSet;
 
@@ -88,24 +89,15 @@ public class DBFDataParser implements Parser {
 	 * Returns data policy type for this parser
 	 * @return Data policy type or null if none was specified
 	 */
-	public String getBDFHandlerPolicyType() {
-		if (this.handlerBDFE != null) {
-			return(this.handlerBDFE.getPolicyType());
+	public String getPolicyType() {
+		if (this.exceptionHandler != null) {
+			return this.exceptionHandler.getType();
 		} else {
-			return(null);
+			return null;
 		}
 			
 	}
         
-    /*
-     * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-     * 
-     * @see org.jetel.data.DataParser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
-     */
-    public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-        this.handlerBDFE = handler;
-    }
-
     /*
      * closes the parser (opened file)
      * 
@@ -129,9 +121,9 @@ public class DBFDataParser implements Parser {
         DataRecord record = new DataRecord(metadata);
         record.init();
         record = parseNext(record);
-        if (handlerBDFE != null) { //use handler only if configured
-            while (handlerBDFE.isThrowException()) {
-                handlerBDFE.handleException(record);
+        if (exceptionHandler != null) { //use handler only if configured
+            while (exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
                 record = parseNext(record);
             }
         }
@@ -145,9 +137,9 @@ public class DBFDataParser implements Parser {
      */
     public DataRecord getNext(DataRecord record) throws JetelException {
         record = parseNext(record);
-        if (handlerBDFE != null) { //use handler only if configured
-            while (handlerBDFE.isThrowException()) {
-                handlerBDFE.handleException(record);
+        if (exceptionHandler != null) { //use handler only if configured
+            while (exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
                 record = parseNext(record);
             }
         }
@@ -195,10 +187,9 @@ public class DBFDataParser implements Parser {
             //removeBinaryZeros(data);
             record.getField(fieldNum).fromString(data.toString());
         } catch (BadDataFormatException bdfe) {
-            if (handlerBDFE != null) { //use handler only if configured
-                handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(),
-                        data, recordCounter, fieldNum), record, fieldNum, data
-                        .toString());
+            if (exceptionHandler != null) { //use handler only if configured
+                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),
+                        data, recordCounter, fieldNum), record, -1, fieldNum, data.toString(), bdfe);
             } else {
                 throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
                         data, recordCounter, fieldNum));
@@ -352,5 +343,9 @@ public class DBFDataParser implements Parser {
         message.append(" field ").append(metadata.getField(fieldNo).getName());
         message.append(" value \"").append(value).append("\"");
         return message.toString();
+    }
+
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        this.exceptionHandler = handler;
     }
 }

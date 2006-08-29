@@ -20,19 +20,23 @@
 // FILE: c:/projects/jetel/org/jetel/data/FixLenDataParser.java
 
 package org.jetel.data.parser;
-import java.nio.*;
-import java.nio.channels.*;
-import java.nio.charset.*;
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CoderResult;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
+import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.*;
+import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  Parsing fix length data.  It should be used in cases where new lines 
@@ -50,7 +54,7 @@ import org.jetel.metadata.*;
  */
 public class FixLenDataParser implements Parser {
 
-	private BadDataFormatExceptionHandler handlerBDFE;
+	private IParserExceptionHandler exceptionHandler;
 	private ByteBuffer dataBuffer;
 	private ByteBuffer fieldBuffer;
 	//private CharBuffer fieldStringBuffer;  //not used
@@ -106,9 +110,9 @@ public class FixLenDataParser implements Parser {
 		record.init();
 
 		record = parseNext(record);
-		if(handlerBDFE != null ) {  //use handler only if configured
-			while(handlerBDFE.isThrowException()) {
-				handlerBDFE.handleException(record);
+		if(exceptionHandler != null ) {  //use handler only if configured
+			while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
 				record = parseNext(record);
 			}
 		}
@@ -126,9 +130,9 @@ public class FixLenDataParser implements Parser {
 	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
-		if(handlerBDFE != null ) {  //use handler only if configured
-			while(handlerBDFE.isThrowException()) {
-				handlerBDFE.handleException(record);
+		if(exceptionHandler != null ) {  //use handler only if configured
+			while(exceptionHandler.isExceptionThrowed()) {
+                exceptionHandler.handleException();
 				record = parseNext(record);
 			}
 		}
@@ -307,8 +311,8 @@ public class FixLenDataParser implements Parser {
 		try {
 			record.getField(fieldNum).fromByteBuffer(data,decoder);
 		} catch (BadDataFormatException bdfe) {
-			if(handlerBDFE != null ) {  //use handler only if configured
-			handlerBDFE.populateFieldFailure(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record,fieldNum,data.toString());
+			if(exceptionHandler != null ) {  //use handler only if configured
+                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum), record, -1, fieldNum, data.toString(), bdfe);
 			} else {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
@@ -318,14 +322,9 @@ public class FixLenDataParser implements Parser {
 		}
 	}
 
-
-	/** 
-	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
-	 * 	 * @see org.jetel.data.parser.Parser#addBDFHandler(org.jetel.exception.BadDataFormatExceptionHandler)
-	 */
-	public void addBDFHandler(BadDataFormatExceptionHandler handler) {
-		this.handlerBDFE = handler;
-	}
+    public void setExceptionHandler(IParserExceptionHandler handler) {
+        this.exceptionHandler = handler;
+    }
 
 }
 /*
