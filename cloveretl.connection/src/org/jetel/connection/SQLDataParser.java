@@ -36,11 +36,11 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * @author maciorowski,dpavlis
+ * @author David Pavlis
  *
  */
 public class SQLDataParser implements Parser {
-	private final static int SQL_FETCH_SIZE_ROWS = 20;
+	private final static int DEFAULT_SQL_FETCH_SIZE_ROWS = 20;
 
 	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
@@ -55,7 +55,7 @@ public class SQLDataParser implements Parser {
 	protected CopySQLData[] transMap=null;
 	protected DataRecord outRecord = null;
 
-	protected int fetchSize = SQL_FETCH_SIZE_ROWS;
+	protected int fetchSize = DEFAULT_SQL_FETCH_SIZE_ROWS;
 	
 	static Log logger = LogFactory.getLog(SQLDataParser.class);
 	
@@ -78,7 +78,7 @@ public class SQLDataParser implements Parser {
 	
 
 	/**
-	 *  Returs next data record parsed from input data sorce or NULL if no more data
+	 *  Returns next data record parsed from input data sorce or NULL if no more data
 	 *  available The specified DataRecord's fields are altered to contain new
 	 *  values.
 	 *
@@ -93,7 +93,6 @@ public class SQLDataParser implements Parser {
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {
                 exceptionHandler.handleException();
-				//record.init();  redundant
 				record = parseNext(record);
 			}
 		}
@@ -147,7 +146,8 @@ public class SQLDataParser implements Parser {
 			if(resultSet.next() == false)
 				return null;
 		} catch (SQLException e) {
-			throw new JetelException(e.getMessage());
+            logger.debug("SQLException when reading resultSet: "+e.getMessage(),e);
+			throw new JetelException("SQLException when reading resultSet: "+e.getMessage(),e);
 		}
 		// init transMap if null
 		if (transMap==null){
@@ -186,7 +186,8 @@ public class SQLDataParser implements Parser {
 				throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, fieldNum));
 			}
 		} catch (Exception ex) {
-			throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
+            logger.debug(ex.getMessage(),ex);
+			throw new RuntimeException(ex.getMessage(),ex);
 		}
 	}
 
@@ -198,8 +199,8 @@ public class SQLDataParser implements Parser {
 		try{
 			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
 		}catch (Exception ex) {
-			ex.printStackTrace();
-			throw new RuntimeException(ex.getMessage());
+            logger.debug(ex.getMessage(),ex);
+			throw new RuntimeException(ex.getMessage(),ex);
 		}
 	}
 
@@ -230,7 +231,7 @@ public class SQLDataParser implements Parser {
 			/*ResultSet.TYPE_FORWARD_ONLY,
 			        ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
 		} catch (SQLException e) {
-			throw new ComponentNotReadyException(e.getMessage());
+			throw new ComponentNotReadyException(e);
 		}
 		
 		// !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
@@ -248,8 +249,8 @@ public class SQLDataParser implements Parser {
 		try{
 			resultSet = statement.executeQuery(sqlQuery);
 		} catch (SQLException e) {
-			e.printStackTrace();
-			throw new ComponentNotReadyException(e.getMessage());
+			logger.debug(e);
+			throw new ComponentNotReadyException(e);
 		}
 		// try to set up some cursor parameters (fetchSize, reading type)
 		try{
@@ -257,6 +258,7 @@ public class SQLDataParser implements Parser {
 		    resultSet.setFetchSize(fetchSize);
 		}catch (SQLException e){
 		    // do nothing - just attempt
+            logger.warn("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
 		}
 		
 	}
@@ -275,7 +277,7 @@ public class SQLDataParser implements Parser {
 			statement.close();
 		}
 		catch (SQLException ex) {
-            logger.warn(ex);
+            logger.warn("SQLException when closing statement",ex);
 		}
 	}
 
