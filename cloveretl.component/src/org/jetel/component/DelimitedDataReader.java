@@ -28,6 +28,7 @@ import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -215,9 +216,9 @@ public class DelimitedDataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-		String policy = getDataPolicy();
+		PolicyType policy = getPolicyType();
 		if (policy != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, getDataPolicy());
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policy.toString());
 		}
 		
 	}
@@ -273,7 +274,7 @@ public class DelimitedDataReader extends Node {
 	 * @return User defined data policy, or null if none was specified
 	 * @see org.jetel.exception.BadDataFormatExceptionHandler
 	 */
-	public String getDataPolicy() {
+	public PolicyType getPolicyType() {
 		return this.parser.getPolicyType();
 	}
 	

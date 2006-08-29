@@ -34,6 +34,7 @@ import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -225,9 +226,9 @@ public class FixLenDataReader extends Node {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
 		
-		String dataPolicy = this.parser.getPolicyType();
+		PolicyType dataPolicy = this.parser.getPolicyType();
 		if (dataPolicy != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy);
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy.toString());
 		}
 		
 		if (this.parser.getOneRecordPerLinePolicy()) {

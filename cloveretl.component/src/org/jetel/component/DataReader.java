@@ -36,8 +36,12 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -115,10 +119,9 @@ public class DataReader extends Node {
 	private int startRecord = -1;
 	private int finalRecord = -1;
 	private int maxErrorCount = -1;
-	private boolean strictPolicy = true;
     
 	private DataParser parser;
-
+	private PolicyType policyType = PolicyType.STRICT;
 
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
@@ -156,7 +159,9 @@ public class DataReader extends Node {
 	public void run() {
         boolean logging = false;
         if(getOutPorts().size() == 2) {
-            logging = true;
+            if(checkLogPortMetadata()) {
+                logging = true;
+            }
         }
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -186,18 +191,22 @@ public class DataReader extends Node {
     					    writeRecord(OUTPUT_PORT, record);
     				}
                 } catch(BadDataFormatException bdfe) {
-                    if(strictPolicy) {
+                    if(policyType == PolicyType.STRICT) {
                         throw bdfe;
-                    }
-                    if(logging) {
-                        //TODO implement log port framework
-                        ((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
-                        ((StringDataField) logRecord.getField(1)).setValue(bdfe.getOffendingValue());
-                        writeRecord(LOG_PORT, logRecord);
-                    }
-                    if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-                        logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-                        break;
+                    } else {
+                        if(logging) {
+                            //TODO implement log port framework
+                            ((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
+                            ((StringDataField) logRecord.getField(1)).setValue(bdfe.getOffendingValue());
+                            ((StringDataField) logRecord.getField(2)).setValue(bdfe.getMessage());
+                            writeRecord(LOG_PORT, logRecord);
+                        } else {
+                            logger.info(bdfe.getMessage());
+                        }
+                        if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+                            logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+                            break;
+                        }
                     }
                 }
 				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
@@ -227,7 +236,23 @@ public class DataReader extends Node {
 	}
 
 
-	private static ReadableByteChannel getChannel(String input) throws IOException {
+	private boolean checkLogPortMetadata() {
+        DataRecordMetadata logMetadata = getOutputPort(LOG_PORT).getMetadata();
+
+        boolean ret = logMetadata.getNumFields() == 3 
+            && logMetadata.getField(0).getType() == DataFieldMetadata.INTEGER_FIELD
+            && logMetadata.getField(1).getType() == DataFieldMetadata.STRING_FIELD
+            && logMetadata.getField(2).getType() == DataFieldMetadata.STRING_FIELD;
+        
+        if(!ret) {
+            logger.warn("The log port metedata has invalid format (expected data fields - integer, string, string)");
+        }
+        
+        return ret;
+    }
+
+
+    private static ReadableByteChannel getChannel(String input) throws IOException {
         String strURL = input;
 		URL url;
 		
@@ -306,7 +331,9 @@ public class DataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, strictPolicy ? "strict" : "controlled"); //TODO change data policy setting
+        if(parser.getPolicyType() != null) {
+            xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, parser.getPolicyType().toString());
+        }
 		
 	}
 
@@ -332,9 +359,10 @@ public class DataReader extends Node {
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-                aDataReader.strictPolicy = xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, "strict").equalsIgnoreCase("strict"); //TODO change data policy setting
-				aDataReader.parser.setStrictPolicy(aDataReader.strictPolicy);
-			}
+			    aDataReader.setPolicyType(PolicyType.valueOfIgnoreCase(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
+			} else {
+			    aDataReader.setPolicyType(PolicyType.STRICT);
+            }
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
@@ -429,4 +457,9 @@ public class DataReader extends Node {
 		}
 		this.maxErrorCount = maxErrorCount;
 	}
+    
+    public void setPolicyType(PolicyType policyType) {
+        this.policyType = policyType;
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+    }
 }
