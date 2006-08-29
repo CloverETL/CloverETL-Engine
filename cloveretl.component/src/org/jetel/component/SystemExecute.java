@@ -23,6 +23,8 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -115,11 +117,14 @@ public class SystemExecute extends Node{
 
 	private String command;
 	private int errorLinesNumber;
-	private File outputFile = null;
+//	private FileWriter outputFile = null;
+	private FileOutputStream outputFile = null;
 	private boolean append;
 	private int exitValue;
 	private Parser parser;
 	private Formatter formatter;
+	private File batch;
+	private String outputFileName;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
@@ -146,6 +151,10 @@ public class SystemExecute extends Node{
 		}catch(InterruptedException ex){
 		}
 		return !thread.isAlive();
+	}
+	
+	private void createBatch(String command)throws IOException{
+		batch =  File.createTempFile("tmp","bat");
 	}
 
 	public void run() {
@@ -201,7 +210,6 @@ public class SystemExecute extends Node{
 			//If there is output port read output from process and send it to output ports
 			SendData sendData=null;
 			SendDataToFile sendDataToFile = null;
-			SendDataToFile sendErrToFile = null;
 			if (outPort!=null){
                 parser.open(process_out, getOutputPort(OUTPUT_PORT).getMetadata());
                 sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
@@ -211,8 +219,6 @@ public class SystemExecute extends Node{
 				SequenceInputStream in = new SequenceInputStream(process_out,process_err);
 				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,in);
 				sendDataToFile.start();
-//				sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_err);
-//				sendErrToFile.start();
 			}
 
 			if (sendDataToFile==null ){
@@ -257,11 +263,6 @@ public class SystemExecute extends Node{
 						throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 					}
 				}
-				if (sendErrToFile!=null) {
-					if (!kill(sendErrToFile,killProcessTime)){
-						throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-					}
-				}
 			}
 			
 			if (getData!=null){
@@ -294,15 +295,6 @@ public class SystemExecute extends Node{
 				}
 			}
 
-			if (sendErrToFile!=null){
-				if (!kill(sendErrToFile,killProcessTime)){
-					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-				}
-				if (sendDataToFile.getResultCode()!=Node.RESULT_OK){
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = sendDataToFile.getResultMsg() + "\n" + sendData.getResultException();
-				}
-			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
@@ -332,8 +324,13 @@ public class SystemExecute extends Node{
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many otput ports");
-		if (!append){
-			outputFile.delete();
+		File outFile= new File(outputFileName);
+		try{
+			outFile.createNewFile();
+//			this.outputFile = new FileWriter(outFile,append);
+			this.outputFile = new FileOutputStream(outFile,append);
+		}catch(IOException ex){
+			throw new ComponentNotReadyException(ex);
 		}
 	}
 
@@ -350,10 +347,10 @@ public class SystemExecute extends Node{
 		SystemExecute sysExec;
 		try {
 			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE),xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
+			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
 				sysExec.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
 			}
-			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			return sysExec;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -366,8 +363,8 @@ public class SystemExecute extends Node{
 		xmlElement.setAttribute(XML_ERROR_LINES_ATTRIBUTE,String.valueOf(errorLinesNumber));
 	}
 	
-	private void setOutputFile(String outputFile) {
-		this.outputFile = new File(outputFile);
+	private void setOutputFile(String outputFile){
+		this.outputFileName = outputFile;
 	}
 
 	private void setAppend(boolean append) {
@@ -528,26 +525,21 @@ public class SystemExecute extends Node{
 	
 	private static class SendDataToFile extends Thread {
 
-		InputStream process_out;
-		RandomAccessFile outFile;
+	    private final static int DEFAULT_CHAR_ARRAY_BUFFER_SIZE = 512;
+
+	    InputStream process_out;
+//		FileWriter outFile;
+	    FileOutputStream outFile;
 		String resultMsg=null;
 		int resultCode;
 		volatile boolean runIt;
 		Thread parentThread;
 		Throwable resultException;
 		
-		SendDataToFile(Thread parentThread,File outFile,InputStream process_out){
+		SendDataToFile(Thread parentThread,FileOutputStream outFile,InputStream process_out){
 			super(parentThread.getName()+".SendDataToFile");
+			this.outFile = outFile;
 			this.process_out = process_out;
-			try {
-				this.outFile=new RandomAccessFile(outFile,"rw");
-			}catch(IOException ex){
-				logger.error("IOError while creating output file");
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				resultException = ex;
-				parentThread.interrupt();
-			}
 			this.runIt=true;
 			this.parentThread = parentThread;
 		}
@@ -558,13 +550,13 @@ public class SystemExecute extends Node{
 		
 		public void run() {
             resultCode=Node.RESULT_RUNNING;
-			BufferedReader out=new BufferedReader(new InputStreamReader(process_out));
-           String line;
+            BufferedReader out=new BufferedReader(new InputStreamReader(process_out));
+            String line;
 			try{
-	            outFile.seek(outFile.length());
-				while (runIt && ((line =out.readLine())!= null) ) {
-					outFile.writeBytes(line+"\n");
-				}
+				while (runIt && ((line=out.readLine())!=null))  {
+					outFile.write(line.getBytes());
+					outFile.write((int)'\n');
+				};
 				out.close();
 				process_out.close();
 			}catch(IOException ex){
