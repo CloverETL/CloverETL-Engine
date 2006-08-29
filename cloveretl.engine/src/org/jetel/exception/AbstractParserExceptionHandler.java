@@ -29,19 +29,19 @@ import org.jetel.data.DataRecord;
  *
  */
 public abstract class AbstractParserExceptionHandler implements IParserExceptionHandler {
-    boolean exceptionThrowed;
+    protected boolean exceptionThrowed;
 
-    String errorMessage;
+    protected String errorMessage;
     
-    DataRecord record;
+    protected DataRecord record;
     
-    int recordNumber;
+    protected int recordNumber;
     
-    int fieldNumber;
+    protected int fieldNumber;
     
-    String offendingValue;
+    protected String offendingValue;
     
-    BadDataFormatException exception;
+    protected BadDataFormatException exception;
     
     public void handleException() {
         exceptionThrowed = false;
@@ -99,6 +99,6 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         return record.getMetadata().getField(fieldNumber).getName();
     }
     
-    public abstract String getType();
+    public abstract PolicyType getType();
 
 }

@@ -36,6 +36,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -324,6 +325,19 @@ public class FixLenDataParser implements Parser {
 
     public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
+    }
+
+
+    public IParserExceptionHandler getExceptionHandler() {
+        return exceptionHandler;
+    }
+
+
+    public PolicyType getPolicyType() {
+        if(exceptionHandler != null) {
+            return exceptionHandler.getType();
+        }
+        return null;
     }
 
 }

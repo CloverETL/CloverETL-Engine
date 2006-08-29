@@ -28,6 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -80,6 +81,10 @@ public interface Parser {
 	 */
 	public void setExceptionHandler(IParserExceptionHandler handler);
 
+    public IParserExceptionHandler getExceptionHandler();
+    
+    public PolicyType getPolicyType();
+    
 }
 /*
  *  end class DataParser

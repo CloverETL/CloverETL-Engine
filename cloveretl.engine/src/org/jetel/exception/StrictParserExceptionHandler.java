@@ -27,16 +27,28 @@ package org.jetel.exception;
  */
 public class StrictParserExceptionHandler extends AbstractParserExceptionHandler {
 
-    private static final String TYPE = "strict";
+    private PolicyType type;
+
+    public StrictParserExceptionHandler() {
+        this(PolicyType.STRICT);
+    }
+    
+    public StrictParserExceptionHandler(PolicyType type) {
+        this.type = type;
+    }
     
     @Override
     protected void handle() {
+        exception.setRecordNumber(recordNumber);
+        exception.setFieldNumber(fieldNumber);
+        exception.setOffendingValue(offendingValue);
+
         throw exception;
     }
 
     @Override
-    public String getType() {
-        return TYPE;
+    public PolicyType getType() {
+        return type;
     }
 
 }
