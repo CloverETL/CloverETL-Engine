@@ -19,6 +19,14 @@
 */
 package org.jetel.exception;
 
+/**
+ * This enum represents type of policy as reaction on BadDataFormatException in parses.
+ * @see org.jetel.exception.IParserExceptionHandler
+ * @see org.jetel.data.parser.Parser
+ * 
+ * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
+ *
+ */
 public enum PolicyType {
 
     STRICT, CONTROLLED, LENIENT;
