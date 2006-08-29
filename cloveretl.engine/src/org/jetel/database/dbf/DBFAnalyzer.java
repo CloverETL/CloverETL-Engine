@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.util.Properties;
 
@@ -77,7 +78,7 @@ public class DBFAnalyzer {
 		dbfFile.close();
 	}
 
-	void analyze(FileChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
+	void analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
 	    
 	    buffer=ByteBuffer.allocate(DBF_HEADER_SIZE);
 	    buffer.order(ByteOrder.LITTLE_ENDIAN);
