@@ -29,6 +29,7 @@ import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -187,9 +188,9 @@ public class DBFDataReader extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharset());
 		}
-		String policyType = this.parser.getPolicyType();
+		PolicyType policyType = this.parser.getPolicyType();
 		if (policyType != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType);
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		}
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
 	}
