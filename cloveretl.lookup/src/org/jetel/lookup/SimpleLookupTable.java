@@ -35,7 +35,7 @@ import org.jetel.data.parser.FixLenDataParser2;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.NotFoundException;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -189,7 +189,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         try {
             id = xattribs.getString(XML_ID_ATTRIBUTE);
             type = xattribs.getString(XML_TYPE_ATTRIBUTE);
-        } catch(NotFoundException ex) {
+        } catch(AttributeNotFoundException ex) {
             throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
         }
         
