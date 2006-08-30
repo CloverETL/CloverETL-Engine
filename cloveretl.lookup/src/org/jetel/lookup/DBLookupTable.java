@@ -447,12 +447,19 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         
         //create db lookup table
         //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-        DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
         
-        lookupTable = new DBLookupTable(id, (DBConnection) graph.getConnection(xattribs.getString(XML_DBCONNECTION)),
+        try {
+            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs
+                    .getString(XML_METADATA_ID));
+
+            lookupTable = new DBLookupTable(id, (DBConnection) graph
+                    .getConnection(xattribs.getString(XML_DBCONNECTION)),
                     metadata, xattribs.getString(XML_SQL_QUERY));
 
-        return lookupTable;
+            return lookupTable;
+        } catch (AttributeNotFoundException ex) {
+            throw new XMLConfigurationException(ex);
+        }
     }
 
 	/**
