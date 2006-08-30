@@ -661,7 +661,7 @@ public class DBOutputTable extends Node {
                 if (childNode == null) {
                     throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ": Can't find <SQLCode> node !");
                 }
-                xattribsChild = new ComponentXMLAttributes(childNode, graph);
+                xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
                 outputTable = new DBOutputTable(xattribs.getString(XML_ID_ATTRIBUTE),
     					xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
     					xattribsChild.getText(childNode),

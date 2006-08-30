@@ -19,6 +19,7 @@ import org.jetel.data.IntegerDataField;
 import org.jetel.data.LongDataField;
 import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
@@ -599,13 +600,17 @@ public class XMLExtract extends Node
 		{
 			// for a mapping declaration, process all of the attributes
 			// element, outPort, parentKeyName, generatedKey
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeXML, graph);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)nodeXML, graph);
 			Mapping mapping = null;
 
 			if (attributes.exists("element") && attributes.exists("outPort"))
 			{
+                try{
 				mapping = extract.new Mapping(attributes.getString("element"),
 						attributes.getInteger("outPort"));
+                }catch(AttributeNotFoundException ex){
+                    
+                }
 			}
 			else
 			{
@@ -616,7 +621,7 @@ public class XMLExtract extends Node
 									+ ": XML Extract Mapping for element: "
 									+ mapping.getElement()
 									+ " missing a required attribute, element for outPort "
-									+ attributes.getString("outPort")
+									+ attributes.getString("outPort",null)
 									+ ".  Skipping this mapping and all children.");
 				}
 				else if (attributes.exists("element"))
@@ -626,7 +631,7 @@ public class XMLExtract extends Node
 									+ ": XML Extract Mapping for element: "
 									+ mapping.getElement()
 									+ " missing a required attribute, outPort for element "
-									+ attributes.getString("element")
+									+ attributes.getString("element",null)
 									+ ".  Skipping this mapping and all children.");
 				}
 				else
@@ -644,13 +649,13 @@ public class XMLExtract extends Node
 			boolean generatedKeyPresent = false;
 			if (attributes.exists("parentKey"))
 			{
-				mapping.setParentKey(attributes.getString("parentKey"));
+				mapping.setParentKey(attributes.getString("parentKey",null));
 				parentKeyPresent = true;
 			}
 
 			if (attributes.exists("generatedKey"))
 			{
-				mapping.setGeneratedKey(attributes.getString("generatedKey"));
+				mapping.setGeneratedKey(attributes.getString("generatedKey",null));
 				generatedKeyPresent = true;
 			}
 

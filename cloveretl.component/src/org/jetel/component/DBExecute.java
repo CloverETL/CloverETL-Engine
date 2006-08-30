@@ -338,7 +338,7 @@ public class DBExecute extends Node {
                 if (childNode == null) {
                     throw new RuntimeException("Can't find <SQLCode> node !");
                 }
-                xattribsChild = new ComponentXMLAttributes(childNode, graph);
+                xattribsChild = new ComponentXMLAttributes((Element)childNode, graph);
                 query = xattribsChild.getText(childNode);
             }
             executeSQL = new DBExecute(xattribs
