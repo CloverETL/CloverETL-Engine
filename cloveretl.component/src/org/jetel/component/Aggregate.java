@@ -266,7 +266,7 @@ public class Aggregate extends Node {
 			}
 			return agg;
 		} catch (Exception ex) {
-            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage(),ex);
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage(),ex);
 		}
 	}
 

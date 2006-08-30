@@ -240,7 +240,7 @@ public class DataWriter extends Node {
 										xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));	
 			}
 		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + ((xattribs.exists(XML_ID_ATTRIBUTE)) ? xattribs.getString(Node.XML_ID_ATTRIBUTE) : " unknown ID ") + ":" + ex.getMessage());
+			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
 		}
 		
