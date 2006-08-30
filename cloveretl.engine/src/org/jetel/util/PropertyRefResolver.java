@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
 
 /**
@@ -112,9 +113,10 @@ public class PropertyRefResolver {
 	 * @param  value  String potentially containing one or more references to property
 	 * @return        String with all references resolved
 	 * @see           org.jetel.data.Defaults
+     * @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	
-	public String resolveRef(String value){
+	public String resolveRef(String value) throws AttributeNotFoundException{
 		if (resolve){
 		    StringBuffer strBuf = new StringBuffer(value);
 		    resolveRef2(strBuf);
@@ -124,7 +126,18 @@ public class PropertyRefResolver {
 		}
 	}
 	
-	public boolean resolveRef(StringBuffer value){
+	/**
+     * Looks for reference to global graph properties within string and
+     *  tries to resolve them - replace by the property's value.<br>
+     *  The format of reference 'call' is denoted by Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX -
+     *  usually in the form ${<i>_property_name_</i>}.
+     *  It can handle nested reference - when global property is referencing another property 
+     * 
+	 * @param value
+	 * @return value with all references resolved
+	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
+	 */
+	public boolean resolveRef(StringBuffer value) throws AttributeNotFoundException{
 	    if (resolve){
 	      return resolveRef2(value);
 	    }else{
@@ -140,7 +153,7 @@ public class PropertyRefResolver {
 	 * global properties - > reference is in form ${<i>..property_name..</i>}
 	 * @return true if at least one reference to global property was found and resolved
 	 */
-	private boolean resolveRef2(StringBuffer value) {
+	private boolean resolveRef2(StringBuffer value) throws AttributeNotFoundException {
 		String reference;
 		String resolvedReference;
 		boolean found=false;
@@ -154,8 +167,8 @@ public class PropertyRefResolver {
 				}
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
-				    logger.error("Can't resolve reference to graph property: " + reference);
-					throw new RuntimeException("Can't resolve reference to graph property: " + reference);
+				    logger.debug("Can't resolve reference to graph property: " + reference);
+					throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
 				}
 				value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
 				regexMatcher.reset(value);
