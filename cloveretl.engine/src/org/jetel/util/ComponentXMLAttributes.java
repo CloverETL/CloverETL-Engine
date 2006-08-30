@@ -184,17 +184,17 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The string value
 	 */
-	public String getString(String key, String defaultValue) throws AttributeNotFoundException {
+	public String getString(String key, String defaultValue) {
 		try {
 			return refResolver.resolveRef(nodeXML.getAttribute(key));
-		} catch (NullPointerException ex){
+		} catch (Exception ex){
             return defaultValue;
         }  
 	}
 
     public String getString(String key, String defaultValue, Log logger) {
         try{
-            return getString(key,defaultValue);
+            return refResolver.resolveRef(nodeXML.getAttribute(key));
         }catch(AttributeNotFoundException ex){
             logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
         }
@@ -244,7 +244,7 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The integer value
 	 */
-	public int getInteger(String key, int defaultValue) throws AttributeNotFoundException {
+	public int getInteger(String key, int defaultValue) {
 		String value;
 		try {
 			value = refResolver.resolveRef(nodeXML.getAttribute(key));
@@ -254,22 +254,28 @@ public class ComponentXMLAttributes {
 			    return Integer.MAX_VALUE;
 			}
 			return Integer.parseInt(value);
-		} catch (NullPointerException ex) {
+		} catch (Exception ex) {
             return defaultValue;
-		} catch (NumberFormatException ex){
-		    return defaultValue;
         }
 	}
     
     public int getInteger(String key, int defaultValue, Log logger) {
-           try{
-               return getInteger(key,defaultValue);
-           }catch(AttributeNotFoundException ex){
-               logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
-           }
-           return defaultValue;
-
+        String value;
+        try {
+            value = refResolver.resolveRef(nodeXML.getAttribute(key));
+            if (value.equalsIgnoreCase(STR_MIN_INT)) {
+                return Integer.MIN_VALUE;
+            } else if (value.equalsIgnoreCase(STR_MAX_INT)) {
+                return Integer.MAX_VALUE;
+            }
+            return Integer.parseInt(value);
+        } catch (AttributeNotFoundException ex) {
+            logger.debug("using default value \"" + defaultValue
+                    + "\" for attribute \"" + key + "\" :", ex);
+        } catch (Exception ex) {
         }
+        return defaultValue;
+    }
     
     /**
      * Sets value of specified attribute
@@ -306,23 +312,26 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The boolean value
 	 */
-	public boolean getBoolean(String key, boolean defaultValue) throws AttributeNotFoundException {
+	public boolean getBoolean(String key, boolean defaultValue) {
 		String value;
 		try {
 			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			return value.matches("^[tTyY].*");
-		} catch (NullPointerException ex) {
+		} catch (Exception ex) {
 			return defaultValue;
 		}
 
 	}
     
     public boolean getBoolean(String key, boolean defaultValue, Log logger) {
-       try{
-           return getBoolean(key,defaultValue);
-       }catch(AttributeNotFoundException ex){
-           logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
-       }
+        String value;
+        try {
+            value = refResolver.resolveRef(nodeXML.getAttribute(key));
+            return value.matches("^[tTyY].*");
+        }catch(AttributeNotFoundException ex){
+            logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
+        }catch (Exception ex) {
+        }
        return defaultValue;
 
     }
@@ -367,7 +376,7 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The double value
 	 */
-	public double getDouble(String key, double defaultValue) throws AttributeNotFoundException{
+	public double getDouble(String key, double defaultValue){
 		String value;
 		try {
 			value = refResolver.resolveRef(nodeXML.getAttribute(key));
@@ -377,22 +386,29 @@ public class ComponentXMLAttributes {
 			    return Double.MAX_VALUE;
 			}
 			return Double.parseDouble(value);
-		} catch (NullPointerException ex) {
+		} catch (Exception ex) {
 			return defaultValue;
-		} catch (NumberFormatException ex) {
-		    return defaultValue;
-        }
+		} 
 	}
 
     public double getDouble(String key, double defaultValue, Log logger) {
-           try{
-               return getDouble(key,defaultValue);
-           }catch(AttributeNotFoundException ex){
-               logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
-           }
-           return defaultValue;
+        String value;
+        try {
+            value = refResolver.resolveRef(nodeXML.getAttribute(key));
+            if (value.equalsIgnoreCase(STR_MIN_DOUBLE)) {
+                return Double.MIN_VALUE;
+            } else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)) {
+                return Double.MAX_VALUE;
+            }
+        } catch (AttributeNotFoundException ex) {
+            logger.debug("using default value \"" + defaultValue
+                    + "\" for attribute \"" + key + "\" :", ex);
+        } catch (Exception ex) {
 
         }
+        return defaultValue;
+
+    }
     
     
     /**
