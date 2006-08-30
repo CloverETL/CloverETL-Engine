@@ -113,6 +113,7 @@ public class SystemExecute extends Node{
 
 	private final static long killProcessTime = 1000;
 	private String command;
+	private String executeCommand;
 	private int errorLinesNumber;
 	private FileWriter outputFile = null;
 	private boolean append;
@@ -120,19 +121,14 @@ public class SystemExecute extends Node{
 	private Parser parser;
 	private Formatter formatter;
 	private File batch;
-	private String interpreter = null;
+	private String interpreter;
 	private String outputFileName;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
-	public SystemExecute(String id,String command) {
+	public SystemExecute(String id,String interpreter, String command,int errorLinesNumber) {
 		super(id);
-		this.command=command;
-		errorLinesNumber=2;
-	}
-
-	public SystemExecute(String id,String command,int errorLinesNumber) {
-		super(id);
+		this.interpreter = interpreter;
 		this.command=command;
 		this.errorLinesNumber=errorLinesNumber;
 	}
@@ -158,7 +154,6 @@ public class SystemExecute extends Node{
 	}
 
 	public void run() {
-		resultCode = Node.RESULT_OK;
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
@@ -196,13 +191,7 @@ public class SystemExecute extends Node{
 		Runtime r=Runtime.getRuntime();
 		
 		try{
-//			Process process=r.exec(command);
-			Process process;
-			if (interpreter!=null){
-				process= r.exec(interpreter+" "+createBatch(command));
-			}else{
-				process= r.exec(createBatch(command));
-			}
+			Process	process= r.exec(executeCommand);
 			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
 			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
@@ -349,6 +338,11 @@ public class SystemExecute extends Node{
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many otput ports");
+		try {
+			executeCommand = interpreter.replaceAll("${}",createBatch(command));
+		}catch(IOException ex){
+			throw new ComponentNotReadyException(ex);
+		}
 		if (outputFileName!=null){
 			File outFile= new File(outputFileName);
 			try{
@@ -372,15 +366,13 @@ public class SystemExecute extends Node{
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SystemExecute sysExec;
 		try {
-			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_COMMAND_ATTRIBUTE),xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
+			sysExec = new SystemExecute(xattribs.getString(XML_ID_ATTRIBUTE),
+					xattribs.getString(XML_INTERPRETER_ATTRIBUTE),
+					xattribs.getString(XML_COMMAND_ATTRIBUTE),
+					xattribs.getInteger(XML_ERROR_LINES_ATTRIBUTE,2));
 			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
 				sysExec.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_INTERPRETER_ATTRIBUTE)){
-				sysExec.setInterpreter(xattribs.getString(XML_INTERPRETER_ATTRIBUTE));
-			}else{
-				sysExec.setInterpreter(System.getenv("SHELL"));
 			}
 			return sysExec;
 		} catch (Exception ex) {
