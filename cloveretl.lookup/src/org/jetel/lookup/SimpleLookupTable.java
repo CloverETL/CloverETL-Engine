@@ -36,6 +36,7 @@ import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.AttributeNotFoundException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -179,7 +180,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		numFound=0;
 	}
 	
-    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML){
+    public static SimpleLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
         SimpleLookupTable lookupTable = null;
         String id;
@@ -190,12 +191,12 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             id = xattribs.getString(XML_ID_ATTRIBUTE);
             type = xattribs.getString(XML_TYPE_ATTRIBUTE);
         } catch(AttributeNotFoundException ex) {
-            throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+            throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(),ex);
         }
         
         //check type
         if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_SIMPLE_LOOKUP)) {
-            throw new RuntimeException("Can't create simple lookup table from type " + type);
+            throw new XMLConfigurationException("Can't create simple lookup table from type " + type);
         }
         
         //create simple lookup table
@@ -216,13 +217,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             
             lookupTable = new SimpleLookupTable(id, metadata, keys, parser, initialSize);
             
-         }catch(FileNotFoundException ex){
-             throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
-         }catch(ComponentNotReadyException ex){
-             throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
-         }
+            return lookupTable;
             
-        return lookupTable;
+         }catch(Exception ex){
+             throw new XMLConfigurationException("can't create simple lookup table",ex);
+         }
     }
 
 	/* (non-Javadoc)
