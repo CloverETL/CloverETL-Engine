@@ -26,15 +26,31 @@ package org.jetel.exception;
  * @see Exception
  * @author D.Pavlis
  */
-public class NotFoundException extends RuntimeException {
+public class AttributeNotFoundException extends Exception {
   
   // Attributes
-
+  String attributeName;  
+    
   // Associations
 
   // Operations
-  public NotFoundException(String message){
-	  super(message);
+  public AttributeNotFoundException(String keyValue){
+	  super("Attribute/property not found: "+keyValue);
   }
 
-} /* end class NotFoundException */
+  public AttributeNotFoundException(String attributeName,String message){
+      super(message);
+      this.attributeName=attributeName;
+  }
+  
+  
+public String getAttributeName() {
+    return attributeName;
+}
+
+public void setAttributeName(String keyValue) {
+    this.attributeName = keyValue;
+}
+
+  
+} /* end class AttributeNotFoundException */
