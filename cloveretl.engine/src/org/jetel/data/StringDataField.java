@@ -244,7 +244,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
 	}
 
 
