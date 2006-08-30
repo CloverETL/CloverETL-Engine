@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.util;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -27,9 +28,15 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import org.jetel.exception.NotFoundException;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
+import org.w3c.dom.Attr;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+
+import org.apache.commons.logging.Log;
+
 /**
  *  Helper class (wrapper) around NamedNodeMap with possibility to parse string
  *  values into integers, booleans, doubles..<br>
@@ -73,7 +80,7 @@ public class ComponentXMLAttributes {
     private static final String STR_MIN_DOUBLE="MIN_DOUBLE";
     
 	protected NamedNodeMap attributes;
-	protected org.w3c.dom.Node nodeXML;
+	protected Element nodeXML;
 	protected PropertyRefResolver refResolver;
 	
 	public static final String XML_ATTRIBUTE_NODE_NAME = "attr";
@@ -86,7 +93,7 @@ public class ComponentXMLAttributes {
      *
      * @param  nodeXML  Description of the Parameter
      */
-    public ComponentXMLAttributes(org.w3c.dom.Node nodeXML) {
+    public ComponentXMLAttributes(Element nodeXML) {
         this(nodeXML, (Properties) null);
     }
 
@@ -95,7 +102,7 @@ public class ComponentXMLAttributes {
 	 *
 	 * @param  nodeXML  Description of the Parameter
 	 */
-	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, TransformationGraph graph) {
+	public ComponentXMLAttributes(Element nodeXML, TransformationGraph graph) {
 	    this(nodeXML, graph.getGraphProperties());
 	}
 
@@ -106,24 +113,24 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML     Description of the Parameter
 	 * @param  properties  Description of the Parameter
 	 */
-	public ComponentXMLAttributes(org.w3c.dom.Node nodeXML, Properties properties) {
+	public ComponentXMLAttributes(Element nodeXML, Properties properties) {
 	   
 		this.nodeXML = nodeXML;
 		refResolver= new PropertyRefResolver(properties);
 		instantiateInlinedNodeAttributes(nodeXML);
 		this.attributes = nodeXML.getAttributes();
 	}
-	
-	private void instantiateInlinedNodeAttributes(org.w3c.dom.Node nodeXML){
+
+    
+	private void instantiateInlinedNodeAttributes(Element _nodeXML){
 	    org.w3c.dom.Node childNode;
 	    org.w3c.dom.NodeList list;
-	    NamedNodeMap childNodeAttributes;
 	    String newAttributeName;
 	    String newAttributeValue;
 	    
 		// add all "inlined" attributes in form of "attr" node as normal attributes
-		if (nodeXML.hasChildNodes()) {
-			list = nodeXML.getChildNodes();
+		if (_nodeXML.hasChildNodes()) {
+			list = _nodeXML.getChildNodes();
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeName().equalsIgnoreCase(XML_ATTRIBUTE_NODE_NAME)) {
@@ -140,11 +147,11 @@ public class ComponentXMLAttributes {
 					}
 					// add value of child node as attribute, also create new attribute node
 					if (newAttributeName!=null && newAttributeValue!=null){
-					    org.w3c.dom.Attr newAttribute = nodeXML.getOwnerDocument().createAttribute(newAttributeName);
+					    org.w3c.dom.Attr newAttribute = _nodeXML.getOwnerDocument().createAttribute(newAttributeName);
 					    newAttribute.setNodeValue(newAttributeValue);
-					    nodeXML.getAttributes().setNamedItem(newAttribute);
+					    _nodeXML.getAttributes().setNamedItem(newAttribute);
 					    // remove child node as it is now included as an attribute - in attribute
-						nodeXML.removeChild(childNode);
+						_nodeXML.removeChild(childNode);
 					}
 					
 				}
@@ -161,12 +168,12 @@ public class ComponentXMLAttributes {
 	 * @param  key  name of the attribute
 	 * @return      The string value
 	 */
-	public String getString(String key) {
+	public String getString(String key) throws AttributeNotFoundException {
 		try {
-			return refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
-		} catch (Exception ex) {
-			throw new NotFoundException("Attribute " + key + " not found!");
-		}
+			return refResolver.resolveRef(nodeXML.getAttribute(key));
+		} catch (NullPointerException ex){
+            throw new AttributeNotFoundException(key);
+        }  
 	}
 
 
@@ -177,27 +184,33 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The string value
 	 */
-	public String getString(String key, String defaultValue) {
+	public String getString(String key, String defaultValue) throws AttributeNotFoundException {
 		try {
-			return refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
-		} catch (Exception ex) {
-			return defaultValue;
-		}
+			return refResolver.resolveRef(nodeXML.getAttribute(key));
+		} catch (NullPointerException ex){
+            return defaultValue;
+        }  
 	}
 
+    public String getString(String key, String defaultValue, Log logger) {
+        try{
+            return getString(key,defaultValue);
+        }catch(AttributeNotFoundException ex){
+            logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
+        }
+        return defaultValue;
+
+     }
+    
+    
     /**
      * Sets value of specified attribute
      * 
      * @param key   attribute name
      * @param value attribute value
      */
-    public void setString(String key,String value) {
-        try {
-            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
-            attrib.setNodeValue(value);
-        } catch (Exception ex) {
-            throw new NotFoundException("Attribute " + key + " not found!");
-        }
+    public void setString(String key,String value) throws AttributeNotFoundException {
+        nodeXML.setAttribute(key,String.valueOf(value));
     }
     
 
@@ -207,20 +220,21 @@ public class ComponentXMLAttributes {
 	 * @param  key  name of the attribute
 	 * @return      The integer value
 	 */
-	public int getInteger(String key) {
+	public int getInteger(String key) throws AttributeNotFoundException {
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			if (value.equalsIgnoreCase(STR_MIN_INT)){
 			    return Integer.MIN_VALUE;
 			}else if (value.equalsIgnoreCase(STR_MAX_INT)){
 			    return Integer.MAX_VALUE;
 			}
 		} catch (NullPointerException ex) {
-			throw new NotFoundException("Attribute " + key + " not found!");
+            throw new AttributeNotFoundException(key);
 		}
 		return Integer.parseInt(value);
 	}
+
 
 
 	/**
@@ -230,20 +244,32 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The integer value
 	 */
-	public int getInteger(String key, int defaultValue) {
+	public int getInteger(String key, int defaultValue) throws AttributeNotFoundException {
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			if (value.equalsIgnoreCase(STR_MIN_INT)){
 			    return Integer.MIN_VALUE;
 			}else if (value.equalsIgnoreCase(STR_MAX_INT)){
 			    return Integer.MAX_VALUE;
 			}
 			return Integer.parseInt(value);
-		} catch (Exception ex) {
-			return defaultValue;
-		}
+		} catch (NullPointerException ex) {
+            return defaultValue;
+		} catch (NumberFormatException ex){
+		    return defaultValue;
+        }
 	}
+    
+    public int getInteger(String key, int defaultValue, Log logger) {
+           try{
+               return getInteger(key,defaultValue);
+           }catch(AttributeNotFoundException ex){
+               logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
+           }
+           return defaultValue;
+
+        }
     
     /**
      * Sets value of specified attribute
@@ -251,13 +277,8 @@ public class ComponentXMLAttributes {
      * @param key   attribute name
      * @param value value to be set
      */
-    public void setInteger(String key,int value) {
-        try {
-            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
-            attrib.setNodeValue(String.valueOf(value));
-        } catch (Exception ex) {
-            throw new NotFoundException("Attribute " + key + " not found!");
-        }
+    public void setInteger(String key,int value) throws AttributeNotFoundException{
+        nodeXML.setAttribute(key,String.valueOf(value));
     }
 
 
@@ -267,12 +288,12 @@ public class ComponentXMLAttributes {
 	 * @param  key  name of the attribute
 	 * @return      The boolean value
 	 */
-	public boolean getBoolean(String key) {
+	public boolean getBoolean(String key) throws AttributeNotFoundException {
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 		} catch (NullPointerException ex) {
-			throw new NotFoundException("Attribute " + key + " not found!");
+			throw new AttributeNotFoundException(key);
 		}
 		return value.matches("^[tTyY].*");
 	}
@@ -285,16 +306,26 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The boolean value
 	 */
-	public boolean getBoolean(String key, boolean defaultValue) {
+	public boolean getBoolean(String key, boolean defaultValue) throws AttributeNotFoundException {
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			return value.matches("^[tTyY].*");
-		} catch (Exception ex) {
+		} catch (NullPointerException ex) {
 			return defaultValue;
 		}
 
 	}
+    
+    public boolean getBoolean(String key, boolean defaultValue, Log logger) {
+       try{
+           return getBoolean(key,defaultValue);
+       }catch(AttributeNotFoundException ex){
+           logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
+       }
+       return defaultValue;
+
+    }
 
     /**
      * Sets value of specified attribute
@@ -302,13 +333,8 @@ public class ComponentXMLAttributes {
      * @param key   attribute name
      * @param value value to be set
      */
-    public void setBoolean(String key,boolean value) {
-        try {
-            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
-            attrib.setNodeValue(String.valueOf(value));
-        } catch (Exception ex) {
-            throw new NotFoundException("Attribute " + key + " not found!");
-        }
+    public void setBoolean(String key,boolean value) throws AttributeNotFoundException {
+        nodeXML.setAttribute(key,String.valueOf(value));
     }
 
 
@@ -318,17 +344,17 @@ public class ComponentXMLAttributes {
 	 * @param  key  name of the attribute
 	 * @return      The double value
 	 */
-	public double getDouble(String key) {
+	public double getDouble(String key) throws AttributeNotFoundException {
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
 			    return Double.MIN_VALUE;
 			}else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
 			    return Double.MAX_VALUE;
 			}
 		} catch (NullPointerException ex) {
-			throw new NotFoundException("Attribute " + key + " not found!");
+			throw new AttributeNotFoundException(key);
 		}
 		return Double.parseDouble(value);
 	}
@@ -341,44 +367,56 @@ public class ComponentXMLAttributes {
 	 * @param  defaultValue  default value to be returned when attribute can't be found
 	 * @return               The double value
 	 */
-	public double getDouble(String key, double defaultValue) {
+	public double getDouble(String key, double defaultValue) throws AttributeNotFoundException{
 		String value;
 		try {
-			value = refResolver.resolveRef(attributes.getNamedItem(key).getNodeValue());
+			value = refResolver.resolveRef(nodeXML.getAttribute(key));
 			if (value.equalsIgnoreCase(STR_MIN_DOUBLE)){
 			    return Double.MIN_VALUE;
 			}else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)){
 			    return Double.MAX_VALUE;
 			}
 			return Double.parseDouble(value);
-		} catch (Exception ex) {
+		} catch (NullPointerException ex) {
 			return defaultValue;
-		}
+		} catch (NumberFormatException ex) {
+		    return defaultValue;
+        }
 	}
 
+    public double getDouble(String key, double defaultValue, Log logger) {
+           try{
+               return getDouble(key,defaultValue);
+           }catch(AttributeNotFoundException ex){
+               logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
+           }
+           return defaultValue;
 
+        }
+    
+    
     /**
      * Sets value of specified attribute
      * 
      * @param key   attribute name
      * @param value value to be set
      */
-    public void setDouble(String key,double value) {
-        try {
-            org.w3c.dom.Node attrib=attributes.getNamedItem(key);
-            attrib.setNodeValue(String.valueOf(value));
-        } catch (Exception ex) {
-            throw new NotFoundException("Attribute " + key + " not found!");
-        }
+    public void setDouble(String key, double value) {
+             nodeXML.setAttribute(key,String.valueOf(value));
     }
 
     
+    
+    
+    
 	/**
-	 *  Checks whether specified attribute exists (XML node has such attribute defined)
-	 *
-	 * @param  key  name of the attribute
-	 * @return      true if exists, otherwise false
-	 */
+     * Checks whether specified attribute exists (XML node has such attribute
+     * defined)
+     * 
+     * @param key
+     *            name of the attribute
+     * @return true if exists, otherwise false
+     */
 	public boolean exists(String key) {
 		if (attributes.getNamedItem(key) != null) {
 			return true;
@@ -394,7 +432,7 @@ public class ComponentXMLAttributes {
 	 * @param  nodeXML  XML node from which to start searching
 	 * @return          The TEXT_NODE value (String) if any exist or null
 	 */
-	public String getText(org.w3c.dom.Node nodeXML) {
+	public String getText(org.w3c.dom.Node nodeXML) throws AttributeNotFoundException{
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
 		if (nodeXML.hasChildNodes()) {
@@ -406,7 +444,7 @@ public class ComponentXMLAttributes {
 				}
 			}
 		}
-		throw new NotFoundException("Text not found !");
+		throw new AttributeNotFoundException("TEXT_NODE not found within node \""+nodeXML.getNodeName()+"\"");
 	}
 
 
@@ -470,16 +508,13 @@ public class ComponentXMLAttributes {
 	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
 	 * @return Properties object with pairs [attribute name]-[attribute value]
 	 */
-	public Properties attributes2Properties(String[] exclude){
+	public Properties attributes2Properties(String[] exclude) throws AttributeNotFoundException {
 	    Properties properties=new Properties();
 	    Set exception=new HashSet();
 	    String name;
 	    
-	    if (exclude!=null){
-	        for (int i=0;i<exclude.length;i++){
-	            exception.add(exclude[i]);
-	        }
-	    }
+	    Collections.addAll(exception,exclude);
+       
 	    for (int i=0; i<attributes.getLength();i++){
 	        name=attributes.item(i).getNodeName();
 	        if (!exception.contains(name)){
@@ -513,7 +548,7 @@ public class ComponentXMLAttributes {
 	 * (substituted with parameters' values)
 	 * @return String with references resolved.
 	 */
-	public String resloveReferences(String input){
+	public String resloveReferences(String input) throws AttributeNotFoundException{
 	    return refResolver.resolveRef(input);
 	}
 
