@@ -23,14 +23,9 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FilePermission;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.RandomAccessFile;
-import java.io.SequenceInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -107,6 +102,7 @@ public class SystemExecute extends Node{
 	private static final String XML_ERROR_LINES_ATTRIBUTE = "errorLinesNumber";
 	private static final String XML_OUTPUT_FILE_ATTRIBUTE = "outputFile";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
 	
 	public final static String COMPONENT_TYPE = "SYS_EXECUTE";
 
@@ -114,8 +110,8 @@ public class SystemExecute extends Node{
 	private final static int OUTPUT_PORT = 0;
 	
 	private final static int ERROR_LINES=2;
-	private final static long killProcessTime = 1000;
 
+	private final static long killProcessTime = 1000;
 	private String command;
 	private int errorLinesNumber;
 	private FileWriter outputFile = null;
@@ -124,6 +120,7 @@ public class SystemExecute extends Node{
 	private Parser parser;
 	private Formatter formatter;
 	private File batch;
+	private String interpreter = null;
 	private String outputFileName;
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
@@ -200,7 +197,12 @@ public class SystemExecute extends Node{
 		
 		try{
 //			Process process=r.exec(command);
-			Process process = r.exec(createBatch(command));
+			Process process;
+			if (interpreter!=null){
+				process= r.exec(interpreter+" "+createBatch(command));
+			}else{
+				process= r.exec(createBatch(command));
+			}
 			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
 			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
@@ -214,15 +216,17 @@ public class SystemExecute extends Node{
 			//If there is output port read output from process and send it to output ports
 			SendData sendData=null;
 			SendDataToFile sendDataToFile = null;
+			SendDataToFile sendErrToFile = null;
 			if (outPort!=null){
                 parser.open(process_out, getOutputPort(OUTPUT_PORT).getMetadata());
                 sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 				//send all out_records to output ports
 				sendData.start();
 			}else if (outputFile!=null){
-				SequenceInputStream in = new SequenceInputStream(process_out,process_err);
-				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,in);
+				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
+				sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
 				sendDataToFile.start();
+				sendErrToFile.start();
 			}
 
 			if (sendDataToFile==null ){
@@ -246,8 +250,12 @@ public class SystemExecute extends Node{
 			// wait for SendData and/or GetData threads to finish work
 			try{
 				exitValue=process.waitFor();
-				if (sendData!=null) sendData.join(1000);
-				if (getData!=null) getData.join(1000);
+				if (sendData!=null) sendData.join(killProcessTime);
+				if (getData!=null) getData.join(killProcessTime);
+				if (sendDataToFile!=null){
+					sendDataToFile.join(killProcessTime);
+					sendErrToFile.join(killProcessTime);
+				}
 				
 			}catch(InterruptedException ex){
 				logger.error("InterruptedException in "+this.getId(),ex);
@@ -266,16 +274,22 @@ public class SystemExecute extends Node{
 					if (!kill(sendDataToFile,killProcessTime)){
 						throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 					}
+					if (!kill(sendErrToFile,killProcessTime)){
+						throw new RuntimeException("Can't kill "+sendErrToFile.getName());
+					}
 				}
 			}
-			
+			if (outputFile!=null) {
+				outputFile.close();
+			}
+			batch.delete();
 			if (getData!=null){
 				if (!kill(getData,killProcessTime)){
 					throw new RuntimeException("Can't kill "+getData.getName());
 				}
-				if (getData.getResultCode()!=Node.RESULT_OK) {
+				if (getData.getResultCode()==Node.RESULT_ERROR) {
 					resultCode = Node.RESULT_ERROR;
-					resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
+					resultMsg = (resultMsg == null ? "" : resultMsg) + getData.getResultMsg() + "\n" + getData.getResultException();
 				}
 			}
 			
@@ -283,19 +297,26 @@ public class SystemExecute extends Node{
 				if (!kill(sendData,killProcessTime)){
 					throw new RuntimeException("Can't kill "+sendData.getName());
 				}
-				if (sendData.getResultCode()!=Node.RESULT_OK){
+				if (sendData.getResultCode()==Node.RESULT_ERROR){
 					resultCode = Node.RESULT_ERROR;
-					resultMsg = sendData.getResultMsg() + "\n" + sendData.getResultException();
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
 				}
 			}
 
 			if (sendDataToFile!=null){
 				if (!kill(sendDataToFile,killProcessTime)){
-					throw new RuntimeException("Can't kill "+sendData.getName());
+					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 				}
-				if (sendDataToFile.getResultCode()!=Node.RESULT_OK){
+				if (sendDataToFile.getResultCode()==Node.RESULT_ERROR){
 					resultCode = Node.RESULT_ERROR;
-					resultMsg = sendDataToFile.getResultMsg() + "\n" + sendData.getResultException();
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
+				}
+				if (!kill(sendErrToFile,killProcessTime)){
+					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
+				}
+				if (sendErrToFile.getResultCode()==Node.RESULT_ERROR){
+					resultCode = Node.RESULT_ERROR;
+					resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
 				}
 			}
 
@@ -328,12 +349,14 @@ public class SystemExecute extends Node{
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many otput ports");
-		File outFile= new File(outputFileName);
-		try{
-			outFile.createNewFile();
-			this.outputFile = new FileWriter(outFile,append);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
+		if (outputFileName!=null){
+			File outFile= new File(outputFileName);
+			try{
+				outFile.createNewFile();
+				this.outputFile = new FileWriter(outFile,append);
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
 		}
 	}
 
@@ -353,6 +376,11 @@ public class SystemExecute extends Node{
 			sysExec.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_OUTPUT_FILE_ATTRIBUTE)){
 				sysExec.setOutputFile(xattribs.getString(XML_OUTPUT_FILE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_INTERPRETER_ATTRIBUTE)){
+				sysExec.setInterpreter(xattribs.getString(XML_INTERPRETER_ATTRIBUTE));
+			}else{
+				sysExec.setInterpreter(System.getenv("SHELL"));
 			}
 			return sysExec;
 		} catch (Exception ex) {
@@ -374,6 +402,12 @@ public class SystemExecute extends Node{
 		this.append = append;
 	}
 
+	private void setInterpreter(String interpreter) {
+		if (interpreter!=null){
+			this.interpreter = interpreter;
+		}
+	}
+
 	private static class GetData extends Thread {
 
 		InputPort inPort;
@@ -386,13 +420,13 @@ public class SystemExecute extends Node{
 		Throwable resultException;
 	
 		
-		GetData(Thread parentThrad,InputPort inPort,DataRecord in_record,Formatter formatter){
-			super();
+		GetData(Thread parentThread,InputPort inPort,DataRecord in_record,Formatter formatter){
+			super(parentThread.getName()+".GetData");
 			this.in_record=in_record;
 			this.inPort=inPort;
 			this.formatter=formatter;
 			runIt=true;
-			this.parentThread = parentThrad;
+			this.parentThread = parentThread;
 		}
 		
 		public void stop_it(){
@@ -407,21 +441,18 @@ public class SystemExecute extends Node{
 				}
 				formatter.close();
 			}catch(IOException ex){
-				logger.error("IOError in sysexec GetData");
+				logger.error("IOError in sysexec GetData",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				resultException = ex;
+				resultMsg = ex.getMessage();
 				parentThread.interrupt();
 				return;
 			}catch (InterruptedException ex){
-				logger.error("InterruptedError in sysexec GetData");
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				resultException = ex;
-				parentThread.interrupt();
+				resultCode = Node.RESULT_ABORTED;
 				return;
 			}catch(Exception ex){
-				logger.error("Error in sysexec GetData");
+				logger.error("Error in sysexec GetData",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				resultException = ex;
@@ -462,8 +493,8 @@ public class SystemExecute extends Node{
 		SendData(Thread parentThread,OutputPort outPort,DataRecord out_record,Parser parser){
 			super(parentThread.getName()+".SendData");
 			this.out_record=out_record;
-			this.outPort=outPort;
 			this.parser=parser;
+			this.outPort=outPort;
 			this.runIt=true;
 			this.parentThread = parentThread;
 		}
@@ -482,21 +513,17 @@ public class SystemExecute extends Node{
 				}
 				parser.close();
 			}catch(IOException ex){
-				logger.error("IOError in sysexec SendData");
+				logger.error("IOError in sysexec SendData",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				resultException = ex;
 				parentThread.interrupt();
 				return;
 			}catch (InterruptedException ex){
-				logger.error("InterruptedError in sysexec SendData");
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				resultException = ex;
-				parentThread.interrupt();
+				resultCode = Node.RESULT_ABORTED;
 				return;
 			}catch(Exception ex){
-				logger.error("Error in sysexec SendData");
+				logger.error("Error in sysexec SendData",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				resultException = ex;
@@ -527,8 +554,8 @@ public class SystemExecute extends Node{
 	}
 	
 	private static class SendDataToFile extends Thread {
-
-	    InputStream process_out;
+		
+	    BufferedInputStream process_out;
 		FileWriter outFile;
 		String resultMsg=null;
 		int resultCode;
@@ -536,7 +563,8 @@ public class SystemExecute extends Node{
 		Thread parentThread;
 		Throwable resultException;
 		
-		SendDataToFile(Thread parentThread,FileWriter outFile,InputStream process_out){
+		SendDataToFile(Thread parentThread,FileWriter outFile,
+				BufferedInputStream process_out){
 			super(parentThread.getName()+".SendDataToFile");
 			this.outFile = outFile;
 			this.process_out = process_out;
@@ -550,14 +578,15 @@ public class SystemExecute extends Node{
 		
 		public void run() {
             resultCode=Node.RESULT_RUNNING;
-            BufferedReader out=new BufferedReader(new InputStreamReader(process_out));
-            String line;
-			try{
-				while (runIt && ((line=out.readLine())!=null))  {
-					outFile.write(line+"\n");
-				};
+            BufferedReader out = new BufferedReader(new InputStreamReader(process_out));
+            String line = null;
+  			try{
+ 				while (runIt && ((line=out.readLine())!=null)){
+ 					synchronized (outFile) {
+ 						outFile.write(line+"\n");
+					}
+ 				}
 				out.close();
-				outFile.close();
 			}catch(IOException ex){
 				logger.error("IOError in sysexec SendDataToFile");
 				resultMsg = ex.getMessage();
@@ -566,7 +595,7 @@ public class SystemExecute extends Node{
 				parentThread.interrupt();
 				return;
 			}catch(Exception ex){
-				logger.error("Error in sysexec SendDataToFile");
+				logger.error("Error in sysexec SendDataToFile",ex);
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				resultException = ex;
