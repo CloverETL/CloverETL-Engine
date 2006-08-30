@@ -43,7 +43,7 @@ import org.jetel.database.IConnection;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.NotFoundException;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
@@ -236,20 +236,19 @@ public class TransformationGraphXMLReaderWriter {
 		// process document
 		// get graph name
 		NodeList graphElement = document.getElementsByTagName(GRAPH_ELEMENT);
-		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes(graphElement.item(0), graph);
+		ComponentXMLAttributes grfAttributes=new ComponentXMLAttributes((Element)graphElement.item(0), graph);
 		try{
 			graph.setName(grfAttributes.getString("name"));
-		}catch(NotFoundException ex){
+		}catch(AttributeNotFoundException ex){
 			throw new XMLConfigurationException("Attribute at Graph node is missing - "+ex.getMessage());
 		}
-		//get debug mode
+        
         grfAttributes.setResolveReferences(false);
-        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
-
+        //get debug mode
+        graph.setDebugMode(grfAttributes.getString("debugMode", "true",logger));
         //get debug directory
-        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
-        grfAttributes.setResolveReferences(true);
-
+        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null, logger));
+        
 		// handle all defined Properties
 		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
 		instantiateProperties(PropertyElements);
@@ -298,7 +297,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Metadata elements & create appropriate Metadata objects
 		for (int i = 0; i < metadataElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(metadataElements.item(i), graph);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)metadataElements.item(i), graph);
 			try{
 			// process metadata element attributes "id" & "fileURL"
 			metadataID = attributes.getString("id");
@@ -328,7 +327,7 @@ public class TransformationGraphXMLReaderWriter {
 			else {
 				recordMetadata=MetadataFactory.fromXML(graph, attributes.getChildNode(metadataElements.item(i),METADATA_RECORD_ELEMENT));
 			}
-			}catch(NotFoundException ex){
+			}catch(AttributeNotFoundException ex){
 				throw new XMLConfigurationException("Metadata - Attributes missing "+ex.getMessage());
 			}
 			// register metadata object
@@ -347,13 +346,13 @@ public class TransformationGraphXMLReaderWriter {
 		
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < phaseElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(phaseElements.item(i), graph);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)phaseElements.item(i), graph);
 			// process Phase element attribute "number"
 			try{
 			phaseNum = attributes.getInteger("number");
 			phase=new Phase(phaseNum);
 			graph.addPhase(phase);
-			}catch(NotFoundException ex) {
+			}catch(AttributeNotFoundException ex) {
 				throw new XMLConfigurationException("Attribute is missing for phase - "+ex.getMessage());
 			}catch(NumberFormatException ex1){
 				throw new XMLConfigurationException("Phase attribute number is not a valid integer !",ex1);
@@ -388,7 +387,7 @@ public class TransformationGraphXMLReaderWriter {
 					.getNodeName()) != 0) {
 				continue;
 			}
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(nodeElements.item(i), graph);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)nodeElements.item(i), graph);
 
 			// process Node element attributes "id" & "type"
 			try {
@@ -412,7 +411,7 @@ public class TransformationGraphXMLReaderWriter {
 					throw new XMLConfigurationException(
 							"Error when creating Component type :" + nodeType);
 				}
-			} catch (NotFoundException ex) {
+			} catch (AttributeNotFoundException ex) {
 				throw new XMLConfigurationException("Missing attribute at node "+nodeID+" - "
 						+ ex.getMessage());
 			}
@@ -445,7 +444,7 @@ public class TransformationGraphXMLReaderWriter {
 
 		// loop through all Node elements & create appropriate Metadata objects
 		for (int i = 0; i < edgeElements.getLength(); i++) {
-			ComponentXMLAttributes attributes = new ComponentXMLAttributes(edgeElements.item(i), graph);
+			ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)edgeElements.item(i), graph);
 
 			// process edge element attributes "id" & "fileURL"
 			try{
@@ -453,12 +452,13 @@ public class TransformationGraphXMLReaderWriter {
 			edgeMetadataID = attributes.getString("metadata");
 			fromNodeAttr = attributes.getString("fromNode");
 			toNodeAttr = attributes.getString("toNode");
-			}catch(NotFoundException ex){
+			}catch(AttributeNotFoundException ex){
 				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
             if(graphDebugMode)
-                debugMode = attributes.getBoolean("debugMode", false);
-            fastPropagate = attributes.getBoolean("fastPropagate", false);
+                debugMode = attributes.getBoolean("debugMode", false,logger);
+            
+            fastPropagate = attributes.getBoolean("fastPropagate", false,logger);
 			Object metadataObj=metadata.get(edgeMetadataID);
 			if (metadataObj == null) {
 				throw new XMLConfigurationException("Can't find metadata ID: " + edgeMetadataID);
@@ -548,7 +548,7 @@ public class TransformationGraphXMLReaderWriter {
                     //register connection in transformation graph
                     graph.addConnection(connectionId, connection);
                 }
-            } catch (NotFoundException ex) {
+            } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Connection " + connectionId + " is missing - " + ex.getMessage());
             }
         }
@@ -581,7 +581,7 @@ public class TransformationGraphXMLReaderWriter {
                     //register sequence in transformation graph
     				graph.addSequence(sequenceId, seq);
     			}
-            } catch (NotFoundException ex) {
+            } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Sequence " + sequenceId + " is missing - " + ex.getMessage());
             }
 		}
@@ -614,7 +614,7 @@ public class TransformationGraphXMLReaderWriter {
                     //register lookup table in transformation graph
                     graph.addLookupTable(lookupTableId, lookup);
                 }
-            } catch (NotFoundException ex) {
+            } catch (AttributeNotFoundException ex) {
                 throw new XMLConfigurationException("Attribute at Lookup table " + lookupTableId + " is missing - " + ex.getMessage());
             }
         }
@@ -624,7 +624,7 @@ public class TransformationGraphXMLReaderWriter {
 	    
 	    // loop through all property elements & create appropriate properties
 	    for (int i = 0; i < propertyElements.getLength(); i++) {
-	        ComponentXMLAttributes attributes = new ComponentXMLAttributes(propertyElements.item(i), graph);
+	        ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)propertyElements.item(i), graph);
 	        try{
 	            // process property from file
 	            if (attributes.exists("fileURL")){
@@ -640,7 +640,7 @@ public class TransformationGraphXMLReaderWriter {
 	            }else{
 	                throw new XMLConfigurationException("Invalid property definition :"+propertyElements.item(i));
 	            }
-	        }catch(NotFoundException ex){
+	        }catch(AttributeNotFoundException ex){
 	            throw new XMLConfigurationException("Property - Attributes missing "+ex.getMessage());
 	        }
 	        

@@ -44,7 +44,7 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.NotFoundException;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.PropertyRefResolver;
 /*
@@ -172,8 +172,8 @@ public final class TransformationGraph {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
             try {
                 debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
-            } catch (Exception ex) {
-                throw new NotFoundException("Attribute debug mode not found!");
+            } catch (AttributeNotFoundException ex) {
+                logger.warn("Problem when resolving debugMode - will use default",ex);
             }
             isDebugModeResolved = true;
         }
@@ -204,8 +204,9 @@ public final class TransformationGraph {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
             try {
                 debugDirectory = prr.resolveRef(debugDirectory);
-            } catch (Exception ex) {
-                throw new NotFoundException("Attribute debug directory not found!");
+            } catch (AttributeNotFoundException ex) {
+                logger.warn("Problem when resolving debugDirectory - will use system default TMP dir",ex);
+                debugDirectory = null;
             }
             isDebugDirectoryResolved = true;
         }
