@@ -47,7 +47,7 @@ public class DataFormatter implements Formatter {
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
-	private String delimiters[];
+    private byte[][] delimiters;
 	private int delimiterLength[];
 	private int fieldLengths[];
 	private ByteBuffer dataBuffer;
@@ -91,13 +91,13 @@ public class DataFormatter implements Formatter {
 
 		// create array of delimiters & initialize them
 		// create array of field sizes & initialize them
-		delimiters = new String[metadata.getNumFields()];
-		delimiterLength = new int[metadata.getNumFields()];
+		delimiters = new byte[metadata.getNumFields()][];
+        delimiterLength = new int[metadata.getNumFields()];
 		fieldLengths = new int[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
-				delimiters[i] = metadata.getField(i).getDelimiters()[0];
-				delimiterLength[i] = delimiters[i].length();
+                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
+				delimiterLength[i] = delimiters[i].length;
 			} else {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
@@ -151,7 +151,7 @@ public class DataFormatter implements Formatter {
 				}
 				fieldBuffer.flip();
 				dataBuffer.put(fieldBuffer);
-				dataBuffer.put(delimiters[i].getBytes()); //TODO
+				dataBuffer.put(delimiters[i]);
 			} else { //fixlen field
 				if (fieldLengths[i] > dataBuffer.remaining()) {
 					flush();
