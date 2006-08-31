@@ -41,9 +41,9 @@ public class Compare {
 	 * @return     -1;0;1 if (a>b); (a==b); (a<b)
 	 */
 	final static public int compare(CharSequence a,CharSequence b){
-		int aLenght = a.length();
-		int bLenght = b.length();
-		int compLength = (aLenght< bLenght  ? aLenght : bLenght );
+		int aLength = a.length();
+		int bLength = b.length();
+		int compLength = (aLength< bLength  ? aLength : bLength );
 		for (int i = 0; i < compLength; i++) {
 			if (a.charAt(i) > b.charAt(i)) {
 				return 1;
@@ -52,65 +52,13 @@ public class Compare {
 			}
 		}
 		// strings seem to be the same (so far), decide according to the length
-		if (aLenght == bLenght) {
+		if (aLength == bLength) {
 			return 0;
-		} else if (aLenght > bLenght) {
+		} else if (aLength > bLength) {
 			return 1;
 		} else {
 			return -1;
 		}
 	}
 	
-	/**
-     * Compares two double numbers
-     * 
-	 * @param a
-	 * @param b
-	 * @return -1;0;1 if (a>b); (a==b); (a<b)
-	 */
-	final static public int compare(double a,double b){
-		if (a>b) return 1; else if (b>a) return -1; else return 0;
-	}
-	
-	/**
-     * Compares two int numbers
-     * 
-	 * @param a
-	 * @param b
-	 * @return -1;0;1 if (a>b); (a==b); (a<b)
-	 */
-	final static public int compare(int a,int b){
-		if (a>b) return 1; else if (b>a) return -1; else return 0;
-	}
-	
-	/**
-     * Compares two long numbers
-     * 
-	 * @param a
-	 * @param b
-	 * @return -1;0;1 if (a>b); (a==b); (a<b)
-	 */
-	final static public int compare(long a,long b){
-		if (a>b) return 1; else if (b>a) return -1; else return 0;
-	}
-	
-	/**
-     * Compares two Number(s) - childern of Number class (Integer,Long,Double,Short,Byte)<br>
-     * Integer,Short and Byte are compared as integer values.
-     * 
-	 * @param a
-	 * @param b
-	 * @return -1;0;1 if (a>b); (a==b); (a<b)
-	 */
-	final static public int compare(Number a,Number b){
-	    if (a instanceof Long){
-	        return compare(a.longValue() ,b.longValue());
-        }else if (a instanceof Double){
-            return compare(a.doubleValue() ,b.doubleValue());
-        }else{
-                return compare(a.intValue() ,b.intValue());
-        }
-            
-	}
-    
 }
