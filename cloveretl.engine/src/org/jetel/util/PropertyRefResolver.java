@@ -47,6 +47,7 @@ import org.jetel.graph.TransformationGraph;
  */
 public class PropertyRefResolver {
 	private Matcher regexMatcher;
+    private Matcher regexEscapeMatcher;
 	private Properties properties;
 
 	private static final int MAX_RECURSION_DEPTH=10;
@@ -61,6 +62,8 @@ public class PropertyRefResolver {
 		if (properties != null) {
 			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 			regexMatcher = pattern.matcher("");
+          //  Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
+          //  regexEscapeMatcher = pattern2.matcher("");
 		}
 		resolve=true; //default behaviour is to resolve references
 	}
@@ -76,6 +79,8 @@ public class PropertyRefResolver {
 		if (this.properties != null) {
 			Pattern pattern = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_REGEX);
 			regexMatcher = pattern.matcher("");
+           // Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
+           // regexEscapeMatcher = pattern2.matcher("");
 		}
 		resolve=true; //default behaviour is to resolve references
 	}
@@ -158,47 +163,40 @@ public class PropertyRefResolver {
 		String resolvedReference;
 		boolean found=false;
 		if ((value != null) && (properties != null)) {
-			regexMatcher.reset(value);
+			// process references
+            regexMatcher.reset(value);
 			while (regexMatcher.find()) {
 				found=true;
 				reference = regexMatcher.group(1);
-				if (logger.isDebugEnabled()) {
-					logger.debug("Reference: "+reference);
-				}
+//				if (logger.isDebugEnabled()) {
+//					logger.debug("Reference: "+reference);
+//				}
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
-				    logger.debug("Can't resolve reference to graph property: " + reference);
+				    logger.warn("Can't resolve reference to graph property: " + reference);
 					throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
 				}
 				value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
 				regexMatcher.reset(value);
 			}
+            // process escape 
+           /* regexEscapeMatcher.reset(value);
+            while (regexEscapeMatcher.find()) {
+                reference = regexEscapeMatcher.group(1);
+//                if (logger.isDebugEnabled()) {
+//                    logger.debug("Reference: "+reference);
+//                }
+                value.replace(regexEscapeMatcher.start(),regexEscapeMatcher.end(),
+                        value.substring(regexEscapeMatcher.start()+2,regexEscapeMatcher.end()-1));
+                regexEscapeMatcher.reset(value);
+            }*/
+            
 			return found;
 		} else {
 			return false;
 		}
 	}
 
-
-//	   //Test/Debug code
-//	   public static void main(String args[]){
-//	   Properties prop=new Properties();
-//	   System.out.println("Property name: "+args[0]);
-//	   try{
-//	   		InputStream inStream = new BufferedInputStream(new FileInputStream(args[0]));
-//	   		prop.load(inStream);
-//	   }catch(IOException ex){
-//	   	ex.printStackTrace();
-//	   }
-//	   PropertyRefResolver attr=new PropertyRefResolver(prop);
-//	   System.out.println("DB driver is: '{${dbDriver}}' ...");
-//	   System.out.println(attr.resolveRef("DB driver is: '{${dbDriver}}' ..."));
-//	   System.out.println("${user} is user");
-//	   System.out.println(attr.resolveRef("${user} is user"));
-//	   System.out.println("${user}/${password} is user/password");
-//	   System.out.println(attr.resolveRef("${user}/${password} is user/password"));
-//	   }
-	
 	 
     /**
      * Determines whether resolving references is enabled/disabled
