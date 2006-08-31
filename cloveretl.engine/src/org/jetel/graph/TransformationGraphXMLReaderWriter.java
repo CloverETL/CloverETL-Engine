@@ -245,9 +245,9 @@ public class TransformationGraphXMLReaderWriter {
         
         grfAttributes.setResolveReferences(false);
         //get debug mode
-        graph.setDebugMode(grfAttributes.getString("debugMode", "true",logger));
+        graph.setDebugMode(grfAttributes.getString("debugMode", "true"));
         //get debug directory
-        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null, logger));
+        graph.setDebugDirectory(grfAttributes.getString("debugDirectory", null));
         
 		// handle all defined Properties
 		NodeList PropertyElements = document.getElementsByTagName(PROPERTY_ELEMENT);
@@ -456,9 +456,9 @@ public class TransformationGraphXMLReaderWriter {
 				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
             if(graphDebugMode)
-                debugMode = attributes.getBoolean("debugMode", false,logger);
+                debugMode = attributes.getBoolean("debugMode", false);
             
-            fastPropagate = attributes.getBoolean("fastPropagate", false,logger);
+            fastPropagate = attributes.getBoolean("fastPropagate", false);
 			Object metadataObj=metadata.get(edgeMetadataID);
 			if (metadataObj == null) {
 				throw new XMLConfigurationException("Can't find metadata ID: " + edgeMetadataID);
