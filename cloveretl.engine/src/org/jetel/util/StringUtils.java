@@ -225,7 +225,7 @@ public class StringUtils {
 	 * @return true if character equals to ['] or ["]
 	 */
 	public static final boolean isQuoteChar(char character){
-	    return (character==QUOTE_CHAR || character==DOUBLE_QUOTE_CHAR ) ? true : false;
+	    return character==QUOTE_CHAR || character==DOUBLE_QUOTE_CHAR;
 	}
 	
 	
@@ -238,8 +238,7 @@ public class StringUtils {
 	 * @return true if the string is quoted
 	 */
 	public static final boolean isQuoted(String str){
-	    return (isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1))
-	            ? true : false;
+	    return isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1);
 	}
 	
 	
