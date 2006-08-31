@@ -51,10 +51,12 @@ public class PropertyRefResolver {
 	private Properties properties;
 
 	private static final int MAX_RECURSION_DEPTH=10;
+    private static final boolean DEFAULT_STRICT_OPTION=true;  // default behaviour is to be strict when referencing missing
 
 	Log logger = LogFactory.getLog(PropertyRefResolver.class);
 	
-	private boolean resolve;
+	private boolean resolve=true; //default behaviour is to resolve references
+    
 	
 	/**Constructor for the PropertyRefResolver object */
 	public PropertyRefResolver(TransformationGraph graph) {
@@ -65,7 +67,6 @@ public class PropertyRefResolver {
           //  Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
           //  regexEscapeMatcher = pattern2.matcher("");
 		}
-		resolve=true; //default behaviour is to resolve references
 	}
 
 
@@ -82,7 +83,6 @@ public class PropertyRefResolver {
            // Pattern pattern2 = Pattern.compile(Defaults.GraphProperties.PROPERTY_PLACEHOLDER_ESCAPE_REGEX);
            // regexEscapeMatcher = pattern2.matcher("");
 		}
-		resolve=true; //default behaviour is to resolve references
 	}
 
 
@@ -121,16 +121,21 @@ public class PropertyRefResolver {
      * @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	
-	public String resolveRef(String value) throws AttributeNotFoundException{
+	public String resolveRef(String value,boolean strict) throws AttributeNotFoundException{
 		if (resolve){
 		    StringBuffer strBuf = new StringBuffer(value);
-		    resolveRef2(strBuf);
+		    resolveRef2(strBuf,strict);
 		    return strBuf.toString();
 		}else{
 		    return value;
 		}
 	}
+    
+    public String resolveRef(String value) throws AttributeNotFoundException{
+        return resolveRef(value,DEFAULT_STRICT_OPTION);
+    }
 	
+    
 	/**
      * Looks for reference to global graph properties within string and
      *  tries to resolve them - replace by the property's value.<br>
@@ -142,23 +147,29 @@ public class PropertyRefResolver {
 	 * @return value with all references resolved
 	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
 	 */
-	public boolean resolveRef(StringBuffer value) throws AttributeNotFoundException{
+	public boolean resolveRef(StringBuffer value,boolean strict) throws AttributeNotFoundException{
 	    if (resolve){
-	      return resolveRef2(value);
+	      return resolveRef2(value,strict);
 	    }else{
 	        return true;
 	    }
 	}
 	
+    public boolean resolveRef(StringBuffer value) throws AttributeNotFoundException{
+        return resolveRef(value,DEFAULT_STRICT_OPTION);
+    }
+    
+    
 	/**
 	 * Method which Looks for reference to global graph properties within string -
 	 * this is the actual implementation. The public version is only a wrapper.
 	 * 
 	 * @param value	String buffer containing plain text mixed with references to 
 	 * global properties - > reference is in form ${<i>..property_name..</i>}
+     * @param strict    if True, then references to non-existent properties cause AttributeNotFoundException be thrown
 	 * @return true if at least one reference to global property was found and resolved
 	 */
-	private boolean resolveRef2(StringBuffer value) throws AttributeNotFoundException {
+	private boolean resolveRef2(StringBuffer value,boolean strict) throws AttributeNotFoundException {
 		String reference;
 		String resolvedReference;
 		boolean found=false;
@@ -174,10 +185,12 @@ public class PropertyRefResolver {
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
 				    logger.warn("Can't resolve reference to graph property: " + reference);
-					throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
-				}
-				value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
-				regexMatcher.reset(value);
+                    if (strict)
+                        throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
+				}else{
+				    value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
+                    regexMatcher.reset(value);
+                }
 			}
             // process escape 
            /* regexEscapeMatcher.reset(value);
@@ -214,5 +227,6 @@ public class PropertyRefResolver {
     public void setResolve(boolean resolve) {
         this.resolve = resolve;
     }
+    
 }
 

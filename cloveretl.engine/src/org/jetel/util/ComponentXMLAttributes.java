@@ -167,14 +167,30 @@ public class ComponentXMLAttributes {
 	 *
 	 * @param  key  name of the attribute
 	 * @return      The string value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public String getString(String key) throws AttributeNotFoundException {
-		try {
-			return refResolver.resolveRef(nodeXML.getAttribute(key));
-		} catch (NullPointerException ex){
+		return getString(key,true);
+	}
+    
+    /**
+     * Returns the String value of specified XML attribute
+     * 
+     * @param key   name of the attribute
+     * @param strictlyResolve   if true, any unresolvable reference to global parameter/property causes AttributeNotFoundException be
+     * thrown 
+     * @return  The string value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
+     */
+    public String getString(String key,boolean strictlyResolve) throws AttributeNotFoundException {
+        try {
+            return refResolver.resolveRef(nodeXML.getAttribute(key),strictlyResolve);
+        } catch (NullPointerException ex){
             throw new AttributeNotFoundException(key);
         }  
-	}
+    }
 
 
 	/**
@@ -219,6 +235,8 @@ public class ComponentXMLAttributes {
 	 *
 	 * @param  key  name of the attribute
 	 * @return      The integer value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public int getInteger(String key) throws AttributeNotFoundException {
 		String value;
@@ -293,6 +311,8 @@ public class ComponentXMLAttributes {
 	 *
 	 * @param  key  name of the attribute
 	 * @return      The boolean value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public boolean getBoolean(String key) throws AttributeNotFoundException {
 		String value;
@@ -352,6 +372,8 @@ public class ComponentXMLAttributes {
 	 *
 	 * @param  key  name of the attribute
 	 * @return      The double value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
 	 */
 	public double getDouble(String key) throws AttributeNotFoundException {
 		String value;
@@ -446,9 +468,13 @@ public class ComponentXMLAttributes {
 	 *  Returns first TEXT_NODE child under specified XML Node
 	 *
 	 * @param  nodeXML  XML node from which to start searching
+     * @param strictlyResolve   if true, any unresolvable reference to global parameter/property causes AttributeNotFoundException be
+     * thrown 
 	 * @return          The TEXT_NODE value (String) if any exist or null
-	 */
-	public String getText(org.w3c.dom.Node nodeXML) throws AttributeNotFoundException{
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
+     */
+	public String getText(org.w3c.dom.Node nodeXML,boolean strictlyResolve) throws AttributeNotFoundException{
 		org.w3c.dom.Node childNode;
 		org.w3c.dom.NodeList list;
 		if (nodeXML.hasChildNodes()) {
@@ -456,14 +482,25 @@ public class ComponentXMLAttributes {
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
 				if (childNode.getNodeType() == org.w3c.dom.Node.TEXT_NODE) {
-					return refResolver.resolveRef(childNode.getNodeValue());
+					return refResolver.resolveRef(childNode.getNodeValue(),strictlyResolve);
 				}
 			}
 		}
 		throw new AttributeNotFoundException("TEXT_NODE not found within node \""+nodeXML.getNodeName()+"\"");
 	}
 
-
+    /**
+     *  Returns first TEXT_NODE child under specified XML Node
+     * 
+     * @param nodeXML  XML node from which to start searching
+     * @return  The TEXT_NODE value (String) if any exist or null
+     * * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
+     */
+    public String getText(org.w3c.dom.Node nodeXML) throws AttributeNotFoundException{
+        return getText(nodeXML,true);
+    }
+    
 	/**
 	 *  Searches for specific child node name under specified XML Node
 	 *
