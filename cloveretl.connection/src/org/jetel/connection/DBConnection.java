@@ -51,6 +51,7 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.Enigma;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
+import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
 
@@ -422,7 +423,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	 * @param  nodeXML  Description of the Parameter
 	 * @return          Description of the Return Value
 	 */
-	public static DBConnection fromXML(TransformationGraph graph, org.w3c.dom.Node nodeXML) {
+	public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		NamedNodeMap attributes = nodeXML.getAttributes();
 		DBConnection con;
