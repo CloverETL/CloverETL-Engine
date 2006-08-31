@@ -170,11 +170,7 @@ public final class TransformationGraph {
     public boolean isDebugMode() {
         if(!isDebugModeResolved) {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
-            try {
                 debugMode = Boolean.valueOf(prr.resolveRef(debugModeStr)).booleanValue();
-            } catch (AttributeNotFoundException ex) {
-                logger.warn("Problem when resolving debugMode - will use default",ex);
-            }
             isDebugModeResolved = true;
         }
         return debugMode;
@@ -202,12 +198,7 @@ public final class TransformationGraph {
     public String getDebugDirectory() {
         if(!isDebugDirectoryResolved) {
             PropertyRefResolver prr = new PropertyRefResolver(getGraphProperties());
-            try {
                 debugDirectory = prr.resolveRef(debugDirectory);
-            } catch (AttributeNotFoundException ex) {
-                logger.warn("Problem when resolving debugDirectory - will use system default TMP dir",ex);
-                debugDirectory = null;
-            }
             isDebugDirectoryResolved = true;
         }
         if(debugDirectory == null) {

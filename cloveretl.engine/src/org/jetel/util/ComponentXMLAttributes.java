@@ -208,17 +208,6 @@ public class ComponentXMLAttributes {
         }  
 	}
 
-    public String getString(String key, String defaultValue, Log logger) {
-        try{
-            return refResolver.resolveRef(nodeXML.getAttribute(key));
-        }catch(AttributeNotFoundException ex){
-            logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
-        }
-        return defaultValue;
-
-     }
-    
-    
     /**
      * Sets value of specified attribute
      * 
@@ -277,23 +266,7 @@ public class ComponentXMLAttributes {
         }
 	}
     
-    public int getInteger(String key, int defaultValue, Log logger) {
-        String value;
-        try {
-            value = refResolver.resolveRef(nodeXML.getAttribute(key));
-            if (value.equalsIgnoreCase(STR_MIN_INT)) {
-                return Integer.MIN_VALUE;
-            } else if (value.equalsIgnoreCase(STR_MAX_INT)) {
-                return Integer.MAX_VALUE;
-            }
-            return Integer.parseInt(value);
-        } catch (AttributeNotFoundException ex) {
-            logger.debug("using default value \"" + defaultValue
-                    + "\" for attribute \"" + key + "\" :", ex);
-        } catch (Exception ex) {
-        }
-        return defaultValue;
-    }
+   
     
     /**
      * Sets value of specified attribute
@@ -343,19 +316,7 @@ public class ComponentXMLAttributes {
 
 	}
     
-    public boolean getBoolean(String key, boolean defaultValue, Log logger) {
-        String value;
-        try {
-            value = refResolver.resolveRef(nodeXML.getAttribute(key));
-            return value.matches("^[tTyY].*");
-        }catch(AttributeNotFoundException ex){
-            logger.debug("using default value \""+defaultValue+"\" for attribute \""+key+"\" :",ex);
-        }catch (Exception ex) {
-        }
-       return defaultValue;
-
-    }
-
+   
     /**
      * Sets value of specified attribute
      * 
@@ -413,25 +374,7 @@ public class ComponentXMLAttributes {
 		} 
 	}
 
-    public double getDouble(String key, double defaultValue, Log logger) {
-        String value;
-        try {
-            value = refResolver.resolveRef(nodeXML.getAttribute(key));
-            if (value.equalsIgnoreCase(STR_MIN_DOUBLE)) {
-                return Double.MIN_VALUE;
-            } else if (value.equalsIgnoreCase(STR_MAX_DOUBLE)) {
-                return Double.MAX_VALUE;
-            }
-        } catch (AttributeNotFoundException ex) {
-            logger.debug("using default value \"" + defaultValue
-                    + "\" for attribute \"" + key + "\" :", ex);
-        } catch (Exception ex) {
-
-        }
-        return defaultValue;
-
-    }
-    
+      
     
     /**
      * Sets value of specified attribute
@@ -561,7 +504,7 @@ public class ComponentXMLAttributes {
 	 * @param exclude	array of Strings - names of attributes to be excluded (can be null)
 	 * @return Properties object with pairs [attribute name]-[attribute value]
 	 */
-	public Properties attributes2Properties(String[] exclude) throws AttributeNotFoundException {
+	public Properties attributes2Properties(String[] exclude)  {
 	    Properties properties=new Properties();
 	    Set exception=new HashSet();
 	    String name;

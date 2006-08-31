@@ -395,12 +395,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		attributes = topNode.getAttributes();
 		for (int i = 0; i < attributes.getLength(); i++) {
 			itemName = attributes.item(i).getNodeName();
-            try{
 			itemValue = refResolver.resolveRef(attributes.item(i)
 					.getNodeValue());
-            }catch(AttributeNotFoundException ex){
-                throw new DOMException(DOMException.NOT_FOUND_ERR,ex.toString()+" - when processing attribute \""+itemName+"\"");
-            }
 			if (itemName.equalsIgnoreCase("name")) {
 				recordName = itemValue;
 			} else if (itemName.equalsIgnoreCase("type")) {
@@ -459,16 +455,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 			for (int j = 0; j < attributes.getLength(); j++) {
 				itemName = attributes.item(j).getNodeName();
-                try {
                     itemValue = refResolver.resolveRef(attributes.item(j)
                             .getNodeValue());
-                } catch (AttributeNotFoundException ex) {
-                    throw new DOMException(DOMException.NOT_FOUND_ERR, ex
-                            .toString()
-                            + " - when processing attribute \""
-                            + itemName
-                            + "\"");
-                }
 				if (itemName.equalsIgnoreCase("type")) {
 					fieldType = getFieldType(itemValue);
 				} else if (itemName.equalsIgnoreCase("name")) {

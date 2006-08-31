@@ -121,7 +121,7 @@ public class PropertyRefResolver {
      * @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	
-	public String resolveRef(String value,boolean strict) throws AttributeNotFoundException{
+	public String resolveRef(String value,boolean strict) {
 		if (resolve){
 		    StringBuffer strBuf = new StringBuffer(value);
 		    resolveRef2(strBuf,strict);
@@ -131,7 +131,7 @@ public class PropertyRefResolver {
 		}
 	}
     
-    public String resolveRef(String value) throws AttributeNotFoundException{
+    public String resolveRef(String value) {
         return resolveRef(value,DEFAULT_STRICT_OPTION);
     }
 	
@@ -147,7 +147,7 @@ public class PropertyRefResolver {
 	 * @return value with all references resolved
 	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
 	 */
-	public boolean resolveRef(StringBuffer value,boolean strict) throws AttributeNotFoundException{
+	public boolean resolveRef(StringBuffer value,boolean strict) {
 	    if (resolve){
 	      return resolveRef2(value,strict);
 	    }else{
@@ -155,7 +155,7 @@ public class PropertyRefResolver {
 	    }
 	}
 	
-    public boolean resolveRef(StringBuffer value) throws AttributeNotFoundException{
+    public boolean resolveRef(StringBuffer value) {
         return resolveRef(value,DEFAULT_STRICT_OPTION);
     }
     
@@ -169,7 +169,7 @@ public class PropertyRefResolver {
      * @param strict    if True, then references to non-existent properties cause AttributeNotFoundException be thrown
 	 * @return true if at least one reference to global property was found and resolved
 	 */
-	private boolean resolveRef2(StringBuffer value,boolean strict) throws AttributeNotFoundException {
+	private boolean resolveRef2(StringBuffer value,boolean strict)  {
 		String reference;
 		String resolvedReference;
 		boolean found=false;
@@ -185,8 +185,8 @@ public class PropertyRefResolver {
 				resolvedReference = properties.getProperty(reference);
 				if (resolvedReference == null) {
 				    logger.warn("Can't resolve reference to graph property: " + reference);
-                    if (strict)
-                        throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
+                   // if (strict)
+                   //     throw new AttributeNotFoundException(reference,"can't resolve reference to graph property: " + reference);
 				}else{
 				    value.replace(regexMatcher.start(),regexMatcher.end(),resolvedReference);
                     regexMatcher.reset(value);
