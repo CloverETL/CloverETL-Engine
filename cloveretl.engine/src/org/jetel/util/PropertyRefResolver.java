@@ -192,18 +192,18 @@ public class PropertyRefResolver {
                     regexMatcher.reset(value);
                 }
 			}
-            // process escape 
-           /* regexEscapeMatcher.reset(value);
-            while (regexEscapeMatcher.find()) {
-                reference = regexEscapeMatcher.group(1);
-//                if (logger.isDebugEnabled()) {
+//            // process escape 
+//           regexEscapeMatcher.reset(value);
+//            while (regexEscapeMatcher.find()) {
+//                reference = regexEscapeMatcher.group(1);
+//               if (logger.isDebugEnabled()) {
 //                    logger.debug("Reference: "+reference);
 //                }
-                value.replace(regexEscapeMatcher.start(),regexEscapeMatcher.end(),
-                        value.substring(regexEscapeMatcher.start()+2,regexEscapeMatcher.end()-1));
-                regexEscapeMatcher.reset(value);
-            }*/
-            
+//                value.replace(regexEscapeMatcher.start(),regexEscapeMatcher.end(),
+//                        value.substring(regexEscapeMatcher.start()+2,regexEscapeMatcher.end()-1));
+//                regexEscapeMatcher.reset(value);
+//            }
+//            
 			return found;
 		} else {
 			return false;
