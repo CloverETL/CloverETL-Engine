@@ -26,12 +26,12 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.channels.Channels;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.DelimitedDataFormatter;
-import org.jetel.data.formatter.FixLenDataFormatter;
+import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenDataParser;
@@ -63,7 +63,11 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- *  This component executes system command.<br>
+ *  This component executes the specified command and arguments in a separate process
+ *   and send output from process to output port. If there is specified command 
+ *   interpreter, command string is written to tmp file and there is called this
+ *   interpreter to execute system script. If there is not connected output
+ *   port, output from process (together with error) can be send to a file<br>
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -84,22 +88,42 @@ import org.w3c.dom.Element;
  *  <table border="1">
  *    <th>XML attributes:</th>
  *    <tr><td><b>type</b></td><td>SYS_EXECUTE</td></tr>
- *    <tr><td><b>command</b></td><td> command to be execute by system</td></tr>
- *    <tr><td><b>errorLinesNumber</b></td><td> number of lines that are print
+ *    <tr><td><b>command</b></td><td> command to be execute by system<br>
+ *    	If there is specified interpreter, command is saved in tmp file and there
+ *     is called interpreter,which executes this script  </td></tr>
+ *    <tr><td><b>interpreter</b></td><td> command interpreter<br> It has to have
+ *     form:"interpreter name [parameters] ${} [parameters]", where in place of
+ *     ${} System Execute is to put the name of script file </td></tr>
+ *    <tr><td><b>capturedErrorLines</b></td><td> number of lines that are print
  *    	 out if command finishes with errors</td></tr>
+ *    <tr><td><b>outputFile</b></td><td>path to the output file</td></tr>
+ *    <tr><td><b>append</b></td><td> whether to append data at the end if output 
+ *    file exists or replace it (values: true/false)</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
- * &lt;attr name="errorLinesNumber"&gt;3&lt;/attr&gt;
+ * &lt;attr name="capturedErrorLines"&gt;3&lt;/attr&gt;
  * &lt;attr name="command"&gt;rm test.txt &lt;/attr&gt;
- * &lt;/Node&gt;</pre>
- *
+ * &lt;/Node&gt;
+ *&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
+ *&lt;attr name="interpreter"&gt;sh ${}&lt;/attr&gt;
+ *&lt;attr name="outputFile"&gt;data/data.txt&lt;/attr&gt;
+ *&lt;attr name="command"&gt;touch data/data.txt
+ *cat
+ *dir /home/username&lt;/attr&gt;
+ *&lt;/Node&gt;
+ *&lt;Node id="SYS_EXECUTE0" type="SYS_EXECUTE"&gt;
+ *&lt;attr name="interpreter"&gt;sh ${} /tmp&lt;/attr&gt;
+ *&lt;attr name="command"&gt;cat
+ *ls -l $1&lt;/attr&gt;
+ *&lt;/Node&gt;
+ *</pre>
  * @author avackova
  *
  */
 public class SystemExecute extends Node{
 	
 	private static final String XML_COMMAND_ATTRIBUTE = "command";
-	private static final String XML_ERROR_LINES_ATTRIBUTE = "errorLinesNumber";
+	private static final String XML_ERROR_LINES_ATTRIBUTE = "capturedErrorLines";
 	private static final String XML_OUTPUT_FILE_ATTRIBUTE = "outputFile";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
@@ -115,7 +139,7 @@ public class SystemExecute extends Node{
 	
 	private String command;
 	private String executeCommand;
-	private int errorLinesNumber;
+	private int capturedErrorLines;
 	private FileWriter outputFile = null;
 	private boolean append;
 	private int exitValue;
@@ -127,13 +151,27 @@ public class SystemExecute extends Node{
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
+	/**
+	 * @param id of component
+	 * @param interpreter command interpreter in proper form
+	 * @param command system command to be executed
+	 * @param errorLinesNumber number of error lines which will be logged
+	 */
 	public SystemExecute(String id,String interpreter, String command,int errorLinesNumber) {
 		super(id);
 		this.interpreter = interpreter;
 		this.command=command;
-		this.errorLinesNumber=errorLinesNumber;
+		this.capturedErrorLines=errorLinesNumber;
 	}
 	
+	/**
+	 * this method interupts thread
+	 * 
+	 * @param thread to be killed
+	 * @param millisec time to wait 
+	 * @return true if process has been interrupted in given time, false in another
+	 *	case 
+	 */
 	static boolean kill(Thread thread, long millisec){
 		if (!thread.isAlive()){
 			return true;
@@ -147,6 +185,12 @@ public class SystemExecute extends Node{
 	}
 	
 	
+	/**
+	 * This method interupts process if it is alive after given time
+	 * 
+	 * @param thread to be killed
+	 * @param millisec time to wait before interrupting
+	 */
 	static void waitKill(Thread thread, long millisec){
 		if (!thread.isAlive()){
 			return;
@@ -161,6 +205,14 @@ public class SystemExecute extends Node{
 	}
 	
 	
+	/**
+	 * 
+	 * This method writes to tmp file given String
+	 * 
+	 * @param command string to be written to tmp file
+	 * @return canonical path of tmp file
+	 * @throws IOException
+	 */
 	private String createBatch(String command)throws IOException{
 		batch =  File.createTempFile("tmp",".bat");
 		FileWriter batchWriter = new FileWriter(batch);
@@ -169,27 +221,26 @@ public class SystemExecute extends Node{
 		return batch.getCanonicalPath();
 	}
 
+	/* (non-Javadoc)
+	 * @see java.lang.Runnable#run()
+	 */
 	@Override public void run() {
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
-		//If there is input port read metadadata and initialize in_record
+		//If there is input port read metadadata, initialize in_record and create data formater
 		if (inPort!=null) {
 			DataRecordMetadata meta=inPort.getMetadata();
 			in_record = new DataRecord(meta);
 			in_record.init();
-			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
-				formatter=new DelimitedDataFormatter();
-			}else {
-				formatter=new FixLenDataFormatter();
-			}
+			formatter = new DataFormatter();
 		}else{
 			formatter=null;
 		}
+//		Creating and initializing record to otput port
 		DataRecord out_record=null;
-		//Creating and initializing record to otput port
 		OutputPort outPort=getOutputPort(OUTPUT_PORT);
-		//If there is output port read metadadata and initialize in_record
+		//If there is output port read metadadata, initialize out_record and create proper data parser
 		if (outPort!=null) {
 			DataRecordMetadata meta=outPort.getMetadata();
 			out_record= new DataRecord(meta);
@@ -207,18 +258,18 @@ public class SystemExecute extends Node{
 		resultCode = Node.RESULT_ERROR;
 		try{
 			Process	process= Runtime.getRuntime().exec(executeCommand);
-			
+			//get process input and output streams
 			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
 			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
 			// If there is input port read records and write them to input stream of the process
 			GetData getData=null; 
 			if (inPort!=null) {
-                formatter.open(process_in,getInputPort(INPUT_PORT).getMetadata());
+                formatter.open(Channels.newChannel(process_in),getInputPort(INPUT_PORT).getMetadata());
                 getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 				getData.start();
 			}
-			//If there is output port read output from process and send it to output ports
+			//If there is output port read output from process and send it to output port
 			SendData sendData=null;
 			SendDataToFile sendDataToFile = null;
 			SendDataToFile sendErrToFile = null;
@@ -227,20 +278,22 @@ public class SystemExecute extends Node{
                 sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 				//send all out_records to output ports
 				sendData.start();
+			//If there is no output port, but there is defined output file read output
+			// and error from process and send it to the file	
 			}else if (outputFile!=null){
 				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
 				sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
 				sendDataToFile.start();
 				sendErrToFile.start();
 			}
-
+			//if output is not sent to file log process error stream
 			if (sendDataToFile==null ){
 				BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
 				String line;
 				StringBuffer errmes=new StringBuffer();
 				int i=0;
-				while (((line=err.readLine())!=null)&&i++<Math.max(errorLinesNumber,ERROR_LINES)){
-					if (i<=errorLinesNumber)
+				while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
+					if (i<=capturedErrorLines)
 						logger.warn(line);
 					if (i<=ERROR_LINES)
 						errmes.append(line+"\n");
@@ -265,6 +318,7 @@ public class SystemExecute extends Node{
 			}catch(InterruptedException ex){
 				logger.error("InterruptedException in "+this.getId(),ex);
 				process.destroy();
+				//interrupt threads if they run still
 				if (getData!=null) {
 					if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
 						throw new RuntimeException("Can't kill "+getData.getName());
@@ -290,6 +344,7 @@ public class SystemExecute extends Node{
 			if (interpreter!=null) {
 				batch.delete();
 			}
+			//chek results of getting and sending data
 			if (getData!=null){
 				if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
 					throw new RuntimeException("Can't kill "+getData.getName());
@@ -354,11 +409,15 @@ public class SystemExecute extends Node{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#init()
+	 */
 	@Override public void init() throws ComponentNotReadyException {
 		if (getInPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many otput ports");
+		//create tmp file with commands and string to execute
 		if (interpreter!=null){
 			try {
 				if (interpreter.contains("${}")){
@@ -374,6 +433,7 @@ public class SystemExecute extends Node{
 		}else{
 			executeCommand = command;
 		}
+		//prepare output file
 		if (getOutPorts().size()==0 && outputFileName!=null){
 			File outFile= new File(outputFileName);
 			try{
@@ -385,15 +445,24 @@ public class SystemExecute extends Node{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#getType()
+	 */
 	@Override public String getType(){
 		return COMPONENT_TYPE;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#checkConfig()
+	 */
 	@Override public boolean checkConfig() {
 		return true;
 	}
 
-	 @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	 /* (non-Javadoc)
+	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
+	 */
+	@Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		SystemExecute sysExec;
 		try {
@@ -411,10 +480,13 @@ public class SystemExecute extends Node{
 		}
 	}
 	
-	   @Override public void toXML(Element xmlElement) {
+	   /* (non-Javadoc)
+	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
+	 */
+	@Override public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_COMMAND_ATTRIBUTE,command);
-		xmlElement.setAttribute(XML_ERROR_LINES_ATTRIBUTE,String.valueOf(errorLinesNumber));
+		xmlElement.setAttribute(XML_ERROR_LINES_ATTRIBUTE,String.valueOf(capturedErrorLines));
 		if (interpreter!=null){
 			xmlElement.setAttribute(XML_INTERPRETER_ATTRIBUTE,interpreter);
 		}
@@ -424,14 +496,30 @@ public class SystemExecute extends Node{
 		}
 	}
 	
+	/**
+	 * Sets output file 
+	 * 
+	 * @param outputFile
+	 */
 	private void setOutputFile(String outputFile){
 		this.outputFileName = outputFile;
 	}
 
+	/**
+	 * Sets whether to append data to output file or create new file
+	 * 
+	 * @param append
+	 */
 	private void setAppend(boolean append) {
 		this.append = append;
 	}
 
+	/**
+	 * This is class for reading records from input port and writing them to Formatter  
+	 * 
+	 * @author avackova
+	 *
+	 */
 	private static class GetData extends Thread {
 
 		InputPort inPort;
@@ -444,6 +532,14 @@ public class SystemExecute extends Node{
 		Throwable resultException;
 	
 		
+		/**
+		 * Constructor for GetData object
+		 * 
+		 * @param parentThread thread which creates this object
+		 * @param inPort input port
+		 * @param in_record input record
+		 * @param formatter where are data written
+		 */
 		GetData(Thread parentThread,InputPort inPort,DataRecord in_record,Formatter formatter){
 			super(parentThread.getName()+".GetData");
 			this.in_record=in_record;
@@ -504,6 +600,12 @@ public class SystemExecute extends Node{
 		}
 	}
 	
+	/**
+	 * This is class for reading records from Parser port and writing them to output port  
+	 * 
+	 * @author avackova
+	 *
+	 */
 	private static class SendData extends Thread {
 
 		DataRecord out_record;
@@ -515,6 +617,14 @@ public class SystemExecute extends Node{
 		Thread parentThread;
 		Throwable resultException;
 		
+		/**
+		 * Constructor for SendData object
+		 * 
+		 * @param parentThread thread which creates this object
+		 * @param outPort output port
+		 * @param out_record output record
+		 * @param Parser where are data read from
+		 */
 		SendData(Thread parentThread,OutputPort outPort,DataRecord out_record,Parser parser){
 			super(parentThread.getName()+".SendData");
 			this.out_record=out_record;
@@ -532,7 +642,6 @@ public class SystemExecute extends Node{
             resultCode=Node.RESULT_RUNNING;
 			try{
 				while (runIt && ((out_record = parser.getNext(out_record))!= null) ) {
-					//broadcast the record to all connected Edges
 					outPort.writeRecord(out_record);
 					SynchronizeUtils.cloverYield();
 				}
@@ -578,6 +687,12 @@ public class SystemExecute extends Node{
 		}
 	}
 	
+	/**
+	 * This is class for reading data from input stream and writing them to output file  
+	 * 
+	 * @author avackova
+	 *
+	 */
 	private static class SendDataToFile extends Thread {
 		
 	    BufferedInputStream process_out;
@@ -588,6 +703,13 @@ public class SystemExecute extends Node{
 		Thread parentThread;
 		Throwable resultException;
 		
+		/**
+		 * Constructor for SendDataToFile object
+		 * 
+		 * @param parentThread thread which creates this object
+		 * @param outFile output file
+		 * @param process_out input stream, where are data read from
+		 */
 		SendDataToFile(Thread parentThread,FileWriter outFile,
 				BufferedInputStream process_out){
 			super(parentThread.getName()+".SendDataToFile");
