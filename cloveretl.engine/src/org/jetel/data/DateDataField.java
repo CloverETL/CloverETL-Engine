@@ -297,6 +297,12 @@ public class DateDataField extends DataField implements Comparable{
 		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 	}
 
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNull) {
+            dataBuffer.putLong(value.getTime());
+        }
+    }
 
 	/**
 	 *  Parses date value from string representation. If format string is defined,

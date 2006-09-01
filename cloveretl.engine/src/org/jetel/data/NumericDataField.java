@@ -413,6 +413,12 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 	}
 
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNull) {
+            dataBuffer.putDouble(value);
+        }
+    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when

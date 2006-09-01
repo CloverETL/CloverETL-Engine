@@ -209,7 +209,7 @@ public abstract class DataField implements Serializable, Comparable {
 
 
 	/**
-	 *  Encode the field's value into ByteBuffer
+	 *  Encode the field's value into ByteBuffer. The numeric value is encoded as a string representation.
 	 *
 	 * @param  encoder                       Charset encoder which could be used to encode characters
 	 * @param  dataBuffer                    Description of the Parameter
@@ -218,6 +218,14 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	public abstract void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException;
 
+    /**
+     *  Encode the field's value into ByteBuffer. The numeric value is encoded as a bit array not as a string representation.
+     *
+     * @param  dataBuffer                    Description of the Parameter
+     * @exception  CharacterCodingException  Description of the Exception
+     * @since                                October 31, 2002
+     */
+    public abstract void toByteBuffer(ByteBuffer dataBuffer);
 
 	/**
 	 *  Serializes data field into provided byte buffer

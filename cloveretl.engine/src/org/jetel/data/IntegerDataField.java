@@ -350,7 +350,13 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 	}
 
-
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNull) {
+            dataBuffer.putInt(value);
+        }
+    }
+    
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when
 	 *  moving data records between components).

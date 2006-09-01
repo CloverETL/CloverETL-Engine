@@ -266,9 +266,17 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since              October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
-		dataBuffer.put(value);
+        if(!isNull) {
+            dataBuffer.put(value);
+        }
 	}
 
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNull) {
+            dataBuffer.put(value);
+        }
+    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when
