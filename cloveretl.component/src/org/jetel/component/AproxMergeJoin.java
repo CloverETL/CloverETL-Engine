@@ -80,12 +80,12 @@ import org.w3c.dom.Element;
  *  <tr><td><b>joinKey</b></td><td>field names with number of letters, weight 
  *  	and strength of comparison as four boolean values for each comparison 
  *  	level separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>slaveOverwriteKey</b><br><i>optional</i></td><td>can be used 
+ *  <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used 
  *  	to specify different key field names for records on slave input; 
  *  	field names separated by :;| {colon, semicolon, pipe}</td>
  *  <tr><td><b>matchingKey</b></td><td>field name for comparing driver and 
  *  	slave records</td>
- *  <tr><td><b>slaveMatchingOverwrite</b><br><i>optional</i></td><td>can be
+ *  <tr><td><b>slaveMatchingOverride</b><br><i>optional</i></td><td>can be
  *  	 used to specify different key field name for records on slave input</td></tr>
  *  <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class
  *  	 to be used for transforming joined data which has conformity greater
@@ -114,7 +114,7 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre&gt;&lt;Node id="APROX_MERGE_JOIN0" type="APROX_MERGE_JOIN"&gt;
+ *  <pre>&lt;Node id="APROX_MERGE_JOIN0" type="APROX_MERGE_JOIN"&gt;
  *  &lt;attr name="matchingKey"&gt;key&lt;/attr&gt;
  *  &lt;attr name="transform"&gt;${out.0.lname} = ${in.0.lname};
  *  ${out.0.fname} = ${in.0.fname};
@@ -126,7 +126,7 @@ import org.w3c.dom.Element;
  *  ${out.0.gender1} = ${in.1.gender};
  *  &lt;/attr&gt;
  *  &lt;attr name="conformity"&gt;0.8&lt;/attr&gt;
- *  &lt;attr name="slaveOverwriteKey"&gt;last_name;first_name&lt;/attr&gt;
+ *  &lt;attr name="slaveOverrideKey"&gt;last_name;first_name&lt;/attr&gt;
  *  &lt;attr name="joinKey"&gt;lname 2 0.75 false true true true;fname 4 0.25 false false false true&lt;/attr&gt;
  *  &lt;attr name="transformForSuspicious"&gt;${out.1.lname} = ${in.0.lname};
  *  ${out.1.fname} = ${in.0.fname};
@@ -141,10 +141,10 @@ import org.w3c.dom.Element;
  */
 public class AproxMergeJoin extends Node {
 
-	private static final String XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE = "slaveOverwriteKey";
+	private static final String XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_MATCHING_KEY_ATTRIBUTE="matchingKey";
-	private static final String XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE = "slaveMatchingOverwrite";
+	private static final String XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE = "slaveMatchingOverride";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE = "transformClassForSuspicious";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
@@ -177,7 +177,7 @@ public class AproxMergeJoin extends Node {
 
 	private String[] joinParameters;
 	private String[] joinKeys;
-	private String[] slaveOverwriteKeys = null;
+	private String[] slaveOverrideKeys = null;
 	private String[] matchingKey=new String[1];
 	private String[] slaveMatchingKey=null;
 	private RecordKey[] recordKey;
@@ -225,10 +225,10 @@ public class AproxMergeJoin extends Node {
 	 *  Can be used if slave record has different names
 	 *  for fields composing the key
 	 *
-	 * @param  slaveKeys  The new slaveOverwriteKey value
+	 * @param  slaveKeys  The new slaveOverrideKey value
 	 */
 	private void setSlaveOverrideKey(String[] slaveKeys) {
-		this.slaveOverwriteKeys = slaveKeys;
+		this.slaveOverrideKeys = slaveKeys;
 	}
 
 	/**
@@ -586,12 +586,12 @@ public class AproxMergeJoin extends Node {
 		for (int i=0;i<weights.length;i++){
 			weights[i]=weights[i]/sumOfWeights;
 		}
-		if (slaveOverwriteKeys == null) {
-			slaveOverwriteKeys = joinKeys;
+		if (slaveOverrideKeys == null) {
+			slaveOverrideKeys = joinKeys;
 		}
 		RecordKey[] recKey = new RecordKey[2];
 		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverwriteKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
 		recKey[DRIVER_ON_PORT].init();
 		recKey[SLAVE_ON_PORT].init();
 		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
@@ -614,7 +614,7 @@ public class AproxMergeJoin extends Node {
 		recordKey[DRIVER_ON_PORT].init();
 		recordKey[SLAVE_ON_PORT].init();
 		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
-		conformityFieldsForSuspicious = findOutFields(slaveOverwriteKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
+		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 	
@@ -672,27 +672,27 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
                     xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null));
-			if (xattribs.exists(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE).
+			if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
+				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 
 			}
-			if (xattribs.exists(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE)) {
-				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE));
+			if (xattribs.exists(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE)) {
+				join.setSlaveMatchingKey(xattribs.getString(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE));
 			}
 			join.setConformityLimit(xattribs.getDouble(XML_CONFORMITY_ATTRIBUTE,DEFAULT_CONFORMITY_LIMIT));
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
 	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
 	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,
-	                		XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
+	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
+	                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
 			join.setTransformationParametersForSuspicious(xattribs.attributes2Properties(
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOIN_KEY_ATTRIBUTE,
 	                		XML_MATCHING_KEY_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,
 	                		XML_TRANSFORM_CLASS_ATTRIBUTE,XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,
-	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,
-	                		XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
+	                		XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,
+	                		XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,XML_CONFORMITY_ATTRIBUTE}));
 			
 			return join;
         }catch (Exception ex) {
@@ -711,12 +711,12 @@ public class AproxMergeJoin extends Node {
 			xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE,buf.toString());
 		}
 		
-		if (slaveOverwriteKeys!= null) {
-			StringBuffer buf = new StringBuffer(slaveOverwriteKeys[0]);
-			for (int i=1; i< slaveOverwriteKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverwriteKeys[i]); 
+		if (slaveOverrideKeys!= null) {
+			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
+			for (int i=1; i< slaveOverrideKeys.length; i++) {
+				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
 			}
-			xmlElement.setAttribute(XML_SLAVE_OVERWRITE_KEY_ATTRIBUTE,buf.toString());
+			xmlElement.setAttribute(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE,buf.toString());
 		}
 		
 		if (matchingKey!=null){
@@ -724,7 +724,7 @@ public class AproxMergeJoin extends Node {
 		}
 		
 		if (slaveMatchingKey!=null){
-			xmlElement.setAttribute(XML_SLAVE_MATCHING_OVERWRITE_ATTRIBUTE,slaveMatchingKey[0]);
+			xmlElement.setAttribute(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE,slaveMatchingKey[0]);
 		}
 		
 		if (transformClassName != null) {
