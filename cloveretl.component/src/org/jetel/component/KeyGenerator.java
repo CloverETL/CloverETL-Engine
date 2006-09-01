@@ -52,8 +52,9 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- * This component creates key which is costructed as combination of chars 
- * from given data fields.<br>
+ * This component creates key which is constructed as combination of chars 
+ * from given data fields.It is possible to make some operation on original strings
+ * as removing blank space, removing diacritic, getting only alpha signs, etc. <br>
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -63,7 +64,7 @@ import org.w3c.dom.Element;
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - record as in input port, but with addidtional field with generated 
+ *        [0] - record as on input port, but with additional field with generated 
  *        		key
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
@@ -77,13 +78,19 @@ import org.w3c.dom.Element;
  *    <tr><td><b>type</b></td><td>"KEY_GEN"</td></tr>
  *    <tr><td><b>keyExpression</b></td><td> field names with the way of generating
  *    	 the key from them, separated by :;|  {colon, semicolon, pipe}. String,
- *    	 which descripts creating of key for each field has form: 
+ *    	 which describes creating of key for each field has form: 
  *    	 [from][-]how many[d|n|a|s|u|l]. When there is no "from" it means key
- *    	 is created from chars from the begining of string or if there is 
- *    	 "-from" the end of string</td></tr>
+ *    	 is created from chars from the beginning of string or if there is 
+ *    	 "-from" the end of string<br>Parameters:<br>
+ *    	d - remove diacritic (change the diacritic letters to theirs latin equivalents)<br>
+ *    	n - get only numeric signs (checking Character.isDigit)<br>
+ *      a - get only alpha signs (checking Character.isLetter)<br>
+ *      s - remove blank space (checking Character.isWhitespace)<br>
+ *      u - change to upper case<br>
+ *      l - change to lower case</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="KEY_GEN0" type="KEY_GEN"&gt;
- *&lt;attr name="keyExpression">lname 2d;fname -2ad&lt/attr&gt;
+ *&lt;attr name="keyExpression">lname 2d;fname -2ad&lt;/attr&gt;
  *&lt;/Node&gt;</pre>
  *
  * @author avackova

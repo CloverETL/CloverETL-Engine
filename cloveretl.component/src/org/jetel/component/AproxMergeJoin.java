@@ -79,7 +79,18 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>joinKey</b></td><td>field names with number of letters, weight 
  *  	and strength of comparison as four boolean values for each comparison 
- *  	level separated by :;|  {colon, semicolon, pipe}</td>
+ *  	level separated by :;|  {colon, semicolon, pipe}. General form:
+ *  fieldName maxNumberOfLetterstoChange fieldWeight identicalComparison tertiaryComparison 
+ *  secondaryComparison primaryComparison<br>Conformity between two strings equals 
+ *  zero if transformation of one string to another necessitates more then maxNumberOfLetterstoChange
+ *  letters to change.<br>Wheight of each field diffrence is counted due to following 
+ *  algorithm: weight given by user divided by sum of weights given by user.</td><br>
+ *  Comparison strength:<br>
+ *  identical - letters equals if they are identical<br>
+ *  tertiary - comparison does not depend on upper or lower case<br>
+ *  secondary - diacritic letters and theirs latin equivalents are equals<br>
+ *  primary - letters with additional features (e.g.:penduncle, pick, circle) and
+ *   theirs latin equivalents are equals
  *  <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used 
  *  	to specify different key field names for records on slave input; 
  *  	field names separated by :;| {colon, semicolon, pipe}</td>
@@ -133,7 +144,7 @@ import org.w3c.dom.Element;
  *  ${out.1.first_name} = ${in.1.first_name};
  *  ${out.1.last_name} = ${in.1.last_name};
  *  &lt;/attr&gt;
- *  &lt;/Node /&gt;
+ *  &lt;/Node &gt;
  *  </pre>
  *
  * @author avackova
