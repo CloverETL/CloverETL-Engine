@@ -23,6 +23,7 @@ package org.jetel.data;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
@@ -247,6 +248,12 @@ public class StringDataField extends DataField implements CharSequence{
 		dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
 	}
 
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNull) {
+            dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
+        }
+    }
 
 	/**
 	 *  Description of the Method

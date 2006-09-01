@@ -24,6 +24,8 @@ import java.math.BigInteger;
 import java.math.RoundingMode;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetEncoder;
 import java.text.NumberFormat;
 
 import org.jetel.data.DecimalDataField;
@@ -579,13 +581,20 @@ public class HugeDecimal implements Decimal {
 	/**
 	 * @see org.jetel.data.primitive.Decimal#toCharBuffer(java.text.NumberFormat)
 	 */
-	public CharBuffer toCharBuffer(NumberFormat numberFormat) {
-		if(isNaN()) {
-			return CharBuffer.allocate(0);
-		}
-		return CharBuffer.wrap(toString(numberFormat));
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumberFormat numberFormat) throws CharacterCodingException {
+        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numberFormat))));
 	}
 
+    /**
+     * @see org.jetel.data.primitive.Decimal#toByteBuffer(java.nio.ByteBuffer)
+     */
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        if(!isNaN()) {
+            dataBuffer.put(value.unscaledValue().toByteArray());
+            dataBuffer.putInt(value.scale());
+        }
+    }
+    
 	/**
 	 * @see org.jetel.data.primitive.Decimal#fromString(java.lang.String, java.text.NumberFormat)
 	 */

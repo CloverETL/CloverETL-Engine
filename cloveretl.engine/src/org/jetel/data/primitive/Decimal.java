@@ -22,6 +22,8 @@ package org.jetel.data.primitive;
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetEncoder;
 import java.text.NumberFormat;
 
 
@@ -93,7 +95,9 @@ public interface Decimal extends Numeric {
 	
 	public String toString(NumberFormat numberFormat);
 
-	public CharBuffer toCharBuffer(NumberFormat numberFormat);
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumberFormat numberFormat) throws CharacterCodingException;
+
+    public void toByteBuffer(ByteBuffer dataBuffer);
 	
 	public void fromString(String value, NumberFormat numberFormat);
 

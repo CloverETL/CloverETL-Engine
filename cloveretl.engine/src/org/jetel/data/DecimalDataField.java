@@ -366,9 +366,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(value.toCharBuffer(numberFormat)));
+		value.toByteBuffer(dataBuffer, encoder, numberFormat);
 	}
 
+    @Override
+    public void toByteBuffer(ByteBuffer dataBuffer) {
+        value.toByteBuffer(dataBuffer);
+    }
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when
