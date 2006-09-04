@@ -28,6 +28,7 @@
 <Field name="occupation" nullable="true" size="20" type="string"/>
 <Field name="houseowner" nullable="true" size="1" type="string"/>
 <Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+<Field locale="en.US" name="Field28" nullable="true" size="1" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
@@ -54,8 +55,10 @@
 <Metadata id="Metadata2">
 <Record name="joined" type="delimited">
 <Field delimiter=";" locale="en.US" name="customer_id" nullable="true" type="integer"/>
-<Field delimiter=";" locale="en.US" name="acount_num" nullable="true" type="long"/>
 <Field delimiter=";" locale="en.US" name="lname" nullable="true" type="string"/>
+<Field delimiter=";" locale="en.US" name="fname" nullable="true" type="string"/>
+<Field delimiter=";" locale="en.US" name="city" nullable="true" type="string"/>
+<Field delimiter=";" locale="en.US" name="country" nullable="true" type="string"/>
 <Field delimiter=";" locale="en.US" name="employee_id" nullable="true" type="integer"/>
 <Field delimiter="\n" locale="en.US" name="full_name" nullable="true" type="string"/>
 </Record>
@@ -65,8 +68,8 @@
 <Phase number="0">
 <Node enabled="enabled" fileURL="data/customers.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="77" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
 <Node enabled="enabled" fileURL="output/joined.txt" guiHeight="68" guiName="Universal Data Writer" guiWidth="127" guiX="534" guiY="77" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="275" guiY="77" id="DBJOIN0" joinKey="fname" sqlQuery="select * from employee where first_name=?" transformClass="TransformForDBjoin.class" type="DBJOIN"/>
-<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="275" guiY="77" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN"/>
+<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
 <Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="0 (Universal Data Writer)" metadata="Metadata2" outPort="0 (DBJoin)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
