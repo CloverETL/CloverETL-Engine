@@ -13,11 +13,13 @@ public class TransformForDBjoin extends DataRecordTransform{
 	        
 
 	
-		target[0].getField(0).setValue(source[0].getField(0).getValue());
-  		target[0].getField(1).setValue(source[0].getField(1).getValue());
-		target[0].getField(2).setValue(source[0].getField(2).getValue());
-		target[0].getField(3).setValue(source[1].getField(0).getValue());
-		target[0].getField(4).setValue(source[1].getField(1).getValue());
+		target[0].getField("customer_id").setValue(source[0].getField("customer_id").getValue());
+  		target[0].getField("lname").setValue(source[0].getField("lname").getValue());
+		target[0].getField("fname").setValue(source[0].getField("fname").getValue());
+		target[0].getField("city").setValue(source[0].getField("city").getValue());
+		target[0].getField("country").setValue(source[0].getField("country").getValue());
+		target[0].getField("employee_id").setValue(source[1].getField("employee_id").getValue());
+		target[0].getField("full_name").setValue(source[1].getField("full_name").getValue());
 
 		return true;
 	}
