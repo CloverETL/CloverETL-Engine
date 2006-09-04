@@ -49,6 +49,11 @@ public class ComponentNotReadyException extends Exception {
       this.graphElement=element;
   }
   
+  public ComponentNotReadyException(GraphElement element,String message,Exception ex){
+      super(message,ex);
+      this.graphElement=element;
+  }
+  
   public ComponentNotReadyException(GraphElement element,String message){
       super(message);
       this.graphElement=element;
