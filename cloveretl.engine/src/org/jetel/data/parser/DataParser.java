@@ -164,11 +164,14 @@ public class DataParser implements Parser {
 				delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
 			}
 		} else {
-			//delimiterSearcher.addPattern(System.getProperty("line.separator"), -2); //separator for skipping first line
-			delimiters = metadata.getField(metadata.getFields().length - 1).getDelimiters();
-			for(int j = 0; j < delimiters.length; j++) {
-			    delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
-			}
+            if(metadata.getField(metadata.getFields().length - 1).isDelimited()) {
+    			delimiters = metadata.getField(metadata.getFields().length - 1).getDelimiters();
+    			for(int j = 0; j < delimiters.length; j++) {
+    			    delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
+    			}
+            } else {
+                delimiterSearcher.addPattern(System.getProperty("line.separator"), -2); //separator for skipping first line
+            }
 		}
 		delimiterSearcher.createFailureFunction();
 	
