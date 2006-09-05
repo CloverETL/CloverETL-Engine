@@ -1,28 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="TestingDBOutputTable">
-<!--
-This graph illustrates usage of dbFields and cloverFields parameters of
-DB_OUTPUT_TABLE component.
-Parameter dbFields allows to specify that only certain fields of target DB table
-will be populated.
-Parameter cloverFields allows to specify which input/Clover fields are used
-for populating target fields.
-The final mapping is determined by the order in which Clover fields and DB fields appear
-in the parameters.
-Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and
-input field FIRST_NAME onto LAST_NAME in DB.
-Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works
-only with DBs/JDBC drivers which support this feature (e.g. Oracle).
--->
+<Graph description="This graph illustrates usage of dbFields and cloverFields parameters of&#10;DB_OUTPUT_TABLE component.&#10;Parameter dbFields allows to specify that only certain fields of target DB table&#10;will be populated.&#10;Parameter cloverFields allows to specify which input/Clover fields are used&#10;for populating target fields.&#10;The final mapping is determined by the order in which Clover fields and DB fields appear&#10;in the parameters.&#10;Note: in this example, input field LAST_NAME is mapped onto FIRST_NAME in DB and&#10;input field FIRST_NAME onto LAST_NAME in DB.&#10;Note2: parameter batchMode allows for grouping of inserts into DB thus increasing throughput. It works&#10;only with DBs/JDBC drivers which support this feature (e.g. Oracle).&#10;" name="TestingDBOutputTable">
 <Global>
-<Metadata id="InMetadata" fileURL="metadata/employeeDB.fmt"/>
-<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
+<Metadata fileURL="metadata/employeeDB.fmt" id="InMetadata"/>
+<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="employees.list.dat" />
-<Node id="OUTPUT" type="DB_OUTPUT_TABLE" commit="300" dbConnection="InterbaseDB"  batchMode="Yes" dbTable="employee_tmp" 
-	dbFields="FIRST_NAME;LAST_NAME" 
-	cloverFields="LAST_NAME;FIRST_NAME" />
-<Edge id="INEDGE2" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+<Node enabled="enabled" fileURL="employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node batchMode="false" cloverFields="LAST_NAME;FIRST_NAME" commit="300" dbConnection="DBConnection0" dbFields="FIRST_NAME;LAST_NAME" dbTable="employee_tmp" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DB_OUTPUT_TABLE"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE2" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
