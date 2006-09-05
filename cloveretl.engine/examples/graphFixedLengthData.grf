@@ -130,7 +130,7 @@
 </Global>
 <Connection type="JDBC" dbConfig="koule_postgre.cfg" id="DBConnection0"/>
 <Phase number="0">
-<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="612" guiY="106" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverwriteKey="last_name;first_name" type="APROX_MERGE_JOIN">
+<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="612" guiY="106" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverrideKey="last_name;first_name" type="APROX_MERGE_JOIN">
 <attr name="transform">${out.0.lname} = ${in.0.lname};
 ${out.0.fname} = ${in.0.fname};
 ${out.0.last_name} = ${in.1.last_name};
