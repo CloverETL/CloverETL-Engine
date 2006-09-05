@@ -79,9 +79,9 @@
 <Field delimiter=";" name="position_title" nullable="true" type="string"/>
 <Field delimiter=";" name="store_id" nullable="true" type="integer"/>
 <Field delimiter=";" name="department_id" nullable="true" type="integer"/>
-<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
-<Field delimiter=";" format="EEE MMM dd yyyy" name="hire_date" nullable="true" type="date"/>
-<Field delimiter=";" format="EEE MMM dd yyyy" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" name="end_date" nullable="true" type="date"/>
 <Field delimiter=";" name="salary" nullable="true" type="numeric"/>
 <Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
 <Field delimiter=";" name="education_level" nullable="true" type="string"/>
@@ -116,21 +116,20 @@
 <Record name="suspicious" type="delimited">
 <Field delimiter=";" name="lname" nullable="true" type="string"/>
 <Field delimiter=";" name="fname" nullable="true" type="string"/>
-<Field delimiter=";" format="EEE MMM dd yyyy" name="birthdate" nullable="true" type="date"/>
+<Field delimiter=";" name="birthdate" nullable="true" type="date"/>
 <Field delimiter=";" name="gender" nullable="true" type="string"/>
 <Field delimiter=";" name="last_name" nullable="true" type="string"/>
 <Field delimiter=";" name="first_name" nullable="true" type="string"/>
-<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
 <Field delimiter=";" name="gender1" nullable="true" type="string"/>
 <Field delimiter=";" name="_lname_conformity_" nullable="true" type="string"/>
 <Field delimiter=";" name="_fname_conformity_" nullable="true" type="string"/>
-<Field delimiter="\n" name="_total_conformity_" nullable="true" type="string"/>
+<Field delimiter=";" name="_total_conformity_" nullable="true" type="string"/>
 </Record>
 </Metadata>
 </Global>
-<Connection type="JDBC" dbConfig="koule_postgre.cfg" id="DBConnection0"/>
 <Phase number="0">
-<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="612" guiY="106" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverrideKey="last_name;first_name" type="APROX_MERGE_JOIN">
+<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="602" guiY="107" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" slaveOverwriteKey="last_name;first_name" type="APROX_MERGE_JOIN">
 <attr name="transform">${out.0.lname} = ${in.0.lname};
 ${out.0.fname} = ${in.0.fname};
 ${out.0.last_name} = ${in.1.last_name};
@@ -147,39 +146,21 @@ ${out.0.gender1} = ${in.1.gender};</attr>
 </Node>
 <Node defaultForeignKey="Sat Aug 26 1961" enabled="enabled" foreignKey="birth_date" guiHeight="57" guiName="Check Foreign Key" guiWidth="120" guiX="934" guiY="452" id="CHECK_FOREIGN_KEY0" primaryKey="customer_id" type="CHECK_FOREIGN_KEY"/>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="35" guiY="174" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="146" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER">
-<attr name="append">false</attr>
-<attr name="fileURL">output/suspicoius.txt</attr>
-</Node>
-<Node enabled="enabled" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="1094" guiY="452" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER">
-<attr name="append">false</attr>
-<attr name="fileURL">output/employee.out</attr>
-</Node>
+<Node append="false" enabled="enabled" fileURL="output/suspicoius.txt" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="146" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="output/employee.out" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="1094" guiY="452" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="440" guiY="42" id="EXT_SORT0" sortKey="key" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="440" guiY="174" id="EXT_SORT1" sortKey="key" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="72" guiName="customer" guiWidth="119" guiX="36" guiY="42" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER">
-<attr name="fileURL">data/customers.dat</attr>
-<attr name="OneRecordPerLine">true</attr>
-</Node>
-<Node enabled="enabled" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="36" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER">
-<attr name="append">false</attr>
-<attr name="fileURL">output/conforming.txt</attr>
-<attr name="OneRecordPerLine">true</attr>
-</Node>
-<Node enabled="enabled" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="1094" guiY="277" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER">
-<attr name="append">false</attr>
-<attr name="fileURL">output/customersGender1.txt</attr>
-<attr name="OneRecordPerLine">true</attr>
-</Node>
+<Node OneRecordPerLine="true" enabled="enabled" fileURL="data/customers.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="15" guiY="44" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="1094" guiY="36" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customersGender1.txt" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="1094" guiY="277" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="243" guiY="42" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="244" guiY="174" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="77" guiName="Partition" guiWidth="129" guiX="784" guiY="319" id="PARTITION0" partitionKey="gender" type="PARTITION"/>
-<Node command="touch data/data.txt&#10;cat&#10;dir /home/username" enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="855" guiY="208" id="SYS_EXECUTE0" type="SYS_EXECUTE">
-<attr name="interpreter">sh ${}</attr>
-<attr name="outputFile">data/data.txt</attr>
+<Node enabled="enabled" guiHeight="67" guiName="System execute" guiWidth="127" guiX="784" guiY="146" id="SYS_EXECUTE0" type="SYS_EXECUTE">
+<attr name="command">cat</attr>
 </Node>
 <Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge8" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
-<Edge debugMode="true" fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge9" inPort="0 (System execute)" metadata="Metadata5" outPort="1 (aproximative join)" toNode="SYS_EXECUTE0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge9" inPort="0 (System execute)" metadata="Metadata5" outPort="1 (aproximative join)" toNode="SYS_EXECUTE0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge0" inPort="0 (Partition)" metadata="Metadata2" outPort="2 (aproximative join)" toNode="PARTITION0:0"/>
 <Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge15" inPort="1 (Check Foreign Key)" metadata="Metadata3" outPort="3 (aproximative join)" toNode="CHECK_FOREIGN_KEY0:1"/>
 <Edge fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge16" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata3" outPort="0 (Check Foreign Key)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
@@ -191,6 +172,6 @@ ${out.0.gender1} = ${in.1.gender};</attr>
 <Edge fromNode="KEY_GEN1:0" guiBendpoints="" id="Edge4" inPort="0 (Ext Sort)" metadata="Metadata3" outPort="0 (Key generator)" toNode="EXT_SORT1:0"/>
 <Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge3" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata2" outPort="0 (Partition)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
 <Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge14" inPort="0 (Check Foreign Key)" metadata="Metadata2" outPort="1 (Partition)" toNode="CHECK_FOREIGN_KEY0:0"/>
-<Edge debugMode="false" fromNode="SYS_EXECUTE0:0" guiBendpoints="" id="Edge10" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata5" outPort="0 (System execute)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="SYS_EXECUTE0:0" guiBendpoints="" id="Edge10" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata5" outPort="0 (System execute)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
 </Phase>
 </Graph>
