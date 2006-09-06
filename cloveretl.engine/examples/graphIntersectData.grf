@@ -1,47 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="Intersect Data">
-<!-- This graph demonstrates functionality of DATA_INTERSECT component - performs 
-joining of two sorted (based on specified key) data flows (A and B) and outputs:
-- to port 0 records found only in flow A
-- to port 1 records found in A &amp; B
-- to port 2 records found only in flow B  
-
-Records both in flow A &amp; B should be unique.-->
+<Graph description="This graph demonstrates functionality of DATA_INTERSECT component - performs &#10;joining of two sorted (based on specified key) data flows (A and B) and outputs:&#10;- to port 0 records found only in flow A&#10;- to port 1 records found in A &amp;amp; B&#10;- to port 2 records found only in flow B  &#10;&#10;Records both in flow A &amp;amp; B should be unique" name="Intersect Data">
 <Global>
-<Metadata id="InMetadata" fileURL="metadata/employees.fmt"/>
-<Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+<Metadata fileURL="metadata/employeeDB.fmt" id="OutMetadata"/>
+<Metadata fileURL="metadata/employees.fmt" id="InMetadata"/>
 </Global>
 <Phase number="0">
-<!-- List of nodes which we will use for transformation -->
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees2.dat"  DataPolicy="Strict" />
-<Node id="INPUT2" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees3.dat"  DataPolicy="Strict" />
-<Node id="INTERSECT" type="DATA_INTERSECTION" joinKey="EmployeeID">
-import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-
-
-public class intersectData extends DataRecordTransform{
-
-        public boolean transform(DataRecord[] source, DataRecord[] target){
-
-                target[0].getField(0).setValue(source[0].getField(0).getValue());
-        	target[0].getField(1).setValue(source[1].getField(1).getValue());
-                target[0].getField(2).setValue(source[0].getField(2).getValue());
-                target[0].getField(3).setValue(source[1].getField(3).getValue());
-                
-		return true;
-        }
-}
-
+<Node enabled="enabled" fileURL="data/employees2.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
 </Node>
-<Node id="WRITER1" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_1_data.out"/>
-<Node id="WRITER3" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_2_data.out"/>
-<Node id="WRITER2" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/intersect_1_2_data.out"/>
-<!-- Edges connecting nodes -->
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="INTERSECT:0" metadata="InMetadata"/>
-<Edge id="INEDGE2" fromNode="INPUT2:0" toNode="INTERSECT:1" metadata="InMetadata"/>
-<Edge id="OUTEDGE1" fromNode="INTERSECT:0" toNode="WRITER1:0" metadata="InMetadata"/>
-<Edge id="OUTEDGE2" fromNode="INTERSECT:1" toNode="WRITER2:0" metadata="OutMetadata"/>
-<Edge id="OUTEDGE3" fromNode="INTERSECT:2" toNode="WRITER3:0" metadata="InMetadata"/>
+<Node enabled="enabled" fileURL="data/employees3.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="18" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node enabled="enabled" guiHeight="25" guiName="INTERSECT" guiWidth="50" guiX="195" guiY="20" id="INTERSECT" joinKey="EmployeeID" type="DATA_INTERSECTION">
+<attr name="transform">${out.0.EMP_NO} = ${in.0.EmployeeID};
+${out.0.FIRST_NAME} = ${in.0.FirstName};
+${out.0.LAST_NAME} = ${in.0.LastName};
+${out.0.FULL_NAME} = ${in.1.LastName}+" "+${in.1.FirstName};
+${out.0.JOB_COUNTRY} = ${in.0.Country};
+${out.0.HIRE_DATE} = ${in.0.HireDate};
+</attr>
+</Node>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_1_data.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="370" guiY="20" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_1_2_data.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="370" guiY="107" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_2_data.out" guiHeight="25" guiName="WRITER3" guiWidth="50" guiX="370" guiY="194" id="WRITER3" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (INTERSECT)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="INTERSECT:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (INTERSECT)" metadata="InMetadata" outPort="0 (INPUT2)" toNode="INTERSECT:1"/>
+<Edge fromNode="INTERSECT:0" guiBendpoints="" id="OUTEDGE1" inPort="0 (WRITER1)" metadata="InMetadata" outPort="0 (INTERSECT)" toNode="WRITER1:0"/>
+<Edge fromNode="INTERSECT:1" guiBendpoints="" id="OUTEDGE2" inPort="0 (WRITER2)" metadata="OutMetadata" outPort="1 (INTERSECT)" toNode="WRITER2:0"/>
+<Edge fromNode="INTERSECT:2" guiBendpoints="" id="OUTEDGE3" inPort="0 (WRITER3)" metadata="InMetadata" outPort="2 (INTERSECT)" toNode="WRITER3:0"/>
 </Phase>
 </Graph>
