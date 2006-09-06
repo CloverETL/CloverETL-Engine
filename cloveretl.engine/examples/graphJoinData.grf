@@ -1,27 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="Testing Joiner">
-<!-- This graph demonstrates functionality of SORT and SORTED_JOIN components. SORTED_JOIN components
-performs joining of master data with slave data based on specified key. It requires both master and slave
-data to be sorted according to used key.  
--->
+<Graph description="This graph demonstrates functionality of SORT and SORTED_JOIN components. SORTED_JOIN components&#10;performs joining of master data with slave data based on specified key. It requires both master and slave&#10;data to be sorted according to used key.  " name="Testing Joiner">
 <Global>
-<Metadata id="InMetadata1" fileURL="metadata/orders.fmt"/>
-<Metadata id="InMetadata2" fileURL="metadata/employees.fmt"/>
-<Metadata id="OutMetadata" fileURL="metadata/joinedOrders.fmt"/>
+<Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
+<Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
+<Metadata fileURL="metadata/orders.fmt" id="InMetadata1"/>
 </Global>
 <Phase number="0">
-<!-- List of nodes which we will use for transformation -->
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" DataPolicy="Strict"/>
-<Node id="INPUT2" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
-<Node id="SORT_ORDERS" type="SORT" sortKey="EmployeeID"/>
-<Node id="SORT_EMPL" type="SORT" sortKey="EmployeeID"/>
-<Node id="JOIN" type="SORTED_JOIN" joinKey="EmployeeID" transformClass="reformatJoinTest" leftOuterJoin="true"/>
-<Node id="WRITER" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/joined_data.out"/>
-<!-- Edges connecting nodes -->
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="SORT_ORDERS:0" metadata="InMetadata1"/>
-<Edge id="INEDGE2" fromNode="INPUT2:0" toNode="SORT_EMPL:0" metadata="InMetadata2"/>
-<Edge id="INNEREDGE1" fromNode="SORT_ORDERS:0" toNode="JOIN:0" metadata="InMetadata1"/>
-<Edge id="INNEREDGE2" fromNode="SORT_EMPL:0" toNode="JOIN:1" metadata="InMetadata2"/>
-<Edge id="OUTEDGE" fromNode="JOIN:0" toNode="WRITER:0" metadata="OutMetadata"/>
+<Node enabled="enabled" fileURL="data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="370" guiY="20" id="JOIN" joinKey="EmployeeID" leftOuterJoin="true" transformClass="reformatJoinTest" type="SORTED_JOIN"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_EMPL" guiWidth="50" guiX="195" guiY="107" id="SORT_EMPL" sortKey="EmployeeID" type="SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="195" guiY="20" id="SORT_ORDERS" sortKey="EmployeeID" type="SORT"/>
+<Node append="false" enabled="enabled" fileURL="output/joined_data.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="545" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (SORT_ORDERS)" metadata="InMetadata1" outPort="0 (INPUT1)" toNode="SORT_ORDERS:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="0 (SORT_EMPL)" metadata="InMetadata2" outPort="0 (INPUT2)" toNode="SORT_EMPL:0"/>
+<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="WRITER:0"/>
+<Edge fromNode="SORT_EMPL:0" guiBendpoints="" id="INNEREDGE2" inPort="1 (JOIN)" metadata="InMetadata2" outPort="0 (SORT_EMPL)" toNode="JOIN:1"/>
+<Edge fromNode="SORT_ORDERS:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (SORT_ORDERS)" toNode="JOIN:0"/>
 </Phase>
 </Graph>
