@@ -158,9 +158,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		    setNull(true);
 			return;
 		}
-		if (_value instanceof Numeric) {
-			setValue((Numeric) _value);
-		} else {
+        if (_value instanceof Numeric) {
+            setValue((Numeric) _value);
+        } else if (_value instanceof Number) {
+            value.setValue(((Number) _value).doubleValue());
+        } else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}

@@ -115,8 +115,10 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	public void setValue(Object _value) {
 		if (_value == null) {
 		    setNull(true);
-		} else if (_value instanceof Integer) {
-			value = ((Integer) _value).intValue();
+        } else if (_value instanceof Numeric) {
+            setValue((Numeric) _value);
+		} else if (_value instanceof Number) {
+			value = ((Number) _value).intValue();
             setNull(value == Integer.MIN_VALUE);
 		} else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());

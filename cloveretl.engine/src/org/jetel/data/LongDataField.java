@@ -117,8 +117,10 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		    setNull(true);
 			return;
 		}
-		if (_value instanceof Long) {
-			this.value = ((Long) _value).longValue();
+		if (_value instanceof Numeric) {
+		    setValue((Numeric) _value);
+        } else if (_value instanceof Number) {
+			this.value = ((Number) _value).longValue();
             setNull(this.value == Long.MIN_VALUE);
 		} else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
