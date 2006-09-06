@@ -66,10 +66,10 @@
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="data/customers.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="77" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
-<Node enabled="enabled" fileURL="output/joined.txt" guiHeight="68" guiName="Universal Data Writer" guiWidth="127" guiX="534" guiY="77" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="275" guiY="77" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN"/>
-<Edge debugMode="true" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
+<Node enabled="enabled" fileURL="data/customers.dat" guiHeight="66" guiName="Universal Data Reader" guiWidth="117" guiX="55" guiY="79" id="DATA_READER0" quotedStrings="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="output/joined.txt" guiHeight="68" guiName="Universal Data Writer" guiWidth="127" guiX="469" guiY="79" id="DATA_WRITER0" type="DATA_WRITER"/>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="62" guiName="DBJoin" guiWidth="122" guiX="260" guiY="79" id="DBJOIN0" joinKey="lname" sqlQuery="select * from employee where last_name=?" transformClass="TransformForDBjoin" type="DBJOIN"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
 <Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="0 (Universal Data Writer)" metadata="Metadata2" outPort="0 (DBJoin)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
