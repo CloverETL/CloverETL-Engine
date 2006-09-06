@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph ilustrates usage of Aproximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." name="graphFixedLengthData">
+<Global>
+<Metadata id="Metadata4">
+<Record name="conforming_out" type="fixed">
+<Field name="lname" nullable="true" size="15" type="string"/>
+<Field name="fname" nullable="true" size="15" type="string"/>
+<Field name="last_name" nullable="true" size="15" type="string"/>
+<Field name="first_name" nullable="true" size="15" type="string"/>
+<Field name="_total_conformity_" nullable="true" size="8" type="numeric"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="customer" type="fixed">
+<Field name="customer_id" nullable="true" size="4" type="integer"/>
+<Field name="account_num" nullable="true" size="11" type="long"/>
+<Field name="lname" nullable="true" size="10" type="string"/>
+<Field name="fname" nullable="true" size="10" type="string"/>
+<Field name="mi" nullable="true" size="4" type="string"/>
+<Field name="address1" nullable="true" size="30" type="string"/>
+<Field name="city" nullable="true" size="7" type="string"/>
+<Field name="state_province" nullable="true" size="6" type="string"/>
+<Field name="postal_code" nullable="true" size="5" type="string"/>
+<Field name="country" nullable="true" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
+<Field name="phone1" nullable="true" size="12" type="string"/>
+<Field name="phone2" nullable="true" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="false" size="15" type="date"/>
+<Field name="marital_status" nullable="true" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" size="13" type="string"/>
+<Field name="gender" nullable="true" size="1" type="string"/>
+<Field name="total_children" nullable="true" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
+<Field name="education" nullable="true" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
+<Field name="member_card" nullable="true" size="8" type="string"/>
+<Field name="occupation" nullable="true" size="20" type="string"/>
+<Field name="houseowner" nullable="true" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="customer_with_key" type="fixed">
+<Field name="customer_id" nullable="true" size="4" type="integer"/>
+<Field name="account_num" nullable="true" size="11" type="long"/>
+<Field name="lname" nullable="true" size="10" type="string"/>
+<Field name="fname" nullable="true" size="10" type="string"/>
+<Field name="mi" nullable="true" size="4" type="string"/>
+<Field name="address1" nullable="true" size="30" type="string"/>
+<Field name="city" nullable="true" size="6" type="string"/>
+<Field name="state_province" nullable="true" size="6" type="string"/>
+<Field name="postal_code" nullable="true" size="5" type="string"/>
+<Field name="country" nullable="true" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
+<Field name="phone1" nullable="true" size="12" type="string"/>
+<Field name="phone2" nullable="true" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="28" type="date"/>
+<Field name="marital_status" nullable="true" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" size="13" type="string"/>
+<Field name="gender" nullable="true" size="1" type="string"/>
+<Field name="total_children" nullable="true" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
+<Field name="education" nullable="true" size="10" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="28" type="date"/>
+<Field name="member_card" nullable="true" size="8" type="string"/>
+<Field name="occupation" nullable="true" size="20" type="string"/>
+<Field name="houseowner" nullable="true" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+<Field locale="en.US" name="key" nullable="true" size="7" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="employee" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" type="string"/>
+<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record name="employee_with_key" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" type="string"/>
+<Field delimiter=";" name="management_role" nullable="true" type="string"/>
+<Field delimiter="\n" locale="en.US" name="key" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5">
+<Record name="suspicious" type="delimited">
+<Field delimiter=";" name="lname" nullable="true" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" type="string"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="birthdate" nullable="true" type="date"/>
+<Field delimiter=";" name="gender" nullable="true" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" type="string"/>
+<Field delimiter=";" format="EEE MMM dd yyyy" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" name="gender1" nullable="true" type="string"/>
+<Field delimiter=";" length="8" name="_lname_conformity_" nullable="true" scale="2" type="numeric"/>
+<Field delimiter=";" length="8" name="_fname_conformity_" nullable="true" scale="2" type="numeric"/>
+<Field delimiter="\n" length="8" name="_total_conformity_" nullable="true" scale="2" type="numeric"/>
+</Record>
+</Metadata>
+<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+</Global>
+<Phase number="0">
+<Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="444" guiY="176" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" type="APROX_MERGE_JOIN">
+<attr name="transform">${out.0.lname} = ${in.0.lname};
+${out.0.fname} = ${in.0.fname};
+${out.0.last_name} = ${in.1.last_name};
+${out.0.first_name} = ${in.1.first_name};
+</attr>
+<attr name="slaveOverrideKey">last_name;first_name</attr>
+<attr name="transformForSuspicious">${out.0.lname} = ${in.0.lname};
+${out.0.fname} = ${in.0.fname};
+${out.0.birthdate} = ${in.0.birthdate};
+${out.0.gender} = ${in.0.gender};
+${out.0.first_name} = ${in.1.first_name};
+${out.0.last_name} = ${in.1.last_name};
+${out.0.birth_date} = ${in.1.birth_date};
+${out.0.gender1} = ${in.1.gender};</attr>
+</Node>
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="7" guiY="259" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node append="false" enabled="enabled" fileURL="output/suspicoius.txt" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="output/employee.out" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="296" guiY="92" id="EXT_SORT0" sortKey="key" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="296" guiY="259" id="EXT_SORT1" sortKey="key" type="EXT_SORT"/>
+<Node OneRecordPerLine="true" enabled="enabled" fileURL="data/customers.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customers.out" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="152" guiY="92" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
+<Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="152" guiY="259" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
+<Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:1" guiBendpoints="" id="Edge18" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata5" outPort="1 (aproximative join)" toNode="DELIMITED_DATA_WRITER_NIO0:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:2" guiBendpoints="" id="Edge19" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata2" outPort="2 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO1:0"/>
+<Edge fromNode="APROX_MERGE_JOIN1:3" guiBendpoints="" id="Edge20" inPort="0 (Delimited Data Writer (New I/O))" metadata="Metadata3" outPort="3 (aproximative join)" toNode="DELIMITED_DATA_WRITER_NIO1:0"/>
+<Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="0 (Key generator)" metadata="Metadata1" outPort="0 (employee)" toNode="KEY_GEN1:0"/>
+<Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge6" inPort="0 (aproximative join)" metadata="Metadata2" outPort="0 (Ext Sort)" toNode="APROX_MERGE_JOIN1:0"/>
+<Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge7" inPort="1 (aproximative join)" metadata="Metadata3" outPort="0 (Ext Sort)" toNode="APROX_MERGE_JOIN1:1"/>
+<Edge fromNode="FIXLEN_DATA_READER_NIO0:0" guiBendpoints="" id="Edge1" inPort="0 (Key generator)" metadata="Metadata0" outPort="0 (customer)" toNode="KEY_GEN0:0"/>
+<Edge fromNode="KEY_GEN0:0" guiBendpoints="" id="Edge5" inPort="0 (Ext Sort)" metadata="Metadata2" outPort="0 (Key generator)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="KEY_GEN1:0" guiBendpoints="" id="Edge4" inPort="0 (Ext Sort)" metadata="Metadata3" outPort="0 (Key generator)" toNode="EXT_SORT1:0"/>
+</Phase>
+</Graph>
