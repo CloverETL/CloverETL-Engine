@@ -128,6 +128,7 @@
 </Record>
 </Metadata>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node conformity="0.8" enabled="enabled" guiHeight="67" guiName="aproximative join" guiWidth="122" guiX="444" guiY="176" id="APROX_MERGE_JOIN1" joinKey="lname 4 0.5 true false false false;fname 3 0.5 true false false false" matchingKey="key" type="APROX_MERGE_JOIN">
@@ -147,13 +148,13 @@ ${out.0.birth_date} = ${in.1.birth_date};
 ${out.0.gender1} = ${in.1.gender};</attr>
 </Node>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="70" guiName="employee" guiWidth="129" guiX="7" guiY="259" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="output/suspicoius.txt" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="output/employee.out" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/suspicoius.txt" guiHeight="79" guiName="Delimited Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="135" id="DELIMITED_DATA_WRITER_NIO0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/employee.out" guiHeight="69" guiName="Delimited Data Writer (New I/O)" guiWidth="118" guiX="596" guiY="303" id="DELIMITED_DATA_WRITER_NIO1" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="95" guiX="296" guiY="92" id="EXT_SORT0" sortKey="key" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="111" guiX="296" guiY="259" id="EXT_SORT1" sortKey="key" type="EXT_SORT"/>
-<Node OneRecordPerLine="true" enabled="enabled" fileURL="data/customers.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customers.out" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER"/>
+<Node OneRecordPerLine="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.dat" guiHeight="72" guiName="customer" guiWidth="119" guiX="7" guiY="92" id="FIXLEN_DATA_READER_NIO0" type="FIXLEN_DATA_READER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/conforming.txt" guiHeight="69" guiName="Fixed Length Data Writer (New I/O)" guiWidth="111" guiX="596" guiY="54" id="FIXLEN_DATA_WRITER_NIO0" type="FIXLEN_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/customers.out" guiHeight="54" guiName="Fixed Length Data Writer (New I/O)" guiWidth="123" guiX="596" guiY="215" id="FIXLEN_DATA_WRITER_NIO1" type="FIXLEN_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="70" guiName="Key generator" guiWidth="138" guiX="152" guiY="92" id="KEY_GEN0" keyExpression="lname 4;fname 3" type="KEY_GEN"/>
 <Node enabled="enabled" guiHeight="88" guiName="Key generator" guiWidth="145" guiX="152" guiY="259" id="KEY_GEN1" keyExpression="last_name 4;first_name 3" type="KEY_GEN"/>
 <Edge fromNode="APROX_MERGE_JOIN1:0" guiBendpoints="" id="Edge0" inPort="0 (Fixed Length Data Writer (New I/O))" metadata="Metadata4" outPort="0 (aproximative join)" toNode="FIXLEN_DATA_WRITER_NIO0:0"/>
