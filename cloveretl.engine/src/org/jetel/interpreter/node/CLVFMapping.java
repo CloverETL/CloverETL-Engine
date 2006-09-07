@@ -13,8 +13,8 @@ import org.jetel.metadata.DataRecordMetadata;
 public class CLVFMapping extends SimpleNode {
  
     public DataField field;
-    public int recordNo;
-    public int fieldNo;
+    public int recordNo=-1;
+    public int fieldNo=-1;
     public String fieldName;
     public int arity;
     
@@ -57,7 +57,8 @@ public class CLVFMapping extends SimpleNode {
           String recFieldName[]=fRecName.substring(1).split("\\.");
           DataRecordMetadata record;
           try{
-              record=parser.getOutRecordMeta(parser.getOutRecordNum(recFieldName[0]));
+        	  recordNo=parser.getOutRecordNum(recFieldName[0]);
+              record=parser.getOutRecordMeta(recordNo);
           }catch(Exception ex){
               throw new ParseException("Error accessing record \""+recFieldName[0]+"\" "+ex.getMessage());
           }
@@ -76,7 +77,8 @@ public class CLVFMapping extends SimpleNode {
        String recFieldName[]=fRecName.substring(1).split("\\.");
        DataRecordMetadata record=null;
        try{
-           record=parser.getOutRecordMeta(Integer.parseInt(recFieldName[0]));
+    	   recordNo=Integer.parseInt(recFieldName[0]);
+           record=parser.getOutRecordMeta(recordNo);
        }catch(NumberFormatException ignore){
        }
        if (record==null){
@@ -100,4 +102,18 @@ public class CLVFMapping extends SimpleNode {
    public void setArity(int arity){
        this.arity=arity;
    }
+   
+   public void dump(String prefix) {
+	    System.out.println(toString(prefix));
+	    if (children != null) {
+	      for (int i = 0; i < children.length; ++i) {
+		SimpleNode n = (SimpleNode)children[i];
+		if (n != null) {
+		  n.dump(prefix + " ");
+		}
+	      }
+	    }
+	    System.out.println("Rec:"+recordNo+" field: "+fieldNo+" fieldName:"+fieldName);
+	  }
+   
 }
