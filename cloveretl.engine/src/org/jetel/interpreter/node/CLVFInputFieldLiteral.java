@@ -12,8 +12,8 @@ import org.jetel.metadata.DataRecordMetadata;
 public class CLVFInputFieldLiteral extends SimpleNode {
 	
 	public DataField field;
-    public int recordNo;
-    public int fieldNo;
+    public int recordNo=-1;
+    public int fieldNo=-1;
     public String fieldName;
 	
 	public CLVFInputFieldLiteral(int id) {
@@ -50,7 +50,8 @@ public class CLVFInputFieldLiteral extends SimpleNode {
      public void setRecordFieldName(String fRecName) throws ParseException{
             // get rid of leading '$' character (the 1st character)
             String recFieldName[]=fRecName.substring(1).split("\\.");
-            DataRecordMetadata record=parser.getInRecordMeta(parser.getInRecordNum(recFieldName[0]));
+            recordNo=parser.getInRecordNum(recFieldName[0]);
+            DataRecordMetadata record=parser.getInRecordMeta(recordNo);
             if (record==null){
                 throw new ParseException("Unknown data field ["+fRecName+"]"); 
             }
@@ -63,7 +64,8 @@ public class CLVFInputFieldLiteral extends SimpleNode {
      public void setRecordNumFieldName(String fRecName) throws ParseException{
          // get rid of leading '$' character (the 1st character)
          String recFieldName[]=fRecName.substring(1).split("\\.");
-         DataRecordMetadata record=parser.getInRecordMeta(Integer.parseInt(recFieldName[0]));
+         recordNo=Integer.parseInt(recFieldName[0]);
+         DataRecordMetadata record=parser.getInRecordMeta(recordNo);
          if (record==null){
              throw new ParseException("Unknown data field ["+fRecName+"]"); 
          }
