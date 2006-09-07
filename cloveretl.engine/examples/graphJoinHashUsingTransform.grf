@@ -4,13 +4,14 @@
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
 <Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
 <Metadata fileURL="metadata/orders.fmt" id="InMetadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
-<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" joinKey="EmployeeID" leftOuterJoin="false" type="HASH_JOIN">
 <attr name="transform">${out.0.OrderID} = ${in.0.OrderID};
@@ -20,7 +21,7 @@ ${out.0.EmployeeID2} = ${in.1.EmployeeID};
 ${out.0.LastName} = ${in.1.LastName}+":"+${in.1.FirstName};
 </attr>
 </Node>
-<Node append="false" enabled="enabled" fileURL="output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (INPUT1)" toNode="JOIN:0"/>
 <Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (JOIN)" metadata="InMetadata2" outPort="0 (INPUT2)" toNode="JOIN:1"/>
 <Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="WRITER:0"/>

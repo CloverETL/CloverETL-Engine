@@ -55,11 +55,12 @@
 </Record>
 </Metadata>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" fileURL="data/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node append="false" enabled="enabled" fileURL="output/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="111" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="111" id="FILTER0" type="FILTER">

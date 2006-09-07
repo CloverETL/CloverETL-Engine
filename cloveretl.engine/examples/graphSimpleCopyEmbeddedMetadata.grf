@@ -22,14 +22,15 @@
 <Field delimiter="\n" format="#" name="ReportsTo" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
 <Node enabled="enabled" guiHeight="25" guiName="BROADCAST2" guiWidth="50" guiX="370" guiY="194" id="BROADCAST2" type="SIMPLE_COPY"/>
-<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
-<Node debugFilename="Trash1_output.txt" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
+<Node debugFilename="${WORKSPACE}/output/Trash1_output.txt" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
 <Node enabled="enabled" guiHeight="25" guiName="TRASH2" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
 <Node enabled="enabled" guiHeight="25" guiName="TRASH3" guiWidth="50" guiX="545" guiY="194" id="TRASH3" type="TRASH"/>
 <Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (TRASH1)" metadata="InMetadata" outPort="0 (BROADCAST)" toNode="TRASH1:0"/>
