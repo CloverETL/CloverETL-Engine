@@ -1,66 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="Testing Simple Copy">
-<!-- This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is
-duplicated onto all connected output ports.
-It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose
-is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)
-
-Metadata in this graph is embedded directly to graph instead of external file.
-Output metadata is the same as input except that for BirthDate and HireDate, locale
-property is defined. It allows to specify language or language.Country locale
-which is used when formatting output.
-In this example, date info on input is expected to be in dd/MM/yyyy format, wherease
-on output it should follow US/UK standard -> (usually defined as MM/dd/YYYY).
--->
+<Graph description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file.&#10;Output metadata is the same as input except that for BirthDate and HireDate, locale&#10;property is defined. It allows to specify language or language.Country locale&#10;which is used when formatting output.&#10;In this example, date info on input is expected to be in dd/MM/yyyy format, wherease&#10;on output it should follow US/UK standard -&gt; (usually defined as MM/dd/YYYY)." name="Testing Simple Copy">
 <Global>
 <Metadata id="InMetadata">
 <Record name="Employees" type="delimited">
-	<Field name="EmployeeID" type="string" delimiter=";" />
-	<Field name="LastName" type="string" delimiter=";" format="#" />
-	<Field name="FirstName" type="string" delimiter=";"/>
-	<Field name="Title" type="string" delimiter=";"/>
-	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
-	<Field name="BirthDate" type="date" delimiter=";" format="dd/MM/yyyy" />
-	<Field name="HireDate" type="date" delimiter=";" format="dd/MM/yyyy" />
-	<Field name="Address" type="string" delimiter=";"/>
-	<Field name="City" type="string" delimiter=";"/>
-	<Field name="Region" type="string" delimiter=";"/>
-	<Field name="PostalCode" type="string" delimiter=";"/>
-	<Field name="Country" type="string" delimiter=";"/>
-	<Field name="Phone" type="string" delimiter=";"/>
-	<Field name="Extension" type="string" delimiter=";"/>
-	<Field name="Photo" type="string" delimiter=";"/>
-	<Field name="Memo" type="string" delimiter=";"/>
-	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+<Field delimiter=";" name="EmployeeID" nullable="true" type="string"/>
+<Field delimiter=";" format="#" name="LastName" nullable="true" type="string"/>
+<Field delimiter=";" name="FirstName" nullable="true" type="string"/>
+<Field delimiter=";" name="Title" nullable="true" type="string"/>
+<Field delimiter=";" name="TitleInCourtesy" nullable="true" type="string"/>
+<Field delimiter=";" format="dd/MM/yyyy" name="BirthDate" nullable="true" type="date"/>
+<Field delimiter=";" format="dd/MM/yyyy" name="HireDate" nullable="true" type="date"/>
+<Field delimiter=";" name="Address" nullable="true" type="string"/>
+<Field delimiter=";" name="City" nullable="true" type="string"/>
+<Field delimiter=";" name="Region" nullable="true" type="string"/>
+<Field delimiter=";" name="PostalCode" nullable="true" type="string"/>
+<Field delimiter=";" name="Country" nullable="true" type="string"/>
+<Field delimiter=";" name="Phone" nullable="true" type="string"/>
+<Field delimiter=";" name="Extension" nullable="true" type="string"/>
+<Field delimiter=";" name="Photo" nullable="true" type="string"/>
+<Field delimiter=";" name="Memo" nullable="true" type="string"/>
+<Field delimiter="\n" format="#" name="ReportsTo" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
 <Metadata id="OutMetadata">
 <Record name="Employees" type="delimited">
-	<Field name="EmployeeID" type="string" delimiter=";" />
-	<Field name="LastName" type="string" delimiter=";" format="#" />
-	<Field name="FirstName" type="string" delimiter=";"/>
-	<Field name="Title" type="string" delimiter=";"/>
-	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
-	<Field name="BirthDate" type="date" delimiter=";" locale="en.US" />
-	<Field name="HireDate" type="date" delimiter=";" locale="en.UK" />
-	<Field name="Address" type="string" delimiter=";"/>
-	<Field name="City" type="string" delimiter=";"/>
-	<Field name="Region" type="string" delimiter=";"/>
-	<Field name="PostalCode" type="string" delimiter=";"/>
-	<Field name="Country" type="string" delimiter=";"/>
-	<Field name="Phone" type="string" delimiter=";"/>
-	<Field name="Extension" type="string" delimiter=";"/>
-	<Field name="Photo" type="string" delimiter=";"/>
-	<Field name="Memo" type="string" delimiter=";"/>
-	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+<Field delimiter=";" name="EmployeeID" nullable="true" type="string"/>
+<Field delimiter=";" format="#" name="LastName" nullable="true" type="string"/>
+<Field delimiter=";" name="FirstName" nullable="true" type="string"/>
+<Field delimiter=";" name="Title" nullable="true" type="string"/>
+<Field delimiter=";" name="TitleInCourtesy" nullable="true" type="string"/>
+<Field delimiter=";" locale="en.US" name="BirthDate" nullable="true" type="date"/>
+<Field delimiter=";" locale="en.UK" name="HireDate" nullable="true" type="date"/>
+<Field delimiter=";" name="Address" nullable="true" type="string"/>
+<Field delimiter=";" name="City" nullable="true" type="string"/>
+<Field delimiter=";" name="Region" nullable="true" type="string"/>
+<Field delimiter=";" name="PostalCode" nullable="true" type="string"/>
+<Field delimiter=";" name="Country" nullable="true" type="string"/>
+<Field delimiter=";" name="Phone" nullable="true" type="string"/>
+<Field delimiter=";" name="Extension" nullable="true" type="string"/>
+<Field delimiter=";" name="Photo" nullable="true" type="string"/>
+<Field delimiter=";" name="Memo" nullable="true" type="string"/>
+<Field delimiter="\n" format="#" name="ReportsTo" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
 </Global>
 <Phase number="0">
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
-<Node id="BROADCAST" type="SIMPLE_COPY"/>
-<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER_NIO" fileURL="output/employees_locale.dat"  DataPolicy="Strict" />
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="OUTPUT1:0" metadata="OutMetadata"/>
+<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="output/employees_locale.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DELIMITED_DATA_WRITER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (OUTPUT1)" metadata="OutMetadata" outPort="0 (BROADCAST)" toNode="OUTPUT1:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (BROADCAST)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>
