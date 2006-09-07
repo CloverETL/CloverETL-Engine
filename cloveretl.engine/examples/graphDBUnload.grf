@@ -23,10 +23,11 @@
 </Record>
 </Metadata>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node append="false" enabled="enabled" fileURL="output/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/employees.list.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>
