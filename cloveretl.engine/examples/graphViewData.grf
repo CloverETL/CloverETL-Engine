@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="View Data">
-<!-- This graph is a simple utility which demonstrates usage of parameters. It allows viewing content
-of particular data file (in delimited format). It reads in data and stores them in "debug" format
-under name Debug_output_<inputfilename>
-
-Execution: java org.jetel.main.runGraph -P:data=<data file> -P:meta=<metadata file> graphViewData.grf
--->
+<Graph description="This graph is a simple utility which demonstrates usage of parameters. It allows viewing content&#10;of particular data file (in delimited format). It reads in data and stores them in &quot;debug&quot; format&#10;under name Debug_output_&lt;inputfilename&gt;&#10;&#10;Execution: java org.jetel.main.runGraph -P:data=&lt;data file&gt; -P:meta=&lt;metadata file&gt; graphViewData.grf" name="View Data">
 <Global>
-<Metadata id="InMetadata" fileURL="metadata/${meta}"/>
+<Metadata fileURL="metadata/${meta}" id="InMetadata"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/${data}"  DataPolicy="Strict" />
-<Node id="BROADCAST" type="SIMPLE_COPY"/>
-<Node id="TRASH1" type="TRASH" debugFilename="Debug_output_${data}"/>
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="TRASH1:0" metadata="InMetadata"/>
+<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="data/${data}" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node debugFilename="Debug_output_${data}" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (TRASH1)" metadata="InMetadata" outPort="0 (BROADCAST)" toNode="TRASH1:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (BROADCAST)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>

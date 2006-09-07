@@ -1,46 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="Testing Simple Copy">
-<!-- This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is
-duplicated onto all connected output ports.
-It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose
-is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)
-
-Metadata in this graph is embedded directly to graph instead of external file.
--->
+<Graph description="This graph demonstrates functionality of SimpleCopy component. Everything brought to SimpleCopy on port 0 is&#10;duplicated onto all connected output ports.&#10;It also shows functionality of Trash Component. It discards everything which is sent into it. Its purpose&#10;is debugging - shows how many records ended in it and can print incoming records, if desired (option debugPrint)&#10;&#10;Metadata in this graph is embedded directly to graph instead of external file." name="Testing Simple Copy">
 <Global>
 <Metadata id="InMetadata">
 <Record name="Employees" type="delimited">
-	<Field name="EmployeeID" type="string" delimiter=";" />
-	<Field name="LastName" type="string" delimiter=";" format="#" />
-	<Field name="FirstName" type="string" delimiter=";"/>
-	<Field name="Title" type="string" delimiter=";"/>
-	<Field name="TitleInCourtesy" type="string" delimiter=";"/>
-	<Field name="BirthDate" type="date" delimiter=";" format="dd/MM/yyyy" />
-	<Field name="HireDate" type="date" delimiter=";" format="dd/MM/yyyy" />
-	<Field name="Address" type="string" delimiter=";"/>
-	<Field name="City" type="string" delimiter=";"/>
-	<Field name="Region" type="string" delimiter=";"/>
-	<Field name="PostalCode" type="string" delimiter=";"/>
-	<Field name="Country" type="string" delimiter=";"/>
-	<Field name="Phone" type="string" delimiter=";"/>
-	<Field name="Extension" type="string" delimiter=";"/>
-	<Field name="Photo" type="string" delimiter=";"/>
-	<Field name="Memo" type="string" delimiter=";"/>
-	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+<Field delimiter=";" name="EmployeeID" nullable="true" type="string"/>
+<Field delimiter=";" format="#" name="LastName" nullable="true" type="string"/>
+<Field delimiter=";" name="FirstName" nullable="true" type="string"/>
+<Field delimiter=";" name="Title" nullable="true" type="string"/>
+<Field delimiter=";" name="TitleInCourtesy" nullable="true" type="string"/>
+<Field delimiter=";" format="dd/MM/yyyy" name="BirthDate" nullable="true" type="date"/>
+<Field delimiter=";" format="dd/MM/yyyy" name="HireDate" nullable="true" type="date"/>
+<Field delimiter=";" name="Address" nullable="true" type="string"/>
+<Field delimiter=";" name="City" nullable="true" type="string"/>
+<Field delimiter=";" name="Region" nullable="true" type="string"/>
+<Field delimiter=";" name="PostalCode" nullable="true" type="string"/>
+<Field delimiter=";" name="Country" nullable="true" type="string"/>
+<Field delimiter=";" name="Phone" nullable="true" type="string"/>
+<Field delimiter=";" name="Extension" nullable="true" type="string"/>
+<Field delimiter=";" name="Photo" nullable="true" type="string"/>
+<Field delimiter=";" name="Memo" nullable="true" type="string"/>
+<Field delimiter="\n" format="#" name="ReportsTo" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
 </Global>
 <Phase number="0">
-<Node id="INPUT1" type="DELIMITED_DATA_READER_NIO" fileURL="data/employees.dat"  DataPolicy="Strict" />
-<Node id="BROADCAST" type="SIMPLE_COPY"/>
-<Node id="TRASH1" type="TRASH" debugFilename="Trash1_output.txt"/>
-<Node id="TRASH2" type="TRASH"/>
-<Node id="BROADCAST2" type="SIMPLE_COPY"/>
-<Node id="TRASH3" type="TRASH"/>
-<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="TRASH1:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE2" fromNode="BROADCAST:1" toNode="TRASH2:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE3" fromNode="BROADCAST:2" toNode="BROADCAST2:0" metadata="InMetadata"/>
-<Edge id="INNEREDGE4" fromNode="BROADCAST2:0" toNode="TRASH3:0" metadata="InMetadata"/>
+<Node enabled="enabled" guiHeight="25" guiName="BROADCAST" guiWidth="50" guiX="195" guiY="20" id="BROADCAST" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="25" guiName="BROADCAST2" guiWidth="50" guiX="370" guiY="194" id="BROADCAST2" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node debugFilename="Trash1_output.txt" enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="TRASH2" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="TRASH3" guiWidth="50" guiX="545" guiY="194" id="TRASH3" type="TRASH"/>
+<Edge fromNode="BROADCAST:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (TRASH1)" metadata="InMetadata" outPort="0 (BROADCAST)" toNode="TRASH1:0"/>
+<Edge fromNode="BROADCAST:1" guiBendpoints="" id="INNEREDGE2" inPort="0 (TRASH2)" metadata="InMetadata" outPort="1 (BROADCAST)" toNode="TRASH2:0"/>
+<Edge fromNode="BROADCAST:2" guiBendpoints="" id="INNEREDGE3" inPort="0 (BROADCAST2)" metadata="InMetadata" outPort="2 (BROADCAST)" toNode="BROADCAST2:0"/>
+<Edge fromNode="BROADCAST2:0" guiBendpoints="" id="INNEREDGE4" inPort="0 (TRASH3)" metadata="InMetadata" outPort="0 (BROADCAST2)" toNode="TRASH3:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (BROADCAST)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="BROADCAST:0"/>
 </Phase>
 </Graph>

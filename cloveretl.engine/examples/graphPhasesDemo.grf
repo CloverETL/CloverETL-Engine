@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="TestingPhases">
-<!-- This graph illustrates usage of several components in different phases.
-First, all components from phase 0 are run, then the execution continues
-with phase 1.
-Data which crossess phase boundary is automatically buffered so the data 
-producing node can finish its work and the data consuming node can later
-start reading the data. 
--->
+<Graph description="This graph illustrates usage of several components in different phases.&#10;First, all components from phase 0 are run, then the execution continues&#10;with phase 1.&#10;Data which crossess phase boundary is automatically buffered so the data &#10;producing node can finish its work and the data consuming node can later&#10;start reading the data. " name="TestingPhases">
 <Global>
-<Metadata id="InMetadata" fileURL="metadata/orders.fmt"/>
+<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
 </Global>
 <Phase number="0">
-<Node id="INPUT" type="DELIMITED_DATA_READER_NIO" fileURL="data/orders.dat" />
-<Node id="SORT" type="SORT" sortKey="ShipName;ShipVia"/>
-<Node id="COPY" type="SIMPLE_COPY"/>
-<Edge id="EDG1" fromNode="INPUT:0" toNode="SORT:0" metadata="InMetadata"/>
-<Edge id="BUFF" fromNode="SORT:0" toNode="COPY:0" metadata="InMetadata"/> 
+<Node enabled="enabled" guiHeight="25" guiName="COPY" guiWidth="50" guiX="370" guiY="20" id="COPY" type="SIMPLE_COPY"/>
+<Node enabled="enabled" fileURL="data/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT" guiWidth="50" guiX="195" guiY="20" id="SORT" sortKey="ShipName;ShipVia" type="SORT"/>
+<Edge fromNode="COPY:0" guiBendpoints="" id="EDG2" inPort="0 (MERGE)" metadata="InMetadata" outPort="0 (COPY)" toNode="MERGE:0"/>
+<Edge fromNode="COPY:1" guiBendpoints="" id="EDG3" inPort="1 (MERGE)" metadata="InMetadata" outPort="1 (COPY)" toNode="MERGE:1"/>
+<Edge fromNode="COPY:2" guiBendpoints="" id="EDG4" inPort="2 (MERGE)" metadata="InMetadata" outPort="2 (COPY)" toNode="MERGE:2"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="EDG1" inPort="0 (SORT)" metadata="InMetadata" outPort="0 (INPUT)" toNode="SORT:0"/>
+<Edge fromNode="SORT:0" guiBendpoints="" id="BUFF" inPort="0 (COPY)" metadata="InMetadata" outPort="0 (SORT)" toNode="COPY:0"/>
 </Phase>
 <Phase number="1">
-<Node id="MERGE" type="MERGE" mergeKey="ShipName;ShipVia"/>
-<Edge id="EDG2" fromNode="COPY:0" toNode="MERGE:0" metadata="InMetadata"/>
-<Edge id="EDG3" fromNode="COPY:1" toNode="MERGE:1" metadata="InMetadata"/>
-<Edge id="EDG4" fromNode="COPY:2" toNode="MERGE:2" metadata="InMetadata"/>
-<Edge id="EDG5" fromNode="MERGE:0" toNode="OUTPUT:0" metadata="InMetadata"/>
+<Node enabled="enabled" guiHeight="25" guiName="MERGE" guiWidth="50" guiX="545" guiY="20" id="MERGE" mergeKey="ShipName;ShipVia" type="MERGE"/>
+<Edge fromNode="MERGE:0" guiBendpoints="" id="EDG5" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (MERGE)" toNode="OUTPUT:0"/>
 </Phase>
 <Phase number="2">
-<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/orders.phases.merged"/>
+<Node append="false" enabled="enabled" fileURL="output/orders.phases.merged" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="720" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 </Phase>
 </Graph>

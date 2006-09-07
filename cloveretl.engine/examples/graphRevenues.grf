@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="kumulativní_vynosy_1_pololetí_2006">
+<Graph description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." name="Revenues of one half-year">
 <Global>
 <Metadata id="Metadata2">
 <Record name="Aggr_revenues" type="delimited">
@@ -54,12 +54,12 @@
 <Field delimiter="\r\n" name="Aggr_revenue" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
-<DBConnection dbDriver="org.postgresql.Driver" dbURL="jdbc:postgresql://koule/foodmart" driverLibrary="file:/home/avackova/home/install/jdbcDrivers/pg74.216.jdbc3.jar" id="DBConnection0" name="FoodmartDB" password="opentech" threadSafeConnection="true" user="test"/>
+<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" fileURL="data/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER_NIO0" type="DELIMITED_DATA_READER_NIO"/>
-<Node append="false" enabled="enabled" fileURL="output/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER_NIO2" type="DELIMITED_DATA_WRITER_NIO"/>
+<Node enabled="enabled" fileURL="data/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="output/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="111" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Filter" guiWidth="0" guiX="476" guiY="111" id="FILTER0" type="FILTER">
@@ -88,14 +88,14 @@ ${out.0.Contract_nr} = ${in.0.Contract_nr};
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="316" guiY="111" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
 <Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge14" inPort="0 (Ext Sort)" metadata="Metadata4" outPort="0 (Clients)" toNode="EXT_SORT1:0"/>
-<Edge fromNode="DELIMITED_DATA_READER_NIO0:0" guiBendpoints="" id="Edge13" inPort="0 (Ext Sort)" metadata="Metadata5" outPort="0 (Bonus)" toNode="EXT_SORT0:0"/>
+<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge13" inPort="0 (Ext Sort)" metadata="Metadata5" outPort="0 (Bonus)" toNode="EXT_SORT0:0"/>
 <Edge fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge16" inPort="0 (Merge Join)" metadata="Metadata5" outPort="0 (Ext Sort)" toNode="MERGE_JOIN0:0"/>
 <Edge fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge17" inPort="1 (Merge Join)" metadata="Metadata4" outPort="0 (Ext Sort)" toNode="MERGE_JOIN0:1"/>
 <Edge fromNode="FILTER0:0" guiBendpoints="" id="Edge3" inPort="0 (Reformat)" metadata="Metadata3" outPort="0 (Filter)" toNode="REFORMAT0:0"/>
 <Edge fromNode="FILTER1:0" guiBendpoints="" id="Edge5" inPort="0 (Reformat)" metadata="Metadata3" outPort="0 (Filter)" toNode="REFORMAT1:0"/>
 <Edge fromNode="MERGE_JOIN0:0" guiBendpoints="" id="Edge0" inPort="0 (Simple Copy)" metadata="Metadata3" outPort="0 (Merge Join)" toNode="SIMPLE_COPY0:0"/>
 <Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (Concatenate)" metadata="Metadata10" outPort="0 (Reformat)" toNode="CONCATENATE1:0"/>
-<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge10" inPort="0 (Not found clients)" metadata="Metadata9" outPort="0 (Reformat)" toNode="DELIMITED_DATA_WRITER_NIO2:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge10" inPort="0 (Not found clients)" metadata="Metadata9" outPort="0 (Reformat)" toNode="DELIMITED_DATA_WRITER2:0"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge2" inPort="0 (Filter)" metadata="Metadata3" outPort="0 (Simple Copy)" toNode="FILTER0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge4" inPort="0 (Filter)" metadata="Metadata3" outPort="1 (Simple Copy)" toNode="FILTER1:0"/>
 </Phase>
