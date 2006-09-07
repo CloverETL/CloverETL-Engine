@@ -28,6 +28,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +41,15 @@ import org.jetel.util.DynamicJavaCode;
 
 public class RecordTransformFactory {
 
+    
+    public static final int TRANSFORM_JAVA_SOURCE=1;
+    public static final int TRANSFORM_CLOVER_TL=2;
+    public static final int TRANSFORM_JAVA_PREPROCESS=3;
+    
+    public static final Pattern PATTERN_CLASS = Pattern.compile("class\\s+\\w+"); 
+    public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+transform"); 
+    public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
+    public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
     
     public static RecordTransform createTransform(String transform, String transformClass, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Properties transformationParameters) throws ComponentNotReadyException {
         RecordTransform transformation = null;
@@ -53,27 +64,28 @@ public class RecordTransformFactory {
             //get transformation from link to the compiled class
             transformation = RecordTransformFactory.loadClass(logger, transformClass);
         } else {
-            //try compile transform parameter as java code
-            try {
+            
+            switch (guessTransformType(transform)) {
+            case TRANSFORM_JAVA_SOURCE:
+                // try compile transform parameter as java code
                 DynamicJavaCode dynaTransCode = new DynamicJavaCode(transform);
-                transformation = RecordTransformFactory.loadClassDynamic(logger, dynaTransCode);
-            } catch(Exception e) {
-                logger.info("Transform parameter is not valid java code (Reason: " + e.getMessage() + ")");
-                logger.info("Trying to parse transform parameter as internal clover script language.");
-            }
-         
-            //trying to parse transform parameter as internal clover script language
-            if(transformation == null) {
-                if (transform.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1){
-                    transformation = new RecordTransformTL(logger, transform);
-                } else {
-                    transformation = RecordTransformFactory.loadClassDynamic(
-                                        logger,
-                                        "Transform" + node.getId(),
-                                        transform,
-                                        inMetadata,
-                                        outMetadata);
-                }
+                transformation = RecordTransformFactory.loadClassDynamic(
+                        logger, dynaTransCode);
+                break;
+            case TRANSFORM_CLOVER_TL:
+                transformation = new RecordTransformTL(logger, transform);
+                break;
+            case TRANSFORM_JAVA_PREPROCESS:
+                transformation = RecordTransformFactory.loadClassDynamic(
+                        logger, "Transform" + node.getId(), transform,
+                        inMetadata, outMetadata);
+                break;
+            default:
+                // logger.error("Can't determine transformation code type at
+                // component ID :"+node.getId());
+                throw new RuntimeException(
+                        "Can't determine transformation code type at component ID :"
+                                + node.getId());
             }
         }
 
@@ -205,5 +217,37 @@ public class RecordTransformFactory {
         }
 
     }
+    
+    /**
+     * Guesses type of transformation code based on
+     * code itself - looks for certain patterns within the code
+     * 
+     * @param transform
+     * @return  guessed transformation type or -1 if can't determine
+     */
+    public static int guessTransformType(String transform){
+      
+        if (transform.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1){
+            // clover internal transformation language
+            return TRANSFORM_CLOVER_TL;
+        }
+        if (PATTERN_TL_CODE.matcher(transform).find()){
+            // clover internal transformation language
+            return TRANSFORM_CLOVER_TL;
+        }
+        
+        if (PATTERN_CLASS.matcher(transform).find()){
+            // full java source code
+            return TRANSFORM_JAVA_SOURCE;
+        }
+        if (PATTERN_PREPROCESS_1.matcher(transform).find() || 
+                PATTERN_PREPROCESS_2.matcher(transform).find() ){
+            // semi-java code which has to be preprocessed
+            return TRANSFORM_JAVA_PREPROCESS;
+        }
+        
+        return -1;
+    }
+    
 }
     
