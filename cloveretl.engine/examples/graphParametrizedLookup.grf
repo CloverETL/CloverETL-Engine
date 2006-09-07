@@ -11,15 +11,16 @@
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform">
+import java.io.FileInputStream;
+
 import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-import org.jetel.data.lookup.*;
-import org.jetel.graph.*;
-import org.jetel.metadata.*;
-import org.jetel.data.parser.*;
-import org.jetel.exception.*;
-import java.io.*;
-import java.util.Properties;
+import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.Parser;
+import org.jetel.lookup.SimpleLookupTable;
+import org.jetel.metadata.DataRecordMetadata;
 
 public class reformatTest extends DataRecordTransform{
 
@@ -27,13 +28,13 @@ public class reformatTest extends DataRecordTransform{
 
 	public boolean init(){
 		
-	Parser parser=new DelimitedDataParserNIO();
+	Parser parser=new DelimitedDataParser();
 		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
 		try{	
 		parser.open(new FileInputStream(parameters.getProperty("lookupFile")), lookupMetadata);
 	    String[] lookupKeyStr=new String[1];
 	    lookupKeyStr[0]=parameters.getProperty("keyField");
-		mylookup = new SimpleLookupTable(lookupMetadata, lookupKeyStr ,parser);
+		mylookup = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);
 		// create key 
 		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
 		key.init();

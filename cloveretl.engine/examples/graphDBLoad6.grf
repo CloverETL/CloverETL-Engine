@@ -3,9 +3,10 @@
 <Global>
 <Metadata fileURL="metadata/employeeDB.fmt" id="InMetadata"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
 <Node cloverFields="FIRST_NAME;LAST_NAME;HIRE_DATE" dbConnection="DBConnection0" dbTable="employee_tmp" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" maxErrors="10" sqlQuery="insert into employee_tmp (FIRST_NAME,LAST_NAME,HIRE_DATE,EMP_NO) values (?,?,?,123)" type="DB_OUTPUT_TABLE"/>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE2" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
 </Phase>

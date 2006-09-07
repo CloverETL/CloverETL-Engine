@@ -2,10 +2,11 @@
 <Graph name="TestingDB2">
 <Global>
 <Metadata fileURL="metadata/supplierDBF.fmt" id="Metadata0"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="data/SUPPLIER.DBF" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER"/>
-<Node debugFilename="output/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="TRASH"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${WORKSPACE}/data/SUPPLIER.DBF" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DBF_DATA_READER"/>
+<Node debugFilename="${WORKSPACE}/output/Trash1_output.txt" debugPrint="true" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="TRASH"/>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

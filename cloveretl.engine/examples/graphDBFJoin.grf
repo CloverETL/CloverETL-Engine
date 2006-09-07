@@ -5,12 +5,13 @@
 <Metadata fileURL="metadata/odetailsDBF.fmt" id="InMetadata2"/>
 <Metadata fileURL="metadata/ordersDBF.fmt" id="InMetadata1"/>
 <Metadata fileURL="metadata/ordersInfo.fmt" id="OutMetadata"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" filterExpression="$CUSTOMER!=&quot;N/A&quot;" guiHeight="25" guiName="FILTER" guiWidth="50" guiX="716" guiY="235" id="FILTER" type="EXT_FILTER"/>
-<Node enabled="enabled" fileURL="data/Customers.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DELIMITED_DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="data/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
-<Node charset="ISO-8859-1" enabled="enabled" fileURL="data/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/Customers.txt" guiHeight="25" guiName="IN_CUSTOMERS" guiWidth="50" guiX="389" guiY="102" id="IN_CUSTOMERS" type="DELIMITED_DATA_READER"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${WORKSPACE}/data/ODETAILS.DBF" guiHeight="25" guiName="IN_DETAILS" guiWidth="50" guiX="20" guiY="194" id="IN_DETAILS" type="DBF_DATA_READER"/>
+<Node charset="ISO-8859-1" enabled="enabled" fileURL="${WORKSPACE}/data/ORDERS.DBF" guiHeight="25" guiName="IN_ORDERS" guiWidth="50" guiX="20" guiY="281" id="IN_ORDERS" type="DBF_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="389" guiY="235" id="JOIN" joinKey="ORDERID" leftOuterJoin="true" type="MERGE_JOIN">
 <attr name="transform">
 import org.jetel.component.DataRecordTransform;
@@ -51,8 +52,8 @@ public class joinCustomers extends  DataRecordTransform{
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" type="SORT"/>
 <Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="SORT_ORDERS" sortKey="ORDERID" type="SORT"/>
-<Node append="false" enabled="enabled" fileURL="output/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
-<Node append="false" enabled="enabled" fileURL="output/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="0 (WRITER1)" metadata="OutMetadata" outPort="0 (FILTER)" toNode="WRITER1:0"/>
 <Edge fromNode="FILTER:1" guiBendpoints="" id="Edge8" inPort="0 (WRITER2)" metadata="OutMetadata" outPort="1 (FILTER)" toNode="WRITER2:0"/>
 <Edge debugMode="false" fromNode="IN_CUSTOMERS:0" guiBendpoints="" id="Edge15" inPort="1 (JOIN_CUSTOMER)" metadata="InMetadata3" outPort="0 (IN_CUSTOMERS)" toNode="JOIN_CUSTOMER:1"/>
