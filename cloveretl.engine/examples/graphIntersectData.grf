@@ -3,16 +3,17 @@
 <Global>
 <Metadata fileURL="metadata/employeeDB.fmt" id="OutMetadata"/>
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="data/employees2.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees2.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
-<Node enabled="enabled" fileURL="data/employees3.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="18" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees3.dat" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="18" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="INTERSECT" guiWidth="50" guiX="195" guiY="20" id="INTERSECT" joinKey="EmployeeID" type="DATA_INTERSECTION">
-<attr name="transform">${out.0.EMP_NO} = ${in.0.EmployeeID};
+<attr name="transform">${out.0.EMP_NO} = Integer.parseInt(${in.0.EmployeeID});
 ${out.0.FIRST_NAME} = ${in.0.FirstName};
 ${out.0.LAST_NAME} = ${in.0.LastName};
 ${out.0.FULL_NAME} = ${in.1.LastName}+" "+${in.1.FirstName};
@@ -20,9 +21,9 @@ ${out.0.JOB_COUNTRY} = ${in.0.Country};
 ${out.0.HIRE_DATE} = ${in.0.HireDate};
 </attr>
 </Node>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_1_data.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="370" guiY="20" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_1_2_data.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="370" guiY="107" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/intersect_2_data.out" guiHeight="25" guiName="WRITER3" guiWidth="50" guiX="370" guiY="194" id="WRITER3" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/intersect_1_data.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="370" guiY="20" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/intersect_1_2_data.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="370" guiY="107" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/intersect_2_data.out" guiHeight="25" guiName="WRITER3" guiWidth="50" guiX="370" guiY="194" id="WRITER3" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (INTERSECT)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="INTERSECT:0"/>
 <Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (INTERSECT)" metadata="InMetadata" outPort="0 (INPUT2)" toNode="INTERSECT:1"/>
 <Edge fromNode="INTERSECT:0" guiBendpoints="" id="OUTEDGE1" inPort="0 (WRITER1)" metadata="InMetadata" outPort="0 (INTERSECT)" toNode="WRITER1:0"/>

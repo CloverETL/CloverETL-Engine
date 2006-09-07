@@ -22,10 +22,11 @@
 <Field delimiter="\n" format="#" name="ReportsTo" nullable="true" type="numeric"/>
 </Record>
 </Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="dataPolicy">Strict</attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="195" guiY="20" id="PARTITION" partitionKey="EmployeeID" ranges="3;5" type="PARTITION"/>
 <Node enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
