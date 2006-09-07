@@ -3,7 +3,7 @@
 <Global>
 <Metadata id="Metadata0">
 <Record name="employeesShort" type="delimited">
-<Field delimiter=";" name="EmployeeID" nullable="true" type="integer"/>
+<Field delimiter=";" name="EmployeeID" nullable="true" type="string"/>
 <Field delimiter=";" name="LastName" nullable="true" type="string"/>
 <Field delimiter=";" name="FirstName" nullable="true" type="string"/>
 <Field delimiter=";" name="BirthDate" nullable="true" type="date"/>
