@@ -45,7 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class RecordTransformTL implements RecordTransform {
 
-    public static final String TL_TRANSFORM_CODE_ID="//#TL";
+    public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is Clover's TransformLanguage
     
     public static final String TRANSFORM_FUNCTION_NAME="transform";
     public static final String FINISHED_FUNCTION_NAME="finished";
