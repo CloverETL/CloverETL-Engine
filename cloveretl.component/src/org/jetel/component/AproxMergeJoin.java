@@ -212,7 +212,7 @@ public class AproxMergeJoin extends Node {
 	// for passing data records into transform function
 	private final static DataRecord[] inRecords = new DataRecord[2];
 	private DataRecord[] outConformingRecords=new DataRecord[1];
-	private DataRecord[] outSuspiciousRecords = new DataRecord[2];
+	private DataRecord[] outSuspiciousRecords = new DataRecord[1];
 
 	private Properties transformationParameters;
 	private Properties transformationParametersForSuspicious;
