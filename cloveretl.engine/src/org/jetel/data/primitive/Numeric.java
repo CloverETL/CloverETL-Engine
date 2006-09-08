@@ -46,6 +46,8 @@ public interface Numeric {
     
     public void setValue(Numeric value);
     
+    public void setValue(Number value);
+    
     public int getInt();
     
     public long getLong();
@@ -60,6 +62,8 @@ public interface Numeric {
      * @return True if Number is considered to have NULL value
      */
     public boolean isNull();
+    
+    public void setNull();
     
     public Decimal getDecimal();
 

@@ -177,6 +177,19 @@ public class HugeDecimal implements Decimal {
         setNaN(false);
     }
     
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+       if (value instanceof Long){
+           setValue(value.longValue());
+       }else if (value instanceof Integer){
+           setValue(value.intValue());
+       }else{
+           setValue(value.doubleValue());
+       }
+    }
+    
 	/**
 	 * @see org.jetel.data.primitive.Decimal#getDouble()
 	 */
@@ -398,6 +411,14 @@ public class HugeDecimal implements Decimal {
         return nan;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull(){
+        setNaN(true);
+    }
+    
+    
 	/**
 	 * @see org.jetel.data.primitive.Decimal#add(org.jetel.data.Numeric)
 	 */

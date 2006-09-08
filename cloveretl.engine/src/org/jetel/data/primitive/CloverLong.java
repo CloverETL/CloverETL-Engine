@@ -127,6 +127,14 @@ public class CloverLong extends Number implements Numeric {
 		this.value = value.getLong();
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+        setValue(value.longValue());
+    }
+
+    
 	/**
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
@@ -167,6 +175,14 @@ public class CloverLong extends Number implements Numeric {
 	public boolean isNull() {
 		return value == Long.MIN_VALUE;
 	}
+    
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull(){
+        this.value = Long.MIN_VALUE;
+    }
+    
 
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()

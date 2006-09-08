@@ -220,6 +220,19 @@ public class IntegerDecimal implements Decimal {
         value = bi.longValue();
         setNaN(false);
     }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+       if (value instanceof Long){
+           setValue(value.longValue());
+       }else if (value instanceof Integer){
+           setValue(value.intValue());
+       }else{
+           setValue(value.doubleValue());
+       }
+    }
 
     /**
      * @see org.jetel.data.Decimal#getDouble()
@@ -312,6 +325,14 @@ public class IntegerDecimal implements Decimal {
      */
     public boolean isNull() {
         return nan;
+    }
+    
+    
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull(){
+        setNaN(true);
     }
 
     /**
