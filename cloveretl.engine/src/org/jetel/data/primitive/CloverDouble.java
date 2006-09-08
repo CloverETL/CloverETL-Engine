@@ -131,6 +131,14 @@ public class CloverDouble extends Number implements Numeric {
         }
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
+     */
+    public void setValue(Number value) {
+        setValue(value.doubleValue());
+    }
+    
+    
 	/**
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
@@ -165,6 +173,11 @@ public class CloverDouble extends Number implements Numeric {
 		return value == Double.NaN;
 	}
 
+    public void setNull(){
+        value=Double.NaN;
+    }
+    
+    
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */

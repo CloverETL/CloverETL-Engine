@@ -127,6 +127,14 @@ public class CloverInteger extends Number implements Numeric {
 		this.value = value.getInt();
 	}
 
+    /**
+     * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
+     */
+    public void setValue(Number value) {
+        setValue(value.intValue());
+    }
+
+    
 	/**
 	 * @see org.jetel.data.Numeric#getInt()
 	 */
@@ -168,6 +176,13 @@ public class CloverInteger extends Number implements Numeric {
 		return value == Integer.MIN_VALUE;
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull(){
+        this.value = Integer.MIN_VALUE;
+    }
+    
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
