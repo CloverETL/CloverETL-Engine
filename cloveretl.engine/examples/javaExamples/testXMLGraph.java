@@ -16,13 +16,15 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package org.jetel.test;
+package javaExamples;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
-import org.jetel.graph.*;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphXMLReaderWriter;
 
 public class testXMLGraph{
 
@@ -44,15 +46,16 @@ public class testXMLGraph{
 		}
 		
 		
-		TransformationGraphXMLReaderWriter graphReader=TransformationGraphXMLReaderWriter.getReference();
-		TransformationGraph graph= TransformationGraph.getReference();
+		TransformationGraph graph= new TransformationGraph();
+		TransformationGraphXMLReaderWriter graphReader=new TransformationGraphXMLReaderWriter(graph);
 		
-		if (!graphReader.read(graph,in)){
-			System.err.println("Error in reading graph from XML!");
-			return;
+		try{
+			graphReader.read(in);
+		}catch(Exception ex){
+			ex.printStackTrace();
 		}
 		
-		if(!graph.init(null)){
+		if(!graph.init()){
 		System.err.println("Graph initialization failed !");
 		return;
 		}

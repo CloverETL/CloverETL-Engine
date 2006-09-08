@@ -16,15 +16,15 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package org.jetel.test;
+package javaExamples;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.component.ComponentFactory;
+import org.jetel.connection.DBConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.database.DBConnection;
-import org.jetel.database.DBLookupTable;
+import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -32,10 +32,6 @@ public class testDBLookup{
 
 	public static void main(String args[]){
 	DBConnection dbCon;
-	
-	DataRecord record;
-
-	int counter=0;
 	
     //initialization; must be present
     Defaults.init();
@@ -63,14 +59,14 @@ public class testDBLookup{
 	}
 	
 	//create connection object. Get driver and connect string from cfg file specified as a first argument
-	dbCon=new DBConnection(args[0]);
+	dbCon=new DBConnection("Conn0",args[0]);
 	try{
 		
 		// create lookup table. Will use previously created connection. The query string
 		// is specified as a second parameter
 		// query string should contain ? (questionmark) in where clause
 		// e.g. select * from customers where customer_id = ? and customer_city= ?
-		DBLookupTable lookup=new DBLookupTable(dbCon,metadataIn,args[1]);
+		DBLookupTable lookup=new DBLookupTable("lookup",dbCon,metadataIn,args[1]);
 		
 		/*
 		* in case the DB doesn't support getMetadata, use following constructor:

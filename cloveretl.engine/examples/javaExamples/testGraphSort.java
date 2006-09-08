@@ -16,17 +16,27 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package org.jetel.test;
-import java.io.*;
-import org.jetel.metadata.*;
-import org.jetel.data.*;
-import org.jetel.graph.*;
-import org.jetel.component.*;
+package javaExamples;
+import java.io.FileInputStream;
+import java.io.IOException;
+
+import org.jetel.component.ComponentFactory;
+import org.jetel.component.DelimitedDataReader;
+import org.jetel.component.DelimitedDataWriter;
+import org.jetel.component.Sort;
+import org.jetel.data.Defaults;
+import org.jetel.exception.GraphConfigurationException;
+import org.jetel.graph.Edge;
+import org.jetel.graph.Node;
+import org.jetel.graph.Phase;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 public class testGraphSort {
 	
-	private static final int _PHASE_1=0;
-	private static final int _PHASE_2=1;
+	private static final Phase _PHASE_1=new Phase(1);
+	private static final Phase _PHASE_2=new Phase(2);
 
 	public static void main(String args[]){
 	
@@ -34,10 +44,6 @@ public class testGraphSort {
     Defaults.init();
     ComponentFactory.init();
     
-	DataRecord record;
-
-	int counter=0;
-	
 	if (args.length!=4){
 		System.out.println("Example graph which sorts input data according to specified key.");
 		System.out.println("The key must be a name of field(or comma delimited fields) from input data.");
@@ -66,24 +72,28 @@ public class testGraphSort {
 	}
 	
 	// create Graph + Node + 2 connections (edges)
-	TransformationGraph graph= TransformationGraph.getReference();
+	TransformationGraph graph = new TransformationGraph();
 	Edge inEdge=new Edge("In Edge",metadataIn);
 	Edge outEdge=new Edge("Out Edge",metadataIn);
 	
-	Node nodeRead=new DelimitedDataReaderNIO("Data Parser",args[0]);
+	Node nodeRead=new DelimitedDataReader("Data Parser",args[0]);
 	String[] sortKeys=args[3].split(",");
 	Node nodeSort=new Sort("Sorter",sortKeys, true);
-	Node nodeWrite=new DelimitedDataWriterNIO("Data Writer",args[1],false);
+	Node nodeWrite=new DelimitedDataWriter("Data Writer",args[1],false);
 	
 	// add	Edges & Nodes & Phases to graph
-	graph.addEdge(inEdge);
-	graph.addEdge(outEdge);
-	
-	graph.addPhase(new Phase(_PHASE_1));
-	graph.addNode(nodeRead,_PHASE_1);
-	graph.addNode(nodeSort,_PHASE_1);
-	graph.addPhase(new Phase(_PHASE_2));
-	graph.addNode(nodeWrite,_PHASE_2);
+	try {
+		graph.addEdge(inEdge);
+		graph.addEdge(outEdge);
+		
+		graph.addPhase(_PHASE_1);
+		_PHASE_1.addNode(nodeRead);
+		_PHASE_1.addNode(nodeSort);
+		graph.addPhase(_PHASE_2);
+		_PHASE_2.addNode(nodeWrite);
+	}catch (GraphConfigurationException ex){
+		ex.printStackTrace();
+	}
 	
 	
 	// assign ports (input & output)
@@ -93,7 +103,7 @@ public class testGraphSort {
 	nodeWrite.addInputPort(0,outEdge);
 	
 	
-	if(!graph.init(System.out)){
+	if(!graph.init()){
 		System.err.println("Graph initialization failed !");
 		return;
 	}
