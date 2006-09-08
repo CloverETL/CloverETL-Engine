@@ -103,11 +103,6 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Filter"/>
-	    <parameter id="type" value="FILTER"/>
-	</extension>
-
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.DBExecute"/>
 	    <parameter id="type" value="DB_EXECUTE"/>
 	</extension>
