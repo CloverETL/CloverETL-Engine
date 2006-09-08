@@ -615,7 +615,7 @@ public class DataParser implements Parser {
 		}		
 	}
 	
-	public void skipRecords(int count) {
+	public int skip(int count) {
 		if(metadata.isSpecifiedRecordDelimiter()) {
 			for(int i = 0; i < count - 1; i++) {
 				findFirstRecordDelimiter();
@@ -625,6 +625,7 @@ public class DataParser implements Parser {
 				findEndOfRecord(0);
 			}
 		}
+		return count;
 	}
 
     public void setExceptionHandler(IParserExceptionHandler handler) {
