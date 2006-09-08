@@ -1,0 +1,14 @@
+<plugin
+   id="org.jetel.thirdparty"
+   version="1.9.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<runtime>
+		<library path="cloveretl.thirdparty.jar"/>
+   	</runtime> 
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
+	    <parameter id="type" value="XML_EXTRACT"/>
+	</extension>
+</plugin>
