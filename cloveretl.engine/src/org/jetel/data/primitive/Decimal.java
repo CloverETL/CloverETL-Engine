@@ -42,21 +42,8 @@ public interface Decimal extends Numeric {
 
 	public Decimal createCopy();
 	
-	public void setValue(Decimal value);
-	
-	public void setValue(double value);
-
-	public void setValue(int value);
-
-	public void setValue(long value);
 	
     public void setValue(BigDecimal _value);
-
-	public double getDouble();
-
-	public int getInt();
-	
-	public long getLong();
 	
 	/**
 	 * @return value of decimal in BigDecimal form
@@ -73,20 +60,6 @@ public interface Decimal extends Numeric {
 	
 	public boolean isNaN();
 	
-	public void add(Numeric a);
-	
-	public void sub(Numeric a);
-
-	public void mul(Numeric a);
-	
-	public void div(Numeric a);
-
-	public void abs();
-	
-	public void mod(Numeric a);
-
-	public void neg();
-
 	public void serialize(ByteBuffer byteBuffer);
 	
 	public void deserialize(ByteBuffer byteBuffer);
