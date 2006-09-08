@@ -11,4 +11,10 @@
 	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
 	    <parameter id="type" value="XML_EXTRACT"/>
 	</extension>
+	
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Filter"/>
+	    <parameter id="type" value="FILTER"/>
+	</extension>
+	
 </plugin>
