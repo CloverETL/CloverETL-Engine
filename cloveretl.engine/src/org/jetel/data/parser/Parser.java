@@ -49,6 +49,12 @@ public interface Parser {
 	 */
 	public DataRecord getNext() throws JetelException;
 
+	/**
+	 * Skips specified number of records.
+	 * @param nRec Number of records to be skipped. 
+	 * @return Number of skipped records.
+	 */
+	public int skip(int nRec);
 
 	// Operations
 	/**
