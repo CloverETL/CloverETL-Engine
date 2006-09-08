@@ -336,7 +336,7 @@ public class DataParser implements Parser {
 
 	private DataRecord parsingErrorFound(String exceptionMessage, DataRecord record, int fieldNum) {
         if(exceptionHandler != null) {
-            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum, recordBuffer.toString(), null);
+            exceptionHandler.populateHandler("Parsing error: " + exceptionMessage, record, recordCounter, fieldNum, getLogString(), new BadDataFormatException("Parsing error: " + exceptionMessage));
             return record;
         } else {
 			throw new RuntimeException("Parsing error: " + exceptionMessage + " when parsing record #" + recordCounter + " and " + fieldNum + ". field (" + recordBuffer.toString() + ")");
@@ -455,6 +455,9 @@ public class DataParser implements Parser {
 	 * Find first record delimiter in input channel.
 	 */
 	private boolean findFirstRecordDelimiter() {
+        if(!metadata.isSpecifiedRecordDelimiter()) {
+            return false;
+        }
 		int character;
 		try {
 			while ((character = readChar()) != -1) {
@@ -577,7 +580,8 @@ public class DataParser implements Parser {
 		return recordCounter;
 	}
 	
-	public CharSequence getLogString() {
+	public String getLogString() {
+        recordBuffer.flip();
 		return recordBuffer.toString(); //TODO kokon
 		//return logString;
 	}

@@ -38,6 +38,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -103,7 +104,7 @@ public class DataReader extends Node {
 	/** XML attribute names */
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
 	private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
-	private static final String XML_STARTPORECORD_ATTRIBUTE = "startRecord";
+	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
@@ -172,7 +173,7 @@ public class DataReader extends Node {
             logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
             logRecord.init();
         }
-		int diffRecord = finalRecord - startRecord;
+		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int errorCount = 0;
 		
 		try {
@@ -341,9 +342,10 @@ public class DataReader extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws XMLConfigurationException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		DataReader aDataReader = null;
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
@@ -363,8 +365,8 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
 				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_STARTPORECORD_ATTRIBUTE)){
-				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTPORECORD_ATTRIBUTE));
+			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
+				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
 				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
@@ -379,8 +381,7 @@ public class DataReader extends Node {
 				aDataReader.parser.setTreatMultipleDelimitersAsOne(xattribs.getBoolean(XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
-			return null;
+		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 
 		return aDataReader;
@@ -436,8 +437,8 @@ public class DataReader extends Node {
 	 * @param finalRecord The finalRecord to set.
 	 */
 	public void setFinalRecord(int finalRecord) {
-		if(startRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
-			throw new InvalidParameterException("Invalid FinishRecord parametr.");
+		if(finalRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
+			throw new InvalidParameterException("Invalid finalRecord parameter.");
 		}
 		this.finalRecord = finalRecord;
 	}
@@ -447,7 +448,7 @@ public class DataReader extends Node {
 	 */
 	public void setMaxErrorCount(int maxErrorCount) {
 		if(maxErrorCount < 0) {
-			throw new InvalidParameterException("Invalid MaxErrorCount parametr.");
+			throw new InvalidParameterException("Invalid maxErrorCount parameter.");
 		}
 		this.maxErrorCount = maxErrorCount;
 	}
