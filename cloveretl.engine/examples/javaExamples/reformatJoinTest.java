@@ -16,11 +16,10 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package org.jetel.test;
+package javaExamples;
 
 import org.jetel.component.DataRecordTransform;
-import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.data.*;
+import org.jetel.data.DataRecord;
 
 
 public class reformatJoinTest extends DataRecordTransform{

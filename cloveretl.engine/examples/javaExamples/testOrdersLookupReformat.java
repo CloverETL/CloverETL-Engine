@@ -16,7 +16,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package org.jetel.test;
+package javaExamples;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -26,11 +26,10 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.GetVal;
 import org.jetel.data.RecordKey;
 import org.jetel.data.SetVal;
-import org.jetel.data.lookup.SimpleLookupTable;
-import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
+import org.jetel.lookup.SimpleLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -47,15 +46,15 @@ public class testOrdersLookupReformat extends DataRecordTransform{
 		
 		try{
 			lookupMetadata=metadataReader.read(new FileInputStream("employees.fmt"));
-			Parser parser=new DelimitedDataParserNIO();
+			Parser parser=new DelimitedDataParser();
 			parser.open(new FileInputStream("employees.dat"),lookupMetadata);
-			lookup=new SimpleLookupTable(lookupMetadata,lookupKey,parser );
-			try {
+			lookup=new SimpleLookupTable("lookup",lookupMetadata,lookupKey,parser );
+//			try {
 				lookup.init();
-			} catch (JetelException e) {
-				e.printStackTrace();
-				return false;
-			}
+//			} catch (JetelException e) {
+//				e.printStackTrace();
+//				return false;
+//			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 			return false;
