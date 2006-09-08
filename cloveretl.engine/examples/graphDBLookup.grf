@@ -38,7 +38,7 @@
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
+<attr name="dataPolicy">Strict</attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="228" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform">
