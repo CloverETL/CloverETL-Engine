@@ -1532,12 +1532,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 throw new TransformLangExecutorRuntimeException(node,"data format exception when mapping \"" + node.fieldName + "\" - assigning \""
                             + value + "\"");
             }
-        }catch(Exception ex){
+        }catch(TransformLangExecutorRuntimeException ex){
+        	throw ex;
+    	}catch(Exception ex){
             String msg=ex.getMessage();
             throw new TransformLangExecutorRuntimeException(node,
                     (msg!=null ? msg : "") +
                     " when mapping \"" + node.fieldName + "\" ("+DataFieldMetadata.type2Str(field.getType())
-                    +") - assigning \"" + value + "\" ("+value.getClass()+")");
+                    +") - assigning \"" + value + "\" ("+(value!=null ? value.getClass(): "unknown class" )+")");
+            
         }
         
         return data;
