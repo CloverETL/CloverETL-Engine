@@ -173,7 +173,7 @@ public class DataParser implements Parser {
                 delimiterSearcher.addPattern(System.getProperty("line.separator"), -2); //separator for skipping first line
             }
 		}
-		delimiterSearcher.createFailureFunction();
+		delimiterSearcher.compile();
 	
 		// create array of field sizes & initialize them
 		fieldLengths = new int[metadata.getNumFields()];

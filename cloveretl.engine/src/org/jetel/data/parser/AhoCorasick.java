@@ -36,13 +36,13 @@ public class AhoCorasick {
 		}
 		
 		//construct failure function
-		createFailureFunction();
+		compile();
 	}
 
 	/**
 	 * Create failure function.
 	 */
-	public void createFailureFunction() {
+	public void compile() {
 		NodeTrie qa, q, r;
 		char c;
 		
