@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Record name="ORDERS_Info" type="delimited">
-	<Field name="ORDERID" type="numeric" delimiter=";" nullable="true" />
-	<Field name="CUSTOMERID" type="string" delimiter=";" nullable="true" />
-	<Field name="CUSTOMER" type="string" delimiter=";" nullable="true" />
-	<Field name="PRODUCTID" type="numeric" delimiter=";" nullable="true" />
-	<Field name="UNITPRICE" type="numeric" delimiter=";" nullable="true" />
-	<Field name="QUANTITY" type="numeric" delimiter=";" nullable="true" />
-	<Field name="DISCOUNT" type="numeric" delimiter="\n" nullable="true" />
+<Field delimiter=";" name="ORDERID" nullable="true" type="numeric"/>
+<Field delimiter=";" name="CUSTOMERID" nullable="true" type="string"/>
+<Field delimiter=";" name="CUSTOMER" nullable="true" type="string"/>
+<Field delimiter=";" name="PRODUCTID" nullable="true" type="numeric"/>
+<Field delimiter=";" name="UNITPRICE" nullable="true" type="numeric"/>
+<Field delimiter=";" locale="en.US" name="PRICE_PER_UNIT" nullable="true" type="numeric"/>
+<Field delimiter=";" name="QUANTITY" nullable="true" type="numeric"/>
+<Field delimiter=";" name="DISCOUNT" nullable="true" type="numeric"/>
+<Field delimiter="\n" locale="en.US" name="SHIPTIME" nullable="true" type="integer"/>
 </Record>
