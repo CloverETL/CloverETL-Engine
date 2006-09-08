@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.component/bin"/>
+		<library path="../../../cloveretl.component.public/bin"/>
    	</runtime> 
 
 	<requires>
@@ -100,11 +100,6 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.Trash"/>
 	    <parameter id="type" value="TRASH"/>
-	</extension>
-
-	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.Filter"/>
-	    <parameter id="type" value="FILTER"/>
 	</extension>
 
 	<extension point-id="component">
