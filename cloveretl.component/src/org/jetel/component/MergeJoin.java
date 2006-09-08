@@ -168,7 +168,7 @@ public class MergeJoin extends Node {
 
 	// for passing data records into transform function
 	private final static DataRecord[] inRecords = new DataRecord[2];
-	private DataRecord[] outRecords=new DataRecord[2];
+	private DataRecord[] outRecords=new DataRecord[1];
 
 	private Properties transformationParameters;
 	
