@@ -52,13 +52,13 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class TestInterpreter extends TestCase {
 
-	DataRecordMetadata metadata;
-	DataRecord record,out;
+	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
+	DataRecord record,record1,out,out1;
 	
 	protected void setUp() {
 	    Defaults.init();
 	    
-		metadata=new DataRecordMetadata("TestInput",DataRecordMetadata.DELIMITED_RECORD);
+		metadata=new DataRecordMetadata("in",DataRecordMetadata.DELIMITED_RECORD);
 		
 		metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
 		metadata.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
@@ -66,17 +66,49 @@ public class TestInterpreter extends TestCase {
 		metadata.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
 		metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
 		
+		metadata1=new DataRecordMetadata("in1",DataRecordMetadata.DELIMITED_RECORD);
+		
+		metadata1.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
+		metadata1.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
+		metadata1.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
+		metadata1.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
+		metadata1.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+		
+		metaOut=new DataRecordMetadata("out",DataRecordMetadata.DELIMITED_RECORD);
+		
+		metaOut.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
+		metaOut.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
+		metaOut.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
+		metaOut.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
+		metaOut.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+				
+		metaOut1=new DataRecordMetadata("out1",DataRecordMetadata.DELIMITED_RECORD);
+		
+		metaOut1.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
+		metaOut1.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
+		metaOut1.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
+		metaOut1.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
+		metaOut1.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+
 		record = new DataRecord(metadata);
 		record.init();
-		out = new DataRecord(metadata);
+		record1 = new DataRecord(metadata1);
+		record1.init();
+		out = new DataRecord(metaOut);
 		out.init();
+		out1 = new DataRecord(metaOut1);
+		out1.init();
 		
 		SetVal.setString(record,0,"  HELLO ");
+		SetVal.setString(record1,0,"  My name ");
 		SetVal.setInt(record,1,135);
+		SetVal.setDouble(record1,1,13.5);
 		SetVal.setString(record,2,"Some silly longer string.");
-		SetVal.setValue(record,3,Calendar.getInstance().getTime());
+		SetVal.setString(record1,2,"Prague");
+		SetVal.setValue(record1,3,Calendar.getInstance().getTime());
 		record.getField("Born").setNull(true);
 		SetVal.setInt(record,4,-999);
+		record1.getField("Value").setNull(true);
 	}
 	
 	protected void tearDown() {
@@ -90,7 +122,7 @@ public class TestInterpreter extends TestCase {
 		String expStr = "int i; i=0; print_err(i); \n"+
 						"int j; j=-1; print_err(j);\n"+
 						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt);\n"+
-						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt)"+
+						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt);\n"+
 						"int field; field=$Value; print_err(field)";
 
 		try {
@@ -774,7 +806,7 @@ public class TestInterpreter extends TestCase {
 		String expStr = "int i; i=10;print_err(\"i=\"+i);\n" +
 						"int j;j=9;print_err(\"j=\"+j);\n" +
 						"boolean eq1; eq1=(i==j+1);print_err(\"eq1=\"+eq1);\n" +
-						"boolean eq1;eq1=(i.eq.(j+1));print_err(\"eq1=\"+eq1);\n" +
+//						"boolean eq1;eq1=(i.eq.(j+1));print_err(\"eq1=\"+eq1);\n" +
 						"long l;l=10;print_err(\"l=\"+l);\n" +
 						"boolean eq2;eq2=(l==j);print_err(\"eq2=\"+eq2);\n" +
 						"eq2=(l.eq.i);print_err(\"eq2=\");print_err(eq2);\n" +
@@ -812,7 +844,7 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(false,((Boolean)result[2]).booleanValue());
+		      assertEquals(true,((Boolean)result[2]).booleanValue());
 		      assertEquals(true,((Boolean)result[4]).booleanValue());
 		      assertEquals(true,((Boolean)result[6]).booleanValue());
 		      assertEquals(true,((Boolean)result[8]).booleanValue());
@@ -1286,14 +1318,14 @@ public class TestInterpreter extends TestCase {
 		String expStr = "date born; born=$Born;print_err(born);\n" +
 						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
-						"for (born;born<now;born=dateadd(born,1,year)) yer=yer+1;\n" +
+						"for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
 						"print_err('years on the end:'+yer);\n" +
 						"boolean b;\n" +
 						"for (born;!b;++yer) \n" +
 						"	if (yer==100) b=true;\n" +
 						"print_err(born);\n" +
 						"print_err('years on the end:'+yer);\n" +
-						"print_err('norn:'+born);\n"+
+						"print_err('born:'+born);\n"+
 						"int i;\n" +
 						"for (i=0;i.le.10;++i) ;\n" +
 						"print_err('on the end i='+i);\n";
@@ -1449,7 +1481,6 @@ public class TestInterpreter extends TestCase {
 						"	if (yer>0) return yer else return -1" +
 						"}\n" +
 						"print_err('years born'+age(born));\n" +
-						"print_err(\"years on the end:\"+age(born));\n"+
 						"print_err(\"year before:\"+year_before(born));\n" +
 						" while (true) {print_err('pred return');" +
 						"return;" +
@@ -1522,7 +1553,7 @@ public class TestInterpreter extends TestCase {
 						"print_err(rep );\n" +
 						"decimal(10,5) stn;stn=str2num('2.5125e-1',decimal);\n" +
 						"print_err(stn );\n" +
-						"string nts;nts=num2str(1);\n" +
+						"string nts;nts=num2str(10,4);\n" +
 						"print_err(nts );\n" +
 						"date newdate;newdate=2001-12-20 16:30:04;\n" +
 						"decimal dtn;dtn=date2num(newdate,month);\n" +
@@ -1573,8 +1604,8 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("isn",false,((Boolean)result[12]).booleanValue());
 		      assertEquals("s1",new CloverDouble(6),(CloverDouble)result[13]);
 		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),((StringBuffer)result[14]).toString());
-		      assertEquals("stn",0.25,((Decimal)result[15]).getDouble());
-		      assertEquals("nts","1",((StringBuffer)result[16]).toString());
+		      assertEquals("stn",0.25125,((Decimal)result[15]).getDouble());
+		      assertEquals("nts","22",((StringBuffer)result[16]).toString());
 		      assertEquals("dtn",11.0,((Decimal)result[18]).getDouble());
 		      assertEquals("ii",21,((CloverInteger)result[19]).getInt());
 		      assertEquals("dts","02.12.24",((StringBuffer)result[21]).toString());
@@ -1608,7 +1639,7 @@ public class TestInterpreter extends TestCase {
 						"int t;t=trunc(-po);\n" +
 						"print_err('truncation of '+(-po)+'='+t);\n" +
 						"date date1;date1=2004-01-02 17:13:20;\n" +
-						"/*date tdate1; tdate1=trunc(date1);\n*/" +
+						"date tdate1; tdate1=trunc(date1);\n" +
 						"print_err('truncation of '+date1+'='+tdate1)\n";
 
 	      print_code(expStr);
@@ -1694,30 +1725,44 @@ public class TestInterpreter extends TestCase {
 
 	public void test_mapping(){
 		System.out.println("\nMapping test:");
-		String expStr = "function test(){\n" +
+		String expStr = "print_err($1.City); "+
+						"function test(){\n" +
 						"	string result;\n" +
 						"	print_err('function');\n" +
 						"	result='result';\n" +
-						"	return result;\n" +
+						"	//return result;\n" +
 						"	$Name:=result;\n" +
+						"	$0.Age:=$Age;\n" +
+						"	$out.City:=concat(\"My City \",$City);\n" +
+						"	$Born:=$1.Born;\n" +
+						"	$0.Value:=nvl(0,$in1.Value);\n" +
 						"	}\n" +
 						"test();\n" +
-						"print_err('out of function');\n" +
-						"$City:=test();\n";
+						"print_err($0.Age); "+
+						"print_err($1.City); "+
+						"//print_err($out.City); " +
+						"print_err($1.City); "+
+						"$1.Name:=test();\n" +
+						"$out1.Age:=$Age;\n" +
+						"$1.City:=$1.City;\n" +
+						"$out1.Value:=$in.Value;\n";
 
 	      print_code(expStr);
 		try {
-		      DataRecordMetadata[] recordMetadata=new DataRecordMetadata[] {metadata};
+		      DataRecordMetadata[] recordMetadata=new DataRecordMetadata[] {metadata,metadata1};
+		      DataRecordMetadata[] outMetadata=new DataRecordMetadata[] {metaOut,metaOut1};
 			  TransformLangParser parser = new TransformLangParser(recordMetadata,
-			  		recordMetadata,new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
+			  		outMetadata,new ByteArrayInputStream(expStr.getBytes()),"UTF-8");
 		      CLVFStart parseTree = parser.Start();
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
-		      executor.setInputRecords(new DataRecord[] {record});
-		      executor.setOutputRecords(new DataRecord[]{out});
+		      executor.setInputRecords(new DataRecord[] {record,record1});
+		      executor.setOutputRecords(new DataRecord[]{out,out1});
+		      SetVal.setString(record1,2,"Prague");
+		      
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
@@ -1725,8 +1770,16 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("result",out.getField("City").getValue().toString());
-//		      assertEquals("result",out.getField("Name").getValue().toString());
+		      assertEquals("result",out.getField("Name").getValue().toString());
+		      assertEquals(record.getField("Age").getValue(),out.getField("Age").getValue());
+		      assertEquals("My City "+record.getField("City").getValue().toString(), out.getField("City").getValue().toString());
+		      assertEquals(record1.getField("Born").getValue(), out.getField("Born").getValue());
+		      assertEquals(0,out.getField("Value").getValue());
+		      assertEquals("",out1.getField("Name").getValue().toString());
+		      assertEquals(record.getField("Age").getValue(), out1.getField("Age").getValue());
+		      assertEquals(record1.getField("City").getValue().toString(), out1.getField("City").getValue().toString());
+		      assertNull(out1.getField("Born").getValue());
+		      assertEquals(record.getField("Value").getValue(), out1.getField("Value").getValue());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
