@@ -65,8 +65,12 @@ import org.w3c.dom.Element;
  * <td> [0] - driver records<br>
  *    [1] - slave records<br></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0] - joined records with conformity greater then given limit<br>
- *        [1] - joined records with conformity smaller then given limit but with the same matching key<br>
+ * <td>[0] - joined records with conformity greater then given limit. If in output metadada 
+ * there are fields called "_total_conformity_" or "_keyName_konformity_", where keyName is 
+ * one of field's names from joinKey parameter, to these fields will be assigned computed 
+ * conformity. These fields have to be of type "numeric"<br>
+ *        [1] - joined records with conformity smaller then given limit but with the same 
+ *        matching key. Output metadata can have additional fields (see above)<br>
  *        [2] - driver records for which there is not matching slave  
  *        [3] - slave records for which there is not matching driver<br></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
