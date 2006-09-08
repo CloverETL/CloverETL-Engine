@@ -64,9 +64,10 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"AGGREGATE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev</td>
+ *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev, CRC32, MD5</td>
  *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input data stream for CRC32 and MD5 functions (if not specified, then value from defaultProperties DataFormatter.DEFAULT_CHARSET_ENCODER is used)</td>
  *  </tr>
  *  </table>
  *
@@ -80,6 +81,7 @@ import org.w3c.dom.Element;
 public class Aggregate extends Node {
 
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
+    private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	public final static String COMPONENT_TYPE = "AGGREGATE";
 
@@ -92,7 +94,7 @@ public class Aggregate extends Node {
 	private RecordKey recordKey;
 	private AggregateFunction aggregateFunction;
 	private boolean equalNULLs;
-
+	private String charset;
 
 	/**
 	 *Constructor for the Aggregate object
@@ -214,7 +216,7 @@ public class Aggregate extends Node {
 		// are considered equal
 		recordKey.setEqualNULLs(equalNULLs);
 
-		aggregateFunction = new AggregateFunction(aggregateFunctionStr, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(), recordKey, sorted);
+		aggregateFunction = new AggregateFunction(aggregateFunctionStr, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(), recordKey, sorted, charset);
 		aggregateFunction.init();
 	}
 
@@ -264,6 +266,9 @@ public class Aggregate extends Node {
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
 			    agg.setEqualNULLs(xattribs.getBoolean(XML_EQUAL_NULL_ATTRIBUTE));
 			}
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+                agg.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
+            }
 			return agg;
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage(),ex);
@@ -272,7 +277,7 @@ public class Aggregate extends Node {
 
 
 	/**  Description of the Method */
-	public boolean checkConfig() {
+	@Override public boolean checkConfig() {
 		return true;
 	}
 	
@@ -283,6 +288,14 @@ public class Aggregate extends Node {
 	public void setEqualNULLs(boolean equal){
 	    this.equalNULLs=equal;
 	}
+
+    public String getCharset() {
+        return charset;
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
+    }
 
 }
 

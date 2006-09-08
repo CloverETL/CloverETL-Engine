@@ -18,9 +18,17 @@
 *
 */
 package org.jetel.component.aggregate;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.CRC32;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -30,6 +38,7 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.Base64;
 
 /**
  *  Represent aggregate function of agregate component.
@@ -47,16 +56,20 @@ public class AggregateFunction implements Iterator {
 	private final static int FNC_SUM = 2;
 	private final static int FNC_COUNT = 3;
 	private final static int FNC_AVG = 4;
-	private final static int FNC_STDEV = 5;
+    private final static int FNC_STDEV = 5;
+    private final static int FNC_CRC32 = 6;
+    private final static int FNC_MD5 = 7;
 
 	private final static String S_FNC_MIN = "MIN";
 	private final static String S_FNC_MAX = "MAX";
 	private final static String S_FNC_SUM = "SUM";
 	private final static String S_FNC_COUNT = "COUNT";
 	private final static String S_FNC_AVG = "AVG";
-	private final static String S_FNC_STDEV = "STDEV";
+    private final static String S_FNC_STDEV = "STDEV";
+    private final static String S_FNC_CRC32 = "CRC32";
+    private final static String S_FNC_MD5 = "MD5";
 
-	private final static String[] FNC_INDEX = {"MIN", "MAX", "SUM", "COUNT", "AVG", "STDEV"};
+	private final static String[] FNC_INDEX = {S_FNC_MIN, S_FNC_MAX, S_FNC_SUM, S_FNC_COUNT, S_FNC_AVG, S_FNC_STDEV, S_FNC_CRC32, S_FNC_MD5};
 	
 	private DataRecordMetadata inMetadata;
 	private DataRecordMetadata outMetadata;
@@ -67,24 +80,27 @@ public class AggregateFunction implements Iterator {
 	private boolean sorted;
 	private DataRecord outRecord;
 	private Map recordMap;
-	
+    private String charset;
+	private CharsetEncoder encoder;
+    
 	/**
 	 *Constructor for the AggregateFunction object
 	 */
-	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, int aggregateGroupInitialCapacity) {
+	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset, int aggregateGroupInitialCapacity) {
 		this.aggregateFunction = aggregateFunction;
 		this.recordKey = recordKey;
 		inMetadata = inRecordMetadata;
 		outMetadata = outRecordMetadata;
 		this.sorted = sorted;
 		this.aggregateGroupInitialCapacity = aggregateGroupInitialCapacity;
+        this.charset = charset;
 	}
 
 	/**
 	 *Constructor for the AggregateFunction object
 	 */
-	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted) {
-		this(aggregateFunction, inRecordMetadata, outRecordMetadata, recordKey, sorted, AGGREGATE_GROUP_INITIAL_CAPACITY);
+	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset) {
+		this(aggregateFunction, inRecordMetadata, outRecordMetadata, recordKey, sorted, charset, AGGREGATE_GROUP_INITIAL_CAPACITY);
 	}
 
 	/**
@@ -103,6 +119,14 @@ public class AggregateFunction implements Iterator {
 		DataFieldMetadata fieldMetadata;
 		Integer fieldNum;
 		
+        //init encoder
+        if(charset == null) {
+            encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
+        } else {
+            encoder = Charset.forName(charset).newEncoder();
+        }
+        
+        
 		aggregateItems = new AggregateItem[functionParts.length];
 		Map fieldNames = inMetadata.getFieldNames();
 
@@ -125,8 +149,12 @@ public class AggregateFunction implements Iterator {
 				functionNumber = FNC_COUNT;
 			} else if(functionName.equalsIgnoreCase(S_FNC_AVG)) {
 				functionNumber = FNC_AVG;
-			} else if(functionName.equalsIgnoreCase(S_FNC_STDEV)) {
-				functionNumber = FNC_STDEV;
+            } else if(functionName.equalsIgnoreCase(S_FNC_STDEV)) {
+                functionNumber = FNC_STDEV;
+            } else if(functionName.equalsIgnoreCase(S_FNC_CRC32)) {
+                functionNumber = FNC_CRC32;
+            } else if(functionName.equalsIgnoreCase(S_FNC_MD5)) {
+                functionNumber = FNC_MD5;
 			} else {
 				throw new RuntimeException("Unknown aggregate function: " + functionName);
 			}
@@ -155,13 +183,19 @@ public class AggregateFunction implements Iterator {
 			}
 
 			//create aggregate item
+            //test input metadata
 			if(!(inMetadata.getField(fieldNum.intValue()).isNumeric())
 					&& (functionNumber == FNC_SUM
 					        || functionNumber == FNC_AVG
 					        || functionNumber == FNC_STDEV)) {
-				throw new RuntimeException("Incorrect data type for aggregation.");
+                throw new RuntimeException("Incorrect input data type for " + FNC_INDEX[functionNumber] + " function: " + inMetadata.getField(fieldNum.intValue()).getTypeAsString());
 			}
-			
+			if((functionNumber == FNC_CRC32 || functionNumber == FNC_MD5)
+                    && inMetadata.getField(fieldNum.intValue()).getType() != DataFieldMetadata.STRING_FIELD) {
+                throw new RuntimeException("Incorrect input data type for " + FNC_INDEX[functionNumber] + " function: " + inMetadata.getField(fieldNum.intValue()).getTypeAsString());
+            }
+            
+            
 			//test output metadata
 			if(functionNumber == FNC_SUM 
 			        || functionNumber == FNC_AVG
@@ -175,7 +209,15 @@ public class AggregateFunction implements Iterator {
 					    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 			    } else if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
 				    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
-			
+			if(functionNumber == FNC_CRC32)
+			    if(!(outMetadata.getField(recordKey.getLenght() + i).getType() == DataFieldMetadata.LONG_FIELD)) {
+                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLenght() + i).getTypeAsString());
+                }
+            if(functionNumber == FNC_MD5)
+                if(!(outMetadata.getField(recordKey.getLenght() + i).getType() == DataFieldMetadata.STRING_FIELD)) {
+                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLenght() + i).getTypeAsString());
+                }
+            
 			aggregateItems[i] = new AggregateItem(functionNumber, fieldNum.intValue());
 		}
 		
@@ -187,8 +229,9 @@ public class AggregateFunction implements Iterator {
 	/**
 	 * Add record for sorted data.
 	 * @param record record
+	 * @throws CharacterCodingException 
 	 */
-	public void addSortedRecord(DataRecord record) {
+	public void addSortedRecord(DataRecord record) throws CharacterCodingException {
 		for (int i = 0; i < aggregateItems.length; i++) {
 			aggregateItems[i].update(record);
 		}
@@ -212,8 +255,10 @@ public class AggregateFunction implements Iterator {
 			val = aggregateItems[i].getValue();
 			if(val instanceof MyInteger) 
 				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
-			else if(val instanceof MyDouble)
-				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+            else if(val instanceof MyDouble)
+                ((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+            else if(val instanceof MyLong)
+                ((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyLong) val).value);
 			else if(val instanceof DataField) 
 				outRecord.getField(keyFields.length + i).copyFrom((DataField) val);
 			else
@@ -230,8 +275,9 @@ public class AggregateFunction implements Iterator {
 	
 	/**
 	 * Adds record to data structure for unsorted input data.
+	 * @throws CharacterCodingException 
 	 */
-	public void addUnsortedRecord(DataRecord record) {
+	public void addUnsortedRecord(DataRecord record) throws CharacterCodingException {
 		String keyString;
 		for (int i = 0; i < aggregateItems.length; i++) {
 			aggregateItems[i].updateUnsorted(record);
@@ -292,8 +338,10 @@ public class AggregateFunction implements Iterator {
 			val = aggregateItems[i].getValueUnsorted(key);
 			if(val instanceof MyInteger) 
 				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyInteger) val).value);
-			else if(val instanceof MyDouble)
-				((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+            else if(val instanceof MyDouble)
+                ((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyDouble) val).value);
+            else if(val instanceof MyLong)
+                ((Numeric) outRecord.getField(keyFields.length + i)).setValue(((MyLong) val).value);
 			else 
 				outRecord.getField(keyFields.length + i).setValue(val);
 		}
@@ -304,9 +352,12 @@ public class AggregateFunction implements Iterator {
 	private class MyInteger {
 		int value;
 	}
-	private class MyDouble {
-		double value;
-	}
+    private class MyDouble {
+        double value;
+    }
+    private class MyLong {
+        long value;
+    }
 	/**
 	 *  Represent one aggregate function.
 	 *
@@ -321,8 +372,12 @@ public class AggregateFunction implements Iterator {
 		Data data;
 		Map dataMap; 
 		MyInteger myInteger;
-		MyDouble myDouble;
-		
+        MyDouble myDouble;
+        MyLong myLong;
+		CRC32 crc32 = new CRC32();
+        MessageDigest md5;
+        ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        
 		/**
 		 *Constructor for the FilterItem object
 		 *
@@ -344,14 +399,22 @@ public class AggregateFunction implements Iterator {
 			}
 
 			myInteger = new MyInteger();
-			myDouble = new MyDouble();
+            myDouble = new MyDouble();
+            myLong = new MyLong();
+            
+            try {
+                md5 = MessageDigest.getInstance("MD5");
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException("Unexpected exception: MD5 algorithm is not available.");
+            }
 		}
 
 		/**
 		 * Update this aggregate item with record.
 		 * @param record record
+		 * @throws CharacterCodingException 
 		 */
-		void update(DataRecord record) {
+		void update(DataRecord record) throws CharacterCodingException {
 			DataField currentDF = null;
 			Object currentValue = null;
 			if(function != FNC_COUNT) {
@@ -402,6 +465,24 @@ public class AggregateFunction implements Iterator {
 						data.dValue2 += (((Numeric) currentDF).getDouble() - tempD) * (((Numeric) currentDF).getDouble() - data.dValue1); 	
 					}
 					break;
+                case FNC_CRC32:
+                    if(firstLoop) {
+                        crc32.reset();
+                        firstLoop = false;
+                    }
+                    dataBuffer.clear();
+                    currentDF.toByteBuffer(dataBuffer, encoder);
+                    crc32.update(dataBuffer.array());
+                    break;
+                case FNC_MD5:
+                    if(firstLoop) {
+                        md5.reset();
+                        firstLoop = false;
+                    }
+                    dataBuffer.clear();
+                    currentDF.toByteBuffer(dataBuffer, encoder);
+                    md5.update(dataBuffer.array());
+                    break;
 			}
 		}
 		
@@ -443,6 +524,21 @@ public class AggregateFunction implements Iterator {
 					} else 
 						result = null;
 					break;
+                case FNC_CRC32:
+                    if(firstLoop) {
+                        result = null;
+                    } else {
+                        myLong.value = crc32.getValue();
+                        result = myLong;
+                    }
+                    break;
+                case FNC_MD5:
+                    if(firstLoop) {
+                        result = null;
+                    } else {
+                        result = Base64.encodeBytes(md5.digest());
+                    }
+                    break;
 			}
 			
 			return result;
@@ -455,8 +551,9 @@ public class AggregateFunction implements Iterator {
 		
 		/**
 		 * Update this aggregate item with record for unsorted input data.
+		 * @throws CharacterCodingException 
 		 */
-		void updateUnsorted(DataRecord record) {
+		void updateUnsorted(DataRecord record) throws CharacterCodingException {
 			DataField currentDF = null;
 			Object currentValue = null;
 			if(function != FNC_COUNT) {
@@ -519,6 +616,39 @@ public class AggregateFunction implements Iterator {
 						tempData.dValue2 += (((Numeric) currentDF).getDouble() - tempD) * (((Numeric) currentDF).getDouble() - tempData.dValue1); 	
 					}
 					break;
+                case FNC_CRC32:
+                    if(!dataMap.containsKey(keyStr)) {
+                        CRC32 crc32 = new CRC32();
+                        dataBuffer.clear();
+                        currentDF.toByteBuffer(dataBuffer, encoder);
+                        crc32.update(dataBuffer.array());
+                        dataMap.put(keyStr, crc32);
+                    } else {
+                        CRC32 crc32 = (CRC32) dataMap.get(keyStr);
+                        dataBuffer.clear();
+                        currentDF.toByteBuffer(dataBuffer, encoder);
+                        crc32.update(dataBuffer.array());
+                    }
+                    break;
+                case FNC_MD5:
+                    if(!dataMap.containsKey(keyStr)) {
+                        MessageDigest md5;
+                        try {
+                            md5 = MessageDigest.getInstance("md5");
+                        } catch (NoSuchAlgorithmException e) {
+                            throw new RuntimeException("Unexpected exception: MD5 algorithm is not available.");
+                        }
+                        dataBuffer.clear();
+                        currentDF.toByteBuffer(dataBuffer, encoder);
+                        md5.update(dataBuffer.array());
+                        dataMap.put(keyStr, md5);
+                    } else {
+                        MessageDigest md5 = (MessageDigest) dataMap.get(keyStr);
+                        dataBuffer.clear();
+                        currentDF.toByteBuffer(dataBuffer, encoder);
+                        md5.update(dataBuffer.array());
+                    }
+                    break;
 			}
 		}
 
@@ -526,11 +656,16 @@ public class AggregateFunction implements Iterator {
 		 * Gets result of aggregate function.
 		 */
 		Object getValueUnsorted(String key) {
-			Object resultValue;
-			Data data = (Data) dataMap.get(key);
-			if(data == null) return null;
+			Object resultValue = null;
 			
-			resultValue = data.getValue();
+            Object oData = dataMap.get(key);
+            if(oData == null) return null;
+
+            if(data instanceof Data) {
+                Data data = (Data) oData;
+			
+                resultValue = data.getValue();
+            }
 
 			switch(function) {
 				case FNC_MIN:
@@ -549,6 +684,11 @@ public class AggregateFunction implements Iterator {
 						return myDouble;
 					} else 
 						return null;
+                case FNC_CRC32:
+                    myLong.value = ((CRC32) oData).getValue();
+                    return myLong;
+                case FNC_MD5:
+                    return Base64.encodeBytes(((MessageDigest) oData).digest());
 				default:
 					throw new RuntimeException("Unknown aggregate function.");
 			}
