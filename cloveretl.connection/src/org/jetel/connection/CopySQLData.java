@@ -538,7 +538,7 @@ public abstract class CopySQLData {
 		void setJetel(ResultSet resultSet) throws SQLException {
 			double i = resultSet.getDouble(fieldSQL);
 			if (resultSet.wasNull()) {
-				((NumericDataField) field).setValue(null);
+				((NumericDataField) field).setValue((Object)null);
 			} else {
 				((NumericDataField) field).setValue(i);
 			}
@@ -595,7 +595,7 @@ public abstract class CopySQLData {
 		void setJetel(ResultSet resultSet) throws SQLException {
 			BigDecimal i = resultSet.getBigDecimal(fieldSQL);
 			if (resultSet.wasNull()) {
-				((DecimalDataField) field).setValue(null);
+				((DecimalDataField) field).setValue((Object)null);
 			} else {
 				((DecimalDataField) field).setValue(new HugeDecimal(i, Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.LENGTH_ATTR)), Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.SCALE_ATTR)), false));
 			}
@@ -651,7 +651,7 @@ public abstract class CopySQLData {
 		void setJetel(ResultSet resultSet) throws SQLException {
 			int i = resultSet.getInt(fieldSQL);
 			if (resultSet.wasNull()) {
-				((IntegerDataField) field).setValue(null);
+				((IntegerDataField) field).setValue((Object)null);
 			} else {
 				((IntegerDataField) field).setValue(i);
 			}
@@ -699,7 +699,7 @@ public abstract class CopySQLData {
 		void setJetel(ResultSet resultSet) throws SQLException {
 			long i = resultSet.getLong(fieldSQL);
 			if (resultSet.wasNull()) {
-				((LongDataField) field).setValue(null);
+				((LongDataField) field).setValue((Object)null);
 			} else {
 				((LongDataField) field).setValue(i);
 			}
