@@ -35,6 +35,8 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
+import com.sun.org.apache.xml.internal.utils.UnImplNode;
+
 /**
  * @author David Pavlis
  *
@@ -299,5 +301,9 @@ public class SQLDataParser implements Parser {
         }
         return null;
     }
+
+	public int skip(int nRec) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
 
 }
