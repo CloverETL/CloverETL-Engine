@@ -73,13 +73,13 @@ public class testGraphSort {
 	
 	// create Graph + Node + 2 connections (edges)
 	TransformationGraph graph = new TransformationGraph();
-	Edge inEdge=new Edge("In Edge",metadataIn);
-	Edge outEdge=new Edge("Out Edge",metadataIn);
+	Edge inEdge=new Edge("InEdge",metadataIn);
+	Edge outEdge=new Edge("OutEdge",metadataIn);
 	
-	Node nodeRead=new DelimitedDataReader("Data Parser",args[0]);
+	Node nodeRead=new DelimitedDataReader("DataParser",args[0]);
 	String[] sortKeys=args[3].split(",");
 	Node nodeSort=new Sort("Sorter",sortKeys, true);
-	Node nodeWrite=new DelimitedDataWriter("Data Writer",args[1],false);
+	Node nodeWrite=new DelimitedDataWriter("DataWriter",args[1],false);
 	
 	// add	Edges & Nodes & Phases to graph
 	try {
