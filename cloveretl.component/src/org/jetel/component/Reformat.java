@@ -298,7 +298,7 @@ public class Reformat extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-	   @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Reformat reformat;
 

@@ -628,7 +628,7 @@ public class DBOutputTable extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           September 27, 2002
 	 */
-     @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		ComponentXMLAttributes xattribsChild;
 		org.w3c.dom.Node childNode;

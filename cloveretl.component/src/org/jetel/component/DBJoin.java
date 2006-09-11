@@ -257,7 +257,7 @@ public class DBJoin extends Node {
         }
 	}
 	
-    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		DBJoin dbjoin;
 		String connectionName;
