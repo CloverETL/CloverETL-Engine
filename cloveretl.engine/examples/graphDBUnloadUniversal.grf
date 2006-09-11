@@ -16,12 +16,12 @@ will optimize the execution plan based on this.
 -->
 <Graph name="Testing DB Unload">
 <Global>
-<Metadata id="InMetadata" dbConnection="InterbaseDB" sqlQuery="select * from ${db_table} where 1=0"/>
-<DBConnection id="InterbaseDB" dbConfig="interbase.cfg"/>
+<Metadata id="InMetadata" connection="InterbaseDB" sqlQuery="select * from ${db_table} where 1=0"/>
+<Connection id="InterbaseDB" dbConfig="koule_postgre.cfg" type="JDBC"/>
 </Global>
 <Phase number="0">
 <Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="InterbaseDB" sqlQuery="select * from ${db_table}"/>
-<Node id="OUTPUT" type="DELIMITED_DATA_WRITER_NIO" append="false" fileURL="output/${db_table}.output"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER" append="false" fileURL="output/${db_table}.output"/>
 <Edge id="INEDGE" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
 </Phase>
 </Graph>
