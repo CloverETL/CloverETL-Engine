@@ -183,7 +183,7 @@ public class DataReader extends Node {
 			}
 			//skip first 'startRecord' lines
 			if(startRecord != -1) {
-				parser.skipRecords(startRecord);
+				parser.skip(startRecord);
 			}
 			//parse
 			while(!parser.endOfInputChannel() && runIt) {

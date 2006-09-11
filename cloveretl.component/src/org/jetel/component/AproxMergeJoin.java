@@ -674,7 +674,7 @@ public class AproxMergeJoin extends Node {
         this.transformationParametersForSuspicious = transformationParameters;
     }
 
-    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		AproxMergeJoin join;
 

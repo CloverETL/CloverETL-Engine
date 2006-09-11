@@ -252,7 +252,7 @@ public class FixLenDataWriter extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		FixLenDataWriter aFixLenDataWriterNIO = null;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);
 		
