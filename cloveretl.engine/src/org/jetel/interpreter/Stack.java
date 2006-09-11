@@ -165,6 +165,7 @@ public class Stack {
 	public final void pushFuncCallFrame(){
         try{
             functionCallStack[++funcStackTop]=localVarSlotOffset;
+            functionCallStack[++funcStackTop]=localVarCounter;
         }catch(ArrayIndexOutOfBoundsException ex){
             if (functionCallStack.length>=MAX_ALLOWED_DEPTH){
                 throw new TransformLangExecutorRuntimeException("Internal error: exceeded max length of function call frame storage");
@@ -173,6 +174,7 @@ public class Stack {
             System.arraycopy(functionCallStack,0,temp,0,functionCallStack.length);
             functionCallStack=temp;
             functionCallStack[++funcStackTop]=localVarSlotOffset;
+            functionCallStack[++funcStackTop]=localVarCounter;
         }
         localVarSlotOffset+=localVarCounter;
         localVarCounter=0;
@@ -186,8 +188,8 @@ public class Stack {
 	public final void popFuncCallFrame(){
 	    // clean local variables objects
         Arrays.fill(localVarSlot,localVarSlotOffset,localVarSlotOffset+localVarCounter,null);
+        localVarCounter=functionCallStack[funcStackTop--];
         localVarSlotOffset=functionCallStack[funcStackTop--];
-        // DEBUG System.out.println("var offset:"+localVarSlotOffset);
-        localVarCounter=0;
+        // DEBUG System.out.println("var offset:"+localVarSlotOffset);    
 	}
 }
