@@ -26,37 +26,38 @@ public interface TransformLangParserConstants {
   int DATETIME_LITERAL = 31;
   int SEMICOLON = 32;
   int NULL_LITERAL = 33;
-  int OR = 34;
-  int AND = 35;
-  int NOT = 36;
-  int EQUAL = 37;
-  int NON_EQUAL = 38;
-  int LESS_THAN = 39;
-  int LESS_THAN_EQUAL = 40;
-  int GREATER_THAN = 41;
-  int GREATER_THAN_EQUAL = 42;
-  int REGEX_EQUAL = 43;
-  int CMPOPERATOR = 44;
-  int MINUS = 45;
-  int PLUS = 46;
-  int MULTIPLY = 47;
-  int DIVIDE = 48;
-  int MODULO = 49;
-  int PLUS_PLUS = 50;
-  int MINUS_MINUS = 51;
-  int FIELD_ID = 52;
-  int REC_NAME_FIELD_ID = 53;
-  int REC_NUM_FIELD_ID = 54;
-  int GLOBAL_PARAMETER_ID = 55;
-  int OPEN_PAR = 56;
-  int CLOSE_PAR = 57;
-  int INT_VAR = 58;
-  int LONG_VAR = 59;
-  int DATE_VAR = 60;
-  int DOUBLE_VAR = 61;
-  int DECIMAL_VAR = 62;
-  int BOOLEAN_VAR = 63;
-  int STRING_VAR = 64;
+  int MAPPING = 34;
+  int OR = 35;
+  int AND = 36;
+  int NOT = 37;
+  int EQUAL = 38;
+  int NON_EQUAL = 39;
+  int LESS_THAN = 40;
+  int LESS_THAN_EQUAL = 41;
+  int GREATER_THAN = 42;
+  int GREATER_THAN_EQUAL = 43;
+  int REGEX_EQUAL = 44;
+  int CMPOPERATOR = 45;
+  int MINUS = 46;
+  int PLUS = 47;
+  int MULTIPLY = 48;
+  int DIVIDE = 49;
+  int MODULO = 50;
+  int PLUS_PLUS = 51;
+  int MINUS_MINUS = 52;
+  int FIELD_ID = 53;
+  int REC_NAME_FIELD_ID = 54;
+  int REC_NUM_FIELD_ID = 55;
+  int GLOBAL_PARAMETER_ID = 56;
+  int OPEN_PAR = 57;
+  int CLOSE_PAR = 58;
+  int INT_VAR = 59;
+  int LONG_VAR = 60;
+  int DATE_VAR = 61;
+  int DOUBLE_VAR = 62;
+  int DECIMAL_VAR = 63;
+  int BOOLEAN_VAR = 64;
+  int STRING_VAR = 65;
   int DATE_FIELD_LITERAL = 112;
   int IDENTIFIER = 113;
   int ERROR = 114;
@@ -100,6 +101,7 @@ public interface TransformLangParserConstants {
     "<DATETIME_LITERAL>",
     "\";\"",
     "\"null\"",
+    "\":=\"",
     "<OR>",
     "<AND>",
     "<NOT>",
@@ -136,7 +138,6 @@ public interface TransformLangParserConstants {
     "\"{\"",
     "\"}\"",
     "\"=\"",
-    "\":=\"",
     "\":\"",
     "\"if\"",
     "\"else\"",
