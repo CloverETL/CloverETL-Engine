@@ -195,7 +195,7 @@ public class Filter extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           July 23, 2002
 	 */
-    @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		Filter filter;
 		String filterExpression;
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(xmlElement, graph);

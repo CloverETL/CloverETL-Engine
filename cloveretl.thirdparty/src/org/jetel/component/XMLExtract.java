@@ -555,7 +555,7 @@ public class XMLExtract extends Node
 	// //////////////////////////////////////////////////////////////////////////
 	// De-Serialization
 	//
-	   @Override public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		XMLExtract extract;
 
