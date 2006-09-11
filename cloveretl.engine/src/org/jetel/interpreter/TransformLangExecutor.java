@@ -1346,9 +1346,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFBlock node, Object data) {
         int childern = node.jjtGetNumChildren();
+        Node childNode;
         for (int i = 0; i < childern; i++) {
-            node.jjtGetChild(i).jjtAccept(this, data);
-            stack.pop(); // in case there is anything on top of stack
+            childNode=node.jjtGetChild(i);
+            childNode.jjtAccept(this, data);
+            //TODO: fixme - sloppy code
+            if (!(childNode instanceof CLVFReturnStatement)){
+            	stack.pop(); // in case there is anything on top of stack
+            }
             // have we seen contiue/break/return statement ??
             if (breakFlag){ 
                 return data;
@@ -1383,7 +1388,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFBreakpointNode node, Object data) {
-        // TODO
+        // list all variables
+    	System.err.println("** list of global variables ***");
+    	for (int i=0;i<stack.globalVarSlot.length;System.out.println(stack.globalVarSlot[i++]));
+    	System.err.println("** list of local variables ***");
+    	for (int i=0;i<stack.localVarCounter;i++)
+    		System.out.println(stack.localVarSlot[stack.localVarSlotOffset+i]);
+    	
+    	
         return data;
     }
     
