@@ -340,6 +340,11 @@ public class FixLenDataParser implements Parser {
         return null;
     }
 
+
+	public int skip(int nRec) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
+
 }
 /*
  *  end class FixLenDataParser
