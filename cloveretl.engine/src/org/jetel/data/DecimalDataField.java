@@ -161,7 +161,9 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
         if (_value instanceof Numeric) {
             setValue((Numeric) _value);
         } else if (_value instanceof Number) {
-            value.setValue(((Number) _value).doubleValue());
+            setValue((Number) _value);
+        } else if (_value instanceof Decimal) {
+            setValue((Decimal) _value);
         } else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
@@ -229,6 +231,22 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
         setNull(false);
     }
     
+    /**
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+        if (value == null) {
+            setNull(true);
+            return;
+        }
+        if(value instanceof BigDecimal) {
+            this.value.setValue((BigDecimal) value);
+        } else {
+            this.value.setValue(value.doubleValue());
+        }
+        setNull(this.value.isNaN());
+    }
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -242,6 +260,12 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
+    /**
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull() {
+        setNull(true);
+    }
 
 	// Associations
 
@@ -593,4 +617,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
         else 
             return value.getBigDecimal();
     }
+
+
 }

@@ -117,9 +117,10 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		    setNull(true);
         } else if (_value instanceof Numeric) {
             setValue((Numeric) _value);
-		} else if (_value instanceof Number) {
-			value = ((Number) _value).intValue();
-            setNull(value == Integer.MIN_VALUE);
+        } else if (_value instanceof Number) {
+            setValue((Number) _value);
+        } else if (_value instanceof Decimal) {
+            setValue((Decimal) _value);
 		} else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
@@ -199,6 +200,18 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
         setNull(false);
     }
 
+    /**
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+        if (value == null) {
+            setNull(true);
+            return;
+        }
+        this.value = value.intValue();
+        setNull(this.value == Integer.MIN_VALUE);
+    }
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -212,6 +225,9 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
+    public void setNull() {
+        setNull(true);
+    }
 
 	// Associations
 

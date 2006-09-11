@@ -120,8 +120,9 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		if (_value instanceof Numeric) {
 		    setValue((Numeric) _value);
         } else if (_value instanceof Number) {
-			this.value = ((Number) _value).longValue();
-            setNull(this.value == Long.MIN_VALUE);
+            setValue((Number) _value);
+        } else if (_value instanceof Decimal) {
+            setValue((Decimal) _value);
 		} else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
@@ -188,7 +189,19 @@ public class LongDataField extends DataField implements Numeric, Comparable{
         this.value = _value.getLong();
         setNull(false);
     }
-    
+
+    /**
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+        if (value == null) {
+            setNull(true);
+            return;
+        }
+        this.value = value.longValue();
+        setNull(this.value == Long.MIN_VALUE);
+    }
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -202,6 +215,12 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		}
 	}
 
+    /**
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull() {
+        setNull(true);
+    }
 
 	// Associations
 
@@ -576,6 +595,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
         else 
             return BigDecimal.valueOf(value);
     }
+
 }
 /*
  *  end class IntegerDataField

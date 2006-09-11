@@ -174,8 +174,9 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	    if (_value instanceof Numeric) {
 	        setValue((Numeric) _value);
         } else if (_value instanceof Number) {
-			value = ((Number) _value).doubleValue();
-            setNull(value == Double.NaN);
+            setValue((Number) _value);
+        } else if (_value instanceof Decimal) {
+            setValue((Decimal) _value);
 		} else {
 		    throw new BadDataFormatException(getMetadata().getName()+" field can not be set with this object - " +_value.toString(),_value.toString());
 		}
@@ -243,6 +244,18 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         setNull(false);
     }
     
+    /**
+     * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
+     */
+    public void setValue(Number value) {
+        if (value == null) {
+            setNull(true);
+            return;
+        }
+        this.value = value.doubleValue();
+        setNull(this.value == Double.NaN);
+    }
+
 	/**
 	 *  Sets the Null value indicator
 	 *
@@ -255,6 +268,13 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 			value = Double.NaN;
 		}
 	}
+
+    /**
+     * @see org.jetel.data.primitive.Numeric#setNull()
+     */
+    public void setNull() {
+        setNull(true);
+    }
 
 
 	// Associations
@@ -648,6 +668,7 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         else 
             return new BigDecimal(Double.toString(value)); //FIXME in java 1.5 call BigDecimal.valueof(a.getDouble()) - in actual way may be in result some inaccuracies
     }
+
 }
 /*
  *  end class NumericDataField
