@@ -219,6 +219,9 @@ TOKEN : {
 |<NULL_LITERAL: "null">
 }
 
+TOKEN : {
+<MAPPING: ":=">
+}
 
 /* Logical operators */
 TOKEN [IGNORE_CASE]: {
@@ -379,7 +382,7 @@ void FunctionDeclaration() :
 	"{"
 	  ( VarDeclaration() ";" )*
 	  ( Statement() )* 
-	  ( Mapping() ";" )*
+	  [ ( Mapping() ";" )+ [ ReturnStatement() ] ]
 	 
 	 "}"
 	{
@@ -431,9 +434,9 @@ void Mapping() : // assignment of value to Clover field
   | t = <REC_NAME_FIELD_ID> { jjtThis.setRecordFieldName(t.image); }
   | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); }
   	)
-  	":=" 
+  	<MAPPING> 
   	
-  	Expression() (":" Expression())* {jjtThis.setArity(jjtree.nodeArity());}
+  	ConditionalOrExpression() (":" ConditionalOrExpression())* {jjtThis.setArity(jjtree.nodeArity());}
 }
 
 /* Other nonterminals and their productions */

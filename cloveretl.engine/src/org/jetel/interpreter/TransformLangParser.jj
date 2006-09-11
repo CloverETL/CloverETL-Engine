@@ -216,6 +216,9 @@ TOKEN : {
 |<NULL_LITERAL: "null">
 }
 
+TOKEN : {
+<MAPPING: ":=">
+}
 
 /* Logical operators */
 TOKEN [IGNORE_CASE]: {
@@ -451,7 +454,7 @@ void FunctionDeclaration() :
 	"{"
 	  ( VarDeclaration() ";" )*
 	  ( Statement() )* 
-	  ( Mapping() ";" )*
+	  [ ( Mapping() ";" )+ [ ReturnStatement() ] ]
 	 
 	 "}"/*@bgen(jjtree)*/
         {
@@ -585,14 +588,14 @@ void Mapping() : // assignment of value to Clover field
   | t = <REC_NAME_FIELD_ID> { jjtn000.setRecordFieldName(t.image); }
   | t = <REC_NUM_FIELD_ID> { jjtn000.setRecordNumFieldName(t.image); }
   	)
-  	":=" 
+  	<MAPPING> 
   	
-  	Expression() (":" Expression())*/*@bgen(jjtree)*/
-                                         {
-                                           jjtree.closeNodeScope(jjtn000, true);
-                                           jjtc000 = false;
-                                           jjtreeCloseNodeScope(jjtn000);
-                                         }
+  	ConditionalOrExpression() (":" ConditionalOrExpression())*/*@bgen(jjtree)*/
+                                                                   {
+                                                                     jjtree.closeNodeScope(jjtn000, true);
+                                                                     jjtc000 = false;
+                                                                     jjtreeCloseNodeScope(jjtn000);
+                                                                   }
 /*@egen*/ {jjtn000.setArity(jjtree.nodeArity());}/*@bgen(jjtree)*/
   } catch (Throwable jjte000) {
     if (jjtc000) {
