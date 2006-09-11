@@ -19,14 +19,30 @@ function price_per_unit(unit_price,quantity,discount){
 	return (unit_price*quantity - discount)/quantity
 }
 function ship_time(ordered,shipped){
-	if (shipped.lt.ordered) return
-	else return datediff(ordered,shipped,day)
+	int d;
+	print_err("i'm in ship_time function:ordered="+ordered+",shipped="+shipped);
+	if (shipped.lt.ordered) {
+		print_err("shipped.lt.ordered");
+		return -1
+	}
+	else {
+		print_err("shipped.ge.ordered");
+		d=datediff(shipped,ordered,day);
+		print_err("diffrence = "+d);
+		return d
+	}
 }
 function transform(){
 	string datum;
 	int shiptime;
 	datum = $ORDERS_DBF.SHIPPEDDAT;
-	if (datum .ne. "        ") shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
+	if (datum .ne. "        ") {
+		print_err("$ORDERS_DBF.ORDERDATE="+$ORDERS_DBF.ORDERDATE);
+		print_err("$ORDERS_DBF.SHIPPEDDAT="+datum);
+		print_err("to date = "+ str2date(datum,"yyyyMMdd"));
+		print_err("function value="+ ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")));
+		shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
+	}
 	else shiptime=-1;
 	$ORDERS_Info.ORDERID:=$ORDERS_DBF.ORDERID;
 	$ORDERS_Info.CUSTOMERID:=$ORDERS_DBF.CUSTOMERID;
