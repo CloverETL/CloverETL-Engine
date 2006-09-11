@@ -18,10 +18,12 @@ will optimize the execution plan based on this.
 <Global>
 <Metadata id="InMetadata" connection="InterbaseDB" sqlQuery="select * from ${db_table} where 1=0"/>
 <Connection id="InterbaseDB" dbConfig="koule_postgre.cfg" type="JDBC"/>
+<Property id="GraphParameter1" name="db_table" value="employee"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node id="INPUT" type="DB_INPUT_TABLE" dbConnection="InterbaseDB" sqlQuery="select * from ${db_table}"/>
-<Node id="OUTPUT" type="DELIMITED_DATA_WRITER" append="false" fileURL="output/${db_table}.output"/>
+<Node id="OUTPUT" type="DELIMITED_DATA_WRITER" append="false" fileURL="${WORKSPACE}/output/${db_table}.output"/>
 <Edge id="INEDGE" fromNode="INPUT:0" toNode="OUTPUT:0" metadata="InMetadata"/>
 </Phase>
 </Graph>
