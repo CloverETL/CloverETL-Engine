@@ -37,7 +37,7 @@ public class testDBLookup{
     Defaults.init();
     ComponentFactory.init();
 
-	if (args.length!=3){
+	if (args.length!=4){
 		System.out.println("Usage: testDBLookup <driver properties file> <sql query> <key> <db metadata file>");
 		System.exit(1);
 	}
