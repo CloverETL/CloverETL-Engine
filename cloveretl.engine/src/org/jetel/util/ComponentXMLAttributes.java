@@ -514,7 +514,7 @@ public class ComponentXMLAttributes {
 	    Set<String> exception=new HashSet<String>();
 	    String name;
 	    
-	    Collections.addAll(exception,exclude);
+	    if(exclude != null) Collections.addAll(exception,exclude);
        
 	    for (int i=0; i<attributes.getLength();i++){
 	        name=attributes.item(i).getNodeName();
