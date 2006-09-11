@@ -498,6 +498,10 @@ public class DataRecordMetadata implements Serializable {
 		return recordDelimiters;
 	}
 
+    public String getRecordDelimiter() {
+        return recordDelimiters[0];
+    }
+    
     /**
      * toString method: creates a String representation of the object
      * @return the String representation

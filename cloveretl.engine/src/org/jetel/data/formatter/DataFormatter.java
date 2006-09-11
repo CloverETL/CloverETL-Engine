@@ -50,6 +50,8 @@ public class DataFormatter implements Formatter {
     private byte[][] delimiters;
 	private int delimiterLength[];
 	private int fieldLengths[];
+    private boolean isRecordDelimiter;
+    private byte[] recordDelimiter;
 	private ByteBuffer dataBuffer;
 
 	// use space (' ') to fill/pad field
@@ -102,6 +104,13 @@ public class DataFormatter implements Formatter {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
 		}
+        // create record delimiter & initialize them
+        isRecordDelimiter = false;
+        if(metadata.isSpecifiedRecordDelimiter()) {
+            isRecordDelimiter = true;
+            recordDelimiter = metadata.getRecordDelimiter().getBytes();
+        }
+        
 	}
 
 
@@ -169,6 +178,12 @@ public class DataFormatter implements Formatter {
 				dataBuffer.put(fieldBuffer);
 			}
 		}
+        if(isRecordDelimiter) {
+            if(recordDelimiter.length > dataBuffer.remaining()) {
+                flush();
+            }
+            dataBuffer.put(recordDelimiter);
+        }
 	}
 	
 	/**
