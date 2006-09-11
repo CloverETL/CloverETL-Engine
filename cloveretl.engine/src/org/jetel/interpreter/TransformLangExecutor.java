@@ -1185,11 +1185,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         // first if
         if (condition) {
             node.jjtGetChild(1).jjtAccept(this, data);
-            //TODO: stack.pop(); -problem with return statement!!! // in case there is anything on top of stack 
         } else { // if else part exists
             if (node.jjtGetNumChildren() > 2) {
                 node.jjtGetChild(2).jjtAccept(this, data);
-                //TODO: stack.pop(); // in case there is anything on top of stack
             }
         }
 
@@ -1346,18 +1344,15 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFBlock node, Object data) {
         int childern = node.jjtGetNumChildren();
-        Node childNode;
         for (int i = 0; i < childern; i++) {
-            childNode=node.jjtGetChild(i);
-            childNode.jjtAccept(this, data);
-            //TODO: fixme - sloppy code
-            if (!(childNode instanceof CLVFReturnStatement)){
-            	stack.pop(); // in case there is anything on top of stack
-            }
+            node.jjtGetChild(i).jjtAccept(this, data);
             // have we seen contiue/break/return statement ??
             if (breakFlag){ 
+            	if (breakType!=BREAK_RETURN)
+            		stack.pop();
                 return data;
             }
+            stack.pop();
         }
         return data;
     }
