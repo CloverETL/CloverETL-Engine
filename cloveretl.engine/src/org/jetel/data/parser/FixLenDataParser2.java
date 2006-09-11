@@ -511,4 +511,8 @@ public class FixLenDataParser2 implements Parser {
     public IParserExceptionHandler getExceptionHandler() {
         return exceptionHandler;
     }
+    
+	public int skip(int nRec) {
+		throw new UnsupportedOperationException("Not yet implemented");
+	}
 }
