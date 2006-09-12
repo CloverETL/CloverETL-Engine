@@ -42,7 +42,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  * @author DPavlis
@@ -192,6 +194,13 @@ public class DBFDataParser implements Parser {
     private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
         try {
             //removeBinaryZeros(data);
+            char fieldType=metadata.getField(fieldNum).getType();
+            if (fieldType==DataFieldMetadata.DATE_FIELD || fieldType==DataFieldMetadata.DATETIME_FIELD){
+                if (StringUtils.isBlank(data)){
+                    record.getField(fieldNum).setNull(true);
+                    return;
+                }
+            }
             record.getField(fieldNum).fromString(data.toString());
         } catch (BadDataFormatException bdfe) {
             if (exceptionHandler != null) { //use handler only if configured
@@ -370,4 +379,5 @@ public class DBFDataParser implements Parser {
 	public int skip(int nRec) {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
+    
 }
