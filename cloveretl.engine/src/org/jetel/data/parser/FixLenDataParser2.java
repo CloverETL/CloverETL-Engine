@@ -512,7 +512,7 @@ public class FixLenDataParser2 implements Parser {
         return exceptionHandler;
     }
     
-	public int skip(int nRec) {
+	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 }
