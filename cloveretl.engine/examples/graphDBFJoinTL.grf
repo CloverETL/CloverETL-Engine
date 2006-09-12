@@ -19,31 +19,17 @@ function price_per_unit(unit_price,quantity,discount){
 	return (unit_price*quantity - discount)/quantity
 }
 function ship_time(ordered,shipped){
-	int d;
-	print_err("i'm in ship_time function:ordered="+ordered+",shipped="+shipped);
-	if (shipped.lt.ordered) {
-		print_err("shipped.lt.ordered");
-		return -1
-	}
-	else {
-		print_err("shipped.ge.ordered");
-		d=datediff(shipped,ordered,day);
-		print_err("diffrence = "+d);
-		return d
-	}
+	if (shipped.lt.ordered) return
+	else return datediff(shipped,ordered,day);
 }
+
 function transform(){
 	string datum;
 	int shiptime;
 	datum = $ORDERS_DBF.SHIPPEDDAT;
 	if (datum .ne. "        ") {
-		print_err("$ORDERS_DBF.ORDERDATE="+$ORDERS_DBF.ORDERDATE);
-		print_err("$ORDERS_DBF.SHIPPEDDAT="+datum);
-		print_err("to date = "+ str2date(datum,"yyyyMMdd"));
-		print_err("function value="+ ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")));
 		shiptime=ship_time($ORDERS_DBF.ORDERDATE,str2date(datum,"yyyyMMdd")); 
-	}
-	else shiptime=-1;
+	} else { shiptime=-1;}
 	$ORDERS_Info.ORDERID:=$ORDERS_DBF.ORDERID;
 	$ORDERS_Info.CUSTOMERID:=$ORDERS_DBF.CUSTOMERID;
 	$ORDERS_Info.PRODUCTID:=$Bigodata_dbf.PRODUCTID;
@@ -57,25 +43,25 @@ function transform(){
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN_CUSTOMER" guiWidth="50" guiX="557" guiY="235" id="JOIN_CUSTOMER" joinKey="CUSTOMERID" leftOuterJoin="true" type="HASH_JOIN">
 <attr name="transform">
-import org.jetel.component.DataRecordTransform;
-import org.jetel.data.*;
-
-public class joinCustomers extends  DataRecordTransform{
-
-	public boolean transform(DataRecord[] source, DataRecord[] target){
-		target[0].copyFieldsByPosition(source[0]);
-		if (source[1]!=null){
-			target[0].getField("CUSTOMER").setValue(source[1].getField("CompanyName").getValue());
-		}else{
-			target[0].getField("CUSTOMER").setValue("N/A");
-		}
-		return true;
-	}
+//#TL
+function copyFields(){
+	$ORDERS_Info.ORDERID:=$ORDERS_Info.ORDERID;
+	$ORDERS_Info.CUSTOMERID:=$ORDERS_Info.CUSTOMERID;
+	$ORDERS_Info.PRODUCTID:=$ORDERS_Info.PRODUCTID;
+	$ORDERS_Info.UNITPRICE:=$ORDERS_Info.UNITPRICE;
+	$ORDERS_Info.PRICE_PER_UNIT:=$ORDERS_Info.PRICE_PER_UNIT;
+	$ORDERS_Info.QUANTITY:=$ORDERS_Info.QUANTITY;
+	$ORDERS_Info.DISCOUNT:=$ORDERS_Info.DISCOUNT;
+	$ORDERS_Info.SHIPTIME:=$ORDERS_Info.SHIPTIME;
+}
+function transform(){
+	copyFields();
+	$ORDERS_Info.CUSTOMER:= nvl($Customer.CompanyName,"N/A");
 }
 </attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" type="SORT"/>
-<Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="SORT_ORDERS" sortKey="ORDERID" type="SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
+<Node enabled="enabled" guiHeight="25" guiName="SORT_ORDERS" guiWidth="50" guiX="196" guiY="281" id="SORT_ORDERS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBForders.out" guiHeight="25" guiName="WRITER1" guiWidth="50" guiX="882" guiY="189" id="WRITER1" type="DELIMITED_DATA_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joinedDBFordersNA.out" guiHeight="25" guiName="WRITER2" guiWidth="50" guiX="882" guiY="285" id="WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="FILTER:0" guiBendpoints="" id="Edge7" inPort="0 (WRITER1)" metadata="OutMetadata" outPort="0 (FILTER)" toNode="WRITER1:0"/>
@@ -84,7 +70,7 @@ public class joinCustomers extends  DataRecordTransform{
 <Edge debugMode="true" fromNode="IN_DETAILS:0" guiBendpoints="" id="Edge1" inPort="0 (SORT_DETAILS)" metadata="InMetadata2" outPort="0 (IN_DETAILS)" toNode="SORT_DETAILS:0"/>
 <Edge debugMode="true" fromNode="IN_ORDERS:0" guiBendpoints="" id="Edge0" inPort="0 (SORT_ORDERS)" metadata="InMetadata1" outPort="0 (IN_ORDERS)" toNode="SORT_ORDERS:0"/>
 <Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="Edge11" inPort="0 (JOIN_CUSTOMER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="JOIN_CUSTOMER:0"/>
-<Edge debugMode="false" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="0 (FILTER)" metadata="OutMetadata" outPort="0 (JOIN_CUSTOMER)" toNode="FILTER:0"/>
+<Edge debugMode="true" fromNode="JOIN_CUSTOMER:0" guiBendpoints="" id="Edge13" inPort="0 (FILTER)" metadata="OutMetadata" outPort="0 (JOIN_CUSTOMER)" toNode="FILTER:0"/>
 <Edge fromNode="SORT_DETAILS:0" guiBendpoints="" id="Edge3" inPort="1 (JOIN)" metadata="InMetadata2" outPort="0 (SORT_DETAILS)" toNode="JOIN:1"/>
 <Edge debugMode="true" fromNode="SORT_ORDERS:0" guiBendpoints="" id="Edge2" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (SORT_ORDERS)" toNode="JOIN:0"/>
 </Phase>
