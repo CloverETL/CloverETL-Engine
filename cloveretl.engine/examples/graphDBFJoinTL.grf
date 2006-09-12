@@ -56,8 +56,15 @@ function copyFields(){
 }
 function transform(){
 	copyFields();
+	//only for debugging
+	if (isnull($Customer.CompanyName)) {
+		print_err("$Customer.CompanyName is null");
+	}else {
+		print_err("$Customer.CompanyName="+$Customer.CompanyName);
+	}
 	$ORDERS_Info.CUSTOMER:= nvl($Customer.CompanyName,"N/A");
-}
+ }
+
 </attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="SORT_DETAILS" guiWidth="50" guiX="196" guiY="194" id="SORT_DETAILS" sortKey="ORDERID" sortOrder="Ascending" type="SORT"/>
