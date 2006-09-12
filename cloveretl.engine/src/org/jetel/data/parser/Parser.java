@@ -53,8 +53,9 @@ public interface Parser {
 	 * Skips specified number of records.
 	 * @param nRec Number of records to be skipped. 
 	 * @return Number of skipped records.
+	 * @throws JetelException
 	 */
-	public int skip(int nRec);
+	public int skip(int nRec) throws JetelException;
 
 	// Operations
 	/**

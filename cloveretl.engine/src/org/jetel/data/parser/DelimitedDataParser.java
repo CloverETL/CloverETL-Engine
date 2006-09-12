@@ -525,7 +525,7 @@ public class DelimitedDataParser implements Parser {
     }
 
 
-	public int skip(int nRec) {
+	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
 //		return 0;
 	}

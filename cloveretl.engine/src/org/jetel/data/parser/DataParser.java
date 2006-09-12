@@ -615,7 +615,7 @@ public class DataParser implements Parser {
 		}		
 	}
 	
-	public int skip(int count) {
+	public int skip(int count) throws JetelException {
 		if(metadata.isSpecifiedRecordDelimiter()) {
 			for(int i = 0; i < count - 1; i++) {
 				findFirstRecordDelimiter();
