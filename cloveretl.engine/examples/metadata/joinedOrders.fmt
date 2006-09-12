@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Record name="Orders" type="delimited">
+<Record name="joinOrders" type="delimited">
 <Field delimiter="|" format="#" name="OrderID" nullable="true" type="numeric"/>
 <Field delimiter="|" name="CustomerID" nullable="true" type="string"/>
 <Field delimiter="|" format="#" name="EmployeeID" nullable="true" type="string"/>
