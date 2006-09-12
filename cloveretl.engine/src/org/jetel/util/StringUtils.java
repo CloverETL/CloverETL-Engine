@@ -239,10 +239,11 @@ public class StringUtils {
 	 * @param str
 	 * @return true if the string is quoted
 	 */
-	public static final boolean isQuoted(String str){
+	public static final boolean isQuoted(CharSequence str){
 	    return isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1);
 	}
 	
+    
 	/**
 	 * Modifies buffer scope so that the string quotes are ignored,
 	 * in case quotes are not present doesn't do anything.
@@ -250,7 +251,7 @@ public class StringUtils {
 	 * @return
 	 */
 	public static CharBuffer unquote(CharBuffer buf) {
-		if (StringUtils.isQuoted(buf.toString())) {
+		if (StringUtils.isQuoted(buf)) {
 			buf.position(buf.position() + 1);
 			buf.limit(buf.limit() - 1);
 		}
