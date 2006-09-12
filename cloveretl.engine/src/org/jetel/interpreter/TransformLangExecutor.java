@@ -696,14 +696,20 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFInputFieldLiteral node, Object data) {
-        DataField field=inputRecords[node.recordNo].getField(node.fieldNo);
-        if (field instanceof Numeric){
-            stack.push(((Numeric)field).duplicateNumeric());
-        }else{
-            stack.push(field.getValue());
-        }
+        DataRecord record = inputRecords[node.recordNo];
+		if (record == null) {
+			stack.push(null);
+		} else {
+			DataField field = record.getField(node.fieldNo);
+			if (field instanceof Numeric) {
+				stack.push(((Numeric) field).duplicateNumeric());
+			} else {
+				stack.push(field.getValue());
+			}
+		}
         
-        // old stack.push(inputRecords[node.recordNo].getField(node.fieldNo).getValue());
+        // old
+		// stack.push(inputRecords[node.recordNo].getField(node.fieldNo).getValue());
         
         // we return reference to DataField so we can
         // perform extra checking in special cases
