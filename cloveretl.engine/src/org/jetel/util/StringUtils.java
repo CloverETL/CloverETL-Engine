@@ -19,6 +19,8 @@
  */
 package org.jetel.util;
 
+import java.nio.CharBuffer;
+
 import sun.text.Normalizer;
 
 /**
@@ -287,7 +289,40 @@ public class StringUtils {
 		}
         return new String(result,0,counter);
 	}
+    
+     /**
+      * Test whether parameter consists of space characters
+      * only
+     * @param data
+     * @return  true if parameter contains space characters only
+     */
+    public static boolean isBlank(CharBuffer data){
+            data.mark();
+            for(int i=0;i<data.length();i++){
+                if (!Character.isSpaceChar(data.get())){
+                    data.reset();
+                    return false;
+                }
+            }
+            data.reset();
+            return true;
+        }
 	
+    /**
+     * Test whether parameter consists of space characters
+     * only
+    * @param data
+    * @return  true if parameter contains space characters only
+    */
+    public static boolean isBlank(CharSequence data){
+         for(int i=0;i<data.length();i++){
+             if (!Character.isSpaceChar(data.charAt(i))){
+                 return false;
+             }
+         }
+         return true;
+     }
+     
 	/**
 	 * This method replaces diacritic chars by theirs equivalence without diacritic.
 	 * It works only for chars for which decomposition is defined
