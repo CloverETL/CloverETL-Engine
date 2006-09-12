@@ -243,6 +243,60 @@ public class StringUtils {
 	    return isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1);
 	}
 	
+	/**
+	 * Modifies buffer scope so that the string quotes are ignored,
+	 * in case quotes are not present doesn't do anything.
+	 * @param buf
+	 * @return
+	 */
+	public static CharBuffer unquote(CharBuffer buf) {
+		if (StringUtils.isQuoted(buf.toString())) {
+			buf.position(buf.position() + 1);
+			buf.limit(buf.limit() - 1);
+		}
+		return buf;
+	}
+	
+	/**
+	 * Modifies buffer scope so that the leading whitespace is ignored.
+	 * @param buf
+	 * @return
+	 */
+	public static CharBuffer trimLeading(CharBuffer buf) {
+		int pos = buf.position();
+		int lim = buf.limit();
+		while (pos < lim && Character.isWhitespace(buf.get(pos))) {
+			pos++;
+		}
+		buf.position(pos);
+		return buf;
+	}
+	
+	/**
+	 * Modifies buffer scope so that the trailing whitespace is ignored.
+	 * @param buf
+	 * @return
+	 */
+	public static CharBuffer trimTrailing(CharBuffer buf) {
+		int pos = buf.position();
+		int lim = buf.limit();
+		while (pos < lim && Character.isWhitespace(buf.get(lim - 1))) {
+			lim--;
+		}
+		buf.limit(lim);
+		return buf;
+	}
+	
+	/**
+	 * Modifies buffer scope so that the leading and trailing whitespace is ignored.
+	 * @param buf
+	 * @return
+	 */
+	public static CharBuffer trim(CharBuffer buf) {
+		trimLeading(buf);
+		trimTrailing(buf);
+		return buf;
+	}
 	
     /**
      * This method removes from the string characters which are not letters nor digits
