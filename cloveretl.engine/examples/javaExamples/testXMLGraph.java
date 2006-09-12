@@ -25,17 +25,31 @@ import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.plugin.Plugins;
 
 public class testXMLGraph{
 
 	public static void main(String args[]){
+		
+		if (args.length<1){
+			System.out.println("Usage: testXMLGraph <graph file name> <plug-ins directory>");
+		}
+		
 		FileInputStream in;
+		String plugins;
+		if (args.length==1){
+			plugins = "../plugins";
+		}else{
+			plugins = args[1];
+		}
         
         //initialization; must be present
         Defaults.init();
+        Plugins.init(plugins);
         ComponentFactory.init();
 
 		System.out.println("Graph definition file: "+args[0]);
+		System.out.println("Plugins directory: "+plugins);
 		
 		try{
 			in=new FileInputStream(args[0]);
