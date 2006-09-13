@@ -45,7 +45,7 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class StringDataField extends DataField implements CharSequence{
 
-	private StringBuffer value;
+	private StringBuilder value;
 	
 	// Attributes
 	/**
@@ -65,18 +65,28 @@ public class StringDataField extends DataField implements CharSequence{
 	/**
 	 *  Constructor for the StringDataField object
 	 *
-	 * @param  _metadata  Description of Parameter
+	 * @param  _metadata  Metadata describing field
 	 * @since             April 23, 2002
 	 */
 	public StringDataField(DataFieldMetadata _metadata) {
-		super(_metadata);
-		if (_metadata.getSize() < 1) {
-			value = new StringBuffer(INITIAL_STRING_BUFFER_CAPACITY);
-		} else {
-			value = new StringBuffer(_metadata.getSize());
-		}
+		this(_metadata,false);
 	}
 
+    /**
+     * Constructor for the StringDataField object
+     * 
+     * @param _metadata Metadata describing field
+     * @param plain <i>not used (only for compatibility reason)</i>
+     */
+    public StringDataField(DataFieldMetadata _metadata,boolean plain) {
+        super(_metadata);
+        if (_metadata.getSize() < 1) {
+            value = new StringBuilder(INITIAL_STRING_BUFFER_CAPACITY);
+        } else {
+            value = new StringBuilder(_metadata.getSize());
+        }
+    }
+    
 
 	/**
 	 *  Constructor for the StringDataField object
@@ -86,7 +96,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since             April 23, 2002
 	 */
 	public StringDataField(DataFieldMetadata _metadata, String _value) {
-		this(_metadata);
+		this(_metadata,false);
 		setValue(_value);
 	}
 
@@ -97,13 +107,13 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @param _metadata
 	 * @param _value
 	 */
-	private StringDataField(DataFieldMetadata _metadata, StringBuffer _value){
+	private StringDataField(DataFieldMetadata _metadata, CharSequence _value){
 	    super(_metadata);
-	    this.value=new StringBuffer(_value.length());
+	    this.value=new StringBuilder(_value.length());
 	    this.value.append(_value);
 	}
 	
-	
+   
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copy()
@@ -292,7 +302,7 @@ public class StringDataField extends DataField implements CharSequence{
             length = length >> 7;
 	    } while((length >> 7) > 0);
     	buffer.put((byte) length);
-	    
+	   
 		for(int counter = 0; counter < chars; counter++) {
 			buffer.putChar(value.charAt(counter));
 		}
