@@ -30,6 +30,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 /**
@@ -142,10 +143,11 @@ public class FileUtils {
 	
     /**
      * Creates ReadableByteChannel from the url definition.
-     * All standard url format are acceptable plus extended form of url by zip construction:
-     * Example: zip:<url_to_file>#<inzip_path_to_file>
+     * <p>All standard url format are acceptable plus extended form of url by zip & gzip construction:</p>
+     * Example: zip:&lt;url_to_file&gt;#&lt;inzip_path_to_file&gt; <br>
+     * Example: gzip:&lt;url_to_file&gt; <br>
      * 
-     * @param input
+     * @param input URL of file to read
      * @return
      * @throws IOException
      */
@@ -156,6 +158,8 @@ public class FileUtils {
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
             strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+        }else if (input.startsWith("gzip:")) {
+            strURL = input.substring(input.indexOf(':') + 1);
         }
         
         //open channel
@@ -185,6 +189,9 @@ public class FileUtils {
             //close the archive
             zin.close();
             throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
+        }else if (input.startsWith("gzip:")) {
+            GZIPInputStream gzin = new GZIPInputStream(url.openStream());
+            return Channels.newChannel(gzin);
         }
         
         return Channels.newChannel(url.openStream());
