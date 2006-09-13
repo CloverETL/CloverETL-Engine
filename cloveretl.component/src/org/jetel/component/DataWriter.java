@@ -36,6 +36,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -136,7 +137,7 @@ public class DataWriter extends Node {
 				resultCode=Node.RESULT_FATAL_ERROR;
 				return;
 			}
-
+			SynchronizeUtils.cloverYield();
 		}
 		formatter.close();
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
