@@ -431,10 +431,26 @@ public class StringUtils {
     public static final StringBuffer strBuffAppend(StringBuffer buff,CharSequence seq){
         int seqLen=seq.length();
         buff.ensureCapacity(buff.length()+seqLen);
-        for(int i=0;i<seqLen;buff.append(seq.charAt(i++)));
+        buff.append(seq);
         return buff;
     }
 
+    /**
+     * This method appends passed-in CharSequence to the end of
+     * passed-in StringBuffer;<br>
+     * It returns reference to buffer object to allow cascading
+     * of these operations.
+     * @param buff buffer to which append sequence of characters
+     * @param seq characters sequence to append
+     * @return  reference to passed-in buffer
+     */
+    public static final StringBuilder strBuffAppend(StringBuilder buff,CharSequence seq){
+        int seqLen=seq.length();
+        buff.ensureCapacity(buff.length()+seqLen);
+        buff.append(seq);
+        return buff;
+    }
+    
 
 }
 
