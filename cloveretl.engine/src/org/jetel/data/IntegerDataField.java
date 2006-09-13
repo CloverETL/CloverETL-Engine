@@ -62,6 +62,14 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		super(_metadata);
 	}
 
+    
+    /**
+     * @param _metadata Metadata describing field
+     * @param plain <i>not used (only for compatibility reason)</i>
+     */
+    public IntegerDataField(DataFieldMetadata _metadata,boolean plain) {
+        super(_metadata);
+    }
 
 	/**
 	 *  Constructor for the NumericDataField object

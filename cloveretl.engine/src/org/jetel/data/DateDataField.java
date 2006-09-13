@@ -63,49 +63,64 @@ public class DateDataField extends DataField implements Comparable{
 	// Associations
 
 	// Operations
+	
 	/**
-	 *  Constructor for the DateDataField object
-	 *
-	 * @param  _metadata  Description of Parameter
-	 * @since             April 23, 2002
+     * Constructor for the DateDataField object
+     * 
+	 * @param _metadata Metadata describing field
+	 * @param plain create plain data field - no formatters,etc. will be assigned/created
 	 */
-	public DateDataField(DataFieldMetadata _metadata) {
-		super(_metadata);
-		Locale locale;
-		// handle locale
-		if (_metadata.getLocaleStr()!=null){
-			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-			if (localeLC.length>1){
-				locale=new Locale(localeLC[0],localeLC[1]);
-			}else{
-				locale=new Locale(localeLC[0]);
-			}
-			//probably wrong locale string defined
-			if (locale==null){
-				throw new RuntimeException("Can't create Locale based on "+_metadata.getLocaleStr());
-			}
-		}else{
-			locale=null;
-		}
-		// handle format string
-		String formatString;
-		formatString = _metadata.getFormatStr();
-		if ((formatString != null) && (formatString.length() != 0)) {
-			if (locale!=null){
-				dateFormat = new SimpleDateFormat(formatString,locale);
-			}else{
-				dateFormat = new SimpleDateFormat(formatString);
-			}
-			dateFormat.setLenient(false);
-		} else if (locale!=null){
-			dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT,locale);
-			dateFormat.setLenient(false);
-		}
-		if (dateFormat!=null){
-		    parsePosition = new ParsePosition(0);
-		}
-	}
+	public DateDataField(DataFieldMetadata _metadata, boolean plain) {
+        super(_metadata);
+        if (!plain) {
+            Locale locale;
+            // handle locale
+            if (_metadata.getLocaleStr() != null) {
+                String[] localeLC = _metadata.getLocaleStr().split(
+                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+                if (localeLC.length > 1) {
+                    locale = new Locale(localeLC[0], localeLC[1]);
+                } else {
+                    locale = new Locale(localeLC[0]);
+                }
+                // probably wrong locale string defined
+                if (locale == null) {
+                    throw new RuntimeException("Can't create Locale based on "
+                            + _metadata.getLocaleStr());
+                }
+            } else {
+                locale = null;
+            }
+            // handle format string
+            String formatString;
+            formatString = _metadata.getFormatStr();
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    dateFormat = new SimpleDateFormat(formatString, locale);
+                } else {
+                    dateFormat = new SimpleDateFormat(formatString);
+                }
+                dateFormat.setLenient(false);
+            } else if (locale != null) {
+                dateFormat = DateFormat.getDateInstance(DateFormat.DEFAULT,
+                        locale);
+                dateFormat.setLenient(false);
+            }
+            if (dateFormat != null) {
+                parsePosition = new ParsePosition(0);
+            }
+        }
+    }
 
+    /**
+     *  Constructor for the DateDataField object
+     *
+     * @param  _metadata  Metadata describing field
+     * @since             April 23, 2002
+     */
+    public DateDataField(DataFieldMetadata _metadata){
+        this(_metadata,false);
+    }
 
 	/**
 	 *  Constructor for the DateDataField object
@@ -115,13 +130,15 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since             April 23, 2002
 	 */
 	public DateDataField(DataFieldMetadata _metadata, Date _value) {
-		this(_metadata);
+		this(_metadata,false);
 		setValue(_value);
 	}
 
 	/**
 	 * Private constructor to be used internally when clonning object.
-	 * Optimized for performance. Many checks waved.
+	 * Optimized for performance. Many checks waved.<br>
+     * <i>Warning: not a thread safe as the clone will reference the same
+     * DateFormat object!</i>
 	 * 
 	 * @param _metadata
 	 * @param _value
