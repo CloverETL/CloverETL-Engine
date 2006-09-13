@@ -39,22 +39,22 @@ public class DataFieldFactory {
 	 * @return                new data field object
 	 * @since                 May 2, 2002
 	 */
-	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata) {
+	public final static DataField createDataField(char fieldType, DataFieldMetadata fieldMetadata,boolean plain) {
 		switch (fieldType) {
 			case DataFieldMetadata.STRING_FIELD:
-				return new StringDataField(fieldMetadata);
+				return new StringDataField(fieldMetadata,plain);
 			case DataFieldMetadata.DATE_FIELD:
-				return new DateDataField(fieldMetadata);
+				return new DateDataField(fieldMetadata,plain);
 			case DataFieldMetadata.NUMERIC_FIELD:
-				return new NumericDataField(fieldMetadata);
+				return new NumericDataField(fieldMetadata,plain);
 			case DataFieldMetadata.DECIMAL_FIELD:
-				return new DecimalDataField(fieldMetadata, Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("length")), Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("scale")));
+				return new DecimalDataField(fieldMetadata, Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("length")), Integer.parseInt(fieldMetadata.getFieldProperties().getProperty("scale")),false);
 			case DataFieldMetadata.INTEGER_FIELD:
-				return new IntegerDataField(fieldMetadata);
+				return new IntegerDataField(fieldMetadata,plain);
 			case DataFieldMetadata.BYTE_FIELD:
-				return new ByteDataField(fieldMetadata);
+				return new ByteDataField(fieldMetadata,plain);
 			case DataFieldMetadata.LONG_FIELD:
-				return new LongDataField(fieldMetadata);
+				return new LongDataField(fieldMetadata,plain);
 			default:
 				throw new RuntimeException("Unsupported data type: " + fieldType);
 		}
@@ -67,8 +67,8 @@ public class DataFieldFactory {
 	 * @param fieldMetadata Metadata describing field's characteristics (eg. data-type, size)
 	 * @return
 	 */
-	public final static DataField createDataField(DataFieldMetadata fieldMetadata){
-		return createDataField(fieldMetadata.getType(),fieldMetadata);
+	public final static DataField createDataField(DataFieldMetadata fieldMetadata,boolean plain){
+		return createDataField(fieldMetadata.getType(),fieldMetadata,plain);
 	}
 	
 	

@@ -62,6 +62,16 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		super(_metadata);
 	}
 
+    /**
+     * Constructor for the NumericDataField object
+     * 
+     * @param _metadata Metadata describing field
+     * @param plain <i>not used (only for compatibility reason)</i>
+     */
+    public LongDataField(DataFieldMetadata _metadata,boolean plain) {
+        super(_metadata);
+    }
+    
 
 	/**
 	 *  Constructor for the NumericDataField object

@@ -59,7 +59,17 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@param  _metadata  Metadata describing field
 	 *@since             October 29, 2002
 	 */
-	public ByteDataField(DataFieldMetadata _metadata) {
+    public ByteDataField(DataFieldMetadata _metadata){
+        this(_metadata,false);
+    }
+    
+	/**
+     * Constructor for the NumericDataField object
+     * 
+	 * @param _metadata Metadata describing field
+	 * @param plain <i>not used (only for compatibility reason)</i>
+	 */
+	public ByteDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
 		if (_metadata.getSize() < 1) {
 			value = new byte[INITIAL_BYTE_ARRAY_CAPACITY];

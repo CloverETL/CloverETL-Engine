@@ -66,40 +66,55 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	 *@param  _metadata  Metadata describing field
 	 *@since             March 28, 2002
 	 */
-	public NumericDataField(DataFieldMetadata _metadata) {
+    public NumericDataField(DataFieldMetadata _metadata){
+        this(_metadata,false);
+    }
+    
+    
+	/**
+     * Constructor for the NumericDataField object
+     * 
+	 * @param _metadata Metadata describing field
+	 * @param plain    create plain data field - no formatters,etc. will be assigned/created
+	 */
+	public NumericDataField(DataFieldMetadata _metadata,boolean plain) {
 		super(_metadata);
-		Locale locale;
-		// handle locale
-		if (_metadata.getLocaleStr()!=null){
-			String[] localeLC=_metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-			if (localeLC.length>1){
-				locale=new Locale(localeLC[0],localeLC[1]);
-			}else{
-				locale=new Locale(localeLC[0]);
-			}
-			// probably wrong locale string defined
-			if (locale==null){
-				throw new RuntimeException("Can't create Locale based on "+_metadata.getLocaleStr());
-			}
-		}else{
-			locale=null;
-		}
-		// handle formatString
-		String formatString;
-		formatString = _metadata.getFormatStr();
-		 if ((formatString != null) && (formatString.length() != 0)) {
-		 	if (locale!=null){
-				numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
-		 	}else{
-		 		numberFormat = new DecimalFormat(formatString);
-			}
-		 }else if (locale!=null) {
-				numberFormat = DecimalFormat.getInstance(locale);
-		}
-		if (numberFormat!=null){
-		    parsePosition = new ParsePosition(0);
-		}
-		
+        if (!plain) {
+            Locale locale;
+            // handle locale
+            if (_metadata.getLocaleStr() != null) {
+                String[] localeLC = _metadata.getLocaleStr().split(
+                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+                if (localeLC.length > 1) {
+                    locale = new Locale(localeLC[0], localeLC[1]);
+                } else {
+                    locale = new Locale(localeLC[0]);
+                }
+                // probably wrong locale string defined
+                if (locale == null) {
+                    throw new RuntimeException("Can't create Locale based on "
+                            + _metadata.getLocaleStr());
+                }
+            } else {
+                locale = null;
+            }
+            // handle formatString
+            String formatString;
+            formatString = _metadata.getFormatStr();
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    numberFormat = new DecimalFormat(formatString,
+                            new DecimalFormatSymbols(locale));
+                } else {
+                    numberFormat = new DecimalFormat(formatString);
+                }
+            } else if (locale != null) {
+                numberFormat = DecimalFormat.getInstance(locale);
+            }
+            if (numberFormat != null) {
+                parsePosition = new ParsePosition(0);
+            }
+        }
 	}
 
 

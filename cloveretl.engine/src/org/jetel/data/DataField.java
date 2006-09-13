@@ -58,14 +58,25 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 *  Constructor
 	 *
-	 * @param  _metadata  Description of Parameter
+	 * @param  _metadata  Metadata describing field
 	 * @since
 	 */
 	public DataField(DataFieldMetadata _metadata) {
 		this.metadata = _metadata;
 	}
 
-
+	/**
+     * Constructor
+     * 
+	 * @param _metadata Metadata describing field
+	 * @param plain if true,create plain data field - no formatters,etc. 
+     * will be created & assigned to field
+	 */
+	public DataField(DataFieldMetadata _metadata, boolean plain) {
+        this.metadata = _metadata;
+    }
+    
+    
 	/**
 	 * Creates deep copy of existing field. 
 	 * 

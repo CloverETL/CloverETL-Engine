@@ -56,7 +56,8 @@ public class DataRecord implements Serializable, Comparable {
 	 */
 	private transient DataRecordMetadata metadata;
 
-
+    private boolean plain=false;
+    
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
@@ -64,9 +65,14 @@ public class DataRecord implements Serializable, Comparable {
 	 * @param _metadata
 	 */
 	public DataRecord(DataRecordMetadata _metadata) {
-		this.metadata = _metadata;
-		fields = new DataField[metadata.getNumFields()];
+		this(_metadata,false);
 	}
+    
+    public DataRecord(DataRecordMetadata _metadata,boolean plain ) {
+        this.metadata = _metadata;
+        this.plain=plain;
+        fields = new DataField[metadata.getNumFields()];
+    }
 
 	/**
 	 * Private constructor used when clonning/copying DataRecord objects.
@@ -309,7 +315,7 @@ public class DataRecord implements Serializable, Comparable {
 			fields[i] =
 					DataFieldFactory.createDataField(
 					fieldMetadata.getType(),
-					fieldMetadata);
+					fieldMetadata,plain);
 		}
 	}
 

@@ -49,50 +49,74 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	private int scale;
 	private NumberFormat numberFormat;
 
+    
+    /**
+     * Constructor
+     * 
+     * @param _metadata Metadata describing field
+     * @param precision integer unscaled value - maximum digits this field can contain
+     * @param scale number of decimal places
+     */
+    public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale){
+        this(_metadata,precision,scale,false);
+    }
+    
 	/**
-	 *  Constructor for the DecimalDataField object
-	 *
+     * Constructor
+     * 
+	 * @param _metadata Metadata describing field
+	 * @param precision integer unscaled value - maximum digits this field can contain
+	 * @param scale number of decimal places
+	 * @param plain create plain data field - no formatters,etc. will be assigned/created
 	 */
-	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale) {
+	public DecimalDataField(DataFieldMetadata _metadata, int precision, int scale, boolean plain) {
 		super(_metadata);
-		Locale locale;
-		// handle locale
-		if (_metadata.getLocaleStr() != null){
-			String[] localeLC = _metadata.getLocaleStr().split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-			if (localeLC.length > 1){
-				locale = new Locale(localeLC[0], localeLC[1]);
-			}else{
-				locale = new Locale(localeLC[0]);
-			}
-			// probably wrong locale string defined
-			if (locale == null){
-				throw new RuntimeException("Can't create Locale based on " + _metadata.getLocaleStr());
-			}
-		}else{
-			locale = null;
-		}
-		// handle formatString
-		String formatString;
-		formatString = _metadata.getFormatStr();
-		if ((formatString != null) && (formatString.length() != 0)) {
-			if (locale != null){
-				numberFormat = new DecimalFormat(formatString,new DecimalFormatSymbols(locale));
-		 	}else{
-		 		numberFormat = new DecimalFormat(formatString);
-			}
-		} else if (locale != null) {
-			numberFormat = DecimalFormat.getInstance(locale);
-		}
-		//instantiate Decimal interface
-		this.precision = precision;
-		this.scale = scale;
-		value = DecimalFactory.getDecimal(precision, scale);
-	}
+        if (!plain) {
+            Locale locale;
+            // handle locale
+            if (_metadata.getLocaleStr() != null) {
+                String[] localeLC = _metadata.getLocaleStr().split(
+                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+                if (localeLC.length > 1) {
+                    locale = new Locale(localeLC[0], localeLC[1]);
+                } else {
+                    locale = new Locale(localeLC[0]);
+                }
+                // probably wrong locale string defined
+                if (locale == null) {
+                    throw new RuntimeException("Can't create Locale based on "
+                            + _metadata.getLocaleStr());
+                }
+            } else {
+                locale = null;
+            }
+            // handle formatString
+            String formatString;
+            formatString = _metadata.getFormatStr();
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    numberFormat = new DecimalFormat(formatString,
+                            new DecimalFormatSymbols(locale));
+                } else {
+                    numberFormat = new DecimalFormat(formatString);
+                }
+            } else if (locale != null) {
+                numberFormat = DecimalFormat.getInstance(locale);
+            }
+        }
+        //instantiate Decimal interface
+        this.precision = precision;
+        this.scale = scale;
+        value = DecimalFactory.getDecimal(precision, scale);
+    }
 
 
+	
 	/**
-	 *  Constructor for the DecimalDataField object
-	 *
+	 * @param _metadata Metadata describing field
+	 * @param value decimal value to be assigned to the field
+	 * @param precision integer unscaled value - maximum digits this field can contain
+	 * @param scale number of decimal places
 	 */
 	public DecimalDataField(DataFieldMetadata _metadata, Decimal value, int precision, int scale) {
 		this(_metadata, precision, scale);
