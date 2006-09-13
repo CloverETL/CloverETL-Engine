@@ -7,16 +7,16 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFUppercaseNode extends SimpleNode {
 	
-	public StringBuffer strBuf;
+	public StringBuilder strBuf;
 	
 	public CLVFUppercaseNode(int id) {
 		super(id);
-		strBuf=new StringBuffer();
+		strBuf=new StringBuilder();
 	}
 	
 	public CLVFUppercaseNode(ExpParser p, int id) {
 	    super(p, id);
-	    strBuf=new StringBuffer();
+	    strBuf=new StringBuilder();
 	  }
 	
 	/** Accept the visitor. **/
