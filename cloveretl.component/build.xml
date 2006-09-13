@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="us-ascii"?>
-<project name="cloveretl.component.public" default="build" basedir=".">
+<project name="cloveretl.component" default="build" basedir=".">
 
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="plugin.name" value="cloveretl.component"/>
@@ -11,7 +11,7 @@
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
 
 	<!--load external properties-->
-	<property file="../cloveretl.engine.berlios/build.properties"/>
+	<property file="../cloveretl.engine/build.properties"/>
 
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
