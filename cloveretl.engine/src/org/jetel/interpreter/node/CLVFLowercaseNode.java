@@ -6,16 +6,16 @@ import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFLowercaseNode extends SimpleNode {
 	
-	public StringBuffer strBuf;
+	public StringBuilder strBuf;
 	
 	public CLVFLowercaseNode(int id) {
 		super(id);
-		strBuf=new StringBuffer();
+		strBuf=new StringBuilder();
 	}
 	
 	public CLVFLowercaseNode(ExpParser p, int id) {
 	    super(p, id);
-	    strBuf=new StringBuffer();
+	    strBuf=new StringBuilder();
 	  }
 	
 	/** Accept the visitor. **/

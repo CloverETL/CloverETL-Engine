@@ -366,7 +366,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 stack.push(result.getTime());
             } else if (a instanceof CharSequence) {
                 CharSequence a1 = (CharSequence) a;
-                StringBuffer buf=new StringBuffer(a1.length()*2);
+                StringBuilder buf=new StringBuilder(a1.length()*2);
                 StringUtils.strBuffAppend(buf,a1);
                 if (b instanceof CharSequence) {
                     StringUtils.strBuffAppend(buf,(CharSequence)b);
@@ -735,7 +735,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFConcatNode node, Object data) {
         Object a;
-        StringBuffer strBuf = new StringBuffer(40);
+        StringBuilder strBuf = new StringBuilder(40);
         int numChildren = node.jjtGetNumChildren();
         for (int i = 0; i < numChildren; i++) {
             node.jjtGetChild(i).jjtAccept(this, data);
@@ -1433,7 +1433,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             }
             break;
         case STRING_VAR:
-            value= new StringBuffer();
+            value= new StringBuilder();
             break;
         case DATE_VAR:
             value=new Date();
@@ -1477,8 +1477,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         try {
             if (variable instanceof Numeric) {
                     ((Numeric) variable).setValue((Numeric) value);
-            } else if (variable instanceof StringBuffer) {
-                StringBuffer var = (StringBuffer) variable;
+            } else if (variable instanceof StringBuilder) {
+                StringBuilder var = (StringBuilder) variable;
                 var.setLength(0);
                 StringUtils.strBuffAppend(var,(CharSequence) value);
             } else if (variable instanceof Boolean) {

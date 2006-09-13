@@ -7,7 +7,7 @@ import org.jetel.interpreter.ExpParser;import org.jetel.interpreter.TransformLan
 
 public class CLVFConcatNode extends SimpleNode {
 	
-	StringBuffer strBuf;
+	StringBuilder strBuf;
 	
 	public CLVFConcatNode(int id) {
 		super(id);

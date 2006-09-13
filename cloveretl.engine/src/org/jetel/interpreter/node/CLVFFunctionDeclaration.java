@@ -43,7 +43,7 @@ public class CLVFFunctionDeclaration extends SimpleNode {
   
   public String toString(){
       int count=0;
-      StringBuffer buffer=new StringBuffer(super.toString()).append(": ");
+      StringBuilder buffer=new StringBuilder(super.toString()).append(": ");
       while (varNames[count]!=null){
           buffer.append(varNames[count++]);
           buffer.append(",");
