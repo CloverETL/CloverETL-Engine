@@ -11,7 +11,7 @@
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
 	
 	<!--load external properties-->
-	<property file="../cloveretl.engine.berlios/build.properties"/>
+	<property file="../cloveretl.engine/build.properties"/>
 
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
