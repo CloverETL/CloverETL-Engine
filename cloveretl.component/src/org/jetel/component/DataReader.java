@@ -44,6 +44,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -251,48 +252,6 @@ public class DataReader extends Node {
         
         return ret;
     }
-
-
-    private static ReadableByteChannel getChannel(String input) throws IOException {
-        String strURL = input;
-		URL url;
-		
-        //resolve url format for zip files
-		if(input.startsWith("zip:")) {
-        	strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
-        }
-        
-		//open channel
-		try {
-			url = new URL(strURL); 
-		} catch(MalformedURLException e) {
-			// try to patch the url
-			try {
-				url = new URL("file:" + strURL);
-			} catch(MalformedURLException ex) {
-				throw new RuntimeException("Wrong URL of file specified: " + ex.getMessage());
-			}
-		}
-
-		//resolve url format for zip files
-		if(input.startsWith("zip:")) {
-			String zipAnchor = input.substring(input.lastIndexOf('#') + 1);
-			ZipInputStream zin = new ZipInputStream(url.openStream()) ;     
-			ZipEntry entry;
-			while((entry = zin.getNextEntry()) != null) {
-				if(entry.getName().equals(zipAnchor)) {
-					return Channels.newChannel(zin);
-		      	}
-				//finish up with entry
-				zin.closeEntry();
-			}
-			//close the archive
-			zin.close();
-			throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
-        }
-		
-		return Channels.newChannel(url.openStream());
-	}
 	
 	/**
 	 *  Description of the Method
@@ -310,7 +269,7 @@ public class DataReader extends Node {
 		}
 		// try to open input channel & initialize data parser
 		try {
-			parser.open(getChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
+			parser.open(FileUtils.getChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
