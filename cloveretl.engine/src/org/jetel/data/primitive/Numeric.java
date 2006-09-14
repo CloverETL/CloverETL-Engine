@@ -42,8 +42,6 @@ public interface Numeric {
     
     public void setValue(double value);
     
-    public void setValue(Decimal value);
-    
     public void setValue(Numeric value);
     
     public void setValue(Number value);

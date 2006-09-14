@@ -202,10 +202,14 @@ public class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
     public void setValue(Numeric _value) {
-        if(_value.isNull()) {
+        if(_value == null || _value.isNull()) {
             setNaN(true);
             return;
         }
+        if(_value instanceof Decimal) {
+            setValue((Decimal) _value);
+        }
+        
         setValue(_value.getBigDecimal());
     }
     

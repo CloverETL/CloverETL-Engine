@@ -85,23 +85,6 @@ public class HugeDecimal implements Decimal {
 	}
 
 	/**
-	 * @see org.jetel.data.primitive.Decimal#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal decimal) {
-		if(decimal == null || decimal.isNaN()) {
-			setNaN(true);
-			return;
-		}
-
-        value = decimal.getBigDecimal();
-        if(!satisfyPrecision()) {
-            setNaN(true);
-            throw new NumberFormatException("Number is out of available precision. (" + decimal + ")");
-        }
-        setNaN(false);
-	}
-
-	/**
 	 * @see org.jetel.data.primitive.Decimal#setValue(double)
 	 */
 	public void setValue(double _value) {
@@ -153,7 +136,7 @@ public class HugeDecimal implements Decimal {
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
     public void setValue(Numeric _value) {
-        if(_value.isNull()) {
+        if(_value == null || _value.isNull()) {
             setNaN(true);
             return;
         }
@@ -169,6 +152,10 @@ public class HugeDecimal implements Decimal {
      * @see org.jetel.data.primitive.Decimal#setValue(java.math.BigDecimal)
      */
     public void setValue(BigDecimal _value) {
+        if(_value == null) {
+            setNaN(true);
+            return;
+        }
         value = _value;
         if(!satisfyPrecision()) {
             setNaN(true);

@@ -591,30 +591,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		value.neg();
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal _value) {
-        if (_value == null) {
-            if(this.metadata.isNullable()) {
-                setNull(true);
-            } else {
-                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-            }
-            return;
-        }
-        value.setValue(_value);
-        if(value.isNaN()) {
-            if(this.metadata.isNullable()) {
-                setNull(true);
-            } else {
-                throw new BadDataFormatException(getMetadata().getName() + " field can not be set to null! (nullable = false)");
-            }
-        }
-        setNull(false);
-	}
-
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */

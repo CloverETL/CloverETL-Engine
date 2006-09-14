@@ -569,20 +569,6 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	}
 	
 	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal _value) {
-		if(_value == null) {
-		    setNull(true);
-		    return;
-		}
-		if(!_value.isNaN()) {
-			value = _value.getLong();
-		}
-		setNull(_value.isNaN());
-	}
-
-	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */
 	public Decimal getDecimal() {
