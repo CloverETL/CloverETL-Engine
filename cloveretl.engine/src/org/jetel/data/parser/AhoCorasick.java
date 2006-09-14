@@ -136,6 +136,13 @@ public class AhoCorasick {
 		return currentNode.depth;
 	}
 	
+    /**
+     * Resets AhoCorasick automat.
+     */
+    public void reset() {
+        currentNode = rootTrie;
+    }
+    
 	/**
 	 * Find first matching pattern in given string
 	 * @param patterns Patterns to be found
@@ -143,7 +150,7 @@ public class AhoCorasick {
 	 * @return {position, patternIdx} for pattern patterns[patternIdx] at position charIdx,
 	 * {-1, -1} otherwise
 	 */
-	static int[] firstMatch(String[] patterns, String str) {
+	public static int[] firstMatch(String[] patterns, String str) {
 		AhoCorasick acEngine = new AhoCorasick(patterns);
 		for (int charIdx = 0; charIdx < str.length(); charIdx++) {
 			acEngine.update(str.charAt(charIdx));
@@ -157,7 +164,7 @@ public class AhoCorasick {
 		return new int[]{-1, -1};
 	}
 
-	public static List getNextLevelNode(List level) {
+	private static List getNextLevelNode(List level) {
 		List ch = new ArrayList();
 		for(Iterator i = level.iterator(); i.hasNext(); ) {
 			ch.addAll(((NodeTrie) i.next()).getChildren());
