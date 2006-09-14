@@ -269,7 +269,7 @@ public class DataReader extends Node {
 		}
 		// try to open input channel & initialize data parser
 		try {
-			parser.open(FileUtils.getChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
+			parser.open(FileUtils.getReadableChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
