@@ -335,6 +335,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 			}
 		}
 		
+		int[] _delimStartEnd = new int[]{-1, 0};
 		/**
 		 * Finds position of first delimiter
 		 * @return null on end of input,
@@ -369,7 +370,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 			int delimPos;	// delimiter position (relative to the current position in the buffer)
 			int nextPos;	// position of next record (relative to the current position in the buffer)			
 			if (recordDelimiters.length == 0) {	// don't expect delimiter
-				nextPos = delimPos = recLen;
+				nextPos = delimPos = Math.min(recLen, charBuffer.remaining());
 			} else {
 				int savedLimit = charBuffer.limit();
 				// restrict delimiter lookup to the relevant part of buffer
@@ -390,7 +391,9 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 					nextPos = delimPos + recordDelimiters[delimMatch[1]].length();
 				}
 			}
-			return new int[]{delimPos, nextPos};
+			_delimStartEnd[0] = delimPos;
+			_delimStartEnd[1] = nextPos;
+			return _delimStartEnd;
 		}
 		
 		/**
@@ -461,6 +464,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 		 * @throws JetelException, BadDataFormatException
 		 */
 		public CharBuffer getNext() throws JetelException, BadDataFormatException {
+			_outBuf.clear();
 			return getNext(_outBuf) ? _outBuf : null;
 		}
 		
