@@ -85,7 +85,7 @@ public class FixLenByteDataParser implements Parser {
 			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		} else {				// char data expected
 			decoder = Charset.forName(charset).newDecoder();
-		} 
+		}
 	}
 
 	/**
@@ -93,7 +93,7 @@ public class FixLenByteDataParser implements Parser {
 	 */
 	public void open(Object inputDataSource, DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
-		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
+		if (_metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
 			throw new RuntimeException("Fixed length data format expected but not encountered");
 		}
 		metadata = _metadata;
@@ -211,6 +211,10 @@ public class FixLenByteDataParser implements Parser {
 	 */
 	public int skip(int nRec) throws JetelException {
 		return recChannel.skip(nRec);
+	}
+	
+	public String getCharsetName() {
+		return decoder.charset().name();
 	}
 
 	public void setExceptionHandler(IParserExceptionHandler handler) {
