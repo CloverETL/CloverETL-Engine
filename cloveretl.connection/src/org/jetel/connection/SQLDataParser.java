@@ -302,7 +302,7 @@ public class SQLDataParser implements Parser {
         return null;
     }
 
-	public int skip(int nRec) {
+	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
