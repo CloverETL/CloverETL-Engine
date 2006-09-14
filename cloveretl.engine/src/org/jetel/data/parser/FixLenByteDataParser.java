@@ -232,6 +232,7 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 		 * @throws JetelException
 		 */
 		public ByteBuffer getNext() throws JetelException {
+			_outBuf.clear();
 			return getNext(_outBuf) ? _outBuf : null;
 		}
 		
