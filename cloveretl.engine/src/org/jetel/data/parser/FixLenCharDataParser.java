@@ -29,6 +29,7 @@ import java.nio.charset.CharsetDecoder;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -75,6 +76,16 @@ public class FixLenCharDataParser implements Parser {
 	 * Indicates whether trailing blanks in string fields are to be skipped
 	 */
 	private boolean skipTrailingBlanks;
+	
+	/**
+	 * Specifies whether incomplete records are allowed.
+	 */
+	private boolean enableIncomplete;
+
+	/**
+	 * Specifies what to do when empty record is encountered.
+	 */
+	private boolean skipEmpty;
 
 	/**
 	 * Create instance for specified charset.
@@ -108,12 +119,15 @@ public class FixLenCharDataParser implements Parser {
 	 */
 	public void open(Object inputDataSource, DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
-		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
+		if (_metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
 			throw new RuntimeException("Fixed length data format expected but not encountered");
 		}
 		metadata = _metadata;
 		ReadableByteChannel byteChannel =((FileInputStream)inputDataSource).getChannel(); 
-		recChannel = new RecordChannel(metadata, byteChannel, decoder, metadata.getRecordDelimiters(), true);
+		recChannel = new RecordChannel(metadata, byteChannel,
+				decoder, metadata.getRecordDelimiters(),
+				enableIncomplete, skipEmpty);
+		fieldLengths = new int[metadata.getNumFields()];
 		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
 			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
 		}
@@ -194,6 +208,7 @@ public class FixLenCharDataParser implements Parser {
 					StringUtils.unquote(rawRec);
 				}
 				record.getField(fieldIdx).fromString(rawRec.toString());
+				rawRec.position(rawRec.limit());	// consume field
 				rawRec.limit(savedLimit);
 			} catch (BadDataFormatException e) {
 					fillXHandler(record, recChannel.getRecordCounter(), fieldIdx,
@@ -242,6 +257,10 @@ public class FixLenCharDataParser implements Parser {
 		return recChannel.skip(nRec);
 	}
 
+	public String getCharsetName() {
+		return decoder.charset().name();
+	}
+
 	public void setExceptionHandler(IParserExceptionHandler handler) {
 		exceptionHandler = handler;
 	}
@@ -254,27 +273,34 @@ public class FixLenCharDataParser implements Parser {
 		return exceptionHandler != null ? exceptionHandler.getType() : null;
 	}
 
-	public String[] getRecordDelimiters() {
-		return recChannel.getRecordDelimiters();
-	}
-
-	public void setRecordDelimiters(String[] recordDelimiters) {
-		recChannel.setRecordDelimiters(recordDelimiters);
-	}
-
-	/**
-	 * Set delimiters to values specified by metadata 
-	 */
-	public void setRecordDelimiters() {
-		setRecordDelimiters(metadata.getRecordDelimiters());
-	}
-	
 	public boolean isEnableIncomplete() {
+		if (recChannel == null) {
+			return enableIncomplete;
+		}
+
 		return recChannel.isEnableIncomplete();
 	}
 
+	public boolean isSkipEmpty() {
+		if (recChannel == null) {
+			return skipEmpty;
+		}
+
+		return recChannel.isSkipEmpty();
+	}
+
 	public void setEnableIncomplete(boolean enableIncomplete) {
-		recChannel.setEnableIncomplete(enableIncomplete);
+		this.enableIncomplete = enableIncomplete;
+		if (recChannel != null) {
+			recChannel.setEnableIncomplete(enableIncomplete);
+		}
+	}
+
+	public void setSkipEmpty(boolean skipEmpty) {
+		this.skipEmpty = skipEmpty;
+		if (recChannel != null) {
+			recChannel.setSkipEmpty(skipEmpty);
+		}
 	}
 
 	public boolean isSkipLeadingBlanks() {
@@ -334,6 +360,11 @@ public class FixLenCharDataParser implements Parser {
 		private boolean enableIncomplete;
 
 		/**
+		 * Specifies what to do when empty record is encountered.
+		 */
+		private boolean skipEmpty;
+
+		/**
 		 * Max delimiter length.
 		 */
 		int maxDelim;
@@ -350,13 +381,16 @@ public class FixLenCharDataParser implements Parser {
 		 * @param decoder Charset decoder
 		 * @param recordDelimiters Nomen omen.
 		 * @param enableIncomplete Enables/disables incomplete records.
+		 * @param skipEmpty Turns on/off skipping of empty records.
 		 * The value is ignored in case that set of delimiters is empty.
 		 */
 		public RecordChannel(DataRecordMetadata metadata, ReadableByteChannel inChannel,
-				CharsetDecoder decoder, String[] recordDelimiters, boolean enableIncomplete) {
+				CharsetDecoder decoder, String[] recordDelimiters,
+				boolean enableIncomplete, boolean skipEmpty) {
 
 			setRecordDelimiters(recordDelimiters);
 			setEnableIncomplete(enableIncomplete);
+			setSkipEmpty(skipEmpty);
 
 			this.decoder = decoder;
 			this.inChannel = inChannel;
@@ -387,17 +421,15 @@ public class FixLenCharDataParser implements Parser {
 		}
 		
 		/**
-		 * Reads raw data for one record from input and fills specified
-		 * buffer with them. For outBuff==null raw data in input are simply skipped. 
-		 * @param outBuf Output buffer to be filled with raw data.
-		 * @return false when no more data available, true otherwise
-		 * @throws JetelException, BadDataFormatException
+		 * Finds position of first delimiter
+		 * @return null on end of input,
+		 * relative positions of delimiter {delimPos, delimEnd} otherwise. 
 		 */
-		public boolean getNext(CharBuffer outBuf) throws JetelException, BadDataFormatException {
+		private int[] findDelim() throws JetelException {
 			// both charBuffer and byteBuffer are ready for reading at this point
 			// outBuf is ready for writing
 			if (eof) {	// no more data in input channel
-				return false;
+				return null;
 			}
 			if (charBuffer.remaining() < recLen + maxDelim) {	// need to get more data from channel
 				byteBuffer.compact();	// ready for writing
@@ -412,15 +444,15 @@ public class FixLenCharDataParser implements Parser {
 				charBuffer.flip();		// ready for reading
 			}
 			// from now on both buffers will stay ready for reading
-
+	
 			if (charBuffer.remaining() == 0) {
 				eof = true;
-				return false;	// no more data
+				return null;	// no more data
 			}
-			int delimPos;	// delimiter position (relative to the current position in the buffer)
-			int nextPos;	// position of next record (relative to the current position in the buffer)
 
 			// find out delimiter position and position of next record
+			int delimPos;	// delimiter position (relative to the current position in the buffer)
+			int nextPos;	// position of next record (relative to the current position in the buffer)			
 			if (recordDelimiters.length == 0) {	// don't expect delimiter
 				nextPos = delimPos = recLen;
 			} else {
@@ -443,6 +475,31 @@ public class FixLenCharDataParser implements Parser {
 					nextPos = delimPos + recordDelimiters[delimMatch[1]].length();
 				}
 			}
+			return new int[]{delimPos, nextPos};
+		}
+
+		/**
+		 * Reads raw data for one record from input and fills specified
+		 * buffer with them. For outBuff==null raw data in input are simply skipped. 
+		 * @param outBuf Output buffer to be filled with raw data.
+		 * @return false when no more data available, true otherwise
+		 * @throws JetelException, BadDataFormatException
+		 */
+		public boolean getNext(CharBuffer outBuf) throws JetelException, BadDataFormatException {
+			int delimPos = 0;	// delimiter position (relative to the current position in the buffer)
+			int nextPos = 0;	// position of next record (relative to the current position in the buffer)			
+			
+			// move buffer position to the beginning of next record
+			// and find out positions of following delimiter and record 
+			do {
+				charBuffer.position(charBuffer.position() + nextPos);	// consume empty record
+				int[] delimStartEnd = findDelim();	// find delimiter for current record
+				if (delimStartEnd == null) {	// no more records
+					return false;
+				}
+				delimPos = delimStartEnd[0];
+				nextPos = delimStartEnd[1];
+			} while (skipEmpty && delimPos == 0);	// until current record requires processing
 
 			// check record data against policies
 			if (delimPos < recLen && !enableIncomplete) {
@@ -485,13 +542,8 @@ public class FixLenCharDataParser implements Parser {
 		public int skip(int nRec) throws JetelException {
 			int skipped;
 			for (skipped = 0; skipped < nRec; skipped++) {
-				try {
-					if (!getNext(null)) {	// end of file reached
-						break;
-					}
-				}
-				catch (BadDataFormatException x) {
-					// ignore it
+				if (findDelim() == null) {
+					break;
 				}
 			}
 			return skipped;
@@ -518,14 +570,15 @@ public class FixLenCharDataParser implements Parser {
 		}
 
 		public void setRecordDelimiters(String[] recordDelimiters) {
-			this.recordDelimiters = recordDelimiters;
-			if (recordDelimiters.length == 0) {	// no delimiter, requires special handling
+			this.recordDelimiters = recordDelimiters == null ? new String[]{} : recordDelimiters;
+			if (this.recordDelimiters.length == 0) {	// no delimiter, requires special handling
 				enableIncomplete = false;
+				skipEmpty = false;
 			}
 			maxDelim = 0;
-			for (int i = 0; i < recordDelimiters.length; i++) {
-				if (recordDelimiters[i].length() > maxDelim) {
-					maxDelim = recordDelimiters[i].length();
+			for (int i = 0; i < this.recordDelimiters.length; i++) {
+				if (this.recordDelimiters[i].length() > maxDelim) {
+					maxDelim = this.recordDelimiters[i].length();
 				}
 			}
 		}
@@ -539,6 +592,17 @@ public class FixLenCharDataParser implements Parser {
 				return; // incomplete records must remain disabled 
 			}
 			this.enableIncomplete = enableIncomplete;
+		}
+
+		public boolean isSkipEmpty() {
+			return enableIncomplete;
+		}
+
+		public void setSkipEmpty(boolean skipEmpty) {
+			if (recordDelimiters.length == 0) {	// no delimiter, no changes possible
+				return; // empty records must remain disabled 
+			}
+			this.skipEmpty = skipEmpty;
 		}
 
 	} // class RecordChannel
