@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
@@ -92,9 +93,11 @@ import org.w3c.dom.Element;
 
 public class FixLenDataReader extends Node {
 
-	private static final String XML_LINESEPARATORSIZE_ATTRIBUTE = "LineSeparatorSize";
+	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "SkipLeadingBlanks";
-	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
+	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "SkipTrailingBlanks";
+	private static final String XML_ENABLEINCOMPLETE_ATTRIBUTE = "enableIncomplete";
+	private static final String XML_SKIPEMPTY_ATTRIBUTE = "skipEmpty";
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -106,7 +109,7 @@ public class FixLenDataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
-	private FixLenDataParser2 parser;
+	private FixLenDataParser3 parser;
 	
 	private int skipRows=-1; // do not skip rows by default
 
@@ -117,10 +120,11 @@ public class FixLenDataReader extends Node {
 	 * @param  id       Description of the Parameter
 	 * @param  fileURL  Description of the Parameter
 	 */
-	public FixLenDataReader(String id, String fileURL) {
+	public FixLenDataReader(String id, String fileURL,
+			boolean byteMode) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new FixLenDataParser2();
+		parser = new FixLenDataParser3(byteMode);
 	}
 
 
@@ -131,10 +135,11 @@ public class FixLenDataReader extends Node {
 	 * @param  fileURL  Description of the Parameter
 	 * @param  charset  Description of the Parameter
 	 */
-	public FixLenDataReader(String id, String fileURL, String charset) {
+	public FixLenDataReader(String id, String fileURL, String charset,
+			boolean byteMode) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new FixLenDataParser2(charset);
+		parser = new FixLenDataParser3(charset, byteMode);
 	}
 
 
@@ -231,26 +236,33 @@ public class FixLenDataReader extends Node {
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy.toString());
 		}
 		
-		if (this.parser.getOneRecordPerLinePolicy()) {
-			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
-					String.valueOf(this.parser.getOneRecordPerLinePolicy()));
-		}
-		
 		if (this.parser.getCharsetName() != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharsetName());
 		}
 		
-		if (this.parser.getSkipLeadingBlanks()) {
+		if (this.parser.isSkipLeadingBlanks()) {
 			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE,
-					String.valueOf(this.parser.getSkipLeadingBlanks()));
+					String.valueOf(this.parser.isSkipLeadingBlanks()));
+		}
+		
+		if (this.parser.isSkipTrailingBlanks()) {
+			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE,
+					String.valueOf(this.parser.isSkipTrailingBlanks()));
+		}
+		
+		if (this.parser.isEnableIncomplete()) {
+			xmlElement.setAttribute(XML_ENABLEINCOMPLETE_ATTRIBUTE,
+					String.valueOf(this.parser.isEnableIncomplete()));
+		}
+		
+		if (this.parser.isSkipEmpty()) {
+			xmlElement.setAttribute(XML_SKIPEMPTY_ATTRIBUTE,
+					String.valueOf(this.parser.isSkipEmpty()));
 		}
 		
 		if (this.skipRows>0){
 		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
-		}
-		
-		xmlElement.setAttribute(XML_LINESEPARATORSIZE_ATTRIBUTE,
-				String.valueOf(this.parser.getLineSeparatorSize()));
+		}		
 	}
 
 
@@ -266,26 +278,32 @@ public class FixLenDataReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		
 		try {
+			String charset = null;
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE),
-						xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			} else {
-				aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE));
+				charset = xattribs.getString(XML_CHARSET_ATTRIBUTE);
 			}
+			boolean byteMode = false;
+			if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
+				byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
+			}
+			aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						charset, byteMode);
 			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
 				aFixLenDataReaderNIO.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
 					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
-			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE));
+			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
+				aFixLenDataReaderNIO.parser.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_SKIPEMPTY_ATTRIBUTE)){
+				aFixLenDataReaderNIO.parser.setSkipEmpty(xattribs.getBoolean(XML_SKIPEMPTY_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
+				aFixLenDataReaderNIO.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_LINESEPARATORSIZE_ATTRIBUTE)){
-				aFixLenDataReaderNIO.setLineSeparatorSize(xattribs.getInteger(XML_LINESEPARATORSIZE_ATTRIBUTE));
+			if (xattribs.exists(XML_SKIPTRAILINGBLANKS_ATTRIBUTE)){
+				aFixLenDataReaderNIO.parser.setSkipTrailingBlanks(xattribs.getBoolean(XML_SKIPTRAILINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
 				aFixLenDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
@@ -298,23 +316,6 @@ public class FixLenDataReader extends Node {
 		return aFixLenDataReaderNIO;
 	}
 
-
-	/**
-	 * Sets OneRecordPerLinePolicy.
-	 *
-	 * @param  b
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		parser.setOneRecordPerLinePolicy(b);
-	}
-	
-	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
-		parser.setSkipLeadingBlanks(skipLeadingBlanks);
-	}
-
-	public void setLineSeparatorSize(int lineSeparatorSize) {
-		parser.setLineSeparatorSize(lineSeparatorSize);
-	}
 
 	/**
 	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
