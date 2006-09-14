@@ -197,18 +197,6 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
     }
 	
     /**
-     * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-     */
-    public void setValue(Decimal value) {
-        if(value == null || value.isNull()) {
-            setNull(true);
-            return;
-        }
-        this.value = value.getInt();
-        setNull(false);
-    }
-
-    /**
      * @see org.jetel.data.primitive.Numeric#setValue(java.lang.Number)
      */
     public void setValue(Number value) {

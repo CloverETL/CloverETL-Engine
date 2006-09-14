@@ -644,22 +644,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		value *= -1;
 	}
 
-
-	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal _value) {
-		if(_value == null) {
-		    setNull(true);
-		    return;
-		}
-
-		if(!_value.isNaN()) {
-			value = _value.getDouble();
-		}
-		setNull(_value.isNaN());
-	}
-
 	/**
 	 * @see org.jetel.data.Numeric#getDecimal()
 	 */

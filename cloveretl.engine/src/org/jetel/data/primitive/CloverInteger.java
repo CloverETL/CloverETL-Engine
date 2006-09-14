@@ -120,13 +120,6 @@ public class CloverInteger extends Number implements Numeric {
         }
     }
     
-	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal value) {
-		this.value = value.getInt();
-	}
-
     /**
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
      */

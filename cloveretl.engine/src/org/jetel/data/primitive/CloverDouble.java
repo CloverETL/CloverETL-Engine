@@ -120,17 +120,6 @@ public class CloverDouble extends Number implements Numeric {
 		this.value = value;
 	}
 
-	/**
-	 * @see org.jetel.data.Numeric#setValue(org.jetel.data.primitive.Decimal)
-	 */
-	public void setValue(Decimal value) {
-        if(value.isNaN()) {
-            this.value = Double.NaN;
-        } else {
-            this.value = value.getDouble();
-        }
-	}
-
     /**
      * @see org.jetel.data.Numeric#setValue(org.jetel.data.Numeric)
      */
