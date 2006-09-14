@@ -145,7 +145,7 @@ public class RecordFilter {
 					throw new RuntimeException(ex.getMessage() + " - error when populating filter's field " + filterField + " with value " + filterValueStr);
 				}
 			} else {
-				DataField filterFieldValue = DataFieldFactory.createDataField(fieldMetadata.getType(), fieldMetadata);
+				DataField filterFieldValue = DataFieldFactory.createDataField(fieldMetadata.getType(), fieldMetadata, false);
 				try {
 					filterFieldValue.fromString(filterValueStr);
 				} catch (Exception ex) {
