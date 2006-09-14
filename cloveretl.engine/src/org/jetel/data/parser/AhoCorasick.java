@@ -150,12 +150,12 @@ public class AhoCorasick {
 	 * @return {position, patternIdx} for pattern patterns[patternIdx] at position charIdx,
 	 * {-1, -1} otherwise
 	 */
-	public static int[] firstMatch(String[] patterns, String str) {
-		AhoCorasick acEngine = new AhoCorasick(patterns);
+	public int[] firstMatch(String[] patterns, String str) {
+		reset();
 		for (int charIdx = 0; charIdx < str.length(); charIdx++) {
-			acEngine.update(str.charAt(charIdx));
+			update(str.charAt(charIdx));
 			for (int patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
-				if (acEngine.isPattern(patternIdx)) {	// match found
+				if (isPattern(patternIdx)) {	// match found
 					return new int[]{charIdx + 1 - patterns[patternIdx].length(), patternIdx};
 				}
 			}
@@ -164,7 +164,7 @@ public class AhoCorasick {
 		return new int[]{-1, -1};
 	}
 
-	private static List getNextLevelNode(List level) {
+	public static List getNextLevelNode(List level) {
 		List ch = new ArrayList();
 		for(Iterator i = level.iterator(); i.hasNext(); ) {
 			ch.addAll(((NodeTrie) i.next()).getChildren());
