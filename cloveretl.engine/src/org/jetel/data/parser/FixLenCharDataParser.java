@@ -53,7 +53,7 @@ public class FixLenCharDataParser implements Parser {
 	private DataRecordMetadata metadata;
 	
 	/**
-	 * Lengths of record fields
+	 * Lengths of record fields.
 	 */
 	private int[] fieldLengths;
 
@@ -477,6 +477,25 @@ public class FixLenCharDataParser implements Parser {
 			}
 			return new int[]{delimPos, nextPos};
 		}
+		
+		/**
+		 * Finds position of first delimiter preceded by record
+		 * which is not supposed to be ignored. Set buffer position
+		 * to the beginning of the record.
+		 * @return null on end of input,
+		 * relative positions of delimiter {delimPos, delimEnd} otherwise. 
+		 */
+		private int[] findUsefulDelim() throws JetelException {
+			int[] delimStartEnd = new int[]{-1, 0};
+			do {
+				charBuffer.position(charBuffer.position() + delimStartEnd[1]);	// consume useless delimiter
+				delimStartEnd = findDelim();	// find delimiter for current record
+				if (delimStartEnd == null) {	// no more records
+					return null;
+				}
+			} while (skipEmpty && delimStartEnd[0] == 0);	// until interesting data are encountered
+			return delimStartEnd;
+		}
 
 		/**
 		 * Reads raw data for one record from input and fills specified
@@ -486,20 +505,15 @@ public class FixLenCharDataParser implements Parser {
 		 * @throws JetelException, BadDataFormatException
 		 */
 		public boolean getNext(CharBuffer outBuf) throws JetelException, BadDataFormatException {
-			int delimPos = 0;	// delimiter position (relative to the current position in the buffer)
-			int nextPos = 0;	// position of next record (relative to the current position in the buffer)			
 			
-			// move buffer position to the beginning of next record
-			// and find out positions of following delimiter and record 
-			do {
-				charBuffer.position(charBuffer.position() + nextPos);	// consume empty record
-				int[] delimStartEnd = findDelim();	// find delimiter for current record
-				if (delimStartEnd == null) {	// no more records
-					return false;
-				}
-				delimPos = delimStartEnd[0];
-				nextPos = delimStartEnd[1];
-			} while (skipEmpty && delimPos == 0);	// until current record requires processing
+			// move buffer position to the beginning of next interesting record
+			// and retrieve position of following delimiter.
+			int[] delimStartEnd = findUsefulDelim();
+			if (delimStartEnd == null) {	// end of input data
+				return false;
+			}
+			int delimPos = delimStartEnd[0];// delimiter position (relative to the current position in the buffer)
+			int nextPos = delimStartEnd[1];	// position of next record (relative to the current position in the buffer)
 
 			// check record data against policies
 			if (delimPos < recLen && !enableIncomplete) {
@@ -542,7 +556,7 @@ public class FixLenCharDataParser implements Parser {
 		public int skip(int nRec) throws JetelException {
 			int skipped;
 			for (skipped = 0; skipped < nRec; skipped++) {
-				if (findDelim() == null) {
+				if (findUsefulDelim() == null) {	// end of input data
 					break;
 				}
 			}
