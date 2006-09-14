@@ -85,6 +85,13 @@ public final class Defaults {
 	 */
 	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
 
+    /**
+     *  when creating InputStream or OutputStream objects, what
+     *  is the size of their internal buffer. Used mainly in
+     *  creating Channels from these streams.
+     */
+    public static int DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE; //2048
+    
 	/**
 	 * when creating/parsing date from string, what is the expected/default
 	 * format of date

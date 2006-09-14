@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -33,6 +32,8 @@ import java.util.zip.Checksum;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import org.jetel.data.Defaults;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -151,7 +152,7 @@ public class FileUtils {
      * @return
      * @throws IOException
      */
-    public static ReadableByteChannel getChannel(String input) throws IOException {
+    public static ReadableByteChannel getReadableChannel(String input) throws IOException {
         String strURL = input;
         URL url;
         
@@ -190,7 +191,7 @@ public class FileUtils {
             zin.close();
             throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
         }else if (input.startsWith("gzip:")) {
-            GZIPInputStream gzin = new GZIPInputStream(url.openStream());
+            GZIPInputStream gzin = new GZIPInputStream(url.openStream(),Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzin);
         }
         
