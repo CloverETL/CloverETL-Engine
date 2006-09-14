@@ -30,7 +30,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.parser.FixLenByteDataParser;
+import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -87,7 +88,7 @@ import org.w3c.dom.Element;
  *
  * @author      dpavlis, maciorowski
  * @since       April 4, 2002
- * @revision    $Revision$
+ * @revision    $Revision: 1439 $
  * @see         org.jetel.data.parser.FixLenDataParser, org.jetel.data.FixLenDataParser2
  */
 
@@ -113,6 +114,7 @@ public class FixLenDataReader extends Node {
 	
 	private int skipRows=-1; // do not skip rows by default
 
+	private boolean byteMode;
 
 	/**
 	 *Constructor for the FixLenDataReaderNIO object
@@ -123,8 +125,11 @@ public class FixLenDataReader extends Node {
 	public FixLenDataReader(String id, String fileURL,
 			boolean byteMode) {
 		super(id);
+		this.byteMode = byteMode; 
 		this.fileURL = fileURL;
-		parser = new FixLenDataParser3(byteMode);
+		parser = byteMode ?
+				new FixLenByteDataParser() :
+				new FixLenCharDataParser();
 	}
 
 
@@ -138,8 +143,11 @@ public class FixLenDataReader extends Node {
 	public FixLenDataReader(String id, String fileURL, String charset,
 			boolean byteMode) {
 		super(id);
+		this.byteMode = byteMode; 
 		this.fileURL = fileURL;
-		parser = new FixLenDataParser3(charset, byteMode);
+		parser = byteMode ?
+				new FixLenByteDataParser(charset) :
+				new FixLenCharDataParser(charset);
 	}
 
 
@@ -234,6 +242,11 @@ public class FixLenDataReader extends Node {
 		PolicyType dataPolicy = this.parser.getPolicyType();
 		if (dataPolicy != null) {
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy.toString());
+		}
+		
+		if (this.isByteMode()) {
+			xmlElement.setAttribute(XML_BYTEMODE_ATTRIBUTE,
+					String.valueOf(this.isByteMode()));
 		}
 		
 		if (this.parser.getCharsetName() != null) {
@@ -346,6 +359,10 @@ public class FixLenDataReader extends Node {
      */
     public void setSkipRows(int skipRows) {
         this.skipRows = skipRows;
+    }
+    
+    private boolean isByteMode() {
+    	return byteMode;
     }
 }
 
