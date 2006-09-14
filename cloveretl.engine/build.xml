@@ -3,7 +3,7 @@
 	
 	<taskdef resource="net/sf/antcontrib/antcontrib.properties">
 	  <classpath>
-	    <pathelement location="lib/ant-contrib.jar"/>
+	    <pathelement location="ant-contrib.jar"/>
 	  </classpath>
 	</taskdef>
 	
@@ -11,13 +11,19 @@
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/doc"/>
 	<property name="dir.dist.default" value="${basedir}/dist"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.src" value="src"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
 	
 	<!--load external properties-->
 	<property file="build.properties"/>
 		
-	<!-- =========================== TARGETS ============================== -->
+	<!-- =========================== LIBRARIES ============================= -->
+	<fileset id="engine-libs" dir="${dir.lib}">
+		<include name="**/*.jar"/>
+	</fileset>
+
+		<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
 	</target>
@@ -76,6 +82,7 @@
 			<classpath>
 				<pathelement path="${tools}"/>
 				<pathelement path="${commons-logging}"/>
+				<fileset refid="engine-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
@@ -102,6 +109,11 @@
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
+		
+		<!-- copy all libraries from lib directory -->
+		<copy todir="${dir.dist}/lib">
+			<fileset dir="${dir.lib}"/>
+		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
