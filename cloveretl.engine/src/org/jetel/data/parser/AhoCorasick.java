@@ -149,7 +149,7 @@ public class AhoCorasick {
 			acEngine.update(str.charAt(charIdx));
 			for (int patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
 				if (acEngine.isPattern(patternIdx)) {	// match found
-					return new int[]{charIdx, patternIdx};
+					return new int[]{charIdx + 1 - patterns[patternIdx].length(), patternIdx};
 				}
 			}
 		}
