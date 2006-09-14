@@ -99,7 +99,7 @@ public class FixLenDataWriter extends Node {
 	private String filler;
 
 	/**  Description of the Field */
-	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER_NIO";
+	public final static String COMPONENT_TYPE = "FIXLEN_DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
 
