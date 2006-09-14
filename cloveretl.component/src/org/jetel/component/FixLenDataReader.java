@@ -94,8 +94,8 @@ import org.w3c.dom.Element;
 public class FixLenDataReader extends Node {
 
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
-	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "SkipLeadingBlanks";
-	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "SkipTrailingBlanks";
+	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
+	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "skipTrailingBlanks";
 	private static final String XML_ENABLEINCOMPLETE_ATTRIBUTE = "enableIncomplete";
 	private static final String XML_SKIPEMPTY_ATTRIBUTE = "skipEmpty";
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
