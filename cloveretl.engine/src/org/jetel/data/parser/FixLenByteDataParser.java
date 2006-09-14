@@ -19,22 +19,16 @@
 */
 package org.jetel.data.parser;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.CharacterCodingException;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -42,62 +36,37 @@ import org.jetel.metadata.DataRecordMetadata;
  * 
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  */
-public class FixLenByteDataParser implements Parser {
-
-	private IParserExceptionHandler exceptionHandler;
-
-	/**
-	 * Record description.
-	 */
-	private DataRecordMetadata metadata;
-	
-	/**
-	 * Used for conversion to character data.
-	 */
-	private CharsetDecoder decoder;
+public class FixLenByteDataParser extends FixLenDataParser3 {
 
 	/**
 	 * Input record channel.
 	 */
 	private RecordChannel recChannel;
 
+	private ByteBuffer fieldBuffer;
+
 	/**
 	 * Create instance for specified charset.
 	 * @param charset
 	 */
 	public FixLenByteDataParser(String charset) {
-		init(charset);
+		super(charset);
 	}
 
 	/**
 	 * Create instance for default charset. 
 	 */
 	public FixLenByteDataParser() {
-		init(null);
-	}
-
-	/**
-	 * Common code for ctors.
-	 */
-	private void init(String charset) {
-		// initialize charset decoder
-		if (charset == null) {	// byte data expected  
-			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-		} else {				// char data expected
-			decoder = Charset.forName(charset).newDecoder();
-		}
+		super(null);
 	}
 
 	/**
 	 * Parser iface.
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata)
+	public void open(Object inputDataSource, DataRecordMetadata metadata)
 			throws ComponentNotReadyException {
-		if (_metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
-			throw new RuntimeException("Fixed length data format expected but not encountered");
-		}
-		metadata = _metadata;
-		ReadableByteChannel byteChannel =((FileInputStream)inputDataSource).getChannel(); 
+		ReadableByteChannel byteChannel = init(inputDataSource, metadata);
+		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
 		recChannel = new RecordChannel(metadata, byteChannel);
 	}
 
@@ -111,35 +80,12 @@ public class FixLenByteDataParser implements Parser {
 	}
 	
 	/**
-	 * Parser iface.
-	 */
-	public DataRecord getNext() throws JetelException {
-		DataRecord rec = new DataRecord(metadata);
-		rec.init();
-		return getNext(rec);
-	}
-
-	/**
-	 * Parser iface.
-	 */
-	public DataRecord getNext(DataRecord record) throws JetelException {
-		DataRecord retval; 
-		while (true) {
-			retval = parseNext(record);
-			if (exceptionHandler == null || !exceptionHandler.isExceptionThrowed()) {
-				return retval;
-			}
-			exceptionHandler.handleException();				
-		}
-	}
-
-	/**
 	 * Obtains raw data and tries to fill record fields with them.
 	 * @param record Output record, cannot be null.
 	 * @return null when no more data are available, output record otherwise.
 	 * @throws JetelException
 	 */
-	private DataRecord parseNext(DataRecord record) throws JetelException {
+	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.init();
 		ByteBuffer rawRec = null;
 		try {
@@ -154,10 +100,9 @@ public class FixLenByteDataParser implements Parser {
 		if (rawRec == null) {
 			return null;	// end of input
 		}
-		ByteBuffer fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataParser.FIELD_BUFFER_LENGTH);
-		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
+		for (int fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			fieldBuffer.clear();
-			rawRec.limit(rawRec.position() + metadata.getField(fieldIdx).getSize());	// dangerous
+			rawRec.limit(rawRec.position() + fieldLengths[fieldIdx]);	// dangerous
 			fieldBuffer.put(rawRec);
 			fieldBuffer.flip();
 			try {
@@ -177,56 +122,10 @@ public class FixLenByteDataParser implements Parser {
 	}
 
 	/**
-	 * Fill bad-format exception handler with relevant data.
-	 * @param errorMessage
-	 * @param record
-	 * @param recordNumber
-	 * @param fieldNumber
-	 * @param offendingValue
-	 * @param exception
-	 */
-	private void fillXHandler(DataRecord record,
-        int recordNumber, int fieldNumber, String offendingValue,
-        BadDataFormatException exception) {
-		
-		// compose error message
-		StringBuffer xmsg = new StringBuffer(); 
-		xmsg.append(exception.getMessage() + " when parsing record number #");
-		xmsg.append(recordNumber);
-		if (fieldNumber >= 0) {
-			xmsg.append(" field ");
-			xmsg.append(metadata.getField(fieldNumber).getName());
-		}
-		
-		if (exceptionHandler == null) { // no handler available
-			throw new RuntimeException(xmsg.toString());			
-		}
-		// set handler
-		exceptionHandler.populateHandler(xmsg.toString(), record, recordNumber,
-				fieldNumber, offendingValue, exception);
-	}
-
-	/**
 	 * Skips records without obtaining respective data.
 	 */
 	public int skip(int nRec) throws JetelException {
 		return recChannel.skip(nRec);
-	}
-	
-	public String getCharsetName() {
-		return decoder.charset().name();
-	}
-
-	public void setExceptionHandler(IParserExceptionHandler handler) {
-		exceptionHandler = handler;
-	}
-
-	public IParserExceptionHandler getExceptionHandler() {
-		return exceptionHandler;
-	}
-
-	public PolicyType getPolicyType() {
-		return exceptionHandler != null ? exceptionHandler.getType() : null;
 	}
 	
 	/**
@@ -274,6 +173,7 @@ public class FixLenByteDataParser implements Parser {
 			}
 			byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 			byteBuffer.flip();
+			_outBuf = createOutBuf();
 		}
 
 		/**
@@ -324,15 +224,15 @@ public class FixLenByteDataParser implements Parser {
 			recCounter++;
 			return true;
 		}
-		
+
+		private ByteBuffer _outBuf = null;
 		/**
 		 * Get buffer filled with raw data.
 		 * @return null when no more data are available, true otherwise
 		 * @throws JetelException
 		 */
 		public ByteBuffer getNext() throws JetelException {
-			ByteBuffer outBuf = createOutBuf(); 
-			return getNext(outBuf) ? outBuf : null;
+			return getNext(_outBuf) ? _outBuf : null;
 		}
 		
 		/**

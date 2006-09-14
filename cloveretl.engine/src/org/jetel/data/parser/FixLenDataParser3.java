@@ -19,11 +19,19 @@
 */
 package org.jetel.data.parser;
 
+import java.io.FileInputStream;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
+
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -31,136 +39,172 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class FixLenDataParser3 implements Parser {
+public abstract class FixLenDataParser3 implements Parser {
 
-	private FixLenByteDataParser byteParser;
-	private FixLenCharDataParser charParser;
-	private Parser parser;
+	protected IParserExceptionHandler exceptionHandler = null;
 
-	public FixLenDataParser3(boolean byteMode) {
-		if (byteMode) {
-			parser = byteParser = new FixLenByteDataParser(); 
-			charParser = null; 
+	/**
+	 * Record description.
+	 */
+	protected DataRecordMetadata metadata = null;
+	
+	/**
+	 * Used for conversion to character data.
+	 */
+	protected CharsetDecoder decoder = null;
+
+	protected int fieldCnt;
+	protected int[] fieldLengths;
+
+	FixLenDataParser3(String charset) {
+		// initialize charset decoder
+		if (charset == null) {  
+			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		} else {
-			parser = charParser = new FixLenCharDataParser();
-			byteParser = null;
+			decoder = Charset.forName(charset).newDecoder();
+		}		
+	}
+	
+	/**
+	 * Performs basic initialization tasks.
+	 * @param inputDataSource 
+	 * @param metadata
+	 * @return Open input channel.
+	 * @throws ComponentNotReadyException
+	 */
+	protected ReadableByteChannel init(Object inputDataSource, DataRecordMetadata metadata) throws ComponentNotReadyException {
+		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
+			throw new RuntimeException("Fixed length data format expected but not encountered");
 		}
-	}
+		this.metadata = metadata;
 
-	public FixLenDataParser3(String charset, boolean byteMode) {
-		if (byteMode) {
-			parser = new FixLenByteDataParser(charset); 
-			charParser = null; 
-		} else {
-			parser = charParser = new FixLenCharDataParser(charset); 
+		fieldCnt = metadata.getNumFields();
+		fieldLengths = new int[fieldCnt];
+		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
+			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
 		}
-	}
 
-	public void close() {
-		parser.close();
+		return ((FileInputStream)inputDataSource).getChannel(); 
 	}
-
-	public IParserExceptionHandler getExceptionHandler() {
-		return parser.getExceptionHandler();
-	}
-
+	
 	public DataRecord getNext() throws JetelException {
-		return parser.getNext();
+		DataRecord rec = new DataRecord(metadata);
+		rec.init();
+		return getNext(rec);
 	}
 
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		return parser.getNext(record);
+		DataRecord retval; 
+		while (true) {
+			retval = parseNext(record);
+			if (exceptionHandler == null || !exceptionHandler.isExceptionThrowed()) {
+				return retval;
+			}
+			exceptionHandler.handleException();				
+		}
 	}
+	
+	/**
+	 * Obtains raw data and tries to fill record fields with them.
+	 * @param record Output record, cannot be null.
+	 * @return null when no more data are available, output record otherwise.
+	 * @throws JetelException
+	 */
+	protected abstract DataRecord parseNext(DataRecord record)
+	throws JetelException;
 
-	public PolicyType getPolicyType() {
-		return parser.getPolicyType();
+	public abstract void close();
+
+	public abstract void open(Object inputDataSource, DataRecordMetadata _metadata)
+	throws ComponentNotReadyException;
+
+	public abstract int skip(int nRec)
+	throws JetelException;
+
+	/**
+	 * Fill bad-format exception handler with relevant data.
+	 * @param errorMessage
+	 * @param record
+	 * @param recordNumber
+	 * @param fieldNumber
+	 * @param offendingValue
+	 * @param exception
+	 */
+	protected void fillXHandler(DataRecord record,
+        int recordNumber, int fieldNumber, String offendingValue,
+        BadDataFormatException exception) {
+		
+		// compose error message
+		StringBuffer xmsg = new StringBuffer(); 
+		xmsg.append(exception.getMessage() + " when parsing record number #");
+		xmsg.append(recordNumber);
+		if (fieldNumber >= 0) {
+			xmsg.append(" field ");
+			xmsg.append(metadata.getField(fieldNumber).getName());
+		}
+		
+		if (exceptionHandler == null) { // no handler available
+			throw new RuntimeException(xmsg.toString());			
+		}
+		// set handler
+		exceptionHandler.populateHandler(xmsg.toString(), record, recordNumber,
+				fieldNumber, offendingValue, exception);
 	}
-
-	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
-		parser.open(inputDataSource, _metadata);
+		
+	public IParserExceptionHandler getExceptionHandler() {
+		return exceptionHandler;
 	}
 
 	public void setExceptionHandler(IParserExceptionHandler handler) {
-		parser.setExceptionHandler(handler);
+		exceptionHandler = handler;
 	}
 
-	public int skip(int nRec) throws JetelException {
-		return parser.skip(nRec);
+	public PolicyType getPolicyType() {
+		return exceptionHandler != null ? exceptionHandler.getType() : null;
 	}
 
 	public String getCharsetName() {
-		if (charParser == null) {
-			return charParser.getCharsetName();
-		} else {
-			return byteParser.getCharsetName();
+		if (decoder == null) {
+			return null;
 		}
+		return decoder.charset().name();
 	}
 
-	public boolean isEnableIncomplete() {
-		if (charParser == null) {
-			return false;
-		}
 
-		return charParser.isEnableIncomplete();
+	public boolean isEnableIncomplete() {
+		return false;
 	}
 
 	public void setEnableIncomplete(boolean enableIncomplete) {
-		if (charParser == null) {
-			return;
-		}
-
-		charParser.setEnableIncomplete(enableIncomplete);
+		// quietly ignore it
+		return;
 	}
 
 	public boolean isSkipEmpty() {
-		if (charParser == null) {
-			return false;
-		}
-
-		return charParser.isSkipEmpty();
+		return false;
 	}
 
 	public void setSkipEmpty(boolean skipEmpty) {
-		if (charParser == null) {
-			return;
-		}
-
-		charParser.setSkipEmpty(skipEmpty);
+		// quietly ignore it
+		return;
 	}
 
 	public boolean isSkipLeadingBlanks() {
-		if (charParser == null) {
-			return false;
-		}
-
-		return charParser.isSkipLeadingBlanks();
+		return false;
 	}
 
 	public void setSkipLeadingBlanks(boolean skipLeadingBlanks) {
-		if (charParser == null) {
-			return;
-		}
-
-		charParser.setSkipLeadingBlanks(skipLeadingBlanks);
+		// quietly ignore it
+		return;
 	}
 
 	public boolean isSkipTrailingBlanks() {
-		if (charParser == null) {
-			return false;
-		}
-
-		return charParser.isSkipTrailingBlanks();
+		return false;
 	}
 
 	public void setSkipTrailingBlanks(boolean skipTrailingBlanks) {
-		if (charParser == null) {
-			return;
-		}
+		// quietly ignore it
+		return;
+	}
 
-		charParser.setSkipTrailingBlanks(skipTrailingBlanks);
-	}
-		
-	public boolean byteMode() {
-		return charParser == null;
-	}
 }

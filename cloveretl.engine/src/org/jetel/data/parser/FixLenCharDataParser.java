@@ -19,22 +19,17 @@
 */
 package org.jetel.data.parser;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
 
@@ -43,25 +38,8 @@ import org.jetel.util.StringUtils;
  * 
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  */
-public class FixLenCharDataParser implements Parser {
+public class FixLenCharDataParser extends FixLenDataParser3 {
 
-	private IParserExceptionHandler exceptionHandler;
-
-	/**
-	 * Record description.
-	 */
-	private DataRecordMetadata metadata;
-	
-	/**
-	 * Lengths of record fields.
-	 */
-	private int[] fieldLengths;
-
-	/**
-	 * Used for conversion to character data.
-	 */
-	private CharsetDecoder decoder;
-	
 	/**
 	 * Input record channel.
 	 */
@@ -91,46 +69,26 @@ public class FixLenCharDataParser implements Parser {
 	 * Create instance for specified charset.
 	 * @param charset
 	 */
-	public FixLenCharDataParser(String charset) {
-		init(charset);
+	public FixLenCharDataParser(String charset) {		
+		super(charset);
 	}
 
 	/**
 	 * Create instance for default charset. 
 	 */
 	public FixLenCharDataParser() {
-		init(null);
-	}
-
-	/**
-	 * Common code for ctors.
-	 */
-	private void init(String charset) {
-		// initialize charset decoder
-		if (charset == null) {  
-			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-		} else {
-			decoder = Charset.forName(charset).newDecoder();
-		}
+		super(null);
 	}
 
 	/**
 	 * Parser iface.
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata)
+	public void open(Object inputDataSource, DataRecordMetadata metadata)
 			throws ComponentNotReadyException {
-		if (_metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
-			throw new RuntimeException("Fixed length data format expected but not encountered");
-		}
-		metadata = _metadata;
-		ReadableByteChannel byteChannel =((FileInputStream)inputDataSource).getChannel(); 
+		ReadableByteChannel byteChannel = init(inputDataSource, metadata);
 		recChannel = new RecordChannel(metadata, byteChannel,
 				decoder, metadata.getRecordDelimiters(),
 				enableIncomplete, skipEmpty);
-		fieldLengths = new int[metadata.getNumFields()];
-		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
-			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
-		}
 	}
 
 	/**
@@ -171,7 +129,7 @@ public class FixLenCharDataParser implements Parser {
 	 * @return null when no more data are available, output record otherwise.
 	 * @throws JetelException
 	 */
-	private DataRecord parseNext(DataRecord record) throws JetelException {
+	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		record.init();
 		CharBuffer rawRec = null;
 		try {
@@ -221,56 +179,10 @@ public class FixLenCharDataParser implements Parser {
 	}
 
 	/**
-	 * Fill bad-format exception handler with relevant data.
-	 * @param errorMessage
-	 * @param record
-	 * @param recordNumber
-	 * @param fieldNumber
-	 * @param offendingValue
-	 * @param exception
-	 */
-	private void fillXHandler(DataRecord record,
-        int recordNumber, int fieldNumber, String offendingValue,
-        BadDataFormatException exception) {
-		
-		// compose error message
-		StringBuffer xmsg = new StringBuffer(); 
-		xmsg.append(exception.getMessage() + " when parsing record number #");
-		xmsg.append(recordNumber);
-		if (fieldNumber >= 0) {
-			xmsg.append(" field ");
-			xmsg.append(metadata.getField(fieldNumber).getName());
-		}
-		
-		if (exceptionHandler == null) { // no handler available
-			throw new RuntimeException(xmsg.toString());			
-		}
-		// set handler
-		exceptionHandler.populateHandler(xmsg.toString(), record, recordNumber,
-				fieldNumber, offendingValue, exception);
-	}
-
-	/**
 	 * Skips records without obtaining respective data.
 	 */
 	public int skip(int nRec) throws JetelException {
 		return recChannel.skip(nRec);
-	}
-
-	public String getCharsetName() {
-		return decoder.charset().name();
-	}
-
-	public void setExceptionHandler(IParserExceptionHandler handler) {
-		exceptionHandler = handler;
-	}
-
-	public IParserExceptionHandler getExceptionHandler() {
-		return exceptionHandler;
-	}
-
-	public PolicyType getPolicyType() {
-		return exceptionHandler != null ? exceptionHandler.getType() : null;
 	}
 
 	public boolean isEnableIncomplete() {
@@ -353,6 +265,8 @@ public class FixLenCharDataParser implements Parser {
 		 * Record delimiters.
 		 */
 		private String[] recordDelimiters;
+		
+		private AhoCorasick acEngine;
 
 		/**
 		 * Indicates whether incomplete records could be valid. 
@@ -407,6 +321,7 @@ public class FixLenCharDataParser implements Parser {
 			charBuffer.flip();
 			byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 			byteBuffer.flip();
+			_outBuf = createOutBuf();
 		}
 		
 		/**
@@ -462,7 +377,7 @@ public class FixLenCharDataParser implements Parser {
 					charBuffer.limit(charBuffer.position() + recLen + maxDelim);
 				}
 				// look up delimiter
-				int[] delimMatch = AhoCorasick.firstMatch(recordDelimiters, charBuffer.toString());	// {position, patternIdx}
+				int[] delimMatch = acEngine.firstMatch(recordDelimiters, charBuffer.toString());	// {position, patternIdx}
 				charBuffer.limit(savedLimit);	// restore original limit
 				if (delimMatch[0] < 0 || delimMatch[0] > recLen) {		// no delimiter
 					if (charBuffer.remaining() < recLen) {	// not enough data
@@ -486,9 +401,11 @@ public class FixLenCharDataParser implements Parser {
 		 * relative positions of delimiter {delimPos, delimEnd} otherwise. 
 		 */
 		private int[] findUsefulDelim() throws JetelException {
-			int[] delimStartEnd = new int[]{-1, 0};
+			int[] delimStartEnd = null;
 			do {
-				charBuffer.position(charBuffer.position() + delimStartEnd[1]);	// consume useless delimiter
+				if (delimStartEnd != null) { 
+					charBuffer.position(charBuffer.position() + delimStartEnd[1]);	// consume useless delimiter
+				}
 				delimStartEnd = findDelim();	// find delimiter for current record
 				if (delimStartEnd == null) {	// no more records
 					return null;
@@ -536,15 +453,15 @@ public class FixLenCharDataParser implements Parser {
 			recCounter++;
 			return true;
 		}
-		
+
+		private CharBuffer _outBuf = null;
 		/**
 		 * Get buffer filled with raw data.
 		 * @return null when no more data are available or current record is invalid, true otherwise
 		 * @throws JetelException, BadDataFormatException
 		 */
 		public CharBuffer getNext() throws JetelException, BadDataFormatException {
-			CharBuffer outBuf = createOutBuf(); 
-			return getNext(outBuf) ? outBuf : null;
+			return getNext(_outBuf) ? _outBuf : null;
 		}
 		
 		/**
@@ -595,6 +512,7 @@ public class FixLenCharDataParser implements Parser {
 					maxDelim = this.recordDelimiters[i].length();
 				}
 			}
+			acEngine = new AhoCorasick(this.recordDelimiters);
 		}
 
 		public boolean isEnableIncomplete() {
