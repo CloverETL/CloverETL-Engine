@@ -2,7 +2,7 @@
 <Graph description="This graph ilustrates usage of Aproximative Join component.&#10;This component requires prepared data: they have &#10;to have a key (component Key Generator creates it) &#10;and be sorted by this key." name="graphFixedLengthData">
 <Global>
 <Metadata id="Metadata4">
-<Record name="conforming_out" type="fixed">
+<Record name="conforming_out" type="fixed" recordDelimiter="\n">
 <Field name="lname" nullable="true" size="15" type="string"/>
 <Field name="fname" nullable="true" size="15" type="string"/>
 <Field name="last_name" nullable="true" size="15" type="string"/>
@@ -11,7 +11,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata0">
-<Record name="customer" type="fixed">
+<Record name="customer" type="fixed" recordDelimiter="\n">
 <Field name="customer_id" nullable="true" size="4" type="integer"/>
 <Field name="account_num" nullable="true" size="11" type="long"/>
 <Field name="lname" nullable="true" size="10" type="string"/>
@@ -40,7 +40,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata2">
-<Record name="customer_with_key" type="fixed">
+<Record name="customer_with_key" type="fixed" recordDelimiter="\n">
 <Field name="customer_id" nullable="true" size="4" type="integer"/>
 <Field name="account_num" nullable="true" size="11" type="long"/>
 <Field name="lname" nullable="true" size="10" type="string"/>
