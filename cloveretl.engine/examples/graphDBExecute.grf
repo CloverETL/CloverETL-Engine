@@ -5,9 +5,12 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="25" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="dbSQL">create table employee11 (EMP_NO NUMERIC not null,FIRST_NAME  VARCHAR(15) not null,LAST_NAME VARCHAR(20) not null,PHONE_EXT VARCHAR(4),HIRE_DATE DATE not null,DEPT_NO CHAR(3) not null,JOB_CODE VARCHAR(5) not null,JOB_GRADE NUMERIC(4,2) not null,JOB_COUNTRY VARCHAR(15) not null,SALARY NUMERIC(15,2) not null,FULL_NAME VARCHAR(35));
+<attr name="dbSQL">drop table employee1;
+drop table employee_TMP;
 
-create table employee1_TMP (EMP_NO NUMERIC, FIRST_NAME VARCHAR(15),LAST_NAME VARCHAR(20),PHONE_EXT VARCHAR(4),HIRE_DATE DATE,DEPT_NO CHAR(3),JOB_CODE VARCHAR(5),JOB_GRADE NUMERIC(4,2),JOB_COUNTRY VARCHAR(15),SALARY NUMERIC(15,2),FULL_NAME VARCHAR(35));
+create table employee1 (EMP_NO NUMERIC not null,FIRST_NAME  VARCHAR(15) not null,LAST_NAME VARCHAR(20) not null,PHONE_EXT VARCHAR(4),HIRE_DATE DATE not null,DEPT_NO CHAR(3) not null,JOB_CODE VARCHAR(5) not null,JOB_GRADE NUMERIC(4,2) not null,JOB_COUNTRY VARCHAR(15) not null,SALARY NUMERIC(15,2) not null,FULL_NAME VARCHAR(35));
+
+create table employee_TMP (EMP_NO NUMERIC, FIRST_NAME VARCHAR(15),LAST_NAME VARCHAR(20),PHONE_EXT VARCHAR(4),HIRE_DATE DATE,DEPT_NO CHAR(3),JOB_CODE VARCHAR(5),JOB_GRADE NUMERIC(4,2),JOB_COUNTRY VARCHAR(15),SALARY NUMERIC(15,2),FULL_NAME VARCHAR(35));
 
 insert into employee1 values(2,'Robert','Nelson','250','1988.12.28','600','VP',2.0,'USA',105900.0,'Nelson, Robert');
 insert into employee1 values(4,'Bruce','Young','233','1988.12.28','621','Eng',2.0,'USA',97500.0,'Young, Bruce');
