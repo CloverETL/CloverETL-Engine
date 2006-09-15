@@ -48,22 +48,22 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	/**
 	 * Indicates whether leading blanks in string fields are to be skipped
 	 */
-	private boolean skipLeadingBlanks;
+	private boolean skipLeadingBlanks = true;
 
 	/**
 	 * Indicates whether trailing blanks in string fields are to be skipped
 	 */
-	private boolean skipTrailingBlanks;
+	private boolean skipTrailingBlanks = true;
 	
 	/**
 	 * Specifies whether incomplete records are allowed.
 	 */
-	private boolean enableIncomplete;
+	private boolean enableIncomplete = true;
 
 	/**
 	 * Specifies what to do when empty record is encountered.
 	 */
-	private boolean skipEmpty;
+	private boolean skipEmpty = true;
 
 	/**
 	 * Create instance for specified charset.

@@ -253,25 +253,17 @@ public class FixLenDataReader extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.parser.getCharsetName());
 		}
 		
-		if (this.parser.isSkipLeadingBlanks()) {
-			xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE,
-					String.valueOf(this.parser.isSkipLeadingBlanks()));
-		}
+		xmlElement.setAttribute(XML_SKIPLEADINGBLANKS_ATTRIBUTE,
+				String.valueOf(this.parser.isSkipLeadingBlanks()));
 		
-		if (this.parser.isSkipTrailingBlanks()) {
-			xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE,
-					String.valueOf(this.parser.isSkipTrailingBlanks()));
-		}
+		xmlElement.setAttribute(XML_SKIPTRAILINGBLANKS_ATTRIBUTE,
+				String.valueOf(this.parser.isSkipTrailingBlanks()));
 		
-		if (this.parser.isEnableIncomplete()) {
-			xmlElement.setAttribute(XML_ENABLEINCOMPLETE_ATTRIBUTE,
-					String.valueOf(this.parser.isEnableIncomplete()));
-		}
+		xmlElement.setAttribute(XML_ENABLEINCOMPLETE_ATTRIBUTE,
+				String.valueOf(this.parser.isEnableIncomplete()));
 		
-		if (this.parser.isSkipEmpty()) {
-			xmlElement.setAttribute(XML_SKIPEMPTY_ATTRIBUTE,
-					String.valueOf(this.parser.isSkipEmpty()));
-		}
+		xmlElement.setAttribute(XML_SKIPEMPTY_ATTRIBUTE,
+				String.valueOf(this.parser.isSkipEmpty()));
 		
 		if (this.skipRows>0){
 		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
