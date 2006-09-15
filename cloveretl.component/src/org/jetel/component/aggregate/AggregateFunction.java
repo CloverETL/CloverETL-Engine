@@ -660,9 +660,10 @@ public class AggregateFunction implements Iterator {
 			
             Object oData = dataMap.get(key);
             if(oData == null) return null;
-
-            if(data instanceof Data) {
-                Data data = (Data) oData;
+            
+            Data data = null;
+            if(oData instanceof Data) {
+                data = (Data) oData;
 			
                 resultValue = data.getValue();
             }
