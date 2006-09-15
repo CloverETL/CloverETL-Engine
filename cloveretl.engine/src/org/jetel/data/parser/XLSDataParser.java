@@ -70,10 +70,9 @@ public class XLSDataParser implements Parser {
 			type = metadata.getField(i).getType();
 			try{
 				switch (type) {
-				case DataFieldMetadata.BYTE_FIELD:record.getField(i).setValue(cell.getErrorCellValue());				
-					break;
 				case DataFieldMetadata.DATE_FIELD:record.getField(i).setValue(cell.getDateCellValue());
 					break;
+				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
@@ -83,11 +82,32 @@ public class XLSDataParser implements Parser {
 				case DataFieldMetadata.STRING_FIELD:record.getField(i).setValue(cell.getStringCellValue());
 					break;
 				}
-			} catch (BadDataFormatException bdfe) {
+			} catch (NumberFormatException bdne) {
+				BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
+				bdfe.setRecordNumber(recordCounter);
+				bdfe.setFieldNumber(i);
 				if(exceptionHandler != null ) {  //use handler only if configured
-	                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(), recordCounter, i), record, -1, i, cell.getStringCellValue(), bdfe);
+	                exceptionHandler.populateHandler(
+	                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
+	                		currentRecord, i, String.valueOf(cell.getNumericCellValue()), bdfe);
 				} else {
 					throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
+				}
+			}catch (NullPointerException np){
+				try {
+					record.getField(i).setNull(true);
+				}catch(BadDataFormatException ex){
+					try {
+						record.getField(i).setToDefaultValue();
+					}catch (BadDataFormatException bdfe){
+						if(exceptionHandler != null ) {  //use handler only if configured
+			                exceptionHandler.populateHandler(
+			                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
+			                		currentRecord, i, "null", bdfe);
+						} else {
+							throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
+						}
+					}
 				}
 			}
 		}
@@ -127,7 +147,7 @@ public class XLSDataParser implements Parser {
 		}else{
 			sheet = wb.getSheetAt(0);
 		}
-		currentRecord = firstRecord-1;
+		currentRecord = firstRecord;
 	}
 
 	public void close() {
@@ -165,8 +185,12 @@ public class XLSDataParser implements Parser {
 	}
 
 	public void setFirstRecord(int firstRecord) {
-		this.firstRecord = firstRecord;
+		this.firstRecord = firstRecord-1;
 	}
 
+	public int getRecordCount() {
+		return recordCounter;
+	}
+	
 
 }
