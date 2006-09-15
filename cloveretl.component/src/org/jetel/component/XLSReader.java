@@ -23,13 +23,13 @@ package org.jetel.component;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.nio.channels.ReadableByteChannel;
 import java.security.InvalidParameterException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.IntegerDataField;
 import org.jetel.data.StringDataField;
-import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.XLSDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -39,7 +39,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -50,6 +49,7 @@ import org.w3c.dom.Element;
 public class XLSReader extends Node {
 
 	public final static String COMPONENT_TYPE = "XLS_READER";
+    static Log logger = LogFactory.getLog(XLSReader.class);
 
 	/** XML attribute names */
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
@@ -100,62 +100,47 @@ public class XLSReader extends Node {
 	 */
 	@Override
 	public void run() {
-//		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-//        record.init();
-// 		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
-//		int errorCount = 0;
-//		
-//		try {
-//			//parse
-//			while(((parser.getNext(record)) != null) && runIt) {
-//     				    writeRecord(OUTPUT_PORT, record);
-//			}
-//         } catch(BadDataFormatException bdfe) {
-//                    if(policyType == PolicyType.STRICT) {
-//                        throw bdfe;
-//                    } else {
-//                        if(logging) {
-//                            //TODO implement log port framework
-//                            ((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
-//                            ((StringDataField) logRecord.getField(1)).setValue(bdfe.getOffendingValue());
-//                            ((StringDataField) logRecord.getField(2)).setValue(bdfe.getMessage());
-//                            writeRecord(LOG_PORT, logRecord);
-//                        } else {
-//                            logger.info(bdfe.getMessage());
-//                        }
-//                        if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-//                            logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-//                            break;
-//                        }
-//                    }
-//                }
-//				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
-//					break;
-//				}
-//				SynchronizeUtils.cloverYield();
-//			}
-//		} catch (IOException ex) {
-//			resultMsg = ex.getMessage();
-//			resultCode = Node.RESULT_ERROR;
-//			closeAllOutputPorts();
-//			return;
-//		} catch (Exception ex) {
-//			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-//			resultCode = Node.RESULT_FATAL_ERROR;
-//			return;
-//		}
-//		// we are done, close all connected output ports to indicate end of stream
-//		parser.close();
-//		broadcastEOF();
-//		if (runIt) {
-//			resultMsg = "OK";
-//		} else {
-//			resultMsg = "STOPPED";
-//		}
-//		resultCode = Node.RESULT_OK;
+		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		record.init();
+		int errorCount = 0;
+		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
+		try{
+			while (((record) != null) && runIt) {
+				try {
+					record = parser.getNext(record);
+					writeRecordBroadcast(record);
+					SynchronizeUtils.cloverYield();
+				}catch(BadDataFormatException bdfe){
+                    if(policyType == PolicyType.STRICT) {
+                        throw bdfe;
+                    } else {
+                        logger.info(bdfe.getMessage());
+                        if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+                            logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+                            break;
+                        }
+                    }
+				}
+				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
+					break;
+				}
+			}
+		} catch (IOException ex) {
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
+			closeAllOutputPorts();
+			return;
+		} catch (Exception ex) {
+			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
+			return;
+		}
+		
 	}
 
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
 	@Override
@@ -260,7 +245,7 @@ public class XLSReader extends Node {
 			if (sheetName!=null){
 				parser.setSheetName(sheetName);
 			}
-			parser.open(FileUtils.getReadableChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
+			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
