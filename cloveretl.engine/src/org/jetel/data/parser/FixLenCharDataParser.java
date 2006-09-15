@@ -151,23 +151,27 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 					record.getField(fieldIdx).setToDefaultValue();
 					continue;
 				}
+				int nextFieldPos;	// absolute position of the beginning of next field
 				if (rawRec.remaining() > fieldLengths[fieldIdx]) {
-					rawRec.limit(rawRec.position() + fieldLengths[fieldIdx]);
+					nextFieldPos = rawRec.position() + fieldLengths[fieldIdx];
+				} else {
+					nextFieldPos = rawRec.limit();
 				}
+				rawRec.limit(nextFieldPos);
 				if (record.getField(fieldIdx).getType()
 						== org.jetel.metadata.DataFieldMetadata.STRING_FIELD) // string value expected
 				{
-					if (skipLeadingBlanks) {
-						StringUtils.trimLeading(rawRec);
-					}
-					if (skipTrailingBlanks) {
-						StringUtils.trimTrailing(rawRec);
-					}
 					StringUtils.unquote(rawRec);
 				}
+				if (skipLeadingBlanks) {
+					StringUtils.trimLeading(rawRec);
+				}
+				if (skipTrailingBlanks) {
+					StringUtils.trimTrailing(rawRec);
+				}
 				record.getField(fieldIdx).fromString(rawRec.toString());
-				rawRec.position(rawRec.limit());	// consume field
 				rawRec.limit(savedLimit);
+				rawRec.position(nextFieldPos);	// consume current field
 			} catch (BadDataFormatException e) {
 					fillXHandler(record, recChannel.getRecordCounter(), fieldIdx,
 						rawRec != null ? rawRec.toString() : null,
