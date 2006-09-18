@@ -52,8 +52,8 @@ public class XLSReader extends Node {
     static Log logger = LogFactory.getLog(XLSReader.class);
 
 	/** XML attribute names */
-	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
-	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
+	private static final String XML_STARTROW_ATTRIBUTE = "startRow";
+	private static final String XML_FINALROW_ATTRIBUTE = "finalRow";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
@@ -63,8 +63,8 @@ public class XLSReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
-	private int startRecord = -1;
-	private int finalRecord = -1;
+	private int startRow = -1;
+	private int finalRow = -1;
 	private int maxErrorCount = -1;
     
 	private XLSDataParser parser;
@@ -103,13 +103,17 @@ public class XLSReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		int errorCount = 0;
-		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
+		int diffRow = (startRow != -1) ? finalRow - startRow : finalRow - 1;
 		try{
 			while (((record) != null) && runIt) {
 				try {
 					record = parser.getNext(record);
-					writeRecordBroadcast(record);
-					SynchronizeUtils.cloverYield();
+					if (record!=null){
+						writeRecordBroadcast(record);
+						SynchronizeUtils.cloverYield();
+					}else{
+						broadcastEOF();
+					}
 				}catch(BadDataFormatException bdfe){
                     if(policyType == PolicyType.STRICT) {
                         throw bdfe;
@@ -121,7 +125,7 @@ public class XLSReader extends Node {
                         }
                     }
 				}
-				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
+				if(finalRow != -1 && parser.getRecordCount() > diffRow) {
 					break;
 				}
 			}
@@ -135,7 +139,13 @@ public class XLSReader extends Node {
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
-		
+//		parser.close();
+		if (runIt) {
+			resultMsg = "OK";
+		} else {
+			resultMsg = "STOPPED";
+		}
+		resultCode = Node.RESULT_OK;
 	}
 
 	/*
@@ -162,11 +172,11 @@ public class XLSReader extends Node {
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
-				aXLSReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
+			if (xattribs.exists(XML_STARTROW_ATTRIBUTE)){
+				aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
-				aXLSReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
+			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
+				aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
 				aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
@@ -190,41 +200,41 @@ public class XLSReader extends Node {
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
     }
 
-	public int getStartRecord() {
-		return startRecord;
+	public int getStartRow() {
+		return startRow;
 	}
 	
 	/**
-	 * @param startRecord The startRecord to set.
+	 * @param startRow The startRow to set.
 	 */
-	public void setStartRecord(int startRecord) {
-		if(startRecord < 0 || (finalRecord != -1 && startRecord > finalRecord)) {
+	public void setStartRow(int startRecord) {
+		if(startRecord < 0 || (finalRow != -1 && startRecord > finalRow)) {
 			throw new InvalidParameterException("Invalid StartRecord parametr.");
 		}
-		this.startRecord = startRecord;
-		parser.setFirstRecord(startRecord);
+		this.startRow = startRecord;
+		parser.setFirstRow(startRecord);
 	}
 	
 	/**
-	 * @return Returns the finalRecord.
+	 * @return Returns the finalRow.
 	 */
 	
-	public int getFinalRecord() {
-		return finalRecord;
+	public int getFinalRow() {
+		return finalRow;
 	}
 	
 	/**
-	 * @param finalRecord The finalRecord to set.
+	 * @param finalRow The finalRow to set.
 	 */
-	public void setFinalRecord(int finalRecord) {
-		if(finalRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
-			throw new InvalidParameterException("Invalid finalRecord parameter.");
+	public void setFinalRow(int finalRecord) {
+		if(finalRecord < 0 || (startRow != -1 && startRow > finalRecord)) {
+			throw new InvalidParameterException("Invalid finalRow parameter.");
 		}
-		this.finalRecord = finalRecord;
+		this.finalRow = finalRecord;
 	}
 
 	/**
-	 * @param finalRecord The finalRecord to set.
+	 * @param finalRow The finalRow to set.
 	 */
 	public void setMaxErrorCount(int maxErrorCount) {
 		if(maxErrorCount < 0) {
