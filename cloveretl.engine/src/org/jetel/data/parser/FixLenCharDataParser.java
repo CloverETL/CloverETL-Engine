@@ -501,7 +501,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 		 * @return Number of records read so far.
 		 */
 		public int getRecordCounter() {
-			return recCounter;
+			return recCounter - 1;
 		}
 		
 		public String[] getRecordDelimiters() {
