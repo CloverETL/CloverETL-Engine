@@ -5,10 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.text.DecimalFormat;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.hssf.record.CellValueRecordInterface;
 import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -31,8 +37,8 @@ public class XLSDataParser implements Parser {
 	private IParserExceptionHandler exceptionHandler;
 	private String sheetName = null;
 	private int recordCounter;
-	private int firstRecord = 1;
-	private int currentRecord;
+	private int firstRow = 1;
+	private int currentRow;
 	HSSFWorkbook wb;
 	HSSFSheet sheet;
 	HSSFRow row;
@@ -63,7 +69,8 @@ public class XLSDataParser implements Parser {
 	}
 
 	private DataRecord parseNext(DataRecord record) throws JetelException {
-		row = sheet.getRow(currentRecord);
+		row = sheet.getRow(currentRow);
+		if (row==null) return null;
 		char type;
 		for (short i=0;i<metadata.getNumFields();i++){
 			cell = row.getCell(i);
@@ -87,9 +94,20 @@ public class XLSDataParser implements Parser {
 				bdfe.setRecordNumber(recordCounter);
 				bdfe.setFieldNumber(i);
 				if(exceptionHandler != null ) {  //use handler only if configured
+					HSSFDataFormat format= wb.createDataFormat();
+					short formatNumber = cell.getCellStyle().getDataFormat();
+					String pattern = format.getFormat(formatNumber);
+					String cellValue;
+					if (pattern.contains("M")||pattern.contains("D")||pattern.contains("Y")){
+						cellValue = cell.getDateCellValue().toString();
+					}else if (pattern.equals("@") || pattern.equals("text")){
+						cellValue = cell.getStringCellValue();
+					}else{
+						cellValue = String.valueOf(cell.getNumericCellValue());
+					}
 	                exceptionHandler.populateHandler(
 	                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-	                		currentRecord, i, String.valueOf(cell.getNumericCellValue()), bdfe);
+	                		currentRow, i, cellValue, bdfe);
 				} else {
 					throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
 				}
@@ -103,7 +121,7 @@ public class XLSDataParser implements Parser {
 						if(exceptionHandler != null ) {  //use handler only if configured
 			                exceptionHandler.populateHandler(
 			                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-			                		currentRecord, i, "null", bdfe);
+			                		currentRow, i, "null", bdfe);
 						} else {
 							throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
 						}
@@ -111,7 +129,7 @@ public class XLSDataParser implements Parser {
 				}
 			}
 		}
-		currentRecord++;
+		currentRow++;
 		recordCounter++;
 		return record;
 	}
@@ -127,7 +145,7 @@ public class XLSDataParser implements Parser {
 	}
 	
 	public int skip(int nRec) throws JetelException {
-		currentRecord+=nRec;
+		currentRow+=nRec;
 		return nRec;
 	}
 
@@ -147,7 +165,7 @@ public class XLSDataParser implements Parser {
 		}else{
 			sheet = wb.getSheetAt(0);
 		}
-		currentRecord = firstRecord;
+		currentRow = firstRow;
 	}
 
 	public void close() {
@@ -184,8 +202,8 @@ public class XLSDataParser implements Parser {
 		this.sheetName = sheetName;
 	}
 
-	public void setFirstRecord(int firstRecord) {
-		this.firstRecord = firstRecord-1;
+	public void setFirstRow(int firstRecord) {
+		this.firstRow = firstRecord-1;
 	}
 
 	public int getRecordCount() {
