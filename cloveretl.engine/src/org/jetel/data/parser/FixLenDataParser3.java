@@ -134,20 +134,14 @@ public abstract class FixLenDataParser3 implements Parser {
         int recordNumber, int fieldNumber, String offendingValue,
         BadDataFormatException exception) {
 		
-		// compose error message
-		StringBuffer xmsg = new StringBuffer(); 
-		xmsg.append(exception.getMessage() + " when parsing record number #");
-		xmsg.append(recordNumber);
-		if (fieldNumber >= 0) {
-			xmsg.append(" field ");
-			xmsg.append(metadata.getField(fieldNumber).getName());
-		}
+		exception.setFieldNumber(fieldNumber);
+		exception.setRecordNumber(recordNumber);
 		
 		if (exceptionHandler == null) { // no handler available
-			throw new RuntimeException(xmsg.toString());			
+			throw new RuntimeException(exception.getMessage());			
 		}
 		// set handler
-		exceptionHandler.populateHandler(xmsg.toString(), record, recordNumber,
+		exceptionHandler.populateHandler(exception.getMessage(), record, recordNumber,
 				fieldNumber, offendingValue, exception);
 	}
 		
