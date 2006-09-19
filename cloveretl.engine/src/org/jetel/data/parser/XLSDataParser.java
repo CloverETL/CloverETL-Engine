@@ -5,19 +5,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.text.DecimalFormat;
-import java.text.Format;
-import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hssf.record.CellValueRecordInterface;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -67,6 +64,31 @@ public class XLSDataParser implements Parser {
 		}
 		return record;
 	}
+	
+	private String getStringFromCell(HSSFCell cell){
+		HSSFDataFormat format= wb.createDataFormat();
+		short formatNumber = cell.getCellStyle().getDataFormat();
+		String pattern = format.getFormat(formatNumber);
+		String cellValue = "";
+		switch (cell.getCellType()){
+		case HSSFCell.CELL_TYPE_BOOLEAN: cellValue = String.valueOf(cell.getBooleanCellValue());
+			break;
+		case HSSFCell.CELL_TYPE_STRING: cellValue = cell.getStringCellValue();
+			break;
+		case HSSFCell.CELL_TYPE_FORMULA: cellValue = cell.getCellFormula();
+			break;
+		case HSSFCell.CELL_TYPE_ERROR: cellValue = String.valueOf(cell.getErrorCellValue());
+			break;
+		case HSSFCell.CELL_TYPE_NUMERIC: 
+			if (pattern.contains("M")||pattern.contains("D")||pattern.contains("Y")){
+				cellValue = cell.getDateCellValue().toString();
+			}else{
+				cellValue = String.valueOf(cell.getNumericCellValue());
+			}
+			break;
+		}
+		return cellValue;
+	}
 
 	private DataRecord parseNext(DataRecord record) throws JetelException {
 		row = sheet.getRow(currentRow);
@@ -80,6 +102,9 @@ public class XLSDataParser implements Parser {
 				case DataFieldMetadata.DATE_FIELD:record.getField(i).setValue(cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
+					record.getField(i).fromString(getStringFromCell(cell));
+//					((ByteDataField)record.getField(i)).setValue(getStringFromCell(cell).getBytes());
+					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
@@ -94,37 +119,32 @@ public class XLSDataParser implements Parser {
 				bdfe.setRecordNumber(recordCounter);
 				bdfe.setFieldNumber(i);
 				if(exceptionHandler != null ) {  //use handler only if configured
-					HSSFDataFormat format= wb.createDataFormat();
-					short formatNumber = cell.getCellStyle().getDataFormat();
-					String pattern = format.getFormat(formatNumber);
-					String cellValue;
-					if (pattern.contains("M")||pattern.contains("D")||pattern.contains("Y")){
-						cellValue = cell.getDateCellValue().toString();
-					}else if (pattern.equals("@") || pattern.equals("text")){
-						cellValue = cell.getStringCellValue();
-					}else{
-						cellValue = String.valueOf(cell.getNumericCellValue());
+					String cellValue = getStringFromCell(cell);
+					try{
+						record.getField(i).fromString(cellValue);
+					}catch (Exception e) {
+		                exceptionHandler.populateHandler(
+		                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
+		                		currentRow + firstRow + 1, i, cellValue, bdfe);
 					}
-	                exceptionHandler.populateHandler(
-	                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-	                		currentRow, i, cellValue, bdfe);
 				} else {
 					throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
 				}
 			}catch (NullPointerException np){
-				try {
+				DataFieldMetadata fieldMetada = record.getField(i).getMetadata();
+				if (fieldMetada.isNullable()){
 					record.getField(i).setNull(true);
-				}catch(BadDataFormatException ex){
-					try {
-						record.getField(i).setToDefaultValue();
-					}catch (BadDataFormatException bdfe){
-						if(exceptionHandler != null ) {  //use handler only if configured
-			                exceptionHandler.populateHandler(
-			                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-			                		currentRow, i, "null", bdfe);
-						} else {
-							throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
-						}
+				}else if (fieldMetada.isDefaultValue()){
+					record.getField(i).setToDefaultValue();
+				}else{
+					BadDataFormatException bdfe = new BadDataFormatException(np.getMessage());
+					if(exceptionHandler != null ) {  //use handler only if configured
+		                exceptionHandler.populateHandler(
+		                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
+		                		currentRow + firstRow + 19
+		                		, i, "null", bdfe);
+					} else {
+						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
 					}
 				}
 			}
