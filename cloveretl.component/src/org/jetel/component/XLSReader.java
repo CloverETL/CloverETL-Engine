@@ -28,8 +28,6 @@ import java.security.InvalidParameterException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.IntegerDataField;
-import org.jetel.data.StringDataField;
 import org.jetel.data.parser.XLSDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -110,9 +108,6 @@ public class XLSReader extends Node {
 					record = parser.getNext(record);
 					if (record!=null){
 						writeRecordBroadcast(record);
-						SynchronizeUtils.cloverYield();
-					}else{
-						broadcastEOF();
 					}
 				}catch(BadDataFormatException bdfe){
                     if(policyType == PolicyType.STRICT) {
@@ -128,6 +123,7 @@ public class XLSReader extends Node {
 				if(finalRow != -1 && parser.getRecordCount() > diffRow) {
 					break;
 				}
+				SynchronizeUtils.cloverYield();
 			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
@@ -140,6 +136,7 @@ public class XLSReader extends Node {
 			return;
 		}
 //		parser.close();
+		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
 		} else {
@@ -172,9 +169,7 @@ public class XLSReader extends Node {
 						xattribs.getString(XML_FILE_ATTRIBUTE));
 			}
 			aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
-			if (xattribs.exists(XML_STARTROW_ATTRIBUTE)){
-				aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE));
-			}
+			aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE,1));
 			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
 				aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
 			}
