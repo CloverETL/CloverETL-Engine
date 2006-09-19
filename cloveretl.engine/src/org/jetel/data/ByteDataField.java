@@ -47,7 +47,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since    October 29, 2002
 	 */
 	protected byte[] value;
-	private static final int ARRAY_LENGTH_INDICATOR_SIZE=4;
+	private static final int ARRAY_LENGTH_INDICATOR_SIZE = Integer.SIZE / 8;
 	
 	private final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
 	
@@ -60,7 +60,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since             October 29, 2002
 	 */
     public ByteDataField(DataFieldMetadata _metadata){
-        this(_metadata,false);
+        this(_metadata, false);
     }
     
 	/**
@@ -69,7 +69,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @param _metadata Metadata describing field
 	 * @param plain <i>not used (only for compatibility reason)</i>
 	 */
-	public ByteDataField(DataFieldMetadata _metadata,boolean plain) {
+	public ByteDataField(DataFieldMetadata _metadata, boolean plain) {
 		super(_metadata);
 		if (_metadata.getSize() < 1) {
 			value = new byte[INITIAL_BYTE_ARRAY_CAPACITY];
@@ -97,7 +97,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate(){
-	    return new ByteDataField(metadata,value);
+	    return new ByteDataField(metadata, value);
 	}
 
 	/* (non-Javadoc)
@@ -106,16 +106,24 @@ public class ByteDataField extends DataField implements Comparable{
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof ByteDataField){
 	        if (!fromField.isNull){
-	            int length=((ByteDataField)fromField).value.length;
-	            if (this.value.length!=length){
-	                this.value=new byte[length];
+	            int length = ((ByteDataField) fromField).value.length;
+	            if (this.value.length != length){
+	                this.value = new byte[length];
 	            }
-	            System.arraycopy(this.value,0,((ByteDataField)fromField).value,0,length);
+	            System.arraycopy(this.value, 0, ((ByteDataField) fromField).value, 0, length);
 	        }
 	        setNull(fromField.isNull);
 	    }
 	}
 	
+    @Override
+    public void setNull(boolean isNull) {
+        super.setNull(isNull);
+        if (this.isNull) {
+            value = null;
+        }
+    }
+    
 	/**
 	 *  Sets the value of the field
 	 *
@@ -173,17 +181,6 @@ public class ByteDataField extends DataField implements Comparable{
 	// Operations
 
 	/**
-	 *  Gets the Metadata attribute of the ByteDataField object
-	 *
-	 *@return    The Metadata value
-	 *@since     October 29, 2002
-	 */
-	public DataFieldMetadata getMetadata() {
-		return super.getMetadata();
-	}
-
-
-	/**
 	 *  Gets the Field Type
 	 *
 	 *@return    The Type value
@@ -213,6 +210,9 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since            October 29, 2002
 	 */
 	public byte getByte(int position) {
+        if(isNull) {
+            return 0;
+        }
 		return value[position];
 	}
 
@@ -296,8 +296,12 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since          October 29, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		buffer.putInt(value.length);
-		buffer.put(value);
+        if(isNull) {
+            buffer.putInt(0);
+        } else {
+            buffer.putInt(value.length);
+            buffer.put(value);
+        }
 	}
 
 
@@ -309,8 +313,16 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		int length = buffer.getInt();
-		buffer.get(value, 0, length);
-		setNull(false);
+        
+        if(length == 0) {
+            setNull(true);
+        } else {
+            if(length != value.length) {
+                value = new byte[length];
+            }
+            buffer.get(value);
+            setNull(false);
+        }
 	}
 
 
@@ -391,7 +403,11 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see	      org.jetel.data.DataField
 	 */
 	public int getSizeSerialized() {
-		return value.length+ARRAY_LENGTH_INDICATOR_SIZE;
+        if(isNull) {
+            return ARRAY_LENGTH_INDICATOR_SIZE;
+        } else {
+            return value.length + ARRAY_LENGTH_INDICATOR_SIZE;
+        }
 	}
 
 }
