@@ -21,6 +21,7 @@ package org.jetel.connection;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -163,7 +164,18 @@ public class DBConnection extends GraphElement implements IConnection {
 	    this.config = new Properties();
 
 		try {
-			InputStream stream = new BufferedInputStream(new FileInputStream(configFilename));
+            InputStream stream = null;
+            if (!new File(configFilename).exists()) {
+                // config file not found on file system - try classpath
+                stream = getClass().getClassLoader().getResourceAsStream(configFilename);
+                if(stream == null) {
+                    throw new FileNotFoundException("Config file for db connection " + id + " not found (" + configFilename +")");
+                }
+                stream = new BufferedInputStream(stream);
+            } else {
+                stream = new BufferedInputStream(new FileInputStream(configFilename));
+            }
+            
 			this.config.load(stream);
 			stream.close();
 			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
@@ -290,13 +302,30 @@ public class DBConnection extends GraphElement implements IConnection {
 	 * @exception  SQLException  Description of the Exception
 	 */
 	public void free() {
-	    for(Iterator i=openedConnections.values().iterator();i.hasNext();){
-	        try {
-                ((Connection)i.next()).close();
+        if(threadSafeConnections) {
+    	    for(Iterator i = openedConnections.values().iterator(); i.hasNext();) {
+    	        try {
+                    Connection c = ((Connection)i.next());
+                    if(!c.getAutoCommit()) {
+                        c.commit();
+                    }
+                    c.close();
+                } catch (SQLException e) {
+                    logger.warn(getId() + " - close operation failed.");
+                }
+    	    }
+        } else {
+            try {
+                if (!dbConnection.isClosed()) {
+                    if (!dbConnection.getAutoCommit()) {
+                        dbConnection.commit();
+                    }
+                    dbConnection.close();
+                }
             } catch (SQLException e) {
-                //What can I do?
-            }
-	    }
+                logger.warn(getId() + " - close operation failed.");
+            }            
+        }
 	}
 
 
