@@ -20,6 +20,8 @@
 package org.jetel.data.parser;
 
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -52,9 +54,21 @@ public abstract class FixLenDataParser3 implements Parser {
 	 * Used for conversion to character data.
 	 */
 	protected CharsetDecoder decoder = null;
+	
+	protected ReadableByteChannel inChannel;
+
+	protected ByteBuffer byteBuffer;
+
+	/**
+	 * Indicates whether end of input data was already reached.
+	 */
+	protected boolean eof;
 
 	protected int fieldCnt;
 	protected int[] fieldLengths;
+	protected int recordLength;
+	protected int fieldIdx;
+	protected int recordIdx;
 
 	FixLenDataParser3(String charset) {
 		// initialize charset decoder
@@ -63,6 +77,7 @@ public abstract class FixLenDataParser3 implements Parser {
 		} else {
 			decoder = Charset.forName(charset).newDecoder();
 		}		
+		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 	
 	/**
@@ -72,19 +87,40 @@ public abstract class FixLenDataParser3 implements Parser {
 	 * @return Open input channel.
 	 * @throws ComponentNotReadyException
 	 */
-	protected ReadableByteChannel init(Object inputDataSource, DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public void open(Object inputDataSource, DataRecordMetadata metadata)
+	throws ComponentNotReadyException {
 		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
 			throw new RuntimeException("Fixed length data format expected but not encountered");
 		}
 		this.metadata = metadata;
 
 		fieldCnt = metadata.getNumFields();
+		recordIdx = 0;
+		fieldIdx = 0;
+		eof = false;
+
+		recordLength = 0;
 		fieldLengths = new int[fieldCnt];
 		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
 			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
+			recordLength += fieldLengths[fieldIdx]; 
 		}
 
-		return ((FileInputStream)inputDataSource).getChannel(); 
+		inChannel = ((FileInputStream)inputDataSource).getChannel();
+		
+		byteBuffer.clear();
+		byteBuffer.flip();
+	}
+	
+	/**
+	 * Release resources.  
+	 */
+	public void close() {
+		try {
+			inChannel.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public DataRecord getNext() throws JetelException {
@@ -113,11 +149,6 @@ public abstract class FixLenDataParser3 implements Parser {
 	protected abstract DataRecord parseNext(DataRecord record)
 	throws JetelException;
 
-	public abstract void close();
-
-	public abstract void open(Object inputDataSource, DataRecordMetadata _metadata)
-	throws ComponentNotReadyException;
-
 	public abstract int skip(int nRec)
 	throws JetelException;
 
@@ -130,19 +161,18 @@ public abstract class FixLenDataParser3 implements Parser {
 	 * @param offendingValue
 	 * @param exception
 	 */
-	protected void fillXHandler(DataRecord record,
-        int recordNumber, int fieldNumber, String offendingValue,
+	protected void fillXHandler(DataRecord record, String offendingValue,
         BadDataFormatException exception) {
 		
-		exception.setFieldNumber(fieldNumber);
-		exception.setRecordNumber(recordNumber);
+		exception.setFieldNumber(fieldIdx);
+		exception.setRecordNumber(recordIdx);
 		
 		if (exceptionHandler == null) { // no handler available
 			throw new RuntimeException(exception.getMessage());			
 		}
 		// set handler
-		exceptionHandler.populateHandler(exception.getMessage(), record, recordNumber,
-				fieldNumber, offendingValue, exception);
+		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
+				fieldIdx, offendingValue, exception);
 	}
 		
 	public IParserExceptionHandler getExceptionHandler() {

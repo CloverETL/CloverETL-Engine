@@ -140,7 +140,6 @@ public class FixLenDataParser implements Parser {
 		return record;
 	}
 
-
 	/**
 	 *  Description of the Method
 	 *
