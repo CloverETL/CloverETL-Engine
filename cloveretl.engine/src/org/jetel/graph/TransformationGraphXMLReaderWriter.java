@@ -503,7 +503,7 @@ public class TransformationGraphXMLReaderWriter {
 			// Node & port specified in form of: <nodeID>:<portNum>
 			graphNode = graph.getNodes().get(specNodePort[0]);
 			if (graphNode == null) {
-				throw new XMLConfigurationException("Can't find node ID: " + fromNodeAttr);
+				throw new XMLConfigurationException("Can't find node ID: " + toNodeAttr);
 			}
             try{
                 toPort=Integer.parseInt(specNodePort[1]);
