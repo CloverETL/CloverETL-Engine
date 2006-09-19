@@ -381,7 +381,8 @@ public final class TransformationGraph {
 			logger.info("Initializing DB connection: ");
 			try {
 				dbCon = (IConnection) iterator.next();
-				dbCon.connect();
+				dbCon.init();
+                dbCon.free();
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
