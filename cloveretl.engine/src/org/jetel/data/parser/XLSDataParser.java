@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.logging.Log;
@@ -41,7 +43,7 @@ public class XLSDataParser implements Parser {
 	private HSSFCell cell;
 	private int metadataRow = -1;
 	private String[] metadataNames = null;
-	private short[] fieldNumber;
+	private short[] fieldNumber ;
 
 	public XLSDataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();	
@@ -193,16 +195,34 @@ public class XLSDataParser implements Parser {
 				fieldNumber[i] = i;
 			}
 		}else{
-			row = sheet.getRow(metadataRow);
 			Map fieldNames = metadata.getFieldNames();
 			if (metadataNames == null){
-				for (short i=0;i<fieldNumber.length;i++){
-					cell = row.getCell(i);
-					fieldNumber[i] = (Short)fieldNames.get(cell.getStringCellValue());
+				Arrays.fill(fieldNumber,(short)-1);
+				row = sheet.getRow(metadataRow);
+				int count = 0;
+				for (Iterator i=row.cellIterator();i.hasNext();){
+					cell = (HSSFCell)i.next();
+					String cellValue = cell.getStringCellValue();
+					if (fieldNames.containsKey(cellValue)){
+						fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cellValue)).shortValue();
+						fieldNames.remove(cellValue);
+					}else{
+						throw new ComponentNotReadyException("There is no field \"" + 
+								cellValue + "\" in output metadata");
+					}
+					count++;
+				}
+				if (count<metadata.getNumFields()){
+					short lastCell = row.getLastCellNum();
+					for (short i=0;i<fieldNumber.length;i++){
+						if (fieldNumber[i] == -1) {
+							fieldNumber[i] = lastCell++;
+						}
+					}
 				}
 			}else{
 				for (short i=0;i<fieldNumber.length;i++){
-					fieldNumber[i] = (Short)fieldNames.get(metadataNames[i]);
+					fieldNumber[i] = ((Integer)fieldNames.get(metadataNames[i])).shortValue();
 				}
 			}
 		}
@@ -255,14 +275,6 @@ public class XLSDataParser implements Parser {
 		this.metadataNames = metadaNames;
 		if (firstRow == 0) {
 			firstRow = 1;
-		}
-	}
-
-	public void setMetadaNames(String[] metadaNames, int metadataRow) {
-		this.metadataRow = metadataRow - 1;
-		this.metadataNames = metadaNames;
-		if (firstRow == 0) {
-			firstRow = this.metadataRow +1;
 		}
 	}
 
