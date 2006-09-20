@@ -69,6 +69,7 @@ import org.w3c.dom.Text;
  * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
  * <i>Works only if database supports transactions.</i></td></tr>
  *  <tr><td><b>printStatements</b><br><i>optional</i></td><td>Specifies whether SQL commands are outputted to stdout. Default - No</td></tr>
+ *  <tr><td><b>callStatement</b><br><i>optional</i></td><td>boolean value (Y/N) - specifies whether SQL commands should be treated as stored procedure calls - using JDBC CallableStatement. Default - "N"</td></tr>
  *  <tr><td>&lt;SQLCode&gt;<br><i><small>!!XML tag!!</small></i></td><td>This tag allows for specifying more than one statement. See example below.</td></tr>
  *  </table>
  *
@@ -101,13 +102,15 @@ public class DBExecute extends Node {
 	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
 	private static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
 	private static final String XML_URL_ATTRIBUTE = "url";
+    private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
 	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
 	private String[] dbSQL;
 	private boolean oneTransaction = false;
 	private boolean printStatements = false;
-
+	private boolean procedureCall = false;
+    
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
 	private final static String SQL_STATEMENT_DELIMITER = ";";
@@ -208,7 +211,7 @@ public class DBExecute extends Node {
 	 * @since    September 27, 2002
 	 */
 	public void run() {
-		Statement sqlStatement;
+		Statement sqlStatement=null;
 		// this does not work for some drivers
 		try {
 			dbConnection.getConnection().setAutoCommit(false);
@@ -222,8 +225,11 @@ public class DBExecute extends Node {
 		}
 
 		try {
-			// let's create statement
-			sqlStatement = dbConnection.getStatement();
+			// let's create statement - based on what do we execute
+            if (!procedureCall){
+                sqlStatement = dbConnection.getStatement();
+            }
+            
 			for (int i = 0; i < dbSQL.length; i++) {
 				// empty strings are skipped
 				if (dbSQL[i].trim().length() == 0) {
@@ -233,15 +239,22 @@ public class DBExecute extends Node {
 				if (printStatements){
 					logger.info(dbSQL[i]);
 				}
+                if (sqlStatement==null){
+                        sqlStatement=dbConnection.getConnection().prepareCall(dbSQL[i]);
+                }
 				sqlStatement.executeUpdate(dbSQL[i]);
 				// shall we commit each statemetn ?
 				if (!oneTransaction) {
 					dbConnection.getConnection().commit();
 				}
+                if (procedureCall){
+                    sqlStatement.close();
+                    sqlStatement=null;
+                }
 			}
 			// let's commit what remains
 			dbConnection.getConnection().commit();
-			sqlStatement.close();
+			if(sqlStatement!=null) { sqlStatement.close(); }
 
 		} catch (SQLException ex) {
 			performRollback();
@@ -287,7 +300,8 @@ public class DBExecute extends Node {
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
 		xmlElement.setAttribute(XML_PRINTSTATEMENTS_ATTRIBUTE, String.valueOf(this.printStatements));
 		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
-		
+		xmlElement.setAttribute(XML_PROCEDURE_CALL_ATTRIBUTE,String.valueOf(procedureCall));
+        
 		// use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
@@ -358,6 +372,10 @@ public class DBExecute extends Node {
             if (xattribs.exists(XML_URL_ATTRIBUTE)) {
                 executeSQL.setURL(xattribs.getString(XML_URL_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
+                executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
+            }
+            
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -378,6 +396,16 @@ public class DBExecute extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+
+    public boolean isProcedureCall() {
+        return procedureCall;
+    }
+
+
+    public void setProcedureCall(boolean procedureCall) {
+        this.procedureCall = procedureCall;
+    }
 
 }
 
