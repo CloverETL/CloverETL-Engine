@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Set;
 
 public class AhoCorasick {
-	public static final int NOPATTERN = -1;
 	boolean failureFunctionDone = false;
 	NodeTrie rootTrie;
 	NodeTrie currentNode;
@@ -127,27 +126,13 @@ public class AhoCorasick {
 		if(currentNode == null) currentNode = rootTrie;
 	}
 	
-	/**
-	 * Update state of Aho-Corasick algorithm.
-	 * @param c incoming char of text
-	 */
-	public int updateMatch(char c) {
-		update(c);
-		for (int idx = minPattern; idx <= maxPattern; idx++) {
-			if (currentNode.patternsFinal[idx]) {
-				return idx + minPattern;
-			}
-		}
-		return NOPATTERN;	// no match
-	}
-	
 	MyInt myInt = new MyInt();
 	public boolean isPattern(int idx) {
 		myInt.value = idx;
 		return currentNode.patternsFinal[idx - minPattern];
 	}
 	
-	public int getDepth() {
+	public int getMatchLength() {
 		return currentNode.depth;
 	}
 	
