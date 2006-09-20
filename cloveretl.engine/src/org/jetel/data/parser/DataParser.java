@@ -261,7 +261,7 @@ public class DataParser implements Parser {
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
-								fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getDepth());
+								fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
 								if(treatMultipleDelimitersAsOne)
 									while(followFieldDelimiter(fieldCounter));
 								break;
@@ -526,7 +526,7 @@ public class DataParser implements Parser {
 				if(delimiterSearcher.isPattern(fieldNum)) {
 					return true;
 				}
-				if(delimiterSearcher.getDepth() == 0) {
+				if(delimiterSearcher.getMatchLength() == 0) {
 					tempReadBuffer.append(temp);
 					return false;
 				}
@@ -549,7 +549,7 @@ public class DataParser implements Parser {
 			while ((character = readChar()) != -1) {
 				delimiterSearcher.update((char) character);
 				if(isRecordDelimiter()) {
-					return (count == delimiterSearcher.getDepth());
+					return (count == delimiterSearcher.getMatchLength());
 				}
 				count++;
 			}
