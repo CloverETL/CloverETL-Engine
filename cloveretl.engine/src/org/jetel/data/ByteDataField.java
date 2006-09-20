@@ -317,7 +317,7 @@ public class ByteDataField extends DataField implements Comparable{
         if(length == 0) {
             setNull(true);
         } else {
-            if(length != value.length) {
+            if(value == null || length != value.length) {
                 value = new byte[length];
             }
             buffer.get(value);
