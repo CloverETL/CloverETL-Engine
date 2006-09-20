@@ -208,7 +208,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since     April 23, 2002
 	 */
 	public Object getValue() {
-	    return (isNull  ? null : value);
+	    return (isNull ? null : value.toString());
 	}
 
 
@@ -218,7 +218,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @return    The charSequence value
 	 */
 	public CharSequence getCharSequence() {
-		return value;
+		return (isNull ? null : value);
 	}
 
 
