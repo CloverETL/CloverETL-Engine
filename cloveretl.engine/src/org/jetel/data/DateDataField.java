@@ -233,6 +233,12 @@ public class DateDataField extends DataField implements Comparable{
 		return isNull ? null : value;
 	}
 
+    /**
+     * @see org.jetel.data.DataField#getValueDuplicate()
+     */
+    public Object getValueDuplicate() {
+        return isNull ? null : value.clone();
+    }
 
 	/**
 	 *  Gets the date attribute of the DateDataField object

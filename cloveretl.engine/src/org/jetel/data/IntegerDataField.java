@@ -264,6 +264,12 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		return new Integer(value);
 	}
 
+    /**
+     * @see org.jetel.data.DataField#getValueDuplicate()
+     */
+    public Object getValueDuplicate() {
+        return getValue();
+    }
 
 	/**
 	 *  Gets the decimal value represented by this object as double primitive

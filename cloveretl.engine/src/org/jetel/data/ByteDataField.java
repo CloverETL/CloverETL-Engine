@@ -201,6 +201,17 @@ public class ByteDataField extends DataField implements Comparable{
 		return isNull ? null : value;
 	}
 
+    /**
+     * @see org.jetel.data.DataField#getValueDuplicate()
+     */
+    public Object getValueDuplicate() {
+        if(isNull) {
+            return null;
+        }
+        byte[] ret = new byte[value.length];
+        System.arraycopy(value, 0, ret, 0, value.length);
+        return ret;
+    }
 
 	/**
 	 *  Gets the byte value represented by this object as byte primitive

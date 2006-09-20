@@ -208,9 +208,15 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since     April 23, 2002
 	 */
 	public Object getValue() {
-	    return (isNull ? null : value.toString());
+	    return (isNull ? null : value);
 	}
 
+    /**
+     * @see org.jetel.data.DataField#getValueDuplicate()
+     */
+    public Object getValueDuplicate() {
+        return (isNull ? null : value.toString());
+    }
 
 	/**
 	 *  Gets the value of the StringDataField object as charSequence
