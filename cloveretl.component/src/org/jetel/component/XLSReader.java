@@ -72,7 +72,7 @@ public class XLSReader extends Node {
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
-	private int metadataRow = 1;
+	private int metadataRow = -1;
 	private String[] metadataNames = null;
 
 	/**
@@ -106,7 +106,7 @@ public class XLSReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		int errorCount = 0;
-		int diffRow = (startRow != -1) ? finalRow - startRow : finalRow - 1;
+		int diffRow = (startRow != -1) ? finalRow - startRow +1: finalRow ;
 		try{
 			while (((record) != null) && runIt) {
 				try {
@@ -258,11 +258,14 @@ public class XLSReader extends Node {
         if (outPorts.size() < 1) {
             throw new ComponentNotReadyException(getId() + ": at least one output port can be defined!");
         }
-		if (sheetName!=null){
+		if (sheetName != null){
 			parser.setSheetName(sheetName);
 		}
-		if (metadataNames!=null){
-			
+		if (metadataNames != null){
+			parser.setMetadataNames(metadataNames);
+		}
+		if (metadataRow != -1){
+			parser.setMetadataRow(metadataRow);
 		}
 		try {
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
