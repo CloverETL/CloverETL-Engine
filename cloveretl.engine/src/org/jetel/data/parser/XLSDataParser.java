@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
-import java.text.SimpleDateFormat;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -14,7 +14,6 @@ import org.apache.poi.hssf.usermodel.HSSFDataFormat;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.jetel.data.ByteDataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -34,12 +33,15 @@ public class XLSDataParser implements Parser {
 	private IParserExceptionHandler exceptionHandler;
 	private String sheetName = null;
 	private int recordCounter;
-	private int firstRow = 1;
+	private int firstRow = 0;
 	private int currentRow;
-	HSSFWorkbook wb;
-	HSSFSheet sheet;
-	HSSFRow row;
-	HSSFCell cell;
+	private HSSFWorkbook wb;
+	private HSSFSheet sheet;
+	private HSSFRow row;
+	private HSSFCell cell;
+	private int metadataRow = -1;
+	private String[] metadataNames = null;
+	private short[] fieldNumber;
 
 	public XLSDataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();	
@@ -65,7 +67,7 @@ public class XLSDataParser implements Parser {
 		return record;
 	}
 	
-	private String getStringFromCell(HSSFCell cell){
+	private String getStringFromCell(HSSFCell cell) {
 		HSSFDataFormat format= wb.createDataFormat();
 		short formatNumber = cell.getCellStyle().getDataFormat();
 		String pattern = format.getFormat(formatNumber);
@@ -94,16 +96,17 @@ public class XLSDataParser implements Parser {
 		row = sheet.getRow(currentRow);
 		if (row==null) return null;
 		char type;
-		for (short i=0;i<metadata.getNumFields();i++){
-			cell = row.getCell(i);
+		for (short i=0;i<fieldNumber.length;i++){
+			cell = row.getCell(fieldNumber[i]);
 			type = metadata.getField(i).getType();
 			try{
 				switch (type) {
-				case DataFieldMetadata.DATE_FIELD:record.getField(i).setValue(cell.getDateCellValue());
+				case DataFieldMetadata.DATE_FIELD:
+					record.getField(i).setValue(cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
+				case DataFieldMetadata.STRING_FIELD:
 					record.getField(i).fromString(getStringFromCell(cell));
-//					((ByteDataField)record.getField(i)).setValue(getStringFromCell(cell).getBytes());
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
@@ -111,40 +114,38 @@ public class XLSDataParser implements Parser {
 				case DataFieldMetadata.NUMERIC_FIELD:
 					record.getField(i).setValue(cell.getNumericCellValue());
 					break;
-				case DataFieldMetadata.STRING_FIELD:record.getField(i).setValue(cell.getStringCellValue());
-					break;
 				}
 			} catch (NumberFormatException bdne) {
 				BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
-				bdfe.setRecordNumber(recordCounter);
-				bdfe.setFieldNumber(i);
+				bdfe.setRecordNumber(currentRow+1);
+				bdfe.setFieldNumber(fieldNumber[i]);
 				if(exceptionHandler != null ) {  //use handler only if configured
 					String cellValue = getStringFromCell(cell);
 					try{
 						record.getField(i).fromString(cellValue);
 					}catch (Exception e) {
 		                exceptionHandler.populateHandler(
-		                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-		                		currentRow + firstRow + 1, i, cellValue, bdfe);
+		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i]), 
+		                		record, currentRow + 1, fieldNumber[i], cellValue, bdfe);
 					}
 				} else {
-					throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
+					throw new RuntimeException(getErrorMessage(bdfe.getMessage(), 
+							recordCounter, fieldNumber[i]));
 				}
 			}catch (NullPointerException np){
-				DataFieldMetadata fieldMetada = record.getField(i).getMetadata();
-				if (fieldMetada.isNullable()){
-					record.getField(i).setNull(true);
-				}else if (fieldMetada.isDefaultValue()){
-					record.getField(i).setToDefaultValue();
-				}else{
+				try {
+					record.getField(fieldNumber[i]).setNull(true);
+				}catch (BadDataFormatException ex){
 					BadDataFormatException bdfe = new BadDataFormatException(np.getMessage());
+					bdfe.setRecordNumber(currentRow+1);
+					bdfe.setFieldNumber(fieldNumber[i]);
 					if(exceptionHandler != null ) {  //use handler only if configured
 		                exceptionHandler.populateHandler(
-		                		getErrorMessage(bdfe.getMessage(), recordCounter, i), record,
-		                		currentRow + firstRow + 19
-		                		, i, "null", bdfe);
+		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i]), 
+		                		record,	currentRow + 1, fieldNumber[i], "null", bdfe);
 					} else {
-						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), recordCounter, i));
+						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), 
+								recordCounter, fieldNumber[i]));
 					}
 				}
 			}
@@ -186,6 +187,25 @@ public class XLSDataParser implements Parser {
 			sheet = wb.getSheetAt(0);
 		}
 		currentRow = firstRow;
+		fieldNumber = new short[metadata.getNumFields()];
+		if (metadataRow == -1){
+			for (short i=0;i<fieldNumber.length;i++){
+				fieldNumber[i] = i;
+			}
+		}else{
+			row = sheet.getRow(metadataRow);
+			Map fieldNames = metadata.getFieldNames();
+			if (metadataNames == null){
+				for (short i=0;i<fieldNumber.length;i++){
+					cell = row.getCell(i);
+					fieldNumber[i] = (Short)fieldNames.get(cell.getStringCellValue());
+				}
+			}else{
+				for (short i=0;i<fieldNumber.length;i++){
+					fieldNumber[i] = (Short)fieldNames.get(metadataNames[i]);
+				}
+			}
+		}
 	}
 
 	public void close() {
@@ -229,6 +249,28 @@ public class XLSDataParser implements Parser {
 	public int getRecordCount() {
 		return recordCounter;
 	}
-	
+
+	public void setMetadataNames(String[] metadaNames) {
+		this.metadataRow = 0;
+		this.metadataNames = metadaNames;
+		if (firstRow == 0) {
+			firstRow = 1;
+		}
+	}
+
+	public void setMetadaNames(String[] metadaNames, int metadataRow) {
+		this.metadataRow = metadataRow - 1;
+		this.metadataNames = metadaNames;
+		if (firstRow == 0) {
+			firstRow = this.metadataRow +1;
+		}
+	}
+
+	public void setMetadataRow(int metadataRow) {
+		this.metadataRow = metadataRow - 1;
+		if (firstRow == 0) {
+			firstRow = this.metadataRow +1;
+		}
+	}
 
 }
