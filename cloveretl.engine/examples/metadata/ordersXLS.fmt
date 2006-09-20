@@ -14,5 +14,5 @@
 <Field name="SHIPREGION" nullable="true" size="15" type="string"/>
 <Field name="SHIPPOSTAL" nullable="true" size="10" type="string"/>
 <Field name="SHIPCOUNTR" nullable="true" size="15" type="string"/>
-<Field locale="en.US" name="additional_field" nullable="false" size="10" type="string"/>
+<Field default="unnecessary" locale="en.US" name="additional_field" nullable="false" size="10" type="string"/>
 </Record>
