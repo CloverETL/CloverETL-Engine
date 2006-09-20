@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Record charset="US-ASCII" dataOffset="481" name="ORDERS_XLS" recordSize="265" type="fixed">
+<Field name="ORDERID" nullable="true" size="20" type="integer"/>
+<Field name="CUSTOMERID" nullable="true" size="5" type="string"/>
+<Field name="EMPLOYEEID" nullable="true" size="20" type="numeric"/>
+<Field format="yyyyMMdd" name="ORDERDATE" nullable="true" size="8" type="date"/>
+<Field format="yyyyMMdd" name="REQUIREDDA" nullable="true" size="8" type="date"/>
+<Field default="19000101" format="yyyyMMdd" name="SHIPPEDDAT" nullable="true" size="8" type="string"/>
+<Field name="SHIPVIA" nullable="true" size="20" type="numeric"/>
+<Field name="FREIGHT" nullable="true" size="20" type="numeric"/>
+<Field name="SHIPNAME" nullable="true" size="40" type="string"/>
+<Field name="SHIPADDRES" nullable="true" size="60" type="string"/>
+<Field name="SHIPCITY" nullable="true" size="15" type="string"/>
+<Field name="SHIPREGION" nullable="true" size="15" type="string"/>
+<Field name="SHIPPOSTAL" nullable="true" size="10" type="string"/>
+<Field name="SHIPCOUNTR" nullable="true" size="15" type="string"/>
+<Field locale="en.US" name="additional_field" nullable="false" size="10" type="string"/>
+</Record>
