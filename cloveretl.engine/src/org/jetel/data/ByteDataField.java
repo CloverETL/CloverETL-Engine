@@ -198,7 +198,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since     October 29, 2002
 	 */
 	public Object getValue() {
-		return value;
+		return isNull ? null : value;
 	}
 
 
