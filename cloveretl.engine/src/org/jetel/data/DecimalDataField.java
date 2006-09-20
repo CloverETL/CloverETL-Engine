@@ -319,6 +319,15 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		return value;
 	}
 
+    /**
+     * @see org.jetel.data.DataField#getValueDuplicate()
+     */
+    public Object getValueDuplicate() {
+        if(isNull) {
+            return null;
+        }
+        return value.createCopy();
+    }
 
 	/**
 	 *  Gets the decimal value represented by this object as double primitive

@@ -21,8 +21,10 @@
 
 package org.jetel.data;
 import java.io.Serializable;
-import java.nio.*;
-import java.nio.charset.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.CharacterCodingException;
+import java.nio.charset.CharsetDecoder;
+import java.nio.charset.CharsetEncoder;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.NullDataFormatException;
@@ -115,7 +117,7 @@ public abstract class DataField implements Serializable, Comparable {
                 return;
             }
 			fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
-            metadata.setDefaultValue(getValue());
+            metadata.setDefaultValue(getValueDuplicate());
 		} catch (Exception ex) {
 			// here, the only reason to fail is bad DefaultValue
 			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
@@ -155,7 +157,17 @@ public abstract class DataField implements Serializable, Comparable {
 	 */
 	public abstract Object getValue();
 
-
+    /**
+     *  Gets the duplicate of the internal value of the data field. If field's value is
+     * deemed to be NULL (isNull() return true) then the returned
+     * value is NULL. Otherwise the duplicate of the internal values is converted
+     * to appropriate object representation and returned.<br>
+     *
+     * @return    The Value value
+     * @since
+     */
+    public abstract Object getValueDuplicate();
+    
 	/**
 	 *  Returns type of the field (String, Numeric, Date, etc.)
 	 *
