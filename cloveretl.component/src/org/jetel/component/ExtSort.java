@@ -89,6 +89,8 @@ import org.w3c.dom.Element;
  *    <tr><td>50000</td><td>3496000</td></tr>
  *    </table>
  *  </tr>
+ *  <tr><td><b>bufferCapacity</b><br><i>optional</i></td><td>What is the maximum number of records
+ *  which are sorted in-memory. If number of records exceed this size, external sorting is performed.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -104,6 +106,8 @@ public class ExtSort extends Node {
 	private static final String XML_SORTERINITIALCAPACITY_ATTRIBUTE = "sorterInitialCapacity";
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
+    private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
+    
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "EXT_SORT";
 
@@ -598,6 +602,17 @@ public class ExtSort extends Node {
     }
     
     /**
+     * What is the maximum capacity of internal buffer used for
+     * in-memory sorting.
+     * 
+     * @param size maximum buffer capacity
+     */
+    public void setBufferCapacity(int size){
+        setInternalSorterInitialCapacity((int)(((double)size)/69.91d));
+        
+    }
+    
+    /**
      *  Description of the Method
      *
      * @return    Description of the Returned Value
@@ -658,6 +673,10 @@ public class ExtSort extends Node {
             if (xattribs.exists(XML_NUMBEROFTAPES_ATTRIBUTE)){
                 sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_BUFFER_CAPACITY_ATTRIBUTE)){
+                sort.setBufferCapacity(xattribs.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
+            }
+            
         } catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
