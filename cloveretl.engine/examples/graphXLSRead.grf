@@ -73,13 +73,13 @@
 </Global>
 <Phase number="0">
 <Node enabled="disabled" fileURL="${WORKSPACE}/output/xls.txt" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="595" guiY="189" id="DATA_WRITER0" type="DATA_WRITER"/>
-<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="367" guiY="314" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
-<Node debugFilename="${WORKSPACE}/output/trash.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="580" guiY="305" id="TRASH0" type="TRASH"/>
-<Node debugFilename="${WORKSPACE}/output/trash_orders.txt" debugPrint="true" enabled="disabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="418" guiY="113" id="TRASH1" type="TRASH"/>
-<Node dataPolicy="strict" enabled="enabled" fileURL="${WORKSPACE}/data/pololeti_provize_2006_01.xls" finalRow="1" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="85" guiY="302" id="XLS_READER0" startRow="1" type="XLS_READER">
+<Node enabled="disabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="367" guiY="314" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node debugFilename="${WORKSPACE}/output/trash.txt" debugPrint="true" enabled="disabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="580" guiY="305" id="TRASH0" type="TRASH"/>
+<Node debugFilename="${WORKSPACE}/output/trash_orders.txt" debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="418" guiY="113" id="TRASH1" type="TRASH"/>
+<Node dataPolicy="strict" enabled="disabled" fileURL="${WORKSPACE}/data/pololeti_provize_2006_01.xls" finalRow="1" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="85" guiY="302" id="XLS_READER0" startRow="1" type="XLS_READER">
 <attr name="startRecord">2</attr>
 </Node>
-<Node enabled="disabled" fileURL="${WORKSPACE}/data/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="88" guiY="107" id="XLS_READER1" startRow="2" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="88" guiY="107" id="XLS_READER1" startRow="2" type="XLS_READER"/>
 <Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge1" inPort="0 (Trash)" metadata="Metadata3" outPort="0 (Simple Copy)" toNode="TRASH0:0"/>
 <Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge2" inPort="0 (Universal Data Writer)" metadata="Metadata3" outPort="1 (Simple Copy)" toNode="DATA_WRITER0:0"/>
 <Edge debugMode="true" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (Simple Copy)" metadata="Metadata3" outPort="0 (XLS Data Reader)" toNode="SIMPLE_COPY0:0"/>
