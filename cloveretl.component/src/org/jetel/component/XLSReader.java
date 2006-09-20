@@ -28,6 +28,7 @@ import java.security.InvalidParameterException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.XLSDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -57,6 +58,8 @@ public class XLSReader extends Node {
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
+	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
+	private final static String XML_METADATANAMES_ATTRIBUTE = "metadataNames";
 
 	private final static int OUTPUT_PORT = 0;
 
@@ -69,6 +72,8 @@ public class XLSReader extends Node {
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
+	private int metadataRow = 1;
+	private String[] metadataNames = null;
 
 	/**
 	 * @param id
@@ -179,6 +184,13 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
 				aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
+				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_METADATANAMES_ATTRIBUTE)){
+				aXLSReader.setMetadataNames(
+					xattribs.getString(XML_METADATANAMES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -244,12 +256,15 @@ public class XLSReader extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
         if (outPorts.size() < 1) {
-            throw new ComponentNotReadyException(getId() + ": one output port can be defined!");
+            throw new ComponentNotReadyException(getId() + ": at least one output port can be defined!");
         }
+		if (sheetName!=null){
+			parser.setSheetName(sheetName);
+		}
+		if (metadataNames!=null){
+			
+		}
 		try {
-			if (sheetName!=null){
-				parser.setSheetName(sheetName);
-			}
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
@@ -258,6 +273,14 @@ public class XLSReader extends Node {
 
 	private void setSheetName(String sheetName) {
 		this.sheetName = sheetName;
+	}
+
+	private void setMetadataRow(int metadaRow) {
+		this.metadataRow = metadaRow;
+	}
+
+	private void setMetadataNames(String[] metadataNames) {
+		this.metadataNames = metadataNames;
 	}
 
 }
