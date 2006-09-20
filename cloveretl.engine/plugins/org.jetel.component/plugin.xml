@@ -171,5 +171,10 @@
 	    <parameter id="className" value="org.jetel.component.DBJoin"/>
 	    <parameter id="type" value="DBJOIN"/>
 	</extension>
+
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.XLSReader"/>
+		<parameter id="type" value="XLS_READER"/>
+	</extension>
 	
 </plugin>
