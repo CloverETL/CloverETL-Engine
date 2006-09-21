@@ -27,6 +27,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 public class XLSDataParser implements Parser {
+	
+	private static int CELL_NUMBER_IN_SHEET = 25;
 
 	static Log logger = LogFactory.getLog(XLSDataParser.class);
 	
@@ -41,8 +43,11 @@ public class XLSDataParser implements Parser {
 	private HSSFSheet sheet;
 	private HSSFRow row;
 	private HSSFCell cell;
+	private HSSFDataFormat format;
 	private int metadataRow = -1;
-	private String[] metadataNames = null;
+	private String[] cloverFields = null;
+	private String[] xlsFields = null;
+	private boolean names;
 	private short[] fieldNumber ;
 
 	public XLSDataParser() {
@@ -70,7 +75,6 @@ public class XLSDataParser implements Parser {
 	}
 	
 	private String getStringFromCell(HSSFCell cell) {
-		HSSFDataFormat format= wb.createDataFormat();
 		short formatNumber = cell.getCellStyle().getDataFormat();
 		String pattern = format.getFormat(formatNumber);
 		String cellValue = "";
@@ -99,22 +103,23 @@ public class XLSDataParser implements Parser {
 		if (row==null) return null;
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
-			cell = row.getCell(fieldNumber[i]);
-			type = metadata.getField(i).getType();
+			if (fieldNumber[i] == -1) continue; //in metdata there is not any field corresponding to this column
+ 			cell = row.getCell(i);
+			type = metadata.getField(fieldNumber[i]).getType();
 			try{
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
-					record.getField(i).setValue(cell.getDateCellValue());
+					record.getField(fieldNumber[i]).setValue(cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					record.getField(i).fromString(getStringFromCell(cell));
+					record.getField(fieldNumber[i]).fromString(getStringFromCell(cell));
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(i).setValue(cell.getNumericCellValue());
+					record.getField(fieldNumber[i]).setValue(cell.getNumericCellValue());
 					break;
 				}
 			} catch (NumberFormatException bdne) {
@@ -124,7 +129,7 @@ public class XLSDataParser implements Parser {
 				if(exceptionHandler != null ) {  //use handler only if configured
 					String cellValue = getStringFromCell(cell);
 					try{
-						record.getField(i).fromString(cellValue);
+						record.getField(fieldNumber[i]).fromString(cellValue);
 					}catch (Exception e) {
 		                exceptionHandler.populateHandler(
 		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i]), 
@@ -188,6 +193,7 @@ public class XLSDataParser implements Parser {
 		}else{
 			sheet = wb.getSheetAt(0);
 		}
+		format = wb.createDataFormat();
 		currentRow = firstRow;
 		fieldNumber = new short[metadata.getNumFields()];
 		if (metadataRow == -1){
@@ -195,9 +201,9 @@ public class XLSDataParser implements Parser {
 				fieldNumber[i] = i;
 			}
 		}else{
+			Arrays.fill(fieldNumber,(short)-1);
 			Map fieldNames = metadata.getFieldNames();
-			if (metadataNames == null){
-				Arrays.fill(fieldNumber,(short)-1);
+			if (cloverFields == null){
 				row = sheet.getRow(metadataRow);
 				int count = 0;
 				for (Iterator i=row.cellIterator();i.hasNext();){
@@ -207,8 +213,7 @@ public class XLSDataParser implements Parser {
 						fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cellValue)).shortValue();
 						fieldNames.remove(cellValue);
 					}else{
-						throw new ComponentNotReadyException("There is no field \"" + 
-								cellValue + "\" in output metadata");
+						logger.warn("There is no field \"" + cellValue + "\" in output metadata");
 					}
 					count++;
 				}
@@ -220,12 +225,68 @@ public class XLSDataParser implements Parser {
 						}
 					}
 				}
+			}else if (xlsFields == null){
+				for (short i = 0; i < cloverFields.length; i++) {
+					try {
+						fieldNumber[i] = ((Integer) fieldNames
+								.get(cloverFields[i])).shortValue();
+					} catch (NullPointerException ex) {
+						throw new ComponentNotReadyException("Clover field \""
+								+ cloverFields[i] + "\" not found");
+					}
+				}
 			}else{
-				for (short i=0;i<fieldNumber.length;i++){
-					fieldNumber[i] = ((Integer)fieldNames.get(metadataNames[i])).shortValue();
+				if (cloverFields.length!=xlsFields.length){
+					throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
+				}
+				if (!names){
+					for (short i=0;i<cloverFields.length;i++){
+						String cellCode = xlsFields[i].toUpperCase(); 
+						int cellNumber  = 0;
+						for (int j=0;j<cellCode.length();j++){
+							cellNumber+=cellCode.charAt(j);
+						}
+						cellNumber+=CELL_NUMBER_IN_SHEET*(cellCode.length()-1) - 'A'*cellCode.length();
+						try {
+							fieldNumber[cellNumber] = 
+								((Integer)fieldNames.get(cloverFields[i])).shortValue();
+						}catch (NullPointerException ex) {
+							throw new ComponentNotReadyException("Clover field \""
+									+ cloverFields[i] + "\" not found");
+						}
+					}
+				}else{
+					row = sheet.getRow(metadataRow);
+					int count = 0;
+					for (Iterator i=row.cellIterator();i.hasNext();){
+						cell = (HSSFCell)i.next();
+						String cellValue = cell.getStringCellValue();
+						int xlsNumber = findString(cellValue,xlsFields);
+						if (xlsNumber > -1){
+							try {
+								fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cloverFields[xlsNumber])).shortValue();
+							}catch (NullPointerException ex) {
+								throw new ComponentNotReadyException("Clover field \""
+										+ cloverFields[xlsNumber] + "\" not found");
+							}
+							count++;
+						}else{
+							logger.warn("There is no field corresponding to \"" + cellValue + "\" in output metadata");
+						}
+					}
+					if (count<cloverFields.length){
+						logger.warn("Not all fields found");
+					}
 				}
 			}
 		}
+	}
+	
+	private int findString(String str,String[] array){
+		for (int i=0;i<array.length;i++){
+			if (str.equals(array[i])) return i;
+		}
+		return -1;
 	}
 
 	public void close() {
@@ -270,12 +331,9 @@ public class XLSDataParser implements Parser {
 		return recordCounter;
 	}
 
-	public void setMetadataNames(String[] metadaNames) {
+	public void setCloverFields(String[] cloverFields) {
 		this.metadataRow = 0;
-		this.metadataNames = metadaNames;
-		if (firstRow == 0) {
-			firstRow = 1;
-		}
+		this.cloverFields = cloverFields;
 	}
 
 	public void setMetadataRow(int metadataRow) {
@@ -283,6 +341,12 @@ public class XLSDataParser implements Parser {
 		if (firstRow == 0) {
 			firstRow = this.metadataRow +1;
 		}
+	}
+
+	public void setXlsFields(String[] xlsFields, boolean names) {
+		this.xlsFields = xlsFields;
+		this.names = names;
+		this.metadataRow = 0;
 	}
 
 }
