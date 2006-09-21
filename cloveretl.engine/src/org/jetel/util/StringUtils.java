@@ -464,6 +464,21 @@ public class StringUtils {
         buff.append(seq);
         return buff;
     }
+
+    /**
+     * This method finds index of string from string array
+     * 
+     * @param str String to find
+     * @param array String array for searching
+     * @return index or found String or -1 if String was not found
+     */
+    public static int findString(String str,String[] array){
+		for (int i=0;i<array.length;i++){
+			if (str.equals(array[i])) return i;
+		}
+		return -1;
+	}
+
     
 
 }
