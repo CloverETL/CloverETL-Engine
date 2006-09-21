@@ -38,6 +38,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -59,7 +60,8 @@ public class XLSReader extends Node {
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
 	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
-	private final static String XML_METADATANAMES_ATTRIBUTE = "metadataNames";
+	private final static String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
+	private final static String XML_XLSFIELDS_ATTRIBUTE = "xlsFields";
 
 	private final static int OUTPUT_PORT = 0;
 
@@ -73,7 +75,8 @@ public class XLSReader extends Node {
 	
 	private String sheetName;
 	private int metadataRow = -1;
-	private String[] metadataNames = null;
+	private String[] cloverFields = null;
+	private String[] xlsFields = null;
 
 	/**
 	 * @param id
@@ -187,9 +190,13 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_METADATANAMES_ATTRIBUTE)){
-				aXLSReader.setMetadataNames(
-					xattribs.getString(XML_METADATANAMES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)){
+				aXLSReader.setCloverFields(
+					xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			}
+			if (xattribs.exists(XML_XLSFIELDS_ATTRIBUTE)){
+				aXLSReader.setXlsFields(
+						xattribs.getString(XML_XLSFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -261,8 +268,20 @@ public class XLSReader extends Node {
 		if (sheetName != null){
 			parser.setSheetName(sheetName);
 		}
-		if (metadataNames != null){
-			parser.setMetadataNames(metadataNames);
+		if (cloverFields != null){
+			parser.setCloverFields(cloverFields);
+		}
+		if (xlsFields != null){
+			boolean names = xlsFields[0].startsWith("\"") ? true : false ;
+			if (names && metadataRow == -1){
+				throw new ComponentNotReadyException("Not valid metadataRow = -1 for given field's names");
+			}
+			if (names){
+				for (int i=0;i<xlsFields.length;i++){
+					xlsFields[i] = StringUtils.unquote(xlsFields[i]);
+				}
+			}
+			parser.setXlsFields(xlsFields,names);
 		}
 		if (metadataRow != -1){
 			parser.setMetadataRow(metadataRow);
@@ -282,8 +301,12 @@ public class XLSReader extends Node {
 		this.metadataRow = metadaRow;
 	}
 
-	private void setMetadataNames(String[] metadataNames) {
-		this.metadataNames = metadataNames;
+	private void setCloverFields(String[] metadataNames) {
+		this.cloverFields = metadataNames;
+	}
+
+	private void setXlsFields(String[] xlsFields) {
+		this.xlsFields = xlsFields;
 	}
 
 }
