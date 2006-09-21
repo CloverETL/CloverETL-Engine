@@ -258,6 +258,20 @@ public class StringUtils {
 		return buf;
 	}
 	
+
+	/**
+	 * Modifies string so that the string quotes are ignored,
+	 * in case quotes are not present doesn't do anything.
+	 * @param str
+	 * @return
+	 */
+	public static String unquote(String str) {
+		if (StringUtils.isQuoted(str)) {
+			str = str.substring(1,str.length()-1);
+		}
+		return str;
+	}
+	
 	/**
 	 * Modifies buffer scope so that the leading whitespace is ignored.
 	 * @param buf
