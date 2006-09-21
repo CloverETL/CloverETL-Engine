@@ -56,7 +56,6 @@ public class XLSReader extends Node {
 	private static final String XML_FINALROW_ATTRIBUTE = "finalRow";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
-	private final static String XML_CHARSET_ATTRIBUTE = "charset";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
 	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
@@ -84,13 +83,6 @@ public class XLSReader extends Node {
 	public XLSReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new XLSDataParser();
-	}
-
-	public XLSReader(String id, String fileURL, String charset) {
-		super(id);
-		this.fileURL = fileURL;
-		parser = new XLSDataParser(charset);
 	}
 
 	/* (non-Javadoc)
@@ -168,14 +160,8 @@ public class XLSReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
-			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),
-						xattribs.getString(XML_CHARSET_ATTRIBUTE));
-			} else {
-				aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE));
-			}
 			aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE,1));
 			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
