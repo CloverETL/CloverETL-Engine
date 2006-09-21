@@ -41,6 +41,7 @@
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
 		<delete dir="${dir.bin}"/>
+		<delete dir="${dir.dist}"/>
 	</target>
 
 	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->
@@ -119,8 +120,8 @@
 	<!-- ask user for MAJOR and MINOR release number -->
 	<target name="set_revision">
 		<buildnumber file="build.number" />
-		<input message="Please enter MAJOR release number:"	addproperty="major_version" />
-		<input message="Please enter MINOR release number:"	addproperty="minor_version" />
+		<input message="Engine - Please enter MAJOR release number:"	addproperty="major_version" />
+		<input message="Engine - Please enter MINOR release number:"	addproperty="minor_version" />
 	</target>
 	
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
