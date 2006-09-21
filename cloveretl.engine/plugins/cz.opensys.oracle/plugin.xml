@@ -1,0 +1,15 @@
+<plugin id="cz.opensys.oracle" version="1.9.0">
+	<runtime>
+		<library path="../../../cloveretl.engine.oracle/bin"/>
+	</runtime>
+	
+	<requires engine-version="1.9.0">
+		<import plugin-id="org.jetel.connection"/>
+	</requires>
+	
+	<extension point-id="component">
+		<parameter id="type" value="ORACLE_DATA_WRITER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.OracleDataWriter"/>
+	</extension>
+	
+</plugin>
