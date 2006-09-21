@@ -25,6 +25,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 public class XLSDataParser implements Parser {
 	
@@ -32,7 +33,6 @@ public class XLSDataParser implements Parser {
 
 	static Log logger = LogFactory.getLog(XLSDataParser.class);
 	
-	private CharsetDecoder decoder;
 	private DataRecordMetadata metadata;
 	private IParserExceptionHandler exceptionHandler;
 	private String sheetName = null;
@@ -51,11 +51,6 @@ public class XLSDataParser implements Parser {
 	private short[] fieldNumber ;
 
 	public XLSDataParser() {
-		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();	
-	}
-
-	public XLSDataParser(String charsetDecoder) {
-		decoder = Charset.forName(charsetDecoder).newDecoder();
 	}
 
 	public DataRecord getNext() throws JetelException {
@@ -179,9 +174,6 @@ public class XLSDataParser implements Parser {
 
 	public void open(Object in, DataRecordMetadata _metadata)throws ComponentNotReadyException{
 		this.metadata = _metadata;
-	
-		decoder.reset();
-		// reset CharsetDecoder
 		recordCounter = 1;
 		try {
 			wb = new HSSFWorkbook((InputStream)in);
@@ -261,7 +253,7 @@ public class XLSDataParser implements Parser {
 					for (Iterator i=row.cellIterator();i.hasNext();){
 						cell = (HSSFCell)i.next();
 						String cellValue = cell.getStringCellValue();
-						int xlsNumber = findString(cellValue,xlsFields);
+						int xlsNumber = StringUtils.findString(cellValue,xlsFields);
 						if (xlsNumber > -1){
 							try {
 								fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cloverFields[xlsNumber])).shortValue();
@@ -282,13 +274,6 @@ public class XLSDataParser implements Parser {
 		}
 	}
 	
-	private int findString(String str,String[] array){
-		for (int i=0;i<array.length;i++){
-			if (str.equals(array[i])) return i;
-		}
-		return -1;
-	}
-
 	public void close() {
 		// TODO Auto-generated method stub
 	}
