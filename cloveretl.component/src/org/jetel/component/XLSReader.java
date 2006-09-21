@@ -43,6 +43,8 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ * 
+ * 
  * @author avackova
  *
  */
@@ -83,6 +85,7 @@ public class XLSReader extends Node {
 	public XLSReader(String id, String fileURL) {
 		super(id);
 		this.fileURL = fileURL;
+		this.parser = new XLSDataParser();
 	}
 
 	/* (non-Javadoc)
