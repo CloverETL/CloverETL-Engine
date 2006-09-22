@@ -283,19 +283,22 @@ public class XLSDataParser implements Parser {
 	 * @return mapping type
 	 */
 	private int getMappingType(int metadataRow,boolean cloverFields,boolean xlsFields){
-		if (cloverFields && xlsFields)
-			if (metadataRow > -1)
-				return CLOVER_FIELDS_AND_XLS_NAMES;
-			else
-				return CLOVER_FIELDS_AND_XLS_NUMBERS;
-		if (cloverFields)
-			if (metadataRow > -1)
+		if (metadataRow > -1){
+			if (!cloverFields && !xlsFields)
 				return MAP_NAMES;
-			else
-				return ONLY_CLOVER_FIELDS;
+			if (cloverFields && xlsFields)
+				return CLOVER_FIELDS_AND_XLS_NAMES;
+		}
+		if (cloverFields && xlsFields)
+			return CLOVER_FIELDS_AND_XLS_NUMBERS;
+		if (cloverFields)
+			return ONLY_CLOVER_FIELDS;
 		return NO_METADATA_INFO;
 	}
 	
+	/**
+	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
+	 */
 	private void noMetadtaInfo(){
 		for (short i=0;i<fieldNumber.length;i++){
 			fieldNumber[i][XLS_NUMBER] = i;
@@ -303,6 +306,12 @@ public class XLSDataParser implements Parser {
 		}
 	}
 	
+	/**
+	 * If clover fields are set but xls fields are not set cells are read in order of clover fields
+	 * 
+	 * @param fieldNames
+	 * @throws ComponentNotReadyException
+	 */
 	private void onlyCloverFields(Map fieldNames) throws ComponentNotReadyException{
 		for (int i = 0; i < cloverFields.length; i++) {
 			fieldNumber[i][XLS_NUMBER] = i;
@@ -315,16 +324,27 @@ public class XLSDataParser implements Parser {
 		}
 	}
 	
+	/**
+	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
+	 * 
+	 * @param fieldNames
+	 * @throws ComponentNotReadyException
+	 */
 	private void cloverFieldsAndXlsNumbers(Map fieldNames) throws ComponentNotReadyException {
 		if (cloverFields.length!=xlsFields.length){
 			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
 		for (short i=0;i<cloverFields.length;i++){
 			String cellCode = xlsFields[i].toUpperCase(); 
+			//getting colum number from its code: 
+			//A='A'-65=0,B='B'-65,....,Z='Z'-65=CELL_NUMBER_IN_SHEET-1,
+			//XYZ = ('X'-64)*CELL_NUMBER_IN_SHEET^2+('Y'-64)*CELL_NUMBER_IN_SHEET+('Z'-65) 
 			int cellNumber  = cellCode.charAt(cellCode.length()-1)-65;
 			for (int j=0;j<cellCode.length()-1;j++){
 				cellNumber+=(cellCode.charAt(j)-64)*CELL_NUMBER_IN_SHEET;
 			}
+			if (cellNumber<0) 
+				throw new ComponentNotReadyException("Wrong column index: " + cellCode);
 			fieldNumber[i][XLS_NUMBER] = cellNumber;
 			try {
 				fieldNumber[i][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[i]);
@@ -335,17 +355,25 @@ public class XLSDataParser implements Parser {
 		}
 	}
 	
+	/**
+	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
+	 * 
+	 * @param fieldNames
+	 * @throws ComponentNotReadyException
+	 */
 	private void cloverfieldsAndXlsNames(Map fieldNames)throws ComponentNotReadyException{
 		if (cloverFields.length!=xlsFields.length){
 			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
+		//getting metadata row
 		row = sheet.getRow(metadataRow);
 		int count = 0;
+		//go through each not empty cell
 		for (Iterator i=row.cellIterator();i.hasNext();){
 			cell = (HSSFCell)i.next();
-			String cellValue = cell.getStringCellValue();
+			String cellValue = getStringFromCell(cell);
 			int xlsNumber = StringUtils.findString(cellValue,xlsFields);
-			if (xlsNumber > -1){
+			if (xlsNumber > -1){//string from cell found in xlsFields attribute
 				fieldNumber[count][XLS_NUMBER] = cell.getCellNum();
 				try {
 					fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[xlsNumber]);
@@ -363,14 +391,23 @@ public class XLSDataParser implements Parser {
 		}
 	}
 	
+	/**
+	 * If there is given metadata row but other metedata attributes are empty we try find
+	 * fields in metadata with the same names as names in xls sheet
+	 * 
+	 * @param fieldNames
+	 * @throws ComponentNotReadyException
+	 */
 	private void mapNames(Map fieldNames) throws ComponentNotReadyException {
+		//getting metadata row
 		row = sheet.getRow(metadataRow);
 		int count = 0;
+		//go through each not empty cell
 		for (Iterator i=row.cellIterator();i.hasNext();){
 			cell = (HSSFCell)i.next();
-			String cellValue = cell.getStringCellValue();
-			fieldNumber[count][XLS_NUMBER] = cell.getCellNum();
-			if (fieldNames.containsKey(cellValue)){
+			String cellValue = getStringFromCell(cell);
+			if (fieldNames.containsKey(cellValue)){//corresponding field in metadata found
+				fieldNumber[count][XLS_NUMBER] = cell.getCellNum();
 				fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cellValue);
 				fieldNames.remove(cellValue);
 				count++;
@@ -390,6 +427,9 @@ public class XLSDataParser implements Parser {
 		// TODO Auto-generated method stub
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
+	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		record = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
@@ -432,7 +472,9 @@ public class XLSDataParser implements Parser {
 		this.cloverFields = cloverFields;
 	}
 
-	public void setMetadataRow(int metadataRow) {
+	public void setMetadataRow(int metadataRow) throws ComponentNotReadyException{
+		if (metadataRow < 0) 
+			throw new ComponentNotReadyException("Number of metadata row has to be greter then 0");
 		this.metadataRow = metadataRow - 1;
 		if (firstRow == 0) {
 			firstRow = this.metadataRow +1;
