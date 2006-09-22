@@ -23,7 +23,6 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -52,7 +51,7 @@ import org.jetel.util.StringUtils;
  */
 public class XLSDataParser implements Parser {
 	
-	private final static int CELL_NUMBER_IN_SHEET = 25;//number of "Z" cell in excel sheet
+	private final static int CELL_NUMBER_IN_SHEET = 'Z'-65+1;//number of "AA" cell in excel sheet
 	
 	private final static int NO_METADATA_INFO = 0;
 	private final static int ONLY_CLOVER_FIELDS = 1;
@@ -68,6 +67,7 @@ public class XLSDataParser implements Parser {
 	private int recordCounter;
 	private int firstRow = 0;
 	private int currentRow;
+	private int lastRow;
 	private HSSFWorkbook wb;
 	private HSSFSheet sheet;
 	private HSSFRow row;
@@ -76,7 +76,10 @@ public class XLSDataParser implements Parser {
 	private int metadataRow = -1;
 	private String[] cloverFields = null;
 	private String[] xlsFields = null;
-	private int[] fieldNumber ;
+	private int[][] fieldNumber ; //mapping of xls fields and clover fields
+	
+	private final int XLS_NUMBER = 0;
+	private final int CLOVER_NUMBER = 1;
 
 	/**
 	 * Constructor
@@ -141,61 +144,61 @@ public class XLSDataParser implements Parser {
 	 * @throws JetelException
 	 */
 	private DataRecord parseNext(DataRecord record) throws JetelException {
+		if (currentRow>lastRow) return null;
 		row = sheet.getRow(currentRow);
-		if (row==null) return null; //afterlast row
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
-			if (fieldNumber[i] == -1) continue; //in metdata there is not any field corresponding to this column
- 			cell = row.getCell(i);
-			type = metadata.getField(fieldNumber[i]).getType();
+			if (fieldNumber[i][CLOVER_NUMBER] == -1) continue; //in metdata there is not any field corresponding to this column
+ 			cell = row.getCell((short)fieldNumber[i][XLS_NUMBER]);
+			type = metadata.getField(fieldNumber[i][CLOVER_NUMBER]).getType();
 			try{
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
-					record.getField(fieldNumber[i]).setValue(cell.getDateCellValue());
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					record.getField(fieldNumber[i]).fromString(getStringFromCell(cell));
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(getStringFromCell(cell));
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(fieldNumber[i]).setValue(cell.getNumericCellValue());
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getNumericCellValue());
 					break;
 				}
 			} catch (NumberFormatException bdne) {//exception when trying get date or number from not numeric cell
 				BadDataFormatException bdfe = new BadDataFormatException(bdne.getMessage());
 				bdfe.setRecordNumber(currentRow+1);
-				bdfe.setFieldNumber(fieldNumber[i]);
+				bdfe.setFieldNumber(fieldNumber[i][CLOVER_NUMBER]);
 				String cellValue = getStringFromCell(cell);
 				try {
-					record.getField(fieldNumber[i]).fromString(cellValue);
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(cellValue);
 				} catch (Exception e) {
 					if (exceptionHandler != null) { // use handler only if configured
 						exceptionHandler.populateHandler(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, fieldNumber[i]),
-								record, currentRow + 1, fieldNumber[i],
+								.getMessage(), currentRow + 1, fieldNumber[i][CLOVER_NUMBER]),
+								record, currentRow + 1, fieldNumber[i][CLOVER_NUMBER],
 								cellValue, bdfe);
 					} else {
 						throw new RuntimeException(getErrorMessage(bdfe
-								.getMessage(), currentRow + 1, fieldNumber[i]));
+								.getMessage(), currentRow + 1, fieldNumber[i][CLOVER_NUMBER]));
 					}
 				}
 			}catch (NullPointerException np){// empty cell
 				try {
-					record.getField(fieldNumber[i]).setNull(true);
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setNull(true);
 				}catch (BadDataFormatException ex){
 					BadDataFormatException bdfe = new BadDataFormatException(np.getMessage());
 					bdfe.setRecordNumber(currentRow+1);
-					bdfe.setFieldNumber(fieldNumber[i]);
+					bdfe.setFieldNumber(fieldNumber[i][CLOVER_NUMBER]);
 					if(exceptionHandler != null ) {  //use handler only if configured
 		                exceptionHandler.populateHandler(
-		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i]), 
-		                		record,	currentRow + 1, fieldNumber[i], "null", bdfe);
+		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i][CLOVER_NUMBER]), 
+		                		record,	currentRow + 1, fieldNumber[i][CLOVER_NUMBER], "null", bdfe);
 					} else {
 						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), 
-								currentRow + 1, fieldNumber[i]));
+								currentRow + 1, fieldNumber[i][CLOVER_NUMBER]));
 					}
 				}
 			}
@@ -246,6 +249,7 @@ public class XLSDataParser implements Parser {
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
+		//setting sheet for reading data
 		if (sheetName!=null){
 			sheet = wb.getSheet(sheetName);
 		}else{
@@ -253,114 +257,133 @@ public class XLSDataParser implements Parser {
 		}
 		format = wb.createDataFormat();
 		currentRow = firstRow;
-		fieldNumber = new int[metadata.getNumFields()];
-		Arrays.fill(fieldNumber,-1);
+		lastRow = sheet.getLastRowNum();
+		fieldNumber = new int[metadata.getNumFields()][2];
+		//mapping metadata with columns in xls
+		for (int i=0;i<fieldNumber.length;i++){
+			fieldNumber[i][CLOVER_NUMBER] = -1;
+		}
 		Map fieldNames = metadata.getFieldNames();
 		switch (getMappingType(metadataRow,cloverFields!=null,xlsFields!=null)) {
-		case NO_METADATA_INFO:
-			for (short i=0;i<fieldNumber.length;i++){
-				fieldNumber[i] = i;
-			}
-			break;
-		case ONLY_CLOVER_FIELDS:
-			for (int i = 0; i < cloverFields.length; i++) {
-				try {
-					fieldNumber[i] = ((Integer) fieldNames.get(cloverFields[i]));
-				} catch (NullPointerException ex) {
-					throw new ComponentNotReadyException("Clover field \""
-							+ cloverFields[i] + "\" not found");
-				}
-			}
-			break;
-		case CLOVER_FIELDS_AND_XLS_NUMBERS:
-			if (cloverFields.length!=xlsFields.length){
-				throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
-			}
-			for (short i=0;i<cloverFields.length;i++){
-				String cellCode = xlsFields[i].toUpperCase(); 
-				int cellNumber  = 0;
-				for (int j=0;j<cellCode.length();j++){
-					cellNumber+=cellCode.charAt(j);
-				}
-				cellNumber+=CELL_NUMBER_IN_SHEET*(cellCode.length()-1) - 'A'*cellCode.length();
-				try {
-					fieldNumber[cellNumber] = 
-						((Integer)fieldNames.get(cloverFields[i])).shortValue();
-				}catch (NullPointerException ex) {
-					throw new ComponentNotReadyException("Clover field \""
-							+ cloverFields[i] + "\" not found");
-				}
-			}
-			break;
-		case MAP_NAMES:
-			row = sheet.getRow(metadataRow);
-			int count = 0;
-			for (Iterator i=row.cellIterator();i.hasNext();){
-				cell = (HSSFCell)i.next();
-				String cellValue = cell.getStringCellValue();
-				if (fieldNames.containsKey(cellValue)){
-					fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cellValue)).shortValue();
-					fieldNames.remove(cellValue);
-				}else{
-					logger.warn("There is no field \"" + cellValue + "\" in output metadata");
-				}
-				count++;
-			}
-			if (count<metadata.getNumFields()){
-				short lastCell = row.getLastCellNum();
-				for (short i=0;i<fieldNumber.length;i++){
-					if (fieldNumber[i] == -1) {
-						fieldNumber[i] = lastCell++;
-					}
-				}
-			}
-			break;
-		case CLOVER_FIELDS_AND_XLS_NAMES:
-			if (cloverFields.length!=xlsFields.length){
-				throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
-			}
-			row = sheet.getRow(metadataRow);
-			count = 0;
-			for (Iterator i=row.cellIterator();i.hasNext();){
-				cell = (HSSFCell)i.next();
-				String cellValue = cell.getStringCellValue();
-				int xlsNumber = StringUtils.findString(cellValue,xlsFields);
-				if (xlsNumber > -1){
-					try {
-						fieldNumber[cell.getCellNum()] = ((Integer)fieldNames.get(cloverFields[xlsNumber])).shortValue();
-					}catch (NullPointerException ex) {
-						throw new ComponentNotReadyException("Clover field \""
-								+ cloverFields[xlsNumber] + "\" not found");
-					}
-					count++;
-				}else{
-					logger.warn("There is no field corresponding to \"" + cellValue + "\" in output metadata");
-				}
-			}
-			if (count<cloverFields.length){
-				logger.warn("Not all fields found");
-			}
-			break;
+		case NO_METADATA_INFO:noMetadtaInfo();break;
+		case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
+		case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
+		case MAP_NAMES:mapNames(fieldNames);break;
+		case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
 		}
 	}
 	
+	/**
+	 * This method guess's type of mapping between metadata fields and xls columns
+	 * 
+	 * @param metadataRow number of metadata row in xls file (-1 when there are not
+	 * 	field's names in xls)
+	 * @param cloverFields
+	 * @param xlsFields - names from xls or numbers of columns
+	 * @return mapping type
+	 */
 	private int getMappingType(int metadataRow,boolean cloverFields,boolean xlsFields){
-		if (metadataRow == -1 && !cloverFields && !xlsFields){
-			return NO_METADATA_INFO;
+		if (cloverFields && xlsFields)
+			if (metadataRow > -1)
+				return CLOVER_FIELDS_AND_XLS_NAMES;
+			else
+				return CLOVER_FIELDS_AND_XLS_NUMBERS;
+		if (cloverFields)
+			if (metadataRow > -1)
+				return MAP_NAMES;
+			else
+				return ONLY_CLOVER_FIELDS;
+		return NO_METADATA_INFO;
+	}
+	
+	private void noMetadtaInfo(){
+		for (short i=0;i<fieldNumber.length;i++){
+			fieldNumber[i][XLS_NUMBER] = i;
+			fieldNumber[i][CLOVER_NUMBER] = i;
 		}
-		if (metadataRow == -1 && !xlsFields){
-			return ONLY_CLOVER_FIELDS;
+	}
+	
+	private void onlyCloverFields(Map fieldNames) throws ComponentNotReadyException{
+		for (int i = 0; i < cloverFields.length; i++) {
+			fieldNumber[i][XLS_NUMBER] = i;
+			try {
+				fieldNumber[i][CLOVER_NUMBER] = (Integer) fieldNames.get(cloverFields[i]);
+			} catch (NullPointerException ex) {
+				throw new ComponentNotReadyException("Clover field \""
+						+ cloverFields[i] + "\" not found");
+			}
 		}
-		if (metadataRow == -1){
-			return CLOVER_FIELDS_AND_XLS_NUMBERS;
+	}
+	
+	private void cloverFieldsAndXlsNumbers(Map fieldNames) throws ComponentNotReadyException {
+		if (cloverFields.length!=xlsFields.length){
+			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
-		if (!cloverFields && !xlsFields){
-			return MAP_NAMES;
+		for (short i=0;i<cloverFields.length;i++){
+			String cellCode = xlsFields[i].toUpperCase(); 
+			int cellNumber  = cellCode.charAt(cellCode.length()-1)-65;
+			for (int j=0;j<cellCode.length()-1;j++){
+				cellNumber+=(cellCode.charAt(j)-64)*CELL_NUMBER_IN_SHEET;
+			}
+			fieldNumber[i][XLS_NUMBER] = cellNumber;
+			try {
+				fieldNumber[i][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[i]);
+			}catch (NullPointerException ex) {
+				throw new ComponentNotReadyException("Clover field \""
+						+ cloverFields[i] + "\" not found");
+			}
 		}
-		if (cloverFields && xlsFields){
-			return CLOVER_FIELDS_AND_XLS_NAMES;
+	}
+	
+	private void cloverfieldsAndXlsNames(Map fieldNames)throws ComponentNotReadyException{
+		if (cloverFields.length!=xlsFields.length){
+			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
-		return -1;
+		row = sheet.getRow(metadataRow);
+		int count = 0;
+		for (Iterator i=row.cellIterator();i.hasNext();){
+			cell = (HSSFCell)i.next();
+			String cellValue = cell.getStringCellValue();
+			int xlsNumber = StringUtils.findString(cellValue,xlsFields);
+			if (xlsNumber > -1){
+				fieldNumber[count][XLS_NUMBER] = cell.getCellNum();
+				try {
+					fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[xlsNumber]);
+				}catch (NullPointerException ex) {
+					throw new ComponentNotReadyException("Clover field \""
+							+ cloverFields[xlsNumber] + "\" not found");
+				}
+				count++;
+			}else{
+				logger.warn("There is no field corresponding to \"" + cellValue + "\" in output metadata");
+			}
+		}
+		if (count<cloverFields.length){
+			logger.warn("Not all fields found");
+		}
+	}
+	
+	private void mapNames(Map fieldNames) throws ComponentNotReadyException {
+		row = sheet.getRow(metadataRow);
+		int count = 0;
+		for (Iterator i=row.cellIterator();i.hasNext();){
+			cell = (HSSFCell)i.next();
+			String cellValue = cell.getStringCellValue();
+			fieldNumber[count][XLS_NUMBER] = cell.getCellNum();
+			if (fieldNames.containsKey(cellValue)){
+				fieldNumber[count][CLOVER_NUMBER] = (Integer)fieldNames.get(cellValue);
+				fieldNames.remove(cellValue);
+				count++;
+			}else{
+				logger.warn("There is no field \"" + cellValue + "\" in output metadata");
+			}
+		}
+		if (count<metadata.getNumFields()){
+			logger.warn("Not all fields found:");
+			for (Iterator i=fieldNames.keySet().iterator();i.hasNext();){
+				logger.warn(i.next());
+			}
+		}
 	}
 	
 	public void close() {
@@ -406,7 +429,6 @@ public class XLSDataParser implements Parser {
 	}
 
 	public void setCloverFields(String[] cloverFields) {
-		this.metadataRow = 0;
 		this.cloverFields = cloverFields;
 	}
 
@@ -419,7 +441,6 @@ public class XLSDataParser implements Parser {
 
 	public void setXlsFields(String[] xlsFields, boolean names) {
 		this.xlsFields = xlsFields;
-		this.metadataRow = 0;
 	}
 
 }
