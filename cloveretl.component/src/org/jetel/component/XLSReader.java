@@ -43,7 +43,54 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>XLS Reader Component</h3>
+ *
+ * <!-- Parses data from xls file and send the records to out ports. -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>XLSReader</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Parses data from xls file and send the records to out ports.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>At least one output port defined/connected.</tr>
+ * <tr><td><h4><i>Comment:</i></h4></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"XLS_READER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>startRow</b></td><td>index of first parsed record</td>
+ *  <tr><td><b>finalRow</b></td><td>index of final parsed record</td>
+ *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. If it is not set data
+ *   are read from first sheet</td>
+ *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
+ *  <tr><td><b>cloverFields</b></td><td>field names separated by :;| {colon, semicolon, pipe}
+ *  Can be used for mapping clover fields and xml fields or for defining order of reading 
+ *  columns from xls sheet</td>
+ *  <tr><td><b>xlsFields</b></td><td>names or indexes of columns from xml sheet corresponding 
+ *  to clover Fields. If xlsFields is set, cloverFields must be set too.Names of colums have 
+ *  to be doublequoted and  separated by :;| {colon, semicolon, pipe}.If they are not doublequoted they 
+ *  are considered as colums indexes</td>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node cloverFields="ORDER;CUSTOMERID;EMPLOYEEID;ORDERDATE;REQUIREDDA;SHIPPEDDAT;SHIPVIA;FREIGHT;SHIPNAME;SHIPADDRES;SHIPCITY;SHIPREGION;SHIPPOSTAL;SHIPCOUNTR" 
+ *  fileURL="${WORKSPACE}/data/ORDERS.xls" id="XLS_READER1" metadataRow="1" startRow="2" 
+ *  type="XLS_READER" xlsFields="&quot;ORDERID,N,20,5&quot;|&quot;CUSTOMERID,C,5&quot;|&quot;EMPLOYEEID,N,20,5&quot;|&quot;ORDERDATE,D&quot;|&quot;REQUIREDDA,D&quot;|&quot;SHIPPEDDAT,D&quot;|&quot;SHIPVIA,N,20,5&quot;|&quot;FREIGHT,N,20,5&quot;|&quot;SHIPNAME,C,40&quot;|&quot;SHIPADDRES,C,60&quot;|&quot;SHIPCITY,C,15&quot;|&quot;SHIPREGION,C,15&quot;|&quot;SHIPPOSTAL,C,10&quot;|'SHIPCOUNTR,C,15&quot;"/&gt;
  * 
+ * <pre>&lt;Node dataPolicy="strict" fileURL="example.xls" id="XLS_READER0" metadataRow="1" 
+ * startRow="2" type="XLS_READER"/&gt;
  * 
  * @author avackova
  *
@@ -67,7 +114,7 @@ public class XLSReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
-	private int startRow = -1;
+	private int startRow = 0;
 	private int finalRow = -1;
 	private int maxErrorCount = -1;
     
@@ -264,16 +311,22 @@ public class XLSReader extends Node {
 			parser.setMetadataRow(metadataRow);
 		}
 		if (xlsFields != null){
+			//check if xlsFields are set as nemas or as indexes
 			boolean names = xlsFields[0].startsWith("\"") ? true : false ;
 			if (names && metadataRow == 0){
-				throw new ComponentNotReadyException("Not valid metadataRow attribute = -1 for given field's names");
+				throw new ComponentNotReadyException("Not valid metadataRow attribute = 0 for given field's names");
 			}
 			if (names){
 				for (int i=0;i<xlsFields.length;i++){
 					xlsFields[i] = StringUtils.unquote(xlsFields[i]);
 				}
+				parser.setMetadataRow(metadataRow);
 			}else{
-				parser.setMetadataRow(0);
+				if (cloverFields!=null){
+					parser.setMetadataRow(0);
+				}else{
+					throw new ComponentNotReadyException("Clover fields must be set if xml fields have been set");
+				}
 			}
 			parser.setXlsFields(xlsFields,names);
 		}
