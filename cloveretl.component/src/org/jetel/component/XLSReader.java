@@ -75,7 +75,7 @@ public class XLSReader extends Node {
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
-	private int metadataRow = -1;
+	private int metadataRow = 0;
 	private String[] cloverFields = null;
 	private String[] xlsFields = null;
 
@@ -260,20 +260,22 @@ public class XLSReader extends Node {
 		if (cloverFields != null){
 			parser.setCloverFields(cloverFields);
 		}
+		if (metadataRow != 0){
+			parser.setMetadataRow(metadataRow);
+		}
 		if (xlsFields != null){
 			boolean names = xlsFields[0].startsWith("\"") ? true : false ;
-			if (names && metadataRow == -1){
-				throw new ComponentNotReadyException("Not valid metadataRow = -1 for given field's names");
+			if (names && metadataRow == 0){
+				throw new ComponentNotReadyException("Not valid metadataRow attribute = -1 for given field's names");
 			}
 			if (names){
 				for (int i=0;i<xlsFields.length;i++){
 					xlsFields[i] = StringUtils.unquote(xlsFields[i]);
 				}
+			}else{
+				parser.setMetadataRow(0);
 			}
 			parser.setXlsFields(xlsFields,names);
-		}
-		if (metadataRow != -1){
-			parser.setMetadataRow(metadataRow);
 		}
 		try {
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
