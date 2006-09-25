@@ -110,10 +110,10 @@ import org.xml.sax.helpers.DefaultHandler;
  * records. Then create the following mapping in the graph: <br>
  * <code>
  * &lt;node id="myId" type="com.lrn.etl.job.component.XMLExtract"&gt; <br>
- * &nbsp;&lt;mapping element="phrase" outPort="0"&gt;<br>
- * &nbsp;&nbsp;&lt;mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br>
- * &nbsp;&lt;/mapping&gt; <br>
- * &nbsp;&lt;mapping element="location" outPort="2"/&gt;<br>
+ * &nbsp;&lt;Mapping element="phrase" outPort="0"&gt;<br>
+ * &nbsp;&nbsp;&lt;Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br>
+ * &nbsp;&lt;/Mapping&gt; <br>
+ * &nbsp;&lt;Mapping element="location" outPort="2"/&gt;<br>
  * &lt;/node&gt;<br>
  * </code> Port 0 will get the DataRecords:<br>
  * 1) id=1111, text=hello<br>
