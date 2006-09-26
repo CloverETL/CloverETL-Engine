@@ -1,0 +1,6 @@
+*** Record# 0 ***
+#0|Field1|i->6
+#1|Field2|N->349.7
+#2|Field3|l->24930
+#3|Field4|B->7.8678765E7
+EOF with result null
