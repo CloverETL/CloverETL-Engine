@@ -1,1 +1,4 @@
-WORKSPACE = /home/avackova/workspace/examples
+# example:
+# WORKSPACE = c:\\cloverETL\\examples
+# WORKSPACE = /home/cloverETL/examples
+WORKSPACE = <absolute_path_to_examples>
