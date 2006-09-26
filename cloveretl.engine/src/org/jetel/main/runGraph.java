@@ -48,12 +48,12 @@ import org.jetel.util.JetelVersion;
  *  Program parameters:
  *  <table>
  *  <tr><td nowrap>-v</td><td>be verbose - print even graph layout</td></tr>
- *  <tr><td nowrap>-log</td><i>logfile</i><td>send output messages to specified logfile instead of stdout</td></tr>
  *  <tr><td nowrap>-P:<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
- *  <tr><td nowrap>-properties <i>filename</i></td><td>load definitions of properties form specified file</td></tr>
+ *  <tr><td nowrap>-cfg <i>filename</i></td><td>load definitions of properties from specified file</td></tr>
  *  <tr><td nowrap>-tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
- *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting hide connections passwods</td></tr>
+ *  <tr><td nowrap>-plugins <i>filename</i></td><td>directory where to look for plugins/components</td></tr>
+ *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -205,16 +205,16 @@ public class runGraph {
 	}
     
     
-	private static void printHelp(){
-		System.out.println("Usage: runGraph [-(v|log|cfg|P:|tracking|info|register)] <graph definition file>");
+	private static void printHelp() {
+		System.out.println("Usage: runGraph [-(v|cfg|P:|tracking|info|plugins|pass)] <graph definition file>");
 		System.out.println("Options:");
 		System.out.println("-v\t\t\tbe verbose - print even graph layout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("-cfg <filename>\t\tload definitions of properties from specified file");
 		System.out.println("-tracking <seconds>\thow frequently output the graph processing status");
 		System.out.println("-info\t\t\tprint info about Clover library version");
-        System.out.println("-register\t\tload/register additional transformation components");
         System.out.println("-plugins\t\tdirectory where to look for plugins/components");
+        System.out.println("-pass\t\tpassword for decrypting of hidden connections passwords");
 	}
 
 	private static void printInfo(){
