@@ -148,11 +148,6 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
-	    <parameter id="type" value="XML_EXTRACT"/>
-	</extension>
-
-	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.SystemExecute"/>
 	    <parameter id="type" value="SYS_EXECUTE"/>
 	</extension>
