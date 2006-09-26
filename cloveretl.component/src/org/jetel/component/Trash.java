@@ -150,6 +150,7 @@ public class Trash extends Node {
 					dataRecord.deserialize(recordBuffer);
 					outStream.println("*** Record# " + recCounter++ + " ***");
 					outStream.print(dataRecord);
+                    if(debugFilename == null) outStream.flush(); //if we debug into stdout
 				}
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
@@ -164,7 +165,7 @@ public class Trash extends Node {
 			SynchronizeUtils.cloverYield();
 		}
         //close debug file
-        if(outStream != null && debugFilename != null) { //debug is route to file
+        if(outStream != null && debugFilename != null) { //debug is routed into file
             outStream.println("EOF with result " + resultMsg);
             outStream.close();
         }
