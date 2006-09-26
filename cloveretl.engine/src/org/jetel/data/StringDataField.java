@@ -215,7 +215,7 @@ public class StringDataField extends DataField implements CharSequence{
      * @see org.jetel.data.DataField#getValueDuplicate()
      */
     public Object getValueDuplicate() {
-        return (isNull ? null : value.toString());
+        return (isNull ? null : new StringBuilder(value));
     }
 
 	/**
