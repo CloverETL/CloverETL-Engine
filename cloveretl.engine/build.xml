@@ -9,9 +9,10 @@
 	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.bin.default" value="${basedir}/bin"/>
-	<property name="dir.doc.default" value="${basedir}/doc"/>
+	<property name="dir.doc.default" value="${basedir}/javadoc"/>
 	<property name="dir.dist.default" value="${basedir}/dist"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
+	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.src" value="src"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
 	
@@ -115,6 +116,11 @@
 		<copy todir="${dir.dist}/lib">
 			<fileset dir="${dir.lib}"/>
 		</copy>
+
+		<!-- copy all documents from docs directory -->
+		<copy todir="${dir.dist}/docs">
+			<fileset dir="${dir.docs}"/>
+		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
@@ -139,18 +145,42 @@
 	</target>
 	
 	<!-- The "javadoc" target generates JavaDoc documentation. -->
-	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
+	<!--target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
         <javadoc destdir="${dir.doc}" access="public" use="true"
         	notree="false" nonavbar="false" noindex="false" splitindex="true"
         	author="true" version="true" nodeprecatedlist="false"
         	nodeprecated="false" packagenames="org.jetel.*"
         	sourcepath="${dir.src}">
+        	<sourcepath path="../cloveretl.connection/src"/>
 			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
 			<bottom>
 				<![CDATA[Copyright &#169; 2002-2005 Opentech s.r.o]]>
 			</bottom>
 		</javadoc>
-	</target>
+	</target-->
 
+	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
+		<echo message="Building code documentation..." />
+		<delete dir="${dir.doc}" />
+		<mkdir dir="${dir.doc}" />
+		<javadoc destdir="${dir.doc}" packagenames="org.jetel.*"
+			author="true">
+			<sourcepath path="${dir.src}"/>
+			<sourcepath path="../cloveretl.component/src"/>
+			<sourcepath path="../cloveretl.connection/src"/>
+			<sourcepath path="../cloveretl.sequence/src"/>
+			<sourcepath path="../cloveretl.lookup/src"/>
+			<sourcepath path="../cloveretl.thirdparty/src"/>
+			<doclet name="com.sun.tools.doclets.standard.Standard">
+				<param name="-breakiterator" value="on" />
+				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
+				<param name="-tag" value="revision" />
+			</doclet>
+			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
+			<bottom>
+				<![CDATA[Copyright &#169; 2002-2006 Javlin consulting s.r.o]]>
+			</bottom>
+		</javadoc>
+	</target>
 	
 </project>
