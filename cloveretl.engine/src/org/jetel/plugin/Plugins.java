@@ -63,6 +63,7 @@ public class Plugins {
         pluginDirectory = new File(directory);
         if(!pluginDirectory.isDirectory()) {
             logger.error("Plugin directory does not exists. (" + directory + ")");
+            return;
         }
         
         //create all plugin descriptor
