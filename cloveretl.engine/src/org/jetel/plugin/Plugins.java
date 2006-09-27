@@ -29,6 +29,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.component.ComponentFactory;
+import org.jetel.data.lookup.LookupTableFactory;
+import org.jetel.data.sequence.SequenceFactory;
+import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
 
 /**
@@ -66,6 +70,12 @@ public class Plugins {
         
         //check dependences between plugins
         checkDependences();
+        
+        //init calls of all factories for components, sequences, lookups and connections
+        ComponentFactory.init();
+        SequenceFactory.init();
+        LookupTableFactory.init();
+        ConnectionFactory.init();
     }
 
     public static List getExtensions(String extensionName) {

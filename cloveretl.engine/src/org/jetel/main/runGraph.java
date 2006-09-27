@@ -128,12 +128,8 @@ public class runGraph {
 			}
 		}
 		
-        //init all static factory
+        //init clover plugins system
         Plugins.init(pluginsRootDirectory);
-        ComponentFactory.init();
-        SequenceFactory.init();
-        LookupTableFactory.init();
-        ConnectionFactory.init();
         
 		FileInputStream in=null;
 		System.out.println("Graph definition file: " + args[args.length - 1]);
