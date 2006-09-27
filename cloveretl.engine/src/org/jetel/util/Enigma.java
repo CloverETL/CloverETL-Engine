@@ -28,10 +28,11 @@ import javax.crypto.SecretKey;
 import org.jetel.exception.JetelException;
 
 /**
+ * Class for encrypting/decrypting strings (mostly passwords) stored by CloverETL
+ * 
  * @author Martin Zatopek, JavlinConsulting,s.r.o.
  * @since  16.8.2006
  *
- * Class for encrypting/decrypting strings (mostly passwords) stored by CloverETL
  */
 public class Enigma {
     
