@@ -73,8 +73,6 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 	 * @throws JetelException
 	 */
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
-		record.init();
-
 		for (int idx = 0; idx < fieldCnt; idx++) {
 			try {
 				// set buffer scope to next field
@@ -96,6 +94,7 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 				return record;
 			}
 		}
+		recordIdx++;
 		return record;
 	}
 
@@ -108,15 +107,11 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
-			try {
-				if (!getData(recordLength)) {	// end of file reached
-					break;
-				}
-			}
-			catch (BadDataFormatException x) {
-				// ignore it
+			if (!getData(recordLength)) {	// end of file reached
+				break;
 			}
 		}
+		recordIdx += skipped;
 		return skipped;
 	}
 		
@@ -124,7 +119,6 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 		if (!getData(fieldLengths[fieldIdx])) {
 			return false;
 		}
-		recordIdx++;
 		fieldIdx = (fieldIdx + 1)%fieldCnt;
 		return true;
 	}

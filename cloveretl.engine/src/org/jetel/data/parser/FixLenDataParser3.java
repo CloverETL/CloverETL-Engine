@@ -21,7 +21,9 @@ package org.jetel.data.parser;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -37,9 +39,8 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Wrapper for fix-length data parsers working in byte and char mode.
+ * Superclass for fox-length data parsers.
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
- *
  */
 public abstract class FixLenDataParser3 implements Parser {
 
@@ -90,7 +91,7 @@ public abstract class FixLenDataParser3 implements Parser {
 	public void open(Object inputDataSource, DataRecordMetadata metadata)
 	throws ComponentNotReadyException {
 		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
-			throw new RuntimeException("Fixed length data format expected but not encountered");
+			throw new ComponentNotReadyException("Fixed length data format expected but not encountered");
 		}
 		this.metadata = metadata;
 
@@ -106,7 +107,11 @@ public abstract class FixLenDataParser3 implements Parser {
 			recordLength += fieldLengths[fieldIdx]; 
 		}
 
-		inChannel = ((FileInputStream)inputDataSource).getChannel();
+		if (inputDataSource instanceof ReadableByteChannel) {
+			inChannel = ((ReadableByteChannel)inputDataSource);
+		} else {
+			inChannel = Channels.newChannel((InputStream)inputDataSource);
+		}
 		
 		byteBuffer.clear();
 		byteBuffer.flip();
@@ -229,6 +234,14 @@ public abstract class FixLenDataParser3 implements Parser {
 	public void setSkipTrailingBlanks(boolean skipTrailingBlanks) {
 		// quietly ignore it
 		return;
+	}
+	
+	public static FixLenDataParser3 createParser(boolean byteMode) {
+		if (byteMode) {
+			return new FixLenByteDataParser();
+		} else {
+			return new FixLenCharDataParser();			
+		}			
 	}
 
 }

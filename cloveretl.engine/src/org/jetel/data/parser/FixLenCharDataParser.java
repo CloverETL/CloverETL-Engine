@@ -31,7 +31,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
 
 /**
- * Parser for sequence of records represented by fixed count of bytes
+ * Parser for sequence of records represented by fixed count of chars.
  * 
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  */
@@ -101,8 +101,6 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 		super.open(inputDataSource, metadata);
 
 		setRecordDelimiters(metadata.getRecordDelimiters());
-		setEnableIncomplete(enableIncomplete);
-		setSkipEmpty(skipEmpty);
 
 		charBuffer.clear();
 		charBuffer.flip();
@@ -115,7 +113,6 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	 * @throws JetelException
 	 */
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
-		record.init();
 		CharBuffer rawRec = null;
 		fieldIdx = -1;
 		try {
@@ -129,7 +126,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 			return null;	// end of input
 		}
 		int savedLimit = rawRec.limit();
-		for (fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
+		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			try {
 				if (rawRec.remaining() == 0) {
 					record.getField(fieldIdx).setToDefaultValue();
@@ -169,9 +166,6 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	}
 
 	public void setEnableIncomplete(boolean enableIncomplete) {
-		if (recordDelimiters.length == 0) {	// no delimiter, no changes possible
-			return; // incomplete records must remain disabled 
-		}
 		this.enableIncomplete = enableIncomplete;
 	}
 
@@ -180,9 +174,6 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	}
 
 	public void setSkipEmpty(boolean skipEmpty) {
-		if (recordDelimiters.length == 0) {	// no delimiter, no changes possible
-			return; // empty records must remain disabled 
-		}
 		this.skipEmpty = skipEmpty;
 	}
 
@@ -209,8 +200,9 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	public void setRecordDelimiters(String[] recordDelimiters) {
 		this.recordDelimiters = recordDelimiters == null ? new String[]{} : recordDelimiters;
 		if (this.recordDelimiters.length == 0) {	// no delimiter, requires special handling
-			enableIncomplete = false;
-			skipEmpty = false;
+			acEngine = null;
+		} else {
+			acEngine = new AhoCorasick(this.recordDelimiters);
 		}
 		maxDelim = 0;
 		for (int i = 0; i < this.recordDelimiters.length; i++) {
@@ -218,10 +210,10 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 				maxDelim = this.recordDelimiters[i].length();
 			}
 		}
-		acEngine = new AhoCorasick(this.recordDelimiters);
 	}
 
-	int[] _delimStartEnd = new int[]{-1, 0};
+	private int[] _delimStartEnd = new int[]{-1, 0};
+ 
 	/**
 	 * Finds position of first delimiter
 	 * @return null on end of input,
@@ -242,7 +234,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 				throw new JetelException(e.getMessage());
 			}
 			charBuffer.compact();	// ready for writing
-			decoder.decode(byteBuffer, charBuffer, byteBuffer.limit() < byteBuffer.capacity());
+			decoder.decode(byteBuffer, charBuffer, false);
 			charBuffer.flip();		// ready for reading
 			_savedLim = charBuffer.limit();
 		}
@@ -256,7 +248,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 		// find out delimiter position and position of next record
 		int delimPos;	// delimiter position (relative to the current position in the buffer)
 		int nextPos;	// position of next record (relative to the current position in the buffer)			
-		if (recordDelimiters.length == 0) {	// don't expect delimiter
+		if (acEngine == null) {	// don't expect delimiter
 			nextPos = delimPos = Math.min(recordLength, charBuffer.remaining());
 		} else {
 			int savedLimit = charBuffer.limit();
@@ -265,7 +257,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 				charBuffer.limit(charBuffer.position() + recordLength + maxDelim);
 			}
 			// look up delimiter
-			int[] delimMatch = acEngine.firstMatch(recordDelimiters, charBuffer.toString());	// {position, patternIdx}
+			int[] delimMatch = acEngine.firstMatch(recordDelimiters, charBuffer);	// {position, patternIdx}
 			charBuffer.limit(savedLimit);	// restore original limit
 			if (delimMatch[0] < 0 || delimMatch[0] > recordLength) {		// no delimiter
 				if (charBuffer.remaining() < recordLength) {	// not enough data
@@ -274,6 +266,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 					nextPos = delimPos = recordLength;	// use fixed amount of data
 				}
 			} else {	// found delimiter
+				acEngine.reset();
 				delimPos = delimMatch[0];
 				nextPos = delimPos + recordDelimiters[delimMatch[1]].length();
 			}
