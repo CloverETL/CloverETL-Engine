@@ -67,7 +67,7 @@ public final class Defaults {
 		DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
-		
+		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
 		Record.init();
         DataFieldMetadata.init();
 		DataParser.init();
@@ -85,6 +85,10 @@ public final class Defaults {
 	 */
 	public static int DEFAULT_INTERNAL_IO_BUFFER_SIZE;// = 32768;
 
+	/**
+	 * Default path to external binary files.
+	 */
+	public static String DEFAULT_BINARY_PATH;
     /**
      *  when creating InputStream or OutputStream objects, what
      *  is the size of their internal buffer. Used mainly in
