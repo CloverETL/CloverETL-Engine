@@ -35,8 +35,6 @@ import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
-import org.jetel.exception.ParserExceptionHandlerFactory;
-import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -52,13 +50,16 @@ import org.w3c.dom.Element;
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
- * <td>DelimitedDataReader</td></tr>
+ * <td>RixLenDataReader</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Parses specified fixed-length-record, input data file and broadcasts the records to all connected out ports.</td></tr>
+ * <td>Parses specified fixed-length record, input data file and broadcasts the records to all connected out ports.
+ * The length of record is fixed either in bytes or in chars. Byte mode is somewhat stricter than char mode.
+ * It doesn't support record delimiters, incomplete records and skipping of leading/trailing blanks in fields.
+ * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td></td></tr>
+ * <td>At least one input port or input file.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>At least one output port defined/connected.</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
@@ -69,15 +70,17 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>byteMode</b></td><td>Specifies parsing mode. true for byte mode, false for char mode.
+ *  Default is false.</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
- *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
- *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is FALSE.</td>
- *  <tr><td><b>SkipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each field should be skipped. Defailt value is TRUE.<br>
- *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
- *  <tr><td><b>LineSeparatorSize</b><br><i>optional</i></td><td> sets the size/length of line delimiter. It is 1 for "\n" - UNIX style
- *   and 2 for "\n\r" - DOS/Windows style. Can be set to any value and is added
- *   to total record length.<br>It is automatically determined from system properties. This method overrides the default value.<br>
- *   Has any meaning only if OneRecordPerLine is set to True - i.e. records are on separate lines.</td>
+ *  <tr><td><b>skipLeadingBlanks</b></td><td>Values true/false. Sets on/off skipping of leading blanks in fields.
+ *  Default is true. It doesn't have any effect in byte mode.</td>
+ *  <tr><td><b>skipTrailingBlanks</b></td><td>Values true/false. Sets on/off skipping of trailing blanks in fields.
+ *  Default is true. It doesn't have any effect in byte mode.</td>
+ *  <tr><td><b>enableIncomplete</b></td><td>Values true/false. Sets on/off support for incomplete records. 
+ *  Default is true. It doesn't have any effect in byte mode.</td>
+ *  <tr><td><b>skipEmpty</b></td><td>Values true/false. Specifies whether empty records are to be ignored. 
+ *  Default is true. It doesn't have any effect in byte mode.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  </tr>
@@ -86,10 +89,10 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node type="FIXED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" /&gt;</pre>
  *
- * @author      dpavlis, maciorowski
- * @since       April 4, 2002
+ * @author      Jan Hadrava
+ * @since       September 27, 2006
  * @revision    $Revision: 1439 $
- * @see         org.jetel.data.parser.FixLenDataParser, org.jetel.data.FixLenDataParser2
+ * @see         org.jetel.data.parser.FixLenDataParser3
  */
 
 public class FixLenDataReader extends Node {
@@ -99,7 +102,6 @@ public class FixLenDataReader extends Node {
 	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "skipTrailingBlanks";
 	private static final String XML_ENABLEINCOMPLETE_ATTRIBUTE = "enableIncomplete";
 	private static final String XML_SKIPEMPTY_ATTRIBUTE = "skipEmpty";
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
@@ -162,24 +164,9 @@ public class FixLenDataReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
-		// shall we skip rows ?
-		if (skipRows>0){
-		    try {
-		        for(int i=0;i<skipRows && runIt;i++){
-				// till we skip required num of records or it reaches end of data or it is stopped from outside
-		            if (parser.getNext(record) == null) break;
-					SynchronizeUtils.cloverYield();
-				}
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
-			}
-		}
-		
-		// MAIN RUN LOOOP
-		
+		// MAIN RUN LOOOP		
 		try {
+			parser.skip(skipRows);	// skip header
 			// till it reaches end of data or it is stopped from outside
 			while (((record = parser.getNext(record)) != null) && runIt) {
 				//broadcast the record to all connected Edges
@@ -239,11 +226,6 @@ public class FixLenDataReader extends Node {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
 		
-		PolicyType dataPolicy = this.parser.getPolicyType();
-		if (dataPolicy != null) {
-			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE,dataPolicy.toString());
-		}
-		
 		if (this.isByteMode()) {
 			xmlElement.setAttribute(XML_BYTEMODE_ATTRIBUTE,
 					String.valueOf(this.isByteMode()));
@@ -294,10 +276,6 @@ public class FixLenDataReader extends Node {
 			aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILEURL_ATTRIBUTE),
 						charset, byteMode);
-			if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) {
-				aFixLenDataReaderNIO.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
-					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
-			}
 			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
 				aFixLenDataReaderNIO.parser.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
 			}

@@ -150,10 +150,10 @@ public class AhoCorasick {
 	 * @return {position, patternIdx} for pattern patterns[patternIdx] at position charIdx,
 	 * {-1, -1} otherwise
 	 */
-	public int[] firstMatch(String[] patterns, String str) {
+	public int[] firstMatch(String[] patterns, CharSequence seq) {
 		reset();
-		for (int charIdx = 0; charIdx < str.length(); charIdx++) {
-			update(str.charAt(charIdx));
+		for (int charIdx = 0; charIdx < seq.length(); charIdx++) {
+			update(seq.charAt(charIdx));
 			for (int patternIdx = 0; patternIdx < patterns.length; patternIdx++) {
 				if (isPattern(patternIdx)) {	// match found
 					return new int[]{charIdx + 1 - patterns[patternIdx].length(), patternIdx};
