@@ -499,7 +499,7 @@ public class DataRecordMetadata implements Serializable {
 	}
 
     public String getRecordDelimiter() {
-        return recordDelimiters[0];
+        return recordDelimiters == null ? "" : recordDelimiters[0];
     }
     
     /**
@@ -542,6 +542,15 @@ public class DataRecordMetadata implements Serializable {
     	}
     	return result;
     }
+    
+    /**
+     * 
+     * @return Value indicating whether byte mode or char mode is to be used for parsing of fixed data. 
+     */
+    public boolean byteMode() {
+    	return false;
+    }
+
 }
 /*
  *  end class DataRecordMetadata

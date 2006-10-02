@@ -26,6 +26,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
 import java.nio.channels.Channels;
 
 import org.apache.commons.logging.Log;
@@ -35,6 +37,7 @@ import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenDataParser;
+import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
@@ -128,7 +131,7 @@ public class SystemExecute extends Node{
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
 	
-	public final static String COMPONENT_TYPE = "SYS_EXECUTE";
+	public static String COMPONENT_TYPE = "SYS_EXECUTE";
 
 	private final static int INPUT_PORT = 0;
 	private final static int OUTPUT_PORT = 0;
@@ -138,6 +141,7 @@ public class SystemExecute extends Node{
 	public  final static long KILL_PROCESS_WAIT_TIME = 1000;
 	
 	private String command;
+	private String[] cmdArray;
 	private String executeCommand;
 	private int capturedErrorLines;
 	private FileWriter outputFile = null;
@@ -151,6 +155,18 @@ public class SystemExecute extends Node{
 	
 	static Log logger = LogFactory.getLog(SystemExecute.class);
 	
+	public SystemExecute(String id) {
+		super(id);
+	}
+	
+	protected void set(String[] cmdArray, int errorLinesNumber)
+	{
+		this.interpreter = null;
+		this.command = null;
+		this.cmdArray = cmdArray;
+		this.capturedErrorLines = errorLinesNumber;		
+	}
+
 	/**
 	 * @param id of component
 	 * @param interpreter command interpreter in proper form
@@ -160,8 +176,9 @@ public class SystemExecute extends Node{
 	public SystemExecute(String id,String interpreter, String command,int errorLinesNumber) {
 		super(id);
 		this.interpreter = interpreter;
-		this.command=command;
-		this.capturedErrorLines=errorLinesNumber;
+		this.command = command;
+		this.cmdArray = null;
+		this.capturedErrorLines=errorLinesNumber;		
 	}
 	
 	/**
@@ -248,7 +265,7 @@ public class SystemExecute extends Node{
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
 				parser=new DelimitedDataParser();
 			}else {
-				parser=new FixLenDataParser();
+				parser= FixLenDataParser3.createParser(meta.byteMode());
 			}
 		}else{
 			parser=null;
@@ -257,7 +274,20 @@ public class SystemExecute extends Node{
 		boolean ok = true;
 		resultCode = Node.RESULT_ERROR;
 		try{
-			Process	process= Runtime.getRuntime().exec(executeCommand);
+			StringBuffer msg = new StringBuffer("Executing command: \"");
+			Process	process;
+			if (cmdArray != null) {
+				msg.append(cmdArray[0]).append("\" with parameters:\n");
+				for (int idx = 1; idx < cmdArray.length; idx++) {
+					msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
+				}
+				logger.info(msg.toString());
+				process = Runtime.getRuntime().exec(cmdArray);
+			} else {
+				msg.append(executeCommand);
+				logger.info(msg.toString());
+				process = Runtime.getRuntime().exec(executeCommand);
+			}
 			//get process input and output streams
 			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
 			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
@@ -430,7 +460,9 @@ public class SystemExecute extends Node{
 			}catch(IOException ex){
 				throw new ComponentNotReadyException(ex);
 			}
-		}else{
+		}else if (cmdArray != null) {
+			executeCommand = null;
+		} else {
 			executeCommand = command;
 		}
 		//prepare output file
@@ -501,7 +533,7 @@ public class SystemExecute extends Node{
 	 * 
 	 * @param outputFile
 	 */
-	private void setOutputFile(String outputFile){
+	protected void setOutputFile(String outputFile){
 		this.outputFileName = outputFile;
 	}
 
@@ -510,7 +542,7 @@ public class SystemExecute extends Node{
 	 * 
 	 * @param append
 	 */
-	private void setAppend(boolean append) {
+	protected void setAppend(boolean append) {
 		this.append = append;
 	}
 
