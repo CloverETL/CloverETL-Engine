@@ -60,8 +60,9 @@ public class DBFTypes  {
 			case 0x0C9: return "windows-1251";
 			case 0x0CB: return "windows-1253";
 			case 0x0CA: return "windows-1254";
+            default:
+                return "US-ASCII";
 		}
-		return "";
 	}
 	
 }
