@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph ilustrates usage of Oracle Reader Component" name="graphSystemExecute">
+<Global>
+<Metadata id="Metadata0">
+<Record name="defaultRecordName" type="delimited" recordDelimiter="">
+<Field size="4" name="u_id" type="integer" delimiter="[" locale="cs.CZ" nullable="true"/>
+<Field size="16" name="name" type="string" delimiter="][" locale="cs.CZ" nullable="true"/>
+<Field size="24" name="email" type="string" delimiter="][" locale="cs.CZ" nullable="true"/>
+<Field size="24" name="company" type="string" delimiter="][" locale="cs.CZ" nullable="true"/>
+<Field size="16" name="country" type="string" delimiter="][" locale="cs.CZ" nullable="true"/>
+<Field size="9" name="created" type="date" delimiter="]" locale="en.US" nullable="true" format="dd-MMM-yy"/>
+<Field size="17" name="logged" type="date" delimiter="\n" locale="en.US" nullable="true" format="yy/MM/dd/kk:mm:ss"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+
+<Node append="false" enabled="enabled" 
+id="ORAREADER" type="ORACLE_DATA_READER"
+oradump="/home/honza/workspace/oradump/src/oradump"
+username="test" password="test" tnsname="xe"
+select="select u_id, name, email, company, country, created, to_char(logged, 'YY/MM/DD/HH24:MI:SS')
+from clover_user where u_id>=0"
+outputFile="${WORKSPACE}/output/ora.out">
+</Node>
+
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/ora.out" id="WRITER" type="DATA_WRITER"/>
+<Edge fromNode="ORAREADER:0" id="Edge1" inPort="0"
+metadata="Metadata0" outPort="0" toNode="WRITER:0"/>
+
+</Phase>
+
+</Graph>
