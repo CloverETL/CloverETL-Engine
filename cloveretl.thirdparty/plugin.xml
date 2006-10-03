@@ -7,6 +7,10 @@
 		<library path="cloveretl.thirdparty.jar"/>
    	</runtime> 
 
+	<requires engine-version="1.9.0">
+		<import plugin-id="org.jetel.sequence"/>
+	</requires>
+
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.XMLExtract"/>
 	    <parameter id="type" value="XML_EXTRACT"/>
