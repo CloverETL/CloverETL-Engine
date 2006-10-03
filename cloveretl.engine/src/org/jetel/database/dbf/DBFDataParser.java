@@ -227,11 +227,13 @@ public class DBFDataParser implements Parser {
     public void open(Object inputDataSource, DataRecordMetadata _metadata)
             throws ComponentNotReadyException {
         
-        if (! (inputDataSource instanceof FileInputStream) ){
-            throw new ComponentNotReadyException("Invalid input data object passed - isn't an InputStream");
+        if (inputDataSource instanceof FileInputStream){
+            dbfFile = ((FileInputStream)inputDataSource).getChannel();
+        }else if (inputDataSource instanceof FileChannel){
+            dbfFile = (FileChannel)inputDataSource;
+        }else{
+            throw new ComponentNotReadyException("Invalid input data object passed - isn't an InputStream or FileChannel");
         }
-        
-        dbfFile = ((FileInputStream)inputDataSource).getChannel();
         
         
         metadata = _metadata;
@@ -260,6 +262,10 @@ public class DBFDataParser implements Parser {
             throw new ComponentNotReadyException(
                     "Error when setting initial reading position: "
                             + ex.getMessage());
+        }
+        //verify that metadata correspond to num of fields (plus 1 - deleted flag)
+        if (metadata.getNumFields()!=(dbfAnalyzer.getNumFields()+1)){
+            throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
         }
         // initialize array of fields sizes
         fieldSizes = new int[metadata.getNumFields()];
