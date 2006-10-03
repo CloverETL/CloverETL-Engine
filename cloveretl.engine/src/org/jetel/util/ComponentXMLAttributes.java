@@ -129,7 +129,7 @@ public class ComponentXMLAttributes {
 	    String newAttributeValue;
 	    
 		// add all "inlined" attributes in form of "attr" node as normal attributes
-		if (_nodeXML.hasChildNodes()) {
+		if (_nodeXML!=null && _nodeXML.hasChildNodes()) {
 			list = _nodeXML.getChildNodes();
 			for (int i = 0; i < list.getLength(); i++) {
 				childNode = list.item(i);
