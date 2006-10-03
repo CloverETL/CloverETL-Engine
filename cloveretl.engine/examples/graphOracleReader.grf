@@ -18,7 +18,7 @@
 
 <Node append="false" enabled="enabled" 
 id="ORAREADER" type="ORACLE_DATA_READER"
-oradump="/home/honza/workspace/oradump/src/oradump"
+oradump="../../oradump/src/oradump"
 username="test" password="test" tnsname="xe"
 select="select u_id, name, email, company, country, created, to_char(logged, 'YY/MM/DD/HH24:MI:SS')
 from clover_user where u_id>=0"
