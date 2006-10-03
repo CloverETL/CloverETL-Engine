@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
@@ -50,7 +51,9 @@ import org.w3c.dom.Element;
  * of SimpleSequence can be greatly increased.</i>
  */
 public class SimpleSequence extends GraphElement implements Sequence {
- 
+
+    public final static String SEQUENCE_TYPE = "SIMPLE_SEQUENCE";
+
     public static final int DATA_SIZE = 8; //how many bytes occupy serialized value in file
     public static final String ACCESS_MODE="rwd";
     
@@ -76,6 +79,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
     /**
      * Creates SimpleSequence object.
      * 
+     * @param id unique identifier of sequence
+     * @param graph transformation graph, where is sequence placed
      * @param sequenceName name (should be unique) of the sequence to be created
      * @param filename filename (with full path) under which store sequence value's
      * @param start	the number the sequence should start with
@@ -83,8 +88,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * @param numCachedValues	how many values should be cached (reduces IO but consumes some of the 
      * available values between object reusals)
      */
-    public SimpleSequence(String id, String sequenceName,String filename,int start,int step,int numCachedValues){
-        super(id, sequenceName);
+    public SimpleSequence(String id, TransformationGraph graph, String sequenceName, String filename, int start, int step, int numCachedValues) {
+        super(id, graph, sequenceName);
         this.filename=filename;
         this.start=start;
         this.sequenceValue=start;
@@ -220,23 +225,21 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return filename;
 	}
 	
-	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) {
+	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
         try {
-		return new SimpleSequence(
+            return new SimpleSequence(
                 xattribs.getString(XML_ID_ATTRIBUTE),
+                graph,
 				xattribs.getString(XML_NAME_ATTRIBUTE),
 				xattribs.getString(XML_FILE_URL_ATTRIBUTE),
 				xattribs.getInteger(XML_START_ATTRIBUTE),
                 xattribs.getInteger(XML_STEP_ATTRIBUTE),
                 xattribs.getInteger(XML_CACHED_ATTRIBUTE));
-        }catch(Exception ex){
-            logger.fatal("while creating SimpleSequence ["+
-                    xattribs.getString(XML_ID_ATTRIBUTE,"unknown id")+"]",ex);
-            return null;
+        } catch(Exception ex) {
+            throw new XMLConfigurationException(SEQUENCE_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(), ex);
         }
-		
 	}
 
     public boolean checkConfig() {

@@ -11,4 +11,9 @@
 		<parameter id="type" value="SIMPLE_SEQUENCE"/>
 		<parameter id="className" value="org.jetel.sequence.SimpleSequence"/>
 	</extension>
+
+	<extension point-id="sequence">
+		<parameter id="type" value="PRIMITIVE_SEQUENCE"/>
+		<parameter id="className" value="org.jetel.sequence.PrimitiveSequence"/>
+	</extension>
 </plugin>
