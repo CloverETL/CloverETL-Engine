@@ -20,9 +20,9 @@
 id="ORAREADER" type="ORACLE_DATA_READER"
 oradump="../../oradump/src/oradump"
 username="test" password="test" tnsname="xe"
-select="select u_id, name, email, company, country, created, to_char(logged, 'YY/MM/DD/HH24:MI:SS')
+select="select u_id, name, email, company, country, to_char(created, 'DD-MON-YY', 'nls_date_language = ENGLISH'), to_char(logged, 'YY/MM/DD/HH24:MI:SS', 'nls_date_language = ENGLISH')
 from clover_user where u_id>=0"
-outputFile="${WORKSPACE}/output/ora.out">
+outputFile="${WORKSPACE}\output\ora.out">
 </Node>
 
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/ora.out" id="WRITER" type="DATA_WRITER"/>
