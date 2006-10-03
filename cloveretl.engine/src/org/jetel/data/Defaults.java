@@ -88,7 +88,7 @@ public final class Defaults {
 	/**
 	 * Default path to external binary files.
 	 */
-	public static String DEFAULT_BINARY_PATH;
+	public static String DEFAULT_BINARY_PATH;// = "./bin/"
     /**
      *  when creating InputStream or OutputStream objects, what
      *  is the size of their internal buffer. Used mainly in
