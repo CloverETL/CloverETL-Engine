@@ -44,7 +44,7 @@ DEFAULT_DATETIME_FORMAT = yyyy-MM-dd HH:mm:ss
 DEFAULT_LOCALE_STR_DELIMITER_REGEX = \\.
 
 #Default path to external binary files.
-DEFAULT_BINARY_PATH = ./bin/
+DEFAULT_BINARY_PATH = ./
 
 #Default charset used when parsing data from text representation
 DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
