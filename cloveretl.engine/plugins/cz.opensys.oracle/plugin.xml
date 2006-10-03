@@ -5,11 +5,17 @@
 	
 	<requires engine-version="1.9.0">
 		<import plugin-id="org.jetel.connection"/>
+		<import plugin-id="org.jetel.component"/>
 	</requires>
 	
 	<extension point-id="component">
 		<parameter id="type" value="ORACLE_DATA_WRITER"/>
 		<parameter id="className" value="cz.opensys.oracle.component.OracleDataWriter"/>
 	</extension>
-	
+
+	<extension point-id="component">
+		<parameter id="type" value="ORACLE_DATA_READER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.OracleDataReader"/>
+	</extension>
+		
 </plugin>
