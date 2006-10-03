@@ -175,7 +175,13 @@ public class StringDataField extends DataField implements CharSequence{
 		}
 	}
 
-
+    public void append(CharSequence seq) {
+        if(isNull) {
+            setValue(seq);
+        } else {
+            value.append(seq);
+        }
+    }
 	/**
 	 *  Sets the Null value indicator
 	 *
