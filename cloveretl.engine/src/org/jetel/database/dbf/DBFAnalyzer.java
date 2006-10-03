@@ -31,8 +31,13 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Properties;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.jetel.component.ComponentFactory;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -50,9 +55,10 @@ public class DBFAnalyzer {
 	
 	private static final int DBF_HEADER_SIZE=32;
 	private static final int DBF_FIELD_DEF_SIZE=32;
+    private static final byte DBF_HEADER_TERMINATOR=0x0D;
 	private static final String HEADER_CHARACTER_ENCODING="ISO-8859-1";
-	private final static String VERSION = "1.0";
-	private final static String LAST_UPDATED = "2004/06/29";  
+	private final static String VERSION = "1.1";
+	private final static String LAST_UPDATED = "2006/10/03";  
 	
 	private ByteBuffer buffer;
 	private int dbfNumRows;
@@ -65,13 +71,11 @@ public class DBFAnalyzer {
 	private byte dbfCodePage;
 	private Charset charset;
 	private String dbfTableName;
-	
+    
 	public DBFAnalyzer(){
 		
 	}
 
-	
-	
 	void analyze(String dbfFileName) throws IOException,DBFErrorException{
 		FileChannel dbfFile=new FileInputStream(dbfFileName).getChannel();
 		analyze(dbfFile,new File(dbfFileName).getName());
@@ -92,39 +96,43 @@ public class DBFAnalyzer {
 		// read-in basic table definition
 		buffer.position(0);
 		dbfType=buffer.get();
+       
 		buffer.position(4);
 		dbfNumRows=buffer.getInt();
+
 		buffer.position(8);
 		dbfDataOffset=buffer.getShort();
-		dbfNumFields=(dbfDataOffset-32-1)/32;
+        // handle differently FoxPro and dBaseIII 
+		dbfNumFields = (dbfType>0x03) ? (dbfDataOffset-296)/32 : (dbfDataOffset-33)/32;
+       
 		buffer.position(29);
 		dbfCodePage=buffer.get();
+       
 		buffer.position(10);
 		dbfRecSize=buffer.getShort();
 		
 		buffer=ByteBuffer.allocate(dbfNumFields*DBF_FIELD_DEF_SIZE);
-	    buffer.order(ByteOrder.LITTLE_ENDIAN);
-		dbfFile.read(buffer);
-		buffer.flip();
-	    
-		// read-in definition of individual fields
-		int offset=0;
-		dbfFields=new DBFFieldMetadata[dbfNumFields];
-		charset=Charset.forName(HEADER_CHARACTER_ENCODING);
-		for(int i=0;i<dbfNumFields;i++){
-			dbfFields[i]=new DBFFieldMetadata();
-			buffer.limit(11+offset);
-			dbfFields[i].name=charset.decode(buffer).toString().trim();
-			buffer.limit(12+offset);
-			dbfFields[i].type=charset.decode(buffer).get();
-			buffer.limit(32+offset);
-			dbfFields[i].offset=buffer.getInt();
-			dbfFields[i].length=buffer.get();
-			dbfFields[i].decPlaces=buffer.get();
-			offset+=DBF_FIELD_DEF_SIZE;
-		}
-		
-		
+        buffer.order(ByteOrder.LITTLE_ENDIAN);
+        dbfFile.read(buffer);
+        buffer.flip();
+        
+        // read-in definition of individual fields
+        int offset=0;
+        dbfFields=new DBFFieldMetadata[dbfNumFields];
+        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
+        for(int i=0;i<dbfNumFields;i++){
+            dbfFields[i]=new DBFFieldMetadata();
+            buffer.limit(11+offset);
+            dbfFields[i].name=charset.decode(buffer).toString().trim();
+            buffer.limit(12+offset);
+            dbfFields[i].type=charset.decode(buffer).get();
+            buffer.limit(32+offset);
+            dbfFields[i].offset=buffer.getInt();
+            dbfFields[i].length=buffer.get();
+            dbfFields[i].decPlaces=buffer.get();
+            offset+=DBF_FIELD_DEF_SIZE;
+        }
+        
 		// let's construct the valid character decoder based on info found in table header
 		try{
 			charset=Charset.forName(DBFTypes.dbfCodepage2Java(dbfCodePage));
@@ -140,33 +148,50 @@ public class DBFAnalyzer {
 	 * @param args
 	 */
 	public static void main(String[] args){
-		
+	    int argsOffset=0;
+        boolean verbose=false;
+        
 		if (args.length==0){
-			System.out.println("*** Jetel DBFAnalyzer (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-04 D.Pavlis, released under GNU Lesser General Public license ***\n");
-			System.out.println("Usage: DBFAnalyzer <DBF filename> [<metadata output filename>]");
+            System.out.println("***  CloverETL DBFAnalyzer (" + VERSION + ") created on "+LAST_UPDATED+" (c) 2002-06 D.Pavlis, released under GNU Lesser General Public license ***");
+            System.out.println("Usage: DBFAnalyzer [-v(erbose)] <DBF filename> [<metadata output filename>]");
 			System.exit(-1);
 		}
-		
+       
 		DBFAnalyzer dbf = new DBFAnalyzer();
+		
+        
+        if (args[0].startsWith("-v")){
+            argsOffset++;
+            verbose=true;
+        }
+        
 		try{
-			dbf.analyze(args[0]);
+			dbf.analyze(args[0+argsOffset]);
 		}catch(Exception ex){
-			System.err.println(ex.getMessage());
-			System.exit(-1);
+            throw new RuntimeException(ex);
 		}
+        
+        if(verbose){
+        System.out.println("DBF type: "+dbf.dbfType+" - "+dbf.getDBFTypeName(dbf.dbfType));
+        System.out.println("Number of rows in table: "+dbf.dbfNumRows);
+        System.out.println("Number of fields in table: "+dbf.dbfNumFields);
+        System.out.println("Codepage: "+dbf.dbfCodePage+" - corresponds to: "+DBFTypes.dbfCodepage2Java(dbf.dbfCodePage));
+        System.out.println("Record size (bytes): "+dbf.dbfRecSize);
+        }
+        
 		try{
 			OutputStream outstream;
-			if (args.length<2){
+			if (args.length<2+argsOffset){
 				outstream=System.out;
 			}else{
-				outstream=new BufferedOutputStream(new FileOutputStream(args[1]));
+				outstream=new BufferedOutputStream(new FileOutputStream(args[1+argsOffset]));
 			}
 			DataRecordMetadataXMLReaderWriter.write(dbf.getCloverMetadata(), outstream);
 		}catch(IOException ex){
 			System.err.println(ex.getMessage());
 			System.exit(-1);
 		}
-		
+		System.exit(0);
 	}
 
 
@@ -203,8 +228,7 @@ public class DBFAnalyzer {
 	 * 
 	 * @return
 	 */
-	public String getDBFTypeName(){
-	    int type=this.dbfType;
+	public String getDBFTypeName(int type){
 	    for (int i=0;i<DBFTypes.KNOWN_TYPES.length;i++){
 	        if (type==DBFTypes.KNOWN_TYPES[i]){
 	            return DBFTypes.KNOWN_TYPES_NAMES[i];
@@ -226,13 +250,14 @@ public class DBFAnalyzer {
 	 */
 	public static char dbfFieldType2Clover(char type){
 		char cloverType;	
-		switch(type){
+		switch(Character.toUpperCase(type)){
 			case 'C': return DataFieldMetadata.STRING_FIELD;
 			case 'N': return DataFieldMetadata.NUMERIC_FIELD;
 			case 'D': return DataFieldMetadata.DATE_FIELD;
 			case 'L': return DataFieldMetadata.STRING_FIELD;
 			case 'M': return DataFieldMetadata.BYTE_FIELD;
-			default: throw new DBFErrorException("Unsupported DBF field type: "+type);
+			default: return DataFieldMetadata.STRING_FIELD;
+            //throw new DBFErrorException("Unsupported DBF field type: \""+String.valueOf(type)+"\" hex: "+Integer.toHexString(type));
 		}
 	}
 	
