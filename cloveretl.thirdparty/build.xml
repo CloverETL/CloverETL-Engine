@@ -58,7 +58,7 @@
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
-			classpath="${dir.dist}${engine.dist}">
+			classpath="${dir.dist}${engine.dist};${dir.dist}${sequence.dist}">
 			<classpath>
 				<pathelement path="${commons-logging}"/>
 			</classpath>
