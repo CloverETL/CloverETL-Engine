@@ -1,6 +1,5 @@
-<!-- testing graph by Francois Armand from Linagora -->
-
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- testing graph by Francois Armand -->
 <Graph name="Testing Simple Copy">
 	<!-- Un essai de copie simple d'un fichier à un autre
 	-->
@@ -35,7 +34,7 @@
 	<Property fileURL="workspace.prm" id="GraphParameter0"/>
 	</Global>
 	<Phase number="0">
-		<Node id="INPUT1" type="LDAP_READER" ldapUrl="ldap://ldap.uninett.no:389/" base="ou=people,dc=uninett,dc=no" filter="uid=*" scope="SUBTREE" />
+		<Node id="INPUT1" type="LDAP_READER" ldapUrl="ldap://ldap.uninett.no:389/" base="ou=people,dc=uninett,dc=no" filter="(uid=h*)" scope="SUBTREE" />
 		<Node id="BROADCAST" type="SIMPLE_COPY" />
 		<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER" fileURL="${WORKSPACE}/output/LdapReader_Uninett.txt" charset="UTF-8" DataPolicy="controlled"  />
 		<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0"	metadata="InOutMetadata" />
