@@ -22,7 +22,6 @@ package org.jetel.lookup;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.jetel.connection.CopySQLData;
 import org.jetel.connection.DBConnection;
@@ -31,12 +30,11 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
-import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -62,6 +60,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     private static final String XML_METADATA_ID ="metadata";
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_DBCONNECTION = "dbConnection";
+    private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection dbConnection;
@@ -426,7 +425,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
     }
 
-	   public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+    public static LookupTable fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
         DBLookupTable lookupTable = null;
         String id;
@@ -437,25 +436,28 @@ public class DBLookupTable extends GraphElement implements LookupTable {
             id = xattribs.getString(XML_ID_ATTRIBUTE);
             type = xattribs.getString(XML_TYPE_ATTRIBUTE);
         } catch(AttributeNotFoundException ex) {
-            throw new RuntimeException("Can't create lookup table - " + ex.getMessage());
+            throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(), ex);
         }
         
         //check type
         if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_DB_LOOKUP)) {
-            throw new RuntimeException("Can't create db lookup table from type " + type);
+            throw new XMLConfigurationException("Can't create db lookup table from type " + type);
         }
         
         //create db lookup table
         //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         
         try {
-            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs
-                    .getString(XML_METADATA_ID));
+            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
 
             lookupTable = new DBLookupTable(id, (DBConnection) graph
                     .getConnection(xattribs.getString(XML_DBCONNECTION)),
                     metadata, xattribs.getString(XML_SQL_QUERY));
-
+            
+            if(xattribs.exists(XML_LOOKUP_INITIAL_SIZE)) {
+                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE));
+            }
+            
             return lookupTable;
         } catch (AttributeNotFoundException ex) {
             throw new XMLConfigurationException(ex);
