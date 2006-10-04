@@ -1,0 +1,45 @@
+<!-- testing graph by Francois Armand from Linagora -->
+
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="Testing Simple Copy">
+	<!-- Un essai de copie simple d'un fichier à un autre
+	-->
+	<Global>
+		<Metadata id="InOutMetadata">
+			<Record name="Employees" type="delimited">
+				<Field name="dn" type="string" delimiter=";" />
+				<Field name="cn" type="string" delimiter=";" />
+				<Field name="displayName" type="string" delimiter=";" />
+				<Field name="eduPersonAffiliation" type="string" delimiter=";" />
+				<Field name="eduPersonOrgDN" type="string" delimiter=";" />
+				<Field name="eduPersonOrgUnitDN" type="string" delimiter=";" />
+				<Field name="eduPersonPrimaryOrgUnitDN" type="string" delimiter=";" />
+				<Field name="eduPersonPrincipalName" type="string" delimiter=";" />
+				<Field name="employeeNumber" type="string" delimiter=";" />
+				<Field name="facsimileTelephoneNumber" type="string" delimiter=";" />
+				<Field name="givenName" type="string" delimiter=";" />
+				<Field name="l" type="string" delimiter=";" />
+				<Field name="labeledURI" type="string" delimiter=";" />
+				<Field name="mail" type="string" delimiter=";" />
+				<Field name="norEduPersonLIN" type="string" delimiter=";" />
+				<Field name="o" type="string" delimiter=";" />
+				<Field name="ou" type="string" delimiter=";" />
+				<Field name="postalCode" type="string" delimiter=";" />
+				<Field name="sn" type="string" delimiter=";" />
+				<Field name="telephoneNumber" type="string" delimiter=";" />
+				<Field name="uid" type="string" delimiter="\n" />
+			</Record>
+		</Metadata>
+<!-- <LdapConnection id="LdapConnection0" name="Open Ldap Connexion" password="" user=""  ldapURL="ldap://localhost:389/dc=sps,dc=fr" />
+ -->	
+	<Property fileURL="workspace.prm" id="GraphParameter0"/>
+	</Global>
+	<Phase number="0">
+		<Node id="INPUT1" type="LDAP_READER" ldapUrl="ldap://ldap.uninett.no:389/" base="ou=people,dc=uninett,dc=no" filter="uid=*" scope="SUBTREE" />
+		<Node id="BROADCAST" type="SIMPLE_COPY" />
+		<Node id="OUTPUT1" type="DELIMITED_DATA_WRITER" fileURL="${WORKSPACE}/output/LdapReader_Uninett.txt" charset="UTF-8" DataPolicy="controlled"  />
+		<Edge id="INEDGE1" fromNode="INPUT1:0" toNode="BROADCAST:0"	metadata="InOutMetadata" />
+		<Edge id="INNEREDGE1" fromNode="BROADCAST:0" toNode="OUTPUT1:0" metadata="InOutMetadata" />
+	</Phase>
+</Graph>
+
