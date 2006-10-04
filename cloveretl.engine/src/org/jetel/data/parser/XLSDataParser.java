@@ -64,6 +64,7 @@ public class XLSDataParser implements Parser {
 	private DataRecordMetadata metadata;
 	private IParserExceptionHandler exceptionHandler;
 	private String sheetName = null;
+	private int sheetNumber = 0;
 	private int recordCounter;
 	private int firstRow = 0;
 	private int currentRow;
@@ -253,7 +254,14 @@ public class XLSDataParser implements Parser {
 		if (sheetName!=null){
 			sheet = wb.getSheet(sheetName);
 		}else{
-			sheet = wb.getSheetAt(0);
+			try {
+				sheet = wb.getSheetAt(sheetNumber);
+			}catch(IndexOutOfBoundsException ex){
+				throw new ComponentNotReadyException("There is no sheet with number \"" +	sheetNumber +"\"");
+			}
+		}
+		if (sheet == null) {
+			throw new ComponentNotReadyException("There is no sheet with name \"" +	sheetName +"\"");
 		}
 		format = wb.createDataFormat();
 		currentRow = firstRow;
@@ -483,6 +491,10 @@ public class XLSDataParser implements Parser {
 
 	public void setXlsFields(String[] xlsFields, boolean names) {
 		this.xlsFields = xlsFields;
+	}
+
+	public void setSheetNumber(int sheetNumber) {
+		this.sheetNumber = sheetNumber;
 	}
 
 }
