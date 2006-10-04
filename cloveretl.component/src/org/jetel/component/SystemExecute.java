@@ -26,8 +26,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.nio.channels.Channels;
 
 import org.apache.commons.logging.Log;
@@ -36,7 +34,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
@@ -422,7 +419,6 @@ public class SystemExecute extends Node{
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
-		broadcastEOF();
 		if (!runIt) {
 			resultMsg = resultMsg + "\n" + "STOPPED";
 			ok = false;;
@@ -437,6 +433,7 @@ public class SystemExecute extends Node{
 		if (ok){
 			resultCode = Node.RESULT_OK;
 		}
+		broadcastEOF();
 	}
 
 	/* (non-Javadoc)
