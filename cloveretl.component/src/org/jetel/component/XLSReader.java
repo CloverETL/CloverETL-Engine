@@ -73,9 +73,12 @@ import org.w3c.dom.Element;
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
  *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. If it is not set data
  *   are read from first sheet</td>
+ *  <tr><td><b>sheetNumber</b></td><td>number of sheet for reading data (starting from 0).
+ *   If it is not set data are read from first sheet. If sheetName and sheetNumber are both
+ *    set, sheetNumber is ignored</td>
  *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
  *  <tr><td><b>cloverFields</b></td><td>field names separated by :;| {colon, semicolon, pipe}
- *  Can be used for mapping clover fields and xml fields or for defining order of reading 
+ *  Can be used for mapping clover fields and xls fields or for defining order of reading 
  *  columns from xls sheet</td>
  *  <tr><td><b>xlsFields</b></td><td>names or indexes of columns from xml sheet corresponding 
  *  to clover Fields. If xlsFields is set, cloverFields must be set too.Names of colums have 
@@ -107,6 +110,7 @@ public class XLSReader extends Node {
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
+	private final static String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
 	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
 	private final static String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
 	private final static String XML_XLSFIELDS_ATTRIBUTE = "xlsFields";
@@ -122,6 +126,7 @@ public class XLSReader extends Node {
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
+	private int sheetNumber = -1;
 	private int metadataRow = 0;
 	private String[] cloverFields = null;
 	private String[] xlsFields = null;
@@ -222,6 +227,8 @@ public class XLSReader extends Node {
 			}
 			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
 				aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
+			}else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)){
+				aXLSReader.setSheetNumber(xattribs.getInteger(XML_SHEETNUMBER_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
@@ -304,6 +311,9 @@ public class XLSReader extends Node {
 		if (sheetName != null){
 			parser.setSheetName(sheetName);
 		}
+		if (sheetNumber > -1){
+			parser.setSheetNumber(sheetNumber);
+		}
 		if (cloverFields != null){
 			parser.setCloverFields(cloverFields);
 		}
@@ -351,6 +361,10 @@ public class XLSReader extends Node {
 
 	private void setXlsFields(String[] xlsFields) {
 		this.xlsFields = xlsFields;
+	}
+
+	public void setSheetNumber(int sheetNumber) {
+		this.sheetNumber = sheetNumber;
 	}
 
 }
