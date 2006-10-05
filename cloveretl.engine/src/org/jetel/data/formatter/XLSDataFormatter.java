@@ -28,6 +28,7 @@ import java.util.Date;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
+import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
@@ -50,6 +51,11 @@ public class XLSDataFormatter implements Formatter {
 	private DataRecordMetadata metadata;
 	private FileOutputStream out;
 	private int recCounter;
+	private boolean saveNames;
+	
+	public XLSDataFormatter(boolean saveNames){
+		this.saveNames = saveNames;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
@@ -57,19 +63,40 @@ public class XLSDataFormatter implements Formatter {
 	public void open(Object out, DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
 		this.out = (FileOutputStream)out; 
+		recCounter = 0;
 		wb = new HSSFWorkbook();
 		sheet = wb.createSheet();
+		if (saveNames){
+			HSSFCellStyle metaStyle = wb.createCellStyle();
+			HSSFFont font = wb.createFont();
+			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			metaStyle.setFont(font);
+			row = sheet.createRow(recCounter);
+			String name;
+			for (short i=0;i<metadata.getNumFields();i++){
+				cell = row.createCell(i);
+				name = metadata.getField(i).getName();
+				if (sheet.getColumnWidth(i) < name.length() * 256 ) {
+					sheet.setColumnWidth(i,(short)(256 * name.length()));
+				}
+				cell.setCellStyle(metaStyle);
+				cell.setCellValue(name);
+			}
+			recCounter++;
+		}
 		dataFormat = wb.createDataFormat();
 		cellStyle = new HSSFCellStyle[metadata.getNumFields()];
 		String format;
-		for (int i=0;i<metadata.getNumFields();i++){
+		for (short i=0;i<metadata.getNumFields();i++){
 			cellStyle[i] = wb.createCellStyle();
 			format = metadata.getField(i).getFormatStr();
 			if (format!=null){
 				cellStyle[i].setDataFormat(dataFormat.getFormat(format));
 			}
+			if (sheet.getColumnWidth(i) < metadata.getField(i).getSize() * 256) {
+				sheet.setColumnWidth(i,(short)( metadata.getField(i).getSize() * 256));
+			}
 		}
-		recCounter = 0;
 	}
 
 	/* (non-Javadoc)
