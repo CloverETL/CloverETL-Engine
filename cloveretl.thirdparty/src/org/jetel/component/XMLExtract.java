@@ -1,11 +1,16 @@
 package org.jetel.component;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
@@ -31,6 +36,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.ComponentXMLAttributes;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
@@ -151,16 +157,17 @@ public class XMLExtract extends Node {
     private static final Log    LOG = LogFactory.getLog(XMLExtract.class);
 
     private static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
+    private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 
-    private static final String XML_MAPPING_ATTRIBUTE = "Mapping";
-    private static final String XML_ELEMENT_ATTRIBUTE = "element";
-    private static final String XML_OUTPORT_ATTRIBUTE = "outPort";
-    private static final String XML_PARENTKEY_ATTRIBUTE = "parentKey";
-    private static final String XML_GENERATEDKEY_ATTRIBUTE = "generatedKey";
-    private static final String XML_XMLFIELDS_ATTRIBUTE = "xmlFields";
-    private static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
-    private static final String XML_SEQUENCEFIELD_ATTRIBUTE = "sequenceField";
-    private static final String XML_SEQUENCEID_ATTRIBUTE = "sequenceId";
+    private static final String XML_MAPPING = "Mapping";
+    private static final String XML_ELEMENT = "element";
+    private static final String XML_OUTPORT = "outPort";
+    private static final String XML_PARENTKEY = "parentKey";
+    private static final String XML_GENERATEDKEY = "generatedKey";
+    private static final String XML_XMLFIELDS = "xmlFields";
+    private static final String XML_CLOVERFIELDS = "cloverFields";
+    private static final String XML_SEQUENCEFIELD = "sequenceField";
+    private static final String XML_SEQUENCEID = "sequenceId";
 
     public final static String COMPONENT_TYPE = "XML_EXTRACT";
 
@@ -609,16 +616,29 @@ public class XMLExtract extends Node {
             // Go through this round about method so that sub classes may
             // re-use this logic like:
             // fromXML(nodeXML) {
-            // MyXMLExtract = (MyXMLExtract) XMLExtract.fromXML(nodeXML);
-            // Do more stuff with MyXMLExtract
-            // return MyXMLExtract
+            //  MyXMLExtract = (MyXMLExtract) XMLExtract.fromXML(nodeXML);
+            //  //Do more stuff with MyXMLExtract
+            //  return MyXMLExtract
             // }
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
             extract.setInputSource(new InputSource(xattribs.getString(XML_SOURCEURI_ATTRIBUTE)));
             
             // Process the mappings
-            NodeList nodes = xmlElement.getChildNodes();
+            NodeList nodes;
+            if(xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
+                //read mapping from string in attribute 'mapping'
+                String mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
+                Document doc = createDocumentFromString(mapping);
+                
+                Element rootElement = doc.getDocumentElement();
+                nodes = rootElement.getElementsByTagName(XML_MAPPING);
+            } else {
+                //old-fashioned version of mapping definition
+                //mapping xml elements are child nodes of the component
+                nodes = xmlElement.getChildNodes();
+            }
+            //iterate over 'Mapping' elements
             for (int i = 0; i < nodes.getLength(); i++) {
                 org.w3c.dom.Node node = nodes.item(i);
                 processMappings(graph, extract, null, node);
@@ -630,28 +650,50 @@ public class XMLExtract extends Node {
         }
     }
     
+    /**
+     * Creates org.w3c.dom.Document object from the given String.
+     * 
+     * @param inString
+     * @return
+     * @throws XMLConfigurationException
+     */
+    private static Document createDocumentFromString(String inString) throws XMLConfigurationException {
+        InputSource is = new InputSource(new StringReader(inString));
+        
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        Document doc;
+        
+        try {
+            doc = dbf.newDocumentBuilder().parse(is);
+        } catch (Exception e) {
+            throw new XMLConfigurationException("Mapping parameter parse error occur.", e);
+        }
+        
+        return doc;
+    }
+    
     private static void processMappings(TransformationGraph graph, XMLExtract extract, Mapping parentMapping, org.w3c.dom.Node nodeXML) {
-        if (XML_MAPPING_ATTRIBUTE.equals(nodeXML.getLocalName())) {
+        if (XML_MAPPING.equals(nodeXML.getNodeName())) {
             // for a mapping declaration, process all of the attributes
             // element, outPort, parentKeyName, generatedKey
             ComponentXMLAttributes attributes = new ComponentXMLAttributes((Element)nodeXML, graph);
             Mapping mapping = null;
             
             try {
-                mapping = extract.new Mapping(attributes.getString(XML_ELEMENT_ATTRIBUTE),
-                        attributes.getInteger(XML_OUTPORT_ATTRIBUTE));
+                mapping = extract.new Mapping(attributes.getString(XML_ELEMENT),
+                        attributes.getInteger(XML_OUTPORT));
             } catch(AttributeNotFoundException ex) {
-                if (attributes.exists(XML_OUTPORT_ATTRIBUTE)) {
+                if (attributes.exists(XML_OUTPORT)) {
                     LOG
                             .warn(extract.getId()
                             + ": XML Extract : Mapping missing a required attribute, element for outPort "
-                            + attributes.getString(XML_OUTPORT_ATTRIBUTE, null)
+                            + attributes.getString(XML_OUTPORT, null)
                             + ".  Skipping this mapping and all children.");
                 } else if (attributes.exists("element")) {
                     LOG
                             .warn(extract.getId()
                             + ": XML Extract : Mapping missing a required attribute, outPort for element "
-                            + attributes.getString(XML_ELEMENT_ATTRIBUTE, null)
+                            + attributes.getString(XML_ELEMENT, null)
                             + ".  Skipping this mapping and all children.");
                 } else {
                     LOG
@@ -671,13 +713,13 @@ public class XMLExtract extends Node {
 
             boolean parentKeyPresent = false;
             boolean generatedKeyPresent = false;
-            if (attributes.exists(XML_PARENTKEY_ATTRIBUTE)) {
-                mapping.setParentKey(attributes.getString(XML_PARENTKEY_ATTRIBUTE, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            if (attributes.exists(XML_PARENTKEY)) {
+                mapping.setParentKey(attributes.getString(XML_PARENTKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
                 parentKeyPresent = true;
             }
             
-            if (attributes.exists(XML_GENERATEDKEY_ATTRIBUTE)) {
-                mapping.setGeneratedKey(attributes.getString(XML_GENERATEDKEY_ATTRIBUTE, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            if (attributes.exists(XML_GENERATEDKEY)) {
+                mapping.setGeneratedKey(attributes.getString(XML_GENERATEDKEY, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
                 generatedKeyPresent = true;
             }
             
@@ -702,9 +744,9 @@ public class XMLExtract extends Node {
             }
 
             //mapping between xml fields and clover fields initialization
-            if (attributes.exists(XML_XMLFIELDS_ATTRIBUTE) && attributes.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
-                String[] xmlFields = attributes.getString(XML_XMLFIELDS_ATTRIBUTE, null).split(Defaults.Component.KEY_FIELDS_DELIMITER);
-                String[] cloverFields = attributes.getString(XML_CLOVERFIELDS_ATTRIBUTE, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            if (attributes.exists(XML_XMLFIELDS) && attributes.exists(XML_CLOVERFIELDS)) {
+                String[] xmlFields = attributes.getString(XML_XMLFIELDS, null).split(Defaults.Component.KEY_FIELDS_DELIMITER);
+                String[] cloverFields = attributes.getString(XML_CLOVERFIELDS, null).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 
                 if(xmlFields.length == cloverFields.length){
                     Map<String, String> xmlCloverMap = new HashMap<String, String>();
@@ -722,9 +764,9 @@ public class XMLExtract extends Node {
             }
             
             //sequence field
-            if (attributes.exists(XML_SEQUENCEFIELD_ATTRIBUTE)) {
-                mapping.setSequenceField(attributes.getString(XML_SEQUENCEFIELD_ATTRIBUTE, null));
-                mapping.setSequenceId(attributes.getString(XML_SEQUENCEID_ATTRIBUTE, null));
+            if (attributes.exists(XML_SEQUENCEFIELD)) {
+                mapping.setSequenceField(attributes.getString(XML_SEQUENCEFIELD, null));
+                mapping.setSequenceId(attributes.getString(XML_SEQUENCEID, null));
             }
             
             // Process all nested mappings
