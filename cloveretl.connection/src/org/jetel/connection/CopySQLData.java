@@ -597,7 +597,7 @@ public abstract class CopySQLData {
 			if (resultSet.wasNull()) {
 				((DecimalDataField) field).setValue((Object)null);
 			} else {
-				((DecimalDataField) field).setValue(new HugeDecimal(i, Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.LENGTH_ATTR)), Integer.parseInt(field.getMetadata().getFieldProperties().getProperty(DataFieldMetadata.SCALE_ATTR)), false));
+				((DecimalDataField) field).setValue(new HugeDecimal(i, Integer.parseInt(field.getMetadata().getProperty(DataFieldMetadata.LENGTH_ATTR)), Integer.parseInt(field.getMetadata().getProperty(DataFieldMetadata.SCALE_ATTR)), false));
 			}
 		}
 

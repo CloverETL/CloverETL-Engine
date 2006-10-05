@@ -480,6 +480,15 @@ public class DataFieldMetadata implements Serializable {
 		return fieldProperties;
 	}
 
+    /**
+     * Gets the one property value from the fieldProperties attribute according given attribute name.
+     * @param attrName
+     * @return
+     * @see this.getFieldProperties()
+     */
+    public String getProperty(String attrName) {
+        return fieldProperties.getProperty(attrName);
+    }
 
 	/**
 	 *  Sets the fieldProperties attribute of the DataRecordMetadata object.
