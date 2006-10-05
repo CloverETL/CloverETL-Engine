@@ -176,7 +176,8 @@ public class LdapParser implements Parser {
 		try {
 			while (ne.hasMore()) {
 				i++;
-				dnList.add(((SearchResult) ne.next()).getName() + (base.length() != 0 ? "," : "") + base);
+				String name = ((SearchResult) ne.next()).getName();
+				dnList.add(name + (base.length() != 0 && name.length() != 0 ? "," : "") + base);
 			}
 		} catch (SizeLimitExceededException e) {
 			if( LIMIT == 0 || i < LIMIT) {
@@ -203,6 +204,7 @@ public class LdapParser implements Parser {
 	        	 * We assume that all search result have the same
 	        	 * class hierarchy, so we can take an one of them.
 	        	 */
+	        	// TODO (if dnList.size() == 0) ... 	        	
 				initTransMap((String)dnList.get(0));
 			} catch (Exception e) {
 				throw new ComponentNotReadyException("Bad metadata name in LdapReader component");
