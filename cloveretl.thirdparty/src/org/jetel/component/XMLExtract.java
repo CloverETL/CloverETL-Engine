@@ -1,7 +1,5 @@
 package org.jetel.component;
 
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
 import java.text.DateFormat;
@@ -10,20 +8,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DateDataField;
 import org.jetel.data.Defaults;
-import org.jetel.data.IntegerDataField;
-import org.jetel.data.LongDataField;
-import org.jetel.data.NumericDataField;
 import org.jetel.data.StringDataField;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.AttributeNotFoundException;
@@ -402,7 +394,7 @@ public class XMLExtract extends Node {
                         //send off record
                         outPort.writeRecord(outRecord);
                         // reset record
-                        resetRecord(outRecord);
+                        outRecord.reset();
                         
                         m_activeMapping = m_activeMapping.getParent();
                     } catch (Exception ex) {
@@ -526,7 +518,7 @@ public class XMLExtract extends Node {
                 if (outPort != null) {
                     m_outRecord = new DataRecord(outPort.getMetadata());
                     m_outRecord.init();
-                    resetRecord(m_outRecord);
+                    m_outRecord.reset();
                 } else {
                     LOG
                             .warn(getId()
@@ -906,63 +898,63 @@ public class XMLExtract extends Node {
         return m_elementPortMap;
     }
     
-    private void resetRecord(DataRecord record) {
-        // reset the record setting the nullable fields to null and default
-        // values. Unfortunately init() does not do this, so if you have a field
-        // that's nullable and you never set a value to it, it will NOT be null.
-        
-        // the reason we need to reset data records is the fact that XML data is
-        // not as rigidly
-        // structured as csv fields, so column values are regularly "missing"
-        // and without a reset
-        // the prior row's value will be present.
-        for (int i = 0; i < record.getNumFields(); i++) {
-            DataFieldMetadata fieldMetadata = record.getMetadata().getField(i);
-            DataField field = record.getField(i);
-            if (fieldMetadata.isNullable()) {
-                // Default all nullables to null
-                field.setNull(true);
-            } else if(fieldMetadata.isDefaultValue()) {
-                //Default all default values to their given defaults
-                field.setToDefaultValue();
-            } else {
-                // Not nullable so set it to the default value (what init does)
-                switch (fieldMetadata.getType()) {
-                    case DataFieldMetadata.INTEGER_FIELD:
-                        ((IntegerDataField) field).setValue(0);
-                        break;
-                        
-                    case DataFieldMetadata.STRING_FIELD:
-                        ((StringDataField) field).setValue("");
-                        break;
-                        
-                    case DataFieldMetadata.DATE_FIELD:
-                    case DataFieldMetadata.DATETIME_FIELD:
-                        ((DateDataField) field).setValue(0);
-                        break;
-                        
-                    case DataFieldMetadata.NUMERIC_FIELD:
-                        ((NumericDataField) field).setValue(0);
-                        break;
-                        
-                    case DataFieldMetadata.LONG_FIELD:
-                        ((LongDataField) field).setValue(0);
-                        break;
-                        
-                    case DataFieldMetadata.DECIMAL_FIELD:
-                        ((NumericDataField) field).setValue(0);
-                        break;
-                        
-                    case DataFieldMetadata.BYTE_FIELD:
-                        ((ByteDataField) field).setValue((byte) 0);
-                        break;
-                        
-                    case DataFieldMetadata.UNKNOWN_FIELD:
-                    default:
-                        break;
-                }
-            }
-        }
-    }
+//    private void resetRecord(DataRecord record) {
+//        // reset the record setting the nullable fields to null and default
+//        // values. Unfortunately init() does not do this, so if you have a field
+//        // that's nullable and you never set a value to it, it will NOT be null.
+//        
+//        // the reason we need to reset data records is the fact that XML data is
+//        // not as rigidly
+//        // structured as csv fields, so column values are regularly "missing"
+//        // and without a reset
+//        // the prior row's value will be present.
+//        for (int i = 0; i < record.getNumFields(); i++) {
+//            DataFieldMetadata fieldMetadata = record.getMetadata().getField(i);
+//            DataField field = record.getField(i);
+//            if (fieldMetadata.isNullable()) {
+//                // Default all nullables to null
+//                field.setNull(true);
+//            } else if(fieldMetadata.isDefaultValue()) {
+//                //Default all default values to their given defaults
+//                field.setToDefaultValue();
+//            } else {
+//                // Not nullable so set it to the default value (what init does)
+//                switch (fieldMetadata.getType()) {
+//                    case DataFieldMetadata.INTEGER_FIELD:
+//                        ((IntegerDataField) field).setValue(0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.STRING_FIELD:
+//                        ((StringDataField) field).setValue("");
+//                        break;
+//                        
+//                    case DataFieldMetadata.DATE_FIELD:
+//                    case DataFieldMetadata.DATETIME_FIELD:
+//                        ((DateDataField) field).setValue(0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.NUMERIC_FIELD:
+//                        ((NumericDataField) field).setValue(0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.LONG_FIELD:
+//                        ((LongDataField) field).setValue(0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.DECIMAL_FIELD:
+//                        ((NumericDataField) field).setValue(0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.BYTE_FIELD:
+//                        ((ByteDataField) field).setValue((byte) 0);
+//                        break;
+//                        
+//                    case DataFieldMetadata.UNKNOWN_FIELD:
+//                    default:
+//                        break;
+//                }
+//            }
+//        }
+//    }
 }
 
