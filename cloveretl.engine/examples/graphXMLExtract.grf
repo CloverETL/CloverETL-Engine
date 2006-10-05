@@ -27,10 +27,13 @@
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="195" guiY="107" id="TRASH2" type="TRASH"/>
 <Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="195" guiY="194" id="TRASH3" type="TRASH"/>
 <Node enabled="enabled" guiHeight="0" guiName="XMLExtract - under construction" guiWidth="0" guiX="20" guiY="20" id="XML_EXTRACT0" sourceUri="${WORKSPACE}/data/xmlExtract.xml" type="XML_EXTRACT">
- <Mapping element="phrase" outPort="0"> 
-  <Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/> 
- </Mapping> 
- <Mapping element="location" outPort="2"/></Node>
+<attr name="mapping">&lt;Mappings&gt;&#13;
+	&lt;Mapping element="phrase" outPort="0"&gt; &#13;
+		&lt;Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt; &#13;
+	&lt;/Mapping&gt; &#13;
+	&lt;Mapping element="location" outPort="2"/&gt;&#13;
+&lt;/Mappings&gt;</attr>
+</Node>
 <Edge fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge6" inPort="0 (Trash)" metadata="Metadata6" outPort="0 (XMLExtract - under construction)" toNode="TRASH1:0"/>
 <Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge7" inPort="0 (Trash)" metadata="Metadata7" outPort="1 (XMLExtract - under construction)" toNode="TRASH2:0"/>
 <Edge fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge8" inPort="0 (Trash)" metadata="Metadata8" outPort="2 (XMLExtract - under construction)" toNode="TRASH3:0"/>
