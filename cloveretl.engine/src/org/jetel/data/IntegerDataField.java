@@ -224,6 +224,20 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
     public void setNull() {
         setNull(true);
     }
+    
+    
+    /* (non-Javadoc)
+     * @see org.jetel.data.DataField#reset()
+     */
+    public void reset(){
+        if (metadata.isNullable()){
+            setNull(true);
+        }else if (metadata.isDefaultValue()){
+            setToDefaultValue();
+        }else{
+            value=0;
+        }
+    }
 
 	// Associations
 

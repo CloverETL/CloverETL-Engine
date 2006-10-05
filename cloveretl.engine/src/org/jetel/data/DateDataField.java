@@ -262,6 +262,19 @@ public class DateDataField extends DataField implements Comparable{
 			value = null;
 		}
 	}
+    
+     /* (non-Javadoc)
+     * @see org.jetel.data.DataField#reset()
+     */
+    public void reset(){
+            if (metadata.isNullable()){
+                setNull(true);
+            }else if (metadata.isDefaultValue()){
+                setToDefaultValue();
+            }else{
+                value.setTime(0);
+            }
+        }
 
 
 	/**

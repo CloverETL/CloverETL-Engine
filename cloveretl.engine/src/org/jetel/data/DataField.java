@@ -41,14 +41,15 @@ import org.jetel.util.StringUtils;
  */
 public abstract class DataField implements Serializable, Comparable {
 
-	// Associations
 	/**
+     * Reference to metadata object describing this field
+     *  
 	 * @since
 	 */
 	protected transient DataFieldMetadata metadata;
 
 	/**
-	 *  Description of the Field
+	 *  Does this field currently contain NULL value ? 
 	 *
 	 * @since    September 16, 2002
 	 */
@@ -145,7 +146,17 @@ public abstract class DataField implements Serializable, Comparable {
 		this.isNull = isNull;
 	}
 
-
+	/**
+	 * An operation which sets/resets field to its
+     * initial value (just after it was created by JVM) - 
+     * it varies depending on type of field.<br>
+     * Nullable fields are set to NULL, non-nullable are zeroed, if they
+     * have default value defined, then default value is assigned.
+     * 
+	 */
+	public abstract void reset();
+    
+    
 	/**
 	 *  Gets the internal value of the data field. If field's value is
 	 * deemed to be NULL (isNull() return true) then the returned

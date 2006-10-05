@@ -27,10 +27,11 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- *  A class that represents one data record Fields are not deleted & created all
- *  the time. Instead, they are created only once and updated when it is needed
- *  When we need to send record through the EDGE, we just serialize it (it isn't
- *  standard version of serializing)
+ *  A class that represents one data record with structure based on provided
+ *  metadata object.<br> 
+ *  Fields of this data record are created only once and updated when it is needed.<br>
+ *  When we need to send record through the EDGE (or other communication channel), we just serialize it 
+ *  to stream of bytes (it isn't standard Java serializing, but Clover's own).
  *
  * @author      D.Pavlis
  * @since       March 26, 2002
@@ -41,33 +42,52 @@ import org.jetel.metadata.DataRecordMetadata;
 public class DataRecord implements Serializable, Comparable {
 
 	/**
+     * Currently not used
 	 * @since
 	 */
 	private transient String codeClassName;
 
 	/**
+     * Array for holding data fields
+     * 
 	 * @since
 	 */
 	private DataField fields[];
 
-	// Associations
 	/**
+     * Reference to metadata object describing this record 
 	 * @since
 	 */
 	private transient DataRecordMetadata metadata;
 
+    
+    /**
+     * Should this record and all its fields be created in plain mode ?<br>
+     * Plai means no "decorators" will be added and this record is deemed to
+     * store values only, no formating or parsing will be performed on this
+     * record.
+     * 
+     */
     private boolean plain=false;
     
 	/**
 	 * Create new instance of DataRecord based on specified metadata (
 	 * how many fields, what field types, etc.)
 	 * 
-	 * @param _metadata
+	 * @param _metadata  description of the record structure
 	 */
 	public DataRecord(DataRecordMetadata _metadata) {
 		this(_metadata,false);
 	}
     
+    /**
+     * Create new instance of DataRecord based on specified metadata (
+     * how many fields, what field types, etc.)
+     * 
+     * @param _metadata description of the record structure
+     * @param plain if true, no formatters and other "extra" objects will be created for
+     * fields
+     */
     public DataRecord(DataRecordMetadata _metadata,boolean plain ) {
         this.metadata = _metadata;
         this.plain=plain;
@@ -75,7 +95,8 @@ public class DataRecord implements Serializable, Comparable {
     }
 
 	/**
-	 * Private constructor used when clonning/copying DataRecord objects.
+	 * Private constructor used when clonning/copying DataRecord objects.<br>
+     * It takes numFields parameter to speed-up creation.
 	 * 
 	 * @param _metadata metadata describing this record
 	 * @param numFields number of fields this record should contain
@@ -152,16 +173,32 @@ public class DataRecord implements Serializable, Comparable {
 
 	/**
 	 *  Deletes/removes specified field. The field's internal reference
-	 * is set to NULL, so it can be garbage collected.
+	 * is set to NULL, so it can be garbage collected.<br>
+     * <b>Warning:</b>We recommend not using this method !<br>
+     * By calling this method, the number of fields is decreased by
+     * one, the internal array containing fields is copied into a new
+     * one.<br>
+     * Be careful when calling this method as the modified record
+     * won't follow the original metadata prescription. New metadata object
+     * will be created and assigned to this record, but it will share fields'
+     * metadata with the original metadata object.<br>
 	 *
 	 * @param  _fieldNum  Description of Parameter
 	 * @since
 	 */
 	public void delField(int _fieldNum) {
-		try {
-			fields[_fieldNum] = null;
-		} catch (IndexOutOfBoundsException e) {
-		}
+            DataField tmp_fields[]=new DataField[fields.length-1];
+            DataRecordMetadata tmp_metadata=new DataRecordMetadata(metadata.getName(),metadata.getRecType());
+            int counter=0;
+            for(int i=0;i<fields.length;i++){
+                if (i!=_fieldNum){
+                    tmp_fields[counter]=fields[i];
+                    tmp_metadata.addField(tmp_fields[counter].getMetadata());
+                    counter++;
+                }
+            }
+            fields=tmp_fields;
+            metadata=tmp_metadata;
 	}
 
 
@@ -249,7 +286,8 @@ public class DataRecord implements Serializable, Comparable {
 
 
 	/**
-	 *  An operation that does ...
+	 *  An operation that returns DataField with
+     *  specified order number.
 	 *
 	 * @param  _fieldNum  Description of Parameter
 	 * @return            The Field value
@@ -265,7 +303,8 @@ public class DataRecord implements Serializable, Comparable {
 
 
 	/**
-	 *  An operation that does ...
+	 *  An operation that returns DataField with
+     *  specified name.
 	 *
 	 * @param  _name  Description of Parameter
 	 * @return        The Field value
@@ -281,7 +320,7 @@ public class DataRecord implements Serializable, Comparable {
 
 
 	/**
-	 *  An attribute that represents ... An operation that does ...
+	 *  An attribute that returns metadata object describing the record
 	 *
 	 * @return    The Metadata value
 	 * @since
@@ -292,13 +331,14 @@ public class DataRecord implements Serializable, Comparable {
 
 
 	/**
-	 *  An operation that does ...
+	 *  An operation that returns numbe of fields this record
+     *  contains.
 	 *
 	 * @return    The NumFields value
 	 * @since
 	 */
 	public int getNumFields() {
-		return metadata.getNumFields();
+		return fields.length;
 	}
 
 
@@ -390,6 +430,7 @@ public class DataRecord implements Serializable, Comparable {
         }
     }
     
+    
     /**
      *  An operation that sets value of the selected data field to NULL
      *  value.
@@ -397,6 +438,29 @@ public class DataRecord implements Serializable, Comparable {
      */
     public void setToNull(int _fieldNum) {
         fields[_fieldNum].setNull(true);
+    }
+    
+    /**
+     * An operation which sets/resets all fields to their
+     * initial value (just after they were created by JVM) - 
+     * it varies depending on type of field.<br>
+     * Nullable fields are set to NULL, non-nullable are zeroed, if they
+     * have default value defined, then default value is assigned.
+     */
+    public void reset() {
+        for (int i = 0; i < fields.length; i++) {
+            fields[i].reset();
+        }
+    }
+    
+    /**
+     * An operation that resets value of specified field - by calling
+     * its reset() method.
+     * 
+     * @param _fieldNum Ordinal number of the field which should be set to default
+     */
+    public void reset(int _fieldNum) {
+        fields[_fieldNum].reset();
     }
     
     
