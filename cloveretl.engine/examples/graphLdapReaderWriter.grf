@@ -1,45 +1,42 @@
-<!-- testing graph by Francois Armand from Linagora -->
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- testing graph by Francois Armand from Linagora -->
 <Graph name="Testing Simple Copy">
 <Global>
-<Metadata id="InMetadata">
+<Metadata id="Metadata">
 <Record name="inEmployees" type="delimited">
-<Field delimiter=";" name="dn" nullable="true" type="string"/>
-<Field delimiter=";" name="uid" nullable="true" type="string"/>
-<Field delimiter=";" name="mail" nullable="true" type="string"/>
-<Field delimiter="\n" locale="fr.FR" name="l" nullable="true" type="string"/>
-</Record>
-</Metadata>
-<Metadata id="OutMetadata">
-<Record name="outEmployees" type="delimited">
-<Field delimiter=";" name="dn" nullable="true" type="string"/>
-<Field delimiter=";" name="mail" nullable="true" type="string"/>
+				<Field name="dn" type="string" delimiter=";" />
+				<Field name="sn" type="string" delimiter="\n" />
+				<Field name="objectClass" type="string" delimiter=";" />
+				<Field name="cn" type="string" delimiter=";" />
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="23" id="INPUT1" type="LDAP_READER">
-<attr name="ldapUrl">ldap://localhost:389/</attr>
-<attr name="user">uid=Manager,ou=foo,ou=com</attr>
+<attr name="ldapUrl">ldap://koule:389/</attr>
+<attr name="user">cn=root,dc=javlinconsulting,dc=cz</attr>
 <attr name="password">secret</attr>
 <attr name="scope">SUBTREE</attr>
-<attr name="filter">uid=*</attr>
-<attr name="base">ou=People,ou=foo,ou=com</attr>
+<attr name="filter">sn=sn089*</attr>
+<attr name="base">dc=javlinconsulting,dc=cz</attr>
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="455" guiY="23" id="OUTPUT1" type="LDAP_WRITER">
-<attr name="ldapUrl">ldap://localhost:389/</attr>
-<attr name="user">uid=Manager,ou=foo,ou=com</attr>
+<attr name="ldapUrl">ldap://koule:389/</attr>
+<attr name="user">cn=root,dc=javlinconsulting,dc=cz</attr>
 <attr name="password">secret</attr>
-<attr name="action">replace_attributes</attr>
+<attr name="action">add_entry</attr>
 </Node>
 <Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="236" guiY="23" id="REFORMAT0" type="REFORMAT">
-<attr name="transform">${out.0.dn} = ${in.0.dn};
-${out.0.mail} = ${in.0.uid} + "@foo.com";
+<attr name="transform">
+${out.0.dn} = ${in.0.dn};
+${out.0.cn} = ${in.0.cn};
+${out.0.objectClass} = ${in.0.objectClass};
+${out.0.sn} = ${in.0.sn} + "x";
 </attr>
 </Node>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="0 (Reformat)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (OUTPUT1)" metadata="OutMetadata" outPort="0 (Reformat)" toNode="OUTPUT1:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="0 (Reformat)" metadata="Metadata" outPort="0 (INPUT1)" toNode="REFORMAT0:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (OUTPUT1)" metadata="Metadata" outPort="0 (Reformat)" toNode="OUTPUT1:0"/>
 </Phase>
 </Graph>
 
