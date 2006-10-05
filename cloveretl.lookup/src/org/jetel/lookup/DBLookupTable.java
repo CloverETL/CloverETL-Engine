@@ -60,7 +60,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     private static final String XML_METADATA_ID ="metadata";
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_DBCONNECTION = "dbConnection";
-    private static final String XML_LOOKUP_INITIAL_SIZE = "initialSize";
+    private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection dbConnection;
@@ -454,8 +454,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
                     .getConnection(xattribs.getString(XML_DBCONNECTION)),
                     metadata, xattribs.getString(XML_SQL_QUERY));
             
-            if(xattribs.exists(XML_LOOKUP_INITIAL_SIZE)) {
-                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE));
+            if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
+                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
             }
             
             return lookupTable;
