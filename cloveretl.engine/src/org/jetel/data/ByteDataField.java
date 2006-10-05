@@ -175,6 +175,18 @@ public class ByteDataField extends DataField implements Comparable{
 		setNull(false);
 	}
 
+     /* (non-Javadoc)
+     * @see org.jetel.data.DataField#reset()
+     */
+    public void reset(){
+         if (metadata.isNullable()){
+             setNull(true);
+         }else if (metadata.isDefaultValue()){
+             setToDefaultValue();
+         }else{
+             setValue(0);
+         }
+     }    
 
 	// Associations
 
