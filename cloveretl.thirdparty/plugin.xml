@@ -21,4 +21,14 @@
 	    <parameter id="type" value="FILTER"/>
 	</extension>
 	
+	<extension point-id="component">
+	    <parameter id="className" value="com.linagora.component.LdapReader"/>
+	    <parameter id="type" value="LDAP_READER"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="com.linagora.component.LdapWriter"/>
+	    <parameter id="type" value="LDAP_WRITER"/>
+	</extension>
+	
 </plugin>
