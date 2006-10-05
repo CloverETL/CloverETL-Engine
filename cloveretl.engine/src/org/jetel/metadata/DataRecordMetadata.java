@@ -67,6 +67,7 @@ public class DataRecordMetadata implements Serializable {
 	/**  Description of the Field */
 	public final static char MIXED_RECORD = 'M';
 
+    public final static String BYTE_MODE_ATTR = "byteMode";
 
 	// Operations
 
@@ -380,6 +381,15 @@ public class DataRecordMetadata implements Serializable {
 		return recordProperties;
 	}
 
+    /**
+     * Gets the one property value from the recordProperties attribute according given attribute name.
+     * @param attrName
+     * @return
+     * @see this.getRecordProperties()
+     */
+    public String getProperty(String attrName) {
+        return recordProperties.getProperty(attrName);
+    }
 
 	/**
 	 *  Sets the recordProperties attribute of the DataRecordMetadata object
@@ -545,10 +555,10 @@ public class DataRecordMetadata implements Serializable {
     
     /**
      * 
-     * @return Value indicating whether byte mode or char mode is to be used for parsing of fixed data. 
+     * @return Value indicating whether byte mode or char mode is to be used for parsing of fixlen data. 
      */
-    public boolean byteMode() {
-    	return false;
+    public boolean isByteMode() {
+        return getProperty(BYTE_MODE_ATTR).equalsIgnoreCase("true");
     }
 
 }

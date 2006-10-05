@@ -262,7 +262,7 @@ public class SystemExecute extends Node{
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
 				parser=new DelimitedDataParser();
 			}else {
-				parser= FixLenDataParser3.createParser(meta.byteMode());
+				parser= FixLenDataParser3.createParser(meta.isByteMode());
 			}
 		}else{
 			parser=null;
