@@ -44,17 +44,19 @@ import org.w3c.dom.Element;
 public class XLSWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_SAVENAMES_ATTRIBUTE = "saveNames";
 
 	public final static String COMPONENT_TYPE = "XLS_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
 	private String fileURL;
+	private boolean saveNames;
 	private XLSDataFormatter formatter;
 
-	public XLSWriter(String id,String fileURL){
+	public XLSWriter(String id,String fileURL, boolean saveNames){
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new XLSDataFormatter();
+		formatter = new XLSDataFormatter(saveNames);
 	}
 	
 	/* (non-Javadoc)
@@ -125,7 +127,7 @@ public class XLSWriter extends Node {
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 		try{
-			return new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_FILEURL_ATTRIBUTE));
+			return new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE),xattribs.getString(XML_FILEURL_ATTRIBUTE),xattribs.getBoolean(XML_SAVENAMES_ATTRIBUTE,false));
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
