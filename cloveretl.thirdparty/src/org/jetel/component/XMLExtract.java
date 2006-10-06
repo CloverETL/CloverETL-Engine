@@ -363,14 +363,14 @@ public class XMLExtract extends Node {
                                         LOG
                                                 .warn(getId()
                                                 + ": XML Extract Mapping's generatedKey field was not found. "
-                                                + m_activeMapping.getGeneratedKey());
+                                                + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else if (parentKeyField == null) {
                                         LOG
                                                 .warn(getId()
                                                 + ": XML Extract Mapping's parentKey field was not found. "
-                                                + m_activeMapping.getParentKey());
+                                                + parentKey[i]);
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else {
@@ -581,7 +581,7 @@ public class XMLExtract extends Node {
                                 .warn(getId()
                                 + ": Sequence "
                                 + getSequenceId()
-                                + " does not exist in transformation graph. Using primitive sequence instead.");
+                                + " does not exist in transformation graph. Primitive sequence is used instead.");
                         sequence = new PrimitiveSequence(getElement(), getGraph(), getElement());
                     }
                 }
@@ -624,7 +624,7 @@ public class XMLExtract extends Node {
                 Document doc = createDocumentFromString(mapping);
                 
                 Element rootElement = doc.getDocumentElement();
-                nodes = rootElement.getElementsByTagName(XML_MAPPING);
+                nodes = rootElement.getChildNodes();
             } else {
                 //old-fashioned version of mapping definition
                 //mapping xml elements are child nodes of the component
