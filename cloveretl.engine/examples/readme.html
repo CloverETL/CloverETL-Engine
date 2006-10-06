@@ -5,7 +5,7 @@
 	<TITLE>CloverETL examples</TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20061005;11474600">
-	<META NAME="CHANGED" CONTENT="20061006;11300000">
+	<META NAME="CHANGED" CONTENT="20061006;15371800">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <H1><FONT COLOR="#008000">CloverETL examples</FONT></H1>
@@ -398,14 +398,41 @@ In third, data is again merged into one flow and saved to file.</P>
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
 org.jetel.main.runGraph -plugins ../plugins <A HREF="graphPhasesDemo.grf" TARGET="_blank">graphPhasesDemo.grf</A></TT></P>
-<H2><!-- Complex example -->Complex example</H2>
+<H3><!-- Partition -->Partition data example</H3>
+<P>Partition component offers various ways of splitting input data
+flow into several output flows. The exact number of output flows
+depends on how many output ports are connected.<BR>There are
+currently three partition algorithms implemented: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0in"><B>Round-Robin</B> - first record
+	goes into first port, second into second...etc. When the last port
+	was used, it starts again with the first one. 
+	</P>
+	<LI><P STYLE="margin-bottom: 0in"><B>Hash</B> - based on specified
+	key, a hash value is calculated and based on it the output port is
+	selected. It should be secured that for two different records with
+	same keys, the exact same output port is selected. 
+	</P>
+	<LI><P><B>Range</B> - based on specified key and range array,
+	records are sent to output port based on value present in key-field.
+	It is very similar to CASE operator, with ranges defined by their
+	upper boundary (inclusive). 
+	</P>
+</UL>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphPartition.grf" TARGET="_blank">graphPartition.grf</A></TT></P>
+<HR>
+<H2><!-- Complex examples -->Complex examples</H2>
 <P>This examples combines several components to perform useful
-transformation similar to one you could use in a real life.<BR>It
-combines information about orders made and information about
-individual items/products purchased within each order. It also adds
-information about which customer ordered the goods.<BR>To get all
-this information, it needs to join data from <TT>ORDERS.DBF</TT> (a
-dBase table) <TT>ODETAILS.DBF</TT> and <TT>Customers.txt</TT>.<BR>First
+transformation similar to one you could use in a real life.</P>
+<H3><!-- Join example -->Join example</H3>
+<P>Thees graphs combine information about orders made and information
+about individual items/products purchased within each order. It also
+adds information about which customer ordered the goods.<BR>To get
+all this information, it needs to join data from <TT>ORDERS.DBF</TT>
+(a dBase table) <TT>ODETAILS.DBF</TT> and <TT>Customers.txt</TT>.<BR>First
 two data sets are joined using <TT>MERGE_JOIN</TT> component, thus
 they have to be sorted first. Then information about customer is
 added using <TT>HASH_JOIN</TT>. As both joins require transformation
@@ -429,6 +456,28 @@ Language.</A>.</P>
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
 org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBFJoinTL.grf" TARGET="_blank">graphDBFJoinTL.grf</A></TT></P>
+<H3><!-- Intersection example -->Intersection example</H3>
+<P>This graph reads personal data from three sources and finds
+records with the same values on corresponding fields (lname –
+last_name, fname – first_name). Matching pairs are transformed into
+one output record and saved in <TT>intersection_customer_employee.txt</TT>
+file.</P>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBRead.grf" TARGET="_blank">graphDBRead.grf</A></TT></P>
+<H3><!-- Real life example -->Real life example</H3>
+<P STYLE="margin-bottom: 0in">This is practical illustration of usage
+CloverETL. This graph transforms data for branch bank. On inputs are
+clients, month interests and charges and half-year bonus. On outputs
+we have aggregated revenues by clients, clients without revenues and
+clients from database, who are not in input file. 
+</P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
+<P STYLE="margin-bottom: 0in">Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphRevenues.grf" TARGET="_blank">graphRevenues.grf</A></TT></P>
+<HR>
 <H2><!-- Database related examples -->Database related examples</H2>
 <P>When experimenting with database, presented example graphs expect
 that there exists database table <TT>EMPLOYEE</TT> with following
@@ -481,8 +530,7 @@ DBUnload component connects to database and unloads all records from
 </P>
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
-org.jetel.main.runGraph -plugins ../plugins</TT><TT>
-<A HREF="graphDBUnload.grf" TARGET="_blank">graphDBUnload.grf</A></TT></P>
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBUnload.grf" TARGET="_blank">graphDBUnload.grf</A></TT></P>
 <H3><!-- DB Load -->DBLoad example</H3>
 <P>DBLoad component does the opposite to DBUnload, it populates
 database table with data processed by CloverETL framework. Similarly
@@ -493,34 +541,26 @@ table with the name <TT>EMPLOYEE_TMP</TT> and structure similar to
 </P>
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
-org.jetel.main.runGraph -plugins ../plugins</TT><TT> <A HREF="graphDBLoad.grf" TARGET="_blank">graphDBLoad.grf</A></TT></P>
-<HR>
-<H3><!-- Partition -->Partition data example</H3>
-<P>Partition component offers various ways of splitting input data
-flow into several output flows. The exact number of output flows
-depends on how many output ports are connected.<BR>There are
-currently three partition algorithms implemented: 
-</P>
-<UL>
-	<LI><P STYLE="margin-bottom: 0in"><B>Round-Robin</B> - first record
-	goes into first port, second into second...etc. When the last port
-	was used, it starts again with the first one. 
-	</P>
-	<LI><P STYLE="margin-bottom: 0in"><B>Hash</B> - based on specified
-	key, a hash value is calculated and based on it the output port is
-	selected. It should be secured that for two different records with
-	same keys, the exact same output port is selected. 
-	</P>
-	<LI><P><B>Range</B> - based on specified key and range array,
-	records are sent to output port based on value present in key-field.
-	It is very similar to CASE operator, with ranges defined by their
-	upper boundary (inclusive). 
-	</P>
-</UL>
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBLoad.grf" TARGET="_blank">graphDBLoad.grf</A></TT></P>
+<H3><!-- DB Join -->DBJoin example</H3>
+<P>DBJoin component joins records from input port with records from
+database. Each pair of matching records is sent to transformation
+(can be written in four ways : external class, java source embedded
+in graph definition, summary transformation or in Transform Language)
+to get output record. In this example for records from flat file are
+searched records from database where field “lname” on input has
+the same value as field “last_name” in database records.</P>
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
-org.jetel.main.runGraph -plugins ../plugins</TT><TT>
-<A HREF="graphPartition.grf" TARGET="_blank">graphPartition.grf</A></TT></P>
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBJoin.grf" TARGET="_blank">graphDBJoin.grf</A></TT></P>
+<H3><!-- DB Lookup -->DBLookup example</H3>
+<P>graph <A HREF="graphDBLookup.grf" TARGET="_blank">graphDBLookup.grf
+</A>has similar functionality as preceding graph, but You can see
+usage of Database Lookup Table.</P>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBLookup.grf" TARGET="_blank">graphDBLookup.grf</A></TT></P>
+<HR>
 <H1><!--- ALL EXAMPLES INDEX --->Index of all examples</H1>
 <TABLE WIDTH=288 BORDER=0 CELLPADDING=2 CELLSPACING=0>
 	<COL WIDTH=284>
@@ -551,7 +591,7 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphDBJoin.grf</P>
+			<P><A HREF="graphDBJoin.grf">graphDBJoin.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -576,12 +616,12 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphDBLookup.grf</P>
+			<P><A HREF="graphDBLookup.grf" TARGET="_blank">graphDBLookup.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphDBRead.grf</P>
+			<P><A HREF="graphDBRead.grf" TARGET="_blank">graphDBRead.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -631,12 +671,12 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P><A HREF="graphJoinHashUsingTransform.grf">graphJoinHashUsingTransform.grf</a></P>
+			<P><A HREF="graphJoinHashUsingTransform.grf">graphJoinHashUsingTransform.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P><A HREF="graphJoinHashUsingTransformLanguage.grf">graphJoinHashUsingTransformLanguage.grf</a></P>
+			<P><A HREF="graphJoinHashUsingTransformLanguage.grf">graphJoinHashUsingTransformLanguage.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -656,12 +696,12 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P><A HREF="graphOrdersReformatUsingTransform.grf">graphOrdersReformatUsingTransform.grf</a></P>
+			<P><A HREF="graphOrdersReformatUsingTransform.grf">graphOrdersReformatUsingTransform.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P><A HREF="graphOrdersTLReformat.grf">graphOrdersTLReformat.grf</a></P>
+			<P><A HREF="graphOrdersTLReformat.grf">graphOrdersTLReformat.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -681,7 +721,7 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphRevenues.grf</P>
+			<P><A HREF="graphRevenues.grf">graphRevenues.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -727,6 +767,11 @@ org.jetel.main.runGraph -plugins ../plugins</TT><TT>
 	<TR>
 		<TD WIDTH=284>
 			<P><A HREF="graphViewData.grf">graphViewData.grf</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=284>
+			<P>graphXLSReadWrite.grf</P>
 		</TD>
 	</TR>
 	<TR>
