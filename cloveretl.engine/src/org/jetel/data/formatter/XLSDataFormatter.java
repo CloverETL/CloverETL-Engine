@@ -33,6 +33,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jetel.data.DataRecord;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -129,10 +130,23 @@ public class XLSDataFormatter implements Formatter {
 				cell.setCellValue(value.toString());
 			}else{
 				cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
-				if (metaType == DataFieldMetadata.DATE_FIELD || metaType == DataFieldMetadata.DATETIME_FIELD){
+				switch (metaType) {
+				case DataFieldMetadata.DATE_FIELD:
+				case DataFieldMetadata.DATETIME_FIELD:
 					cell.setCellValue((Date)value);
-				}else{
+					break;
+				case DataFieldMetadata.INTEGER_FIELD:
+					cell.setCellValue((Integer)value);
+					break;
+				case DataFieldMetadata.LONG_FIELD:
+					cell.setCellValue((Long)value);
+					break;
+				case DataFieldMetadata.DECIMAL_FIELD:
+					cell.setCellValue(((Decimal)value).getDouble());
+					break;
+				case DataFieldMetadata.NUMERIC_FIELD:
 					cell.setCellValue((Double)value);
+					break;
 				}
 			}
 		}
