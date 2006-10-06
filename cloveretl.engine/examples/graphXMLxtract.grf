@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="XXX">
+<Global>
+<Metadata id="Metadata2">
+<Record name="BenefitsOthers" type="delimited">
+<Field delimiter=";" name="mobilephone" nullable="true" type="string"/>
+<Field delimiter=";" name="car" nullable="true" type="string"/>
+<Field delimiter=";" name="seqKey" nullable="true" type="integer"/>
+<Field delimiter=";" name="jobID" nullable="false" type="integer"/>
+<Field delimiter="\r\n" name="empID" nullable="false" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record name="BenFinancial" type="delimited">
+<Field delimiter=";" name="monthly_bonus" nullable="true" type="integer"/>
+<Field delimiter=";" name="yearly_bonus" nullable="true" type="integer"/>
+<Field delimiter="\r\n" name="seqKey" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata4">
+<Record name="customers" type="delimited">
+<Field delimiter=";" name="name" nullable="true" type="string"/>
+<Field delimiter="\r\n" name="joinedKey" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="Employees" type="delimited">
+<Field delimiter=";" name="empID" nullable="false" type="integer"/>
+<Field delimiter=";" name="jobID" nullable="false" type="integer"/>
+<Field delimiter=";" name="basic_salary" nullable="true" type="integer"/>
+<Field delimiter=";" name="firstname" nullable="true" type="string"/>
+<Field delimiter="\r\n" name="surname" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="Children" type="delimited">
+<Field delimiter=";" name="chname" nullable="true" type="string"/>
+<Field delimiter=";" name="age" nullable="true" type="integer"/>
+<Field delimiter="\r\n" name="parentID" nullable="false" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata6">
+<Record name="joinedBenefits" type="delimited">
+<Field delimiter=";" name="car" nullable="true" type="string"/>
+<Field delimiter=";" name="mobilephone" nullable="true" type="string"/>
+<Field delimiter=";" name="financial_bonus" nullable="true" type="integer"/>
+<Field delimiter="\r\n" name="seqKey" nullable="true" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata5">
+<Record name="Projects" type="delimited">
+<Field delimiter=";" name="projName" nullable="true" type="string"/>
+<Field delimiter=";" name="inProjectID" nullable="true" type="string"/>
+<Field delimiter=";" name="projManager" nullable="true" type="string"/>
+<Field delimiter=";" name="Start" nullable="true" type="string"/>
+<Field delimiter=";" name="End" nullable="true" type="string"/>
+<Field delimiter=";" name="empID" nullable="false" type="integer"/>
+<Field delimiter="\r\n" name="jobID" nullable="false" type="integer"/>
+</Record>
+</Metadata>
+<Sequence cached="50" fileURL="C:\stepan\eclipse\workspace\p\data\seqkey" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+</Global>
+<Phase number="0">
+<Node OneRecordPerLine="false" append="false" enabled="enabled" fileURL="C:/stepan/eclipse/workspace/p/output/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="607" guiY="25" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="C:/stepan/eclipse/workspace/p/output/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="623" guiY="395" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="C:/stepan/eclipse/workspace/p/output/XMLoutputCHILD.txt" guiHeight="0" guiName="Children" guiWidth="0" guiX="634" guiY="98" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="C:/stepan/eclipse/workspace/p/output/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="634" guiY="176" id="DELIMITED_DATA_WRITER3" type="DELIMITED_DATA_WRITER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="C:/stepan/eclipse/workspace/p/output/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="607" guiY="270" id="DELIMITED_DATA_WRITER4" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="351" guiY="395" id="MERGE_JOIN0" joinKey="seqKey" slaveOverrideKey="seqKey" type="MERGE_JOIN">
+<attr name="transform">${out.0.car} = ${in.0.car};&#13;
+${out.0.seqKey} = ${in.0.seqKey};&#13;
+${out.0.mobilephone} = ${in.0.mobilephone};&#13;
+${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});&#13;
+&#13;
+</attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="XMLExtract - under construction" guiWidth="0" guiX="56" guiY="135" id="XML_EXTRACT0" sourceUri="C:/Documents and Settings/ja/Cookies/Desktop/employees.xml" type="XML_EXTRACT">
+<attr name="mapping">&lt;Mappings&gt;&#13;
+	&lt;Mapping element="employee" outPort="0" xmlFields="salary" cloverFields="basic_salary"&gt;&#13;
+		&lt;Mapping element="child" outPort="1" parentKey="empID" generatedKey="parentID"/&gt;&#13;
+		&lt;Mapping element="benefits" outPort="2" parentKey="empID;jobID" generatedKey="empID;jobID" sequenceField="seqKey" sequenceId="Sequence0"&gt;&#13;
+			&lt;Mapping element="financial" outPort="3" parentKey="seqKey" generatedKey="seqKey"/&gt;   &#13;
+		&lt;/Mapping&gt;&#13;
+		&lt;Mapping element="project" outPort="4" parentKey="empID;jobID" generatedKey="empID;jobID"&gt;&#13;
+			&lt;Mapping element="customer" outPort="5" parentKey="projName;projManager;inProjectID;Start" generatedKey="joinedKey"/&gt;&#13;
+		&lt;/Mapping&gt;&#13;
+	&lt;/Mapping&gt;&#13;
+&lt;/Mappings&gt;</attr>
+</Node>
+<Edge fromNode="MERGE_JOIN0:0" guiBendpoints="" id="Edge5" inPort="0 (Join - Benefits)" metadata="Metadata6" outPort="0 (Merge Join)" toNode="DELIMITED_DATA_WRITER1:0"/>
+<Edge debugMode="false" fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge2" inPort="0 (Employees)" metadata="Metadata0" outPort="0 (XMLExtract - under construction)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge16" inPort="0 (Children)" metadata="Metadata1" outPort="1 (XMLExtract - under construction)" toNode="DELIMITED_DATA_WRITER2:0"/>
+<Edge fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge21" inPort="0 (Merge Join)" metadata="Metadata2" outPort="2 (XMLExtract - under construction)" toNode="MERGE_JOIN0:0"/>
+<Edge fromNode="XML_EXTRACT0:3" guiBendpoints="" id="Edge22" inPort="1 (Merge Join)" metadata="Metadata3" outPort="3 (XMLExtract - under construction)" toNode="MERGE_JOIN0:1"/>
+<Edge debugMode="false" fromNode="XML_EXTRACT0:4" guiBendpoints="" id="Edge23" inPort="0 (Projects)" metadata="Metadata5" outPort="4 (XMLExtract - under construction)" toNode="DELIMITED_DATA_WRITER3:0"/>
+<Edge fromNode="XML_EXTRACT0:5" guiBendpoints="" id="Edge24" inPort="0 (Customers)" metadata="Metadata4" outPort="5 (XMLExtract - under construction)" toNode="DELIMITED_DATA_WRITER4:0"/>
+</Phase>
+</Graph>
