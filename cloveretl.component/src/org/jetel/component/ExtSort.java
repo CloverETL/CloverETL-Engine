@@ -36,6 +36,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 /**
@@ -91,6 +92,8 @@ import org.w3c.dom.Element;
  *  </tr>
  *  <tr><td><b>bufferCapacity</b><br><i>optional</i></td><td>What is the maximum number of records
  *  which are sorted in-memory. If number of records exceed this size, external sorting is performed.</td></tr>
+ *  <tr><td><b>tmpDirs</b><br><i>optional</i></td><td>Semicolon (;) delimited list of directories which should be
+ *  used for creating tape files - used when external sorting is performed. Default value is equal to Java's <code>java.io.tmpdir</code> system property.</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -107,6 +110,7 @@ public class ExtSort extends Node {
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
     private static final String XML_BUFFER_CAPACITY_ATTRIBUTE = "bufferCapacity";
+    private static final String XML_TEMPORARY_DIRS = "tmpDirs";
     
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "EXT_SORT";
@@ -120,6 +124,7 @@ public class ExtSort extends Node {
 	private String[] sortKeysNames;
 	private ByteBuffer recordBuffer;
 	private boolean carouselInitialized;
+    private String[] tmpDirs;
 	
 	private InputPort inPort;
 	private DataRecord inRecord;
@@ -646,6 +651,10 @@ public class ExtSort extends Node {
        				String.valueOf(this.internalSorterCapacity));
        }
        
+       if (this.tmpDirs!=null){
+           xmlElement.setAttribute(XML_TEMPORARY_DIRS,StringUtils.stringArraytoString(tmpDirs,';') );
+       }
+       
        
     }
 
@@ -677,6 +686,10 @@ public class ExtSort extends Node {
                 sort.setBufferCapacity(xattribs.getInteger(XML_BUFFER_CAPACITY_ATTRIBUTE));
             }
             
+            if (xattribs.exists(XML_TEMPORARY_DIRS)){
+                sort.setTmpDirs(xattribs.getString(XML_TEMPORARY_DIRS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+            }
+            
         } catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -697,6 +710,14 @@ public class ExtSort extends Node {
      */
     public String getType() {
         return COMPONENT_TYPE;
+    }
+
+    public String[] getTmpDirs() {
+        return tmpDirs;
+    }
+
+    public void setTmpDirs(String[] tmpDirs) {
+        this.tmpDirs = tmpDirs;
     }
 }
 
