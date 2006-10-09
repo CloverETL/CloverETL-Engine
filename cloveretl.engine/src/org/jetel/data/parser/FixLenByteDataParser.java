@@ -20,16 +20,11 @@
 package org.jetel.data.parser;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.CharacterCodingException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Parser for sequence of records represented by fixed count of bytes
@@ -57,11 +52,11 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 	}
 
 	/**
-	 * Parser iface.
+	 * Set new data source.
+	 * @param inputDataSource
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata metadata)
-			throws ComponentNotReadyException {
-		super.open(inputDataSource, metadata);
+	public void setDataSource(Object inputDataSource) {
+		super.setDataSource(inputDataSource);
 		dataPos = 0;
 		dataLim = 0;
 	}
@@ -73,7 +68,7 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 	 * @throws JetelException
 	 */
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
-		for (int idx = 0; idx < fieldCnt; idx++) {
+		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			try {
 				// set buffer scope to next field
 				if (!getNextField()) {
@@ -119,7 +114,6 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 		if (!getData(fieldLengths[fieldIdx])) {
 			return false;
 		}
-		fieldIdx = (fieldIdx + 1)%fieldCnt;
 		return true;
 	}
 

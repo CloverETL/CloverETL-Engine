@@ -102,8 +102,19 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 
 		setRecordDelimiters(metadata.getRecordDelimiters());
 
+	}
+
+	/**
+	 * Set new data source.
+	 * @param inputDataSource
+	 */
+	public void setDataSource(Object inputDataSource) {
+		super.setDataSource(inputDataSource);
 		charBuffer.clear();
 		charBuffer.flip();
+		_savedLim = _savedPos = 0;
+		_delimStartEnd[0] = -1;
+		_delimStartEnd[1] = 0;
 	}
 
 	/**
