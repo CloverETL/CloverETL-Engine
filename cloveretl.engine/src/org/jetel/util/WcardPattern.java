@@ -121,6 +121,25 @@ public class WcardPattern {
 	}
 
 	/**
+	 * Add filename patterns.
+	 * @param pat Array of patterns
+	 */
+	public void addPattern(String[] pat) {
+		for (int i = 0; i < pat.length; i++) {
+			addPattern(pat[i]);
+		}
+	}
+
+	/**
+	 * Add filename patterns.
+	 * @param pat Pattern list
+	 * @param sep Pattern separator
+	 */
+	public void addPattern(String pat, String sep) {
+		addPattern(pat.split(sep));
+	}
+
+	/**
 	 * Splits specified pattern in two parts - directory which cannot contain any wildcard
 	 * and filename pattern containing wildcards. When specified pattern doesn't contain
 	 * any wildcards, doesn't do anything. 
