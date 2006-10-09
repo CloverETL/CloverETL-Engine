@@ -18,10 +18,10 @@
 <attr name="user">cn=root,dc=javlinconsulting,dc=cz</attr>
 <attr name="password">secret</attr>
 <attr name="scope">SUBTREE</attr>
-<attr name="filter">sn=sn089*</attr>
+<attr name="filter">sn=*</attr>
 <attr name="base">dc=javlinconsulting,dc=cz</attr>
 </Node>
-<Node enabled="enabled" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="455" guiY="23" id="OUTPUT1" type="LDAP_WRITER">
+<Node enabled="disabled" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="455" guiY="23" id="OUTPUT1" type="LDAP_WRITER">
 <attr name="ldapUrl">ldap://koule:389/</attr>
 <attr name="user">cn=root,dc=javlinconsulting,dc=cz</attr>
 <attr name="password">secret</attr>
@@ -35,8 +35,9 @@ ${out.0.objectClass} = ${in.0.objectClass};
 ${out.0.sn} = ${in.0.sn} + "x";
 </attr>
 </Node>
+<Node enabled="enabled" id="FS_OUT" type="DELIMITED_DATA_WRITER" fileURL="${WORKSPACE}/output/ldap.out"/>
 <Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="0 (Reformat)" metadata="Metadata" outPort="0 (INPUT1)" toNode="REFORMAT0:0"/>
-<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (OUTPUT1)" metadata="Metadata" outPort="0 (Reformat)" toNode="OUTPUT1:0"/>
+<Edge fromNode="REFORMAT0:0" guiBendpoints="" id="Edge1" inPort="0 (OUTPUT1)" metadata="Metadata" outPort="0 (Reformat)" toNode="FS_OUT:0"/>
 </Phase>
 </Graph>
 
