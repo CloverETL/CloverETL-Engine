@@ -21,9 +21,13 @@
 
 package org.jetel.data.formatter;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+
+import javax.naming.InvalidNameException;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -34,8 +38,10 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.XLSUtils;
 
 /**
  * @author avackova
@@ -51,23 +57,63 @@ public class XLSDataFormatter implements Formatter {
 	private HSSFDataFormat dataFormat;
 	private DataRecordMetadata metadata;
 	private FileOutputStream out;
+	private int firstRow;
 	private int recCounter;
 	private boolean saveNames;
+	private int namesRow = 0;
+	private boolean append;
+	private String sheetName = null;
+	private int sheetNumber = -1;
+	private String firstColumnIndex = "A";
+	private int firstColumn;
 	
-	public XLSDataFormatter(boolean saveNames){
+	public XLSDataFormatter(boolean saveNames, boolean append){
 		this.saveNames = saveNames;
+		this.append = append;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata) {
+	public void open(Object out, DataRecordMetadata _metadata) throws ComponentNotReadyException{
 		this.metadata = _metadata;
-		this.out = (FileOutputStream)out; 
+		try{
+			if (((File)out).length() > 0) {
+				wb = new HSSFWorkbook(new FileInputStream((File)out));
+			}else{
+				wb = new HSSFWorkbook();
+			}
+			this.out = new FileOutputStream((File)out);
+		}catch(IOException ex){
+			throw new RuntimeException(ex);
+		}
+		if (sheetName != null){
+			sheet = wb.getSheet(sheetName);
+			if (sheet == null) {
+				sheet = wb.createSheet(sheetName);
+			}
+		}else if (sheetNumber > -1){
+			try {
+				sheet = wb.getSheetAt(sheetNumber);
+			}catch(IndexOutOfBoundsException ex){
+				throw new ComponentNotReadyException("There is no sheet with number \"" +	sheetNumber +"\"");
+			}
+		}else {
+			sheet = wb.createSheet();
+		}
 		recCounter = 0;
-		wb = new HSSFWorkbook();
-		sheet = wb.createSheet();
-		if (saveNames){
+		if (append) {
+			if (sheet.getLastRowNum() != 0){
+				recCounter = sheet.getLastRowNum() + 1;
+			}
+		}
+		try {
+			firstColumn = XLSUtils.getCellNum(firstColumnIndex);
+		}catch(InvalidNameException ex){
+			throw new ComponentNotReadyException(ex);
+		}
+		if (saveNames && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
+			recCounter = namesRow > -1 ? namesRow : 0;
 			HSSFCellStyle metaStyle = wb.createCellStyle();
 			HSSFFont font = wb.createFont();
 			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
@@ -75,10 +121,10 @@ public class XLSDataFormatter implements Formatter {
 			row = sheet.createRow(recCounter);
 			String name;
 			for (short i=0;i<metadata.getNumFields();i++){
-				cell = row.createCell(i);
+				cell = row.createCell((short)(firstColumn + i));
 				name = metadata.getField(i).getName();
-				if (sheet.getColumnWidth(i) < name.length() * 256 ) {
-					sheet.setColumnWidth(i,(short)(256 * name.length()));
+				if (sheet.getColumnWidth((short)(firstColumn + i)) < name.length() * 256 ) {
+					sheet.setColumnWidth((short)(firstColumn + i),(short)(256 * name.length()));
 				}
 				cell.setCellStyle(metaStyle);
 				cell.setCellValue(name);
@@ -94,9 +140,12 @@ public class XLSDataFormatter implements Formatter {
 			if (format!=null){
 				cellStyle[i].setDataFormat(dataFormat.getFormat(format));
 			}
-			if (sheet.getColumnWidth(i) < metadata.getField(i).getSize() * 256) {
-				sheet.setColumnWidth(i,(short)( metadata.getField(i).getSize() * 256));
+			if (sheet.getColumnWidth((short)(firstColumn + i)) < metadata.getField(i).getSize() * 256) {
+				sheet.setColumnWidth((short)(firstColumn + i),(short)( metadata.getField(i).getSize() * 256));
 			}
+		}
+		if (firstRow > recCounter) {
+			recCounter = firstRow;
 		}
 	}
 
@@ -119,9 +168,11 @@ public class XLSDataFormatter implements Formatter {
 		row = sheet.createRow(recCounter);
 		char metaType;
 		Object value;
+		short colNum;
 		for (short i=0;i<metadata.getNumFields();i++){
 			metaType = metadata.getField(i).getType();
-			cell = row.createCell(i);
+			colNum = (short)(firstColumn + i);
+			cell = row.createCell(colNum);
 			value = record.getField(i).getValue();
 			if (value == null) continue;
 			cell.setCellStyle(cellStyle[i]);
@@ -169,4 +220,23 @@ public class XLSDataFormatter implements Formatter {
 
 	}
 
+	public void setSheetName(String sheetName) {
+		this.sheetName = sheetName;
+	}
+
+	public void setSheetNumber(int sheetNumber) {
+		this.sheetNumber = sheetNumber;
+	}
+	
+	public void setFirstRow(int firstRow){
+		this.firstRow = firstRow;
+	}
+
+	public void setFirstColumn(String firstColumn){
+		this.firstColumnIndex = firstColumn;
+	}
+
+	public void setNamesRow(int namesRow) {
+		this.namesRow = namesRow;
+	}
 }
