@@ -189,7 +189,8 @@ public class SortDataRecordInternal {
 	    */  
 	    currentColIndex++;
 	    if (currentColIndex>=recordColList.size()){
-	        currentColSize=(currentColSize*COLLECTION_GROW_FACTOR)/10;
+	        // let's round it to 4B size (32bits)
+	        currentColSize=(((currentColSize*COLLECTION_GROW_FACTOR)/10)/32+1)*32;
 	        currentRecordCol=new DataRecordCol(currentColSize,metadata,sortOrderAscending);
 	        recordColList.add(currentRecordCol);
 	    }else{
