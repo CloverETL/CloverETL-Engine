@@ -28,7 +28,10 @@ package org.jetel.component;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Iterator;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
@@ -40,6 +43,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WcardPattern;
 import org.w3c.dom.Element;
 
 /**
@@ -97,6 +101,9 @@ import org.w3c.dom.Element;
 
 public class FixLenDataReader extends Node {
 
+	// regex pattern describing allowed filename separators
+	private final static String FILE_SEPARATOR = " +";
+
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
 	private static final String XML_SKIPTRAILINGBLANKS_ATTRIBUTE = "skipTrailingBlanks";
@@ -106,6 +113,8 @@ public class FixLenDataReader extends Node {
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	
+	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER";
 
@@ -114,7 +123,7 @@ public class FixLenDataReader extends Node {
 
 	private FixLenDataParser3 parser;
 	
-	private int skipRows=-1; // do not skip rows by default
+	private int skipRows= 0; // do not skip rows by default
 
 	private boolean byteMode;
 
@@ -164,14 +173,22 @@ public class FixLenDataReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
-		// MAIN RUN LOOOP		
+		WcardPattern pat = new WcardPattern();
+		pat.addPattern(fileURL, FILE_SEPARATOR);
+		Iterator<String> fileItor = pat.filenames().iterator();
+		String filename = null;
 		try {
-			parser.skip(skipRows);	// skip header
-			// till it reaches end of data or it is stopped from outside
-			while (((record = parser.getNext(record)) != null) && runIt) {
-				//broadcast the record to all connected Edges
-				writeRecordBroadcast(record);
-				SynchronizeUtils.cloverYield();
+			while (fileItor.hasNext()) {				
+				FileInputStream stream;
+				filename = fileItor.next();
+				stream = new FileInputStream(filename);
+				parser.setDataSource(stream);
+				skipRows -= parser.skip(skipRows);	// support for skip spanning across several files
+				while (parser.getNext(record) != null && runIt) {
+					//broadcast the record to all connected Edges
+					writeRecordBroadcast(record);
+					SynchronizeUtils.cloverYield();
+				}
 			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
@@ -179,7 +196,7 @@ public class FixLenDataReader extends Node {
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultMsg = "An error  occured while parsing file \"" + filename + "\": " + ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
@@ -206,13 +223,8 @@ public class FixLenDataReader extends Node {
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException(getId() + ": atleast one output port has to be defined!");
 		}
-		// try to open file & initialize data parser
-		try {
-			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
-		} catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
-
+		// try initialize data parser
+		parser.open(null, getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 
@@ -274,7 +286,7 @@ public class FixLenDataReader extends Node {
 				byteMode = xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE);
 			}
 			aFixLenDataReaderNIO = new FixLenDataReader(xattribs.getString(XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILEURL_ATTRIBUTE),
+						xattribs.getString(XML_FILEURL_ATTRIBUTE, ""),
 						charset, byteMode);
 			if (xattribs.exists(XML_ENABLEINCOMPLETE_ATTRIBUTE)){
 				aFixLenDataReaderNIO.parser.setEnableIncomplete(xattribs.getBoolean(XML_ENABLEINCOMPLETE_ATTRIBUTE));
