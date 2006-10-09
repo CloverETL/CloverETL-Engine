@@ -26,6 +26,8 @@ import java.io.InputStream;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.naming.InvalidNameException;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.poi.hssf.usermodel.HSSFCell;
@@ -42,6 +44,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
+import org.jetel.util.XLSUtils;
 
 /**
  * Parsing data from xls file.
@@ -50,8 +53,6 @@ import org.jetel.util.StringUtils;
  *
  */
 public class XLSDataParser implements Parser {
-	
-	private final static int CELL_NUMBER_IN_SHEET = 'Z'-65+1;//number of "AA" cell in excel sheet
 	
 	private final static int NO_METADATA_INFO = 0;
 	private final static int ONLY_CLOVER_FIELDS = 1;
@@ -343,16 +344,12 @@ public class XLSDataParser implements Parser {
 			throw new ComponentNotReadyException("Number of clover fields and xls fields must be the same");
 		}
 		for (short i=0;i<cloverFields.length;i++){
-			String cellCode = xlsFields[i].toUpperCase(); 
-			//getting colum number from its code: 
-			//A='A'-65=0,B='B'-65,....,Z='Z'-65=CELL_NUMBER_IN_SHEET-1,
-			//XYZ = ('X'-64)*CELL_NUMBER_IN_SHEET^2+('Y'-64)*CELL_NUMBER_IN_SHEET+('Z'-65) 
-			int cellNumber  = cellCode.charAt(cellCode.length()-1)-65;
-			for (int j=0;j<cellCode.length()-1;j++){
-				cellNumber+=(cellCode.charAt(j)-64)*CELL_NUMBER_IN_SHEET;
+			int cellNumber;
+			try {
+				cellNumber = XLSUtils.getCellNum(xlsFields[i]);
+			}catch(InvalidNameException ex){
+				throw new ComponentNotReadyException(ex);
 			}
-			if (cellNumber<0) 
-				throw new ComponentNotReadyException("Wrong column index: " + cellCode);
 			fieldNumber[i][XLS_NUMBER] = cellNumber;
 			try {
 				fieldNumber[i][CLOVER_NUMBER] = (Integer)fieldNames.get(cloverFields[i]);
