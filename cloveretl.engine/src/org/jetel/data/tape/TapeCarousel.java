@@ -23,6 +23,7 @@
  */
 package org.jetel.data.tape;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -35,16 +36,45 @@ import java.io.IOException;
 public class TapeCarousel {
 
     private DataRecordTape[] tapeArray;
+    private File[] tmpDirs;
     private int currTape;
     
+    /**
+     * 
+     * @param numTapes how many tapes should this carousel contain
+     */
     public TapeCarousel(int numTapes){
         tapeArray=new DataRecordTape[numTapes];
         currTape=0;
     }
     
+    /**
+     * This constructor allows for tapes placed in different temporary directories.
+     * Tapes will be distributed to directories in round-robin order
+     * 
+     * @param numTapes how many tapes should this carousel contain
+     * @param tmpDirNames array of paths to directories which should be used for
+     * storing generated tmp files
+     */
+    public TapeCarousel(int numTapes,String[] tmpDirNames){
+        this(numTapes);
+        tmpDirs=new File[tmpDirNames.length];
+        for(int i=0;i<tmpDirNames.length;i++){
+            tmpDirs[i]=new File(tmpDirNames[i]);
+        }
+    }
+    
+    
+    /**
+     * Opens all tapes in carousel. It effectivelly calls open() on each
+     * tape.
+     * 
+     * @throws IOException
+     */
     public void open() throws IOException{
         for(int i=0;i<tapeArray.length;i++){
             tapeArray[i]=new DataRecordTape();
+            tapeArray[i].setTmpDirectory(tmpDirs[i%tmpDirs.length]);
             tapeArray[i].open();
         }
     }

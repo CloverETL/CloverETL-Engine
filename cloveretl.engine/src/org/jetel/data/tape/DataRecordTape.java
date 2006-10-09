@@ -65,6 +65,7 @@ public class DataRecordTape {
 
     private FileChannel tmpFileChannel;
 	private File tmpFile;
+    private File tmpDirectory;
 	private String tmpFileName;
 
     private boolean deleteOnExit;
@@ -140,7 +141,7 @@ public class DataRecordTape {
 	 */
 	public void open() throws IOException {
         if(tmpFileName == null)
-            tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX);
+            tmpFile = File.createTempFile(TMP_FILE_PREFIX, TMP_FILE_SUFFIX, tmpDirectory);
         else {
             tmpFile = new File(tmpFileName);
             if(deleteOnStart && tmpFile.exists()) {
@@ -616,6 +617,26 @@ public class DataRecordTape {
 		    return "start: "+offsetStart+" #records: "+nRecords+" length: "+length;
 		}
 	}
+
+    /**
+     * Returns previously set temporary directory where this DataRecordTape
+     * should create its file (temporary)
+     * 
+     * @return
+     */
+    public File getTmpDirectory() {
+        return tmpDirectory;
+    }
+
+    /**
+     * Allows to set the temporary directory in which this DataRecordTape will
+     * create temporary file to store data.
+     * 
+     * @param tmpDirectory
+     */
+    public void setTmpDirectory(File tmpDirectory) {
+        this.tmpDirectory = tmpDirectory;
+    }
 	
 }
 
