@@ -28,6 +28,8 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -65,6 +67,8 @@ public abstract class FixLenDataParser3 implements Parser {
 	 */
 	protected boolean eof;
 
+	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	
 	protected int fieldCnt;
 	protected int[] fieldLengths;
 	protected int recordLength;
@@ -98,7 +102,6 @@ public abstract class FixLenDataParser3 implements Parser {
 		fieldCnt = metadata.getNumFields();
 		recordIdx = 0;
 		fieldIdx = 0;
-		eof = false;
 
 		recordLength = 0;
 		fieldLengths = new int[fieldCnt];
@@ -107,27 +110,53 @@ public abstract class FixLenDataParser3 implements Parser {
 			recordLength += fieldLengths[fieldIdx]; 
 		}
 
-		if (inputDataSource instanceof ReadableByteChannel) {
-			inChannel = ((ReadableByteChannel)inputDataSource);
-		} else {
-			inChannel = Channels.newChannel((InputStream)inputDataSource);
-		}
-		
+		setDataSource(inputDataSource);
+	}
+
+	/**
+	 * Set new data source.
+	 * @param inputDataSource
+	 */
+	public void setDataSource(Object inputDataSource) {
+		releaseDataSource();
 		byteBuffer.clear();
 		byteBuffer.flip();
+		decoder.reset();
+
+		if (inputDataSource == null) {
+			eof = true;
+		} else {
+			eof = false;
+			if (inputDataSource instanceof ReadableByteChannel) {
+				inChannel = ((ReadableByteChannel)inputDataSource);
+			} else {
+				inChannel = Channels.newChannel((InputStream)inputDataSource);
+			}
+		}
 	}
-	
+
 	/**
-	 * Release resources.  
+	 * Release data source.  
 	 */
-	public void close() {
+	private void releaseDataSource() {
+		if (inChannel == null) {
+			return;
+		}
 		try {
 			inChannel.close();
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.error(e.getStackTrace());
 		}
+		inChannel = null;
 	}
 	
+	/**
+	 * Release resources.
+	 */
+	public void close() {
+		releaseDataSource();
+	}
+
 	public DataRecord getNext() throws JetelException {
 		DataRecord rec = new DataRecord(metadata);
 		rec.init();
