@@ -22,6 +22,7 @@ package org.jetel.data.formatter;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -44,7 +45,7 @@ public interface Formatter {
 	 *@param  out        Description of the Parameter
 	 *@param  _metadata  Description of the Parameter
 	 */
-	public void open(Object out, DataRecordMetadata _metadata);
+	public void open(Object out, DataRecordMetadata _metadata) throws ComponentNotReadyException;
 
 
 	/**
