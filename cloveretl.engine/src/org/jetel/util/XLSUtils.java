@@ -24,8 +24,10 @@ package org.jetel.util;
 import javax.naming.InvalidNameException;
 
 /**
- * @author avackova
- *
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 9, 2006
  */
 public class XLSUtils {
 

@@ -35,6 +35,9 @@ import java.util.Map.Entry;
  * the object call method enableDuplicity()
  * 
  * @author david pavlis
+ * @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
  * @since  24.11.2005
  *
  */
