@@ -105,12 +105,12 @@ import org.w3c.dom.Element;
 &lt;/Node&gt;
 </pre>
  *
- *  @since March 27, 2004
  */
-
 /**
- * @author avackova
- *
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class DBJoin extends Node {
 

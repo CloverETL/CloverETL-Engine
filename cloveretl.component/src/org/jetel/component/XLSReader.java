@@ -90,13 +90,16 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node cloverFields="ORDER;CUSTOMERID;EMPLOYEEID;ORDERDATE;REQUIREDDA;SHIPPEDDAT;SHIPVIA;FREIGHT;SHIPNAME;SHIPADDRES;SHIPCITY;SHIPREGION;SHIPPOSTAL;SHIPCOUNTR" 
  *  fileURL="${WORKSPACE}/data/ORDERS.xls" id="XLS_READER1" metadataRow="1" startRow="2" 
- *  type="XLS_READER" xlsFields="&quot;ORDERID,N,20,5&quot;|&quot;CUSTOMERID,C,5&quot;|&quot;EMPLOYEEID,N,20,5&quot;|&quot;ORDERDATE,D&quot;|&quot;REQUIREDDA,D&quot;|&quot;SHIPPEDDAT,D&quot;|&quot;SHIPVIA,N,20,5&quot;|&quot;FREIGHT,N,20,5&quot;|&quot;SHIPNAME,C,40&quot;|&quot;SHIPADDRES,C,60&quot;|&quot;SHIPCITY,C,15&quot;|&quot;SHIPREGION,C,15&quot;|&quot;SHIPPOSTAL,C,10&quot;|'SHIPCOUNTR,C,15&quot;"/&gt;
+ *  type="XLS_READER" xlsFields="&quot;ORDERID,N,20,5&quot;|&quot;CUSTOMERID,C,5&quot;|&quot;EMPLOYEEID,N,20,5&quot;|&quot;ORDERDATE,D&quot;|&quot;REQUIREDDA,D&quot;|&quot;SHIPPEDDAT,D&quot;|&quot;SHIPVIA,N,20,5&quot;|&quot;FREIGHT,N,20,5&quot;|&quot;SHIPNAME,C,40&quot;|&quot;SHIPADDRES,C,60&quot;|&quot;SHIPCITY,C,15&quot;|&quot;SHIPREGION,C,15&quot;|&quot;SHIPPOSTAL,C,10&quot;|&quot;SHIPCOUNTR,C,15&quot;"/&gt;
  * 
  * <pre>&lt;Node dataPolicy="strict" fileURL="example.xls" id="XLS_READER0" metadataRow="1" 
  * startRow="2" type="XLS_READER"/&gt;
  * 
- * @author avackova
- *
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class XLSReader extends Node {
 
