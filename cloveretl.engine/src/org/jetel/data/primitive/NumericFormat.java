@@ -31,8 +31,11 @@ import java.util.Locale;
 /**
  * This class is equivalent of DecimalFormat for BigDecimal
  * 
- * @author avackova
- *
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created August 17, 2006 
  */
 public class NumericFormat extends NumberFormat {
 
