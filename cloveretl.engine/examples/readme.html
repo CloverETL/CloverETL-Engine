@@ -5,7 +5,7 @@
 	<TITLE>CloverETL examples</TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20061005;11474600">
-	<META NAME="CHANGED" CONTENT="20061006;15371800">
+	<META NAME="CHANGED" CONTENT="20061010;11064100">
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <H1><FONT COLOR="#008000">CloverETL examples</FONT></H1>
@@ -423,6 +423,38 @@ currently three partition algorithms implemented:
 <P>Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
 org.jetel.main.runGraph -plugins ../plugins <A HREF="graphPartition.grf" TARGET="_blank">graphPartition.grf</A></TT></P>
+<H3><!-- System call examples -->System call example</H3>
+<P>It is possible to call system command from CloverETL framework.
+System execute component can be standalone component or can work with
+records flowing form other component. Output from executing system
+command can be sent to other component or can be logged to file. If
+there is not given interpreter, “command” attribute is treated as
+simple system command with parameters, else “command” attribute
+is saved in temporary batch file and there is called interpreter to
+execute this script</P>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphSystemExecute.grf" TARGET="_blank">graphSystemExecute.grf</A></TT></P>
+<H3><!-- Excel example -->Working with Excel files example</H3>
+<P>CloverETL can read and write data from/to xls files. In this
+example data are read from <TT>ORDERS.xls</TT> file, partitioned to 3
+parts and each of thees parts are saved in <TT>orders.partitioned.xls</TT>
+file in another sheet. 
+</P>
+<P><I>Important: Because it is impossible to write to different
+sheets in the same time each writing component has other phase.</I> 
+</P>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphXLSReadWrite.grf" TARGET="_blank">graphXLSReadWrite.grf</A></TT></P>
+<H3><!-- XML example -->XML extract example</H3>
+<P>CloverETL can read data from xml files. In this example data are
+read from <TT>employees.xml </TT>file. “Mapping” attribute
+describes dependencies between xml nodes and metadata fields. 
+</P>
+<P>Executing:<BR><TT>java -cp
+&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
+org.jetel.main.runGraph -plugins ../plugins <A HREF="graphXMLExtract.grf" TARGET="_blank">graphXMLExtract.grf</A></TT></P>
 <HR>
 <H2><!-- Complex examples -->Complex examples</H2>
 <P>This examples combines several components to perform useful
@@ -472,11 +504,17 @@ clients, month interests and charges and half-year bonus. On outputs
 we have aggregated revenues by clients, clients without revenues and
 clients from database, who are not in input file. 
 </P>
+<P STYLE="margin-bottom: 0in"><I>Note:In order to run successfully,
+you have to have database and database connection defined (see next
+examples) </I>
+</P>
 <P STYLE="margin-bottom: 0in"><BR>
 </P>
 <P STYLE="margin-bottom: 0in">Executing:<BR><TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:./&quot;
 org.jetel.main.runGraph -plugins ../plugins <A HREF="graphRevenues.grf" TARGET="_blank">graphRevenues.grf</A></TT></P>
+<P STYLE="margin-bottom: 0in"><BR>
+</P>
 <HR>
 <H2><!-- Database related examples -->Database related examples</H2>
 <P>When experimenting with database, presented example graphs expect
@@ -761,7 +799,7 @@ org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBLookup.grf" TARGET="
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphSystemExecute.grf</P>
+			<P><A HREF="graphSystemExecute.grf">graphSystemExecute.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
@@ -771,12 +809,12 @@ org.jetel.main.runGraph -plugins ../plugins <A HREF="graphDBLookup.grf" TARGET="
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphXLSReadWrite.grf</P>
+			<P><A HREF="graphXLSReadWrite.grf">graphXLSReadWrite.grf</A></P>
 		</TD>
 	</TR>
 	<TR>
 		<TD WIDTH=284>
-			<P>graphXMLExtract.grf</P>
+			<P><A HREF="graphXMLExtract.grf">graphXMLExtract.grf</A></P>
 		</TD>
 	</TR>
 </TABLE>
