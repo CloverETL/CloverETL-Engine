@@ -8,12 +8,16 @@
 <Phase number="0">
 <Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="272" guiY="168" id="PARTITION0" partitionKey="SHIPVIA" ranges="1;2;3" type="PARTITION"/>
 <Node cloverFields="ORDER;CUSTOMERID;EMPLOYEEID;ORDERDATE;REQUIREDDA;SHIPPEDDAT;SHIPVIA;FREIGHT;SHIPNAME;SHIPADDRES;SHIPCITY;SHIPREGION;SHIPPOSTAL;SHIPCOUNTR" enabled="enabled" fileURL="${WORKSPACE}/data/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="74" guiY="168" id="XLS_READER1" metadataRow="1" startRow="2" type="XLS_READER" xlsFields="&quot;ORDERID,N,20,5&quot;|&quot;CUSTOMERID,C,5&quot;|&quot;EMPLOYEEID,N,20,5&quot;|&quot;ORDERDATE,D&quot;|&quot;REQUIREDDA,D&quot;|&quot;SHIPPEDDAT,D&quot;|&quot;SHIPVIA,N,20,5&quot;|&quot;FREIGHT,N,20,5&quot;|&quot;SHIPNAME,C,40&quot;|&quot;SHIPADDRES,C,60&quot;|&quot;SHIPCITY,C,15&quot;|&quot;SHIPREGION,C,15&quot;|&quot;SHIPPOSTAL,C,10&quot;|&quot;SHIPCOUNTR,C,15&quot;"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/via1.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="65" id="XLS_WRITER0" saveNames="true" type="XLS_WRITER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/via2.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="168" id="XLS_WRITER1" saveNames="true" type="XLS_WRITER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/via3.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="274" id="XLS_WRITER2" saveNames="true" type="XLS_WRITER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" firstColumn="f" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="65" id="XLS_WRITER0" namesRow="2" saveNames="true" sheetName="via1" type="XLS_WRITER"/>
 <Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge6" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="0 (Partition)" toNode="XLS_WRITER0:0"/>
-<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge7" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="1 (Partition)" toNode="XLS_WRITER1:0"/>
-<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge8" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="2 (Partition)" toNode="XLS_WRITER2:0"/>
+<Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge0" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="1 (Partition)" toNode="XLS_WRITER1:0"/>
+<Edge fromNode="PARTITION0:2" guiBendpoints="" id="Edge1" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="2 (Partition)" toNode="XLS_WRITER2:0"/>
 <Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge5" inPort="0 (Partition)" metadata="Metadata0" outPort="0 (XLS Data Reader)" toNode="PARTITION0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" firstDataRow="10" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="168" id="XLS_WRITER1" saveNames="true" sheetName="via2" type="XLS_WRITER"/>
+</Phase>
+<Phase number="2">
+<Node append="true" enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="274" id="XLS_WRITER2" saveNames="true" sheetName="via3" type="XLS_WRITER"/>
 </Phase>
 </Graph>
