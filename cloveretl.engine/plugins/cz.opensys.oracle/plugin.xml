@@ -9,13 +9,13 @@
 	</requires>
 	
 	<extension point-id="component">
-		<parameter id="type" value="ORACLE_DATA_WRITER"/>
-		<parameter id="className" value="cz.opensys.oracle.component.OracleDataWriter"/>
+		<parameter id="type" value="ORACLE_DATA_READER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.OracleDataReader"/>
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="ORACLE_DATA_READER"/>
-		<parameter id="className" value="cz.opensys.oracle.component.OracleDataReader"/>
+		<parameter id="type" value="ORACLE_DATA_WRITER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.OracleDataWriter"/>
 	</extension>
 		
 </plugin>
