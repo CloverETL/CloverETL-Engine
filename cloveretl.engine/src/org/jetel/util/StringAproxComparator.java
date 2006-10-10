@@ -31,8 +31,10 @@ import org.jetel.exception.JetelException;
 /**
  * Class for approximative string comparison
  * 
- * @author avackova, JavlinConsulting,s.r.o.
- *
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created August 17, 2006 
  */
 
 public class StringAproxComparator{
