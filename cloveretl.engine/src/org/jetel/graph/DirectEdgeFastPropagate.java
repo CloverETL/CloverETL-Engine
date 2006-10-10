@@ -47,16 +47,6 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     // Attributes
     
     /**
-     *  Number of internal buffers for storing records
-     * Note: it does not improve performance much if this
-     * number is increased.
-     *
-     * @since    April 11, 2002
-     */
-    private final static int INTERNAL_BUFFERS_NUM = 4;
-
-
-    /**
      *Constructor for the Edge object
      *
      * @param  id        Description of Parameter
@@ -96,7 +86,8 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     public void init() throws IOException {
         // initialize & open the data pipe
         // we are ready to supply data
-        recordBuffer=new EdgeRecordBufferPool(INTERNAL_BUFFERS_NUM, Defaults.Record.MAX_RECORD_SIZE);
+        recordBuffer=new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS, 
+                                            Defaults.Record.MAX_RECORD_SIZE);
         recordCounter = 0;
     }
 
