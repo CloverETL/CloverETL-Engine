@@ -44,8 +44,13 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.XLSUtils;
 
 /**
- * @author avackova
- *
+ * Writes records to xls sheet
+ *  
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class XLSDataFormatter implements Formatter {
 
@@ -78,18 +83,22 @@ public class XLSDataFormatter implements Formatter {
 	public void open(Object out, DataRecordMetadata _metadata) throws ComponentNotReadyException{
 		this.metadata = _metadata;
 		try{
-			if (((File)out).length() > 0) {
+			if (((File)out).length() > 0) {//if xls file exist add to it new data
 				wb = new HSSFWorkbook(new FileInputStream((File)out));
-			}else{
+			}else{//create new xls file
 				wb = new HSSFWorkbook();
 			}
 			this.out = new FileOutputStream((File)out);
 		}catch(IOException ex){
 			throw new RuntimeException(ex);
 		}
+		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
 			sheet = wb.getSheet(sheetName);
 			if (sheet == null) {
+				sheet = wb.createSheet(sheetName);
+			}else if (!append){
+				wb.removeSheetAt(wb.getSheetIndex(sheetName));
 				sheet = wb.createSheet(sheetName);
 			}
 		}else if (sheetNumber > -1){
@@ -102,6 +111,7 @@ public class XLSDataFormatter implements Formatter {
 			sheet = wb.createSheet();
 		}
 		recCounter = 0;
+		//set recCounter for proper row
 		if (append) {
 			if (sheet.getLastRowNum() != 0){
 				recCounter = sheet.getLastRowNum() + 1;
@@ -112,11 +122,12 @@ public class XLSDataFormatter implements Formatter {
 		}catch(InvalidNameException ex){
 			throw new ComponentNotReadyException(ex);
 		}
+		//save metadata  names
 		if (saveNames && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
 			recCounter = namesRow > -1 ? namesRow : 0;
 			HSSFCellStyle metaStyle = wb.createCellStyle();
 			HSSFFont font = wb.createFont();
-			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);
+			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);//save metadata names bold
 			metaStyle.setFont(font);
 			row = sheet.createRow(recCounter);
 			String name;
@@ -131,6 +142,7 @@ public class XLSDataFormatter implements Formatter {
 			}
 			recCounter++;
 		}
+		//creating cell formats from metadata formats
 		dataFormat = wb.createDataFormat();
 		cellStyle = new HSSFCellStyle[metadata.getNumFields()];
 		String format;
@@ -154,7 +166,7 @@ public class XLSDataFormatter implements Formatter {
 	 */
 	public void close() {
 		try {
-			wb.write(out);
+			wb.write(out);//write workbook to file
 			out.close();	
 		}catch(IOException ex){
 			ex.printStackTrace();
@@ -166,8 +178,8 @@ public class XLSDataFormatter implements Formatter {
 	 */
 	public void write(DataRecord record) throws IOException {
 		row = sheet.createRow(recCounter);
-		char metaType;
-		Object value;
+		char metaType;//metadata field type
+		Object value;//field value
 		short colNum;
 		for (short i=0;i<metadata.getNumFields();i++){
 			metaType = metadata.getField(i).getType();
