@@ -64,14 +64,15 @@ import org.jetel.util.JetelVersion;
 public class runGraph {
     private static Log logger = LogFactory.getLog(runGraph.class);
 
-	private final static String RUN_GRAPH_VERSION="1.8";
-	private final static String VERBOSE_SWITCH = "-v";
+    //TODO change run graph version
+	private final static String RUN_GRAPH_VERSION = "1.8";
+	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
-	private final static String PROPERTY_DEFINITION_SWITCH = "-P:";
-	private final static String TRACKING_INTERVAL_SWITCH = "-tracking";
-	private final static String INFO_SWITCH= "-info";
-    private final static String PLUGINS_SWITCH= "-plugins";
-    private final static String PASSWORD_SWITCH= "-pass";
+	public final static String PROPERTY_DEFINITION_SWITCH = "-P:";
+	public final static String TRACKING_INTERVAL_SWITCH = "-tracking";
+	public final static String INFO_SWITCH = "-info";
+    public final static String PLUGINS_SWITCH = "-plugins";
+    public final static String PASSWORD_SWITCH = "-pass";
 	
 	/**
 	 *  Description of the Method
