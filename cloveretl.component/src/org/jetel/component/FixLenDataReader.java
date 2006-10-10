@@ -26,8 +26,6 @@
 package org.jetel.component;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -36,8 +34,11 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser3;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
+import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -86,6 +87,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>skipEmpty</b></td><td>Values true/false. Specifies whether empty records are to be ignored. 
  *  Default is true. It doesn't have any effect in byte mode.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  </tr>
  *  </table>
@@ -93,16 +95,15 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node type="FIXED_DATA_READER" id="InputFile" fileURL="/tmp/mydata.dat" /&gt;</pre>
  *
- * @author      Jan Hadrava
- * @since       September 27, 2006
- * @revision    $Revision: 1439 $
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 09/15/06  
  * @see         org.jetel.data.parser.FixLenDataParser3
  */
 
 public class FixLenDataReader extends Node {
 
 	// regex pattern describing allowed filename separators
-	private final static String FILE_SEPARATOR = " +";
+	private final static String FILEMASK_SEPARATOR = "\\s+";
 
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
@@ -111,6 +112,7 @@ public class FixLenDataReader extends Node {
 	private static final String XML_SKIPEMPTY_ATTRIBUTE = "skipEmpty";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
 	
 	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
@@ -122,6 +124,7 @@ public class FixLenDataReader extends Node {
 	private String fileURL;
 
 	private FixLenDataParser3 parser;
+    private PolicyType policyType;
 	
 	private int skipRows= 0; // do not skip rows by default
 
@@ -170,35 +173,44 @@ public class FixLenDataReader extends Node {
 	 */
 	public void run() {
 		// we need to create data record - take the metadata from first output port
-		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		record.init();
+		DataRecord rec = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		DataRecord record = null;
+		rec.init();
 
 		WcardPattern pat = new WcardPattern();
-		pat.addPattern(fileURL, FILE_SEPARATOR);
+		pat.addPattern(fileURL, FILEMASK_SEPARATOR);
 		Iterator<String> fileItor = pat.filenames().iterator();
 		String filename = null;
-		try {
-			while (fileItor.hasNext()) {				
-				FileInputStream stream;
-				filename = fileItor.next();
+		while (fileItor.hasNext() && runIt) {				
+			FileInputStream stream;
+			filename = fileItor.next();
+			try {
 				stream = new FileInputStream(filename);
 				parser.setDataSource(stream);
-				skipRows -= parser.skip(skipRows);	// support for skip spanning across several files
-				while (parser.getNext(record) != null && runIt) {
-					//broadcast the record to all connected Edges
-					writeRecordBroadcast(record);
-					SynchronizeUtils.cloverYield();
+				parser.skip(skipRows);	// skip in each file
+				record =rec;
+				while (record != null && runIt) {
+					try {
+						//broadcast the record to all connected Edges
+	                    if((record = parser.getNext(record)) != null && runIt) {
+							writeRecordBroadcast(record);
+							SynchronizeUtils.cloverYield();
+	                    }
+	                } catch(BadDataFormatException bdfe) {
+	                    if(policyType == PolicyType.STRICT) {
+	                        throw bdfe;
+	                    } else {
+	                        logger.info(bdfe.getMessage());
+	                    }
+	                }
 				}
+            } catch(BadDataFormatException bdfe) {
+                if(policyType == PolicyType.STRICT) {
+                    throw bdfe;
+                }
+			} catch (Exception ex) {
+				logger.error("An error  occured while parsing file \"" + filename + "\": " + ex.getClass().getName()+" : "+ ex.getMessage());
 			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = "An error  occured while parsing file \"" + filename + "\": " + ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
 		}
 		// we are done, close all connected output ports to indicate end of stream
 		parser.close();
@@ -261,7 +273,8 @@ public class FixLenDataReader extends Node {
 		
 		if (this.skipRows>0){
 		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
-		}		
+		}
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());		
 	}
 
 
@@ -303,7 +316,7 @@ public class FixLenDataReader extends Node {
 			if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
 				aFixLenDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
 			}
-			
+			aFixLenDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));			
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -343,6 +356,19 @@ public class FixLenDataReader extends Node {
         this.skipRows = skipRows;
     }
     
+    public void setPolicyType(String strPolicyType) {
+        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    }
+    
+	public void setPolicyType(PolicyType policyType) {
+        this.policyType = policyType;
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+	}
+
+	public PolicyType getPolicyType() {
+		return this.parser.getPolicyType();
+	}
+	
     private boolean isByteMode() {
     	return byteMode;
     }
