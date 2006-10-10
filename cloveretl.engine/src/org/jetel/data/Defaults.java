@@ -326,7 +326,8 @@ public final class Defaults {
 		public static void init() {
 		    DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*4);
 		    BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*10);
-		}
+            DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS =getIntProperties("Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
+        }
 
 		/**
 		 *  Size of internal buffer of DirectEdge for storing
@@ -345,6 +346,16 @@ public final class Defaults {
 		 * several times bigger - 128kB or more
 		 */
 		public static int BUFFERED_EDGE_INTERNAL_BUFFER_SIZE;
+        
+        
+        /**
+         * Number of internal buffers for storing/buffering records
+         * transmitted through FastPropagate Edge. One buffer can
+         * store one data record.
+         * Minimum size is 1. Default is 4. Higher number can help increasing
+         * processing speed but not much.
+         */
+        public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
 	}
 
 }

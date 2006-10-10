@@ -100,5 +100,10 @@ GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
 #several times bigger - 128kB or more
 #Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = 81920
 
-
+#Number of internal buffers for storing/buffering records
+#transmitted through FastPropagate Edge. One buffer can
+#store one data record.
+#Minimum size is 1. Default is 4. Higher number can help increasing
+#processing speed but not much.
+Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS = 4
 			
