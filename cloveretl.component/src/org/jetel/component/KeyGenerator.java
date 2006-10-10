@@ -93,10 +93,12 @@ import org.w3c.dom.Element;
  *&lt;attr name="keyExpression">lname 2d;fname -2ad&lt;/attr&gt;
  *&lt;/Node&gt;</pre>
  *
- * @author avackova
- *
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
-public class KeyGenerator extends Node {
+ public class KeyGenerator extends Node {
 
 	public static final char SWITCH_REMOVE_DIACRITIC = 'd';
     public static final char SWITCH_ONLY_NUMERIC = 'n';

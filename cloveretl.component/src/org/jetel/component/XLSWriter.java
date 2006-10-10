@@ -33,12 +33,66 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.XLSUtils;
 import org.w3c.dom.Element;
 
 /**
- * @author avackova
+ *  <h3>XLS Writer Component</h3>
  *
+ * <!-- Reads data from input port and writes them to given xls sheet in xls file. -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>XLSWriter</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td>Writers</td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Reads data from input port and writes them to given xls sheet in xls file. If 
+ *  in one graph you want to write to the same file but to different sheets each XLSWriter
+ *  has to have another phase</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>one input port defined/connected.</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"XLS_WRITER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the output file</td>
+ *  <tr><td><b>saveNames</b></td><td>indicates if metadata names are saved or not 
+ *  (true/false - default false)</td>
+ *  <tr><td><b>namesRow</b></td><td>index of row, where to write metadata names</td>
+ *  <tr><td><b>firstDataRow</b></td><td>index of row, where to write first data record</td>
+ *  <tr><td><b>firstColumn</b></td><td>code of column from which data will be written</td>
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. If it is not set data
+ *   new sheet with default name is created</td>
+ *  <tr><td><b>sheetNumber</b></td><td>number of sheet for writing data (starting from 0).
+ *   If it is not set new sheet with default name is created. If sheetName and sheetNumber 
+ *   are both set, sheetNumber is ignored</td>
+ *  <tr><td><b>append</b></td><td>indicates if given sheet exist new data are append
+ *   to the sheet or old data are deleted and rewritten by new ones (true/false - default 
+ *   false)</td>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node fileURL="output/orders.partitioned.xls" firstColumn="f" 
+ *   id="XLS_WRITER0" namesRow="2" saveNames="true" sheetName="via1" type="XLS_WRITER"/&gt;
+ * 
+ * <pre>&lt;Node fileURL="output/orders.partitioned.xls" firstDataRow="10" 
+ * id="XLS_WRITER1" saveNames="true" sheetName="via2" type="XLS_WRITER"/&gt;
+ *
+ * <pre>&lt;Node append="true" fileURL="output/orders.partitioned.xls" 
+ * id="XLS_WRITER2" saveNames="true" sheetName="via3" type="XLS_WRITER"/&gt;
+ * 
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class XLSWriter extends Node {
 
@@ -56,8 +110,15 @@ public class XLSWriter extends Node {
 
 	private String fileURL;
 	private XLSDataFormatter formatter;
-	private int namesRow;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 * @param fileURL output file
+	 * @param saveNames indicates if save metadata names
+	 * @param append indicates if new data are appended or rewrite old data 
+	 */
 	public XLSWriter(String id,String fileURL, boolean saveNames, boolean append){
 		super(id);
 		this.fileURL = fileURL;
@@ -144,7 +205,7 @@ public class XLSWriter extends Node {
 				xlsWriter.setSheetNumber(xattribs.getInteger(XML_SHEETNUMBER_ATTRIBUTE));
 			}
 			xlsWriter.setFirstColumn(xattribs.getString(XML_FIRSTCOLUMN_ATTRIBUTE,"A"));
-			xlsWriter.setFirstRow(xattribs.getInteger(XML_FIRSTDATAROW_ATTRIBUTE,0));
+			xlsWriter.setFirstRow(xattribs.getInteger(XML_FIRSTDATAROW_ATTRIBUTE,1));
 			xlsWriter.setNamesRow(xattribs.getInteger(XML_NAMESROW_ATTRIBUTE,0));
 			return xlsWriter;
 		} catch (Exception ex) {

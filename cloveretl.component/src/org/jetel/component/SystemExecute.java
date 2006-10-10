@@ -117,8 +117,11 @@ import org.w3c.dom.Element;
  *ls -l $1&lt;/attr&gt;
  *&lt;/Node&gt;
  *</pre>
- * @author avackova
- *
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class SystemExecute extends Node{
 	
