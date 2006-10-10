@@ -37,12 +37,12 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Superclass for fox-length data parsers.
- * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ * Superclass for fix-length data parsers.
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 09/05/06  
  */
 public abstract class FixLenDataParser3 implements Parser {
 
