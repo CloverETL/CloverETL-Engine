@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 /**
- * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
- * 
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 09/05/06  
  * Class generating collection of filenames which match
  * given wildcard patterns.
  * The pattern may describe either relative or absolute filenames.
