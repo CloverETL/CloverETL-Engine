@@ -49,8 +49,11 @@ import org.jetel.util.XLSUtils;
 /**
  * Parsing data from xls file.
  * 
- * @author avackova
- *
+/**
+* @author avackova <agata.vackova@javlinconsulting.cz> ; 
+* (c) JavlinConsulting s.r.o.
+*	www.javlinconsulting.cz
+*	@created October 10, 2006
  */
 public class XLSDataParser implements Parser {
 	
@@ -274,7 +277,7 @@ public class XLSDataParser implements Parser {
 		}
 		Map fieldNames = metadata.getFieldNames();
 		switch (getMappingType(metadataRow,cloverFields!=null,xlsFields!=null)) {
-		case NO_METADATA_INFO:noMetadtaInfo();break;
+		case NO_METADATA_INFO:noMetadataInfo();break;
 		case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
 		case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
 		case MAP_NAMES:mapNames(fieldNames);break;
@@ -308,7 +311,7 @@ public class XLSDataParser implements Parser {
 	/**
 	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
 	 */
-	private void noMetadtaInfo(){
+	private void noMetadataInfo(){
 		for (short i=0;i<fieldNumber.length;i++){
 			fieldNumber[i][XLS_NUMBER] = i;
 			fieldNumber[i][CLOVER_NUMBER] = i;
