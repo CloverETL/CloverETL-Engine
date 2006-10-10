@@ -31,6 +31,8 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
@@ -57,6 +59,9 @@ import org.jetel.util.StringUtils;
  * @revision    $Revision$
  */
 public class DelimitedDataParser implements Parser {
+
+	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	
 	private String charSet = null;
 	private IParserExceptionHandler exceptionHandler;
 	private ByteBuffer dataBuffer;
@@ -70,7 +75,6 @@ public class DelimitedDataParser implements Parser {
 	private char[][] delimiters;
 	private char[] fieldTypes;
 	private boolean isEof;
-    private boolean skipRows=false;
 
 	// this will be added as a parameter to constructor
 	private boolean handleQuotedStrings = true;
@@ -127,14 +131,14 @@ public class DelimitedDataParser implements Parser {
 
 		record.init();
 
-		record = parseNext(record);
+		boolean success = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {
                 exceptionHandler.handleException();
-				record = parseNext(record);
+				success = parseNext(record);
 			}
 		}
-		return record;
+		return success ? record : null;
 	}
 
 
@@ -149,15 +153,19 @@ public class DelimitedDataParser implements Parser {
 	 *@since                   May 2, 2002
 	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		record = parseNext(record);
+		return getNext0(record) ? record : null; 
+	}
+
+	private boolean getNext0(DataRecord record) throws JetelException {
+		boolean retval = parseNext(record);
 		if(exceptionHandler != null ) {  //use handler only if configured
 			while(exceptionHandler.isExceptionThrowed()) {
                 exceptionHandler.handleException();
 				//record.init();   //redundant
-				record = parseNext(record);
+				retval = parseNext(record);
 			}
 		}
-		return record;
+		return retval;
 	}
 
 
@@ -173,9 +181,6 @@ public class DelimitedDataParser implements Parser {
         DataFieldMetadata fieldMetadata;
 		this.metadata = metadata;
 
-		
-		reader = Channels.newChannel((InputStream) in);
-
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];
 		fieldTypes = new char[metadata.getNumFields()];
@@ -185,30 +190,58 @@ public class DelimitedDataParser implements Parser {
 			fieldTypes[i] = fieldMetadata.getType();
 			// we handle only one character delimiters
 		}
+		setDataSource(in);
+	}
+
+	/**
+	 * Set new data source.
+	 * @param inputDataSource
+	 */
+	public void setDataSource(Object inputDataSource) {
+		releaseDataSource();
+
 		decoder.reset();// reset CharsetDecoder
 		dataBuffer.clear();
         dataBuffer.flip();
 		charBuffer.clear();
 		charBuffer.flip();
 		recordCounter = 1;// reset record counter
-		isEof=false;
 
+		if (inputDataSource == null) {
+			isEof = true;
+		} else {
+			isEof = false;
+			if (inputDataSource instanceof ReadableByteChannel) {
+				reader = ((ReadableByteChannel)inputDataSource);
+			} else {
+				reader = Channels.newChannel((InputStream)inputDataSource);
+			}
+		}
 	}
 
+	/**
+	 * Release data source
+	 *
+	 */
+	private void releaseDataSource() {
+		if (reader == null) {
+			return;
+		}
+		try {
+			reader.close();
+		} catch (IOException e) {
+			logger.error(e.getStackTrace());
+		}
+		reader = null;		
+	}
 
 	/**
-	 *  Description of the Method
+	 *  Release resources
 	 *
 	 *@since    May 2, 2002
 	 */
 	public void close() {
-		if (reader != null) {
-			try {
-				reader.close();
-			} catch (IOException ex) {
-				ex.printStackTrace();
-			}
-		}
+		releaseDataSource();
 	}
 
 
@@ -299,13 +332,12 @@ public class DelimitedDataParser implements Parser {
 	 *@exception  IOException  Description of Exception
 	 *@since                   March 27, 2002
 	 */
-	private DataRecord parseNext(DataRecord record) throws JetelException {
+	private boolean parseNext(DataRecord record) throws JetelException {
 		int result;
 		int fieldCounter = 0;
 		int character;
 		int totalCharCounter = 0;
 		int delimiterPosition;
-		long size = 0;
 		int charCounter;
 		boolean isWithinQuotes;
 		char quoteChar=' ';
@@ -384,19 +416,19 @@ public class DelimitedDataParser implements Parser {
 					e.printStackTrace();
 					throw new JetelException(e.getMessage());
 				}
-				return null;
+				return false;
 			}
 
 			// set field's value
 			// are we skipping this row/field ?
-			if (!skipRows){
+			if (record != null){
 			    fieldStringBuffer.flip();
 			    populateField(record, fieldCounter, fieldStringBuffer);
 			}
 			fieldCounter++;
 		}
 		recordCounter++;
-		return record;
+		return true;
 	}
 
 
@@ -498,23 +530,6 @@ public class DelimitedDataParser implements Parser {
 		}
 	}
 
-
-    /**
-     * @return Returns the skipRows.
-     */
-    public boolean isSkipRows() {
-        return skipRows;
-    }
-
-
-    /**
-     * @param skipRows The skipRows to set.
-     */
-    public void setSkipRows(boolean skipRows) {
-        this.skipRows = skipRows;
-    }
-
-
     public void setExceptionHandler(IParserExceptionHandler handler) {
         this.exceptionHandler = handler;
     }
@@ -525,11 +540,22 @@ public class DelimitedDataParser implements Parser {
     }
 
 
+	/**
+	 * Skip records.
+	 * @param nRec Number of records to be skipped
+	 * @return Number of successfully skipped records.
+	 * @throws JetelException
+	 */
 	public int skip(int nRec) throws JetelException {
-		throw new UnsupportedOperationException("Not yet implemented");
-//		return 0;
+		int skipped;
+		for (skipped = 0; skipped < nRec; skipped++) {
+			if (!getNext0(null)) {	// end of file reached
+				break;
+			}
+		}
+		return skipped;
 	}
-	
+		
 }	
 /*
  *  end class DelimitedDataParser

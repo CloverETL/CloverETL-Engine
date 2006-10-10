@@ -29,7 +29,8 @@ import org.jetel.exception.JetelException;
 /**
  * Parser for sequence of records represented by fixed count of bytes
  * 
- * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 09/15/06  
  */
 public class FixLenByteDataParser extends FixLenDataParser3 {
 

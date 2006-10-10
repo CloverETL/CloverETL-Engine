@@ -33,7 +33,8 @@ import org.jetel.util.StringUtils;
 /**
  * Parser for sequence of records represented by fixed count of chars.
  * 
- * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 09/15/06  
  */
 public class FixLenCharDataParser extends FixLenDataParser3 {
 
