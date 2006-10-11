@@ -67,7 +67,10 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"XLS_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
- *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or
+ *   incorrect data.  'Strict' (default value) aborts processing, 'Controlled'
+ *   logs the entire record while processing continues, and 'Lenient' attempts
+ *   to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>startRow</b></td><td>index of first parsed record</td>
  *  <tr><td><b>finalRow</b></td><td>index of final parsed record</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
@@ -77,21 +80,30 @@ import org.w3c.dom.Element;
  *   If it is not set data are read from first sheet. If sheetName and sheetNumber are both
  *    set, sheetNumber is ignored</td>
  *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
- *  <tr><td><b>cloverFields</b></td><td>field names separated by :;| {colon, semicolon, pipe}
- *  Can be used for mapping clover fields and xls fields or for defining order of reading 
- *  columns from xls sheet</td>
- *  <tr><td><b>xlsFields</b></td><td>names or indexes of columns from xml sheet corresponding 
- *  to clover Fields. If xlsFields is set, cloverFields must be set too.Names of colums have 
- *  to be doublequoted and  separated by :;| {colon, semicolon, pipe}.If they are not doublequoted they 
- *  are considered as colums indexes</td>
+ *  <tr><td><b>fieldMap</b></td><td>Pairs of clover fields and xls columns
+ *   (cloverField=xlsColumn) separated by :;| {colon, semicolon, pipe}.
+ *  Can be used for mapping clover fields and xls fields or for defining order 
+ *  of reading columns from xls sheet. Xls columns can be written as names given 
+ *  in row specified by metadataRow attribute or as column's codes preceded 
+ *  by $. Xls fields may be missing, then columns are read in order they are 
+ *  in xls sheet and are given to proper metadata fields</td>
  *  </tr>
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node cloverFields="ORDER;CUSTOMERID;EMPLOYEEID;ORDERDATE;REQUIREDDA;SHIPPEDDAT;SHIPVIA;FREIGHT;SHIPNAME;SHIPADDRES;SHIPCITY;SHIPREGION;SHIPPOSTAL;SHIPCOUNTR" 
- *  fileURL="${WORKSPACE}/data/ORDERS.xls" id="XLS_READER1" metadataRow="1" startRow="2" 
- *  type="XLS_READER" xlsFields="&quot;ORDERID,N,20,5&quot;|&quot;CUSTOMERID,C,5&quot;|&quot;EMPLOYEEID,N,20,5&quot;|&quot;ORDERDATE,D&quot;|&quot;REQUIREDDA,D&quot;|&quot;SHIPPEDDAT,D&quot;|&quot;SHIPVIA,N,20,5&quot;|&quot;FREIGHT,N,20,5&quot;|&quot;SHIPNAME,C,40&quot;|&quot;SHIPADDRES,C,60&quot;|&quot;SHIPCITY,C,15&quot;|&quot;SHIPREGION,C,15&quot;|&quot;SHIPPOSTAL,C,10&quot;|&quot;SHIPCOUNTR,C,15&quot;"/&gt;
+ *  <pre>&lt;Node fieldMap="ORDER=ORDERID,N,20,5;CUSTOMERID=CUSTOMERID,C,5;
+ *  EMPLOYEEID=EMPLOYEEID,N,20,5;ORDERDATE=ORDERDATE,D;REQUIREDDA=REQUIREDDA,
+ *  D;SHIPCOUNTR=SHIPCOUNTR,C,15" fileURL="ORDERS.xls" id="XLS_READER1" metadataRow="1" 
+ *  startRow="2" type="XLS_READER" /&gt;
  * 
+ *  <pre>&lt;Node fieldMap="ORDER=$a;CUSTOMERID=$b;EMPLOYEEID=$c;ORDERDATE=$d;
+ *  REQUIREDDA=$d;SHIPPEDDAT=$f;SHIPVIA=$g;FREIGHT=$h;SHIPNAME=$i;SHIPADDRES=$j;
+ *  SHIPCITY=$k;SHIPREGION=$l;SHIPPOSTAL=$n;SHIPCOUNTR=$m" fileURL="ORDERS.xls"
+ *  id="XLS_READER1" metadataRow="1" type="XLS_READER" /&gt;
+ *  
+ *  <pre>&lt;Node fieldMap="ORDER;CUSTOMERID=;EMPLOYEEID;ORDERDATE;SHIPCOUNTR" 
+ *  fileURL="ORDERS.xls" id="XLS_READER1"type="XLS_READER" /&gt;
+ *
  * <pre>&lt;Node dataPolicy="strict" fileURL="example.xls" id="XLS_READER0" metadataRow="1" 
  * startRow="2" type="XLS_READER"/&gt;
  * 
@@ -115,10 +127,12 @@ public class XLSReader extends Node {
 	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
 	private final static String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
 	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
-	private final static String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
-	private final static String XML_XLSFIELDS_ATTRIBUTE = "xlsFields";
-
+	private final static String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
+	
+	private final static String ASSIGMENT_STRING = "=";
 	private final static int OUTPUT_PORT = 0;
+	private final static int CLOVER_FIELDS = 0;
+	private final static int XLS_FIELDS = 1;
 
 	private String fileURL;
 	private int startRow = 0;
@@ -131,15 +145,15 @@ public class XLSReader extends Node {
 	private String sheetName;
 	private int sheetNumber = -1;
 	private int metadataRow = 0;
-	private String[] cloverFields = null;
-	private String[] xlsFields = null;
+	private String[][] fieldMap;
 
 	/**
 	 * @param id
 	 */
-	public XLSReader(String id, String fileURL) {
+	public XLSReader(String id, String fileURL, String[][] fieldMap) {
 		super(id);
 		this.fileURL = fileURL;
+		this.fieldMap = fieldMap;
 		this.parser = new XLSDataParser();
 	}
 
@@ -218,8 +232,17 @@ public class XLSReader extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
 		try {
+			String[] fMap =null;
+			String[][] fieldMap = null;
+			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+				fMap = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				fieldMap = new String[fMap.length][2];
+				for (int i=0;i<fieldMap.length;i++){
+					fieldMap[i] = fMap[i].split(ASSIGMENT_STRING);
+				}
+			}
 			aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE));
+						xattribs.getString(XML_FILE_ATTRIBUTE),fieldMap);
 			aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE,1));
 			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
@@ -235,14 +258,6 @@ public class XLSReader extends Node {
 			}
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)){
-				aXLSReader.setCloverFields(
-					xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
-			if (xattribs.exists(XML_XLSFIELDS_ATTRIBUTE)){
-				aXLSReader.setXlsFields(
-						xattribs.getString(XML_XLSFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -317,31 +332,39 @@ public class XLSReader extends Node {
 		if (sheetNumber > -1){
 			parser.setSheetNumber(sheetNumber);
 		}
-		if (cloverFields != null){
-			parser.setCloverFields(cloverFields);
-		}
 		if (metadataRow != 0){
 			parser.setMetadataRow(metadataRow);
 		}
-		if (xlsFields != null){
-			//check if xlsFields are set as nemas or as indexes
-			boolean names = xlsFields[0].startsWith("\"") ? true : false ;
-			if (names && metadataRow == 0){
-				throw new ComponentNotReadyException("Not valid metadataRow attribute = 0 for given field's names");
-			}
-			if (names){
-				for (int i=0;i<xlsFields.length;i++){
-					xlsFields[i] = StringUtils.unquote(xlsFields[i]);
+		if (fieldMap != null){
+			String[] cloverFields = new String[fieldMap.length];
+			String[] xlsFields = new String[fieldMap.length];
+			for (int i=0;i<fieldMap.length;i++){
+				cloverFields[i] = fieldMap[i][CLOVER_FIELDS];
+				if (fieldMap[i].length > 1) {
+					xlsFields[i] = fieldMap[i][XLS_FIELDS];
+				}else {
+					xlsFields[i] = null;
 				}
-				parser.setMetadataRow(metadataRow);
-			}else{
-				if (cloverFields!=null){
-					parser.setMetadataRow(0);
+			}
+			parser.setCloverFields(cloverFields);
+			if (xlsFields[0] != null){
+				if (xlsFields[0].startsWith("$")){
+					for (int i=0;i<xlsFields.length;i++){
+						xlsFields[i] = xlsFields[i].substring(1);
+					}
+					parser.setMappingType(XLSDataParser.CLOVER_FIELDS_AND_XLS_NUMBERS);
+					parser.setXlsFields(xlsFields);
 				}else{
-					throw new ComponentNotReadyException("Clover fields must be set if xml fields have been set");
+					parser.setMappingType(XLSDataParser.CLOVER_FIELDS_AND_XLS_NAMES);
+					parser.setXlsFields(xlsFields);
 				}
+			}else {
+				parser.setMappingType(XLSDataParser.ONLY_CLOVER_FIELDS);
 			}
-			parser.setXlsFields(xlsFields,names);
+		}else if (metadataRow != 0){
+			parser.setMappingType(XLSDataParser.MAP_NAMES);
+		}else{
+			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
 		}
 		try {
 			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
@@ -356,14 +379,6 @@ public class XLSReader extends Node {
 
 	private void setMetadataRow(int metadaRow) {
 		this.metadataRow = metadaRow;
-	}
-
-	private void setCloverFields(String[] metadataNames) {
-		this.cloverFields = metadataNames;
-	}
-
-	private void setXlsFields(String[] xlsFields) {
-		this.xlsFields = xlsFields;
 	}
 
 	public void setSheetNumber(int sheetNumber) {
