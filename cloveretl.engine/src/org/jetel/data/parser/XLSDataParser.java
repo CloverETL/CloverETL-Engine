@@ -57,11 +57,11 @@ import org.jetel.util.XLSUtils;
  */
 public class XLSDataParser implements Parser {
 	
-	private final static int NO_METADATA_INFO = 0;
-	private final static int ONLY_CLOVER_FIELDS = 1;
-	private final static int CLOVER_FIELDS_AND_XLS_NUMBERS = 2;
-	private final static int MAP_NAMES = 3;
-	private final static int CLOVER_FIELDS_AND_XLS_NAMES = 4;
+	public final static int NO_METADATA_INFO = 0;
+	public final static int ONLY_CLOVER_FIELDS = 1;
+	public final static int CLOVER_FIELDS_AND_XLS_NUMBERS = 2;
+	public final static int MAP_NAMES = 3;
+	public final static int CLOVER_FIELDS_AND_XLS_NAMES = 4;
 	
 	static Log logger = LogFactory.getLog(XLSDataParser.class);
 	
@@ -81,6 +81,7 @@ public class XLSDataParser implements Parser {
 	private int metadataRow = -1;
 	private String[] cloverFields = null;
 	private String[] xlsFields = null;
+	int mappingType = -1;
 	private int[][] fieldNumber ; //mapping of xls fields and clover fields
 	
 	private final int XLS_NUMBER = 0;
@@ -276,36 +277,14 @@ public class XLSDataParser implements Parser {
 			fieldNumber[i][CLOVER_NUMBER] = -1;
 		}
 		Map fieldNames = metadata.getFieldNames();
-		switch (getMappingType(metadataRow,cloverFields!=null,xlsFields!=null)) {
+		switch (mappingType) {
 		case NO_METADATA_INFO:noMetadataInfo();break;
 		case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
 		case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
 		case MAP_NAMES:mapNames(fieldNames);break;
 		case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
+		default:throw new ComponentNotReadyException("Mapping type is not set");
 		}
-	}
-	
-	/**
-	 * This method guess's type of mapping between metadata fields and xls columns
-	 * 
-	 * @param metadataRow number of metadata row in xls file (-1 when there are not
-	 * 	field's names in xls)
-	 * @param cloverFields
-	 * @param xlsFields - names from xls or numbers of columns
-	 * @return mapping type
-	 */
-	private int getMappingType(int metadataRow,boolean cloverFields,boolean xlsFields){
-		if (metadataRow > -1){
-			if (!cloverFields && !xlsFields)
-				return MAP_NAMES;
-			if (cloverFields && xlsFields)
-				return CLOVER_FIELDS_AND_XLS_NAMES;
-		}
-		if (cloverFields && xlsFields)
-			return CLOVER_FIELDS_AND_XLS_NUMBERS;
-		if (cloverFields)
-			return ONLY_CLOVER_FIELDS;
-		return NO_METADATA_INFO;
 	}
 	
 	/**
@@ -489,12 +468,23 @@ public class XLSDataParser implements Parser {
 		}
 	}
 
-	public void setXlsFields(String[] xlsFields, boolean names) {
+	public void setXlsFields(String[] xlsFields) {
 		this.xlsFields = xlsFields;
 	}
 
 	public void setSheetNumber(int sheetNumber) {
 		this.sheetNumber = sheetNumber;
+	}
+
+	public void setMappingType(int mappingType) {
+		this.mappingType = mappingType;
+		switch (mappingType) {
+		case NO_METADATA_INFO:logger.info("Mapping type set to NO_METADATA_INFO");break;
+		case ONLY_CLOVER_FIELDS:logger.info("Mapping type set to ONLY_CLOVER_FIELDS");break;
+		case CLOVER_FIELDS_AND_XLS_NUMBERS:logger.info("Mapping type set to CLOVER_FIELDS_AND_XLS_NUMBERS");break;
+		case MAP_NAMES:logger.info("Mapping type set to MAP_NAMES");break;
+		case CLOVER_FIELDS_AND_XLS_NAMES:logger.info("Mapping type set to CLOVER_FIELDS_AND_XLS_NAMES");break;
+		}
 	}
 
 }
