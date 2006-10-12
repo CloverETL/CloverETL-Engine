@@ -19,10 +19,15 @@
 */
 package org.jetel.data;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import sun.misc.Regexp;
 
 /**
  *  Helper class which contains some framework-wide constants defitions.<br>
@@ -68,6 +73,8 @@ public final class Defaults {
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
+		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", File.pathSeparator);
+		
 		Record.init();
         DataFieldMetadata.init();
 		DataParser.init();
@@ -89,6 +96,12 @@ public final class Defaults {
 	 * Default path to external binary files.
 	 */
 	public static String DEFAULT_BINARY_PATH;// = "./bin/"
+	
+	/**
+	 * regex for separator of filenames in list of filenames 
+	 */
+	public static String DEFAULT_PATH_SEPARATOR_REGEX;
+	
     /**
      *  when creating InputStream or OutputStream objects, what
      *  is the size of their internal buffer. Used mainly in
@@ -327,7 +340,7 @@ public final class Defaults {
 		    DIRECT_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*4);
 		    BUFFERED_EDGE_INTERNAL_BUFFER_SIZE = getIntProperties("Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE", Defaults.Record.MAX_RECORD_SIZE*10);
             DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS =getIntProperties("Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS", 4);
-        }
+		}
 
 		/**
 		 *  Size of internal buffer of DirectEdge for storing
