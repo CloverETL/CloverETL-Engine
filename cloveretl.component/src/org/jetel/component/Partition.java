@@ -22,11 +22,9 @@ package org.jetel.component;
 import java.io.IOException;
 
 import org.jetel.component.partition.HashPartition;
-import org.jetel.component.partition.HashPartition2;
 import org.jetel.component.partition.PartitionFunction;
 import org.jetel.component.partition.RangePartition;
 import org.jetel.component.partition.RoundRobinPartition;
-import org.jetel.component.partition.ValuePartition;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
@@ -221,7 +219,7 @@ public class Partition extends Node {
 			    if (partitionRanges!=null){
 			        partitionFce=new RangePartition(partitionRanges);
 			    }else{
-			        partitionFce=new HashPartition2();
+			        partitionFce=new HashPartition();
 			    }
 			}else{
 			    partitionFce=new RoundRobinPartition(); 
