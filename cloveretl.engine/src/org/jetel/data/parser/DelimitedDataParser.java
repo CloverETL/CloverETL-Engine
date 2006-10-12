@@ -36,11 +36,13 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.QuotingDecoder;
 import org.jetel.util.StringUtils;
 
 /**
@@ -76,16 +78,16 @@ public class DelimitedDataParser implements Parser {
 	private char[] fieldTypes;
 	private boolean isEof;
 
-	// this will be added as a parameter to constructor
-	private boolean handleQuotedStrings = true;
-
 	// Attributes
 	// maximum length of delimiter
 	private final static int DELIMITER_CANDIDATE_BUFFER_LENGTH = 32;
 	
+	private QuotingDecoder qdecoder;
 	
 	
-	
+	public DelimitedDataParser() {
+		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER, new QuotingDecoder());		
+	}
 	// Associations
 
 	// Operations
@@ -95,10 +97,14 @@ public class DelimitedDataParser implements Parser {
 	 *
 	 *@since    March 28, 2002
 	 */
-	public DelimitedDataParser() {
-		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+	public DelimitedDataParser(QuotingDecoder qdecoder) {
+		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER, qdecoder);
 	}
 
+
+	public DelimitedDataParser(String charsetDecoder) {
+		this(charsetDecoder, new QuotingDecoder());		
+	}
 
 	/**
 	 *  Constructor for the DelimitedDataParser object
@@ -107,8 +113,9 @@ public class DelimitedDataParser implements Parser {
 	 *      UNICODE chars
 	 *@since                  March 28, 2002
 	 */
-	public DelimitedDataParser(String charsetDecoder) {
+	public DelimitedDataParser(String charsetDecoder, QuotingDecoder qdecoder) {
 		this.charSet = charsetDecoder;
+		this.qdecoder = qdecoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldStringBuffer = CharBuffer.allocate(Defaults.DataParser.FIELD_BUFFER_LENGTH);
@@ -175,9 +182,13 @@ public class DelimitedDataParser implements Parser {
 	 *@param  in         InputStream of delimited text data
 	 *@param  _metadata  Metadata describing the structure of data
 	 *@since             March 27, 2002
+	 *@throws ComponentNotReadyException
 	 */
-	public void open(Object in, DataRecordMetadata metadata) {
-        
+	public void open(Object in, DataRecordMetadata metadata)
+	throws ComponentNotReadyException {
+		if (metadata.getRecType() != DataRecordMetadata.DELIMITED_RECORD) {
+			throw new ComponentNotReadyException("Delimited data expected but not encountered");
+		}        
         DataFieldMetadata fieldMetadata;
 		this.metadata = metadata;
 
@@ -340,7 +351,6 @@ public class DelimitedDataParser implements Parser {
 		int delimiterPosition;
 		int charCounter;
 		boolean isWithinQuotes;
-		char quoteChar=' ';
 
 		// populate all data fields
 
@@ -360,15 +370,17 @@ public class DelimitedDataParser implements Parser {
 //						continue;
 					totalCharCounter++;
 					// handle quoted strings
-					if (handleQuotedStrings && StringUtils.isQuoteChar((char)character)){
-					    if (!isWithinQuotes){
-					        if (charCounter==0){
-					        quoteChar=(char)character;
+					// TODO ignore quotes in case they are preceded by escape character
+					if (isWithinQuotes) {
+						/* TODO complain in case that the closing  quote isn't at the end of the field
+						or consider unescaped closing quote to be end of the field */
+						if (qdecoder.isEndQuote((char)character)) {
+							isWithinQuotes = false;
+						}
+					} else {
+						if (qdecoder.isStartQuote((char)character) && charCounter == 0) {
 					        isWithinQuotes=true;
-					        }
-					    }else if (quoteChar==(char)character){
-					        isWithinQuotes=false;
-					    }
+				        }
 					}
 					if ((result = is_delimiter((char) character, fieldCounter, delimiterPosition,isWithinQuotes)) == 1) {
 						/*
@@ -441,7 +453,7 @@ public class DelimitedDataParser implements Parser {
 	 *@since            March 28, 2002
 	 */
 	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
-        String strData = buffer2String(data, fieldNum,handleQuotedStrings);
+        String strData = buffer2String(data, fieldNum);
         try {
 			record.getField(fieldNum).fromString(strData);
 		} catch (BadDataFormatException bdfe) {
@@ -463,24 +475,13 @@ public class DelimitedDataParser implements Parser {
 	 *  Transfers CharBuffer into string and handles quoting of strings (removes quotes)
 	 *
 	 *@param  buffer        Character buffer to work on
-	 *@param  removeQuotes  true/false remove quotation characters
 	 *@return               String with quotes removed if specified
 	 */
-	private String buffer2String(CharBuffer buffer,int fieldNum, boolean removeQuotes) {
-	    if (removeQuotes && buffer.hasRemaining() &&
-			metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
-			/* if first & last characters are quotes (and quoted is at least one character, remove quotes */
-			if (StringUtils.isQuoteChar(buffer.charAt(0))) { 
-				if (StringUtils.isQuoteChar(buffer.charAt(buffer.limit()-1))) {
-					if (buffer.remaining()>2){
-						return buffer.subSequence(1, buffer.limit() - 1).toString();
-					}else{
-						return ""; //empty string after quotes removed
-					}
-				}
-			} 
+	private String buffer2String(CharBuffer buffer,int fieldNum) {
+		if (metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
+			return qdecoder.decode(buffer).toString();
 		}
-		return buffer.toString();
+	    return buffer.toString();	    
 	}
 
 
