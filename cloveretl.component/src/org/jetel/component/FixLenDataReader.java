@@ -31,6 +31,7 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.FixLenDataParser3;
@@ -55,7 +56,7 @@ import org.w3c.dom.Element;
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
- * <td>RixLenDataReader</td></tr>
+ * <td>FixLenDataReader</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
@@ -101,9 +102,6 @@ import org.w3c.dom.Element;
  */
 
 public class FixLenDataReader extends Node {
-
-	// regex pattern describing allowed filename separators
-	private final static String FILEMASK_SEPARATOR = "\\s+";
 
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
@@ -178,7 +176,7 @@ public class FixLenDataReader extends Node {
 		rec.init();
 
 		WcardPattern pat = new WcardPattern();
-		pat.addPattern(fileURL, FILEMASK_SEPARATOR);
+		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		Iterator<String> fileItor = pat.filenames().iterator();
 		String filename = null;
 		while (fileItor.hasNext() && runIt) {				

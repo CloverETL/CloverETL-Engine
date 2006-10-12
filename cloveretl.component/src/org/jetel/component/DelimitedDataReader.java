@@ -25,6 +25,7 @@ import java.util.Iterator;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -79,9 +80,6 @@ import org.w3c.dom.Element;
  * @see         org.jetel.data.parser.DelimitedDataParser
  */
 public class DelimitedDataReader extends Node {
-
-	// regex pattern describing allowed filename separators
-	private final static String FILEMASK_SEPARATOR = "\\s+";
 
     static Log logger = LogFactory.getLog(DelimitedDataReader.class);
 
@@ -142,7 +140,7 @@ public class DelimitedDataReader extends Node {
 		rec.init();
 
 		WcardPattern pat = new WcardPattern();
-		pat.addPattern(fileURL, FILEMASK_SEPARATOR);
+		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 		Iterator<String> fileItor = pat.filenames().iterator();
 		String filename = null;
 		while (fileItor.hasNext()) {				
