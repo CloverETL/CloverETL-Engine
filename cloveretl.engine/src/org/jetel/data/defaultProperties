@@ -46,6 +46,9 @@ DEFAULT_LOCALE_STR_DELIMITER_REGEX = \\.
 #Default path to external binary files.
 DEFAULT_BINARY_PATH = ./
 
+#Regex for separator of filenames in list of filenames - path separator.
+DEFAULT_PATH_SEPARATOR_REGEX = \\s*[:;]\\s*
+
 #Default charset used when parsing data from text representation
 DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
 

@@ -69,7 +69,7 @@ public final class Defaults {
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
-		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", File.pathSeparator);
+		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", "\\s*[:;]\\s*");
 		
 		Record.init();
         DataFieldMetadata.init();
@@ -94,7 +94,7 @@ public final class Defaults {
 	public static String DEFAULT_BINARY_PATH;// = "./bin/"
 	
 	/**
-	 * regex for separator of filenames in list of filenames 
+	 * Regex for separator of filenames in list of filenames - path separator. 
 	 */
 	public static String DEFAULT_PATH_SEPARATOR_REGEX;
 	
