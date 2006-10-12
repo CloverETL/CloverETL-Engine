@@ -58,9 +58,12 @@ public class TapeCarousel {
      */
     public TapeCarousel(int numTapes,String[] tmpDirNames){
         this(numTapes);
-        tmpDirs=new File[tmpDirNames.length];
-        for(int i=0;i<tmpDirNames.length;i++){
-            tmpDirs[i]=new File(tmpDirNames[i]);
+        
+        if(tmpDirNames != null && tmpDirNames.length > 0) {
+            tmpDirs=new File[tmpDirNames.length];
+            for(int i=0;i<tmpDirNames.length;i++){
+                tmpDirs[i]=new File(tmpDirNames[i]);
+            }
         }
     }
     
@@ -74,7 +77,8 @@ public class TapeCarousel {
     public void open() throws IOException{
         for(int i=0;i<tapeArray.length;i++){
             tapeArray[i]=new DataRecordTape();
-            tapeArray[i].setTmpDirectory(tmpDirs[i%tmpDirs.length]);
+            if(tmpDirs != null)
+                tapeArray[i].setTmpDirectory(tmpDirs[i%tmpDirs.length]);
             tapeArray[i].open();
         }
     }
