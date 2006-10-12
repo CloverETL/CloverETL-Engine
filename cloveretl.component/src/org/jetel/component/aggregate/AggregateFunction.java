@@ -545,7 +545,9 @@ public class AggregateFunction implements Iterator {
 		}
 		
 		void reset() {
-			data.reset();
+            if(data != null) {
+                data.reset();
+            }
 			firstLoop = true;
 		}
 		
