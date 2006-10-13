@@ -170,12 +170,14 @@ public class DataRecordTape {
 	 */
 	public void close() throws IOException {
 		isClosed=true;
-        clear();
-        tmpFileChannel.close();
         if(deleteOnExit) {
+            clear();
+            tmpFileChannel.close();
             if (!tmpFile.delete()) {
                 throw new IOException("Can't delete TMP file: " + tmpFile.getAbsoluteFile());
             }
+        } else {
+            tmpFileChannel.close();
         }
 	}
 
