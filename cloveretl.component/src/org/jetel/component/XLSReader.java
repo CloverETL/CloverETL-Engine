@@ -322,7 +322,7 @@ public class XLSReader extends Node {
 			throw new InvalidParameterException("Invalid StartRecord parametr.");
 		}
 		this.startRow = startRecord;
-		parser.setFirstRow(startRecord);
+		parser.setFirstRow(startRecord-1);
 	}
 	
 	/**
@@ -368,7 +368,7 @@ public class XLSReader extends Node {
 			parser.setSheetNumber(sheetNumber);
 		}
 		if (metadataRow != 0){
-			parser.setMetadataRow(metadataRow);
+			parser.setMetadataRow(metadataRow-1);
 		}
 		if (fieldMap != null){
 			String[] cloverFields = new String[fieldMap.length];
