@@ -224,8 +224,10 @@ public class XLSWriter extends Node {
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatter.isAppend()));
 		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatter.getFirstColumn()));
-		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()));
-		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()));
+		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()+1));
+		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()+1));
+		xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
+		xmlElement.setAttribute(XML_SAVENAMES_ATTRIBUTE,String.valueOf(formatter.isSaveNames()));
 	}
 
 	private void setSheetName(String sheetName) {
