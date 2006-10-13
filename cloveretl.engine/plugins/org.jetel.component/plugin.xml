@@ -181,4 +181,8 @@
 	    <parameter id="type" value="CLOVER_WRITER"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="className" value="org.jetel.component.CloverDataReader"/>
+		<parameter id="type" value="CLOVER_READER"/>
+	</extension>
 </plugin>
