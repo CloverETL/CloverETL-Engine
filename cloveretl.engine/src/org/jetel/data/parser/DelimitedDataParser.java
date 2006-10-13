@@ -43,7 +43,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.QuotingDecoder;
-import org.jetel.util.StringUtils;
 
 /**
  *  Parsing delimited text data. Supports delimiters with the length of up to 32
