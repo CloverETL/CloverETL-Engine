@@ -448,7 +448,15 @@ public class XLSDataParser implements Parser {
 	}
 
 	public void setFirstRow(int firstRecord) {
-		this.firstRow = firstRecord-1;
+		this.firstRow = firstRecord;
+	}
+
+	public int getFirstRow() {
+		return firstRow;
+	}
+
+	public int getSheetNumber() {
+		return sheetNumber;
 	}
 
 	public int getRecordCount() {
@@ -462,7 +470,7 @@ public class XLSDataParser implements Parser {
 	public void setMetadataRow(int metadataRow) throws ComponentNotReadyException{
 		if (metadataRow < 0) 
 			throw new ComponentNotReadyException("Number of metadata row has to be greter then 0");
-		this.metadataRow = metadataRow - 1;
+		this.metadataRow = metadataRow;
 		if (firstRow == 0) {
 			firstRow = this.metadataRow +1;
 		}
@@ -485,6 +493,14 @@ public class XLSDataParser implements Parser {
 		case MAP_NAMES:logger.info("Mapping type set to MAP_NAMES");break;
 		case CLOVER_FIELDS_AND_XLS_NAMES:logger.info("Mapping type set to CLOVER_FIELDS_AND_XLS_NAMES");break;
 		}
+	}
+
+	public int getMetadataRow() {
+		return metadataRow;
+	}
+
+	public String getSheetName() {
+		return sheetName;
 	}
 
 }
