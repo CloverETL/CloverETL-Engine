@@ -22,6 +22,7 @@ import org.jetel.metadata.*;
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.*;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 
 public class testDataParsing {
@@ -54,7 +55,11 @@ public class testDataParsing {
 	metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
 	
 	DelimitedDataParser parser=new DelimitedDataParser();
-	parser.open(in,metadata);
+	try{
+		parser.open(in,metadata);
+	}catch(ComponentNotReadyException ex){
+		ex.printStackTrace();
+	}
 	record = new DataRecord(metadata);
 	record.init();
 	
