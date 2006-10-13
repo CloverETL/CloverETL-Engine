@@ -2,7 +2,7 @@
 <Graph name="DBTest">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" type="fixed" recordDelimiter="\n">
+<Record name="customer" type="fixed">
 <Field name="customer_id" nullable="true" size="4" type="integer"/>
 <Field name="account_num" nullable="true" size="11" type="long"/>
 <Field name="lname" nullable="true" size="10" type="string"/>
