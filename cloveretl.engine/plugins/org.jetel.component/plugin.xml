@@ -176,5 +176,9 @@
 	    <parameter id="className" value="org.jetel.component.XLSWriter"/>
 	    <parameter id="type" value="XLS_WRITER"/>
 	</extension>
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.CloverDataWriter"/>
+	    <parameter id="type" value="CLOVER_WRITER"/>
+	</extension>
 	
 </plugin>
