@@ -317,13 +317,12 @@ public class DataRecordTape {
 	 * @param data buffer containig record's data
 	 * @return
 	 */
-	public boolean put(ByteBuffer data) throws IOException{
+	public long put(ByteBuffer data) throws IOException{
 	    try{
-	        currentDataChunk.put(data);
+	        return currentDataChunk.put(data);
 	    }catch(NullPointerException ex){
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
-	    return true;
 	}
 	
 	/**
@@ -333,13 +332,12 @@ public class DataRecordTape {
 	 * @return
 	 * @throws IOException
 	 */
-	public boolean put(DataRecord data) throws IOException{
+	public long put(DataRecord data) throws IOException{
 	    try{
-	        currentDataChunk.put(data);
+	        return currentDataChunk.put(data);
 	    }catch(NullPointerException ex){
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
-	    return true;
 	}
 	
 	/**
@@ -470,7 +468,7 @@ public class DataRecordTape {
 		 *@exception  IOException  In case of IO failure
 		 *@since                   September 17, 2002
 		 */
-		 void put(ByteBuffer recordBuffer) throws IOException {
+		long put(ByteBuffer recordBuffer) throws IOException {
 			int recordSize = recordBuffer.remaining();
 			
 			// check that internal buffer has enough space
@@ -487,6 +485,7 @@ public class DataRecordTape {
 			
 			length+=(recordSize+ LEN_SIZE_SPECIFIER);
 			nRecords++;
+			return recordSize+ LEN_SIZE_SPECIFIER;
 		}
 
 		 /**
@@ -495,7 +494,7 @@ public class DataRecordTape {
 		 * @param data	DataRecord to be stored
 		 * @throws IOException
 		 */
-		void put(DataRecord data) throws IOException {
+		long put(DataRecord data) throws IOException {
 				int recordSize = data.getSizeSerialized();
 				
 				// check that internal buffer has enough space
@@ -512,6 +511,7 @@ public class DataRecordTape {
 				
 				length+=(recordSize+ LEN_SIZE_SPECIFIER);
 				nRecords++;
+				return recordSize+ LEN_SIZE_SPECIFIER;
 			}
 
 		/**
