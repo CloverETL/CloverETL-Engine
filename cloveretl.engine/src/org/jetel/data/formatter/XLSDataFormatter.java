@@ -104,6 +104,7 @@ public class XLSDataFormatter implements Formatter {
 		}else if (sheetNumber > -1){
 			try {
 				sheet = wb.getSheetAt(sheetNumber);
+				sheetName = wb.getSheetName(sheetNumber);
 			}catch(IndexOutOfBoundsException ex){
 				throw new ComponentNotReadyException("There is no sheet with number \"" +	sheetNumber +"\"");
 			}
@@ -241,7 +242,7 @@ public class XLSDataFormatter implements Formatter {
 	}
 	
 	public void setFirstRow(int firstRow){
-		this.firstRow = firstRow-1;
+		this.firstRow = firstRow;
 	}
 
 	public void setFirstColumn(String firstColumn){
@@ -253,7 +254,7 @@ public class XLSDataFormatter implements Formatter {
 	}
 
 	public void setNamesRow(int namesRow) {
-		this.namesRow = namesRow-1;
+		this.namesRow = namesRow;
 	}
 
 	public boolean isAppend() {
@@ -265,11 +266,11 @@ public class XLSDataFormatter implements Formatter {
 	}
 
 	public int getFirstRow() {
-		return firstRow+1;
+		return firstRow;
 	}
 
 	public int getNamesRow() {
-		return namesRow+1;
+		return namesRow;
 	}
 
 	public String getSheetName() {
