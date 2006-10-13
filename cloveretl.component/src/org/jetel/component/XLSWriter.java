@@ -226,7 +226,9 @@ public class XLSWriter extends Node {
 		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatter.getFirstColumn()));
 		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()+1));
 		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()+1));
-		xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
+		if (formatter.getSheetName() != null) {//TODO can't we obtain it from parser?
+			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
+		}
 		xmlElement.setAttribute(XML_SAVENAMES_ATTRIBUTE,String.valueOf(formatter.isSaveNames()));
 	}
 
