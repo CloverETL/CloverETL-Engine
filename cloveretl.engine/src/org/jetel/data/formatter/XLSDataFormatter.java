@@ -62,10 +62,10 @@ public class XLSDataFormatter implements Formatter {
 	private HSSFDataFormat dataFormat;
 	private DataRecordMetadata metadata;
 	private FileOutputStream out;
-	private int firstRow;
+	private int firstRow = 0;
 	private int recCounter;
 	private boolean saveNames;
-	private int namesRow = 0;
+	private int namesRow = -1;
 	private boolean append;
 	private String sheetName = null;
 	private int sheetNumber = -1;
@@ -241,14 +241,42 @@ public class XLSDataFormatter implements Formatter {
 	}
 	
 	public void setFirstRow(int firstRow){
-		this.firstRow = firstRow;
+		this.firstRow = firstRow-1;
 	}
 
 	public void setFirstColumn(String firstColumn){
 		this.firstColumnIndex = firstColumn;
 	}
 
+	public int getFirstColumn() {
+		return firstColumn;
+	}
+
 	public void setNamesRow(int namesRow) {
-		this.namesRow = namesRow;
+		this.namesRow = namesRow-1;
+	}
+
+	public boolean isAppend() {
+		return append;
+	}
+
+	public boolean isSaveNames() {
+		return saveNames;
+	}
+
+	public int getFirstRow() {
+		return firstRow+1;
+	}
+
+	public int getNamesRow() {
+		return namesRow+1;
+	}
+
+	public String getSheetName() {
+		return sheetName;
+	}
+
+	public int getSheetNumber() {
+		return sheetNumber;
 	}
 }
