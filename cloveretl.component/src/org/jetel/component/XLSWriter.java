@@ -213,6 +213,21 @@ public class XLSWriter extends Node {
 		}
 	}
 
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     May 21, 2002
+	 */
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatter.isAppend()));
+		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatter.getFirstColumn()));
+		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()));
+		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()));
+	}
+
 	private void setSheetName(String sheetName) {
 		formatter.setSheetName(sheetName);
 	}
