@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph name="graphCLOVERData">
+<Global>
+<Metadata id="Metadata0">
+<Record name="customer" type="fixed">
+<Field name="customer_id" nullable="true" size="4" type="integer"/>
+<Field name="account_num" nullable="true" size="11" type="long"/>
+<Field name="lname" nullable="true" size="10" type="string"/>
+<Field name="fname" nullable="true" size="10" type="string"/>
+<Field name="mi" nullable="true" size="4" type="string"/>
+<Field name="address1" nullable="true" size="30" type="string"/>
+<Field name="city" nullable="true" size="7" type="string"/>
+<Field name="state_province" nullable="true" size="6" type="string"/>
+<Field name="postal_code" nullable="true" size="5" type="string"/>
+<Field name="country" nullable="true" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
+<Field name="phone1" nullable="true" size="12" type="string"/>
+<Field name="phone2" nullable="true" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="15" type="date"/>
+<Field name="marital_status" nullable="true" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" size="13" type="string"/>
+<Field name="gender" nullable="true" size="1" type="string"/>
+<Field name="total_children" nullable="true" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
+<Field name="education" nullable="true" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
+<Field name="member_card" nullable="true" size="8" type="string"/>
+<Field name="occupation" nullable="true" size="20" type="string"/>
+<Field name="houseowner" nullable="true" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="data/customers.cmp" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="68" guiY="292" id="CLOVER_READER0" type="CLOVER_READER"/>
+<Node enabled="disabled" fileURL="output/customers.cmp" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="423" guiY="107" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
+<Node OneRecordPerLine="true" enabled="disabled" fileURL="${WORKSPACE}/data/customers.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="55" guiY="103" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customer.out" guiHeight="0" guiName="Fixed Length Data Writer" guiWidth="0" guiX="417" guiY="296" id="FIXLEN_DATA_WRITER0" type="FIXLEN_DATA_WRITER"/>
+<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (Fixed Length Data Writer)" metadata="Metadata0" outPort="0 (Clover Data Reader)" toNode="FIXLEN_DATA_WRITER0:0"/>
+<Edge debugMode="true" fromNode="FIXLEN_DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (CLOVER Data Writer)" metadata="Metadata0" outPort="0 (customer from file)" toNode="CLOVER_WRITER0:0"/>
+</Phase>
+</Graph>
