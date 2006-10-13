@@ -266,7 +266,42 @@ public class XLSReader extends Node {
 		return aXLSReader;
 	}
 	
-    public void setPolicyType(String strPolicyType) {
+	/**
+	 *  Description of the Method
+	 *
+	 * @return    Description of the Returned Value
+	 * @since     May 21, 2002
+	 */
+	public void toXML(Element xmlElement) {
+	    super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
+		if (fieldMap != null){
+			String[] fm = new String[fieldMap.length];
+			for (int i=0;i<fm.length;i++){
+				fm[i] = StringUtils.stringArraytoString(fieldMap[i],ASSIGMENT_STRING.charAt(0));
+			}
+			xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE,StringUtils.stringArraytoString(fm,';'));
+		}
+		xmlElement.setAttribute(XML_STARTROW_ATTRIBUTE,String.valueOf(parser.getFirstRow()));
+		if (finalRow > -1) {
+			xmlElement.setAttribute(XML_FINALROW_ATTRIBUTE,String.valueOf(this.finalRow));
+		}
+		if (maxErrorCount > -1) {
+			xmlElement.setAttribute(XML_MAXERRORCOUNT_ATTRIBUTE,String.valueOf(this.maxErrorCount));
+		}
+		if (parser.getMetadataRow() > -1) {
+			xmlElement.setAttribute(XML_METADATAROW_ATTRIBUTE, String.valueOf(parser.getMetadataRow()));
+		}
+		if (sheetName != null) {
+			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,this.sheetName);
+		}else{
+			xmlElement.setAttribute(XML_SHEETNUMBER_ATTRIBUTE,String.valueOf(parser.getSheetNumber()));
+		}
+		
+	}
+
+	public void setPolicyType(String strPolicyType) {
         setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
     }
     
