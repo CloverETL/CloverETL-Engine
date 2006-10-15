@@ -56,6 +56,8 @@ import org.jetel.util.StringUtils;
 
 public class DBFDataParser implements Parser {
 
+    private static final String METADATA_PROPERTY_CHARSET="charset";
+    
     private IParserExceptionHandler exceptionHandler;
 
     private String charSet;
@@ -78,6 +80,7 @@ public class DBFDataParser implements Parser {
 
     private int fieldSizes[];
 
+    
     public DBFDataParser() {
     }
 
@@ -247,13 +250,15 @@ public class DBFDataParser implements Parser {
         charBuffer = CharBuffer.allocate(dbfAnalyzer.getRecSize());
         buffer = ByteBuffer
                 .allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-        if (charSet != null) {
-            decoder = Charset.forName(charSet).newDecoder();
-        } else {
-            decoder = Charset.forName(
-                    DBFTypes.dbfCodepage2Java(dbfAnalyzer.getDBFCodePage()))
-                    .newDecoder();
+        
+       if (charSet == null) {
+            charSet = metadata.getProperty(METADATA_PROPERTY_CHARSET);
+            if (charSet == null) {
+                charSet = DBFTypes.dbfCodepage2Java(dbfAnalyzer
+                        .getDBFCodePage());
+            }
         }
+        decoder = Charset.forName(charSet).newDecoder();
         decoder.reset();
         totalRecords = dbfAnalyzer.getNumRows();
         try {

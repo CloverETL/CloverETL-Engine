@@ -111,9 +111,12 @@ public class DBFAnalyzer {
 		buffer.position(10);
 		dbfRecSize=buffer.getShort();
 		
-		buffer=ByteBuffer.allocate(dbfNumFields*DBF_FIELD_DEF_SIZE);
+        int filedInfoLength=dbfNumFields*DBF_FIELD_DEF_SIZE;
+		buffer=ByteBuffer.allocate(filedInfoLength);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
-        dbfFile.read(buffer);
+        if (dbfFile.read(buffer)!=filedInfoLength){
+            throw new DBFErrorException("Problem reading DBF fields directory - too short !");
+        }
         buffer.flip();
         
         // read-in definition of individual fields
