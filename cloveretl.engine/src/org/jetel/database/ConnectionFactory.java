@@ -85,7 +85,7 @@ public class ConnectionFactory {
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
         Class tClass;
         ConnectionDescription connectionDescription = null;
-
+       
         try {
             connectionDescription = (ConnectionDescription) connectionMap.get(connectionType);
             
@@ -98,9 +98,9 @@ public class ConnectionFactory {
             //find class of connection
             tClass = Class.forName(connectionDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
-            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName());
+            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName(),ex);
         } catch(Exception ex) {
-            throw new RuntimeException("Unknown connection type: " + connectionType);
+            throw new RuntimeException("Unknown connection type: " + connectionType,ex);
         }
         try {
             //create instance of connection
