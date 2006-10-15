@@ -227,7 +227,8 @@ public class DataRecordMetadata implements Serializable {
 	 *  Gets the fieldPosition attribute of the DataRecordMetadata object
 	 *
 	 * @param  fieldName  Description of the Parameter
-	 * @return            The position of the field within record
+	 * @return            The position of the field within record or -1 if
+     * such field does not exist.
 	 */
 	public int getFieldPosition(String fieldName) {
 		Integer position;
