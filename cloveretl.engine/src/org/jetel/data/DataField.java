@@ -158,9 +158,9 @@ public abstract class DataField implements Serializable, Comparable {
     
     
 	/**
-	 *  Gets the internal value of the data field. If field's value is
+	 *  Returns the internal value of the data field. If field's value is
 	 * deemed to be NULL (isNull() return true) then the returned
-	 * value is NULL. Otherwise the internal values is converted
+	 * value is NULL. Otherwise the internal value is converted
 	 * to appropriate object representation and returned.<br>
 	 *
 	 * @return    The Value value
@@ -169,9 +169,9 @@ public abstract class DataField implements Serializable, Comparable {
 	public abstract Object getValue();
 
     /**
-     *  Gets the duplicate of the internal value of the data field. If field's value is
+     *  Returns the duplicate of the internal value of the data field. If field's value is
      * deemed to be NULL (isNull() return true) then the returned
-     * value is NULL. Otherwise the duplicate of the internal values is converted
+     * value is NULL. Otherwise the duplicate of the internal value is converted
      * to appropriate object representation and returned.<br>
      *
      * @return    The Value value
