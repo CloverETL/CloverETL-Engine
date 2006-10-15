@@ -843,15 +843,19 @@ void BuildInFunction() #void :
 	|"round" "(" AdditiveExpression() ")" #RoundNode(1)
 	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
 	|Date2NumNode()
+	|SequenceNode()
+	|LookupNode()
 	
 }
 
 
 void BuildInProcedure() #void : {}
 {
-	"print_err" "(" AdditiveExpression() ")" #PrintErrNode(1)
+	"print_err" "(" AdditiveExpression() ["," <BOOLEAN_LITERAL> ] ")" #PrintErrNode
 	|"print_stack" "(" ")" #PrintStackNode(0)
 	|"breakpoint" "(" ")" #BreakpointNode(0)
+	| PrintLogNode()
+	|"raise_error" "(" AdditiveExpression() ")" #RaiseErrorNode(1)
 }
 
 void ConcatNode() : // concatenates strings
@@ -933,6 +937,84 @@ void Num2StrNode() :
     ")"
 }
 
+void PrintLogNode() : 
+{
+	Token t;
+}
+{
+	"print_log" "("
+	
+	(
+	 "trace" { jjtThis.setLevel(0); }
+	| "debug" { jjtThis.setLevel(1); }
+	| "info" { jjtThis.setLevel(2); }
+	| "warn" { jjtThis.setLevel(3); }
+	| "error" { jjtThis.setLevel(4); }
+	| "fatal" { jjtThis.setLevel(5); }
+	)
+	
+	","
+	AdditiveExpression()
+}
+
+void SequenceNode() :
+{
+	Token t;
+}
+{
+	"sequence" "(" 
+	t=<STRING_LITERAL> { jjtThis.setName(t.image); } 
+	[ ","
+	(  <INT_VAR> { jjtThis.setReturnType(INT_VAR); }
+	| <LONG_VAR> {  jjtThis.setReturnType(LONG_VAR); }
+	| <STRING_VAR> { jjtThis.setReturnType(STRING_VAR); }
+	) ]
+	")"
+	[ 
+		".next" 	{ jjtThis.setOperation(0); }
+	  | ".current" { jjtThis.setOperation(1); }
+	  | ".reset" { jjtThis.setOperation(2); }
+	]  
+}
+
+void LookupNode() :
+{
+	Token t;
+}
+{
+	(
+		"lookup"  { jjtThis.setOperation(0); }
+		"("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } "," 
+		AdditiveExpression() //KEYS GO HERE
+		("," AdditiveExpression())+
+		")"
+		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); } 
+	)
+	(
+		"lookup_next" { jjtThis.setOperation(1); }
+		"("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		")"
+		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); } 
+	)
+	(
+		"lookup_found" { jjtThis.setOperation(2); }
+		"("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		")"
+	)
+	(
+		"lookup_admin" 
+		"("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		(
+			"init" 	{jjtThis.setOperation(3);}
+			"free" 	{jjtThis.setOperation(4);}
+		)
+		")"
+	)
+}
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
 

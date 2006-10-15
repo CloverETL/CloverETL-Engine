@@ -36,6 +36,8 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.*;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.Compare;
@@ -67,6 +69,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     protected Node emptyNode; // used as replacement for empty statements
     
+    protected TransformationGraph graph;
+
+    protected Log runtimeLogger;
+    
     static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
     /**
@@ -83,6 +89,22 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         this(null);
     }
     
+    public TransformationGraph getGraph() {
+        return graph;
+    }
+
+    public void setGraph(TransformationGraph graph) {
+        this.graph = graph;
+    }
+
+    public Log getRuntimeLogger() {
+        return runtimeLogger;
+    }
+
+    public void setRuntimeLogger(Log runtimeLogger) {
+        this.runtimeLogger = runtimeLogger;
+    }
+
     /**
      * Set input data records for processing.<br>
      * Referenced input data fields will be resolved from
@@ -1067,10 +1089,14 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFPrintErrNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
-
-        System.err.println(a != null ? a : "<null>");
-
-        // stack.push(Stack.TRUE_VAL);
+        if (node.jjtGetNumChildren()>1){
+            StringBuilder buf=new StringBuilder((a != null ? a.toString() : "<null>"));
+            buf.append(" (on line: ").append(node.getLineNumber());
+            buf.append(" col: ").append(node.getColumnNumber()).append(")");
+            System.err.println(buf);
+        }else{
+            System.err.println(a != null ? a : "<null>");
+        }
 
         return data;
     }
@@ -1785,4 +1811,131 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
+    public Object visit(CLVFRaiseErrorNode node,Object data){
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object a = stack.pop();
+        throw new TransformLangExecutorRuntimeException(node,null,
+                    "!!! Exception raised by user: "+((a!=null) ? a.toString() : "no message"));
+        
+    }
+    
+    public Object visit(CLVFSequenceNode node,Object data){
+        Object seqVal=null;
+        if (node.sequence==null){
+            node.sequence=graph.getSequence(node.sequenceName);
+            if (node.sequence==null){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "Can't obtain Sequence \""+node.sequenceName+
+                        "\" from graph \""+graph.getName()+"\"");
+            }
+        }
+        switch(node.opType){
+        case CLVFSequenceNode.OP_RESET:
+            node.sequence.reset();
+            return data;
+        case CLVFSequenceNode.OP_CURRENT:
+            switch(node.retType){
+            case LONG_VAR:
+                seqVal=new CloverLong(node.sequence.currentValueLong());
+                break;
+            case STRING_VAR:
+                seqVal=node.sequence.currentValueString();
+            default:
+                seqVal=new CloverInteger(node.sequence.currentValueInt());
+            }
+            default: // default is next value from sequence
+                switch(node.retType){
+                case LONG_VAR:
+                    seqVal=new CloverLong(node.sequence.nextValueLong());
+                    break;
+                case STRING_VAR:
+                    seqVal=node.sequence.nextValueString();
+                default:
+                    seqVal=new CloverInteger(node.sequence.nextValueInt());
+                }
+        }
+        stack.push(seqVal);
+        return data;
+    }
+    
+    public Object visit(CLVFLookupNode node,Object data){
+        DataRecord record=null;
+        if (node.lookup==null){
+            node.lookup=graph.getLookupTable(node.lookupName);
+            if (node.lookup==null){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "Can't obtain LookupTable \""+node.lookupName+
+                        "\" from graph \""+graph.getName()+"\"");
+            }
+            node.fieldNum=node.lookup.getMetadata().getFieldPosition(node.fieldName);
+            if (node.fieldNum<0){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "Invalid field name \""+node.fieldName+"\" at LookupTable \""+node.lookupName+
+                        "\" in graph \""+graph.getName()+"\"");
+            }
+        }
+        switch(node.opType){
+        case CLVFLookupNode.OP_INIT:
+            try{
+                node.lookup.init();
+            }catch(ComponentNotReadyException ex){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "Error when initializing lookup table \""+node.lookupName+"\" :",
+                        ex);
+            }
+            return data;
+        case CLVFLookupNode.OP_FREE:
+            node.lookup.free();
+            return data;
+        case CLVFLookupNode.OP_NUM_FOUND:
+            stack.push(new CloverInteger(node.lookup.getNumFound()));
+            return data;
+        case CLVFLookupNode.OP_GET:
+            Object keys[]=new Object[node.jjtGetNumChildren()];
+            for(int i=0;i<node.jjtGetNumChildren();i++){
+                node.jjtGetChild(i).jjtAccept(this, data);
+                keys[i]=stack.pop();
+            }
+            record=node.lookup.get(keys);
+            break;
+        case CLVFLookupNode.OP_NEXT:
+            record=node.lookup.getNext();
+        }
+        
+        if(record!=null){
+            stack.push(record.getField(node.fieldNum).getValue());
+        }else{
+            stack.push(null);
+        }
+        
+        return data;
+    }
+    
+    public Object visit(CLVFPrintLogNode node, Object data) {
+        if (runtimeLogger == null) {
+            throw new TransformLangExecutorRuntimeException(node,
+                    "Can NOT perform" + "log operation - no logger defined");
+        }
+        Object msg = stack.pop();
+        switch (node.level) {
+        case 1: //| "debug" 
+            runtimeLogger.debug(msg);
+            break;
+        case 2: //| "info"
+            runtimeLogger.info(msg);
+            break;
+        case 3: //| "warn"
+            runtimeLogger.warn(msg);
+            break;
+        case 4: //| "error"
+            runtimeLogger.error(msg);
+            break;
+        case 5: //| "fatal"
+            runtimeLogger.fatal(msg);
+            break;
+        default:
+            runtimeLogger.trace(msg);
+        }
+        return data;
+    }
 }
