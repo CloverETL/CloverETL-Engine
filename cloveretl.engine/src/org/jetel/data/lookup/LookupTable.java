@@ -117,7 +117,7 @@ public interface LookupTable {
 	public int getNumFound();
 	
 	/**
-	 * Gets the metadata associated with the DataRecord stored in the lookup table.
+	 * Returns the metadata associated with the DataRecord stored in this lookup table.
 	 * @return the metadata object
 	 */
 	public DataRecordMetadata getMetadata();
