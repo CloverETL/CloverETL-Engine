@@ -36,6 +36,7 @@ import org.apache.poi.hssf.usermodel.HSSFRow;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jetel.data.DataRecord;
+import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -44,7 +45,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
-import org.jetel.util.XLSUtils;
 
 /**
  * Parsing data from xls file.
@@ -328,7 +328,7 @@ public class XLSDataParser implements Parser {
 		for (short i=0;i<cloverFields.length;i++){
 			int cellNumber;
 			try {
-				cellNumber = XLSUtils.getCellNum(xlsFields[i]);
+				cellNumber = XLSDataFormatter.getCellNum(xlsFields[i]);
 			}catch(InvalidNameException ex){
 				throw new ComponentNotReadyException(ex);
 			}
