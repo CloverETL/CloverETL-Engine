@@ -21,11 +21,13 @@
 
 package org.jetel.data.formatter;
 
+import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -43,7 +45,12 @@ public class CloverDataFormatter implements Formatter {
 	DataRecordTape tape;
 	DataRecordMetadata metadata;
 	DataOutputStream idx;
-	long index = 1;
+	boolean saveIndex;
+	long index = 0;
+
+	public CloverDataFormatter(boolean index) {
+		saveIndex = index;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
@@ -52,19 +59,25 @@ public class CloverDataFormatter implements Formatter {
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		tape = new DataRecordTape((String)out,true,false);
-		try{
-			idx = new DataOutputStream(new FileOutputStream((String)out+".idx"));
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
 		try {
 			tape.open();
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
+		
 		tape.addDataChunk();
+		if (saveIndex) {
+			try{
+				idx = new DataOutputStream(new BufferedOutputStream(new FileOutputStream((String)out+".idx"),
+						Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE));
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
+		}
 	}
 
+
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
@@ -72,8 +85,10 @@ public class CloverDataFormatter implements Formatter {
 		try{
 			tape.flush(true);
 			tape.close();
-			idx.flush();
-			idx.close();
+			if (saveIndex) { 
+				idx.flush();
+				idx.close();
+			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
@@ -83,8 +98,10 @@ public class CloverDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public void write(DataRecord record) throws IOException {
-		index+=tape.put(record);
-		idx.writeLong(index);
+		index=tape.put(record);
+		if (saveIndex) {
+			idx.writeLong(index);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -92,7 +109,9 @@ public class CloverDataFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		tape.flush(true);
-		idx.flush();
+		if (saveIndex) {
+			idx.flush();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -102,5 +121,9 @@ public class CloverDataFormatter implements Formatter {
 		// TODO Auto-generated method stub
 
 	}
+
+	/**
+	 * @param index
+	 */
 
 }
