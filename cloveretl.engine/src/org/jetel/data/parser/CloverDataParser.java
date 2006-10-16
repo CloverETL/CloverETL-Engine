@@ -21,7 +21,13 @@
 
 package org.jetel.data.parser;
 
+import java.io.DataInputStream;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
+import java.nio.LongBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 
 import org.jetel.data.DataRecord;
@@ -42,8 +48,23 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class CloverDataParser implements Parser {
 	
-	DataRecordMetadata metadata;
-	DataRecordTape tape;
+	private DataRecordMetadata metadata;
+	private DataRecordTape tape;
+	private FileChannel recordFile;
+	private ByteBuffer recordBuffer;
+	private RandomAccessFile indexFile;
+	private long index;
+	private long idx;
+	private int startRecord = 0;
+	private int counter;
+	
+	private final static int LONG_SIZE_BYTES = 8;
+	private final static short BUFFER_CAPACITY = 100;
+    private final static int LEN_SIZE_SPECIFIER = 4;
+
+	public int getStartRecord() {
+		return startRecord;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext()
@@ -58,8 +79,9 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#skip(int)
 	 */
 	public int skip(int nRec) throws JetelException {
-		// TODO Auto-generated method stub
-		return 0;
+		this.startRecord = nRec;
+		index = LONG_SIZE_BYTES * nRec;
+		return nRec;
 	}
 
 	/* (non-Javadoc)
@@ -67,15 +89,31 @@ public class CloverDataParser implements Parser {
 	 */
 	public void open(Object in, DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
-		this.metadata = metadata;
-		tape = new DataRecordTape((String)in,false,false);
-		try{
-			tape.open();
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
+		this.metadata = _metadata;
+		if (startRecord == 0) {
+			tape = new DataRecordTape((String)in,false,false);
+			try{
+				tape.open();
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
+			tape.addDataChunk();
+			tape.rewind();
+		}else{
+			try {
+				DataRecord dr = new DataRecord(metadata);
+				dr.init();
+				recordFile = new RandomAccessFile((String)in,"r").getChannel();
+				recordBuffer = ByteBuffer.allocateDirect((dr.getSizeSerialized()+LEN_SIZE_SPECIFIER)*BUFFER_CAPACITY);
+				indexFile = new RandomAccessFile((String)in + ".idx","r");
+				indexFile.seek(index);
+				idx = indexFile.readLong();
+				recordFile.position(idx);
+				counter = 0;
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
 		}
-		tape.addDataChunk();
-		tape.rewind();
 	}
 
 	/* (non-Javadoc)
@@ -83,7 +121,12 @@ public class CloverDataParser implements Parser {
 	 */
 	public void close() {
 		try{
-			tape.close();
+			if (startRecord == 0) {
+				tape.close();
+			}else{
+				recordFile.close();
+				indexFile.close();
+			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
@@ -93,17 +136,35 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
-		try{
-	        if (tape.get(record)){
-	            return record;
-	        }else{
-	            return null;
-	        }
+		try {
+			if (startRecord == 0) {
+				return getNextFromTape(record);
+			}else{
+				return getNextFromFile(record);
+			}
 		}catch(IOException ex){
 			throw new JetelException(ex.getLocalizedMessage());
 		}
 	}
-
+	
+	private DataRecord getNextFromTape(DataRecord record) throws IOException{
+        if (tape.get(record)){
+            return record;
+        }else{
+            return null;
+        }
+	}
+	
+	private DataRecord getNextFromFile(DataRecord record)throws IOException{
+		if (counter % BUFFER_CAPACITY == 0){
+			recordFile.read(recordBuffer);
+			recordBuffer.rewind();
+		}
+		recordBuffer.position(recordBuffer.position()+LONG_SIZE_BYTES);
+		record.deserialize(recordBuffer);
+		return record;
+	}
+ 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setExceptionHandler(org.jetel.exception.IParserExceptionHandler)
 	 */
