@@ -22,16 +22,17 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.security.InvalidParameterException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.CloverDataParser;
-import org.jetel.data.parser.DataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -48,11 +49,15 @@ public class CloverDataReader extends Node {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
+	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
+	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
 	private CloverDataParser parser;
+	private int startRecord = -1;
+	private int finalRecord = -1;
 
 	public CloverDataReader(String id, String fileURL) {
 		super(id);
@@ -75,9 +80,15 @@ public class CloverDataReader extends Node {
 	public void run() {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
+		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
+		int recordCount = 0;
         try {
 	        while ((record = parser.getNext(record))!=null){
 				    writeRecordBroadcast(record);
+					if(finalRecord != -1 && recordCount++ > diffRecord) {
+						break;
+					}
+					SynchronizeUtils.cloverYield();
 	        }
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
@@ -106,6 +117,12 @@ public class CloverDataReader extends Node {
 		try {
 			aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 						xattribs.getString(XML_FILE_ATTRIBUTE));
+			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
+				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
+				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -129,7 +146,23 @@ public class CloverDataReader extends Node {
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
+		if (startRecord != -1) {
+			try{
+				parser.skip(startRecord);
+			}catch (JetelException ex) {}
+		}
 		parser.open(fileURL, getOutputPort(OUTPUT_PORT).getMetadata());
 	}
+	
+	public void setStartRecord(int startRecord){
+		this.startRecord = startRecord;
+	}
 
+	public void setFinalRecord(int finalRecord) {
+		if(finalRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
+			throw new InvalidParameterException("Invalid finalRecord parameter.");
+		}
+		this.finalRecord = finalRecord;
+	}
+	
 }
