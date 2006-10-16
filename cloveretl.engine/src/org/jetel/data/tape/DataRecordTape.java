@@ -467,6 +467,7 @@ public class DataRecordTape {
 		 *@param  recordBuffer             ByteBuffer containing record's data
 		 *@exception  IOException  In case of IO failure
 		 *@since                   September 17, 2002
+		 *@return number of bytes in the chunk after saveing data
 		 */
 		long put(ByteBuffer recordBuffer) throws IOException {
 			int recordSize = recordBuffer.remaining();
@@ -485,13 +486,14 @@ public class DataRecordTape {
 			
 			length+=(recordSize+ LEN_SIZE_SPECIFIER);
 			nRecords++;
-			return recordSize+ LEN_SIZE_SPECIFIER;
+			return length;
 		}
 
 		 /**
 		  * Stores one data record into buffer / file.
 		  * 
 		 * @param data	DataRecord to be stored
+		 *@return number of bytes in the chunk after saveing data
 		 * @throws IOException
 		 */
 		long put(DataRecord data) throws IOException {
@@ -511,7 +513,7 @@ public class DataRecordTape {
 				
 				length+=(recordSize+ LEN_SIZE_SPECIFIER);
 				nRecords++;
-				return recordSize+ LEN_SIZE_SPECIFIER;
+				return length;
 			}
 
 		/**
