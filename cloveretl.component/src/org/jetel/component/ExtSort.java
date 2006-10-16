@@ -335,7 +335,7 @@ public class ExtSort extends Node {
     private void phaseMerge() throws IOException, InterruptedException {
         int index;
         DataRecordTape targetTape;
-        TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes());
+        TapeCarousel targetCarousel = new TapeCarousel(tapeCarousel.numTapes(), tmpDirs);
         DataRecord[] sourceRecords = new DataRecord[tapeCarousel.numTapes()];
         boolean[] sourceRecordsFlags = new boolean[tapeCarousel.numTapes()];
 
@@ -552,7 +552,7 @@ public class ExtSort extends Node {
     private void flushToTape() throws IOException {
         DataRecordTape tape;
         if (!carouselInitialized) {
-            tapeCarousel = new TapeCarousel(numberOfTapes);
+            tapeCarousel = new TapeCarousel(numberOfTapes, tmpDirs);
             tapeCarousel.open();
             tape = tapeCarousel.getFirstTape();
             carouselInitialized = true;
@@ -687,7 +687,7 @@ public class ExtSort extends Node {
             }
             
             if (xattribs.exists(XML_TEMPORARY_DIRS)){
-                sort.setTmpDirs(xattribs.getString(XML_TEMPORARY_DIRS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+                sort.setTmpDirs(xattribs.getString(XML_TEMPORARY_DIRS).split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX));
             }
             
         } catch (Exception ex) {
