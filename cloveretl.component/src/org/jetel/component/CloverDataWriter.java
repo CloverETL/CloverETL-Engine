@@ -21,6 +21,7 @@
 
 package org.jetel.component;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.jetel.data.DataRecord;
@@ -29,12 +30,14 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- * @author avackova <agata.vackova@javlinconsulting.cz> ; 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
@@ -44,20 +47,28 @@ import org.w3c.dom.Element;
 public class CloverDataWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
+	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
+	private static final String XML_ZIPDATA_ATTRIBUTE = "zipData";
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
 	
 	private String fileURL;
 	private CloverDataFormatter formatter;
+	private boolean saveMetadata;
+	private DataRecordMetadata metadata;
+	private FileOutputStream metaOut;
+	private InputPort inPort;
+	private boolean zipData;
 	
 	/**
 	 * @param id
 	 */
-	public CloverDataWriter(String id, String fileURL) {
+	public CloverDataWriter(String id, String fileURL, boolean saveIndex) {
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new CloverDataFormatter();
+		formatter = new CloverDataFormatter(saveIndex);
 	}
 
 	/* (non-Javadoc)
@@ -73,8 +84,10 @@ public class CloverDataWriter extends Node {
 	 */
 	@Override
 	public void run() {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord record = new DataRecord(inPort.getMetadata());
+		if (saveMetadata){
+			DataRecordMetadataXMLReaderWriter.write(metadata, metaOut);
+		}
+		DataRecord record = new DataRecord(metadata);
 		record.init();
 		while (record != null && runIt) {
 			try {
@@ -118,8 +131,19 @@ public class CloverDataWriter extends Node {
 		if (inPorts.size() != 1) {
 			throw new ComponentNotReadyException("One input port has to be defined!");
 		}
+		inPort = getInputPort(READ_FROM_PORT);
+		metadata = inPort.getMetadata();
 		// based on file mask, create/open output file
-		formatter.open(fileURL, getInputPort(READ_FROM_PORT).getMetadata());
+		formatter.open(fileURL, metadata);
+		if (saveMetadata) {
+			try{
+				metaOut = new FileOutputStream(fileURL+".fmt");
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
+		}
+		if (zipData){
+		}
 	}
 	/**
 	 *  Description of the Method
@@ -134,13 +158,24 @@ public class CloverDataWriter extends Node {
 		
 		try{
 			aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_FILEURL_ATTRIBUTE));
+					xattribs.getString(XML_FILEURL_ATTRIBUTE),
+					xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
+			aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
+			aDataWriter.setZipData(xattribs.getBoolean(XML_ZIPDATA_ATTRIBUTE,true));
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
 		}
 		
 		return aDataWriter;
+	}
+
+	public void setSaveMetadata(boolean saveMetadata) {
+		this.saveMetadata = saveMetadata;
+	}
+
+	public void setZipData(boolean zipData) {
+		this.zipData = zipData;
 	}
 
 }
