@@ -69,8 +69,9 @@ public final class Defaults {
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
-		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", "\\s*;\\s*");
+		DEFAULT_PATH_SEPARATOR_REGEX = getStringProperties("DEFAULT_FILENAME_SEPARATOR_REGEX", ";");
 		DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE = getIntProperties("DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE", 2048);
+        DEFAULT_PLUGINS_DIRECTORY = getStringProperties("DEFAULT_PLUGINS_DIRECTORY", "./plugins");
 		
 		Record.init();
         DataFieldMetadata.init();
@@ -92,19 +93,19 @@ public final class Defaults {
 	/**
 	 * Default path to external binary files.
 	 */
-	public static String DEFAULT_BINARY_PATH;// = "./bin/"
+	public static String DEFAULT_BINARY_PATH;// = "./bin/";
 	
 	/**
 	 * Regex for separator of filenames in list of filenames - path separator. 
 	 */
-	public static String DEFAULT_PATH_SEPARATOR_REGEX;
+	public static String DEFAULT_PATH_SEPARATOR_REGEX;// = ";";
 	
     /**
      *  when creating InputStream or OutputStream objects, what
      *  is the size of their internal buffer. Used mainly in
      *  creating Channels from these streams.
      */
-    public static int DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE; //2048
+    public static int DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE; // = 2048;
     
 	/**
 	 * when creating/parsing date from string, what is the expected/default
@@ -116,11 +117,13 @@ public final class Defaults {
 
 	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
 	
-	/**
-	 * Separator in JDBC driver library list
-	 */
-	public static String DEFAULT_JDBC_LIBRARY_SEPARATOR = ";";
 	
+    /**
+     *  List of directories, where plugins are located.
+     *  Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX property.
+     */
+    public static String DEFAULT_PLUGINS_DIRECTORY;// = "./plugins"
+    
 	/**
 	 *  Defaults regarding DataRecord structure/manipulation
 	 *
