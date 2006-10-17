@@ -49,6 +49,10 @@ DEFAULT_BINARY_PATH = ./
 #Regex for separator of filenames in list of filenames - path separator.
 DEFAULT_PATH_SEPARATOR_REGEX = \\s*;\\s*
 
+#List of directories, where plugins are located.
+#Paths separator is defined in DEFAULT_PATH_SEPARATOR_REGEX property.
+DEFAULT_PLUGINS_DIRECTORY = ./plugins
+
 #Default charset used when parsing data from text representation
 DataParser.DEFAULT_CHARSET_DECODER = ISO-8859-1
 

@@ -83,7 +83,7 @@ public class runGraph {
 		boolean verbose = false;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
-		String pluginsRootDirectory = "./plugins";
+		String pluginsRootDirectory = null;
         Defaults.init();
 		
 		System.out.println("***  CloverETL framework/transformation graph runner ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
