@@ -58,9 +58,10 @@ public class SortDataRecordInternal {
 	private boolean sortOrderAscending;
 	private List recordColList;
 	private DataRecordCol[] recordColArray;
-
+	private int numCollections;
+    
 	private final static int DEFAULT_RECORD_COLLECTION_CAPACITY = 2000;
-	private final static int DEFAULT_MAX_NUM_COLLECTIONS = 8;
+	private final static int DEFAULT_NUM_COLLECTIONS = 8;
 
 	/**
 	 * Comment for <code>COLLECTION_GROW_FACTOR</code>
@@ -78,9 +79,10 @@ public class SortDataRecordInternal {
 	 * @param sortAscending	True if required sort order is Ascending, otherwise False
 	 * @param oneColCapacity	What is the initial capacity of 1 chunk/array of data records
 	 */
-	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, int oneColCapacity) {
+	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, boolean growingBuffer, int oneColCapacity) {
 		this.metadata = metadata;
-		recordColList = new ArrayList(DEFAULT_MAX_NUM_COLLECTIONS);
+        this.numCollections = growingBuffer ? DEFAULT_NUM_COLLECTIONS : 1;
+		recordColList = new ArrayList(this.numCollections);
 		// allocate buffer for storing values
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		key = new RecordKey(keyItems, metadata);
@@ -93,18 +95,16 @@ public class SortDataRecordInternal {
 	}
 
 
-	/**
-	 * @see SortDataRecordInternal
-	 * 
-	 */
+    public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending, boolean growingBuffer) {
+        this(metadata,keyItems,sortAscending, growingBuffer, DEFAULT_RECORD_COLLECTION_CAPACITY);
+    }
+
 	public SortDataRecordInternal(DataRecordMetadata metadata, String[] keyItems, boolean sortAscending){
-	    this(metadata,keyItems,sortAscending,DEFAULT_RECORD_COLLECTION_CAPACITY);
+	    this(metadata,keyItems,sortAscending, true, DEFAULT_RECORD_COLLECTION_CAPACITY);
 	}
 	
 	public void setInitialBufferCapacity(int capacity){
-	    //if (capacity>100){
-	        currentColSize=capacity;
-	    //}
+	    currentColSize = Math.max(10, capacity);
 	}
 	
 	/**
@@ -181,7 +181,7 @@ public class SortDataRecordInternal {
 //	}
 
 	private final boolean secureSpace(){
-	    if (currentColIndex+1>=DEFAULT_MAX_NUM_COLLECTIONS){
+	    if (currentColIndex+1 >= numCollections){
 	        return false;
 	    }
 	    /* add record collection (if it doesn't exist already)
@@ -191,7 +191,12 @@ public class SortDataRecordInternal {
 	    if (currentColIndex>=recordColList.size()){
 	        // let's round it to 4B size (32bits)
 	        currentColSize=(((currentColSize*COLLECTION_GROW_FACTOR)/10)/32+1)*32;
-	        currentRecordCol=new DataRecordCol(currentColSize,metadata,sortOrderAscending);
+            try{
+                currentRecordCol = new DataRecordCol(currentColSize, metadata, sortOrderAscending);
+            }catch(OutOfMemoryError ex){
+                currentRecordCol = null;
+                throw new RuntimeException("Out of memory in internal sorter algorithm. Please, set maximum Java heap size via -Xmx<size> JVM command line parameter or decrease sorter buffer capacity.");
+            }
 	        recordColList.add(currentRecordCol);
 	    }else{
 	        currentRecordCol=(DataRecordCol)recordColList.get(currentColIndex);
