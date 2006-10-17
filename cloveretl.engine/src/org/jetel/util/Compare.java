@@ -23,6 +23,10 @@
  */
 package org.jetel.util;
 
+import java.text.CollationElementIterator;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
+
 /**
  * Miscelaneous comparison utilities
  * 
@@ -61,4 +65,45 @@ public class Compare {
 		}
 	}
 	
+    final static public int compare(CharSequence a,CharSequence b,RuleBasedCollator col){
+        
+        CollationElementIterator iterA = col.getCollationElementIterator(
+                        new CharSequenceCharacterIterator(a)); 
+        CollationElementIterator iterB = col.getCollationElementIterator(
+                new CharSequenceCharacterIterator(b)); 
+
+        int elementA,elementB;
+        int orderA,orderB;
+        
+        while ((elementA = iterA.next()) != CollationElementIterator.NULLORDER) {
+            elementB=iterB.next();
+            if (elementB != CollationElementIterator.NULLORDER){
+                // check primary order
+                orderA=CollationElementIterator.primaryOrder(elementA);
+                orderB=CollationElementIterator.primaryOrder(elementB);
+                if (orderA!=orderB){
+                    return orderA-orderB;
+                }
+                orderA=CollationElementIterator.secondaryOrder(elementA);
+                orderB=CollationElementIterator.secondaryOrder(elementB);
+                if (orderA!=orderB){
+                    return orderA-orderB;
+                }
+                orderA=CollationElementIterator.tertiaryOrder(elementA);
+                orderB=CollationElementIterator.tertiaryOrder(elementB);
+                if (orderA!=orderB){
+                    return orderA-orderB;
+                }
+                
+            }else{
+                return 1; // first sequence seems to be longer than second
+            }
+        }
+        if ((elementB = iterB.next()) != CollationElementIterator.NULLORDER){
+            return -1; // second sequence seems to be longer than first
+        }else{
+            return 0; // equal
+        }
+        
+    }
 }
