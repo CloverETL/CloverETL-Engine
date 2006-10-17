@@ -26,9 +26,12 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.Compare;
 
 /**
  *  A class that represents String type data field.<br>
@@ -401,7 +404,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 *  Compares this object with the specified object for order.
 	 *
 	 * @param  obj  Any object implementing CharSequence interface
-	 * @return      Description -1;0;1 based on comparison result
+	 * @return      -1;0;1 based on comparison result
 	 */
 	public int compareTo(Object obj) {
 	    CharSequence strObj;
@@ -419,29 +422,41 @@ public class StringDataField extends DataField implements CharSequence{
                     + obj.getClass().getName());
         }
 
-        int valueLenght = value.length();
-        int strObjLenght = strObj.length();
-        int compLength = (valueLenght < strObjLenght ? valueLenght
-                : strObjLenght);
-        for (int i = 0; i < compLength; i++) {
-            if (value.charAt(i) > strObj.charAt(i)) {
-                return 1;
-            } else if (value.charAt(i) < strObj.charAt(i)) {
-                return -1;
-            }
-        }
-        // strings seem to be the same (so far), decide according to the
-        // length
-        if (valueLenght == strObjLenght) {
-            return 0;
-        } else if (valueLenght > strObjLenght) {
-            return 1;
-        } else {
-            return -1;
-        }
+      return Compare.compare(value, strObj);
         
 	}
 
+    /**
+     * Compares this object with the specified object for order -
+     * respecting i18n particularities - e.g. "e" versus "é".<br>
+     * Using this method requires lots of resources and is therefore
+     * much slower than simple compareTo(Object obj) method.
+     *
+     * @param  obj  Any object implementing CharSequence interface
+     * @param collator Collator which should be used to compare
+     * string representations respecting i18n particularities
+     * @return      -1;0;1 based on comparison result
+     */
+    public int compareTo(Object obj,RuleBasedCollator collator) {
+        CharSequence strObj;
+        
+        if (isNull) return -1;
+
+        if (obj instanceof StringDataField) {
+            if (((StringDataField) obj).isNull())
+                return 1;
+            strObj=((StringDataField) obj).value;
+        }else if (obj instanceof CharSequence) {
+            strObj = (CharSequence) obj;
+        }else {
+            throw new ClassCastException("Can't compare StringDataField to "
+                    + obj.getClass().getName());
+        }
+
+        return Compare.compare(value, strObj, collator);
+    }
+
+    
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
