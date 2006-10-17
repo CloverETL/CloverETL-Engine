@@ -19,31 +19,51 @@
 */
 package org.jetel.data;
 
+import java.text.Collator;
+import java.text.RuleBasedCollator;
 import java.util.Comparator;
 import java.util.Arrays;
 
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
+
 /**
- *  This class compares two records of the same structure 
+ *  This class compares two records of the same structure (created based on
+ *  the same or at least compatible metadata).<br> Used for
+ *  primarily for sorting data records when it can be passed
+ *  into JDK's standard sorting methods.
  *
  *@author     dpavlis
  *@created    February 28, 2004
  *@since      February 28, 2004
+ *@revision    $Revision:  $
  */
 public class RecordComparator implements Comparator{
 
-	private int keyFields[];
+	protected int keyFields[];
+    protected RuleBasedCollator collator;
 	
 	/**
-	 *  Constructor for the RecordKey object
+	 *  Constructor for the RecordComparator object
 	 *
-	 *@param  keyFieldNames  Description of Parameter
-	 *@param  metadata       Description of Parameter
+	 *@param  keyField  indexes of fields to be considered for sorting
 	 *@since                 May 2, 2002
 	 */
 	public RecordComparator(int keyFields[]) {
-		this.keyFields = keyFields;
+		this(keyFields,null);
 	}
 
+    /**
+     * Constructor for the RecordComparator object
+     * 
+     * @param keyFields indexes of fields to be considered for sorting
+     * @param collator  Collator which should be use for comparing String fields
+     */
+    public RecordComparator(int keyFields[], RuleBasedCollator collator){
+        this.keyFields = keyFields;
+        this.collator=collator;
+    }
+    
 	/**
 	 *  Gets the keyFields attribute of the RecordKey object
 	 *
@@ -62,23 +82,40 @@ public class RecordComparator implements Comparator{
 	 *@return          -1 ; 0 ; 1
 	 */
 	public int compare(Object o1, Object o2) {
-		int compResult;
-		DataRecord record1=(DataRecord)o1;
-		DataRecord record2=(DataRecord)o2;
-		/* by D.Pavlis following check has been "relaxed" to speed up processing.
-		 * if (record1.getMetadata() != record2.getMetadata()) {
-		*	throw new RuntimeException("Can't compare - records have different metadata associated." +
-		*			" Possibly different structure");
-		}*/
-		for (int i = 0; i < keyFields.length; i++) {
-			compResult = record1.getField(keyFields[i]).compareTo(record2.getField(keyFields[i]));
-			if (compResult != 0) {
-				return compResult;
-			}
-		}
-		return 0;
-		// seem to be the same
-	}
+        int compResult;
+        DataRecord record1 = (DataRecord) o1;
+        DataRecord record2 = (DataRecord) o2;
+        /*
+         * by D.Pavlis following check has been "relaxed" to speed up
+         * processing. if (record1.getMetadata() != record2.getMetadata()) {
+         * throw new RuntimeException("Can't compare - records have different
+         * metadata associated." + " Possibly different structure"); }
+         */
+        if (collator != null) {
+            for (int i = 0; i < keyFields.length; i++) {
+                DataField field1 = record1.getField(keyFields[i]);
+                if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                    if ((compResult = ((StringDataField) field1).compareTo(
+                            record2.getField(keyFields[i]), collator)) != 0)
+                        return compResult;
+                } else {
+                    if ((compResult = field1.compareTo(record2
+                            .getField(keyFields[i]))) != 0)
+                        return compResult;
+                }
+            }
+
+        } else {
+
+            for (int i = 0; i < keyFields.length; i++) {
+                if ((compResult = record1.getField(keyFields[i]).compareTo(
+                        record2.getField(keyFields[i]))) != 0)
+                    return compResult;
+            }
+        }
+        return 0;
+        // seem to be the same
+    }
 
 
 	/**
@@ -117,6 +154,14 @@ public class RecordComparator implements Comparator{
 			return false;
 		}
 	}
+
+    public Collator getCollator() {
+        return collator;
+    }
+
+    public void setCollator(RuleBasedCollator collator) {
+        this.collator = collator;
+    }
 }
 // end RecordKey
 
