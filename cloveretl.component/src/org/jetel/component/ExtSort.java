@@ -72,7 +72,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>sortOrder</b><br><i>optional</i></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td>
  *  <tr><td><b>numberOfTapes</b><br><i>optional</i></td><td>even number greater than 2 - denotes how many tapes (temporary files) will be used when external sorting data.
  *  <i>Default is 6 tapes.</i></td>
- *  <tr><td><b>sorterInitialCapacity</b><br><i>optional</i></td><td>the initial capacity of internal sorter used for in-memory sorting records. If the
+ *  <!--tr><td><b>sorterInitialCapacity</b><br><i>optional</i></td><td>the initial capacity of internal sorter used for in-memory sorting records. If the
  *   system has plenty of memory, specify high number here (5000 or more). If the system is short on memory, use low number (100).<br>
  *   The final capacity is based on following formula:<br><code>sorter_initial_capacity * (1 - grow_factor^max_num_collections)/(1 - grow_factor)</code><br>
  *   where:<br><code>grow_factor=1.6<br>max_num_collections=8<br>sorterInitialCapacity=2000<br></code><br>With the parameters above, the default total capacity roughly is <b>140000</b> records. The
@@ -89,7 +89,7 @@ import org.w3c.dom.Element;
  *    <tr><td>20000</td><td>1399000</td></tr>
  *    <tr><td>50000</td><td>3496000</td></tr>
  *    </table>
- *  </tr>
+ *  </tr-->
  *  <tr><td><b>bufferCapacity</b><br><i>optional</i></td><td>What is the maximum number of records
  *  which are sorted in-memory. If number of records exceed this size, external sorting is performed.</td></tr>
  *  <tr><td><b>tmpDirs</b><br><i>optional</i></td><td>Semicolon (;) delimited list of directories which should be
@@ -132,7 +132,7 @@ public class ExtSort extends Node {
 	private RecordKey sortKey;
 	
 	private int numberOfTapes;
-	private int internalSorterCapacity;
+	private int internalBufferCapacity;
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 	private final static int DEFAULT_NUMBER_OF_TAPES = 6;
@@ -155,7 +155,7 @@ public class ExtSort extends Node {
         this.sortKeysNames = sortKeys;
         carouselInitialized = false;
         numberOfTapes=DEFAULT_NUMBER_OF_TAPES;
-        internalSorterCapacity=-1;
+        internalBufferCapacity=-1;
     }
 
     /**
@@ -314,13 +314,12 @@ public class ExtSort extends Node {
                             + Defaults.Record.MAX_RECORD_SIZE);
         }
         // create sorter
-        if (internalSorterCapacity>0){
+        if (internalBufferCapacity>0){
             sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT)
-                    .getMetadata(), sortKeysNames, sortOrderAscending,internalSorterCapacity);
-            
-        }else{
-        sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT)
-                .getMetadata(), sortKeysNames, sortOrderAscending);
+                    .getMetadata(), sortKeysNames, sortOrderAscending, false, internalBufferCapacity);
+        } else {
+            sorter = new SortDataRecordInternal(getInputPort(READ_FROM_PORT)
+                    .getMetadata(), sortKeysNames, sortOrderAscending, false);
         }
         
     }
@@ -588,33 +587,21 @@ public class ExtSort extends Node {
      * @param numberOfTapes The numberOfTapes to set.
      */
     public void setNumberOfTapes(int numberOfTapes) {
-        if (numberOfTapes>2 && (numberOfTapes%2==0)){
-            this.numberOfTapes = numberOfTapes;
+        if(numberOfTapes > 2) {
+            this.numberOfTapes = numberOfTapes / 2 * 2;
+        } else {
+            numberOfTapes = 2;
         }
     }
     
     /**
-     * What is the initial capacity (in num of records) internal
-     * sorter (SortDataRecordInternal)  will start with.
-     * 
-     * @param internalSorterCapacity The internalSorterCapacity to set.
-     * @see org.jetel.data.SortDataRecordInternal
-     */
-    public void setInternalSorterInitialCapacity(int internalSorterCapacity) {
-        if (internalSorterCapacity>10){
-            this.internalSorterCapacity = internalSorterCapacity;
-        }
-    }
-    
-    /**
-     * What is the maximum capacity of internal buffer used for
+     * What is the capacity of internal buffer used for
      * in-memory sorting.
      * 
-     * @param size maximum buffer capacity
+     * @param size buffer capacity
      */
     public void setBufferCapacity(int size){
-        setInternalSorterInitialCapacity((int)(((double)size)/69.91d));
-        
+        internalBufferCapacity = size;
     }
     
     /**
@@ -641,14 +628,13 @@ public class ExtSort extends Node {
        }
        
        // numberOfTapes attribute
-       if (this.numberOfTapes != 2) {
+       if (this.numberOfTapes != 6) {
        		xmlElement.setAttribute(XML_NUMBEROFTAPES_ATTRIBUTE,String.valueOf(this.numberOfTapes));
        }
        
        // sorterInitialCapacity
-       if (this.internalSorterCapacity > 10) {
-       		xmlElement.setAttribute(XML_SORTERINITIALCAPACITY_ATTRIBUTE, 
-       				String.valueOf(this.internalSorterCapacity));
+       if (this.internalBufferCapacity > 0) {
+       		xmlElement.setAttribute(XML_BUFFER_CAPACITY_ATTRIBUTE, String.valueOf(this.internalBufferCapacity));
        }
        
        if (this.tmpDirs!=null){
@@ -677,7 +663,8 @@ public class ExtSort extends Node {
                         .matches("^[Aa].*"));
             }
             if (xattribs.exists(XML_SORTERINITIALCAPACITY_ATTRIBUTE)){
-                sort.setInternalSorterInitialCapacity(xattribs.getInteger(XML_SORTERINITIALCAPACITY_ATTRIBUTE));
+                //only for backward compatibility
+                sort.setBufferCapacity(xattribs.getInteger(XML_SORTERINITIALCAPACITY_ATTRIBUTE));
             }
             if (xattribs.exists(XML_NUMBEROFTAPES_ATTRIBUTE)){
                 sort.setNumberOfTapes(xattribs.getInteger(XML_NUMBEROFTAPES_ATTRIBUTE));
