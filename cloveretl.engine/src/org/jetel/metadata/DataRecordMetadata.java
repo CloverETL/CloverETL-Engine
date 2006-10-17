@@ -22,7 +22,6 @@
 package org.jetel.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import java.util.Properties;
 
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
+import org.jetel.util.TypedProperties;
 
 
 /**
@@ -58,7 +58,7 @@ public class DataRecordMetadata implements Serializable {
 	private String[] recordDelimiters;
 	private String localeStr;
 
-	private Properties recordProperties;
+	private TypedProperties recordProperties;
 
 	/**  Description of the Field */
 	public final static char DELIMITED_RECORD = 'D';
@@ -114,15 +114,7 @@ public class DataRecordMetadata implements Serializable {
 		ret.setLocaleStr(getLocaleStr());
 
 		//copy record properties
-		Properties target = new Properties();
-		Properties source = getRecordProperties();
-		if(source != null) {
-		    for(Enumeration e = source.propertyNames(); e.hasMoreElements();) {
-		        String key = (String) e.nextElement();
-		        target.put(key, source.getProperty(key));
-		    }
-		    ret.setRecordProperties(target);
-		}
+        ret.setRecordProperties(getRecordProperties());
 		
 		//copy fields
 		DataFieldMetadata[] sourceFields = getFields();
@@ -378,7 +370,7 @@ public class DataRecordMetadata implements Serializable {
 	 *
 	 * @return    The recordProperties value
 	 */
-	public Properties getRecordProperties() {
+	public TypedProperties getRecordProperties() {
 		return recordProperties;
 	}
 
@@ -401,9 +393,8 @@ public class DataRecordMetadata implements Serializable {
 	 * @param  properties  The new recordProperties value
 	 */
 	public void setRecordProperties(Properties properties) {
-		recordProperties = properties;
+		recordProperties = new TypedProperties(properties);
 	}
-
 
 	/**
 	 *  An operation that adds DataField (metadata) into DataRecord
@@ -554,14 +545,6 @@ public class DataRecordMetadata implements Serializable {
     	return result;
     }
     
-    /**
-     * 
-     * @return Value indicating whether byte mode or char mode is to be used for parsing of fixlen data. 
-     */
-    public boolean isByteMode() {
-        return getProperty(BYTE_MODE_ATTR).equalsIgnoreCase("true");
-    }
-
 }
 /*
  *  end class DataRecordMetadata
