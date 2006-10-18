@@ -60,14 +60,20 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"SORT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sortKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>sortOrder</b><br><i>optional</i></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td>
- *  </tr>
+ *  <tr><td><b>sortOrder</b><br><i>optional</i></td><td>one of "Ascending|Descending" {the fist letter is sufficient, if not defined, then Ascending}</td></tr>
+ *  <tr><td><b>useI18N</b><br><i>optional</i></td><td>true/false perform sorting according to national rules - e.g. Czech or German handling of characters like "i","í". Default
+ *  is false.<br>Use it only if you are sorting data according to key which can contain accented characters or
+ *  you want sorter to follow certain locale specific rules.</td></tr>
+ *  <tr><td><b>locale</b><br><i>optional</i></td><td>locale to be used when sorting using I18N rules. If not specified, then system
+ *  default is used.<br><i>Example: "fr"</i></td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="SORT_CUSTOMER" type="SORT" sortKey="Name:Address" sortOrder="A"/&gt;</pre>
+ *  
+ *  <pre>&lt;Node id="SORT_CUSTOMER" type="SORT" sortKey="Name:Address" sortOrder="A" useI18N="true" locale="fr"/&gt;</pre>
  *
- * @author      dpavlis
+ * @author      David Pavlis
  * @since       April 4, 2002
  * @revision    $Revision$
  */
@@ -75,6 +81,9 @@ public class Sort extends Node {
 
 	private static final String XML_SORTORDER_ATTRIBUTE = "sortOrder";
 	private static final String XML_SORTKEY_ATTRIBUTE = "sortKey";
+    private static final String XML_USE_I18N_ATTRIBUTE = "useI18N";
+    private static final String XML_LOCALE_ATTRIBUTE = "locale";
+    
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "SORT";
 
@@ -85,6 +94,8 @@ public class Sort extends Node {
 	private boolean sortOrderAscending;
 	private String[] sortKeys;
 	private ByteBuffer recordBuffer;
+    private String localeStr;
+    private boolean useI18N;
 
 	private final static boolean DEFAULT_ASCENDING_SORT_ORDER = true; 
 
@@ -213,6 +224,12 @@ public class Sort extends Node {
 		// create sorter
 		newSorter = new SortDataRecordInternal(
 		        getInputPort(READ_FROM_PORT).getMetadata(), sortKeys, sortOrderAscending);
+        if (useI18N){
+            newSorter.setUseCollator(true);
+        }
+        if (localeStr!=null){
+            newSorter.setCollatorLocale(localeStr);
+        }
 	}
 
 
@@ -231,9 +248,17 @@ public class Sort extends Node {
 			}
 			xmlElement.setAttribute(XML_SORTKEY_ATTRIBUTE,buf.toString());
 		}
-		if (this.sortOrderAscending == false) {
+		if (sortOrderAscending == false) {
 			xmlElement.setAttribute(XML_SORTORDER_ATTRIBUTE, "Descending");
 		}
+        
+        if (useI18N){
+            xmlElement.setAttribute(XML_USE_I18N_ATTRIBUTE, String.valueOf(useI18N));
+        }
+        
+        if (localeStr!=null){
+            xmlElement.setAttribute(XML_LOCALE_ATTRIBUTE, localeStr);
+        }
 	}
 
 
@@ -253,6 +278,13 @@ public class Sort extends Node {
 			if (xattribs.exists(XML_SORTORDER_ATTRIBUTE)) {
 				sort.setSortOrderAscending(xattribs.getString(XML_SORTORDER_ATTRIBUTE).matches("^[Aa].*"));
 			}
+            if (xattribs.exists(XML_USE_I18N_ATTRIBUTE)){
+                sort.setUseI18N(xattribs.getBoolean(XML_USE_I18N_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_LOCALE_ATTRIBUTE)){
+                sort.setLocaleStr(xattribs.getString(XML_LOCALE_ATTRIBUTE));
+            }
+            
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -272,5 +304,37 @@ public class Sort extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+
+    /**
+     * @return the localeStr
+     */
+    public String getLocaleStr() {
+        return localeStr;
+    }
+
+
+    /**
+     * @param localeStr the localeStr to set
+     */
+    public void setLocaleStr(String localeStr) {
+        this.localeStr = localeStr;
+    }
+
+
+    /**
+     * @return the useI18N
+     */
+    public boolean isUseI18N() {
+        return useI18N;
+    }
+
+
+    /**
+     * @param useI18N the useI18N to set
+     */
+    public void setUseI18N(boolean useI18N) {
+        this.useI18N = useI18N;
+    }
 }
 
