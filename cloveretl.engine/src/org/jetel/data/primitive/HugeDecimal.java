@@ -42,7 +42,7 @@ import org.jetel.data.NumericDataField;
  *@since      December 1, 2005
  *@see        org.jetel.data.primitive.Decimal
  */
-public class HugeDecimal implements Decimal {
+public final class HugeDecimal implements Decimal {
     private static RoundingMode ROUNDING_MODE = RoundingMode.HALF_UP;
 	private BigDecimal value;
 	private final int precision;
