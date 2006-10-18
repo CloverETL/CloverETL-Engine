@@ -42,7 +42,7 @@ import org.jetel.data.NumericDataField;
  *@since      April 12, 2006
  *@see        org.jetel.data.primitive.Decimal
  */
-public class IntegerDecimal implements Decimal {
+public final class IntegerDecimal implements Decimal {
 
     private long value;
     private int precision;

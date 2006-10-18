@@ -32,7 +32,7 @@ import java.math.BigDecimal;
  *@see        org.jetel.data.primitive.CloverLong
  *@see        org.jetel.data.primitive.CloverDouble
  */
-public class CloverInteger extends Number implements Numeric {
+public final class CloverInteger extends Number implements Numeric {
 	private int value;
 	
 	/**
