@@ -119,7 +119,6 @@ public class CloverDataWriter extends Node {
 		}
 		DataRecord record = new DataRecord(metadata);
 		record.init();
-		long start = System.currentTimeMillis();
 		while (record != null && runIt) {
 			try {
 				record = inPort.readRecord(record);
@@ -149,7 +148,6 @@ public class CloverDataWriter extends Node {
 			closeAllOutputPorts();
 			return;
 		}
-		logger.info("Time = " + (System.currentTimeMillis() - start));
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
 		resultCode=Node.RESULT_OK;
 	}
