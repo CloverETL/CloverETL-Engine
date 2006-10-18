@@ -20,10 +20,13 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -59,6 +62,8 @@ public class SortDataRecordInternal {
 	private List recordColList;
 	private DataRecordCol[] recordColArray;
 	private int numCollections;
+    private Locale collatorLocale;
+    private boolean useCollator=false;
     
 	private final static int DEFAULT_RECORD_COLLECTION_CAPACITY = 2000;
 	private final static int DEFAULT_NUM_COLLECTIONS = 8;
@@ -208,7 +213,15 @@ public class SortDataRecordInternal {
 	 *  Sorts internal array containing individual records
 	 */
 	public void sort() {
-	    RecordComparator comparator=new RecordComparator(key.getKeyFields());
+        RecordComparator comparator;
+        if (useCollator){
+            if (collatorLocale==null){
+                collatorLocale=Locale.getDefault();
+            }
+            comparator=new RecordComparator(key.getKeyFields(),(RuleBasedCollator)Collator.getInstance(collatorLocale));
+        }else{
+            comparator=new RecordComparator(key.getKeyFields());
+        }
 	    DataRecordCol recordArray;
 	    for (Iterator iterator=recordColList.iterator();iterator.hasNext();){
 	        recordArray=((DataRecordCol)iterator.next());
@@ -424,6 +437,58 @@ public class SortDataRecordInternal {
 		
 	}
 
+    /**
+     * Determines whether Collator will be used
+     * for sorting Strings.<br>
+     * Without Collator, strings are sorted
+     * based on individual characters unicode. With
+     * Collator, locale-sensitive String comparison
+     * is performed.
+     * 
+     * @param useCollator the useCollator to set
+     */
+    public void setUseCollator(boolean useCollator) {
+        this.useCollator = useCollator;
+    }
+
+
+    /**
+     * Set which Locale (national peculiarities) will be
+     * used when comparing Strings.<br>
+     * For example, in Czech  "ch" is a one character and
+     * "a","á" both precede "b".
+     * 
+     * @param collatorLocale the collatorLocale to set
+     */
+    public void setCollatorLocale(Locale collatorLocale) {
+        this.collatorLocale = collatorLocale;
+    }
+
+    /**
+     * Set which Locale (national peculiarities) will be
+     * used when comparing Strings.<br>
+     * For example, in Czech  "ch" is a one character and
+     * "a","á" both precede "b".
+     * 
+     * @param collatorLocale    String representation of locale - e.g. "uk" or "fr"
+     */
+    public void setCollatorLocale(String collatorLocale) {
+        Locale locale;
+        String[] localeLC = collatorLocale.split(
+                Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+        if (localeLC.length > 1) {
+            locale = new Locale(localeLC[0], localeLC[1]);
+        } else {
+            locale = new Locale(localeLC[0]);
+        }
+        // probably wrong locale string defined
+        if (locale == null) {
+            throw new RuntimeException("Can't create Locale based on "
+                    + collatorLocale);
+        }
+        
+        this.collatorLocale = locale;
+    }
   
 }
 

@@ -29,7 +29,7 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  *  This class compares two records of the same structure (created based on
- *  the same or at least compatible metadata).<br> Used for
+ *  the same or at least compatible metadata).<br> Used
  *  primarily for sorting data records when it can be passed
  *  into JDK's standard sorting methods.
  *
@@ -134,12 +134,30 @@ public class RecordComparator implements Comparator{
 		if (keyFields.length != record2KeyFields.length) {
 			throw new RuntimeException("Can't compare. keys have different number of DataFields");
 		}
+        
+         if (collator != null) {
+             for (int i = 0; i < keyFields.length; i++) {
+                 DataField field1 = record1.getField(keyFields[i]);
+                 if (field1.getType() == DataFieldMetadata.STRING_FIELD) {
+                     if ((compResult = ((StringDataField) field1).compareTo(
+                             record2.getField(record2KeyFields[i]),collator)) != 0)
+                         return compResult;
+                 }else{
+                     if ((compResult = field1.compareTo(
+                             record2.getField(record2KeyFields[i]))) != 0)
+                         return compResult;
+                 }
+            }             
+             
+         }else{
+        
 		for (int i = 0; i < keyFields.length; i++) {
 			compResult = record1.getField(keyFields[i]).compareTo(record2.getField(record2KeyFields[i]));
 			if (compResult != 0) {
 				return compResult;
 			}
 		}
+         }
 		return 0;
 		// seem to be the same
 	}
