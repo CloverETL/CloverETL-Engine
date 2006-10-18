@@ -19,7 +19,6 @@
 */
 package org.jetel.util;
 
-import java.util.Enumeration;
 import java.util.Properties;
 
 /**
@@ -46,10 +45,7 @@ public class TypedProperties extends Properties {
     public TypedProperties(Properties properties) {
         super();
         if(properties != null) {
-            for(Enumeration e = properties.propertyNames(); e.hasMoreElements();) {
-                String key = (String) e.nextElement();
-                put(key, properties.getProperty(key));
-            }
+            putAll(properties);
         }
     }
     
