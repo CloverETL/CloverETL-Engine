@@ -219,7 +219,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	            String jdbcDriverLibrary = config
 	            .getProperty(JDBC_DRIVER_LIBRARY_NAME);
 	            if (jdbcDriverLibrary != null) {
-	                String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_JDBC_LIBRARY_SEPARATOR);
+	                String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
 	                URL[] myURLs= new URL[libraryPaths.length];
 	                	// try to create URL directly, if failed probably the protocol is missing, so use File.toURL
 	                    for(int i=0;i<libraryPaths.length;i++){
