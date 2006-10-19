@@ -12,7 +12,7 @@
 <Phase number="0">
 
 <Node enabled="enabled" id="MYSQL_WRITER" type="MYSQL_DATA_WRITER"
-myload="/home/honza/workspace/dbtools/src/myload"
+myload="../../cloveretl.binutils/mysql/myload"
 username="test" database="test"
 dbTable="employee"
 hostname="koule">

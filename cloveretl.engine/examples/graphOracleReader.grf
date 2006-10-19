@@ -16,13 +16,13 @@
 </Global>
 <Phase number="0">
 
-<Node append="false" enabled="enabled" 
-id="ORAREADER" type="ORACLE_DATA_READER"
-oradump="../../oradump/src/oradump"
+<Node enabled="enabled" id="ORAREADER" type="ORACLE_DATA_READER"
+oradump="../../dbtools/src/oradump"
 username="test" password="test" tnsname="xe"
-select="select u_id, name, email, company, country, to_char(created, 'DD-MON-YY', 'nls_date_language = ENGLISH'), to_char(logged, 'YY/MM/DD/HH24:MI:SS', 'nls_date_language = ENGLISH')
+sqlQuery="select u_id, name, email, company, country, to_char(created, 'DD-MON-YY', 'nls_date_language = ENGLISH'), to_char(logged, 'YY/MM/DD/HH24:MI:SS', 'nls_date_language = ENGLISH')
 from clover_user where u_id>=0"
-outputFile="${WORKSPACE}\output\ora.out">
+append="false" 
+outputFile="${WORKSPACE}/output/ora.out">
 </Node>
 
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/ora.out" id="WRITER" type="DATA_WRITER"/>
