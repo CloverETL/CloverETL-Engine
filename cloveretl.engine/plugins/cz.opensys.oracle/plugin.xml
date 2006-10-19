@@ -18,4 +18,14 @@
 		<parameter id="className" value="cz.opensys.oracle.component.OracleDataWriter"/>
 	</extension>
 		
+	<extension point-id="component">
+		<parameter id="type" value="MYSQL_DATA_READER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.MysqlDataReader"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="MYSQL_DATA_WRITER"/>
+		<parameter id="className" value="cz.opensys.oracle.component.MysqlDataWriter"/>
+	</extension>
+
 </plugin>
