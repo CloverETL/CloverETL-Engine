@@ -42,9 +42,9 @@ public class QuotingDecoderMysql extends QuotingDecoder {
 		for (int pos = 0; pos < inlen; pos++) {
 			char c = quoted.charAt(pos);
 			if (c == '\\') {
-				pos++;
 				unquoted.insert(outlen, quoted.subSequence(subOffset, pos));
 				outlen += pos - subOffset;
+				pos++;
 				if (pos == inlen) {	// escape char is the last one
 					unquoted.setLength(outlen);
 					return unquoted;
