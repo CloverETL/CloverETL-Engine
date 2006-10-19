@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph ilustrates usage of MySQL Writer Component" name="graphSystemExecute">
+<Global>
+<Metadata id="Metadata0">
+<Record name="defaultRecordName" type="delimited" _recordDelimiter="">
+<Field name="first_name" type="string" delimiter="\t" locale="cs.CZ" nullable="true"/>
+<Field name="last_name" type="string" delimiter="\n" locale="cs.CZ" nullable="true"/>
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+
+<Node enabled="enabled" id="MYSQL_WRITER" type="MYSQL_DATA_WRITER"
+myload="/home/honza/workspace/dbtools/src/myload"
+username="test" database="test"
+dbTable="employee"
+hostname="koule">
+</Node>
+
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employee.txt" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Edge fromNode="INPUT:0" id="Edge1" inPort="0"
+metadata="Metadata0" outPort="0" toNode="MYSQL_WRITER:0"/>
+
+</Phase>
+
+</Graph>
