@@ -4,7 +4,7 @@ LIBS=-lmysqlclient
 
 # windows (mingw+msys) settings
 #INCLUDEPATH=/usr/include/mysql
-#LIBS=-lclntsh
+#LIBS=-lmysqlclient
 
 all: build
 

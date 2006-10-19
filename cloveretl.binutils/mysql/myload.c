@@ -27,6 +27,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef WIN32
+#include <io.h>
+#include <fcntl.h>
+#endif
+
 #include <mysql.h>
 
 #include "myload_opt.h"
@@ -67,7 +72,7 @@ int main(int argc, char **argv) {
 	char *query1 = "LOAD DATA LOCAL INFILE '' INTO TABLE ";
 	char *query = NULL;
 
-#ifdef WINDOWS
+#ifdef WIN32
 	/*set output to binary mode to avoid newline transformation*/
 	setmode(fileno(stdout), O_BINARY);
 #endif
