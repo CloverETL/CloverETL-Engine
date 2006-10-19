@@ -147,6 +147,8 @@ public class runGraph {
 
 		try {
 			graphReader.read(in);
+            
+            //graph parameters defined on command line are applied after composing of graph from xml file 
             graph.loadGraphProperties(properties);
 
 			graph.init();
