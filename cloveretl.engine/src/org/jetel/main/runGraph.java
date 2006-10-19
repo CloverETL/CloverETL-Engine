@@ -103,7 +103,7 @@ public class runGraph {
 					InputStream inStream = new BufferedInputStream(new FileInputStream(args[i]));
 					properties.load(inStream);
 				} catch (IOException ex) {
-					System.err.println(ex.getMessage());
+					logger.error(ex.getMessage(), ex);
 					System.exit(-1);
 				}
 			}else if (args[i].startsWith(PROPERTY_DEFINITION_SWITCH)){
@@ -144,10 +144,11 @@ public class runGraph {
 
 		TransformationGraph graph = new TransformationGraph();
         TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-		graph.loadGraphProperties(properties);
 
 		try {
 			graphReader.read(in);
+            graph.loadGraphProperties(properties);
+
 			graph.init();
 			if (verbose) {
 				//this can be called only after graph.init()
