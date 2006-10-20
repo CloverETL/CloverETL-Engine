@@ -64,37 +64,28 @@ import org.xml.sax.SAXParseException;
  * &lt;!ELEMENT Graph (Global , Phase+)&gt;
  * &lt;!ATTLIST Graph
  *		name ID #REQUIRED 
- *      debugMode NMTOKEN (true | false)  #IMPLIED
- *      debugDirectory CDATE #IMPLIED &gt;
+ *      debugMode NMTOKEN (true | false) #IMPLIED
+ *      debugDirectory CDATE #IMPLIED&gt;
  *
- * &lt;!ELEMENT Global (Property*, Metadata+, Connection*, Sequence*, Lookup*)&gt;
+ * &lt;!ELEMENT Global (Property*, Metadata+, Connection*, Sequence*, LookupTable*)&gt;
  *
  * &lt;!ELEMENT Property (#PCDATA)&gt;
  * &lt;!ATTLIST Property
  *           	name CDATA #IMPLIED
  * 				value CDATA #IMPLIED
- *				fileURL CDATA #IMPLIED &gt;
+ *				fileURL CDATA #IMPLIED&gt;
  *
  * &lt;!ELEMENT Metadata (#PCDATA)&gt;
  * &lt;!ATTLIST Metadata
  *           	id ID #REQUIRED
- * 				type CDATA #REQUIRED
- *				fileURL CDATA 
- *				sqlQuery CDATA 
- *				dbConnection CDATA &gt;
+ *				fileURL CDATA #IMPLIED
+ *              connection CDATA #IMPLIED
+ *              sqlQuery CDATA #IMPLIED&gt;
  *
  * &lt;!ELEMENT Connection (#PCDATA)&gt;
  * &lt;!ATTLIST Connection
  *           	id ID #REQUIRED
  *              type NMTOKEN #REQUIRED
- *		        dbDriver CDATA #REQUIRED
- *		        dbURL CDATA #REQUIRED
- *		        dbConfig CDATA #IMPLIED
- *		        driverLibrary CDATA #IMPLIED
- *              user CDATA #IMPLIED
- *		        password CDATA #IMPLIED
- *              transactionIsolation (READ_UNCOMMITTED | READ_COMMITTED |
- *                                 REPEATABLE_READ | SERIALIZABLE ) #IMPLIED&gt;
  *
  * &lt;!ELEMENT Sequence (#PCDATA)&gt;
  * &lt;!ATTLIST Sequence
@@ -112,10 +103,11 @@ import org.xml.sax.SAXParseException;
  *
  * &lt;!ELEMENT Node (#PCDATA)&gt;
  * &lt;!ATTLIST Node
- *		type NMTOKEN #REQUIRED
  *		id ID #REQUIRED 
+ *      type NMTOKEN #REQUIRED
+ *      enabled NMTOKEN (enabled | disabled) #IMPLIED 
  *      passThroughOutputPort NMTOKEN #IMPLIED 
- *      passThroughInputPort  NMTOKEN #IMPLIED &gt;
+ *      passThroughInputPort NMTOKEN #IMPLIED &gt;
  *
  * &lt;!ELEMENT Edge (#PCDATA)&gt;
  * &lt;!ATTLIST Edge
@@ -123,8 +115,8 @@ import org.xml.sax.SAXParseException;
  *		metadata NMTOKEN #REQUIRED
  *		fromNode NMTOKEN #REQUIRED
  *		toNode	NMTOKEN #REQUIRED
- *      debugMode   type NMTOKEN #IMPLIED 
- *      fastPropagate type NMTOKEN #IMPLIED &gt;
+ *      debugMode NMTOKEN (true | false) #IMPLIED 
+ *      fastPropagate NMTOKEN (true | false) #IMPLIED&gt;
  *
  *
  * </pre>

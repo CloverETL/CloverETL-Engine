@@ -99,6 +99,23 @@ import org.w3c.dom.NamedNodeMap;
  * driverLibrary=c:/Orahome91/jdbc/lib/ojdbc14.jar
  * threadSafeConnection=true
  * ********</pre>
+ * 
+ * The XML DTD describing the internal structure is as follows:
+ * 
+ *  * &lt;!ATTLIST Connection
+ *              id ID #REQUIRED
+ *              type NMTOKEN (JDBC) #REQUIRED
+ *              dbDriver CDATA #IMPLIED
+ *              dbURL CDATA #IMPLIED
+ *              dbConfig CDATA #IMPLIED
+ *              driverLibrary CDATA #IMPLIED
+ *              user CDATA #IMPLIED
+ *              password CDATA #IMPLIED
+ *              threadSafeConnection NMTOKEN (true | false) #IMPLIED
+ *              passwordEncrypted NMTOKEN (true | false) #IMPLIED
+ *              transactionIsolation (READ_UNCOMMITTED | READ_COMMITTED |
+ *                                 REPEATABLE_READ | SERIALIZABLE ) #IMPLIED&gt;
+ *                                 
  * @author      dpavlis
  * @since       21. b?ezen 2004
  * @revision    $Revision$

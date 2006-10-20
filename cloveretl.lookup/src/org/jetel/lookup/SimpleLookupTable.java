@@ -47,6 +47,18 @@ import org.w3c.dom.Element;
 /**
  *  Simple lookup table which reads data from flat file and creates Map structure.
  *
+ * The XML DTD describing the internal structure is as follows:
+ * 
+ *  * &lt;!ATTLIST LookupTable
+ *              id ID #REQUIRED
+ *              type NMTOKEN (simpleLookup) #REQUIRED
+ *              metadata CDATA #REQUIRED
+ *              key CDATA #REQUIRED
+ *              dataType NMTOKEN (delimited | fixed) #REQUIRED
+ *              fileURL CDATA #REQUIRED
+ *              charset CDATA #IMPLIED
+ *              initialSize CDATA #IMPLIED&gt;
+ *              
  * @author     dpavlis
  * @since    May 2, 2002
  */

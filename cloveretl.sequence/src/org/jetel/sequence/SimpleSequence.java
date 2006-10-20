@@ -49,6 +49,18 @@ import org.w3c.dom.Element;
  * generated values in various situations.<br>
  * <i>Note: by setting number of cached values to high enough value (>20) the performance
  * of SimpleSequence can be greatly increased.</i>
+ *
+ * The XML DTD describing the internal structure is as follows:
+ * 
+ * &lt;!ATTLIST Sequence
+ *              id ID #REQUIRED
+ *              type NMTOKEN (SIMPLE_SEQUENCE) #REQUIRED
+ *              name CDATA #REQUIRED
+ *              fileURL CDATA #REQUIRED
+ *              start CDATA #IMPLIED
+ *              step CDATA #IMPLIED
+ *              cached CDATA #IMPLIED&gt;
+ *                                 
  */
 public class SimpleSequence extends GraphElement implements Sequence {
 
