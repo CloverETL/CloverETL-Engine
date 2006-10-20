@@ -38,9 +38,20 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ByteBufferUtils;
+
+import com.sun.org.apache.bcel.internal.generic.IXOR;
 
 
 /**
+ * Class for saving data in Clover internal format
+ * Data are saved to zip file with structure:
+ * DATA/fileName
+ * INDEX/fileName.idx
+ * METADATA/fileName.fmt
+ * 
+ * 
+ * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -57,21 +68,26 @@ public class CloverDataFormatter implements Formatter {
 	private WritableByteChannel idxWriter;
 	private ByteBuffer idxBuffer;
 	private boolean saveIndex;
-	private long index = 0;
+	private short index = 0;
 	private int recordSize;
-	private boolean opened = false;
 	private String fileURL;
 	private String fileName;
 	private File idxTmpFile;
-
-	private final static int LEN_SIZE_SPECIFIER = 4;
+	private ReadableByteChannel idxReader;
+	
+	private final static short LEN_SIZE_SPECIFIER = 4;
+	private final static int SHORT_SIZE_BYTES = 2;
 	private final static int LONG_SIZE_BYTES = 8;
 
 	
 	public CloverDataFormatter(String fileName,boolean saveIndex) {
 		this.fileURL = fileName;
 		this.saveIndex = saveIndex;
-		this.fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
+		if (fileURL.toLowerCase().endsWith(".zip")){
+			this.fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1,fileURL.lastIndexOf('.'));
+		}else{
+			this.fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -82,6 +98,11 @@ public class CloverDataFormatter implements Formatter {
 		this.metadata = _metadata;
 		if (out instanceof ZipOutputStream) {
 			this.out = (ZipOutputStream)out;
+			try {
+				((ZipOutputStream)out).putNextEntry(new ZipEntry("DATA/" + fileName));
+			}catch(IOException ex){
+				throw new ComponentNotReadyException(ex);
+			}
 		}else{
 			this.out = (FileOutputStream)out;
 		}
@@ -90,7 +111,7 @@ public class CloverDataFormatter implements Formatter {
 		if (saveIndex) {
 			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "INDEX");
 			dataDir.mkdir();
-			idxTmpFile = new File(dataDir.getPath() + File.separator + fileName  + ".idx");
+			idxTmpFile = new File(dataDir.getPath() + File.separator + fileName  + ".idx.tmp");
 			try{
 				idxWriter = Channels.newChannel(new DataOutputStream(
 						new FileOutputStream(idxTmpFile)));
@@ -110,75 +131,102 @@ public class CloverDataFormatter implements Formatter {
 	public void close() {
 		try{
 			flush();
-			if (out instanceof ZipOutputStream) {
-				((ZipOutputStream)out).closeEntry();
-				((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX/" + fileName + ".idx"));
-				if (idxTmpFile.length() == 0) {
-					writer.write(idxBuffer);
-				}else{
+			if (saveIndex) {
+				idxReader = new FileInputStream(idxTmpFile).getChannel();
+				if (idxTmpFile.length() > 0){
+					ByteBufferUtils.flusch(idxBuffer,idxWriter);
 					idxWriter.close();
-					ReadableByteChannel idxReader = Channels.newChannel(
-							new FileInputStream(idxTmpFile));
-					while (idxReader.read(buffer) > 0){
-						flush();
-					}
+				}else{
 					idxBuffer.flip();
-					writer.write(idxBuffer);
 				}
-				writer.close();
-				idxTmpFile.delete();
-				idxTmpFile.getParentFile().delete();
+				long startValue = 0;
+				int position;
+				if (out instanceof ZipOutputStream) {
+					((ZipOutputStream)out).closeEntry();
+					((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX/" + fileName + ".idx"));
+					do {
+						startValue = changShortToInt(startValue);
+						position = buffer.position();
+						flush();
+					}while (position == buffer.limit());
+					((ZipOutputStream)out).closeEntry();
+					idxTmpFile.delete();
+					idxTmpFile.getParentFile().delete();
+				}else{
+					out.close();
+					idxWriter = new FileOutputStream(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.'))).getChannel();
+					do {
+						startValue = changShortToInt(startValue);
+						position = buffer.position();
+						ByteBufferUtils.flusch(buffer,idxWriter);
+					}while (position == buffer.limit());
+					idxTmpFile.delete();
+					idxWriter.close();
+				}
 			}else{
-				flushIdxBuffer();
+				if (out instanceof ZipOutputStream) {
+					((ZipOutputStream)out).closeEntry();
+				}else{
+					out.close();
+				}
 			}
-			out.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
+	}
+	
+	private long changShortToInt(long lastValue) throws IOException{
+		while (buffer.remaining() >= LONG_SIZE_BYTES){
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES && idxBuffer.limit() == idxBuffer.capacity()){
+				idxBuffer.limit(ByteBufferUtils.reload(idxBuffer,idxReader));
+			}
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){
+				break;
+			}
+			lastValue += idxBuffer.getShort();
+			buffer.putLong(lastValue);
+		}
+		return lastValue;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public void write(DataRecord record) throws IOException {
-		if (out instanceof ZipOutputStream && !opened) {
-			((ZipOutputStream)out).putNextEntry(new ZipEntry("DATA/" + fileName));
-			opened = true;
+		if (saveIndex) {
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES){
+				ByteBufferUtils.flusch(idxBuffer,idxWriter);
+			}
+			idxBuffer.putShort(index);
+			index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
+					(short)(recordSize + LEN_SIZE_SPECIFIER) : 
+					(short)(Short.MAX_VALUE - (recordSize + LEN_SIZE_SPECIFIER));
 		}
-		if (idxBuffer.remaining() < LONG_SIZE_BYTES){
-			flushIdxBuffer();
-		}
-		idxBuffer.putLong(index);
 		recordSize = record.getSizeSerialized();
 		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
 			flush();
 		}
 		buffer.putInt(recordSize);
 		record.serialize(buffer);
-		index+= recordSize + LEN_SIZE_SPECIFIER;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		buffer.flip();
-		writer.write(buffer);
-		buffer.clear();
+		ByteBufferUtils.flusch(buffer,writer);
 	}
 	
-	private void flushIdxBuffer()throws IOException{
-		idxBuffer.flip();
-		idxWriter.write(idxBuffer);
-		idxBuffer.clear();
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
 	 */
 	public void setOneRecordPerLinePolicy(boolean b) {
 		// TODO Auto-generated method stub
 
+	}
+
+	public boolean isSaveIndex() {
+		return saveIndex;
 	}
 
 	/**
