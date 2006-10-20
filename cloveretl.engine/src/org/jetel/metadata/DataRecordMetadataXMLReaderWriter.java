@@ -67,20 +67,24 @@ import org.xml.sax.helpers.DefaultHandler;
  * 
  *   &lt;!ELEMENT Record (FIELD+)&gt;
  *   &lt;!ATTLIST Record
- * 		name ID #REQUIRED
- *             	type ( fixed | delimited )  #REQUIRED &gt;
+ * 	            name ID #REQUIRED
+ *              id ID #REQUIRED
+ *              name CDATA #REQUIRED
+ *              type NMTOKEN (delimited | fixed | mixed) #REQUIRED
+ *              locale CDATA #IMPLIED
+ *              recordDelimiter CDATA #IMPLIED
  * 
  * 
  *   &lt;!ELEMENT Field (#PCDATA) EMPTY&gt;
  *   &lt;!ATTLIST Field
- *       name ID #REQUIRED
- * 		type NMTOKEN #REQUIRED
- * 		delimiter NMTOKEN #IMPLIED &quot;,&quot;
- * 		size NMTOKEN #IMPLIED &quot;0&quot;
- * 		format CDATA #IMPLIED 
- * 		locale CDATA #IMPLIED
- *       nullable NMTOKEN #IMPLIED &quot;true&quot;
- * 		default CDATA #IMPLIED &gt;
+ *              name ID #REQUIRED
+ *              type NMTOKEN #REQUIRED
+ *              delimiter NMTOKEN #IMPLIED &quot;,&quot;
+ *              size NMTOKEN #IMPLIED &quot;0&quot;
+ *              format CDATA #IMPLIED 
+ *              locale CDATA #IMPLIED
+ *              nullable NMTOKEN (true | false) #IMPLIED &quot;true&quot;
+ *              default CDATA #IMPLIED &gt;
  *   
  * </pre>
  * 

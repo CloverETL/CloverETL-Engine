@@ -32,6 +32,15 @@ import org.w3c.dom.Element;
  * Simple class implementing Sequence interface. It uses internally "long" datatype to
  * store sequence's value. The value is not persistent.<br>
  * 
+ * The XML DTD describing the internal structure is as follows:
+ * 
+ * &lt;!ATTLIST Sequence
+ *              id ID #REQUIRED
+ *              type NMTOKEN (PRIMITIVE_SEQUENCE) #REQUIRED
+ *              name CDATA #REQUIRED
+ *              start CDATA #IMPLIED
+ *              step CDATA #IMPLIED
+ *              
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */

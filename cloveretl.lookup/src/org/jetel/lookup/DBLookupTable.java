@@ -46,11 +46,18 @@ import org.w3c.dom.Element;
  *  query. Caching of found values can be provided - if the constructor with
  *  <code>numCached</code> parameter is used. 
  * 
- *  Example using DBLookupTable:
+ * The XML DTD describing the internal structure is as follows:
+ * 
+ *  * &lt;!ATTLIST LookupTable
+ *              id ID #REQUIRED
+ *              type NMTOKEN (dbLookup) #REQUIRED
+ *              metadata CDATA #REQUIRED
+ *              sqlQuery CDATA #REQUIRED
+ *              dbConnection CDATA #REQUIRED
+ *              maxCached CDATA #IMPLIED&gt;
  * 
  *
  *@author     dpavlis
- *@created    25. kv�ten 2003
  *@since      May 22, 2003
  */
 public class DBLookupTable extends GraphElement implements LookupTable {
