@@ -26,10 +26,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
-import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -41,8 +39,15 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ByteBufferUtils;
 
 /**
+ * Class for reading data saved in Clover internal format
+ * It is predicted that zip file (with name dataFile.zip) has following structure:
+ * DATA/dataFile
+ * INDEX/dataFile.idx
+ * If data are not in zip file indexes (if needed) have to be adequate location
+ * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -56,8 +61,8 @@ public class CloverDataParser implements Parser {
 	private InputStream in;
 	private ReadableByteChannel recordFile;
 	private ByteBuffer recordBuffer;
-	private long index = 0;
-	private long idx = 0;
+	private long index = 0;//index for reading index
+	private long idx = 0;//index for reading record
 	private int recordSize;
 	
 	private final static int LONG_SIZE_BYTES = 8;
@@ -93,55 +98,52 @@ public class CloverDataParser implements Parser {
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
 		String fileName;
+		//set input stream
 		try {
 			if (((String)in).endsWith(".zip")){
 				this.in = new ZipInputStream(new FileInputStream((String)in));
 				fileName = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1,((String)in).lastIndexOf('.'));
+	            ZipEntry entry;
+	            //find entry DATA/fileName
+	            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
+	                if(entry.getName().equals("DATA" + File.separator + fileName)) {
+	                	break;
+	                }
+	            }
 			}else{
 				this.in = new FileInputStream((String)in);
 				fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
 			}
 			recordFile = Channels.newChannel(this.in);
 			recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-			if (index > 0) {
-				if (((String)in).endsWith(".zip")){
+			if (index > 0) {//reading not all records --> find index in record file
+				DataInputStream indexFile;
+				if (((String)in).endsWith(".zip")){//read index from fileName.zip#INDEX/fileName.idx
 					ZipInputStream tmpIn = new ZipInputStream(new FileInputStream((String)in));
+		            indexFile = new DataInputStream(tmpIn);
 		            ZipEntry entry;
-		            byte[] readBuffer = new byte[LONG_SIZE_BYTES];
+		            //find entry INDEX/fileName.idx
 		            while((entry = tmpIn.getNextEntry()) != null) {
-		                if(entry.getName().equals("INDEX/"+fileName+".idx")) {
-		                	tmpIn.skip(index);
-		                	tmpIn.read(readBuffer);
+		                if(entry.getName().equals(
+		                		"INDEX" + File.separator + fileName + ".idx")) {
+		                	indexFile.skip(index);
+		                	idx = indexFile.readLong();//read index for reading records
 		                	break;
 		                }
 		            }
-		            idx = (((long)readBuffer[0] << 56) +
-		                    ((long)(readBuffer[1] & 255) << 48) +
-		                    ((long)(readBuffer[2] & 255) << 40) +
-		                    ((long)(readBuffer[3] & 255) << 32) +
-		                    ((long)(readBuffer[4] & 255) << 24) +
-		                    ((readBuffer[5] & 255) << 16) +
-		                    ((readBuffer[6] & 255) <<  8) +
-		                    ((readBuffer[7] & 255) <<  0));
 		            tmpIn.close();
-				}else{
+		            indexFile.close();
+				}else{//read index from ../INDEX/fileName.idx
 					File root = new File(((String)in)).getParentFile().getParentFile();
 					String filePath = root == null ? "" : root.getPath() + File.separator;
-					DataInputStream indexFile = new DataInputStream(new FileInputStream(
+					indexFile = new DataInputStream(new FileInputStream(
 							filePath + "INDEX" + File.separator + fileName + ".idx"));
 					indexFile.skip(index);
 					idx = indexFile.readLong();
 					indexFile.close();
 				}
-			}
-			if (((String)in).endsWith(".zip")) {
-	            ZipEntry entry;
-	            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
-	                if(entry.getName().equals("DATA/"+fileName)) {
-	                	break;
-	                }
-	            }
-			}
+			}// if (index > 0)
+			//skip idx bytes from record file
 			int i=0;
 			do {
 				recordBuffer.rewind();
@@ -169,27 +171,25 @@ public class CloverDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#getNext(org.jetel.data.DataRecord)
 	 */
 	public DataRecord getNext(DataRecord record)throws JetelException{
+		//refill buffer if we are on the end of buffer
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
-			recordBuffer.compact();
-			try{
-				recordFile.read(recordBuffer);
-			}catch(IOException ex){
-				throw new JetelException(ex.getLocalizedMessage());
+			try {
+				ByteBufferUtils.reload(recordBuffer,recordFile);
+			} catch (IOException e) {
+				throw new JetelException(e.getLocalizedMessage());
 			}
-			recordBuffer.flip();
 		}
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER){
 			return null;
 		}
 		recordSize = recordBuffer.getInt();
-		if (recordSize > recordBuffer.remaining()){
-			recordBuffer.compact();
+		//refill buffer if we are on the end of buffer
+		if (recordBuffer.remaining() < recordSize ){
 			try{
-				recordFile.read(recordBuffer);
+				ByteBufferUtils.reload(recordBuffer,recordFile);
 			}catch(IOException ex){
 				throw new JetelException(ex.getLocalizedMessage());
 			}
-			recordBuffer.flip();
 		}
 		record.deserialize(recordBuffer);
 		return record;
