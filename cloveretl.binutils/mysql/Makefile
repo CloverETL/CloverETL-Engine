@@ -3,8 +3,12 @@ INCLUDEPATH=/usr/include/mysql
 LIBS=-lmysqlclient
 
 # windows (mingw+msys) settings
-#INCLUDEPATH=/usr/include/mysql
-#LIBS=-lmysqlclient
+## well, this is difficult to automate, before calling make myload,
+## we need to do following steps:
+## (1) add missing symbols to include/libmysql.def (!)
+## (2) $ dlltool --input-def include/libmySQL.def --dllname lib/opt/libmySQL.dll --output-lib  lib/libmysqlclient.a -A -k
+#INCLUDEPATH="c:/Program files/MySQL/MySQL Server 5.0/include"
+#LIBS=-L"c:/Program files/MySQL/MySQL Server 5.0/lib/" -lmysqlclient
 
 all: build
 
