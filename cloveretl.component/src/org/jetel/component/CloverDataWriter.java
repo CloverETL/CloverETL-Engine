@@ -43,11 +43,65 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>Clover Data Writer Component</h3>
+ *
+ * <!-- Writes data in Clover internal format to binary file. -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>CloverDataWriter</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td>Writers</td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Reads data from input port and writes them to binary file in Clover internal
+ *  format. With records can be saved indexes of records in binary file (for 
+ *  reading not all records afterward) and metadata definition. Data are saved
+ *   in zip file with the structure:<br>DATA/fileName<br>INDEX/fileName.idx<br>
+ *   METADATA/fileName.fmt<br>Because POI currently uses a lot of memory for large sheets it impossible to save large data (over ~1.8MB) to xls file</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>one input port defined/connected.</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"CLOVER_WRITER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>path and name for output file (filePath/fileName).
+ *   Part after last file.separator will be use as name for data file (fileName). 
+ *   If compressLevel is not zero data will be save in file fileName.zip with 
+ *   structure described above. If compress level equals zero data will be saved
+ *   in following files:<br>filePath/DATA/fileName<br>filePath/INDEX/fileName.idx<br>
+ *   filePath/METADATA/fileName.fmt </td>
+ *  <tr><td><b>saveIndex</b></td><td>indicates if indexes to records in binary 
+ *  file are saved or not (true/false - default false)</td>
+ *  <tr><td><b>saveMetadata</b></td><td>indicates if metadata definition is saved
+ *   or not (true/false - default false)</td>
+ *  <tr><td><b>compressLevel</b><br><i>optional</i></td><td>Sets the compression level. The default
+ *   setting is to compress using default ZIP compression level.If compressLevel is not zero data will be save in file fileName.zip with 
+ *   structure described above. If compress level equals zero data will be saved
+ *   in following files:<br>filePath/DATA/fileName<br>filePath/INDEX/fileName.idx<br>
+ *   filePath/METADATA/fileName.fmt</td>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node compressLevel="0" fileURL="customers.clv" id="CLOVER_WRITER0"
+ *   saveIndex="true" saveMetadata="true" type="CLOVER_WRITER"/&gt;
+ *  
+ *  <pre>&lt;Node fileURL="customers.clv" id="CLOVER_WRITER0"
+ *   saveIndex="true" type="CLOVER_WRITER"/&gt;
+ *
+/**
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
  * @since Oct 12, 2006
+ * @see CloverDataFormater
  *
  */
 public class CloverDataWriter extends Node {
@@ -71,13 +125,14 @@ public class CloverDataWriter extends Node {
 	
     static Log logger = LogFactory.getLog(CloverDataWriter.class);
 
-    /**
-	 * @param id
-	 */
-	public CloverDataWriter(String id, String fileURL, boolean saveIndex) {
+ 	public CloverDataWriter(String id, String fileURL, boolean saveIndex) {
 		super(id);
 		this.fileURL = fileURL;
-		fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
+		if (fileURL.toLowerCase().endsWith(".zip")){
+			fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1,fileURL.lastIndexOf('.'));
+		}else{
+			fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
+		}
 		formatter = new CloverDataFormatter(fileURL,saveIndex);
 	}
 
@@ -89,14 +144,22 @@ public class CloverDataWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
+	/**
+	 * This method saves metadata definition to METADATA/fileName.fmt or
+	 * fileName.zip#METADATA/fileName.fmt
+	 * 
+	 * @throws IOException
+	 */
 	private void saveMetadata() throws IOException{
 		if (out instanceof FileOutputStream) {
-			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "METADATA");
-			dataDir.mkdir();
-			FileOutputStream metaFile = new FileOutputStream(dataDir.getPath() + File.separator + fileName +".fmt");
+			File metadataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "METADATA");
+			metadataDir.mkdir();
+			FileOutputStream metaFile = new FileOutputStream(
+					metadataDir.getPath() + File.separator + fileName +".fmt");
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);			
 		}else{//out is ZipOutputStream
-			((ZipOutputStream)out).putNextEntry(new ZipEntry("METADATA/" + fileName+".fmt"));
+			((ZipOutputStream)out).putNextEntry(new ZipEntry(
+					"METADATA" + File.separator + fileName+".fmt"));
 			DataRecordMetadataXMLReaderWriter.write(metadata, out);
 			((ZipOutputStream)out).closeEntry();
 		}
@@ -107,16 +170,6 @@ public class CloverDataWriter extends Node {
 	 */
 	@Override
 	public void run() {
-		if (saveMetadata){
-			try{
-				saveMetadata();
-			}catch (IOException ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
-		}
 		DataRecord record = new DataRecord(metadata);
 		record.init();
 		while (record != null && runIt) {
@@ -141,6 +194,9 @@ public class CloverDataWriter extends Node {
 		}
 		formatter.close();
 		try{
+			if (saveMetadata){
+				saveMetadata();
+			}
 			out.close();
 		}catch (IOException ex) {
 			resultMsg=ex.getMessage();
@@ -171,9 +227,13 @@ public class CloverDataWriter extends Node {
 		}
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
-		try{
+		try{//create output stream
 			if (compressLevel != 0) {
-				out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
+				if (fileURL.toLowerCase().endsWith(".zip")){
+					out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
+				}else{
+					out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
+				}
 				if (compressLevel != -1){
 					((ZipOutputStream)out).setLevel(compressLevel);
 				}
@@ -210,6 +270,16 @@ public class CloverDataWriter extends Node {
 		}
 		
 		return aDataWriter;
+	}
+
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		xmlElement.setAttribute(XML_SAVEMETADATA_ATTRIBUTE,String.valueOf(saveMetadata));
+		xmlElement.setAttribute(XML_SAVEINDEX_ATRRIBUTE,String.valueOf(formatter.isSaveIndex()));
+		if (compressLevel > -1){
+			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
+		}
 	}
 
 	public void setSaveMetadata(boolean saveMetadata) {
