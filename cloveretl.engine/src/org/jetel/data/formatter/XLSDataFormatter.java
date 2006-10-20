@@ -65,7 +65,6 @@ public class XLSDataFormatter implements Formatter {
 	private FileOutputStream out;
 	private int firstRow = 0;
 	private int recCounter;
-	private boolean saveNames;
 	private int namesRow = -1;
 	private boolean append;
 	private String sheetName = null;
@@ -73,8 +72,7 @@ public class XLSDataFormatter implements Formatter {
 	private String firstColumnIndex = "A";
 	private int firstColumn;
 	
-	public XLSDataFormatter(boolean saveNames, boolean append){
-		this.saveNames = saveNames;
+	public XLSDataFormatter(boolean append){
 		this.append = append;
 	}
 
@@ -125,7 +123,7 @@ public class XLSDataFormatter implements Formatter {
 			throw new ComponentNotReadyException(ex);
 		}
 		//save metadata  names
-		if (saveNames && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
+		if (namesRow > -1 && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
 			recCounter = namesRow > -1 ? namesRow : 0;
 			HSSFCellStyle metaStyle = wb.createCellStyle();
 			HSSFFont font = wb.createFont();
@@ -260,10 +258,6 @@ public class XLSDataFormatter implements Formatter {
 
 	public boolean isAppend() {
 		return append;
-	}
-
-	public boolean isSaveNames() {
-		return saveNames;
 	}
 
 	public int getFirstRow() {
