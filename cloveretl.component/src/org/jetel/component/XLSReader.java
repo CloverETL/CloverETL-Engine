@@ -54,7 +54,9 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Parses data from xls file and send the records to out ports.</td></tr>
+ * <td>Parses data from xls file and send the records to out ports.<br>Because 
+ * POI currently uses a lot of memory for large sheets, it is impossible to read 
+ * large data (over ~4.3MB in xls file - 2.1MB in flat file)</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
