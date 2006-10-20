@@ -107,6 +107,7 @@ import org.w3c.dom.Element;
 public class CloverDataWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
 	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
@@ -115,6 +116,7 @@ public class CloverDataWriter extends Node {
 	private final static int READ_FROM_PORT = 0;
 	
 	private String fileURL;
+	private boolean append;
 	private CloverDataFormatter formatter;
 	private boolean saveMetadata;
 	private DataRecordMetadata metadata;
@@ -240,7 +242,7 @@ public class CloverDataWriter extends Node {
 			}else{
 				File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "DATA");
 				dataDir.mkdir();
-				out = new FileOutputStream(dataDir.getPath() + File.separator + fileName);
+				out = new FileOutputStream(dataDir.getPath() + File.separator + fileName, append);
 			}
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
@@ -262,6 +264,7 @@ public class CloverDataWriter extends Node {
 			aDataWriter = new CloverDataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILEURL_ATTRIBUTE),
 					xattribs.getBoolean(XML_SAVEINDEX_ATRRIBUTE,false));
+			aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
 			aDataWriter.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
 		}catch(Exception ex){
@@ -275,6 +278,7 @@ public class CloverDataWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(append));
 		xmlElement.setAttribute(XML_SAVEMETADATA_ATTRIBUTE,String.valueOf(saveMetadata));
 		xmlElement.setAttribute(XML_SAVEINDEX_ATRRIBUTE,String.valueOf(formatter.isSaveIndex()));
 		if (compressLevel > -1){
@@ -288,6 +292,11 @@ public class CloverDataWriter extends Node {
 
 	public void setCompressLevel(int compressLevel) {
 		this.compressLevel = compressLevel;
+	}
+
+	public void setAppend(boolean append) {
+		this.append = append;
+		formatter.setAppend(append);
 	}
 
 
