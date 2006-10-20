@@ -21,6 +21,7 @@
 
 package org.jetel.data.formatter;
 
+import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,8 +41,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ByteBufferUtils;
 
-import com.sun.org.apache.bcel.internal.generic.IXOR;
-
 
 /**
  * Class for saving data in Clover internal format
@@ -59,6 +58,7 @@ import com.sun.org.apache.bcel.internal.generic.IXOR;
  * @since Oct 12, 2006
  *
  */
+//TODO change inplementation when out is ZipOutputStream and append=true
 public class CloverDataFormatter implements Formatter {
 	
 	private WritableByteChannel writer;
@@ -74,6 +74,7 @@ public class CloverDataFormatter implements Formatter {
 	private String fileName;
 	private File idxTmpFile;
 	private ReadableByteChannel idxReader;
+	private boolean append;
 	
 	private final static short LEN_SIZE_SPECIFIER = 4;
 	private final static int SHORT_SIZE_BYTES = 2;
@@ -134,7 +135,7 @@ public class CloverDataFormatter implements Formatter {
 			if (saveIndex) {
 				idxReader = new FileInputStream(idxTmpFile).getChannel();
 				if (idxTmpFile.length() > 0){
-					ByteBufferUtils.flusch(idxBuffer,idxWriter);
+					ByteBufferUtils.flush(idxBuffer,idxWriter);
 					idxWriter.close();
 				}else{
 					idxBuffer.flip();
@@ -145,7 +146,7 @@ public class CloverDataFormatter implements Formatter {
 					((ZipOutputStream)out).closeEntry();
 					((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX/" + fileName + ".idx"));
 					do {
-						startValue = changShortToInt(startValue);
+						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
 						flush();
 					}while (position == buffer.limit());
@@ -154,11 +155,18 @@ public class CloverDataFormatter implements Formatter {
 					idxTmpFile.getParentFile().delete();
 				}else{
 					out.close();
-					idxWriter = new FileOutputStream(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.'))).getChannel();
+					File idxInFile = new File(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.')));
+					if (append && idxInFile.length() > 0) {
+						DataInputStream idxIn = new DataInputStream(new FileInputStream(idxInFile));
+						idxIn.skip(idxInFile.length() - LONG_SIZE_BYTES);
+						startValue = idxIn.readLong();
+						idxIn.close();
+					}
+					idxWriter = new FileOutputStream(idxInFile,append).getChannel();
 					do {
-						startValue = changShortToInt(startValue);
+						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
-						ByteBufferUtils.flusch(buffer,idxWriter);
+						ByteBufferUtils.flush(buffer,idxWriter);
 					}while (position == buffer.limit());
 					idxTmpFile.delete();
 					idxWriter.close();
@@ -175,7 +183,7 @@ public class CloverDataFormatter implements Formatter {
 		}
 	}
 	
-	private long changShortToInt(long lastValue) throws IOException{
+	private long changSizeToIndex(long lastValue) throws IOException{
 		while (buffer.remaining() >= LONG_SIZE_BYTES){
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES && idxBuffer.limit() == idxBuffer.capacity()){
 				idxBuffer.limit(ByteBufferUtils.reload(idxBuffer,idxReader));
@@ -183,8 +191,8 @@ public class CloverDataFormatter implements Formatter {
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){
 				break;
 			}
-			lastValue += idxBuffer.getShort();
 			buffer.putLong(lastValue);
+			lastValue += idxBuffer.getShort();
 		}
 		return lastValue;
 	}
@@ -193,16 +201,16 @@ public class CloverDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public void write(DataRecord record) throws IOException {
+		recordSize = record.getSizeSerialized();
 		if (saveIndex) {
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES){
-				ByteBufferUtils.flusch(idxBuffer,idxWriter);
-			}
-			idxBuffer.putShort(index);
 			index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
 					(short)(recordSize + LEN_SIZE_SPECIFIER) : 
 					(short)(Short.MAX_VALUE - (recordSize + LEN_SIZE_SPECIFIER));
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES){
+				ByteBufferUtils.flush(idxBuffer,idxWriter);
+			}
+			idxBuffer.putShort(index);
 		}
-		recordSize = record.getSizeSerialized();
 		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
 			flush();
 		}
@@ -214,7 +222,7 @@ public class CloverDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		ByteBufferUtils.flusch(buffer,writer);
+		ByteBufferUtils.flush(buffer,writer);
 	}
 	
 	/* (non-Javadoc)
@@ -227,6 +235,14 @@ public class CloverDataFormatter implements Formatter {
 
 	public boolean isSaveIndex() {
 		return saveIndex;
+	}
+
+	public boolean isAppend() {
+		return append;
+	}
+
+	public void setAppend(boolean append) {
+		this.append = append;
 	}
 
 	/**
