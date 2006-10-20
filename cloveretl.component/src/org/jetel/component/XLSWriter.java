@@ -49,7 +49,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Reads data from input port and writes them to given xls sheet in xls file. If 
  *  in one graph you want to write to the same file but to different sheets each XLSWriter
- *  has to have another phase</td></tr>
+ *  has to have another phase<br>Because POI currently uses a lot of memory for
+ *   large sheets, it is impossible to save large data (over ~1.8MB) to xls file</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>one input port defined/connected.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -62,8 +63,6 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"XLS_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the output file</td>
- *  <tr><td><b>saveNames</b></td><td>indicates if metadata names are saved or not 
- *  (true/false - default false)</td>
  *  <tr><td><b>namesRow</b></td><td>index of row, where to write metadata names</td>
  *  <tr><td><b>firstDataRow</b></td><td>index of row, where to write first data record</td>
  *  <tr><td><b>firstColumn</b></td><td>code of column from which data will be written</td>
@@ -80,13 +79,13 @@ import org.w3c.dom.Element;
  *
  *  <h4>Example:</h4>
  *  <pre>&lt;Node fileURL="output/orders.partitioned.xls" firstColumn="f" 
- *   id="XLS_WRITER0" namesRow="2" saveNames="true" sheetName="via1" type="XLS_WRITER"/&gt;
+ *   id="XLS_WRITER0" namesRow="2" sheetName="via1" type="XLS_WRITER"/&gt;
  * 
  * <pre>&lt;Node fileURL="output/orders.partitioned.xls" firstDataRow="10" 
- * id="XLS_WRITER1" saveNames="true" sheetName="via2" type="XLS_WRITER"/&gt;
+ * id="XLS_WRITER1" sheetName="via2" type="XLS_WRITER"/&gt;
  *
  * <pre>&lt;Node append="true" fileURL="output/orders.partitioned.xls" 
- * id="XLS_WRITER2" saveNames="true" sheetName="via3" type="XLS_WRITER"/&gt;
+ * id="XLS_WRITER2" namesRow="1" firstDataRow="3" sheetName="via3" type="XLS_WRITER"/&gt;
  * 
 /**
 * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -97,7 +96,6 @@ import org.w3c.dom.Element;
 public class XLSWriter extends Node {
 
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
-	private static final String XML_SAVENAMES_ATTRIBUTE = "saveNames";
 	private static final String XML_SHEETNAME_ATTRIBUTE = "sheetName";
 	private static final String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
@@ -119,10 +117,10 @@ public class XLSWriter extends Node {
 	 * @param saveNames indicates if save metadata names
 	 * @param append indicates if new data are appended or rewrite old data 
 	 */
-	public XLSWriter(String id,String fileURL, boolean saveNames, boolean append){
+	public XLSWriter(String id,String fileURL, boolean append){
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new XLSDataFormatter(saveNames,append);
+		formatter = new XLSDataFormatter(append);
 	}
 	
 	/* (non-Javadoc)
@@ -196,7 +194,6 @@ public class XLSWriter extends Node {
 		try{
 			xlsWriter = new XLSWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_FILEURL_ATTRIBUTE),
-					xattribs.getBoolean(XML_SAVENAMES_ATTRIBUTE,false),
 					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
 				xlsWriter.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
@@ -229,7 +226,6 @@ public class XLSWriter extends Node {
 		if (formatter.getSheetName() != null) {//TODO can't we obtain it from parser?
 			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
 		}
-		xmlElement.setAttribute(XML_SAVENAMES_ATTRIBUTE,String.valueOf(formatter.isSaveNames()));
 	}
 
 	private void setSheetName(String sheetName) {
