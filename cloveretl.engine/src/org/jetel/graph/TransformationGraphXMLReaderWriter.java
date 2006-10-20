@@ -63,9 +63,11 @@ import org.xml.sax.SAXParseException;
  * <pre>
  * &lt;!ELEMENT Graph (Global , Phase+)&gt;
  * &lt;!ATTLIST Graph
- *		name ID #REQUIRED &gt;
+ *		name ID #REQUIRED 
+ *      debugMode NMTOKEN (true | false)  #IMPLIED
+ *      debugDirectory CDATE #IMPLIED &gt;
  *
- * &lt;!ELEMENT Global (Property*, Metadata+, DBConnection*, Sequence*, Lookup*)&gt;
+ * &lt;!ELEMENT Global (Property*, Metadata+, Connection*, Sequence*, Lookup*)&gt;
  *
  * &lt;!ELEMENT Property (#PCDATA)&gt;
  * &lt;!ATTLIST Property
@@ -81,9 +83,10 @@ import org.xml.sax.SAXParseException;
  *				sqlQuery CDATA 
  *				dbConnection CDATA &gt;
  *
- * &lt;!ELEMENT DBConnection (#PCDATA)&gt;
- * &lt;!ATTLIST DBConnection
+ * &lt;!ELEMENT Connection (#PCDATA)&gt;
+ * &lt;!ATTLIST Connection
  *           	id ID #REQUIRED
+ *              type NMTOKEN #REQUIRED
  *		        dbDriver CDATA #REQUIRED
  *		        dbURL CDATA #REQUIRED
  *		        dbConfig CDATA #IMPLIED
@@ -95,11 +98,13 @@ import org.xml.sax.SAXParseException;
  *
  * &lt;!ELEMENT Sequence (#PCDATA)&gt;
  * &lt;!ATTLIST Sequence
- *          	id ID #REQUIRED &gt;
+ *          	id ID #REQUIRED 
+ *              type NMTOKEN #REQUIRED &gt;
  *
  * &lt;!ELEMENT Lookup (#PCDATA)&gt;
  * &lt;!ATTLIST Lookup
- *          	id ID #REQUIRED &gt;
+ *          	id ID #REQUIRED 
+ *              type NMTOKEN #REQUIRED &gt;
  *
  * &lt;!ELEMENT Phase (Node+ , Edge+)&gt;
  * &lt;!ATTLIST Phase
@@ -108,14 +113,18 @@ import org.xml.sax.SAXParseException;
  * &lt;!ELEMENT Node (#PCDATA)&gt;
  * &lt;!ATTLIST Node
  *		type NMTOKEN #REQUIRED
- *		id ID #REQUIRED&gt;
+ *		id ID #REQUIRED 
+ *      passThroughOutputPort NMTOKEN #IMPLIED 
+ *      passThroughInputPort  NMTOKEN #IMPLIED &gt;
  *
  * &lt;!ELEMENT Edge (#PCDATA)&gt;
  * &lt;!ATTLIST Edge
  *		id ID #REQUIRED
  *		metadata NMTOKEN #REQUIRED
  *		fromNode NMTOKEN #REQUIRED
- *		toNode	NMTOKEN #REQUIRED&gt;
+ *		toNode	NMTOKEN #REQUIRED
+ *      debugMode   type NMTOKEN #IMPLIED 
+ *      fastPropagate type NMTOKEN #IMPLIED &gt;
  *
  *
  * </pre>
