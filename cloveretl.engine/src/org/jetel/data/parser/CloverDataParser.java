@@ -146,8 +146,7 @@ public class CloverDataParser implements Parser {
 			//skip idx bytes from record file
 			int i=0;
 			do {
-				recordBuffer.rewind();
-				recordFile.read(recordBuffer);
+				ByteBufferUtils.reload(recordBuffer,recordFile);
 				i++;
 			}while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
 			recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
