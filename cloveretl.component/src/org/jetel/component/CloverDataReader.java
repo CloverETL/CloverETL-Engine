@@ -18,7 +18,6 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-
 package org.jetel.component;
 
 import java.io.IOException;
@@ -36,13 +35,56 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>Clover Data Reader Component</h3>
+ *
+ * <!-- Reads data saved in Clover internal format and send the records to out 
+ * ports. -->
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>CloverReader</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>Reads data saved in Clover internal format and send the records to out 
+ * ports.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>At least one output port defined/connected.</tr>
+ * <tr><td><h4><i>Comment:</i></h4></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"CLOVER_READER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the data file. It can be zip file 
+ *  storing data, data indexes and metadata description or binary file with data
+ *  saved in Clover internal format. In such case it is predicted, that indexes
+ *  (if needed) are stored in file ../INDEX/dataFileName.idx in relation to dataFileName</td>
+ *  <tr><td><b>startRecord</b></td><td>index of first parsed record</td>
+ *  <tr><td><b>finalRecord</b></td><td>index of final parsed record</td>
+ *  </tr>
+ *  </table>
+ *
+ *  <h4>Example:</h4>
+ *  <pre>&lt;Node fileURL="DATA/customers.clv" finalRecord="2" id="CLOVER_READER0" 
+ *  startRecord="1" type="CLOVER_READER"/&gt;
+ * 
+ * <pre>&lt;Node fileURL="customers.clv.zip" id="CLOVER_READER0" type="CLOVER_READER"/&gt;
+ * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
  * @since Oct 13, 2006
+ * @see CloverDataParser.java
  *
  */
+
+
 public class CloverDataReader extends Node {
 
 	public final static String COMPONENT_TYPE = "CLOVER_READER";
@@ -85,7 +127,7 @@ public class CloverDataReader extends Node {
         try {
 	        while ((record = parser.getNext(record))!=null){
 				    writeRecordBroadcast(record);
-					if(finalRecord != -1 && recordCount++ > diffRecord) {
+					if(finalRecord != -1 && ++recordCount > diffRecord) {
 						break;
 					}
 					SynchronizeUtils.cloverYield();
@@ -130,6 +172,16 @@ public class CloverDataReader extends Node {
 		return aDataReader;
 	}
 
+	public void toXML(Element xmlElement) {
+	    super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
+		if (finalRecord > -1) {
+			xmlElement.setAttribute(XML_FINALRECORD_ATTRIBUTE,String.valueOf(finalRecord));
+		}
+		if (startRecord > -1){
+			xmlElement.setAttribute(XML_STARTRECORD_ATTRIBUTE,String.valueOf(startRecord));
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -146,6 +198,7 @@ public class CloverDataReader extends Node {
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
+		//set start record
 		if (startRecord != -1) {
 			try{
 				parser.skip(startRecord);
