@@ -21,9 +21,14 @@
 package org.jetel.util;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+
+import org.jetel.data.Defaults;
 
 /**
  * This class provides static methods for working with ByteBuffer in association
@@ -50,7 +55,9 @@ public class ByteBufferUtils {
 	public static int flush(ByteBuffer buffer, WritableByteChannel writer)
 			throws IOException {
 		int write;
-		buffer.flip();
+		if (buffer.position() != 0) {
+			buffer.flip();
+		}
 		write = writer.write(buffer);
 		buffer.clear();
 		return write;
@@ -74,4 +81,47 @@ public class ByteBufferUtils {
 		return read;
 	}
 
+    /**
+     * This method rewrites bytes from input stream to output stream
+     * 
+     * @param in
+     * @param out
+     * @throws IOException
+     */
+    public static void rewrite(InputStream in, OutputStream out)throws IOException{
+    	ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+    	ReadableByteChannel reader = Channels.newChannel(in);
+    	WritableByteChannel writer = Channels.newChannel(out);
+    	while (reload(buffer,reader) > 0){
+    		flush(buffer, writer);
+    	}
+    }
+	
+    /**
+     * This method rewrites maximum "bytes" bytes from input stream to output stream
+     * 
+     * @param in
+     * @param out
+     * @param bytes number of bytes to rewrite
+     * @throws IOException
+     */
+    public static void rewrite(InputStream in, OutputStream out, long bytes)throws IOException{
+    	if (Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE == 0){
+    		Defaults.init();
+    	}
+    	ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+    	ReadableByteChannel reader = Channels.newChannel(in);
+    	WritableByteChannel writer = Channels.newChannel(out);
+    	long b = 0;
+    	int r;
+     	while ( (r = reload(buffer,reader)) > 0 && b < bytes){
+    		b += r;
+    		if (r == buffer.capacity()) {
+    			flush(buffer, writer);
+    		}else{
+    			buffer.limit((int) (bytes % buffer.capacity()));
+    			flush(buffer, writer);
+    		}
+    	}
+    }
 }
