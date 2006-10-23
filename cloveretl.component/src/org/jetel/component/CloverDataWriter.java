@@ -22,10 +22,12 @@
 package org.jetel.component;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
@@ -38,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -76,10 +79,12 @@ import org.w3c.dom.Element;
  *   structure described above. If compress level equals zero data will be saved
  *   in following files:<br>filePath/DATA/fileName<br>filePath/INDEX/fileName.idx<br>
  *   filePath/METADATA/fileName.fmt </td>
- *  <tr><td><b>saveIndex</b></td><td>indicates if indexes to records in binary 
- *  file are saved or not (true/false - default false)</td>
- *  <tr><td><b>saveMetadata</b></td><td>indicates if metadata definition is saved
- *   or not (true/false - default false)</td>
+ *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at
+ *   the end if output file exists or replace it (true/false - default true)</td>
+ *  <tr><td><b>saveIndex</b><br><i>optional</i></td><td>indicates if indexes to records 
+ *  in binary file are saved or not (true/false - default false)</td>
+ *  <tr><td><b>saveMetadata</b><br><i>optional</i></td><td>indicates if metadata
+ *   definition is saved or not (true/false - default false)</td>
  *  <tr><td><b>compressLevel</b><br><i>optional</i></td><td>Sets the compression level. The default
  *   setting is to compress using default ZIP compression level.If compressLevel is not zero data will be save in file fileName.zip with 
  *   structure described above. If compress level equals zero data will be saved
@@ -229,17 +234,41 @@ public class CloverDataWriter extends Node {
 		}
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
-		try{//create output stream
+		try{//create output stream and rewrite existing data
 			if (compressLevel != 0) {
+				ZipInputStream zipData = null;
+//				if append=true existaing file has to be renamed
+				File dataOriginal;
+				File data = new File(fileURL + ".tmp");
 				if (fileURL.toLowerCase().endsWith(".zip")){
-					out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
+					dataOriginal = new File(fileURL);
+				}else{
+					dataOriginal = new File(fileURL + ".zip");
+				}
+				if (append && dataOriginal.exists()) {
+					dataOriginal.renameTo(data);
+					zipData = new ZipInputStream(new FileInputStream(data));
+					//find entry with data
+					while (!zipData.getNextEntry().getName().equalsIgnoreCase(
+							"DATA" + File.separator + fileName)) {}
+				}
+				//create new zip file
+				if (fileURL.toLowerCase().endsWith(".zip")){
+					out = new ZipOutputStream(new FileOutputStream(fileURL));
 				}else{
 					out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
 				}
+				//set compress level if given
 				if (compressLevel != -1){
 					((ZipOutputStream)out).setLevel(compressLevel);
 				}
-			}else{
+				((ZipOutputStream)out).putNextEntry(new ZipEntry("DATA" + File.separator + fileName));
+				//rewrite existing data to new zip file
+				if (append && data.exists()){
+					ByteBufferUtils.rewrite(zipData,out);
+					zipData.close();
+				}
+			}else{//compressLevel=0
 				File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "DATA");
 				dataDir.mkdir();
 				out = new FileOutputStream(dataDir.getPath() + File.separator + fileName, append);
@@ -275,6 +304,9 @@ public class CloverDataWriter extends Node {
 		return aDataWriter;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
+	 */
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
