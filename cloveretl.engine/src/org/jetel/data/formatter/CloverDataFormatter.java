@@ -33,6 +33,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.DataRecord;
@@ -48,7 +49,7 @@ import org.jetel.util.ByteBufferUtils;
  * DATA/fileName
  * INDEX/fileName.idx
  * METADATA/fileName.fmt
- * 
+ * or to binary files with analogical directory structure
  * 
  * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -58,7 +59,6 @@ import org.jetel.util.ByteBufferUtils;
  * @since Oct 12, 2006
  *
  */
-//TODO change inplementation when out is ZipOutputStream and append=true
 public class CloverDataFormatter implements Formatter {
 	
 	private WritableByteChannel writer;
@@ -81,6 +81,12 @@ public class CloverDataFormatter implements Formatter {
 	private final static int LONG_SIZE_BYTES = 8;
 
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param fileName name of archive or name of binary file with records
+	 * @param saveIndex whether to save indexes of records or not 
+	 */
 	public CloverDataFormatter(String fileName,boolean saveIndex) {
 		this.fileURL = fileName;
 		this.saveIndex = saveIndex;
@@ -97,19 +103,15 @@ public class CloverDataFormatter implements Formatter {
 	public void open(Object out, DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
+		//create output stream
 		if (out instanceof ZipOutputStream) {
 			this.out = (ZipOutputStream)out;
-			try {
-				((ZipOutputStream)out).putNextEntry(new ZipEntry("DATA/" + fileName));
-			}catch(IOException ex){
-				throw new ComponentNotReadyException(ex);
-			}
 		}else{
 			this.out = (FileOutputStream)out;
 		}
 		writer = Channels.newChannel(this.out);
 		buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		if (saveIndex) {
+		if (saveIndex) {//create temporary index file
 			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "INDEX");
 			dataDir.mkdir();
 			idxTmpFile = new File(dataDir.getPath() + File.separator + fileName  + ".idx.tmp");
@@ -134,65 +136,99 @@ public class CloverDataFormatter implements Formatter {
 			flush();
 			if (saveIndex) {
 				idxReader = new FileInputStream(idxTmpFile).getChannel();
-				if (idxTmpFile.length() > 0){
+				if (idxTmpFile.length() > 0){//if some indexes were saved to tmp file, save the rest of indexes
 					ByteBufferUtils.flush(idxBuffer,idxWriter);
 					idxWriter.close();
 				}else{
 					idxBuffer.flip();
 				}
-				long startValue = 0;
+				long startValue = 0;//first index
 				int position;
 				if (out instanceof ZipOutputStream) {
 					((ZipOutputStream)out).closeEntry();
-					((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX/" + fileName + ".idx"));
+					//put entry INEX/fileName.idx
+					((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX" + File.separator + fileName + ".idx"));
+					File index = new File(fileURL + ".tmp");//if append=true exist old indexes
+					if (append && index.exists()){
+						//rewrite old indexes
+						ZipInputStream zipIndex = new ZipInputStream(
+								new FileInputStream(index));
+						while (!(zipIndex.getNextEntry()).getName().equalsIgnoreCase(
+								"INDEX" + File.separator + fileName + ".idx")) {}
+						DataInputStream inIndex = new DataInputStream(zipIndex);
+						ReadableByteChannel idxChannel = Channels.newChannel(inIndex);
+				    	while (ByteBufferUtils.reload(buffer,idxChannel) == buffer.capacity()){
+				    		ByteBufferUtils.flush(buffer, writer);
+				    	}
+				    	//get last old index
+				    	startValue = buffer.getLong(buffer.limit() - LONG_SIZE_BYTES);
+				    	ByteBufferUtils.flush(buffer, writer);
+				    	inIndex.close();
+						zipIndex.close();
+						index.delete();
+					}
+					//append indexes from tmp file 
 					do {
 						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
 						flush();
 					}while (position == buffer.limit());
-					((ZipOutputStream)out).closeEntry();
+					//clear up
 					idxTmpFile.delete();
 					idxTmpFile.getParentFile().delete();
-				}else{
-					out.close();
+				}else{//out instanceof FileOutputStream
 					File idxInFile = new File(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.')));
+			    	//get last old index
 					if (append && idxInFile.length() > 0) {
-						DataInputStream idxIn = new DataInputStream(new FileInputStream(idxInFile));
+						DataInputStream idxIn = new DataInputStream(
+								new FileInputStream(idxInFile));
 						idxIn.skip(idxInFile.length() - LONG_SIZE_BYTES);
 						startValue = idxIn.readLong();
 						idxIn.close();
 					}
+					//append indexes from tmp file 
 					idxWriter = new FileOutputStream(idxInFile,append).getChannel();
 					do {
 						startValue = changSizeToIndex(startValue);
 						position = buffer.position();
 						ByteBufferUtils.flush(buffer,idxWriter);
 					}while (position == buffer.limit());
+					//clear up
 					idxTmpFile.delete();
 					idxWriter.close();
 				}
+			}
+			if (out instanceof ZipOutputStream) {
+				((ZipOutputStream)out).closeEntry();
 			}else{
-				if (out instanceof ZipOutputStream) {
-					((ZipOutputStream)out).closeEntry();
-				}else{
-					out.close();
-				}
+				out.close();
 			}
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
 	}
 	
+	/**
+	 * This method fills buffer with indexes created from records's sizes stored
+	 *  in tmp file or idxBuffer
+	 * 
+	 * @param lastValue value to start from
+	 * @return
+	 * @throws IOException
+	 */
 	private long changSizeToIndex(long lastValue) throws IOException{
+		short actualValue;
 		while (buffer.remaining() >= LONG_SIZE_BYTES){
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES && idxBuffer.limit() == idxBuffer.capacity()){
 				idxBuffer.limit(ByteBufferUtils.reload(idxBuffer,idxReader));
 			}
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//there is no more sizes to working up
 				break;
 			}
 			buffer.putLong(lastValue);
-			lastValue += idxBuffer.getShort();
+			actualValue = idxBuffer.getShort();
+			//if negative value change to big Integer
+			lastValue += actualValue > 0 ? actualValue : Short.MAX_VALUE - actualValue;
 		}
 		return lastValue;
 	}
@@ -203,6 +239,7 @@ public class CloverDataFormatter implements Formatter {
 	public void write(DataRecord record) throws IOException {
 		recordSize = record.getSizeSerialized();
 		if (saveIndex) {
+			//if size is grater then Short, change to negative Short
 			index = recordSize + LEN_SIZE_SPECIFIER <= Short.MAX_VALUE ? 
 					(short)(recordSize + LEN_SIZE_SPECIFIER) : 
 					(short)(Short.MAX_VALUE - (recordSize + LEN_SIZE_SPECIFIER));
