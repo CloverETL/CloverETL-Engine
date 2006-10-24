@@ -68,8 +68,8 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.FixLenDataWriterNIO"/>
-	    <parameter id="type" value="FIXLEN_DATA_WRITER_NIO"/>
+	    <parameter id="className" value="org.jetel.component.FixLenDataWriter"/>
+	    <parameter id="type" value="FIXLEN_DATA_WRITER"/>
 	</extension>
 
 	<extension point-id="component">
@@ -78,8 +78,8 @@
 	</extension>
 
 	<extension point-id="component">
-	    <parameter id="className" value="org.jetel.component.FixLenDataReaderNIO"/>
-	    <parameter id="type" value="FIXLEN_DATA_READER_NIO"/>
+	    <parameter id="className" value="org.jetel.component.FixLenDataReader"/>
+	    <parameter id="type" value="FIXLEN_DATA_READER"/>
 	</extension>
 
 	<extension point-id="component">
