@@ -19,7 +19,7 @@
 */
 package org.jetel.component;
 
-import java.io.FileInputStream;
+import java.nio.channels.ReadableByteChannel;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -35,6 +35,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.jetel.util.WcardPattern;
 import org.w3c.dom.Element;
@@ -144,10 +145,10 @@ public class DelimitedDataReader extends Node {
 		Iterator<String> fileItor = pat.filenames().iterator();
 		String filename = null;
 		while (fileItor.hasNext()) {				
-			FileInputStream stream;
+			ReadableByteChannel stream;
 			filename = fileItor.next();
 			try {
-				stream = new FileInputStream(filename);
+				stream = FileUtils.getReadableChannel(filename);
 				parser.setDataSource(stream);
 				parser.skip(skipRows);	// skip in each file
 				record = rec;
