@@ -118,7 +118,7 @@ public final class TransformationGraph {
 		dataRecordMetadata = new HashMap<String,DataRecordMetadata> ();
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
-		graphProperties = null;
+		graphProperties = new Properties();
 	}
 
 
