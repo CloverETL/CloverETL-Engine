@@ -188,23 +188,21 @@ public class FixLenDataReader extends Node {
 				parser.skip(skipRows);	// skip in each file
 				record =rec;
 				while (record != null && runIt) {
-					try {
-						//broadcast the record to all connected Edges
-	                    if((record = parser.getNext(record)) != null && runIt) {
-							writeRecordBroadcast(record);
-							SynchronizeUtils.cloverYield();
-	                    }
-	                } catch(BadDataFormatException bdfe) {
-	                    if(policyType == PolicyType.STRICT) {
-	                        throw bdfe;
-	                    } else {
-	                        logger.info(bdfe.getMessage());
-	                    }
-	                }
+					//broadcast the record to all connected Edges
+                    if((record = parser.getNext(record)) != null && runIt) {
+						writeRecordBroadcast(record);
+						SynchronizeUtils.cloverYield();
+                    }
 				}
             } catch(BadDataFormatException bdfe) {
                 if(policyType == PolicyType.STRICT) {
-                    throw bdfe;
+                    parser.close();
+                    broadcastEOF();
+                    resultMsg = bdfe.getMessage();
+                    resultCode = Node.RESULT_ERROR;
+                    return;
+                } else {
+                    logger.info(bdfe.getMessage());
                 }
 			} catch (Exception ex) {
 				logger.error("An error  occured while parsing file \"" + filename + "\": " + ex.getClass().getName()+" : "+ ex.getMessage());
