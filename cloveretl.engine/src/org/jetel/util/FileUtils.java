@@ -154,11 +154,18 @@ public class FileUtils {
      */
     public static ReadableByteChannel getReadableChannel(String input) throws IOException {
         String strURL = input;
+        String zipAnchor = null;
         URL url;
         
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
-            strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+            if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
+                strURL = input.substring(input.indexOf(':') + 1);
+                zipAnchor = null;
+            } else {
+                strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+                zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+            }
         }else if (input.startsWith("gzip:")) {
             strURL = input.substring(input.indexOf(':') + 1);
         }
@@ -177,10 +184,12 @@ public class FileUtils {
 
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
-            String zipAnchor = input.substring(input.lastIndexOf('#') + 1);
             ZipInputStream zin = new ZipInputStream(url.openStream()) ;     
             ZipEntry entry;
             while((entry = zin.getNextEntry()) != null) {
+                if(zipAnchor == null) { //url is given without anchor; first entry in zip file is used
+                    return Channels.newChannel(zin);
+                }
                 if(entry.getName().equals(zipAnchor)) {
                     return Channels.newChannel(zin);
                 }
@@ -189,7 +198,12 @@ public class FileUtils {
             }
             //close the archive
             zin.close();
-            throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
+            //no channel found report
+            if(zipAnchor == null) {
+                throw new RuntimeException("Zip file is empty.");
+            } else {
+                throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
+            }
         }else if (input.startsWith("gzip:")) {
             GZIPInputStream gzin = new GZIPInputStream(url.openStream(),Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzin);
