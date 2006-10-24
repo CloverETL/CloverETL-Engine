@@ -92,8 +92,8 @@ import org.xml.sax.SAXParseException;
  *          	id ID #REQUIRED 
  *              type NMTOKEN #REQUIRED &gt;
  *
- * &lt;!ELEMENT Lookup (#PCDATA)&gt;
- * &lt;!ATTLIST Lookup
+ * &lt;!ELEMENT LookupTable (#PCDATA)&gt;
+ * &lt;!ATTLIST LookupTable
  *          	id ID #REQUIRED 
  *              type NMTOKEN #REQUIRED &gt;
  *
