@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="graphCLOVERData">
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.4" licenseType="Evaluation license" modified="Tue Oct 24 13:25:45 CEST 2006" name="graphCLOVERData">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" type="fixed">
+<Record name="customer" recordDelimiter="\n" type="fixed">
 <Field name="customer_id" nullable="true" size="4" type="integer"/>
 <Field name="account_num" nullable="true" size="11" type="long"/>
 <Field name="lname" nullable="true" size="10" type="string"/>
@@ -33,11 +33,13 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="data/customers.cmp" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="68" guiY="292" id="CLOVER_READER0" type="CLOVER_READER"/>
-<Node enabled="disabled" fileURL="output/customers.cmp" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="423" guiY="107" id="CLOVER_WRITER0" type="CLOVER_WRITER"/>
-<Node OneRecordPerLine="true" enabled="disabled" fileURL="${WORKSPACE}/data/customers.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="55" guiY="103" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="output/customer.out" guiHeight="0" guiName="Fixed Length Data Writer" guiWidth="0" guiX="417" guiY="296" id="FIXLEN_DATA_WRITER0" type="FIXLEN_DATA_WRITER"/>
-<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (Fixed Length Data Writer)" metadata="Metadata0" outPort="0 (Clover Data Reader)" toNode="FIXLEN_DATA_WRITER0:0"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.cmp" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="417" guiY="103" id="CLOVER_WRITER0" saveIndex="true" type="CLOVER_WRITER"/>
+<Node OneRecordPerLine="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="55" guiY="103" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER"/>
 <Edge debugMode="true" fromNode="FIXLEN_DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (CLOVER Data Writer)" metadata="Metadata0" outPort="0 (customer from file)" toNode="CLOVER_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.cmp.zip" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="55" guiY="296" id="CLOVER_READER0" startRecord="10000" type="CLOVER_READER"/>
+<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/customer.out" guiHeight="0" guiName="Fixed Length Data Writer" guiWidth="0" guiX="417" guiY="296" id="FIXLEN_DATA_WRITER0" type="FIXLEN_DATA_WRITER"/>
+<Edge fromNode="CLOVER_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (Fixed Length Data Writer)" metadata="Metadata0" outPort="0 (Clover Data Reader)" toNode="FIXLEN_DATA_WRITER0:0"/>
 </Phase>
 </Graph>
