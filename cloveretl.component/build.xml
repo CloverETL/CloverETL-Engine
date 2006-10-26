@@ -112,19 +112,4 @@
 		</copy>
 	</target>
 	
-	<!-- The "javadoc" target generates JavaDoc documentation. -->
-	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
-        <javadoc destdir="${dir.doc}" access="public" use="true"
-        	notree="false" nonavbar="false" noindex="false" splitindex="true"
-        	author="true" version="true" nodeprecatedlist="false"
-        	nodeprecated="false" packagenames="org.jetel.*"
-        	sourcepath="${dir.src}">
-			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
-			<bottom>
-				<![CDATA[Copyright &#169; 2002-2005 Opentech s.r.o]]>
-			</bottom>
-		</javadoc>
-	</target>
-
-	
 </project>
