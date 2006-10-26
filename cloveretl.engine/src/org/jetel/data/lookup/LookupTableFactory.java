@@ -97,8 +97,10 @@ public class LookupTableFactory {
             //find class of lookup table
             tClass = Class.forName(lookupTableDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
+            logger.error("Unknown lookup table: " + lookupTableType + " class: " + lookupTableDescription.getClassName());
             throw new RuntimeException("Unknown lookup table: " + lookupTableType + " class: " + lookupTableDescription.getClassName());
         } catch(Exception ex) {
+            logger.error("Unknown lookup table type: " + lookupTableType);
             throw new RuntimeException("Unknown lookup table type: " + lookupTableType);
         }
         try {
@@ -106,6 +108,7 @@ public class LookupTableFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (LookupTable) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
+            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex);
             throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
         }
     }

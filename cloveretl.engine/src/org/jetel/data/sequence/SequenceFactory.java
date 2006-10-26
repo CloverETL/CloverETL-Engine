@@ -98,8 +98,10 @@ public class SequenceFactory {
             //find class of sequence
             tClass = Class.forName(sequenceDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
+            logger.error("Unknown sequence: " + sequenceType + " class: " + sequenceDescription.getClassName());
             throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + sequenceDescription.getClassName());
         } catch(Exception ex) {
+            logger.error("Unknown sequence type: " + sequenceType);
             throw new RuntimeException("Unknown sequence type: " + sequenceType);
         }
         try {
@@ -107,6 +109,7 @@ public class SequenceFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (Sequence) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
+            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
             throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
         }
     }

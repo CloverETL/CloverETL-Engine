@@ -108,8 +108,10 @@ public class ComponentFactory {
             //find class of component
 			tClass = Class.forName(componentDescription.getClassName(), true, pluginDescriptor.getClassLoader());
 		} catch(ClassNotFoundException ex) {
+            logger.error("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
 			throw new RuntimeException("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
 		} catch(Exception ex) {
+            logger.error("Unknown component type: " + componentType);
             throw new RuntimeException("Unknown component type: " + componentType);
 		}
 		try {
@@ -117,8 +119,10 @@ public class ComponentFactory {
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(InvocationTargetException e) {
+            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
 		} catch(Exception ex) {
+            logger.error("Can't create object of : " + componentType + " exception: " + ex);
 			throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
 		}
 	}
