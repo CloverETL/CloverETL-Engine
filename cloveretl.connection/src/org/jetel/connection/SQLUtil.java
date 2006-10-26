@@ -389,8 +389,10 @@ public class SQLUtil {
 				return Types.VARCHAR;
 			case DataFieldMetadata.DATE_FIELD:
 				return Types.DATE;
-			case DataFieldMetadata.LONG_FIELD:
-				return Types.BIGINT;
+            case DataFieldMetadata.LONG_FIELD:
+                return Types.BIGINT;
+            case DataFieldMetadata.DECIMAL_FIELD:
+                return Types.DECIMAL;
 			default:
 				return -1;
 			// unknown or not possible to translate
