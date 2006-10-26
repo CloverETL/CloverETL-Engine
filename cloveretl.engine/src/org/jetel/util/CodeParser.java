@@ -875,7 +875,7 @@ public class CodeParser {
 		transCode.append("\n\t/**\n"
 		        		+ "\t * Initializes reformat class/function. This method is called only once at then\n"
 		   	 			+ "\t * beginning of transformation process. Any object allocation/initialization should\n"
-		        		+ "\t * happen here.)\n"
+		        		+ "\t * happen here.\n"
         				+ "\t */\n");
 		transCode.append("\tpublic boolean init() {\n");
 		//initialization sequeneces
