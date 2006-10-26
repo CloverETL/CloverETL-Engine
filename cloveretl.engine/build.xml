@@ -163,7 +163,7 @@
 		<echo message="Building code documentation..." />
 		<delete dir="${dir.doc}" />
 		<mkdir dir="${dir.doc}" />
-		<javadoc destdir="${dir.doc}" packagenames="org.jetel.*"
+		<javadoc destdir="${dir.doc}" packagenames="*"
 			author="true">
 			<sourcepath path="${dir.src}"/>
 			<sourcepath path="../cloveretl.component/src"/>
@@ -171,6 +171,7 @@
 			<sourcepath path="../cloveretl.sequence/src"/>
 			<sourcepath path="../cloveretl.lookup/src"/>
 			<sourcepath path="../cloveretl.thirdparty/src"/>
+			<!--sourcepath path="../cloveretl.engine.oracle/src"/-->
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
