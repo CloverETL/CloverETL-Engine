@@ -49,9 +49,10 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- *  <h3>Data Reader Component</h3>
+ *  <h3>Universal Data Reader Component</h3>
  *
- * <!-- Parses specified input data file and send the records to first out port. -->
+ * <!-- Parses specified input data file and send the records to the first output port. 
+ * Embeded parser covers both fixlen and delimited data format. -->
  *
  * <table border="1">
  *  <th>Component:</th>
@@ -60,7 +61,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Parses specified input data file and send the records to first out port.</td></tr>
+ * <td>Parses specified input data file and send the records to the first output port. 
+ * Embeded parser covers both fixlen and delimited data format.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>

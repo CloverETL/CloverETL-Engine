@@ -40,39 +40,39 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- *  <h3>DelimitedDataWriter Component</h3>
+ *  <h3>Universal Data Writer Component</h3>
  *
  * <!-- All records from input port [0] are formatted with delimiter and written to specified file -->
  * 
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
- * <td>DelimitedDataWriter</td></tr>
+ * <td>DataWriter</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records from input port [0] are formatted with delimiter and written to specified file.<br>
- * Delimiters are taken from metadata specified for port[0] data flow.</td></tr>
+ * <td>All records from input port [0] are formatted to the delimited or fixlen form and written to specified file.<br>
+ * Type of formatting is taken from metadata specified for port[0] data flow.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td>This component uses java.nio.* classes.</td></tr>
+ * <td></td></tr>
  * </table>
  *  <br>  
  *  <table border="1">
  *  <th>XML attributes:</th>
- *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_WRITER_NIO"</td></tr>
+ *  <tr><td><b>type</b></td><td>"DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the output file</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
- *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false default:false)</td>
  *  </tr>
  *  </table>  
  *
  * <h4>Example:</h4>
- * <pre>&lt;Node type="DELIMITED_DATA_WRITER_NIO" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
+ * <pre>&lt;Node type="DATA_WRITER" id="Writer" fileURL="/tmp/transfor.out" append="true" /&gt;</pre>
  * 
  * @author     dpavlis
  * @since    April 4, 2002

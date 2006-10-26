@@ -59,7 +59,7 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"FIXLEN_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the output file</td>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
  *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
