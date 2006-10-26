@@ -9,6 +9,7 @@
 	<property name="dir.dist.default" value="${basedir}/dist"/>
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
 
 	<!--load external properties-->
 	<property file="../cloveretl.engine/build.properties"/>
@@ -89,6 +90,12 @@
 		</jar>
 		<!-- copy plugin manifest -->
 		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
+		<!-- copy all libraries from lib directory -->
+		<copy todir="${dir.dist}/plugins/${plugin.dir.name}/lib">
+			<fileset dir="${dir.lib}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
