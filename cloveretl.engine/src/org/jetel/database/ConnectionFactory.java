@@ -98,8 +98,10 @@ public class ConnectionFactory {
             //find class of connection
             tClass = Class.forName(connectionDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
+            logger.error("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName(),ex);
             throw new RuntimeException("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName(),ex);
         } catch(Exception ex) {
+            logger.error("Unknown connection type: " + connectionType,ex);
             throw new RuntimeException("Unknown connection type: " + connectionType,ex);
         }
         try {
@@ -107,6 +109,7 @@ public class ConnectionFactory {
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
             return (IConnection) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(Exception ex) {
+            logger.error("Can't create object of : " + connectionType + " exception: " + ex);
             throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + ex);
         }
     }
