@@ -159,7 +159,7 @@
 		</javadoc>
 	</target-->
 
-	<target name="javadoc" depends="checkproperties" description="Create Javadoc API documentation">
+	<target name="javadoc" depends="checkproperties,set_revision" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
 		<delete dir="${dir.doc}" />
 		<mkdir dir="${dir.doc}" />
@@ -176,9 +176,9 @@
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
 				<param name="-tag" value="revision" />
 			</doclet>
-			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework </h1>]]></doctitle>
+			<doctitle><![CDATA[<h1>CloverETL: Java ETL framework</h1><h3>version: ]]>${major_version}.${minor_version}<![CDATA[</h3>]]></doctitle>
 			<bottom>
-				<![CDATA[Copyright &#169; 2002-2006 Javlin consulting s.r.o]]>
+				<![CDATA[<address>Copyright &#169; 2002-2006 Javlin consulting s.r.o</address>]]>
 			</bottom>
 		</javadoc>
 	</target>
