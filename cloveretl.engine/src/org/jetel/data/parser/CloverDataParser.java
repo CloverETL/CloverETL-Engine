@@ -155,10 +155,9 @@ public class CloverDataParser implements Parser {
 		            indexFile.close();
 				}else{//read index from binary file
 					if (indexFileURL == null){
-						File root = new File(((String)in)).getParentFile().getParentFile();
-						String filePath = root == null ? "" : root.getPath() + File.separator;
+						File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+2));
 						indexFile = new DataInputStream(new FileInputStream(
-								filePath + fileName + ".idx"));
+								dir + fileName + ".idx"));
 					}else{
 						indexFile = new DataInputStream(new FileInputStream(indexFileURL));
 					}
