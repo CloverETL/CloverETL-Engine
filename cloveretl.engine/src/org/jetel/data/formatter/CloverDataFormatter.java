@@ -112,8 +112,8 @@ public class CloverDataFormatter implements Formatter {
 		writer = Channels.newChannel(this.out);
 		buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		if (saveIndex) {//create temporary index file
-			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
-			idxTmpFile = new File(dataDir.getPath() + fileName  + ".idx.tmp");
+			String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+			idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
 			try{
 				idxWriter = Channels.newChannel(new DataOutputStream(
 						new FileOutputStream(idxTmpFile)));
