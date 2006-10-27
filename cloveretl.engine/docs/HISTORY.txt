@@ -2,6 +2,21 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-0-1
+---------
+Changes/bug fixes:
++ Added new component "Oracle Data Writer" - oracle bulk loader
++ Added new component "MySQL Data Writer" - mysql bulk loader
++ Added new component "Clover Data Reader" - data reader for Clover internal format
++ Added new component "Clover Data Writer" - data writer for Clover internal format
++ Added new component "LDAP Reader" - data extractor from LDAP directory
++ Added new component "LDAP Writer" - data loader to LDAP directory
++ Added new component "XLS Reader" - excel sheets reader
++ Added new component "XLS Writer" - excel sheets writer
++ DelimitedDataReader and FixLenDataReader can read from multifile specified by wildcard patterns
++ FixLenDataParser has two different reading mode - byte and char mode
++ XMLExtract now operates with multifield keys and generated key by sequence
+
 REL 2-0-0
 ---------
 Changes/bug fixes:
