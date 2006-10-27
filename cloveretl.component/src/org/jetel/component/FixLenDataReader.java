@@ -184,6 +184,7 @@ public class FixLenDataReader extends Node {
 		while (fileItor.hasNext() && runIt) {				
 			ReadableByteChannel stream;
 			filename = fileItor.next();
+			logger.info("Start parsing file " + filename);
 			try {
 				stream = FileUtils.getReadableChannel(filename);
 				parser.setDataSource(stream);
