@@ -174,7 +174,7 @@ public class CloverDataReader extends Node {
 			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
 				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
 			}
-			if (xattribs.equals(XML_COMPRESSEDDATA_ATTRIBUTE)){
+			if (xattribs.exists(XML_COMPRESSEDDATA_ATTRIBUTE)){
 				aDataReader.setCompressedData(xattribs.getBoolean(XML_COMPRESSEDDATA_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
