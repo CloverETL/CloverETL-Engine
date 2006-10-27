@@ -23,7 +23,9 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import javax.naming.InvalidNameException;
@@ -501,6 +503,17 @@ public class XLSDataParser implements Parser {
 
 	public String getSheetName() {
 		return sheetName;
+	}
+	
+	public String[] getNames(){
+		ArrayList names = new ArrayList<String>();
+		row = sheet.getRow(metadataRow);
+		//go through each not empty cell
+		for (Iterator i=row.cellIterator();i.hasNext();){
+			cell = (HSSFCell)i.next();
+			names.add(getStringFromCell(cell));
+		}
+		return (String[])names.toArray();
 	}
 
 }
