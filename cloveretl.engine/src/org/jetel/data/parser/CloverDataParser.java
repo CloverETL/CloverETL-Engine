@@ -64,6 +64,8 @@ public class CloverDataParser implements Parser {
 	private long index = 0;//index for reading index
 	private long idx = 0;//index for reading record
 	private int recordSize;
+	private String indexFileURL;
+	private int compressedData = -1;
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
@@ -71,7 +73,8 @@ public class CloverDataParser implements Parser {
 	/**
 	 * @param fileurl
 	 */
-	public CloverDataParser() {
+	public CloverDataParser(String indexFileURL) {
+		this.indexFileURL = indexFileURL;
 	}
 
 	/* (non-Javadoc)
@@ -100,9 +103,29 @@ public class CloverDataParser implements Parser {
 		String fileName;
 		//set input stream
 		try {
-			if (((String)in).endsWith(".zip")){
+			switch (compressedData) {
+			case 1:
 				this.in = new ZipInputStream(new FileInputStream((String)in));
+				break;
+			case 0:
+				this.in = new FileInputStream((String)in);
+				break;
+			default:
+				if (((String)in).endsWith(".zip")){
+					this.in = new ZipInputStream(new FileInputStream((String)in));
+					compressedData = 1;
+				}else{
+					this.in = new FileInputStream((String)in);
+					compressedData = 0;
+				}
+				break;
+			}
+			if (((String)in).endsWith(".zip")) {
 				fileName = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1,((String)in).lastIndexOf('.'));
+			}else{
+				fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
+			}
+			if (this.in instanceof ZipInputStream){
 	            ZipEntry entry;
 	            //find entry DATA/fileName
 	            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
@@ -110,15 +133,12 @@ public class CloverDataParser implements Parser {
 	                	break;
 	                }
 	            }
-			}else{
-				this.in = new FileInputStream((String)in);
-				fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
 			}
 			recordFile = Channels.newChannel(this.in);
 			recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 			if (index > 0) {//reading not all records --> find index in record file
 				DataInputStream indexFile;
-				if (((String)in).endsWith(".zip")){//read index from fileName.zip#INDEX/fileName.idx
+				if (this.in instanceof ZipInputStream){//read index from archive
 					ZipInputStream tmpIn = new ZipInputStream(new FileInputStream((String)in));
 		            indexFile = new DataInputStream(tmpIn);
 		            ZipEntry entry;
@@ -133,11 +153,15 @@ public class CloverDataParser implements Parser {
 		            }
 		            tmpIn.close();
 		            indexFile.close();
-				}else{//read index from ../INDEX/fileName.idx
-					File root = new File(((String)in)).getParentFile().getParentFile();
-					String filePath = root == null ? "" : root.getPath() + File.separator;
-					indexFile = new DataInputStream(new FileInputStream(
-							filePath + "INDEX" + File.separator + fileName + ".idx"));
+				}else{//read index from binary file
+					if (indexFileURL == null){
+						File root = new File(((String)in)).getParentFile().getParentFile();
+						String filePath = root == null ? "" : root.getPath() + File.separator;
+						indexFile = new DataInputStream(new FileInputStream(
+								filePath + fileName + ".idx"));
+					}else{
+						indexFile = new DataInputStream(new FileInputStream(indexFileURL));
+					}
 					indexFile.skip(index);
 					idx = indexFile.readLong();
 					indexFile.close();
@@ -216,6 +240,10 @@ public class CloverDataParser implements Parser {
 	public PolicyType getPolicyType() {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	public void setCompressedData(int compressedData) {
+		this.compressedData = compressedData;
 	}
 
 }
