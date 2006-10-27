@@ -68,7 +68,7 @@ public class ByteBufferUtils {
 	 * 
 	 * @param buffer
 	 * @param reader
-	 * @return The number of bytes written, possibly zero
+	 * @return The number of bytes read, possibly zero
 	 * @throws IOException
 	 */
 	public static int reload(ByteBuffer buffer, ReadableByteChannel reader) throws IOException{
