@@ -59,8 +59,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Reads data from input port and writes them to binary file in Clover internal
  *  format. With records can be saved indexes of records in binary file (for 
- *  reading not all records afterward) and metadata definition. Data are saved
- *   in zip file with the structure:<br>DATA/fileName<br>INDEX/fileName.idx<br>
+ *  reading not all records afterward) and metadata definition. If compress level
+ *   is not set to zero, data are saved in zip file with the structure:<br>DATA/fileName<br>INDEX/fileName.idx<br>
  *   METADATA/fileName.fmt<br>Because POI currently uses a lot of memory for large sheets it impossible to save large data (over ~1.8MB) to xls file</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>one input port defined/connected.</td></tr>
@@ -73,12 +73,7 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"CLOVER_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path and name for output file (filePath/fileName).
- *   Part after last file.separator will be use as name for data file (fileName). 
- *   If compressLevel is not zero data will be save in file fileName.zip with 
- *   structure described above. If compress level equals zero data will be saved
- *   in following files:<br>filePath/DATA/fileName<br>filePath/INDEX/fileName.idx<br>
- *   filePath/METADATA/fileName.fmt </td>
+ *  <tr><td><b>fileURL</b></td><td>path to the output file </td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at
  *   the end if output file exists or replace it (true/false - default true)</td>
  *  <tr><td><b>saveIndex</b><br><i>optional</i></td><td>indicates if indexes to records 
@@ -86,10 +81,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>saveMetadata</b><br><i>optional</i></td><td>indicates if metadata
  *   definition is saved or not (true/false - default false)</td>
  *  <tr><td><b>compressLevel</b><br><i>optional</i></td><td>Sets the compression level. The default
- *   setting is to compress using default ZIP compression level.If compressLevel is not zero data will be save in file fileName.zip with 
- *   structure described above. If compress level equals zero data will be saved
- *   in following files:<br>filePath/DATA/fileName<br>filePath/INDEX/fileName.idx<br>
- *   filePath/METADATA/fileName.fmt</td>
+ *   setting is to compress using default ZIP compression level. 
  *  </tr>
  *  </table>
  *
@@ -159,10 +151,9 @@ public class CloverDataWriter extends Node {
 	 */
 	private void saveMetadata() throws IOException{
 		if (out instanceof FileOutputStream) {
-			File metadataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "METADATA");
-			metadataDir.mkdir();
+			File dir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
 			FileOutputStream metaFile = new FileOutputStream(
-					metadataDir.getPath() + File.separator + fileName +".fmt");
+					dir.getPath() + fileName +".fmt");
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);			
 		}else{//out is ZipOutputStream
 			((ZipOutputStream)out).putNextEntry(new ZipEntry(
@@ -240,11 +231,7 @@ public class CloverDataWriter extends Node {
 //				if append=true existaing file has to be renamed
 				File dataOriginal;
 				File data = new File(fileURL + ".tmp");
-				if (fileURL.toLowerCase().endsWith(".zip")){
-					dataOriginal = new File(fileURL);
-				}else{
-					dataOriginal = new File(fileURL + ".zip");
-				}
+				dataOriginal = new File(fileURL);
 				if (append && dataOriginal.exists()) {
 					dataOriginal.renameTo(data);
 					zipData = new ZipInputStream(new FileInputStream(data));
@@ -253,11 +240,7 @@ public class CloverDataWriter extends Node {
 							"DATA" + File.separator + fileName)) {}
 				}
 				//create new zip file
-				if (fileURL.toLowerCase().endsWith(".zip")){
-					out = new ZipOutputStream(new FileOutputStream(fileURL));
-				}else{
-					out = new ZipOutputStream(new FileOutputStream(fileURL+".zip"));
-				}
+				out = new ZipOutputStream(new FileOutputStream(fileURL));
 				//set compress level if given
 				if (compressLevel != -1){
 					((ZipOutputStream)out).setLevel(compressLevel);
@@ -269,9 +252,8 @@ public class CloverDataWriter extends Node {
 					zipData.close();
 				}
 			}else{//compressLevel=0
-				File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "DATA");
-				dataDir.mkdir();
-				out = new FileOutputStream(dataDir.getPath() + File.separator + fileName, append);
+				File dir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
+				out = new FileOutputStream(dir.getPath() + fileName, append);
 			}
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
