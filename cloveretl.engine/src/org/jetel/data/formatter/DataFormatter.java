@@ -22,8 +22,10 @@
 
 package org.jetel.data.formatter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
@@ -67,6 +69,7 @@ public class DataFormatter implements Formatter {
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
 		initFieldFiller();
 		encoder.reset();
+		metadata = null;
 	}
 	
 	public DataFormatter(String charEncoder){
@@ -76,41 +79,50 @@ public class DataFormatter implements Formatter {
 		encoder = Charset.forName(charEncoder).newEncoder();
 		initFieldFiller();
 		encoder.reset();
+		metadata = null;
 	}
 	
 	/**
-	 *  Description of the Method
+	 *  Set output and format description (metadata). May be called repeatedly.
 	 *
-	 * @param  out        Description of Parameter
-	 * @param  _metadata  Description of Parameter
+	 *@param  out        Output. null value preserves previous setting.
+	 *@param  _metadata  Format. null value preserver previous setting.
 	 * @since             March 28, 2002
 	 */
 	public void open(Object out, DataRecordMetadata _metadata) {
-		this.metadata = _metadata;
 
+		close();
 		// create buffered output stream reader 
-		writer = (WritableByteChannel) out;
+		if (out == null) {
+			writer = null;
+		} else if (out instanceof WritableByteChannel) {
+			writer = (WritableByteChannel)out;
+		} else {
+			writer = Channels.newChannel((OutputStream) out);
+		}
 
 		// create array of delimiters & initialize them
 		// create array of field sizes & initialize them
-		delimiters = new byte[metadata.getNumFields()][];
-        delimiterLength = new int[metadata.getNumFields()];
-		fieldLengths = new int[metadata.getNumFields()];
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			if(metadata.getField(i).isDelimited()) {
-                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
-				delimiterLength[i] = delimiters[i].length;
-			} else {
-				fieldLengths[i] = metadata.getField(i).getSize();
+		if (_metadata != null) {	// new metadata
+			metadata = _metadata;
+			delimiters = new byte[metadata.getNumFields()][];
+	        delimiterLength = new int[metadata.getNumFields()];
+			fieldLengths = new int[metadata.getNumFields()];
+			for (int i = 0; i < metadata.getNumFields(); i++) {
+				if(metadata.getField(i).isDelimited()) {
+	                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
+					delimiterLength[i] = delimiters[i].length;
+				} else {
+					fieldLengths[i] = metadata.getField(i).getSize();
+				}
 			}
+	        // create record delimiter & initialize them
+	        isRecordDelimiter = false;
+	        if(metadata.isSpecifiedRecordDelimiter()) {
+	            isRecordDelimiter = true;
+	            recordDelimiter = metadata.getRecordDelimiter().getBytes();
+	        }
 		}
-        // create record delimiter & initialize them
-        isRecordDelimiter = false;
-        if(metadata.isSpecifiedRecordDelimiter()) {
-            isRecordDelimiter = true;
-            recordDelimiter = metadata.getRecordDelimiter().getBytes();
-        }
-        
 	}
 
 
@@ -120,12 +132,16 @@ public class DataFormatter implements Formatter {
 	 * @since    March 28, 2002
 	 */
 	public void close() {
+		if (writer == null) {
+			return;
+		}
 		try{
 			flush();
 			writer.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
+		writer = null;
 	}
 
 
@@ -150,14 +166,27 @@ public class DataFormatter implements Formatter {
 	 * @since                   March 28, 2002
 	 */
 	public void write(DataRecord record) throws IOException {
+		writeRecord(record);
+	}
+
+	/**
+	 * Write record to output (or buffer).
+	 * @param record
+	 * @return Number of written bytes.
+	 * @throws IOException
+	 */
+	public int writeRecord(DataRecord record) throws IOException {
 		int size;
+		int encLen = 0;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			if(metadata.getField(i).isDelimited()) {
 				fieldBuffer.clear();
 				record.getField(i).toByteBuffer(fieldBuffer, encoder);
-				if((fieldBuffer.position() + delimiterLength[i]) > dataBuffer.remaining()) {
+				int fieldLen = fieldBuffer.position() + delimiterLength[i];
+				if(fieldLen > dataBuffer.remaining()) {
 					flush();
 				}
+				encLen += fieldLen;
 				fieldBuffer.flip();
 				dataBuffer.put(fieldBuffer);
 				dataBuffer.put(delimiters[i]);
@@ -173,6 +202,7 @@ public class DataFormatter implements Formatter {
 					fieldFiller.limit(fieldLengths[i] - size);
 					fieldBuffer.put(fieldFiller);
 				}
+				encLen += size;
 				fieldBuffer.flip();
 				fieldBuffer.limit(fieldLengths[i]);
 				dataBuffer.put(fieldBuffer);
@@ -183,7 +213,9 @@ public class DataFormatter implements Formatter {
                 flush();
             }
             dataBuffer.put(recordDelimiter);
+            encLen += recordDelimiter.length;
         }
+        return encLen;
 	}
 	
 	/**
