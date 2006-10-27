@@ -151,9 +151,9 @@ public class CloverDataWriter extends Node {
 	 */
 	private void saveMetadata() throws IOException{
 		if (out instanceof FileOutputStream) {
-			File dir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
+			String dir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
 			FileOutputStream metaFile = new FileOutputStream(
-					dir.getPath() + fileName +".fmt");
+					dir + fileName +".fmt");
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);			
 		}else{//out is ZipOutputStream
 			((ZipOutputStream)out).putNextEntry(new ZipEntry(
@@ -252,8 +252,8 @@ public class CloverDataWriter extends Node {
 					zipData.close();
 				}
 			}else{//compressLevel=0
-				File dir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
-				out = new FileOutputStream(dir.getPath() + fileName, append);
+				String dir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+				out = new FileOutputStream(dir + fileName, append);
 			}
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
