@@ -54,6 +54,7 @@ public class FixLenDataFormatter implements Formatter {
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
 	private int recordCounter;
+	private int recordLength;
 	private int fieldLengths[];
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
@@ -72,12 +73,15 @@ public class FixLenDataFormatter implements Formatter {
 	 *@since    August 21, 2002
 	 */
 	public FixLenDataFormatter() {
+		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER ).newEncoder();
 		initFieldFiller();
 		encoder.reset();
 		crLF=System.getProperty("line.separator","\n").getBytes();
+		metadata = null;
+		recordCounter = 0;
 	}
 
 
@@ -88,6 +92,7 @@ public class FixLenDataFormatter implements Formatter {
 	 *@since               August 21, 2002
 	 */
 	public FixLenDataFormatter(String charEncoder) {
+		writer = null;
 		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
@@ -95,6 +100,8 @@ public class FixLenDataFormatter implements Formatter {
 		initFieldFiller();
 		encoder.reset();
 		crLF=System.getProperty("line.separator","\n").getBytes();
+		metadata = null;
+		recordCounter = 0;
 	}
 
 
@@ -128,26 +135,33 @@ public class FixLenDataFormatter implements Formatter {
 	}
 
 	/**
-	 *  Description of the Method
+	 *  Set output and format description (metadata). May be called repeatedly.
 	 *
-	 *@param  out        Description of the Parameter
-	 *@param  _metadata  Description of the Parameter
+	 *@param  out        Output. null value preserves previous setting.
+	 *@param  _metadata  Format. null value preserver previous setting.
 	 */
 	public void open(Object out, DataRecordMetadata _metadata) {
-		this.metadata = _metadata;
 
 //		writer = ((FileOutputStream) out).getChannel();
-		writer=Channels.newChannel((OutputStream)out);
+		close();
+		if (out == null) {
+			writer = null;
+		} else {
+			writer=Channels.newChannel((OutputStream)out);
+		}
 		
 		// create array of field sizes & initialize them
-		fieldLengths = new int[metadata.getNumFields()];
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldLengths[i] = metadata.getField(i).getSize();
+		if (_metadata != null) {	// new metadata
+			metadata = _metadata;
+			fieldLengths = new int[metadata.getNumFields()];
+			recordLength = oneRecordPerLinePolicy ? crLF.length : 0;
+			for (int i = 0; i < metadata.getNumFields(); i++) {
+				fieldLengths[i] = metadata.getField(i).getSize();
+				recordLength += fieldLengths[i];
+			}
 		}
 		encoder.reset();
 		// reset CharsetDecoder
-		recordCounter = 0;
-		// reset record counter
 	}
 
 
@@ -158,6 +172,10 @@ public class FixLenDataFormatter implements Formatter {
 	 *@exception  IOException  Description of the Exception
 	 */
 	public void write(DataRecord record) throws IOException {
+		writeRecord(record);
+	}
+
+	public int writeRecord(DataRecord record) throws IOException {
 		int size;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			
@@ -183,9 +201,10 @@ public class FixLenDataFormatter implements Formatter {
 			}
 			dataBuffer.put(crLF);
 		}
+		return recordLength;
 	}
 
-	public void writeFieldNames() throws IOException {
+	public int writeFieldNames() throws IOException {
 	    int size;
 	    CharBuffer charBuffer=CharBuffer.allocate(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		for (int i = 0; i < metadata.getNumFields(); i++) {
@@ -216,19 +235,23 @@ public class FixLenDataFormatter implements Formatter {
 			}
 			dataBuffer.put(crLF);
 		}
+		return recordLength;
 	}
 
 	/**
 	 *  Description of the Method
 	 */
 	public void close() {
+		if (writer == null) {
+			return;
+		}
 		try {
 			flushBuffer();
 			writer.close();
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}
-
+		writer = null;
 	}
 
 

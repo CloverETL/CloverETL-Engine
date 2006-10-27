@@ -1,4 +1,4 @@
 # example:
 # WORKSPACE = c:\\cloverETL\\examples
 # WORKSPACE = /home/cloverETL/examples
-WORKSPACE = <absolute_path_to_examples>
+WORKSPACE = /home/honza/workspace/cloveretl.engine/examples

@@ -29,7 +29,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -65,52 +64,65 @@ public class DelimitedDataFormatter implements Formatter {
 	// Operations
 	
 	public DelimitedDataFormatter() {
+		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
 		encoder.reset();
 		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
+		metadata = null;
 	}
 	
 	public DelimitedDataFormatter(String charEncoder) {
+		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = charEncoder;
 		encoder = Charset.forName(charEncoder).newEncoder();
 		encoder.reset();
 		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
+		metadata = null;
 	}
 	
 	/**
-	 *  Description of the Method
+	 *  Set output and format description (metadata). May be called repeatedly.
 	 *
-	 * @param  out        Description of Parameter
-	 * @param  _metadata  Description of Parameter
+	 *@param  out        Output. null value preserves previous setting.
+	 *@param  _metadata  Format. null value preserver previous setting.
 	 * @since             March 28, 2002
 	 */
 	public void open(Object out, DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
-		
-		// create buffered input stream reader 
-		writer = Channels.newChannel((OutputStream) out);
 
-		// create array of delimiters & initialize them
-		delimiters = new String[metadata.getNumFields()];
-		delimiterLength= new int[metadata.getNumFields()];
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			delimiters[i] = metadata.getField(i).getDelimiter();
-			delimiterLength[i] = delimiters[i].length();
+		// close previous output
+		close();
+		// create buffered input stream reader
+		if (out == null) {
+			writer = null;
+		} else {
+			writer = Channels.newChannel((OutputStream) out);
 		}
-		// if oneRecordPerLine - change last delimiter to be new-line character
-		if (oneRecordPerLinePolicy){
-		    delimiters[delimiters.length-1]=NEW_LINE_STR;
-		    delimiterLength[delimiters.length-1]=NEW_LINE_STR.length();
-		}
+
 		charBuffer.clear(); // preventively clear the buffer
 		
-		numFields=metadata.getNumFields(); // buffer numFields
+		if (_metadata != null) {	// set new metadata
+			metadata = _metadata;
+			// create array of delimiters & initialize them
+			delimiters = new String[metadata.getNumFields()];
+			delimiterLength= new int[metadata.getNumFields()];
+			for (int i = 0; i < metadata.getNumFields(); i++) {
+				delimiters[i] = metadata.getField(i).getDelimiter();
+				delimiterLength[i] = delimiters[i].length();
+			}
+			// if oneRecordPerLine - change last delimiter to be new-line character
+			if (oneRecordPerLinePolicy){
+			    delimiters[delimiters.length-1]=NEW_LINE_STR;
+			    delimiterLength[delimiters.length-1]=NEW_LINE_STR.length();
+			}
+			
+			numFields=metadata.getNumFields(); // buffer numFields
+		}
 	}
-
 
 	/**
 	 *  Description of the Method
@@ -118,12 +130,19 @@ public class DelimitedDataFormatter implements Formatter {
 	 * @since    March 28, 2002
 	 */
 	public void close() {
+		if (writer == null) {
+			return;
+		}
+
 		try{
-			flushBuffer(true);
+			dataBuffer.flip();
+			writer.write(dataBuffer);
+			dataBuffer.clear();
 			writer.close();
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
+		writer = null;
 	}
 
 
@@ -145,39 +164,69 @@ public class DelimitedDataFormatter implements Formatter {
 	 * @since                   March 28, 2002
 	 */
 	public void write(DataRecord record) throws IOException {
+		writeRecord(record);
+	}
+
+	/**
+	 * Write record to output (or buffer).
+	 * @param record
+	 * @return Number of written bytes.
+	 * @throws IOException
+	 */
+	public int writeRecord(DataRecord record) throws IOException {
 		String fieldVal;
+		charBuffer.clear();
 		for (int i = 0; i < numFields; i++) {
 			fieldVal=record.getField(i).toString();
-			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining())
-			{
-				flushBuffer(false);
+			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining()) {
+				throw new IOException("Insufficient buffer size");
 			}
 			
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
+		charBuffer.flip();
+		return encode();
 	}
-	
+
+	private int encode() throws IOException {
+		int newStart = dataBuffer.position();
+        encoder.encode(charBuffer, dataBuffer, true);
+        int encLen = dataBuffer.position() - newStart;
+        if (!charBuffer.hasRemaining()) {	// all data encoded
+        	return encLen;
+        }
+       	// write previous data
+        dataBuffer.flip();
+    	writer.write(dataBuffer);
+    	dataBuffer.clear();
+    	// encode remaining part of data
+        encoder.encode(charBuffer, dataBuffer, true);
+        return encLen + dataBuffer.position();
+	}
+
 	/**
 	 * Output names of record's fields to output stream
 	 * 
 	 * @throws IOException
 	 */
-	public void writeFieldNames() throws IOException {
+	public int writeFieldNames() throws IOException {
 		String fieldVal;
+		charBuffer.clear();
 		for (int i = 0; i < numFields; i++) {
 			fieldVal=metadata.getField(i).getName();
 			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining())
 			{
-				flushBuffer(false);
-			}
-			
+				throw new IOException("Insufficient buffer size");
+			}			
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
-		
+		charBuffer.flip();
+		return encode();		
 	}
-	
+
+/*	
 	private void flushBuffer(boolean endOfData) throws IOException {
 		CoderResult result;
 		charBuffer.flip();
@@ -214,6 +263,7 @@ public class DelimitedDataFormatter implements Formatter {
 
 		}
 	}
+*/
 
 	/**
 	 *  Sets OneRecordPerLinePolicy.
