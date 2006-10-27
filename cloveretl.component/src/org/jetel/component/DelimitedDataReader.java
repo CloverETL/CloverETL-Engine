@@ -147,6 +147,7 @@ public class DelimitedDataReader extends Node {
 		while (fileItor.hasNext()) {				
 			ReadableByteChannel stream;
 			filename = fileItor.next();
+            logger.info("Start parsing file " + filename);
 			try {
 				stream = FileUtils.getReadableChannel(filename);
 				parser.setDataSource(stream);
