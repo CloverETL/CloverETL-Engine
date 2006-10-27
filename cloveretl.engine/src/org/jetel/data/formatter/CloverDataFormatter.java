@@ -112,9 +112,8 @@ public class CloverDataFormatter implements Formatter {
 		writer = Channels.newChannel(this.out);
 		buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		if (saveIndex) {//create temporary index file
-			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1) + "INDEX");
-			dataDir.mkdir();
-			idxTmpFile = new File(dataDir.getPath() + File.separator + fileName  + ".idx.tmp");
+			File dataDir = new File(fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1));
+			idxTmpFile = new File(dataDir.getPath() + fileName  + ".idx.tmp");
 			try{
 				idxWriter = Channels.newChannel(new DataOutputStream(
 						new FileOutputStream(idxTmpFile)));
@@ -139,6 +138,7 @@ public class CloverDataFormatter implements Formatter {
 				if (idxTmpFile.length() > 0){//if some indexes were saved to tmp file, save the rest of indexes
 					ByteBufferUtils.flush(idxBuffer,idxWriter);
 					idxWriter.close();
+					ByteBufferUtils.reload(idxBuffer,idxReader);
 				}else{
 					idxBuffer.flip();
 				}
@@ -219,8 +219,8 @@ public class CloverDataFormatter implements Formatter {
 	private long changSizeToIndex(long lastValue) throws IOException{
 		short actualValue;
 		while (buffer.remaining() >= LONG_SIZE_BYTES){
-			if (idxBuffer.remaining() < SHORT_SIZE_BYTES && idxBuffer.limit() == idxBuffer.capacity()){
-				idxBuffer.limit(ByteBufferUtils.reload(idxBuffer,idxReader));
+			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//end of idxBuffer, reload it
+				ByteBufferUtils.reload(idxBuffer,idxReader);
 			}
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//there is no more sizes to working up
 				break;
