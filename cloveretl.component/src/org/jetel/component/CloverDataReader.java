@@ -60,12 +60,16 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"CLOVER_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the data file. It can be zip file 
+ *  <tr><td><b>fileURL</b></td><td>path to the data file. It archive 
  *  storing data, data indexes and metadata description or binary file with data
- *  saved in Clover internal format. In such case it is predicted, that indexes
- *  (if needed) are stored in file ../INDEX/dataFileName.idx in relation to dataFileName</td>
- *  <tr><td><b>startRecord</b></td><td>index of first parsed record</td>
- *  <tr><td><b>finalRecord</b></td><td>index of final parsed record</td>
+ *  saved in Clover internal format. </td>
+ *  <tr><td><b>compressedData</b><br><i>optional</i></td><td>whether data file is zip archive or
+ *   not. If not set we try to guess it from fileURL: if it ends with ".zip" 
+ *   true else false</td>
+ *  <tr><td><b>indexFileURL</b><br><i>optional</i></td><td>if index file is not 
+ *  in the same directory as data filr or has not expected name (fileURL.idx)</td>
+ *  <tr><td><b>startRecord</b><br><i>optional</i></td><td>index of first parsed record</td>
+ *  <tr><td><b>finalRecord</b><br><i>optional</i></td><td>index of final parsed record</td>
  *  </tr>
  *  </table>
  *
@@ -91,20 +95,24 @@ public class CloverDataReader extends Node {
 
 	/** XML attribute names */
 	private final static String XML_FILE_ATTRIBUTE = "fileURL";
+	private final static String XML_COMPRESSEDDATA_ATTRIBUTE = "compressedData";
+	private final static String XML_INDEXFILEURL_ATTRIBUTE = "indexFileURL";
 	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
 	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
 
 	private final static int OUTPUT_PORT = 0;
 
 	private String fileURL;
+	private String indexFileURL;
+	private boolean compressedData;
 	private CloverDataParser parser;
 	private int startRecord = -1;
 	private int finalRecord = -1;
 
-	public CloverDataReader(String id, String fileURL) {
+	public CloverDataReader(String id, String fileURL, String indexFileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new CloverDataParser();
+		parser = new CloverDataParser(indexFileURL);
 	}
 
 	/* (non-Javadoc)
@@ -158,12 +166,16 @@ public class CloverDataReader extends Node {
 
 		try {
 			aDataReader = new CloverDataReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE));
+						xattribs.getString(XML_FILE_ATTRIBUTE),
+						xattribs.getString(XML_INDEXFILEURL_ATTRIBUTE,null));
 			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
 				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
 				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
+			}
+			if (xattribs.equals(XML_COMPRESSEDDATA_ATTRIBUTE)){
+				aDataReader.setCompressedData(xattribs.getBoolean(XML_COMPRESSEDDATA_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -175,6 +187,10 @@ public class CloverDataReader extends Node {
 	public void toXML(Element xmlElement) {
 	    super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
+		if (indexFileURL != null){
+			xmlElement.setAttribute(XML_INDEXFILEURL_ATTRIBUTE,indexFileURL);
+		}
+		xmlElement.setAttribute(XML_COMPRESSEDDATA_ATTRIBUTE,String.valueOf(compressedData));
 		if (finalRecord > -1) {
 			xmlElement.setAttribute(XML_FINALRECORD_ATTRIBUTE,String.valueOf(finalRecord));
 		}
@@ -216,6 +232,15 @@ public class CloverDataReader extends Node {
 			throw new InvalidParameterException("Invalid finalRecord parameter.");
 		}
 		this.finalRecord = finalRecord;
+	}
+
+	public void setCompressedData(boolean compressedData) {
+		this.compressedData = compressedData;
+		if (compressedData) {
+			parser.setCompressedData(1);
+		}else{
+			parser.setCompressedData(0);
+		}
 	}
 	
 }
