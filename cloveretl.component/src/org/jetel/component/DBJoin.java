@@ -87,7 +87,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
  *    </td></tr>
-  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format or as java code</td>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format or as java code</td>
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML 
  *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
@@ -97,20 +97,19 @@ import org.w3c.dom.Element;
  *    </table>
  *    <h4>Example:</h4> <pre>
  *    &lt;Node id="dbjoin0" type="DBJOIN"&gt;
-&lt;attr name="metadata"&gt;Metadata3&lt;/attr&gt;
-&lt;attr name="transformClass"&gt;TransformTransformdbjoin0&lt;/attr&gt;
-&lt;attr name="sqlQuery"&gt;select * from employee where Employee_ID=?&lt;/attr&gt;
-&lt;attr name="joinKey"&gt;EmployeeID&lt;/attr&gt;
-&lt;attr name="dbConnection"&gt;DBConnection0&lt;/attr&gt;
-&lt;/Node&gt;
+ *      &lt;attr name="metadata"&gt;Metadata3&lt;/attr&gt;
+ *      &lt;attr name="transformClass"&gt;TransformTransformdbjoin0&lt;/attr&gt;
+ *      &lt;attr name="sqlQuery"&gt;select * from employee where Employee_ID=?&lt;/attr&gt;
+ *      &lt;attr name="joinKey"&gt;EmployeeID&lt;/attr&gt;
+ *      &lt;attr name="dbConnection"&gt;DBConnection0&lt;/attr&gt;
+ *    &lt;/Node&gt;
 </pre>
  *
- */
-/**
-* @author avackova <agata.vackova@javlinconsulting.cz> ; 
-* (c) JavlinConsulting s.r.o.
-*	www.javlinconsulting.cz
-*	@created October 10, 2006
+ * @author avackova <agata.vackova@javlinconsulting.cz> 
+ * (c) JavlinConsulting s.r.o.
+ *	www.javlinconsulting.cz
+ *
+ *	@created October 10, 2006
  */
 public class DBJoin extends Node {
 
