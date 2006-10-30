@@ -272,7 +272,6 @@ public class SystemExecute extends Node{
 		}
 
 		boolean ok = true;
-		resultCode = Node.RESULT_ERROR;
 		try{
 			StringBuffer msg = new StringBuffer("Executing command: \"");
 			Process	process;
@@ -351,19 +350,23 @@ public class SystemExecute extends Node{
 				//interrupt threads if they run still
 				if (getData!=null) {
 					if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
+						resultCode = Node.RESULT_ERROR;
 						throw new RuntimeException("Can't kill "+getData.getName());
 					}
 				}
 				if (sendData!=null) {
 					if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
+						resultCode = Node.RESULT_ERROR;
 						throw new RuntimeException("Can't kill "+sendData.getName());
 					}
 				}
 				if (sendDataToFile!=null) {
 					if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
+						resultCode = Node.RESULT_ERROR;
 						throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 					}
 					if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
+						resultCode = Node.RESULT_ERROR;
 						throw new RuntimeException("Can't kill "+sendErrToFile.getName());
 					}
 				}
@@ -377,37 +380,45 @@ public class SystemExecute extends Node{
 			//chek results of getting and sending data
 			if (getData!=null){
 				if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
+					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+getData.getName());
 				}
 				if (getData.getResultCode()==Node.RESULT_ERROR) {
 					ok = false;
+					resultCode = Node.RESULT_ERROR;
 					resultMsg = (resultMsg == null ? "" : resultMsg) + getData.getResultMsg() + "\n" + getData.getResultException();
 				}
 			}
 			
 			if (sendData!=null){
 				if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
+					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendData.getName());
 				}
 				if (sendData.getResultCode()==Node.RESULT_ERROR){
 					ok = false;
+					resultCode = Node.RESULT_ERROR;
 					resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
 				}
 			}
 
 			if (sendDataToFile!=null){
 				if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
+					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 				}
 				if (sendDataToFile.getResultCode()==Node.RESULT_ERROR){
 					ok = false;
+					resultCode = Node.RESULT_ERROR;
 					resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
 				}
 				if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
+					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
 				}
 				if (sendErrToFile.getResultCode()==Node.RESULT_ERROR){
 					ok = false;
+					resultCode = Node.RESULT_ERROR;
 					resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
 				}
 			}
@@ -415,6 +426,7 @@ public class SystemExecute extends Node{
 		}catch(IOException ex){
 			ex.printStackTrace();
 			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
 			ok = false;;
 		}catch(Exception ex){
 		    ex.printStackTrace();
@@ -425,18 +437,20 @@ public class SystemExecute extends Node{
 		if (!runIt) {
 			resultMsg = resultMsg + "\n" + "STOPPED";
 			ok = false;;
+			resultCode = Node.RESULT_ERROR;
 		}
+		broadcastEOF();
 		if (exitValue!=0){
 			if (outputFile!=null) {
 				logger.error("Process exit value not 0");
 			}
+			resultCode = Node.RESULT_ERROR;
 			resultMsg = "Process exit value not 0";
 			ok = false;;
 		}
 		if (ok){
 			resultCode = Node.RESULT_OK;
 		}
-		broadcastEOF();
 	}
 
 	/* (non-Javadoc)
