@@ -29,13 +29,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,9 +41,9 @@ import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.PropertyRefResolver;
+import org.jetel.util.TypedProperties;
 /*
  *  import org.apache.log4j.Logger;
  *  import org.apache.log4j.BasicConfigurator;
@@ -92,7 +89,7 @@ public final class TransformationGraph {
 
 	private WatchDog watchDog;
 
-	private Properties graphProperties;
+	private TypedProperties graphProperties;
 	
 	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 
@@ -118,7 +115,7 @@ public final class TransformationGraph {
 		dataRecordMetadata = new HashMap<String,DataRecordMetadata> ();
 		// initialize logger - just basic
 		//BasicConfigurator.configure();
-		graphProperties = new Properties();
+		graphProperties = new TypedProperties();
 	}
 
 
@@ -691,7 +688,7 @@ public final class TransformationGraph {
 	 *
 	 * @return    The graphProperties value
 	 */
-	public Properties getGraphProperties() {
+	public TypedProperties getGraphProperties() {
 		return graphProperties;
 	}
 
@@ -702,7 +699,7 @@ public final class TransformationGraph {
 	 * @param  properties  The new graphProperties value
 	 */
 	public void setGraphProperties(Properties properties) {
-		this.graphProperties = properties;
+		this.graphProperties = new TypedProperties(properties);
 	}
 
 
@@ -714,17 +711,17 @@ public final class TransformationGraph {
 	 */
 	public void loadGraphProperties(String fileURL) throws IOException {
 		if (graphProperties == null) {
-			graphProperties = new Properties();
+			graphProperties = new TypedProperties();
 		}
-		URL url=null;
-        try{
+		URL url = null;
+        try {
             url = new URL(fileURL); 
-        }catch(MalformedURLException e){
+        } catch(MalformedURLException e) {
             // try to patch the url
             try {
-                url=new URL("file:"+fileURL);
-            }catch(MalformedURLException ex){
-                logger.error("Wrong URL/filename of file specified: "+fileURL,ex);
+                url = new URL("file:" + fileURL);
+            } catch(MalformedURLException ex) {
+                logger.error("Wrong URL/filename of file specified: " + fileURL, ex);
                 throw new IOException(ex.getMessage());
             }
         }
@@ -741,7 +738,7 @@ public final class TransformationGraph {
 	 */
 	public void loadGraphProperties(Properties properties) {
 		if (graphProperties == null) {
-			graphProperties = new Properties();
+			graphProperties = new TypedProperties();
 		}
 		graphProperties.putAll(properties);
 	}
