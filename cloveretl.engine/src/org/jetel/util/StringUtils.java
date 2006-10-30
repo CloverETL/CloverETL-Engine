@@ -479,7 +479,21 @@ public class StringUtils {
 		return -1;
 	}
 
-    
+    /**
+     * This method finds index of first charater, which can't be part of identifier
+     * 
+     * @param str String for searching
+     * @param fromIndex 
+     * @return index of first character after identifier name
+     */
+    public static int findIdentifierEnd(String str, int fromIndex){
+    	int index = fromIndex;
+    	StringBuilder string = new StringBuilder(str);
+    	while (index < str.length() && Character.isUnicodeIdentifierPart(string.charAt(index))){
+    		index++;
+    	}
+    	return index;
+    }
 
 }
 
