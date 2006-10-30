@@ -506,7 +506,7 @@ public class XLSDataParser implements Parser {
 	}
 	
 	public String[] getNames(){
-		ArrayList names = new ArrayList<String>();
+		ArrayList<String> names = new ArrayList<String>();
 		row = sheet.getRow(metadataRow);
 		//go through each not empty cell
 		for (Iterator i=row.cellIterator();i.hasNext();){
