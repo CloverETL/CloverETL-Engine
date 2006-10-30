@@ -21,17 +21,21 @@ package org.jetel.util;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.channels.WritableByteChannel;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.Defaults;
 /**
@@ -212,6 +216,44 @@ public class FileUtils {
         return Channels.newChannel(url.openStream());
     }
 
+	public static WritableByteChannel getWritableChannel(String input, boolean appendData) throws IOException {
+        String strURL = input;
+		OutputStream os;
+		URL url;
+		
+        //resolve url format for zip files
+		if(input.startsWith("zip:")) {
+        	strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+        }
+        
+		//open channel
+		if(!strURL.startsWith("ftp")) {
+			os = new FileOutputStream(strURL, appendData);
+		} else {
+			try {
+				url = new URL(strURL); 
+			} catch(MalformedURLException e) {
+				// try to patch the url
+				try {
+					url = new URL("file:" + strURL);
+				} catch(MalformedURLException ex) {
+					throw new RuntimeException("Wrong URL of file specified: " + ex.getMessage());
+				}
+			}
+			os = url.openConnection().getOutputStream();
+		}
+		//resolve url format for zip files
+		if(input.startsWith("zip:")) {
+			String zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+			ZipOutputStream zout = new ZipOutputStream(os);
+			ZipEntry entry = new ZipEntry(zipAnchor);
+			zout.putNextEntry(entry);
+			return Channels.newChannel(zout);
+        } else {
+        	return Channels.newChannel(os);
+        }
+	}
+    
 }
 
 /*
