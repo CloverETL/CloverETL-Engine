@@ -76,7 +76,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
     int step;
     int start;
     int numCachedValues;
-    boolean isDefined=false;
+    boolean isInitialized;
   
     int counter;
     FileChannel io;
@@ -108,14 +108,22 @@ public class SimpleSequence extends GraphElement implements Sequence {
         this.step=step;
         this.counter=0;
         this.numCachedValues=numCachedValues;
-        this.isDefined=true;
+        this.isInitialized = false;
     }
     
     public long currentValueLong(){
+        if(!isInitialized()) {
+            throw new RuntimeException("Can't get currentValue for not initialized sequence.");
+        }
+
         return sequenceValue;
     }
     
     public long nextValueLong(){
+        if(!isInitialized()) {
+            throw new RuntimeException("Can't call nextValue for not initialized sequence.");
+        }
+
         if (counter<=0){
             flushValue(sequenceValue+step*numCachedValues);
             counter=numCachedValues;
@@ -144,6 +152,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
     }
     
     public void reset(){
+        if(!isInitialized()) {
+            throw new RuntimeException("Can't reset not initialized sequence.");
+        }
         sequenceValue=start;
         flushValue(sequenceValue);
     }
@@ -157,33 +168,35 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * All necessary internal initialization should be performed in this method.
      */
     public void init() throws ComponentNotReadyException {
-        buffer=ByteBuffer.allocateDirect(DATA_SIZE);
+        buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
-            File file=new File(filename);
-            if (!file.exists()){
+            File file = new File(filename);
+            if (!file.exists()) {
                 file.createNewFile();
-                io=new RandomAccessFile(file,ACCESS_MODE).getChannel();
-                lock=io.lock();
+                io = new RandomAccessFile(file,ACCESS_MODE).getChannel();
+                lock = io.lock();
                 io.force(true);
                 flushValue(sequenceValue);
-            }else{
-                io=new RandomAccessFile(file,ACCESS_MODE).getChannel();
-                lock=io.tryLock();
-                if (lock==null){
+            } else {
+                io = new RandomAccessFile(file,ACCESS_MODE).getChannel();
+                lock = io.tryLock();
+                if (lock == null) {
                     // report non-locked sequence
-                    logger.warn("Can't obtain file lock for sequence: "+getName());
+                    logger.warn("Can't obtain file lock for sequence: " + getName());
                 }
                 io.force(true);
                 io.read(buffer);
                 buffer.flip();
-                sequenceValue=buffer.getLong();
+                sequenceValue = buffer.getLong();
             }
-        }catch(IOException ex){
-            throw new ComponentNotReadyException(ex.getMessage());
+        } catch(IOException ex) {
+            isInitialized = false;
+            throw new ComponentNotReadyException(ex);
         }
+        isInitialized = true;
     }
     
-    private final void flushValue(long value){
+    private final void flushValue(long value) {
         try{
             buffer.rewind();
             buffer.putLong(value);
@@ -201,22 +214,27 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * this method.
      */
     public void free() {
-        try{
-            if (lock!=null){
+        try {
+            if (lock != null) {
                 lock.release();
             }
-            io.close();
-        }catch(IOException ex){
-            logger.error("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
-            throw new RuntimeException("I/O error when accessing sequence "+getName()+" - "+ex.getMessage());
+            if (io != null && io.isOpen()) {
+                io.close();
+            }
+        } catch (IOException ex) {
+            logger.error("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
+            throw new RuntimeException("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
         }
     }
     
-    public void delete(){
+    public void delete() {
+        if(!isInitialized()) {
+            throw new RuntimeException("Can't delete not initialized sequence.");
+        }
         File sequenceFile;
         free();
-        sequenceFile=new File(filename);
-        if (sequenceFile.exists()){;
+        sequenceFile = new File(filename);
+        if (sequenceFile.exists()) {
             sequenceFile.delete();
         }
     }
@@ -236,6 +254,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
 	public String getFilename() {
 		return filename;
 	}
+
+    public boolean isInitialized() {
+        return isInitialized;
+    }
 	
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
