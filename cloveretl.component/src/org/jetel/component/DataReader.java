@@ -20,13 +20,7 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.security.InvalidParameterException;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -45,6 +39,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -176,24 +171,27 @@ public class DataReader extends Node {
             logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
             logRecord.init();
         }
-		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int errorCount = 0;
-		
+
+        if (startRecord < 0) {
+        	startRecord = 0;
+        }
+        if (isSkipFirstLine()) {
+        	startRecord++;
+        }
+        int recCnt = 0;
+        if (finalRecord > 0) {
+        	recCnt = finalRecord - startRecord;
+        }
+
+		MultiFileReader reader = new MultiFileReader(parser, fileURL, 0, startRecord, recCnt, 0);
 		try {
-			//skip first line
-			if(isSkipFirstLine()) {
-				parser.skipFirstLine();
-			}
-			//skip first 'startRecord' lines
-			if(startRecord != -1) {
-				parser.skip(startRecord);
-			}
-			//parse
-			while(!parser.endOfInputChannel() && runIt) {
+			while(runIt) {			
                 try {
-    				if((parser.getNext(record)) != null) {
-    				    writeRecord(OUTPUT_PORT, record);
+    				if((reader.getNext(record)) == null) {
+    					break;
     				}
+    				writeRecord(OUTPUT_PORT, record);    				
                 } catch(BadDataFormatException bdfe) {
                     if(policyType == PolicyType.STRICT) {
                         throw bdfe;
@@ -213,12 +211,9 @@ public class DataReader extends Node {
                         }
                     }
                 }
-				if(finalRecord != -1 && parser.getRecordCount() > diffRecord) {
-					break;
-				}
 				SynchronizeUtils.cloverYield();
 			}
-		} catch (IOException ex) {
+		} catch (BadDataFormatException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
@@ -229,7 +224,7 @@ public class DataReader extends Node {
 			return;
 		}
 		// we are done, close all connected output ports to indicate end of stream
-		parser.close();
+		reader.close();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
