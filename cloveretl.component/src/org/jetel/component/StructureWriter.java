@@ -21,7 +21,9 @@
 
 package org.jetel.component;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.StructureFormater;
@@ -48,10 +50,15 @@ public class StructureWriter extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_MASK_ATTRIBUTE = "mask";
+	private static final String XML_HEADER_ATTRIBUTE = "header";
+	private static final String XML_FOOTER_ATTRIBUTE = "footer";
 
 	private String fileURL;
 	private boolean appendData;
 	private StructureFormater formatter;
+	private String header = null;
+	private String footer = null;
+	private OutputStream writer;
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -79,6 +86,17 @@ public class StructureWriter extends Node {
 	 */
 	@Override
 	public void run() {
+		if (header != null ){
+			try {
+				writer.write(header.getBytes());
+				writer.close();
+			} catch (IOException e) {
+				resultMsg=e.getMessage();
+				resultCode=Node.RESULT_ERROR;
+				closeAllOutputPorts();
+				return;
+			}
+		}
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
@@ -103,6 +121,18 @@ public class StructureWriter extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		formatter.close();
+		if (footer != null ){
+			try {
+				writer = new FileOutputStream(fileURL, true);
+				writer.write(footer.getBytes());
+				writer.close();
+			} catch (IOException e) {
+				resultMsg=e.getMessage();
+				resultCode=Node.RESULT_ERROR;
+				closeAllOutputPorts();
+				return;
+			}
+		}
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
 		resultCode=Node.RESULT_OK;
 	}
@@ -126,6 +156,10 @@ public class StructureWriter extends Node {
 		}
 		// based on file mask, create/open output file
 		try {
+			if (header != null) {
+				writer = new FileOutputStream(fileURL, appendData);
+				appendData = true;
+			}
 			formatter.open(FileUtils.getWritableChannel(fileURL, appendData), getInputPort(READ_FROM_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
@@ -141,13 +175,27 @@ public class StructureWriter extends Node {
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-									xattribs.getString(XML_MASK_ATTRIBUTE));	
+									xattribs.getString(XML_MASK_ATTRIBUTE));
+			if (xattribs.exists(XML_HEADER_ATTRIBUTE)){
+				aDataWriter.setHeader(xattribs.getString(XML_HEADER_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_FOOTER_ATTRIBUTE)){
+				aDataWriter.setFooter(xattribs.getString(XML_FOOTER_ATTRIBUTE));
+			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
 		}
 		
 		return aDataWriter;
+	}
+
+	public void setFooter(String footer) {
+		this.footer = footer;
+	}
+
+	public void setHeader(String header) {
+		this.header = header;
 	}
 	
 }
