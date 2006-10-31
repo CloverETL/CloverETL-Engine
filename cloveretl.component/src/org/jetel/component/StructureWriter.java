@@ -21,15 +21,12 @@
 
 package org.jetel.component;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
-import org.jetel.data.formatter.StructureFormater;
+import org.jetel.data.formatter.StructureFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -42,6 +39,53 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>StructureWriter Component</h3>
+ *
+ * <!-- All records from input port [0] are formatted due to given mask and written to specified file -->
+ * 
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>StructureWriter</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td>All records from input port [0] are formatted due to given mask and written to specified file.</td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>[0]- input records</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td>This component uses java.nio.* classes.</td></tr>
+ * </table>
+ *  <br>  
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"STRUCTURE_WRITER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>fileURL</b></td><td>Output files mask.
+ *  Use wildcard '#' to specify where to insert sequential number of file. Number of consecutive wildcards specifies
+ *  minimal length of the number. Name without wildcard specifies only one file.</td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
+ *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>mask</b></td><td>template for formating records. Every occurrence 
+ *  of $fieldName will be replaced by value of the fieldName</td>
+ *  <tr><td><b>header</b></td><td>text to write before records</td>
+ *  <tr><td><b>footer</b></td><td>text to write after records</td>
+ *  </tr>
+ *  </table>  
+ *
+ * <h4>Example:</h4>
+ * <pre>;&lt;Node append="true" fileURL="${WORKSPACE}/output/structured_customers.txt"
+ *  id="STRUCTURE_WRITER0" type="STRUCTURE_WRITER"&gt;
+ * &lt;attr name="mask"&gt;&lt;Customer id=$customer_id&gt;
+ * &lt;last name = $lname&gt;
+ *	&lt;first name = $fname&gt;
+ * &lt;/Customer&gt;
+ * &lt;/attr&gt;
+ * &lt;/Node&gt;
+ * 
+ * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -60,8 +104,7 @@ public class StructureWriter extends Node {
 
 	private String fileURL;
 	private boolean appendData;
-	private String charset;
-	private StructureFormater formatter;
+	private StructureFormatter formatter;
 	private String header = null;
 	private String footer = null;
 	private WritableByteChannel writer;
@@ -70,14 +113,22 @@ public class StructureWriter extends Node {
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 * @param fileURL
+	 * @param charset
+	 * @param appendData
+	 * @param mask
+	 */
 	public StructureWriter(String id, String fileURL, String charset, 
 			boolean appendData, String mask) {
 		super(id);
 		this.fileURL = fileURL;
-		this.charset = charset;
 		this.appendData = appendData;
-		formatter = charset == null ? new StructureFormater() : 
-			new StructureFormater(charset);
+		formatter = charset == null ? new StructureFormatter() : 
+			new StructureFormatter(charset);
 		formatter.setMask(mask);
 	}
 
@@ -94,6 +145,7 @@ public class StructureWriter extends Node {
 	 */
 	@Override
 	public void run() {
+		//write header
 		if (header != null ){
 			buffer.put(header.getBytes());
 			try {
@@ -108,6 +160,7 @@ public class StructureWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
+		//write records
 		while (record != null && runIt) {
 			try {
 				record = inPort.readRecord(record);
@@ -136,6 +189,7 @@ public class StructureWriter extends Node {
 			closeAllOutputPorts();
 			return;
 		}
+		//write footer
 		if (footer != null ){
 			buffer.clear();
 			buffer.put(footer.getBytes());
@@ -148,6 +202,7 @@ public class StructureWriter extends Node {
 				return;
 			}
 		}
+		//close output
 		try {
 			writer.close();
 		} catch (IOException ex) {
@@ -187,6 +242,9 @@ public class StructureWriter extends Node {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#fromXML(org.jetel.graph.TransformationGraph, org.w3c.dom.Element)
+	 */
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		StructureWriter aDataWriter = null;
@@ -211,6 +269,25 @@ public class StructureWriter extends Node {
 		return aDataWriter;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
+	 */
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
+		String charSet = this.formatter.getCharsetName();
+		if (charSet != null) {
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
+		}
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
+		if (header != null){
+			xmlElement.setAttribute(XML_HEADER_ATTRIBUTE,header);
+		}
+		if (footer != null){
+			xmlElement.setAttribute(XML_FOOTER_ATTRIBUTE,footer);
+		}
+	}
+	
 	public void setFooter(String footer) {
 		this.footer = footer;
 	}
