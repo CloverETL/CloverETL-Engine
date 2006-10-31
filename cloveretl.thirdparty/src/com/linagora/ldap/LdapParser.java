@@ -382,4 +382,9 @@ public class LdapParser implements Parser {
 		throw new UnsupportedOperationException();
 	}
 
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
+	
+
 }
