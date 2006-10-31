@@ -71,7 +71,9 @@ public class EdgeDebuger {
 
     public void close() {
         try {
-            dataTape.flush(true);
+            if(!isReadMode) {
+                dataTape.flush(true);
+            }
             dataTape.close();
         }catch(IOException ex){
             throw new RuntimeException("Can't flush/rewind DataRecordTape: " + ex.getMessage());
