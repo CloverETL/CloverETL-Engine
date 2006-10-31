@@ -24,15 +24,20 @@ package org.jetel.component;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.StructureFormater;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -55,10 +60,12 @@ public class StructureWriter extends Node {
 
 	private String fileURL;
 	private boolean appendData;
+	private String charset;
 	private StructureFormater formatter;
 	private String header = null;
 	private String footer = null;
-	private OutputStream writer;
+	private WritableByteChannel writer;
+	private ByteBuffer buffer;
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -67,6 +74,7 @@ public class StructureWriter extends Node {
 			boolean appendData, String mask) {
 		super(id);
 		this.fileURL = fileURL;
+		this.charset = charset;
 		this.appendData = appendData;
 		formatter = charset == null ? new StructureFormater() : 
 			new StructureFormater(charset);
@@ -87,9 +95,9 @@ public class StructureWriter extends Node {
 	@Override
 	public void run() {
 		if (header != null ){
+			buffer.put(header.getBytes());
 			try {
-				writer.write(header.getBytes());
-				writer.close();
+				ByteBufferUtils.flush(buffer,writer);
 			} catch (IOException e) {
 				resultMsg=e.getMessage();
 				resultCode=Node.RESULT_ERROR;
@@ -120,18 +128,33 @@ public class StructureWriter extends Node {
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		formatter.close();
+		try {
+			formatter.flush();
+		} catch (IOException ex) {
+			resultMsg=ex.getMessage();
+			resultCode=Node.RESULT_ERROR;
+			closeAllOutputPorts();
+			return;
+		}
 		if (footer != null ){
+			buffer.clear();
+			buffer.put(footer.getBytes());
 			try {
-				writer = new FileOutputStream(fileURL, true);
-				writer.write(footer.getBytes());
-				writer.close();
+				ByteBufferUtils.flush(buffer,writer);
 			} catch (IOException e) {
 				resultMsg=e.getMessage();
 				resultCode=Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
 			}
+		}
+		try {
+			writer.close();
+		} catch (IOException ex) {
+			resultMsg=ex.getMessage();
+			resultCode=Node.RESULT_ERROR;
+			closeAllOutputPorts();
+			return;
 		}
 		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
 		resultCode=Node.RESULT_OK;
@@ -144,7 +167,7 @@ public class StructureWriter extends Node {
 	public boolean checkConfig() {
 		return true;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
@@ -156,11 +179,9 @@ public class StructureWriter extends Node {
 		}
 		// based on file mask, create/open output file
 		try {
-			if (header != null) {
-				writer = new FileOutputStream(fileURL, appendData);
-				appendData = true;
-			}
-			formatter.open(FileUtils.getWritableChannel(fileURL, appendData), getInputPort(READ_FROM_PORT).getMetadata());
+			writer = FileUtils.getWritableChannel(fileURL, appendData);
+			buffer = ByteBuffer.allocateDirect(StringUtils.getMaxLength(header,footer));
+			formatter.open(writer , getInputPort(READ_FROM_PORT).getMetadata());
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
