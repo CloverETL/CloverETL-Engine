@@ -30,6 +30,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.JetelException;
 
+/** A class for transparent reading of clover data records from multiple input files */
 public class MultiFileReader {
 	
     static Log logger = LogFactory.getLog(MultiFileReader.class);
@@ -43,6 +44,15 @@ public class MultiFileReader {
 	private int fileCounter;
 	private String filename;
 
+	/**
+	 * Sole ctor.
+	 * @param parser Parser to be used to obtain records from input files.
+	 * @param fileSpec Specification of input file(s)
+	 * @param skip Number of records to be skipped
+	 * @param fileSkip Number of records to be skipped in each input file
+	 * @param maxRecCnt Max number of records to read
+	 * @param fileMaxRecCnt Max number of records to read from each file
+	 */
 	public MultiFileReader(Parser parser, String fileSpec, int skip, int fileSkip,
 			int maxRecCnt, int fileMaxRecCnt) {
 		this.parser = parser;
@@ -90,6 +100,12 @@ public class MultiFileReader {
 		return false;
 	}
 
+	/**
+	 * Tries to obtain one record
+	 * @param record Instance to be filled with obtained data
+	 * @return null on error, the record otherwise
+	 * @throws JetelException
+	 */
 	public DataRecord getNext(DataRecord record) throws JetelException {
 		if (maxRecCnt > 0 && counter == maxRecCnt) {
 			return null;
@@ -118,6 +134,10 @@ public class MultiFileReader {
 		return rec;
 	}		
 
+	/**
+	 * Releases resources held by the instance
+	 *
+	 */
 	public void close() {
 		parser.close();
 	}
