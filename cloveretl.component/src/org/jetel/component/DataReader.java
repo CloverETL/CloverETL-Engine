@@ -216,11 +216,13 @@ public class DataReader extends Node {
 		} catch (BadDataFormatException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
+			reader.close();
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
 			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
+			reader.close();
 			return;
 		}
 		// we are done, close all connected output ports to indicate end of stream
