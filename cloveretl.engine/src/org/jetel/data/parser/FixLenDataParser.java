@@ -344,6 +344,10 @@ public class FixLenDataParser implements Parser {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
+
 }
 /*
  *  end class FixLenDataParser

@@ -91,6 +91,8 @@ public interface Parser {
     public IParserExceptionHandler getExceptionHandler();
     
     public PolicyType getPolicyType();
+
+	public void setDataSource(Object inputDataSource);
     
 }
 /*

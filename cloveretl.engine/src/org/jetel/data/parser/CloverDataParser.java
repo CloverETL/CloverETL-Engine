@@ -245,4 +245,8 @@ public class CloverDataParser implements Parser {
 		this.compressedData = compressedData;
 	}
 
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
+
 }
