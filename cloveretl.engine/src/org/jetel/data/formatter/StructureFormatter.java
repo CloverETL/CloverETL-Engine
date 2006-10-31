@@ -145,17 +145,21 @@ public class StructureFormatter implements Formatter {
 			if (dataBuffer.remaining() < index - lastIndex){
 				flush();
 			}
-			//put to buffer bytes from mask from last field name to actual one
+			//put bytes from mask from last field name to actual one to buffer 
 			dataBuffer.put(maskBytes, lastIndex, index - lastIndex);
 			fieldBuffer.clear();
+			//change field value to bytes
 			record.getField(fieldName).toByteBuffer(fieldBuffer, encoder);
 			fieldBuffer.flip();
 			if (dataBuffer.remaining() < fieldBuffer.limit()){
 				flush();
 			}
+			//put field value to data buffer
 			dataBuffer.put(fieldBuffer);
+			//set processed part of mask to the end of field name identifier
 			lastIndex = index + maskAnalize[i].length;
 		}
+		//put rest of mask (after last data field) to data buffer
 		if (dataBuffer.remaining() < maskBytes.length - lastIndex){
 			flush();
 		}
@@ -187,6 +191,9 @@ public class StructureFormatter implements Formatter {
 		return(this.charSet);
 	}
 
+	/**
+	 * Private class for storing data field name, its andex and lenght in mask
+	 */
 	class DataFieldParams {
 		
 		String name;
