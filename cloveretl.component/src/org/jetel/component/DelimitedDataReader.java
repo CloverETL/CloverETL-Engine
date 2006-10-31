@@ -135,6 +135,7 @@ public class DelimitedDataReader extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
+		// TODO use MultiFileReader to handle multiple input files
 		// we need to create data record - take the metadata from first output port
 		DataRecord rec = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		DataRecord record = null;
