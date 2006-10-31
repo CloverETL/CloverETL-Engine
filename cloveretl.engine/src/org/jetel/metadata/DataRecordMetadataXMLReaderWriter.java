@@ -40,7 +40,6 @@ import javax.xml.transform.stream.StreamSource;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
@@ -143,7 +142,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String FIELD_ELEMENT = "Field";
 	private static final String CODE_ELEMENT = "Code";
 	private static final String NAME_ATTR = "name"; 
-	private static final String TYPE_ATTR = "type";
+    private static final String TYPE_ATTR = "type";
+    private static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
@@ -283,7 +283,11 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		else if(record.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) rt = "fixed";
 		else rt = "mixed";
 
-		metadataElement.setAttribute(TYPE_ATTR, rt);
+        metadataElement.setAttribute(TYPE_ATTR, rt);
+
+        if(!StringUtils.isEmpty(record.getRecordDelimiter())) {
+            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, record.getRecordDelimiter());
+        }
 
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
