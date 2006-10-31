@@ -486,13 +486,28 @@ public class StringUtils {
      * @param fromIndex 
      * @return index of first character after identifier name
      */
-    public static int findIdentifierEnd(String str, int fromIndex){
+    public static int findIdentifierEnd(CharSequence str, int fromIndex){
     	int index = fromIndex;
-    	StringBuilder string = new StringBuilder(str);
-    	while (index < str.length() && Character.isUnicodeIdentifierPart(string.charAt(index))){
+    	while (index < str.length() && Character.isUnicodeIdentifierPart(str.charAt(index))){
     		index++;
     	}
     	return index;
+    }
+    
+    /**
+     * This method finds maximal lenth from set of Strings
+     * 
+     * @param strings 
+     * @return length of longest string
+     */
+    public static int getMaxLength(String...strings){
+    	int length = 0;
+    	for (int i=0;i<strings.length;i++){
+    		if (strings[i] != null && strings[i].length() > length){
+    			length = strings[i].length(); 
+    		}
+    	}
+    	return length;
     }
 
 }
