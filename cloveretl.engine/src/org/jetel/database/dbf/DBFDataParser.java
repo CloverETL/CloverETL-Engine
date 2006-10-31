@@ -390,5 +390,9 @@ public class DBFDataParser implements Parser {
 	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
+
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
     
 }

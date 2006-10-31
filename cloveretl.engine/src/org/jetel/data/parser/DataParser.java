@@ -20,8 +20,10 @@
 package org.jetel.data.parser;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
+import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
@@ -82,11 +84,12 @@ public class DataParser implements Parser {
 	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-
+		reader = null;
 	}
 	
 	public DataParser(String charset) {
 		decoder = Charset.forName(charset).newDecoder();
+		reader = null;
 	}
 	
 	/**
@@ -137,11 +140,6 @@ public class DataParser implements Parser {
 		//save metadata
 		this.metadata = metadata;
 
-		//save inputDataSource
-		if (!(inputDataSource instanceof ReadableByteChannel))
-			throw new ComponentNotReadyException("Input stream is not ReadableByteChannel type.");
-		reader = (ReadableByteChannel) inputDataSource;
-
 		//aho-corasick initialize
 		delimiterSearcher = new AhoCorasick();
 
@@ -183,11 +181,57 @@ public class DataParser implements Parser {
 			}
 		}
 
-		//decoder reset
-		decoder.reset();
+		setDataSource(inputDataSource);
+	}
 
-		//record counter reset
-		recordCounter = 0;
+	/**
+	 * Set new data source.
+	 * @param inputDataSource
+	 */
+	public void setDataSource(Object inputDataSource) {
+		releaseDataSource();
+
+		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+
+		decoder.reset();// reset CharsetDecoder
+		byteBuffer.clear();
+		charBuffer.clear();
+		charBuffer.flip();
+		fieldBuffer.setLength(0);
+		recordBuffer.clear();
+		tempReadBuffer.setLength(0);
+		
+		recordCounter = 0;// reset record counter
+
+		if (inputDataSource == null) {
+			reader = null;
+		} else {
+			if (inputDataSource instanceof ReadableByteChannel) {
+				reader = ((ReadableByteChannel)inputDataSource);
+			} else {
+				reader = Channels.newChannel((InputStream)inputDataSource);
+			}
+		}
+	}
+
+
+	/**
+	 * Release data source
+	 *
+	 */
+	private void releaseDataSource() {
+		if (reader == null) {
+			return;
+		}
+		try {
+			reader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		reader = null;		
 	}
 
 	/**
@@ -573,7 +617,7 @@ public class DataParser implements Parser {
 	}
 	
 	public boolean endOfInputChannel() {
-		return !reader.isOpen();
+		return reader == null || !reader.isOpen();
 	}
 	
 	public int getRecordCount() {

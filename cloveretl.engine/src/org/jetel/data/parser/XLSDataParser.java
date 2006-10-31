@@ -516,4 +516,8 @@ public class XLSDataParser implements Parser {
 		return (String[])names.toArray();
 	}
 
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
+
 }
