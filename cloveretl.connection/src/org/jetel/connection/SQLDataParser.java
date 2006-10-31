@@ -306,4 +306,8 @@ public class SQLDataParser implements Parser {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
+	public void setDataSource(Object inputDataSource) {
+		throw new UnsupportedOperationException();
+	}
+
 }
