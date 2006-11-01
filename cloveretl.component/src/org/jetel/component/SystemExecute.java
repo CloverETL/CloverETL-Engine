@@ -347,6 +347,7 @@ public class SystemExecute extends Node{
 			}catch(InterruptedException ex){
 				logger.error("InterruptedException in "+this.getId(),ex);
 				process.destroy();
+				deleteBatch();
 				//interrupt threads if they run still
 				if (getData!=null) {
 					if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
@@ -374,9 +375,7 @@ public class SystemExecute extends Node{
 			if (outputFile!=null) {
 				outputFile.close();
 			}
-			if (interpreter!=null) {
-				batch.delete();
-			}
+			deleteBatch();
 			//chek results of getting and sending data
 			if (getData!=null){
 				if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
@@ -428,10 +427,12 @@ public class SystemExecute extends Node{
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
 			ok = false;;
+			deleteBatch();
 		}catch(Exception ex){
 		    ex.printStackTrace();
 			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
+			deleteBatch();
 			return;
 		}
 		if (!runIt) {
@@ -439,7 +440,6 @@ public class SystemExecute extends Node{
 			ok = false;;
 			resultCode = Node.RESULT_ERROR;
 		}
-		broadcastEOF();
 		if (exitValue!=0){
 			if (outputFile!=null) {
 				logger.error("Process exit value not 0");
@@ -450,6 +450,15 @@ public class SystemExecute extends Node{
 		}
 		if (ok){
 			resultCode = Node.RESULT_OK;
+		}
+		broadcastEOF();
+	}
+	
+	private void deleteBatch(){
+		if (interpreter!=null) {
+			if (!batch.delete()) {
+				logger.warn("Batch file (" + batch.getName() + ")was not deleted");
+			}
 		}
 	}
 
