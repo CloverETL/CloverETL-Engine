@@ -285,7 +285,7 @@ public class XLSDataParser implements Parser {
 		case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
 		case MAP_NAMES:mapNames(fieldNames);break;
 		case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
-		default:throw new ComponentNotReadyException("Mapping type is not set");
+		default:noMetadataInfo();break;
 		}
 	}
 	
@@ -513,7 +513,7 @@ public class XLSDataParser implements Parser {
 			cell = (HSSFCell)i.next();
 			names.add(getStringFromCell(cell));
 		}
-		return (String[])names.toArray();
+		return names.toArray(new String[0]);
 	}
 
 	public void setDataSource(Object inputDataSource) {
