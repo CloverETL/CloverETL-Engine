@@ -75,9 +75,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each fixlen field should be skipped. Default value is TRUE.<br>
  *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
- *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
- *  <tr><td><b>startRecord</b></td><td>index of first parsed record</td>
- *  <tr><td><b>finalRecord</b></td><td>index of final parsed record</td>
+ *  <tr><td><b>skipRows</b></td><td>specifies how many records/rows should be skipped from the source file; good for handling files where first rows is a header not a real data. Dafault is 0.</td>
+ *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
  *  <tr><td><b>quotedStrings</b></td><td>string field can be quoted by '' or ""</td>
  *  <tr><td><b>treatMultipleDelimitersAsOne</b></td><td>if this option is true, then multiple delimiters are recognise as one delimiter</td>
@@ -101,9 +100,8 @@ public class DataReader extends Node {
 
 	/** XML attribute names */
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
-	private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
-	private static final String XML_STARTRECORD_ATTRIBUTE = "startRecord";
-	private static final String XML_FINALRECORD_ATTRIBUTE = "finalRecord";
+	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
+	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	private static final String XML_QUOTEDSTRINGS_ATTRIBUTE = "quotedStrings";
 	private static final String XML_TREATMULTIPLEDELIMITERSASONE_ATTRIBUTE = "treatMultipleDelimitersAsOne";
@@ -114,13 +112,13 @@ public class DataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private final static int LOG_PORT = 1;
 	private String fileURL;
-	private boolean skipFirstLine = false;
-	private int startRecord = -1;
-	private int finalRecord = -1;
+	private int skipRows = -1;
+	private int numRecords = -1;
 	private int maxErrorCount = -1;
     
 	private DataParser parser;
-	private PolicyType policyType = PolicyType.STRICT;
+    private MultiFileReader reader;
+    private PolicyType policyType = PolicyType.STRICT;
 
 	/**
 	 *Constructor for the DelimitedDataReaderNIO object
@@ -173,18 +171,6 @@ public class DataReader extends Node {
         }
 		int errorCount = 0;
 
-        if (startRecord < 0) {
-        	startRecord = 0;
-        }
-        if (isSkipFirstLine()) {
-        	startRecord++;
-        }
-        int recCnt = 0;
-        if (finalRecord > 0) {
-        	recCnt = finalRecord - startRecord;
-        }
-
-		MultiFileReader reader = new MultiFileReader(parser, fileURL, 0, startRecord, recCnt, 0);
 		try {
 			while(runIt) {			
                 try {
@@ -266,13 +252,13 @@ public class DataReader extends Node {
 		if (outPorts.size() > 2) {
 			throw new ComponentNotReadyException(getId() + ": at most two output ports can be defined!");
 		}
-		// try to open input channel & initialize data parser
-		try {
-			parser.open(FileUtils.getReadableChannel(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
-
+        
+		// initialize multifile reader based on prepared parser
+        reader = new MultiFileReader(parser, fileURL);
+        reader.setLogger(logger);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        reader.setSkip(skipRows);
+        reader.setNumRecords(numRecords);
 	}
 
 
@@ -320,14 +306,11 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
-				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+			if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
+				aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_STARTRECORD_ATTRIBUTE)){
-				aDataReader.setStartRecord(xattribs.getInteger(XML_STARTRECORD_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FINALRECORD_ATTRIBUTE)){
-				aDataReader.setFinalRecord(xattribs.getInteger(XML_FINALRECORD_ATTRIBUTE));
+			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+				aDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
 				aDataReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
@@ -345,14 +328,6 @@ public class DataReader extends Node {
 		return aDataReader;
 	}
 	
-	public void setSkipFirstLine(boolean skip) {
-		skipFirstLine = skip;
-	}
-	
-	public boolean isSkipFirstLine() {
-		return skipFirstLine;
-	}
-
 	/**
 	 *  Description of the Method
 	 *
@@ -367,38 +342,17 @@ public class DataReader extends Node {
 	}
 	
 	/**
-	 * @return Returns the startRecord.
-	 */
-	public int getStartRecord() {
-		return startRecord;
-	}
-	
-	/**
 	 * @param startRecord The startRecord to set.
 	 */
-	public void setStartRecord(int startRecord) {
-		if(startRecord < 0 || (finalRecord != -1 && startRecord > finalRecord)) {
-			throw new InvalidParameterException("Invalid StartRecord parametr.");
-		}
-		this.startRecord = startRecord;
-	}
-	
-	/**
-	 * @return Returns the finalRecord.
-	 */
-	
-	public int getFinalRecord() {
-		return finalRecord;
+	public void setSkipRows(int skipRows) {
+		this.skipRows = Math.max(skipRows, 0);
 	}
 	
 	/**
 	 * @param finalRecord The finalRecord to set.
 	 */
-	public void setFinalRecord(int finalRecord) {
-		if(finalRecord < 0 || (startRecord != -1 && startRecord > finalRecord)) {
-			throw new InvalidParameterException("Invalid finalRecord parameter.");
-		}
-		this.finalRecord = finalRecord;
+	public void setNumRecords(int numRecords) {
+		this.numRecords = Math.max(numRecords, 0);
 	}
 
 	/**
