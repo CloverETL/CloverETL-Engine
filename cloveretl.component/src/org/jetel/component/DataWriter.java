@@ -36,8 +36,8 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
-import org.jetel.data.parser.FixLenDataParser3;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
@@ -256,9 +256,10 @@ public class DataWriter extends Node {
 	 *
 	 * @param  nodeXML  Description of Parameter
 	 * @return          Description of the Returned Value
+	 * @throws XMLConfigurationException 
 	 * @since           May 21, 2002
 	 */
-	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
+	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
 		DataWriter aDataWriter = null;
 		
@@ -269,10 +270,9 @@ public class DataWriter extends Node {
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 									xattribs.getInteger(XML_RECORDS_PER_FILE, 0),
 									xattribs.getInteger(XML_BYTES_PER_FILE, 0));
-		}catch(Exception ex){
-			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
-			return null;
-		}
+        } catch (Exception ex) {
+            throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+        }
 		
 		return aDataWriter;
 	}
