@@ -511,7 +511,8 @@ public class XLSDataParser implements Parser {
 		//go through each not empty cell
 		for (Iterator i=row.cellIterator();i.hasNext();){
 			cell = (HSSFCell)i.next();
-			names.add(getStringFromCell(cell));
+			names.add(XLSDataFormatter.getCellCode(cell.getCellNum()) + " - " +
+					getStringFromCell(cell));
 		}
 		return names.toArray(new String[0]);
 	}
