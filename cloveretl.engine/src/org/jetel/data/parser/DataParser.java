@@ -42,6 +42,11 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * Parsing plain text data.
  * 
+ * Known bugs: 
+ * - Method skip() doesn't recognize records without final delimiter/recordDelimiter,
+ *   for example last record in file without termination enter.
+ *   That's why skip() doesn't count unfinished records.
+ *   
  * @author Martin Zatopek, David Pavlis
  * @since September 29, 2005
  * @see Parser
@@ -350,7 +355,7 @@ public class DataParser implements Parser {
                     if(fieldCounter + 1 == metadata.getNumFields()) {
                         populateField(record, fieldCounter, fieldBuffer);
                         if((fieldCounter != 0 || recordBuffer.position() > 0)) { //hack for hack for one column table
-                            reader.close();
+                            //reader.close();
                             return record;
                         }
                     }
@@ -638,38 +643,48 @@ public class DataParser implements Parser {
 		this.treatMultipleDelimitersAsOne = treatMultipleDelimitersAsOne;
 	}
 	
-	/**
-	 * Skip first line/record in input channel.
-	 */
-	public void skipFirstLine() {
-		int character;
-		
-		try {
-			while ((character = readChar()) != -1) {
-				delimiterSearcher.update((char) character);
-				if(delimiterSearcher.isPattern(-2)) {
-					break;
-				}
-			}
-			if(character == -1) {
-				throw new RuntimeException("Skipping first line: record delimiter not found.");
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(getErrorMessage(e.getMessage(),	null, -1));
-		}		
-	}
+//	/**
+//	 * Skip first line/record in input channel.
+//	 */
+//	public void skipFirstLine() {
+//		int character;
+//		
+//		try {
+//			while ((character = readChar()) != -1) {
+//				delimiterSearcher.update((char) character);
+//				if(delimiterSearcher.isPattern(-2)) {
+//					break;
+//				}
+//			}
+//			if(character == -1) {
+//				throw new RuntimeException("Skipping first line: record delimiter not found.");
+//			}
+//		} catch (IOException e) {
+//			throw new RuntimeException(getErrorMessage(e.getMessage(),	null, -1));
+//		}		
+//	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#skip(int)
+	 */
 	public int skip(int count) throws JetelException {
-		if(metadata.isSpecifiedRecordDelimiter()) {
-			for(int i = 0; i < count - 1; i++) {
-				findFirstRecordDelimiter();
+        int skipped;
+
+        if(metadata.isSpecifiedRecordDelimiter()) {
+			for(skipped = 0; skipped < count; skipped++) {
+				if(!findFirstRecordDelimiter()) {
+				    break;
+                }
 			}
 		} else {
-			for(int i = 0; i < count - 1; i++) {
-				findEndOfRecord(0);
+			for(skipped = 0; skipped < count; skipped++) {
+				if(!findEndOfRecord(0)) {
+				    break;
+                }
 			}
 		}
-		return count;
+        
+		return skipped;
 	}
 
     public void setExceptionHandler(IParserExceptionHandler handler) {

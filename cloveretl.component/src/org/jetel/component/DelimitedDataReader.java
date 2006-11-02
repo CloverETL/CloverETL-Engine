@@ -19,13 +19,9 @@
 */
 package org.jetel.component;
 
-import java.nio.channels.ReadableByteChannel;
-import java.util.Iterator;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -35,9 +31,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
+import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
-import org.jetel.util.WcardPattern;
 import org.w3c.dom.Element;
 
 /**
@@ -65,7 +60,7 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DELIMITED_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the input files</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
@@ -97,6 +92,7 @@ public class DelimitedDataReader extends Node {
 	private String fileURL;
 
 	private DelimitedDataParser parser;
+    private MultiFileReader reader;
     private PolicyType policyType;
     private int skipRows=0; // do not skip rows by default
 
@@ -135,48 +131,41 @@ public class DelimitedDataReader extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		// TODO use MultiFileReader to handle multiple input files
 		// we need to create data record - take the metadata from first output port
-		DataRecord rec = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-		DataRecord record = null;
-		rec.init();
+		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
+		record.init();
 
-		WcardPattern pat = new WcardPattern();
-		pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-		Iterator<String> fileItor = pat.filenames().iterator();
-		String filename = null;
-		while (fileItor.hasNext()) {				
-			ReadableByteChannel stream;
-			filename = fileItor.next();
-            logger.info("Start parsing file " + filename);
-			try {
-				stream = FileUtils.getReadableChannel(filename);
-				parser.setDataSource(stream);
-				parser.skip(skipRows);	// skip in each file
-				record = rec;
-				while (record != null && runIt) {
-                    if((record = parser.getNext(record)) != null && runIt) {
+		try {
+			while (record != null && runIt) {
+                try {
+                    if((record = reader.getNext(record)) != null) {
                         //broadcast the record to all connected Edges
                         writeRecordBroadcast(record);
-                        SynchronizeUtils.cloverYield();
                     }
-				}
-            } catch(BadDataFormatException bdfe) {
-                if(policyType == PolicyType.STRICT) {
-                    parser.close();
-                    broadcastEOF();
-                    resultMsg = bdfe.getMessage();
-                    resultCode = Node.RESULT_ERROR;
-                    return;
-                } else {
-                    logger.info(bdfe.getMessage());
+                } catch(BadDataFormatException bdfe) {
+                    if(policyType == PolicyType.STRICT) {
+                        throw bdfe;
+                    } else {
+                        logger.info(bdfe.getMessage());
+                    }
                 }
-			} catch (Exception ex) {
-				logger.error("An error  occured while parsing file \"" + filename + "\": " + ex.getClass().getName()+" : "+ ex.getMessage());
+                SynchronizeUtils.cloverYield();
 			}
+        } catch(BadDataFormatException bdfe) {
+            resultMsg = bdfe.getMessage();
+            resultCode = Node.RESULT_ERROR;
+            reader.close();
+            closeAllOutputPorts();
+            return;
+		} catch (Exception ex) {
+            resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
+            resultCode = Node.RESULT_FATAL_ERROR;
+            reader.close();
+            return;
 		}
+        
 		// we are done, close all connected output ports to indicate end of stream
-		parser.close();
+		reader.close();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
@@ -198,8 +187,12 @@ public class DelimitedDataReader extends Node {
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException(getId() + ": atleast one output port has to be defined!");
 		}
-		// try to initialize data parser
-		parser.open(null, getOutputPort(OUTPUT_PORT).getMetadata());
+
+        // initialize multifile reader based on prepared parser
+        reader = new MultiFileReader(parser, fileURL);
+        reader.setLogger(logger);
+        reader.setSkip(skipRows);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 
