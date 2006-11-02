@@ -19,7 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import org.apache.commons.logging.Log;
@@ -38,7 +37,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -70,11 +68,12 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the input file</td>
+ *  <tr><td><b>fileURL</b></td><td>path to the input files</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each fixlen field should be skipped. Default value is TRUE.<br>
  *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
+ *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b></td><td>specifies how many records/rows should be skipped from the source file; good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
@@ -100,6 +99,7 @@ public class DataReader extends Node {
 
 	/** XML attribute names */
 	private static final String XML_SKIPLEADINGBLANKS_ATTRIBUTE = "skipLeadingBlanks";
+	private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
 	private static final String XML_SKIPROWS_ATTRIBUTE = "skipRows";
 	private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
@@ -112,6 +112,7 @@ public class DataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private final static int LOG_PORT = 1;
 	private String fileURL;
+	private boolean skipFirstLine = false;
 	private int skipRows = -1;
 	private int numRecords = -1;
 	private int maxErrorCount = -1;
@@ -256,9 +257,10 @@ public class DataReader extends Node {
 		// initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, fileURL);
         reader.setLogger(logger);
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 
@@ -306,6 +308,9 @@ public class DataReader extends Node {
 			if (xattribs.exists(XML_SKIPLEADINGBLANKS_ATTRIBUTE)){
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
+				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+			}
 			if (xattribs.exists(XML_SKIPROWS_ATTRIBUTE)){
 				aDataReader.setSkipRows(xattribs.getInteger(XML_SKIPROWS_ATTRIBUTE));
 			}
@@ -328,6 +333,14 @@ public class DataReader extends Node {
 		return aDataReader;
 	}
 	
+	public void setSkipFirstLine(boolean skip) {
+		skipFirstLine = skip;
+	}
+	
+	public boolean isSkipFirstLine() {
+		return skipFirstLine;
+	}
+
 	/**
 	 *  Description of the Method
 	 *

@@ -248,6 +248,7 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 			charBuffer.compact();	// ready for writing
 			decoder.decode(byteBuffer, charBuffer, false);
 			charBuffer.flip();		// ready for reading
+            _savedPos = 0;
 			_savedLim = charBuffer.limit();
 		}
 		// from now on both buffers will stay ready for reading
@@ -357,9 +358,13 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
-			if (findUsefulDelim() == null) {	// end of input data
+            charBuffer.limit(_savedLim);
+            charBuffer.position(_savedPos);
+            int[] delimStartEnd = findUsefulDelim();
+			if (delimStartEnd == null) {	// end of input data
 				break;
 			}
+            _savedPos += delimStartEnd[1];
 		}
 		return skipped;
 	}

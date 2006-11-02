@@ -36,10 +36,10 @@ import org.jetel.metadata.DataRecordMetadata;
  * A class for transparent reading of clover data records from multiple input files.
  * The nested parser is used for parsing all input source files.
  * Usage: 
- * - first instantiate some suitable parser, set all its parameters (don't call open or init methods)
+ * - first instantiate some suitable parser, set all its parameters (don't call open or init method)
  * - optionally set appropriate logger
- * - call init method with metadata for reading input sources
  * - sets required multifile reader parameters (setFileSkip(), setSkip(), setNumRecords(), ...)
+ * - call init method with metadata for reading input sources
  * - at last one can use this reader in the same way as all parsers via nextRecord method called in cycle
  * 
  * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
@@ -130,7 +130,7 @@ public class MultiFileReader {
 				stream = FileUtils.getReadableChannel(filename);
 				logger.debug("Reading input file " + filename);
 				parser.setDataSource(stream);
-				parser.skip(fileSkip);
+				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
 			} catch (IOException e) {
 				logger.error("Skipping unreadable file " + filename, e);
