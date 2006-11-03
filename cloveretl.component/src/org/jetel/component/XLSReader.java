@@ -121,15 +121,15 @@ public class XLSReader extends Node {
     static Log logger = LogFactory.getLog(XLSReader.class);
 
 	/** XML attribute names */
-	private static final String XML_STARTROW_ATTRIBUTE = "startRow";
-	private static final String XML_FINALROW_ATTRIBUTE = "finalRow";
-	private static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
-	private final static String XML_FILE_ATTRIBUTE = "fileURL";
-	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
-	private final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
-	private final static String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
-	private final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
-	private final static String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
+	public static final String XML_STARTROW_ATTRIBUTE = "startRow";
+	public static final String XML_FINALROW_ATTRIBUTE = "finalRow";
+	public static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
+	public final static String XML_FILE_ATTRIBUTE = "fileURL";
+	public final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
+	public final static String XML_SHEETNAME_ATTRIBUTE = "sheetName";
+	public final static String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
+	public final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
+	public final static String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
 	
 	private final static String ASSIGMENT_STRING = "=";
 	private final static int OUTPUT_PORT = 0;
