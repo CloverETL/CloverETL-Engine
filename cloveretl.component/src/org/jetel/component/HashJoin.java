@@ -1,34 +1,36 @@
 /*
-*    jETeL/Clover - Java based ETL application framework.
-*    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
-*    
-*    This library is free software; you can redistribute it and/or
-*    modify it under the terms of the GNU Lesser General Public
-*    License as published by the Free Software Foundation; either
-*    version 2.1 of the License, or (at your option) any later version.
-*    
-*    This library is distributed in the hope that it will be useful,
-*    but WITHOUT ANY WARRANTY; without even the implied warranty of
-*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
-*    Lesser General Public License for more details.
-*    
-*    You should have received a copy of the GNU Lesser General Public
-*    License along with this library; if not, write to the Free Software
-*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-*
-*/
+ *    jETeL/Clover - Java based ETL application framework.
+ *    Copyright (C) 2002-04  David Pavlis <david_pavlis@hotmail.com>
+ *    
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *    
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+ *    Lesser General Public License for more details.
+ *    
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *
+ */
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -39,7 +41,6 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.DuplicateKeyMap;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -62,18 +63,27 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- *        Joins records on input ports. It expects that on port [0], there is a
- *	driver and on port [1] is a slave<br>
+ *  Joins records on input ports. It expects driver stream at port [0] and 
+ *  slave streams at other input ports. Slave streams are expected to be small enough
+ *  to store all the slave records in hashtable.<br>
+ *  Each driver record is joined with corresponding slave records according
+ *  to join keys specification. 
  *	For each driver record, slave record is looked up in Hashtable which is created
  *	from all records on slave port.
- *	Pair of driver and slave records is sent to transformation class.<br>
- *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
+ *	Tuple of driver and slave records is sent to transformation class.<br>
+ *	The method <i>transform</i> is called for every tuple of driver and
+ *  corresponding slaves.<br>
  *	It skips driver records for which there is no corresponding slave - unless outer
  *	join is specified, when only driver record is passed to <i>transform</i> method.<br>
  *  In this case be sure, that your transform code is prepared processe null input records. 
- *	Hash join does not require input data be sorted. But it spends some time at the beginning
+ *  There are three join modes available: inner, left outer, full outer.<br>
+ *  Inner mode skips driver records with missing slaves. Left outer mode process even
+ *  driver records with missing slaves. Full outer mode additionally calls transformation
+ *  method for run-away slaves - those without driver.<br>
+ *	Hash join does not require input data to be sorted. But it spends some time at the beginning
  *	initializing hashtable of slave records.
- *	It is generally good idea to specify how many records are expected to be stored in hashtable, especially
+ *	It is generally good idea to specify how many records are expected to be stored in each hashtable
+ *  (there is one hashtable per each slave input), especially
  *	when you expect the number to be really great. It is better to specify slightly greater number to ensure
  *	that rehashing won't occure. For small record sets - up to 512 records, there is no need to specify the
  *	size.
@@ -99,15 +109,18 @@ import org.w3c.dom.Element;
  *    <th>XML attributes:</th>
  *    <tr><td><b>type</b></td><td>"HASH_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
- *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>join key specification in format<br>
+ *    <tt>[driver_key_list1]{*[slave_key_list1]}|[driver_key_list2]{*[slave_key_list2]}|...</tt><br>
+ *    Each key list consists of comma-separated field names. In case slave key list is missing,
+ *    it is supposed to be identical with driver key list. Order of driver/slave key list pairs corresponds
+ *    to order of slave input ports. Therefore number of pairs should be equal to number of slave inputs.</td></tr>
  *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td>
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
- *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false  See description of the HashJoin component.</td></tr>
+ *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
  *    duplicate records are discarded - only the last one read from port stays.</td></tr>
@@ -141,14 +154,18 @@ import org.w3c.dom.Element;
  * @created     09. March 2004
  */
 public class HashJoin extends Node {
+	public enum Join {
+		INNER,
+		LEFT_OUTER,
+		FULL_OUTER,
+	}
 
 	private static final String XML_HASHTABLESIZE_ATTRIBUTE = "hashTableSize";
-	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
-	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_JOINTYPE_ATTRIBUTE = "joinType";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
-    private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
+	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
@@ -157,28 +174,30 @@ public class HashJoin extends Node {
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int DRIVER_ON_PORT = 0;
-	private final static int SLAVE_ON_PORT = 1;
+	private final static int FIRST_SLAVE_PORT = 1;
 
 	private String transformClassName;
 
 	private RecordTransform transformation = null;
 	private String transformSource = null;
 
-	private boolean leftOuterJoin;
-    private boolean slaveDuplicates=false;
+	private Join join;
+	private boolean slaveDuplicates=false;
 
-	private String[] joinKeys;
-	private String[] slaveOverrideKeys = null;
-
-	private RecordKey driverKey;
-	private RecordKey slaveKey;
-
-	private Map hashMap;
-	private int hashTableInitialCapacity;
+	private String[][] driverJoiners;
+	private String[][] slaveJoiners;
 	
+	private RecordKey[] driverKeys;
+	private RecordKey[] slaveKeys;
+
+	private HashMap<HashKey, MapItem>[] hashMap;
+	private int hashTableInitialCapacity;
+
 	private Properties transformationParameters;
 
 	static Log logger = LogFactory.getLog(HashJoin.class);
+
+	private int slaveCnt;
 
 	/**
 	 *Constructor for the HashJoin object
@@ -188,36 +207,25 @@ public class HashJoin extends Node {
 	 * @param  transformClass  Description of the Parameter
 	 * @param  leftOuterJoin   Description of the Parameter
 	 */
-	public HashJoin(String id, String[] joinKeys, String transform,
-			String transformClass, boolean leftOuterJoin) {
+	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, String transform,
+			String transformClass, Join join) {
 		super(id);
-		this.joinKeys = joinKeys;
 		this.transformSource =transform;
 		this.transformClassName = transformClass;
-		this.leftOuterJoin = leftOuterJoin;
+		this.join = join;
 		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
+		this.driverJoiners = driverJoiners;
+		this.slaveJoiners = slaveJoiners;
 	}
-
 
 //	/**
-//	 *  Sets the leftOuterJoin attribute of the HashJoin object
-//	 *
-//	 * @param  outerJoin  The new leftOuterJoin value
-//	 */
+//	*  Sets the leftOuterJoin attribute of the HashJoin object
+//	*
+//	* @param  outerJoin  The new leftOuterJoin value
+//	*/
 //	public void setLeftOuterJoin(boolean outerJoin) {
-//		leftOuterJoin = outerJoin;
+//	leftOuterJoin = outerJoin;
 //	}
-//
-
-	/**
-	 *  Sets the slaveOverrideKey attribute of the HashJoin object
-	 *
-	 * @param  slaveKeys  The new slaveOverrideKey value
-	 */
-	public void setSlaveOverrideKey(String[] slaveKeys) {
-		this.slaveOverrideKeys = slaveKeys;
-	}
-
 
 	/**
 	 *  Sets the hashTableInitialCapacity attribute of the HashJoin object
@@ -232,164 +240,256 @@ public class HashJoin extends Node {
 
 
 	/**
-     * Description of the Method
-     * 
-     * @exception ComponentNotReadyException
-     *                Description of the Exception
-     */
-    public void init() throws ComponentNotReadyException {
-        // test that we have at least one input port and one output
-        if (inPorts.size() < 2) {
-            throw new ComponentNotReadyException(
-                    "At least two input ports have to be defined!");
-        } else if (outPorts.size() < 1) {
-            throw new ComponentNotReadyException(
-                    "At least one output port has to be defined!");
-        }
-        if (slaveOverrideKeys == null) {
-            slaveOverrideKeys = joinKeys;
-        }
-        (driverKey = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT)
-                .getMetadata())).init();
-        (slaveKey = new RecordKey(slaveOverrideKeys,
-                getInputPort(SLAVE_ON_PORT).getMetadata())).init();
+	 * Description of the Method
+	 * 
+	 * @exception ComponentNotReadyException
+	 *                Description of the Exception
+	 */
+	public void init() throws ComponentNotReadyException {
+		// test that we have at least one input port and one output
+		if (inPorts.size() < 1) {
+			throw new ComponentNotReadyException(
+					"At least one input ports has to be defined!");
+		} else if (outPorts.size() < 1) {
+			throw new ComponentNotReadyException(
+					"At least one output port has to be defined!");
+		}
+		slaveCnt = inPorts.size() - 1;
+		if (driverJoiners.length < slaveCnt || slaveJoiners.length < slaveCnt) {
+			throw new ComponentNotReadyException("driver-slave key pair not specified for all slave inputs");
+		}
 
-        // allocate HashMap
-        try {
-            hashMap = new HashMap(hashTableInitialCapacity);
-            if (slaveDuplicates)
-                hashMap = new DuplicateKeyMap(hashMap);
-        } catch (OutOfMemoryError ex) {
-            logger.fatal(ex);
-        } finally {
-            if (hashMap == null) {
-                throw new ComponentNotReadyException(
-                        "Can't allocate HashMap of size: "
-                                + hashTableInitialCapacity);
-            }
-        }
-        // init transformation
-        DataRecordMetadata[] inMetadata = (DataRecordMetadata[]) getInMetadata()
-                .toArray(new DataRecordMetadata[0]);
-        DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
-                WRITE_TO_PORT).getMetadata() };
-        try {
-            transformation = RecordTransformFactory.createTransform(
-            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
-        }
-    }
+		driverKeys = new RecordKey[slaveCnt];
+		slaveKeys = new RecordKey[slaveCnt];
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			driverKeys[idx] = new RecordKey(driverJoiners[idx], getInputPort(DRIVER_ON_PORT).getMetadata());
+			driverKeys[idx].init();
+			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+			slaveKeys[idx].init();
+		}
+
+		// allocate maps		
+		try {
+			hashMap = (HashMap<HashKey, MapItem>[])new HashMap[slaveCnt];
+			for (int idx = 0; idx < slaveCnt; idx++) {
+				hashMap[idx] = new HashMap<HashKey, MapItem>(hashTableInitialCapacity);
+			}
+		} catch (OutOfMemoryError ex) {
+			logger.fatal(ex);
+			throw new ComponentNotReadyException("Can't allocate HashMap of size: "	+ hashTableInitialCapacity);
+		}
+
+		// init transformation
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+				getOutputPort(WRITE_TO_PORT).getMetadata()};
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[1 + slaveCnt];
+		inMetadata[0] = getInputPort(DRIVER_ON_PORT).getMetadata();
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
+		}
+		try {
+			transformation = RecordTransformFactory.createTransform(
+					transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
+		} catch(Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
+	}
 
 
-    /**
-     * @param transformationParameters
-     *            The transformationParameters to set.
-     */
-    public void setTransformationParameters(Properties transformationParameters) {
-        this.transformationParameters = transformationParameters;
-    }
+	/**
+	 * @param transformationParameters
+	 *            The transformationParameters to set.
+	 */
+	public void setTransformationParameters(Properties transformationParameters) {
+		this.transformationParameters = transformationParameters;
+	}
 	/**
 	 *  Main processing method for the SimpleCopy object
 	 *
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		InputPort inDriverPort = getInputPort(DRIVER_ON_PORT);
-		InputPort inSlavePort = getInputPort(SLAVE_ON_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-		DataRecordMetadata slaveRecordMetadata = inSlavePort.getMetadata();
-		DataRecord driverRecord;
-		DataRecord slaveRecord;
-		DataRecord storeRecord;
-		DataRecord outRecord[]= {new DataRecord(outPort.getMetadata())};
-		DataRecord[] inRecords = new DataRecord[2];
-
-		slaveRecord=new DataRecord(inSlavePort.getMetadata());
-		slaveRecord.init();
-		
-		// first read all records from SLAVE port
-		while (slaveRecord!=null && runIt) {
-			try {
-				if ((slaveRecord=inSlavePort.readRecord(slaveRecord)) != null) {
-				    storeRecord=slaveRecord.duplicate();
-					hashMap.put(new HashKey(slaveKey, storeRecord),
-							storeRecord);
-				} 
-				SynchronizeUtils.cloverYield();
-
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
-			}
+		InputReader[] slaveReader = new InputReader[slaveCnt];
+		// read slave ports in separate threads
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			slaveReader[idx] = new InputReader(idx);
+			slaveReader[idx].start();
 		}
-		//XDEBUG START
-//		if (logger.isDebugEnabled()) {
-//			for (Iterator i = hashMap.values().iterator(); i.hasNext();) {
-//				logger.debug("> " + i.next());
-//			}
-//			logger.debug("***KEYS***");
-//			for (Iterator i = hashMap.keySet().iterator(); i.hasNext();) {
-//				logger.debug("> " + i.next());
-//			}
-//		}
-		//XDEBUG END
-
-		// now read all records from DRIVER port and try to look up corresponding
-		// record from SLAVE records set.
-		driverRecord = new DataRecord(inDriverPort.getMetadata());
-		driverRecord.init();
-		outRecord[0].init();
-		HashKey driverHashKey = new HashKey(driverKey, driverRecord);
-		inRecords[0] = driverRecord;
-
-		while (runIt && driverRecord != null) {
-			try {
-				driverRecord = inDriverPort.readRecord(driverRecord);
-				if (driverRecord != null) {
-					// let's find slave record
-					slaveRecord = (DataRecord) hashMap.get(driverHashKey);
-					// do we have it or is OuterJoin enabled ?
-					if ((slaveRecord != null) || (leftOuterJoin)) {
-						// call transformation function
-                        do {
-                            inRecords[1] = slaveRecord;
-						try{
-						    if (!transformation.transform(inRecords, outRecord)) {
-						        resultCode = Node.RESULT_ERROR;
-						        resultMsg = transformation.getMessage();
-						        return;
-						    }
-                            
-						}catch(NullPointerException ex){
-						    logger.error("Null pointer exception when transforming input data",ex);
-						    logger.info("Possibly incorrectly handled outer-join situation");
-						    throw new RuntimeException("Null pointer exception when transforming input data",ex);
-						}
-						outPort.writeRecord(outRecord[0]);
-                        }while(slaveDuplicates && 
-                                (slaveRecord = (DataRecord)((DuplicateKeyMap)hashMap).getNext())!=null);
-					}
+		// wait for slave input threads to finish their job
+		boolean killIt = false;
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			while (slaveReader[idx].getState() != Thread.State.TERMINATED) {
+				if (killIt) {
+					slaveReader[idx].interrupt();
+					break;
 				}
-				SynchronizeUtils.cloverYield();
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
+				killIt = !runIt;
+				try {
+					slaveReader[idx].join(1000);
+				} catch (InterruptedException e) {
+					logger.warn(getId() + "thread interrupted, it will interrupt child threads", e);
+					killIt = true;
+				}
 			}
 		}
-		// signal end of records stream
+		slaveReader = null;
+
+		// now we can suppose maps are filled with records from slave input ports
+		
+		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
+		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
+
+		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
+		driverRecord.init();
+		DataRecord[] inRecords = new DataRecord[1 + slaveCnt];
+		inRecords[0] = driverRecord;
+		DataRecord[] outRecords = new DataRecord[1];
+		outRecords[0] = new DataRecord(outPort.getMetadata());
+		outRecords[0].init();
+		HashKey[] hashKey = new HashKey[slaveCnt];
+		MapItem[] slaveRecords = new MapItem[slaveCnt];
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			hashKey[idx] = new HashKey(driverKeys[idx], driverRecord);
+		}
+		while (runIt) {
+			int slaveIdx;
+			try {
+				if (driverPort.readRecord(driverRecord) == null) { // no more input data
+					resultCode = Node.RESULT_OK;
+					resultMsg = "succeeded";
+					break;
+				}
+				for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+					slaveRecords[slaveIdx] = hashMap[slaveIdx].get(hashKey[slaveIdx]);
+					if (slaveRecords[slaveIdx] == null) {
+						if (join == Join.INNER) {	// missing slave
+							break;
+						}
+						slaveRecords[slaveIdx] = new MapItem();
+						slaveRecords[slaveIdx].records.add(null);
+					}
+					slaveRecords[slaveIdx].indicator = true;
+				}
+				if (slaveIdx < slaveCnt) {	// missing slaves
+					continue;	// read next driver
+				}
+			} catch (InterruptedException e) {
+				logger.error(getId() + ": thread forcibly aborted", e);
+				resultCode = Node.RESULT_ERROR;
+				resultMsg = "thread forcibly interrupted";
+				break;
+			} catch (IOException e) {
+				logger.error(getId() + ": thread failed", e);
+				resultCode = Node.RESULT_FATAL_ERROR;
+				resultMsg = "thread failed";
+				break;
+			}
+
+			// we need to generate all combinations of slaves 
+			int[] cnt = new int[slaveCnt];
+			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				cnt[slaveIdx] = slaveDuplicates ? slaveRecords[slaveIdx].records.size() : 1;
+			}
+			for (int recIdx = 0; true; recIdx++) {
+				int q = recIdx;
+				for (slaveIdx = 0; slaveIdx < slaveCnt - 1; slaveIdx++) {					
+					inRecords[1 + slaveIdx] = slaveRecords[slaveIdx].records.get(q%cnt[slaveIdx]);
+					q /= cnt[slaveIdx];
+				}
+				if (q >= cnt[slaveCnt - 1]) { // all combinations exhausted
+					break;
+				}
+				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
+
+				try{
+					if (!transformation.transform(inRecords, outRecords)) {
+						resultCode = Node.RESULT_ERROR;
+						resultMsg = transformation.getMessage();
+						transformation.finished();
+						setEOF(WRITE_TO_PORT);
+						return;
+					}
+				} catch(NullPointerException ex){
+					if (join == Join.INNER) {
+						throw ex;
+					}
+					logger.error("Null pointer exception when transforming input data",ex);
+					logger.info("Possibly incorrectly handled outer situation");
+					throw new RuntimeException("Null pointer exception when transforming input data",ex);
+				}
+				try {
+					outPort.writeRecord(outRecords[0]);
+					outRecords[0].reset();
+				} catch (IOException ex) {
+					resultMsg = ex.getMessage();
+					resultCode = Node.RESULT_ERROR;
+					closeAllOutputPorts();
+					transformation.finished();
+					setEOF(WRITE_TO_PORT);
+					return;
+				} catch (Exception ex) {
+					resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+					resultCode = Node.RESULT_FATAL_ERROR;
+					transformation.finished();
+					setEOF(WRITE_TO_PORT);
+					return;
+				}
+	 		}
+			SynchronizeUtils.cloverYield();
+		} // while
+		if (join == Join.FULL_OUTER) {
+			for (int idx = 0; idx < slaveCnt + 1; idx++) {
+				inRecords[idx] = null;
+			}
+			for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
+					if (pair.getValue().indicator && slaveDuplicates) {
+						continue;	// all slave records in collection were already used
+					}
+					Iterator<DataRecord> itor = pair.getValue().records.iterator();
+					if (pair.getValue().indicator) {
+						itor.next();	// first slave record in collection was already used
+					}
+					// process unused records
+					while (itor.hasNext()) {
+						DataRecord record = itor.next();
+						inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
+						try{
+							if (!transformation.transform(inRecords, outRecords)) {
+								resultCode = Node.RESULT_ERROR;
+								resultMsg = transformation.getMessage();
+								transformation.finished();
+								setEOF(WRITE_TO_PORT);
+								return;
+							}
+						} catch(NullPointerException ex){
+							logger.error("Null pointer exception when transforming input data",ex);
+							logger.info("Possibly incorrectly handled outer situation");
+							throw new RuntimeException("Null pointer exception when transforming input data",ex);
+						}
+						try {
+							outPort.writeRecord(outRecords[0]);
+							outRecords[0].reset();
+						} catch (IOException ex) {
+							resultMsg = ex.getMessage();
+							resultCode = Node.RESULT_ERROR;
+							closeAllOutputPorts();
+							transformation.finished();
+							setEOF(WRITE_TO_PORT);
+							return;
+						} catch (Exception ex) {
+							resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+							resultCode = Node.RESULT_FATAL_ERROR;
+							transformation.finished();
+							setEOF(WRITE_TO_PORT);
+							return;
+						}
+						
+					} // for 
+				} // for
+				inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
+			} // for all slaves
+		}
 		transformation.finished();
 		setEOF(WRITE_TO_PORT);
 		if (runIt) {
@@ -400,7 +500,6 @@ public class HashJoin extends Node {
 		resultCode = Node.RESULT_OK;
 	}
 
-
 	/**
 	 *  Description of the Method
 	 *
@@ -409,41 +508,51 @@ public class HashJoin extends Node {
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		
+
 		if (transformClassName != null) {
 			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
 		} 
-		
+
 		if (transformSource!=null){
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
-		
-		if (joinKeys != null) {
-			String jKeys = joinKeys[0];
-			for (int i=1; i< joinKeys.length; i++) {
-				jKeys += Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]; 
+
+		String joinStr = "";
+		for (int i = 0; true; i++) {
+			for (int j = 0; true; j++) {
+				joinStr += driverJoiners[i][j];
+				if (j == driverJoiners[i].length - 1) {
+					break;	// leave inner loop
+				}
+				joinStr += ",";
 			}
-			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, jKeys);
-		}
-		
-		if (slaveOverrideKeys != null) {
-			String overKeys = slaveOverrideKeys[0];
-			for (int i=1; i< slaveOverrideKeys.length; i++) {
-				overKeys += Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]; 
+			joinStr += "*";
+			for (int j = 0; true; j++) {
+				joinStr += slaveJoiners[i][j];
+				if (j == slaveJoiners[i].length - 1) {
+					break;	// leave inner loop
+				}
+				joinStr += ",";
 			}
-			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE, overKeys);
+			if (i == driverJoiners.length - 1) {
+				break;	// leave outer loop
+			}
+			joinStr += "|";
 		}
-		
-		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(this.leftOuterJoin));
-		
+		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, joinStr);
+
+
+		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
+				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
+
 		if (hashTableInitialCapacity > DEFAULT_HASH_TABLE_INITIAL_CAPACITY ) {
 			xmlElement.setAttribute(XML_HASHTABLESIZE_ATTRIBUTE, String.valueOf(hashTableInitialCapacity));
 		}
-        
-        if (slaveDuplicates){
-            xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
-        }
-		
+
+		if (slaveDuplicates){
+			xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
+		}
+
 		Enumeration propertyAtts = transformationParameters.propertyNames();
 		while (propertyAtts.hasMoreElements()) {
 			String attName = (String)propertyAtts.nextElement();
@@ -452,6 +561,23 @@ public class HashJoin extends Node {
 	}
 
 
+	private static String[][][] parseJoiners(String joinBy) throws XMLConfigurationException {
+		String[][][] res = new String[2][][];
+		String[] pairs = joinBy.split("\\|");
+		res[0] = new String[pairs.length][];
+		res[1] = new String[pairs.length][];
+
+		for (int i = 0; i < pairs.length; i++) {
+			String[] keys = pairs[i].split("\\*");
+			if (keys.length < 1 && keys.length > 2) {
+				throw new XMLConfigurationException("Invalid join pair: " + pairs[i]);
+			}
+			res[0][i] = keys[0].split(",");
+			res[1][i] = keys[keys.length == 1 ? 0 : 1].split(",");
+		}
+		return res;
+	}
+
 	/**
 	 *  Description of the Method
 	 *
@@ -459,38 +585,47 @@ public class HashJoin extends Node {
 	 * @return          Description of the Returned Value
 	 * @since           May 21, 2002
 	 */
-    public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
+	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		HashJoin join;
 
 		try {
-            join = new HashJoin(
-                    xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
-                    xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                    xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE,false));
-
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
-						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-
+			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
+			Join joinType;
+			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
+				joinType = Join.INNER;
+			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
+				joinType = Join.LEFT_OUTER;
+			} else if (joinStr.equalsIgnoreCase("fullOuter")) {
+				joinType = Join.FULL_OUTER;
+			} else {
+				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
+						+ "Invalid joinType specification: " + joinStr);				
 			}
+
+			String[][][] joiners = parseJoiners(xattribs.getString(XML_JOINKEY_ATTRIBUTE, ""));
+
+			join = new HashJoin(
+					xattribs.getString(XML_ID_ATTRIBUTE),
+					joiners[0], joiners[1],
+					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
+					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+					joinType);
+
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
 			}
-            if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
-                join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
-            }
+			if (xattribs.exists(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE)) {
+				join.setSlaveDuplicates(xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE));
+			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
-			                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
-			                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
-			                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
-			                		XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
-			
+					new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
+							XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE, XML_JOINTYPE_ATTRIBUTE,
+							XML_HASHTABLESIZE_ATTRIBUTE,XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE}));
+
 			return join;
 		} catch (Exception ex) {
-	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
+			throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 	/**
@@ -506,12 +641,68 @@ public class HashJoin extends Node {
 		return COMPONENT_TYPE;
 	}
 
-    public boolean isSlaveDuplicates() {
-        return slaveDuplicates;
-    }
+	public boolean isSlaveDuplicates() {
+		return slaveDuplicates;
+	}
 
-    public void setSlaveDuplicates(boolean slaveDuplicates) {
-        this.slaveDuplicates = slaveDuplicates;
-    }
+	public void setSlaveDuplicates(boolean slaveDuplicates) {
+		this.slaveDuplicates = slaveDuplicates;
+	}
+	
+	private static class MapItem {
+		public ArrayList<DataRecord> records;
+		public boolean indicator;
+		public MapItem() {
+			records = new ArrayList<DataRecord>(1);
+			indicator = false;
+		}
+	}
+	
+	private class InputReader extends Thread {
+		private InputPort inPort;
+		private Map<HashKey, MapItem> map;
+		RecordKey recKey;
+		DataRecordMetadata metadata;
+
+		public InputReader(int slaveIdx) {
+			super(Thread.currentThread().getName() + ".InputThread#" + slaveIdx);
+			runIt = true;
+			map = hashMap[slaveIdx];
+			inPort = getInputPort(FIRST_SLAVE_PORT + slaveIdx);
+			metadata = inPort.getMetadata();
+			recKey = slaveKeys[slaveIdx];
+		}
+		
+		public void run() {
+			while (runIt) {
+				try {
+					DataRecord record = new DataRecord(metadata);
+					record.init();
+					if (inPort.readRecord(record) == null) { // no more input data
+						resultMsg = "succeeded";
+						resultCode = RESULT_OK;
+						return;
+					}
+					HashKey key = new HashKey(recKey, record);
+					MapItem item = map.get(key);
+					if (item == null) { // this is first record associated with current key
+						// create map item
+						item = new MapItem();
+						// put it into map
+						map.put(key, item);
+					}
+					item.records.add(record);
+				} catch (InterruptedException e) {
+					logger.error(getId() + ": thread forcibly aborted", e);
+					return;
+				} catch (IOException e) {
+					logger.error(getId() + ": thread failed", e);
+					return;
+				}					
+			} // while
+			resultMsg = "thread aborted";
+			resultCode = RESULT_ABORTED;
+		}
+	}	
 }
 
