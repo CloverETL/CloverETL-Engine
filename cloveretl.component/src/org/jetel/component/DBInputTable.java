@@ -152,8 +152,8 @@ public class DBInputTable extends Node {
         if (connection==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
         }
-		parser.open(connection, getOutputPort(WRITE_TO_PORT).getMetadata());
-		
+		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
+		parser.setDataSource(connection);
 	}
 
 

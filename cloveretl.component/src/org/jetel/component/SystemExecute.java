@@ -294,7 +294,8 @@ public class SystemExecute extends Node{
 			// If there is input port read records and write them to input stream of the process
 			GetData getData=null; 
 			if (inPort!=null) {
-                formatter.open(Channels.newChannel(process_in),getInputPort(INPUT_PORT).getMetadata());
+                formatter.init(getInputPort(INPUT_PORT).getMetadata());
+                formatter.setDataTarget(Channels.newChannel(process_in));
                 getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
 				getData.start();
 			}
@@ -303,7 +304,8 @@ public class SystemExecute extends Node{
 			SendDataToFile sendDataToFile = null;
 			SendDataToFile sendErrToFile = null;
 			if (outPort!=null){
-                parser.open(process_out, getOutputPort(OUTPUT_PORT).getMetadata());
+                parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+                parser.setDataSource(process_out);
                 sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
 				//send all out_records to output ports
 				sendData.start();

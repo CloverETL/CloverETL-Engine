@@ -220,7 +220,8 @@ public class CloverDataReader extends Node {
 				parser.skip(startRecord);
 			}catch (JetelException ex) {}
 		}
-		parser.open(fileURL, getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        parser.setDataSource(fileURL);
 	}
 	
 	public void setStartRecord(int startRecord){

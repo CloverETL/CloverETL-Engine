@@ -404,7 +404,8 @@ public class XLSReader extends Node {
 			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
 		}
 		try {
-			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
+			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+            parser.setDataSource(new FileInputStream(fileURL));
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}

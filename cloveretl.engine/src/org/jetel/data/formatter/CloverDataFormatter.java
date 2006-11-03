@@ -98,32 +98,37 @@ public class CloverDataFormatter implements Formatter {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata)
+	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
-		//create output stream
-		if (out instanceof ZipOutputStream) {
-			this.out = (ZipOutputStream)out;
-		}else{
-			this.out = (FileOutputStream)out;
-		}
-		writer = Channels.newChannel(this.out);
-		buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		if (saveIndex) {//create temporary index file
-			String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
-			idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
-			try{
-				idxWriter = Channels.newChannel(new DataOutputStream(
-						new FileOutputStream(idxTmpFile)));
-			}catch(IOException ex){
-				throw new ComponentNotReadyException(ex);
-			}
-			idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		}
+        buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        if (saveIndex) {//create temporary index file
+            String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+            idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
+            try{
+                idxWriter = Channels.newChannel(new DataOutputStream(
+                        new FileOutputStream(idxTmpFile)));
+            }catch(IOException ex){
+                throw new ComponentNotReadyException(ex);
+            }
+            idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        }
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object outputDataTarget) {
+        //create output stream
+        if (out instanceof ZipOutputStream) {
+            this.out = (ZipOutputStream)out;
+        }else{
+            this.out = (FileOutputStream)out;
+        }
+        writer = Channels.newChannel(this.out);
+    }
 
 	
 	/* (non-Javadoc)//			writer.close();
@@ -236,7 +241,7 @@ public class CloverDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
-	public void write(DataRecord record) throws IOException {
+	public int write(DataRecord record) throws IOException {
 		recordSize = record.getSizeSerialized();
 		if (saveIndex) {
 			//if size is grater then Short, change to negative Short
@@ -253,6 +258,8 @@ public class CloverDataFormatter implements Formatter {
 		}
 		buffer.putInt(recordSize);
 		record.serialize(buffer);
+        
+        return recordSize + LEN_SIZE_SPECIFIER;
 	}
 
 	/* (non-Javadoc)
@@ -262,14 +269,6 @@ public class CloverDataFormatter implements Formatter {
 		ByteBufferUtils.flush(buffer,writer);
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public boolean isSaveIndex() {
 		return saveIndex;
 	}

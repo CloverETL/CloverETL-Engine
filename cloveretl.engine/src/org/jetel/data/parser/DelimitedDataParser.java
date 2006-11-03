@@ -175,15 +175,10 @@ public class DelimitedDataParser implements Parser {
 	}
 
 
-	/**
-	 *  An operation that opens/initializes parser.
-	 *
-	 *@param  in         InputStream of delimited text data
-	 *@param  _metadata  Metadata describing the structure of data
-	 *@since             March 27, 2002
-	 *@throws ComponentNotReadyException
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object in, DataRecordMetadata metadata)
+	public void init(DataRecordMetadata metadata)
 	throws ComponentNotReadyException {
 		if (metadata.getRecType() != DataRecordMetadata.DELIMITED_RECORD) {
 			throw new ComponentNotReadyException("Delimited data expected but not encountered");
@@ -200,12 +195,10 @@ public class DelimitedDataParser implements Parser {
 			fieldTypes[i] = fieldMetadata.getType();
 			// we handle only one character delimiters
 		}
-		setDataSource(in);
 	}
 
-	/**
-	 * Set new data source.
-	 * @param inputDataSource
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) {
 		releaseDataSource();

@@ -20,7 +20,6 @@
 package org.jetel.lookup;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,11 +30,11 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -223,9 +222,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
                 parser = new DelimitedDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             } else {
-                parser = new FixLenDataParser2(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+                parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             }
-            parser.open(new FileInputStream(xattribs.getString(XML_FILE_URL)), metadata);
+            parser.init(metadata);
+            parser.setDataSource(new FileInputStream(xattribs.getString(XML_FILE_URL)));
             
             lookupTable = new SimpleLookupTable(id, metadata, keys, parser, initialSize);
             

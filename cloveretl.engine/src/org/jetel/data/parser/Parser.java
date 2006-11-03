@@ -59,14 +59,19 @@ public interface Parser {
 
 	// Operations
 	/**
-	 *  Initialization of data parser
+	 *  Initialization of data parser by given metadata.
 	 *
-	 * @param  in         Description of Parameter
 	 * @param  _metadata  Description of Parameter
 	 * @since             March 27, 2002
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException;
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException;
 
+    /**
+     * Sets input data source. Some of parsers allow to call this method repeatedly.
+     * @param inputDataSource
+     * @throws ComponentNotReadyException
+     */
+    public void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
 
 	/**
 	 *  Closing/deinitialization of parser
@@ -92,7 +97,6 @@ public interface Parser {
     
     public PolicyType getPolicyType();
 
-	public void setDataSource(Object inputDataSource);
     
 }
 /*

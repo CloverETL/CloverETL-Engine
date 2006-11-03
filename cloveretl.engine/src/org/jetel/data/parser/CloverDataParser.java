@@ -95,88 +95,94 @@ public class CloverDataParser implements Parser {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object in, DataRecordMetadata _metadata)
+	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
-		String fileName;
-		//set input stream
-		try {
-			switch (compressedData) {
-			case 1:
-				this.in = new ZipInputStream(new FileInputStream((String)in));
-				break;
-			case 0:
-				this.in = new FileInputStream((String)in);
-				break;
-			default:
-				if (((String)in).endsWith(".zip")){
-					this.in = new ZipInputStream(new FileInputStream((String)in));
-					compressedData = 1;
-				}else{
-					this.in = new FileInputStream((String)in);
-					compressedData = 0;
-				}
-				break;
-			}
-			if (((String)in).endsWith(".zip")) {
-				fileName = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1,((String)in).lastIndexOf('.'));
-			}else{
-				fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
-			}
-			if (this.in instanceof ZipInputStream){
-	            ZipEntry entry;
-	            //find entry DATA/fileName
-	            while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
-	                if(entry.getName().equals("DATA" + File.separator + fileName)) {
-	                	break;
-	                }
-	            }
-			}
-			recordFile = Channels.newChannel(this.in);
-			recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-			if (index > 0) {//reading not all records --> find index in record file
-				DataInputStream indexFile;
-				if (this.in instanceof ZipInputStream){//read index from archive
-					ZipInputStream tmpIn = new ZipInputStream(new FileInputStream((String)in));
-		            indexFile = new DataInputStream(tmpIn);
-		            ZipEntry entry;
-		            //find entry INDEX/fileName.idx
-		            while((entry = tmpIn.getNextEntry()) != null) {
-		                if(entry.getName().equals(
-		                		"INDEX" + File.separator + fileName + ".idx")) {
-		                	indexFile.skip(index);
-		                	idx = indexFile.readLong();//read index for reading records
-		                	break;
-		                }
-		            }
-		            tmpIn.close();
-		            indexFile.close();
-				}else{//read index from binary file
-					if (indexFileURL == null){
-						File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+2));
-						indexFile = new DataInputStream(new FileInputStream(
-								dir + fileName + ".idx"));
-					}else{
-						indexFile = new DataInputStream(new FileInputStream(indexFileURL));
-					}
-					indexFile.skip(index);
-					idx = indexFile.readLong();
-					indexFile.close();
-				}
-			}// if (index > 0)
-			//skip idx bytes from record file
-			int i=0;
-			do {
-				ByteBufferUtils.reload(recordBuffer,recordFile);
-				i++;
-			}while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
-			recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(ex);
-		}
 	}
+
+    /* (non-Javadoc)
+     * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+     */
+    public void setDataSource(Object in) throws ComponentNotReadyException {
+        String fileName;
+        //set input stream
+        try {
+            switch (compressedData) {
+            case 1:
+                this.in = new ZipInputStream(new FileInputStream((String)in));
+                break;
+            case 0:
+                this.in = new FileInputStream((String)in);
+                break;
+            default:
+                if (((String)in).endsWith(".zip")){
+                    this.in = new ZipInputStream(new FileInputStream((String)in));
+                    compressedData = 1;
+                }else{
+                    this.in = new FileInputStream((String)in);
+                    compressedData = 0;
+                }
+                break;
+            }
+            if (((String)in).endsWith(".zip")) {
+                fileName = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1,((String)in).lastIndexOf('.'));
+            }else{
+                fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
+            }
+            if (this.in instanceof ZipInputStream){
+                ZipEntry entry;
+                //find entry DATA/fileName
+                while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
+                    if(entry.getName().equals("DATA" + File.separator + fileName)) {
+                        break;
+                    }
+                }
+            }
+            recordFile = Channels.newChannel(this.in);
+            recordBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+            if (index > 0) {//reading not all records --> find index in record file
+                DataInputStream indexFile;
+                if (this.in instanceof ZipInputStream){//read index from archive
+                    ZipInputStream tmpIn = new ZipInputStream(new FileInputStream((String)in));
+                    indexFile = new DataInputStream(tmpIn);
+                    ZipEntry entry;
+                    //find entry INDEX/fileName.idx
+                    while((entry = tmpIn.getNextEntry()) != null) {
+                        if(entry.getName().equals(
+                                "INDEX" + File.separator + fileName + ".idx")) {
+                            indexFile.skip(index);
+                            idx = indexFile.readLong();//read index for reading records
+                            break;
+                        }
+                    }
+                    tmpIn.close();
+                    indexFile.close();
+                }else{//read index from binary file
+                    if (indexFileURL == null){
+                        File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+2));
+                        indexFile = new DataInputStream(new FileInputStream(
+                                dir + fileName + ".idx"));
+                    }else{
+                        indexFile = new DataInputStream(new FileInputStream(indexFileURL));
+                    }
+                    indexFile.skip(index);
+                    idx = indexFile.readLong();
+                    indexFile.close();
+                }
+            }// if (index > 0)
+            //skip idx bytes from record file
+            int i=0;
+            do {
+                ByteBufferUtils.reload(recordBuffer,recordFile);
+                i++;
+            }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
+            recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        } catch (IOException ex) {
+            throw new ComponentNotReadyException(ex);
+        }
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#close()
@@ -243,10 +249,6 @@ public class CloverDataParser implements Parser {
 
 	public void setCompressedData(int compressedData) {
 		this.compressedData = compressedData;
-	}
-
-	public void setDataSource(Object inputDataSource) {
-		throw new UnsupportedOperationException();
 	}
 
 }

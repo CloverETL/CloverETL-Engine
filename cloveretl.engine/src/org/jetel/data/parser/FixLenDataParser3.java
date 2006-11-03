@@ -19,7 +19,6 @@
 */
 package org.jetel.data.parser;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -85,14 +84,10 @@ public abstract class FixLenDataParser3 implements Parser {
 		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	}
 	
-	/**
-	 * Performs basic initialization tasks.
-	 * @param inputDataSource 
-	 * @param metadata
-	 * @return Open input channel.
-	 * @throws ComponentNotReadyException
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata metadata)
+	public void init(DataRecordMetadata metadata)
 	throws ComponentNotReadyException {
 		if (metadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD) {
 			throw new ComponentNotReadyException("Fixed length data format expected but not encountered");
@@ -109,13 +104,10 @@ public abstract class FixLenDataParser3 implements Parser {
 			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
 			recordLength += fieldLengths[fieldIdx]; 
 		}
-
-		setDataSource(inputDataSource);
 	}
 
-	/**
-	 * Set new data source.
-	 * @param inputDataSource
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) {
 		releaseDataSource();

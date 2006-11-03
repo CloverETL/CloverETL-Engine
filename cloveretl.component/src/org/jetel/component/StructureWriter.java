@@ -236,7 +236,8 @@ public class StructureWriter extends Node {
 		try {
 			writer = FileUtils.getWritableChannel(fileURL, appendData);
 			buffer = ByteBuffer.allocateDirect(StringUtils.getMaxLength(header,footer));
-			formatter.open(writer , getInputPort(READ_FROM_PORT).getMetadata());
+			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+            formatter.setDataTarget(writer);
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}

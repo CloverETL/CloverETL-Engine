@@ -82,50 +82,48 @@ public class DataFormatter implements Formatter {
 		metadata = null;
 	}
 	
-	/**
-	 *  Set output and format description (metadata). May be called repeatedly.
-	 *
-	 *@param  out        Output. null value preserves previous setting.
-	 *@param  _metadata  Format. null value preserver previous setting.
-	 * @since             March 28, 2002
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata) {
-
-		close();
-		// create buffered output stream reader 
-		if (out == null) {
-			writer = null;
-		} else if (out instanceof WritableByteChannel) {
-			writer = (WritableByteChannel)out;
-		} else {
-			writer = Channels.newChannel((OutputStream) out);
-		}
-
+	public void init(DataRecordMetadata _metadata) {
 		// create array of delimiters & initialize them
 		// create array of field sizes & initialize them
-		if (_metadata != null) {	// new metadata
-			metadata = _metadata;
-			delimiters = new byte[metadata.getNumFields()][];
-	        delimiterLength = new int[metadata.getNumFields()];
-			fieldLengths = new int[metadata.getNumFields()];
-			for (int i = 0; i < metadata.getNumFields(); i++) {
-				if(metadata.getField(i).isDelimited()) {
-	                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
-					delimiterLength[i] = delimiters[i].length;
-				} else {
-					fieldLengths[i] = metadata.getField(i).getSize();
-				}
+		metadata = _metadata;
+		delimiters = new byte[metadata.getNumFields()][];
+        delimiterLength = new int[metadata.getNumFields()];
+		fieldLengths = new int[metadata.getNumFields()];
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			if(metadata.getField(i).isDelimited()) {
+                delimiters[i] = (metadata.getField(i).getDelimiters()[0]).getBytes();
+				delimiterLength[i] = delimiters[i].length;
+			} else {
+				fieldLengths[i] = metadata.getField(i).getSize();
 			}
-	        // create record delimiter & initialize them
-	        isRecordDelimiter = false;
-	        if(metadata.isSpecifiedRecordDelimiter()) {
-	            isRecordDelimiter = true;
-	            recordDelimiter = metadata.getRecordDelimiter().getBytes();
-	        }
 		}
+        // create record delimiter & initialize them
+        isRecordDelimiter = false;
+        if(metadata.isSpecifiedRecordDelimiter()) {
+            isRecordDelimiter = true;
+            recordDelimiter = metadata.getRecordDelimiter().getBytes();
+        }
 	}
 
-
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        close();
+        
+        // create buffered output stream reader 
+        if (out == null) {
+            writer = null;
+        } else if (out instanceof WritableByteChannel) {
+            writer = (WritableByteChannel) out;
+        } else {
+            writer = Channels.newChannel((OutputStream) out);
+        }
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -157,25 +155,13 @@ public class DataFormatter implements Formatter {
 		dataBuffer.clear();
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  record           Description of Parameter
-	 * @exception  IOException  Description of Exception
-	 * @since                   March 28, 2002
-	 */
-	public void write(DataRecord record) throws IOException {
-		writeRecord(record);
-	}
-
 	/**
 	 * Write record to output (or buffer).
 	 * @param record
 	 * @return Number of written bytes.
 	 * @throws IOException
 	 */
-	public int writeRecord(DataRecord record) throws IOException {
+	public int write(DataRecord record) throws IOException {
 		int size;
 		int encLen = 0;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
@@ -226,14 +212,6 @@ public class DataFormatter implements Formatter {
 		return(this.charSet);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		// TODO Auto-generated method stub
-		
-	}
-	
 	/**
 	 *  Initialization of the FieldFiller buffer
 	 */

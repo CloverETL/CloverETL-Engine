@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import javax.naming.InvalidNameException;
@@ -246,49 +245,55 @@ public class XLSDataParser implements Parser {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.parser.Parser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object in, DataRecordMetadata _metadata)throws ComponentNotReadyException{
+	public void init(DataRecordMetadata _metadata)throws ComponentNotReadyException{
 		this.metadata = _metadata;
-		recordCounter = 1;
-		//creating workbook from input stream 
-		try {
-			wb = new HSSFWorkbook((InputStream)in);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
-		//setting sheet for reading data
-		if (sheetName!=null){
-			sheet = wb.getSheet(sheetName);
-		}else{
-			try {
-				sheet = wb.getSheetAt(sheetNumber);
-			}catch(IndexOutOfBoundsException ex){
-				throw new ComponentNotReadyException("There is no sheet with number \"" +	sheetNumber +"\"");
-			}
-		}
-		if (sheet == null) {
-			throw new ComponentNotReadyException("There is no sheet with name \"" +	sheetName +"\"");
-		}
-		format = wb.createDataFormat();
-		currentRow = firstRow;
-		lastRow = sheet.getLastRowNum();
-		fieldNumber = new int[metadata.getNumFields()][2];
-		//mapping metadata with columns in xls
-		for (int i=0;i<fieldNumber.length;i++){
-			fieldNumber[i][CLOVER_NUMBER] = -1;
-		}
-		Map fieldNames = metadata.getFieldNames();
-		switch (mappingType) {
-		case NO_METADATA_INFO:noMetadataInfo();break;
-		case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
-		case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
-		case MAP_NAMES:mapNames(fieldNames);break;
-		case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
-		default:noMetadataInfo();break;
-		}
 	}
 	
+    /* (non-Javadoc)
+     * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+     */
+    public void setDataSource(Object in) throws ComponentNotReadyException {
+        recordCounter = 1;
+        //creating workbook from input stream 
+        try {
+            wb = new HSSFWorkbook((InputStream)in);
+        }catch(IOException ex){
+            throw new ComponentNotReadyException(ex);
+        }
+        //setting sheet for reading data
+        if (sheetName!=null){
+            sheet = wb.getSheet(sheetName);
+        }else{
+            try {
+                sheet = wb.getSheetAt(sheetNumber);
+            }catch(IndexOutOfBoundsException ex){
+                throw new ComponentNotReadyException("There is no sheet with number \"" +   sheetNumber +"\"");
+            }
+        }
+        if (sheet == null) {
+            throw new ComponentNotReadyException("There is no sheet with name \"" + sheetName +"\"");
+        }
+        format = wb.createDataFormat();
+        currentRow = firstRow;
+        lastRow = sheet.getLastRowNum();
+        fieldNumber = new int[metadata.getNumFields()][2];
+        //mapping metadata with columns in xls
+        for (int i=0;i<fieldNumber.length;i++){
+            fieldNumber[i][CLOVER_NUMBER] = -1;
+        }
+        Map fieldNames = metadata.getFieldNames();
+        switch (mappingType) {
+        case NO_METADATA_INFO:noMetadataInfo();break;
+        case ONLY_CLOVER_FIELDS:onlyCloverFields(fieldNames);break;
+        case CLOVER_FIELDS_AND_XLS_NUMBERS:cloverFieldsAndXlsNumbers(fieldNames);break;
+        case MAP_NAMES:mapNames(fieldNames);break;
+        case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
+        default:noMetadataInfo();break;
+        }
+    }
+
 	/**
 	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
 	 */
@@ -515,10 +520,6 @@ public class XLSDataParser implements Parser {
 					getStringFromCell(cell));
 		}
 		return names.toArray(new String[0]);
-	}
-
-	public void setDataSource(Object inputDataSource) {
-		throw new UnsupportedOperationException();
 	}
 
 }

@@ -77,20 +77,10 @@ public class XLSDataFormatter implements Formatter {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata) throws ComponentNotReadyException{
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException{
 		this.metadata = _metadata;
-		try{
-			if (((File)out).length() > 0) {//if xls file exist add to it new data
-				wb = new HSSFWorkbook(new FileInputStream((File)out));
-			}else{//create new xls file
-				wb = new HSSFWorkbook();
-			}
-			this.out = new FileOutputStream((File)out);
-		}catch(IOException ex){
-			throw new RuntimeException(ex);
-		}
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
 			sheet = wb.getSheet(sheetName);
@@ -161,6 +151,22 @@ public class XLSDataFormatter implements Formatter {
 		}
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        try{
+            if (((File)out).length() > 0) {//if xls file exist add to it new data
+                wb = new HSSFWorkbook(new FileInputStream((File)out));
+            }else{//create new xls file
+                wb = new HSSFWorkbook();
+            }
+            this.out = new FileOutputStream((File)out);
+        }catch(IOException ex){
+            throw new RuntimeException(ex);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
@@ -176,7 +182,7 @@ public class XLSDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
-	public void write(DataRecord record) throws IOException {
+	public int write(DataRecord record) throws IOException {
 		row = sheet.createRow(recCounter);
 		char metaType;//metadata field type
 		Object value;//field value
@@ -214,20 +220,14 @@ public class XLSDataFormatter implements Formatter {
 			}
 		}
 		recCounter++;
+        
+        return 0;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#flush()
 	 */
 	public void flush() throws IOException {
-		// TODO Auto-generated method stub
-
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
 		// TODO Auto-generated method stub
 
 	}

@@ -182,7 +182,8 @@ public class XLSWriter extends Node {
 			if (!out.exists()){
 				out.createNewFile();
 			}
-			formatter.open(out,getInputPort(READ_FROM_PORT).getMetadata());
+			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+            formatter.setDataTarget(out);
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}

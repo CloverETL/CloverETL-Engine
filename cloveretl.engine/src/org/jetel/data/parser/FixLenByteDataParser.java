@@ -52,9 +52,8 @@ public class FixLenByteDataParser extends FixLenDataParser3 {
 		super(null);
 	}
 
-	/**
-	 * Set new data source.
-	 * @param inputDataSource
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.FixLenDataParser3#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) {
 		super.setDataSource(inputDataSource);

@@ -128,11 +128,10 @@ public class DataParser implements Parser {
 		return record;
 	}
 
-	/**
-	 * @see org.jetel.data.parser.Parser#open(java.lang.Object,
-	 *      org.jetel.metadata.DataRecordMetadata)
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata metadata) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		//init private variables
 		byteBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -185,13 +184,10 @@ public class DataParser implements Parser {
 				fieldLengths[i] = metadata.getField(i).getSize();
 			}
 		}
-
-		setDataSource(inputDataSource);
 	}
 
-	/**
-	 * Set new data source.
-	 * @param inputDataSource
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) {
 		releaseDataSource();

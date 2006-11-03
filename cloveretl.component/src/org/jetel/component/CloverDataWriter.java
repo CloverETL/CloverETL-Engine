@@ -258,7 +258,8 @@ public class CloverDataWriter extends Node {
 		}catch(IOException ex){
 			throw new ComponentNotReadyException(ex);
 		}
-		formatter.open(out, metadata);
+		formatter.init(metadata);
+        formatter.setDataTarget(out);
 	}
 	/**
 	 *  Description of the Method

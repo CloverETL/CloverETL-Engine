@@ -98,7 +98,8 @@ public class PortDataConsumer implements DataConsumer {
 	 */
 	public void setInput(InputStream stream) {		
 		try {
-			parser.open(stream, metadata);
+			parser.init(metadata);
+            parser.setDataSource(stream);
 		} catch (ComponentNotReadyException e) {
 			// this is not expected to happen 
 			throw new RuntimeException("Unable to open parser: " + e.getMessage());

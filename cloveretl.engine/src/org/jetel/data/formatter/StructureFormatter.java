@@ -84,14 +84,13 @@ public class StructureFormatter implements Formatter {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata)
+	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
 
 		// create buffered output stream writer and buffers 
-		writer = (WritableByteChannel) out;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		
@@ -121,10 +120,21 @@ public class StructureFormatter implements Formatter {
 		maskAnalizeMap.toArray(maskAnalize);
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        close();
+        writer = (WritableByteChannel) out;
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	public void close() {
+        if (writer == null) {
+            return;
+        }
 		try{
 			flush();
 			writer.close();
@@ -136,7 +146,7 @@ public class StructureFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
-	public void write(DataRecord record) throws IOException {
+	public int write(DataRecord record) throws IOException {
 		lastIndex = 0;
 		//for each record field which is in mask change its name to value
 		for (int i=0;i<maskAnalize.length;i++){
@@ -164,6 +174,9 @@ public class StructureFormatter implements Formatter {
 			flush();
 		}
 		dataBuffer.put(maskBytes, lastIndex, maskBytes.length - lastIndex);
+        
+        //TODO Agato, prosim vrat tady pocet zapsanych bytu do vystupniho streamu, diky
+        return -1;
 	}
 
 	/* (non-Javadoc)
@@ -171,12 +184,6 @@ public class StructureFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		ByteBufferUtils.flush(dataBuffer,writer);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
 	}
 
 	public void setMask(String mask) {

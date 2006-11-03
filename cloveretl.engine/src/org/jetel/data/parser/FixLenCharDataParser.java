@@ -94,20 +94,18 @@ public class FixLenCharDataParser extends FixLenDataParser3 {
 		setRecordDelimiters(null);
 	}
 
-	/**
-	 * Parser iface.
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.FixLenDataParser3#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata metadata)
+	public void init(DataRecordMetadata metadata)
 			throws ComponentNotReadyException {
-		super.open(inputDataSource, metadata);
+		super.init(metadata);
 
 		setRecordDelimiters(metadata.getRecordDelimiters());
-
 	}
 
-	/**
-	 * Set new data source.
-	 * @param inputDataSource
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.FixLenDataParser3#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) {
 		super.setDataSource(inputDataSource);

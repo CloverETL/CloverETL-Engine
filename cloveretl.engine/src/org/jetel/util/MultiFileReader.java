@@ -36,7 +36,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * A class for transparent reading of clover data records from multiple input files.
  * The nested parser is used for parsing all input source files.
  * Usage: 
- * - first instantiate some suitable parser, set all its parameters (don't call open or init method)
+ * - first instantiate some suitable parser, set all its parameters (don't call init method)
  * - optionally set appropriate logger
  * - sets required multifile reader parameters (setFileSkip(), setSkip(), setNumRecords(), ...)
  * - call init method with metadata for reading input sources
@@ -61,14 +61,11 @@ public class MultiFileReader {
 	private int numRecords; //max number of returned records
     private String filename;
     private boolean noInputFile = false;
-	/**
+
+    /**
 	 * Sole ctor.
 	 * @param parser Parser to be used to obtain records from input files.
 	 * @param fileURL Specification of input file(s)
-	 * @param skip Number of records to be skipped
-	 * @param fileSkip Number of records to be skipped in each input file
-	 * @param maxRecCnt Max number of records to read
-	 * @param fileMaxRecCnt Max number of records to read from each file
 	 */
 	public MultiFileReader(Parser parser, String fileURL) {
 		this.parser = parser;
@@ -82,7 +79,7 @@ public class MultiFileReader {
      * @throws ComponentNotReadyException
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        parser.open(null, metadata);
+        parser.init(metadata);
         
         WcardPattern pat = new WcardPattern();
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
@@ -138,7 +135,10 @@ public class MultiFileReader {
 			} catch (JetelException e) {
 				logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
 				continue;
-			}
+			} catch (ComponentNotReadyException e) {
+			    logger.error("An error occured while switching input file " + filename + ", the file will be ignored", e);
+                continue;
+            }
 		}
 		return false;
 	}

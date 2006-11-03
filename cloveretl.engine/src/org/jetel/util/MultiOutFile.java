@@ -23,12 +23,7 @@
 package org.jetel.util;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.util.Formatter;
 import java.util.Iterator;
-
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
 
 /**
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
