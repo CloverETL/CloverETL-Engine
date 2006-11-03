@@ -18,22 +18,18 @@
 *
 */
 package org.jetel.data.formatter;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.Channel;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.nio.charset.CoderResult;
 import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -61,8 +57,6 @@ public class FixLenDataFormatter implements Formatter {
 	private byte[] crLF;
 	private String charSet = null;
 	
-	private boolean oneRecordPerLinePolicy = false;
-
 	// Attributes
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
@@ -130,52 +124,51 @@ public class FixLenDataFormatter implements Formatter {
 	 * 
 	 * @param filler	character used for padding
 	 */
-	public void setFiller(char filler){
+    Character filler;
+	public void setFiller(char filler) {
+        this.filler = new Character(filler);
 	    initFieldFiller(filler);
 	}
 
-	/**
-	 *  Set output and format description (metadata). May be called repeatedly.
-	 *
-	 *@param  out        Output. null value preserves previous setting.
-	 *@param  _metadata  Format. null value preserver previous setting.
-	 */
-	public void open(Object out, DataRecordMetadata _metadata) {
+    public Character getFiller() {
+        return filler;
+    }
 
-//		writer = ((FileOutputStream) out).getChannel();
-		close();
-		if (out == null) {
-			writer = null;
-		} else {
-			writer=Channels.newChannel((OutputStream)out);
-		}
-		
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
+	 */
+	public void init(DataRecordMetadata _metadata) {
 		// create array of field sizes & initialize them
-		if (_metadata != null) {	// new metadata
-			metadata = _metadata;
-			fieldLengths = new int[metadata.getNumFields()];
-			recordLength = oneRecordPerLinePolicy ? crLF.length : 0;
-			for (int i = 0; i < metadata.getNumFields(); i++) {
-				fieldLengths[i] = metadata.getField(i).getSize();
-				recordLength += fieldLengths[i];
-			}
+		metadata = _metadata;
+		fieldLengths = new int[metadata.getNumFields()];
+        //TODO set this to recordDelimiter.length()
+//			recordLength = oneRecordPerLinePolicy ? crLF.length : 0;
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			fieldLengths[i] = metadata.getField(i).getSize();
+			recordLength += fieldLengths[i];
 		}
-		encoder.reset();
-		// reset CharsetDecoder
+
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        close();
 
-	/**
-	 *  Description of the Method
-	 *
-	 *@param  record           Description of the Parameter
-	 *@exception  IOException  Description of the Exception
-	 */
-	public void write(DataRecord record) throws IOException {
-		writeRecord(record);
-	}
+        if (out == null) {
+            writer = null;
+        } else if (out instanceof WritableByteChannel) {
+            writer = (WritableByteChannel) out;
+        } else {
+            writer = Channels.newChannel((OutputStream) out);
+        }
 
-	public int writeRecord(DataRecord record) throws IOException {
+        // reset CharsetDecoder
+        encoder.reset();
+    }
+    
+	public int write(DataRecord record) throws IOException {
 		int size;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			
@@ -195,12 +188,13 @@ public class FixLenDataFormatter implements Formatter {
 			fieldBuffer.limit(fieldLengths[i]);
 			dataBuffer.put(fieldBuffer);
 		}
-		if(oneRecordPerLinePolicy){
-			if (dataBuffer.remaining()<crLF.length){
-				flushBuffer();
-			}
-			dataBuffer.put(crLF);
-		}
+        //TODO add recordDelimiter into dataBuffer
+//		if(oneRecordPerLinePolicy){
+//			if (dataBuffer.remaining()<crLF.length){
+//				flushBuffer();
+//			}
+//			dataBuffer.put(crLF);
+//		}
 		return recordLength;
 	}
 
@@ -229,12 +223,13 @@ public class FixLenDataFormatter implements Formatter {
 			fieldBuffer.limit(fieldLengths[i]);
 			dataBuffer.put(fieldBuffer);
 		}
-		if(oneRecordPerLinePolicy){
-			if (dataBuffer.remaining()<crLF.length){
-				flushBuffer();
-			}
-			dataBuffer.put(crLF);
-		}
+        //TODO add recordDelimiter into dataBuffer
+//		if(oneRecordPerLinePolicy){
+//			if (dataBuffer.remaining()<crLF.length){
+//				flushBuffer();
+//			}
+//			dataBuffer.put(crLF);
+//		}
 		return recordLength;
 	}
 
@@ -278,33 +273,6 @@ public class FixLenDataFormatter implements Formatter {
 		}
 	}
 
-
-	/**
-	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		oneRecordPerLinePolicy = b;
-	}
-
-	/**
-	 * Sets line separator char(s) - allows to specify
-	 * different than default EOL character (\n).
-	 * 
-	 * @param separator
-	 */
-	public void setLineSeparator(String separator){
-		crLF=separator.getBytes();
-	}
-	
-	/**
-	 * 
-	 * @return
-	 */
-	public boolean getOneRecordPerLinePolicy() {
-		return(this.oneRecordPerLinePolicy);
-	}
-	
 	/**
 	 * 
 	 * @return
@@ -312,7 +280,6 @@ public class FixLenDataFormatter implements Formatter {
 	public String getCharSetName() {
 		return(this.charSet);
 	}
-	
 	
 }
 /*

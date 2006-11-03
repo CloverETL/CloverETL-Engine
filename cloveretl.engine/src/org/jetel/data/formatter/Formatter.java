@@ -40,13 +40,17 @@ public interface Formatter {
 
 	// Operations
 	/**
-	 *  Initialization of data formatter
+	 *  Initialization of data formatter by given metadata.
 	 *
-	 *@param  out        Description of the Parameter
 	 *@param  _metadata  Description of the Parameter
 	 */
-	public void open(Object out, DataRecordMetadata _metadata) throws ComponentNotReadyException;
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException;
 
+    /**
+     * Sets output data destination. Some of formatters allow to call this method repeatedly.
+     * @param outputDataTarget
+     */
+    public void setDataTarget(Object outputDataTarget);
 
 	/**
 	 *  Closing/deinitialization of formatter
@@ -60,7 +64,7 @@ public interface Formatter {
 	 *@param  record           Data record to format and send to output stream
 	 *@exception  IOException  Description of the Exception
 	 */
-	public void write(DataRecord record) throws IOException;
+	public int write(DataRecord record) throws IOException;
 
 
 	/**
@@ -69,13 +73,6 @@ public interface Formatter {
 	 */
 	public void flush() throws IOException;
 
-
-	/**
-	 * True allows only one record per line.  False asks that all records 
-	 * will be on one line.
-	 * @param b
-	 */
-	public void setOneRecordPerLinePolicy(boolean b);
 
 }
 /*

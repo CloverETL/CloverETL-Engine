@@ -185,7 +185,8 @@ public class DBFDataReader extends Node {
 		}
 		// try to open file & initialize data parser
 		try {
-			parser.open(new FileInputStream(fileURL), getOutputPort(OUTPUT_PORT).getMetadata());
+			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+            parser.setDataSource(new FileInputStream(fileURL));
 		} catch (FileNotFoundException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}

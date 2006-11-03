@@ -75,7 +75,8 @@ public class PortDataProducer implements DataProducer {
 	 * @see org.jetel.util.exec.DataProducer
 	 */
 	public void setOutput(OutputStream stream) {
-        formatter.open(Channels.newChannel(stream), metadata);        
+        formatter.init(metadata);
+        formatter.setDataTarget(Channels.newChannel(stream));
         record = new DataRecord(metadata);
         record.init();
 	}

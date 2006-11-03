@@ -207,62 +207,66 @@ public class SQLDataParser implements Parser {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.data.DataParser#open(java.lang.Object, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.data.parser.Parser#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata _metadata) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		metadata = _metadata;
 		fieldCount = _metadata.getNumFields();
+	}
 
-		//outRecord.init();
-		// get dbConnection from graph
-		if (! (inputDataSource instanceof DBConnection)){
-			throw new ComponentNotReadyException("Need DBConnection object !");
-		}
-		dbConnection= (DBConnection) inputDataSource;
-		
-		try{
-		    // try to set autocommit to false
-		    dbConnection.getConnection().setAutoCommit(false);
-		}catch (Exception e) {
-			logger.warn(e);
-		}
-		try {
-			// connection is created up front
-			//dbConnection.connect();
-			statement = dbConnection.getStatement();
-			/*ResultSet.TYPE_FORWARD_ONLY,
-			        ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
-		} catch (SQLException e) {
-			throw new ComponentNotReadyException(e);
-		}
-		
-		// !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
-		// this needs some detecting of supported features first (may-be which version of JDBC is implemented or so
-		try {
-			// following calls are not always supported (as it seems)
-			// if error occures, we just ignore it
-			statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
-			statement.setFetchSize(fetchSize);
-		
-		} catch (Exception e) {
-			logger.warn(e);
-		}
-		
-		try{
-			resultSet = statement.executeQuery(sqlQuery);
-		} catch (SQLException e) {
-			logger.debug(e);
-			throw new ComponentNotReadyException(e);
-		}
-		// try to set up some cursor parameters (fetchSize, reading type)
-		try{
-		    resultSet.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY);
-		    resultSet.setFetchSize(fetchSize);
-		}catch (SQLException e){
-		    // do nothing - just attempt
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
+	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+        //outRecord.init();
+        // get dbConnection from graph
+        if (! (inputDataSource instanceof DBConnection)){
+            throw new RuntimeException("Need DBConnection object !");
+        }
+        dbConnection= (DBConnection) inputDataSource;
+        
+        try{
+            // try to set autocommit to false
+            dbConnection.getConnection().setAutoCommit(false);
+        }catch (Exception e) {
+            logger.warn(e);
+        }
+        try {
+            // connection is created up front
+            //dbConnection.connect();
+            statement = dbConnection.getStatement();
+            /*ResultSet.TYPE_FORWARD_ONLY,
+                    ResultSet.CONCUR_READ_ONLY,ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
+        } catch (SQLException e) {
+            throw new ComponentNotReadyException(e);
+        }
+        
+        // !!! POTENTIALLY DANGEROUS - SOME DBs produce fatal error - Abstract method call !!
+        // this needs some detecting of supported features first (may-be which version of JDBC is implemented or so
+        try {
+            // following calls are not always supported (as it seems)
+            // if error occures, we just ignore it
+            statement.setFetchDirection(ResultSet.FETCH_FORWARD); 
+            statement.setFetchSize(fetchSize);
+        
+        } catch (Exception e) {
+            logger.warn(e);
+        }
+        
+        try{
+            resultSet = statement.executeQuery(sqlQuery);
+        } catch (SQLException e) {
+            logger.debug(e);
+            throw new ComponentNotReadyException(e);
+        }
+        // try to set up some cursor parameters (fetchSize, reading type)
+        try{
+            resultSet.setFetchDirection(ResultSet.TYPE_FORWARD_ONLY);
+            resultSet.setFetchSize(fetchSize);
+        }catch (SQLException e){
+            // do nothing - just attempt
             logger.warn("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
-		}
-		
+        }
 	}
 
 	/* (non-Javadoc)
@@ -304,10 +308,6 @@ public class SQLDataParser implements Parser {
 
 	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException("Not yet implemented");
-	}
-
-	public void setDataSource(Object inputDataSource) {
-		throw new UnsupportedOperationException();
 	}
 
 }

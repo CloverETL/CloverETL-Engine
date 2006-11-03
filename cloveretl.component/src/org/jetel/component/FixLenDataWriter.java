@@ -18,10 +18,7 @@
 *
 */
 package org.jetel.component;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,8 +31,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.MultiOutFile;
-import org.jetel.util.StringUtils;
+import org.jetel.util.MultiFileWriter;
 import org.w3c.dom.Element;
 
 /**
@@ -69,10 +65,6 @@ import org.w3c.dom.Element;
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
- *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
- *  <tr><td><b>LineSeparator</b><br><i>optional</i></td><td>characters to be output as line/record separator (if OneRecordPerLine is set to true). Control
- * characters "\n", "\r", "\t" may be used as well as all printable characers.</td>
- *  </tr>
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td>
  *  <tr><td><b>filler</b><br><i>optional</i></td><td>allows specifying what character will be used for padding output fields. Default is " " (space)></td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
@@ -90,8 +82,6 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  */
 public class FixLenDataWriter extends Node {
-	private static final String XML_LINESEPARATOR_ATTRIBUTE = "LineSeparator";
-	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -100,17 +90,15 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	
-	private static final boolean DEFAULT_ONE_REC_PER_LINE=false;
 	private static final boolean DEFAULT_APPEND=false;
 	
 	private String fileURL;
 	private boolean appendData;
 	private FixLenDataFormatter formatter;
+    private MultiFileWriter writer;
 	private boolean outputFieldNames=false;
-	private String filler;
-	private Iterator<String> filenameItor;
-	private int maxRecords;
-	private int maxBytes;
+	private int recordsPerFile;
+	private int bytesPerFile;
 
 	static Log logger = LogFactory.getLog(FixLenDataWriter.class);
 
@@ -127,15 +115,11 @@ public class FixLenDataWriter extends Node {
 	 * @param  charset     Description of the Parameter
 	 * @param  appendData  Description of the Parameter
 	 */
-	public FixLenDataWriter(String id, String fileURL, String charset, boolean appendData,
-		int maxRecords, int maxBytes) {
+	public FixLenDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
-		this.maxRecords = maxRecords;
-		this.maxBytes = maxBytes;
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		filenameItor = new MultiOutFile(fileURL); 
 	}
 
 
@@ -149,26 +133,12 @@ public class FixLenDataWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		int recCnt = 0;
-		int size = 0;
 		
 		try {
-			if (outputFieldNames){
-				size += formatter.writeFieldNames();
-			}
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
 				if (record != null) {
-					if ((maxRecords > 0 && recCnt >= maxRecords) || (maxBytes > 0 && size >= maxBytes)) {
-						setNextOutput();
-						recCnt = 0;
-						size = 0;
-						if (outputFieldNames){
-							size += formatter.writeFieldNames();
-						}
-					}
-					size += formatter.writeRecord(record);
-					recCnt++;
+                    writer.write(record);
 				}
 			}
 		} catch (IOException ex) {
@@ -177,12 +147,12 @@ public class FixLenDataWriter extends Node {
 			closeAllOutputPorts();
 			return;
 		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
+			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
 			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
 
-		formatter.close();
+		writer.close();
 		if (runIt) {
 			resultMsg = "OK";
 		} else {
@@ -203,31 +173,16 @@ public class FixLenDataWriter extends Node {
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
-		// based on file mask, create/open output file
-		try {
-			formatter.open(new FileOutputStream(filenameItor.next(), appendData), getInputPort(READ_FROM_PORT).getMetadata());
-		} catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
-//		catch (IOException ex){
-//			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
-//		}
-		
-		// if filler is defined, use it
-		if (filler!=null){
-		    formatter.setFiller(filler.charAt(0));
-		}
+        // initialize multifile writer based on prepared formatter
+        writer = new MultiFileWriter(formatter, fileURL);
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        //TODO kokon - outputFiledNames
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
-	private void setNextOutput() throws FileNotFoundException {
-		if (!filenameItor.hasNext()) {
-			logger.warn(getId() + ": Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-					+ "Size of output file will exceed specified limit");
-			return;
-		}
-		formatter.open(new FileOutputStream(filenameItor.next(), appendData), null);
-	}
-
 	/**
 	 *  Description of the Method
 	 *
@@ -243,22 +198,18 @@ public class FixLenDataWriter extends Node {
 			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(this.appendData));
 		}
 		
-		if (((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()) {
-			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
-					String.valueOf(((FixLenDataFormatter)this.formatter).getOneRecordPerLinePolicy()));
-		}
 		if (outputFieldNames){
 		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 		}
 		
-		if (filler!=null){
-		    xmlElement.setAttribute(XML_FILLER,filler);
+		if (formatter.getFiller() != null){
+		    xmlElement.setAttribute(XML_FILLER, formatter.getFiller().toString());
 		}
-		if (maxRecords > 0) {
-			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(maxRecords));
+		if (recordsPerFile > 0) {
+			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
 		}
-		if (maxBytes > 0) {
-			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(maxBytes));
+		if (bytesPerFile > 0) {
+			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
 		}
 		
 	}
@@ -281,14 +232,8 @@ public class FixLenDataWriter extends Node {
 					xattribs.getString(XML_ID_ATTRIBUTE), 
 					xattribs.getString(XML_FILEURL_ATTRIBUTE),
 					xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND),
-					xattribs.getInteger(XML_RECORDS_PER_FILE, 0),
-					xattribs.getInteger(XML_BYTES_PER_FILE, 0));
+					xattribs.getBoolean(XML_APPEND_ATTRIBUTE,DEFAULT_APPEND));
 
-			aFixLenDataWriterNIO.setOneRecordPerLinePolicy(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE,DEFAULT_ONE_REC_PER_LINE));
-			if (xattribs.exists(XML_LINESEPARATOR_ATTRIBUTE)){
-				aFixLenDataWriterNIO.setLineSeparator(xattribs.getString(XML_LINESEPARATOR_ATTRIBUTE));
-			}
 			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
 			    aFixLenDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
 			}
@@ -296,8 +241,12 @@ public class FixLenDataWriter extends Node {
 			if (xattribs.exists(XML_FILLER)){
 			    aFixLenDataWriterNIO.setFiller(xattribs.getString(XML_FILLER));
 			}
-			
-			
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+                aFixLenDataWriterNIO.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
+            if(xattribs.exists(XML_BYTES_PER_FILE)) {
+                aFixLenDataWriterNIO.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+            }
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -306,30 +255,6 @@ public class FixLenDataWriter extends Node {
 		return aFixLenDataWriterNIO;
 	}
 
-
-	/**
-	 * True allows only one record per line.  False puts all records
-	 * on one line.
-	 *
-	 * @param  b
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		formatter.setOneRecordPerLinePolicy(b);
-	}
-
-	/**
-	 * Sets line separator char(s) - allows to specify
-	 * different than default EOL character (\n).
-	 * 
-	 * @param separator
-	 */
-	public void setLineSeparator(String separator){
-		// this should be somehow generalized
-		if (formatter instanceof FixLenDataFormatter){
-			((FixLenDataFormatter)formatter).setLineSeparator(StringUtils.stringToSpecChar(separator));
-		}
-	}
-	
 	 /**
      * @param outputFieldNames The outputFieldNames to set.
      */
@@ -349,12 +274,7 @@ public class FixLenDataWriter extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
-    /**
-     * @return Returns the filler.
-     */
-    public String getFiller() {
-        return filler;
-    }
+
     /**
      * Which character (1st from specified string) will
      * be used as filler for padding output fields
@@ -362,7 +282,15 @@ public class FixLenDataWriter extends Node {
      * @param filler The filler to set.
      */
     public void setFiller(String filler) {
-        this.filler = filler;
+        this.formatter.setFiller(filler.charAt(0));
+    }
+
+    public void setBytesPerFile(int bytesPerFile) {
+        this.bytesPerFile = bytesPerFile;
+    }
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
     }
 }
 

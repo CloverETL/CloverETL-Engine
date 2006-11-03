@@ -135,7 +135,7 @@ public class LdapParser implements Parser {
 	 * This function try to contact the LDAP server and perform the search query.
 	 * ComponentNotReadyException exception are raised for each caught exceptions.
 	 */
-	public void open(Object inputDataSource, DataRecordMetadata metadata) 
+	public void init(DataRecordMetadata metadata) 
 		throws ComponentNotReadyException {
 
 		this.metadata = metadata;
@@ -210,9 +210,14 @@ public class LdapParser implements Parser {
 				throw new ComponentNotReadyException("Bad metadata name in LdapReader component");
 			}
 		} 
-        
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+     */
+    public void setDataSource(Object inputDataSource) {
+        throw new UnsupportedOperationException();
+    }
 
 	public void close() {
 		try {
@@ -381,10 +386,5 @@ public class LdapParser implements Parser {
 	public int skip(int nRec) throws JetelException {
 		throw new UnsupportedOperationException();
 	}
-
-	public void setDataSource(Object inputDataSource) {
-		throw new UnsupportedOperationException();
-	}
-	
 
 }

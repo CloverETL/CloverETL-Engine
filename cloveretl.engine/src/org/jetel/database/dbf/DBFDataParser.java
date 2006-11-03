@@ -23,17 +23,11 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
-import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 
-import org.jetel.data.parser.Parser;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.Parser;
@@ -116,6 +110,9 @@ public class DBFDataParser implements Parser {
      * @see org.jetel.data.DataParser#close()
      */
     public void close() {
+        if(dbfFile == null) {
+            return;
+        }
         try {
             dbfFile.close();
         } catch (IOException ex) {
@@ -227,19 +224,25 @@ public class DBFDataParser implements Parser {
      * @see org.jetel.data.DataParser#open(java.lang.Object,
      *      org.jetel.metadata.DataRecordMetadata)
      */
-    public void open(Object inputDataSource, DataRecordMetadata _metadata)
+    public void init(DataRecordMetadata _metadata)
             throws ComponentNotReadyException {
+        metadata = _metadata;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+     */
+    public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
+        close();
         
         if (inputDataSource instanceof FileInputStream){
             dbfFile = ((FileInputStream)inputDataSource).getChannel();
         }else if (inputDataSource instanceof FileChannel){
             dbfFile = (FileChannel)inputDataSource;
         }else{
-            throw new ComponentNotReadyException("Invalid input data object passed - isn't an InputStream or FileChannel");
+            throw new RuntimeException("Invalid input data object passed - isn't an InputStream or FileChannel");
         }
         
-        
-        metadata = _metadata;
         dbfAnalyzer = new DBFAnalyzer();
         try {
             dbfAnalyzer.analyze(dbfFile, metadata.getName());
@@ -391,8 +394,4 @@ public class DBFDataParser implements Parser {
 		throw new UnsupportedOperationException("Not yet implemented");
 	}
 
-	public void setDataSource(Object inputDataSource) {
-		throw new UnsupportedOperationException();
-	}
-    
 }

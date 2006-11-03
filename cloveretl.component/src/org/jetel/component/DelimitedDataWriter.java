@@ -19,10 +19,7 @@
 */
 
 package org.jetel.component;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +32,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.MultiOutFile;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -71,7 +68,6 @@ import org.w3c.dom.Element;
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td> 
- *  <tr><td><b>OneRecordPerLine</b><br><i>optional</i></td><td>whether to put one or all records on one line. (values: true/false).  Default value is false.</td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  </tr>
@@ -84,7 +80,6 @@ import org.w3c.dom.Element;
  * @since    April 4, 2002
  */
 public class DelimitedDataWriter extends Node {
-	private static final String XML_ONERECORDPERLINE_ATTRIBUTE = "OneRecordPerLine";
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -97,10 +92,10 @@ public class DelimitedDataWriter extends Node {
 	private String fileURL;
 	private boolean appendData;
 	private DelimitedDataFormatter formatter;
+    private MultiFileWriter writer;
 	private boolean outputFieldNames=false;
-	private Iterator<String> filenameItor;
-	private int maxRecords;
-	private int maxBytes;
+	private int recordsPerFile;
+	private int bytesPerFile;
 
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
@@ -122,15 +117,11 @@ public class DelimitedDataWriter extends Node {
 		formatter = new DelimitedDataFormatter();
 	}
 
-	public DelimitedDataWriter(String id, String fileURL, String charset, boolean appendData,
-			int maxRecords, int maxBytes) {
+	public DelimitedDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
-		this.maxRecords = maxRecords;
-		this.maxBytes = maxBytes;
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		filenameItor = new MultiOutFile(fileURL); 
 	}
 
 
@@ -143,54 +134,34 @@ public class DelimitedDataWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		int recCnt = 0;
-		int size = 0;
 		
 		try {
-			if (outputFieldNames) {
-		        formatter.writeFieldNames();
-		    }
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
 				if (record != null) {
-					if ((maxRecords > 0 && recCnt >= maxRecords) || (maxBytes > 0 && size >= maxBytes)) {
-						setNextOutput();
-						recCnt = 0;
-						size = 0;
-						if (outputFieldNames){
-							size += formatter.writeFieldNames();
-						}
-					}
-					size += formatter.writeRecord(record);
-					recCnt++;
+                    writer.write(record);
 				}
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		catch (IOException ex) {
-			resultMsg=ex.getMessage();
-			resultCode=Node.RESULT_ERROR;
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
 		}
 		catch (Exception ex) {
-			resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode=Node.RESULT_FATAL_ERROR;
+			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
-		formatter.close();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}
-
-
-	private void setNextOutput() throws FileNotFoundException {
-		if (!filenameItor.hasNext()) {
-			logger.warn(getId() + ": Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-					+ "Size of output file will exceed specified limit");
-			return;
-		}
-		formatter.open(new FileOutputStream(filenameItor.next(), appendData), null);
+		writer.close();
+		if (runIt) {
+		    resultMsg = "OK"; 
+        } else {
+            resultMsg = "STOPPED";
+        }
+		resultCode = Node.RESULT_OK;
 	}
 
 	/**
@@ -204,16 +175,16 @@ public class DelimitedDataWriter extends Node {
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
-		// based on file mask, create/open output file
-		try {
-			formatter.open(new FileOutputStream(filenameItor.next(), appendData), getInputPort(READ_FROM_PORT).getMetadata());
-		}
-		catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
-//		catch (IOException ex){
-//			throw new ComponentNotReadyException(getID() + "IOError: " + ex.getMessage());
-//		}
+        
+        // initialize multifile writer based on prepared formatter
+        writer = new MultiFileWriter(formatter, fileURL);
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        //TODO kokon - outputFiledNames
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+        
 	}
 	
 	/**
@@ -230,18 +201,14 @@ public class DelimitedDataWriter extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		if (this.formatter.getOneRecordPerLinePolicy()) {
-			xmlElement.setAttribute(XML_ONERECORDPERLINE_ATTRIBUTE,
-					String.valueOf(this.formatter.getOneRecordPerLinePolicy()));
-		}
 		if (outputFieldNames){
 		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 		}
-		if (maxRecords > 0) {
-			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(maxRecords));
+		if (recordsPerFile > 0) {
+			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
 		}
-		if (maxBytes > 0) {
-			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(maxBytes));
+		if (bytesPerFile > 0) {
+			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
 		}
 	}
 
@@ -261,23 +228,16 @@ public class DelimitedDataWriter extends Node {
 			aDelimitedDataWriterNIO = new DelimitedDataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-									xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT),	
-									xattribs.getInteger(XML_RECORDS_PER_FILE, 0),
-									xattribs.getInteger(XML_BYTES_PER_FILE, 0));
-			if (xattribs.exists(XML_ONERECORDPERLINE_ATTRIBUTE)){
-				if(xattribs.getBoolean(XML_ONERECORDPERLINE_ATTRIBUTE)){
-					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(true);
-				}else{
-					aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
-				}
-			}else{
-				// sets the default policy
-				aDelimitedDataWriterNIO.setOneRecordPerLinePolicy(false);
-			}
+									xattribs.getBoolean(XML_APPEND_ATTRIBUTE,APPEND_DATA_AS_DEFAULT));	
 			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
 			    aDelimitedDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
 			}
-			
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+                aDelimitedDataWriterNIO.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
+            if(xattribs.exists(XML_BYTES_PER_FILE)) {
+                aDelimitedDataWriterNIO.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+            }
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -285,15 +245,6 @@ public class DelimitedDataWriter extends Node {
 		return aDelimitedDataWriterNIO;
 	}
 
-	/**
-	 * True allows only one record per line.  False puts all records 
-	 * on one line.
-	 * @param b
-	 */
-	private void setOneRecordPerLinePolicy(boolean b) {
-		formatter.setOneRecordPerLinePolicy(b);
-	}
-	
 	public boolean checkConfig(){
 		return true;
 	}
@@ -313,6 +264,14 @@ public class DelimitedDataWriter extends Node {
      */
     public void setOutputFieldNames(boolean outputFieldNames) {
         this.outputFieldNames = outputFieldNames;
+    }
+
+    public void setBytesPerFile(int bytesPerFile) {
+        this.bytesPerFile = bytesPerFile;
+    }
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
     }
 }
 

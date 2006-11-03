@@ -94,7 +94,7 @@ import org.w3c.dom.Element;
  *
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/15/06  
- * @see         org.jetel.data.parser.FixLenDataParser3
+ * @see         org.jetel.data.parser.FixLenDataParser
  */
 
 public class FixLenDataReader extends Node {

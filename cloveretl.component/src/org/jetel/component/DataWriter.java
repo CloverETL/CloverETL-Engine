@@ -19,17 +19,7 @@
 */
 
 package org.jetel.component;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.WritableByteChannel;
-import java.util.Iterator;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,7 +32,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.MultiOutFile;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -97,9 +87,9 @@ public class DataWriter extends Node {
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatter formatter;
-	private Iterator<String> filenameItor;
-	private int maxRecords;
-	private int maxBytes;
+    private MultiFileWriter writer;
+	private int bytesPerFile;
+	private int recordsPerFile;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -115,15 +105,11 @@ public class DataWriter extends Node {
 	 * @param  appendData  Description of Parameter
 	 * @since              April 16, 2002
 	 */
-	public DataWriter(String id, String fileURL, String charset, boolean appendData,
-		int maxRecords, int maxBytes) {
+	public DataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
-		this.maxRecords = maxRecords;
-		this.maxBytes = maxBytes;
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		filenameItor = new MultiOutFile(fileURL); 
 	}
 
 
@@ -134,86 +120,37 @@ public class DataWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		int recCnt = 0;
-		int size = 0;
 
 		try {
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
 				if (record != null) {
-					if ((maxRecords > 0 && recCnt >= maxRecords) || (maxBytes > 0 && size >= maxBytes)) {
-						setNextOutput();
-						recCnt = 0;
-						size = 0;
-					}
-					size += formatter.writeRecord(record);
-					recCnt++;
+                    writer.write(record);
 				}
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		catch (IOException ex) {
-			resultMsg=ex.getMessage();
-			resultCode=Node.RESULT_ERROR;
+			resultMsg = ex.getMessage();
+			resultCode = Node.RESULT_ERROR;
 			closeAllOutputPorts();
 			return;
 		}
 		catch (Exception ex) {
-			resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode=Node.RESULT_FATAL_ERROR;
+			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
+			resultCode = Node.RESULT_FATAL_ERROR;
 			return;
 		}
-		formatter.close();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}
 
-	private static WritableByteChannel getChannel(String input, boolean appendData) throws IOException {
-        String strURL = input;
-		OutputStream os;
-		URL url;
-		
-        //resolve url format for zip files
-		if(input.startsWith("zip:")) {
-        	strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
-        }
-        
-		//open channel
-		if(!strURL.startsWith("ftp")) {
-			os = new FileOutputStream(strURL, appendData);
-		} else {
-			try {
-				url = new URL(strURL); 
-			} catch(MalformedURLException e) {
-				// try to patch the url
-				try {
-					url = new URL("file:" + strURL);
-				} catch(MalformedURLException ex) {
-					throw new RuntimeException("Wrong URL of file specified: " + ex.getMessage());
-				}
-			}
-			os = url.openConnection().getOutputStream();
-		}
-		//resolve url format for zip files
-		if(input.startsWith("zip:")) {
-			String zipAnchor = input.substring(input.lastIndexOf('#') + 1);
-			ZipOutputStream zout = new ZipOutputStream(os);
-			ZipEntry entry = new ZipEntry(zipAnchor);
-			zout.putNextEntry(entry);
-			return Channels.newChannel(zout);
+        writer.close();
+		if (runIt) {
+            resultMsg = "OK";
         } else {
-        	return Channels.newChannel(os);
+            resultMsg = "STOPPED";
         }
+		resultCode = Node.RESULT_OK;
 	}
 
-	private void setNextOutput() throws FileNotFoundException {
-		if (!filenameItor.hasNext()) {
-			logger.warn(getId() + ": Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-					+ "Size of output file will exceed specified limit");
-			return;
-		}
-		formatter.open(new FileOutputStream(filenameItor.next(), appendData), null);
-	}
 
 	/**
 	 *  Description of the Method
@@ -226,12 +163,14 @@ public class DataWriter extends Node {
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
 		}
-		// based on file mask, create/open output file
-		try {
-			formatter.open(new FileOutputStream(filenameItor.next(), appendData), getInputPort(READ_FROM_PORT).getMetadata());
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
+
+        // initialize multifile writer based on prepared formatter
+        writer = new MultiFileWriter(formatter, fileURL);
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
 	/**
@@ -267,9 +206,13 @@ public class DataWriter extends Node {
 			aDataWriter = new DataWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
-									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-									xattribs.getInteger(XML_RECORDS_PER_FILE, 0),
-									xattribs.getInteger(XML_BYTES_PER_FILE, 0));
+									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+                aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
+            if(xattribs.exists(XML_BYTES_PER_FILE)) {
+                aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+            }
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -285,5 +228,25 @@ public class DataWriter extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+
+    public int getBytesPerFile() {
+        return bytesPerFile;
+    }
+
+
+    public void setBytesPerFile(int bytesPerFile) {
+        this.bytesPerFile = bytesPerFile;
+    }
+
+
+    public int getRecordsPerFile() {
+        return recordsPerFile;
+    }
+
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
+    }
 	
 }

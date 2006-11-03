@@ -46,7 +46,6 @@ public class DelimitedDataFormatter implements Formatter {
 	
     private final static String DELIMITER_SYSTEM_PROPERTY_NAME="line.separator";
     private String charSet = null;
-	private boolean oneRecordPerLinePolicy=false;
 	// Attributes
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
@@ -84,46 +83,44 @@ public class DelimitedDataFormatter implements Formatter {
 		metadata = null;
 	}
 	
-	/**
-	 *  Set output and format description (metadata). May be called repeatedly.
-	 *
-	 *@param  out        Output. null value preserves previous setting.
-	 *@param  _metadata  Format. null value preserver previous setting.
-	 * @since             March 28, 2002
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void open(Object out, DataRecordMetadata _metadata) {
+	public void init(DataRecordMetadata _metadata) {
 		this.metadata = _metadata;
 
-		// close previous output
-		close();
-		// create buffered input stream reader
-		if (out == null) {
-			writer = null;
-		} else {
-			writer = Channels.newChannel((OutputStream) out);
+		metadata = _metadata;
+		// create array of delimiters & initialize them
+		delimiters = new String[metadata.getNumFields()];
+		delimiterLength= new int[metadata.getNumFields()];
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			delimiters[i] = metadata.getField(i).getDelimiter();
+			delimiterLength[i] = delimiters[i].length();
 		}
-
-		charBuffer.clear(); // preventively clear the buffer
 		
-		if (_metadata != null) {	// set new metadata
-			metadata = _metadata;
-			// create array of delimiters & initialize them
-			delimiters = new String[metadata.getNumFields()];
-			delimiterLength= new int[metadata.getNumFields()];
-			for (int i = 0; i < metadata.getNumFields(); i++) {
-				delimiters[i] = metadata.getField(i).getDelimiter();
-				delimiterLength[i] = delimiters[i].length();
-			}
-			// if oneRecordPerLine - change last delimiter to be new-line character
-			if (oneRecordPerLinePolicy){
-			    delimiters[delimiters.length-1]=NEW_LINE_STR;
-			    delimiterLength[delimiters.length-1]=NEW_LINE_STR.length();
-			}
-			
-			numFields=metadata.getNumFields(); // buffer numFields
-		}
+		numFields=metadata.getNumFields(); // buffer numFields
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        // close previous output
+        close();
+        
+        // create buffered input stream reader
+        if (out == null) {
+            writer = null;
+        } else if (out instanceof WritableByteChannel) {
+            writer = (WritableByteChannel) out;
+        } else {
+            writer = Channels.newChannel((OutputStream) out);
+        }
+
+        // preventively clear the buffer
+        charBuffer.clear(); 
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -155,25 +152,13 @@ public class DelimitedDataFormatter implements Formatter {
 		
 	}
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  record           Description of Parameter
-	 * @exception  IOException  Description of Exception
-	 * @since                   March 28, 2002
-	 */
-	public void write(DataRecord record) throws IOException {
-		writeRecord(record);
-	}
-
 	/**
 	 * Write record to output (or buffer).
 	 * @param record
 	 * @return Number of written bytes.
 	 * @throws IOException
 	 */
-	public int writeRecord(DataRecord record) throws IOException {
+	public int write(DataRecord record) throws IOException {
 		String fieldVal;
 		charBuffer.clear();
 		for (int i = 0; i < numFields; i++) {
@@ -265,21 +250,6 @@ public class DelimitedDataFormatter implements Formatter {
 	}
 */
 
-	/**
-	 *  Sets OneRecordPerLinePolicy.
-	 * @see org.jetel.data.formatter.Formatter#setOneRecordPerLinePolicy(boolean)
-	 */
-	public void setOneRecordPerLinePolicy(boolean b) {
-		oneRecordPerLinePolicy = b;
-	}
-	
-	/**
-	 * @return true if formatter should output one record per line
-	 */
-	public boolean getOneRecordPerLinePolicy() {
-		return(this.oneRecordPerLinePolicy);
-	}
-	
 	/**
 	 * Returns name of charset which is used by this formatter
 	 * @return Name of charset or null if none was specified

@@ -190,7 +190,7 @@ public class LdapReader extends Node {
 		 */
 //		parser.open(getGraph().getLdapConnection(this.ldapConnectionId), getOutputPort(OUTPUT_PORT).getMetadata());
 //		LdapConnection ldapCon = new LdapConnection("id_ldapCon",ldapUrl,"","");
-		parser.open(null, getOutputPort(OUTPUT_PORT).getMetadata());
+		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
 		/*
 		 * Well... some other things to do ?
 		 */
