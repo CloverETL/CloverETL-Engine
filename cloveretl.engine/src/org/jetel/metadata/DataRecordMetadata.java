@@ -505,6 +505,25 @@ public class DataRecordMetadata implements Serializable {
     }
     
     /**
+     * Returns header with field names ended by field delimiters.
+     * Used in flat file writers for file header describing data.
+     * @return
+     */
+    public String getFieldNamesHeader() {
+        StringBuilder ret = new StringBuilder();
+        String fieldDelimiter;
+        
+        for (int i = 0; i < getNumFields(); i++) {
+            ret.append(getField(i).getName());
+            fieldDelimiter = getField(i).getDelimiter(); 
+            ret.append(StringUtils.isEmpty(fieldDelimiter) ? ";" : fieldDelimiter);
+        }
+        ret.append(getRecordDelimiter());
+        
+        return ret.toString();      
+    }
+
+    /**
      * toString method: creates a String representation of the object
      * @return the String representation
      */

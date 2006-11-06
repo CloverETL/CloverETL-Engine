@@ -63,7 +63,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>fileURL</b></td><td>path to the input files</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
+ *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
  *  </tr>
  *  </table>
  *
@@ -87,6 +89,8 @@ public class DelimitedDataReader extends Node {
 	private final static String XML_CHARSET_ATTRIBUTE = "charset";
 	private final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
+    private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
+    private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
@@ -95,6 +99,8 @@ public class DelimitedDataReader extends Node {
     private MultiFileReader reader;
     private PolicyType policyType;
     private int skipRows=0; // do not skip rows by default
+    private boolean skipFirstLine = false;
+    private int numRecords = -1;
 
 
 	/**
@@ -191,7 +197,9 @@ public class DelimitedDataReader extends Node {
         // initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, fileURL);
         reader.setLogger(logger);
+        reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
+        reader.setNumRecords(numRecords);
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
@@ -238,6 +246,12 @@ public class DelimitedDataReader extends Node {
 			aDelimitedDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
             if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
                 aDelimitedDataReaderNIO.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
+                aDelimitedDataReaderNIO.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+                aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -297,6 +311,15 @@ public class DelimitedDataReader extends Node {
     public void setSkipRows(int skipRows) {
         this.skipRows = skipRows;
     }
+    
+    public void setSkipFirstLine(boolean skip) {
+        this.skipFirstLine = skip;
+    }
+
+    public void setNumRecords(int numRecords) {
+        this.numRecords = Math.max(numRecords, 0);
+    }
+
     
 }
 

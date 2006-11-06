@@ -21,6 +21,9 @@ package org.jetel.util;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
@@ -52,13 +55,18 @@ public class MultiFileWriter {
     private Log logger = defaultLogger;
 
     private Formatter formatter;
+    private DataRecordMetadata metadata;
     private String fileURL;
+    private String charset;
     private int recordsPerFile;
     private int bytesPerFile;
     private int records;
     private int bytes;
-    private Iterator<String> fileNames;
     private boolean appendData;
+    private ByteBuffer header;
+    private ByteBuffer footer;
+    private Iterator<String> fileNames;
+    private WritableByteChannel byteChannel;
     
     /**
      * Constructor.
@@ -76,6 +84,7 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
+        this.metadata = metadata;
         fileNames = new MultiOutFile(fileURL);
         formatter.init(metadata);
         try {
@@ -96,10 +105,30 @@ public class MultiFileWriter {
                     + "Size of output file will exceed specified limit");
             return;
         }
-        
-        formatter.setDataTarget(FileUtils.getWritableChannel(fileNames.next(), appendData));
+        //write footer to the previous destination if it is not first call of this method
+        if(byteChannel != null) {
+            writeFooter();
+        }
+        byteChannel = FileUtils.getWritableChannel(fileNames.next(), appendData);
+        //write header
+        writeHeader();
+        formatter.setDataTarget(byteChannel);
     }
 
+    private void writeHeader() throws IOException {
+        if(header != null) {
+            byteChannel.write(header);
+            header.rewind();
+        }
+    }
+    
+    private void writeFooter() throws IOException {
+        if(footer != null) {
+            byteChannel.write(footer);
+            footer.rewind();
+        }
+    }
+    
     /**
      * Writes given record via formatter into destination file(s).
      * @param record
@@ -145,6 +174,36 @@ public class MultiFileWriter {
 
     public void setAppendData(boolean appendData) {
         this.appendData = appendData;
+    }
+
+    public void setFooter(String footer) {
+        if(charset != null) {
+            try {
+                this.footer = ByteBuffer.wrap(footer.getBytes(charset));
+                return;
+            } catch (UnsupportedEncodingException e) {
+                logger.warn(e);
+                charset = null;
+            }
+        }
+        this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+        if(charset != null) {
+            try {
+                this.header = ByteBuffer.wrap(header.getBytes(charset));
+                return;
+            } catch (UnsupportedEncodingException e) {
+                logger.warn(e);
+                charset = null;
+            }
+        }
+        this.header = ByteBuffer.wrap(header.getBytes());
+    }
+
+    public void setCharset(String charset) {
+        this.charset = charset;
     }
 
 }
