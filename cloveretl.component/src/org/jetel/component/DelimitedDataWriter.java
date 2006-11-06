@@ -96,7 +96,8 @@ public class DelimitedDataWriter extends Node {
 	private boolean outputFieldNames=false;
 	private int recordsPerFile;
 	private int bytesPerFile;
-
+	private String charset;
+    
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER";
@@ -121,6 +122,7 @@ public class DelimitedDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+        this.charset = charset;
 		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -182,7 +184,10 @@ public class DelimitedDataWriter extends Node {
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
-        //TODO kokon - outputFiledNames
+        writer.setCharset(charset);
+        if(outputFieldNames) {
+            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
         
 	}

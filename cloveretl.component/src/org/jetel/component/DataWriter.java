@@ -67,6 +67,7 @@ import org.w3c.dom.Element;
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td> 
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  </tr>
@@ -82,12 +83,14 @@ public class DataWriter extends Node {
 	private static final String XML_APPEND_ATTRIBUTE = "append";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatter formatter;
     private MultiFileWriter writer;
+    private boolean outputFieldNames;
 	private int bytesPerFile;
 	private int recordsPerFile;
 
@@ -170,6 +173,9 @@ public class DataWriter extends Node {
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
+        if(outputFieldNames) {
+            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
@@ -186,6 +192,15 @@ public class DataWriter extends Node {
 		if (charSet != null) {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
 		}
+        if (outputFieldNames){
+            xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+        }
+        if (recordsPerFile > 0) {
+            xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
+        }
+        if (bytesPerFile > 0) {
+            xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
+        }
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 	}
 
@@ -207,6 +222,9 @@ public class DataWriter extends Node {
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE, null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false));
+            if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
+                aDataWriter.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
+            }
             if(xattribs.exists(XML_RECORDS_PER_FILE)) {
                 aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
             }
@@ -248,5 +266,9 @@ public class DataWriter extends Node {
     public void setRecordsPerFile(int recordsPerFile) {
         this.recordsPerFile = recordsPerFile;
     }
-	
+
+    public void setOutputFieldNames(boolean outputFieldNames) {
+        this.outputFieldNames = outputFieldNames;
+    }
+
 }
