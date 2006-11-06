@@ -41,7 +41,7 @@ import org.jetel.data.Defaults;
  * @since Oct 20, 2006
  *
  */
-public class ByteBufferUtils {
+public final class ByteBufferUtils {
 	
 	/**
 	 * This method flushes the buffer to the Channel and prepares it for next
