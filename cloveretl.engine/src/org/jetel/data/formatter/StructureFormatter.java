@@ -22,6 +22,7 @@
 package org.jetel.data.formatter;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
@@ -94,7 +95,11 @@ public class StructureFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		
-		maskBytes = mask.getBytes();
+		try {
+			maskBytes = mask.getBytes(charSet != null ? charSet : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		} catch (UnsupportedEncodingException e) {
+			throw new ComponentNotReadyException(e);
+		}
 
 		//find places in mask where to put record field's values
 		List<DataFieldParams> maskAnalizeMap = new ArrayList<DataFieldParams>();
