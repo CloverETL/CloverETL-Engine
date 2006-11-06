@@ -24,6 +24,8 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -54,7 +56,8 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>-info</td><td>print info about Clover library version</td></tr>
  *  <tr><td nowrap>-plugins <i>filename</i></td><td>directory where to look for plugins/components</td></tr>
  *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
- *  <tr><td nowrap><b>filename</b></td><td>name of the file containing graph's layout in XML (this must be the last parameter passed)</td></tr>
+ *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
+ *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
  * @author      dpavlis
@@ -65,7 +68,7 @@ public class runGraph {
     private static Log logger = LogFactory.getLog(runGraph.class);
 
     //TODO change run graph version
-	private final static String RUN_GRAPH_VERSION = "1.8";
+	private final static String RUN_GRAPH_VERSION = "1.9";
 	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
 	public final static String PROPERTY_DEFINITION_SWITCH = "-P:";
@@ -73,6 +76,7 @@ public class runGraph {
 	public final static String INFO_SWITCH = "-info";
     public final static String PLUGINS_SWITCH = "-plugins";
     public final static String PASSWORD_SWITCH = "-pass";
+    public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
 	
 	/**
 	 *  Description of the Method
@@ -81,6 +85,7 @@ public class runGraph {
 	 */
 	public static void main(String args[]) {
 		boolean verbose = false;
+        boolean loadFromSTDIN = false;
 		Properties properties=new Properties();
 		int trackingInterval=-1;
 		String pluginsRootDirectory = null;
@@ -126,22 +131,42 @@ public class runGraph {
             }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
-			}
+			}else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)){
+			    loadFromSTDIN=true;
+            }
 		}
 		
         //init clover plugins system
         Plugins.init(pluginsRootDirectory);
         
-		FileInputStream in=null;
-		System.out.println("Graph definition file: " + args[args.length - 1]);
-
-		try {
-			in = new FileInputStream(args[args.length - 1]);
-		} catch (FileNotFoundException e) {
-			System.err.println("Error - graph definition file not found: "+e.getMessage());
-			System.exit(-1);
-		}
-
+		// load graph definition from XML
+        InputStream in = null;
+        if (loadFromSTDIN) {
+            System.out.println("Graph definition loaded from STDIN");
+            in = System.in;
+        } else {
+            System.out.println("Graph definition file: "
+                    + args[args.length - 1]);
+            URL fileURL=null;
+            try {
+                fileURL = new URL(args[args.length - 1]);
+            }catch(MalformedURLException ex2){
+                try{
+                    fileURL = new URL("file:"+args[args.length - 1]);
+                }catch(MalformedURLException ex1){
+                    System.err.println("Error - graph definition file can't be read: "
+                            + ex1.getMessage());
+                    System.exit(-1);
+                }
+            }
+            try{
+                in=fileURL.openStream();
+            } catch (IOException e) {
+                System.err.println("Error - graph definition file can't be read: "
+                        + e.getMessage());
+                System.exit(-1);
+            }
+        }
 		TransformationGraph graph = new TransformationGraph();
         TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
 
@@ -215,6 +240,10 @@ public class runGraph {
 		System.out.println("-info\t\t\tprint info about Clover library version");
         System.out.println("-plugins\t\tdirectory where to look for plugins/components");
         System.out.println("-pass\t\tpassword for decrypting of hidden connections passwords");
+        System.out.println("-stdin\t\tload graph definition from STDIN");
+        System.out.println();
+        System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
+        
 	}
 
 	private static void printInfo(){
