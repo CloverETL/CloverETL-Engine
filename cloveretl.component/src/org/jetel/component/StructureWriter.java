@@ -26,6 +26,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.StructureFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.InputPort;
@@ -109,6 +110,7 @@ public class StructureWriter extends Node {
 	private String footer = null;
 	private WritableByteChannel writer;
 	private ByteBuffer buffer;
+	private String charset;
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -127,6 +129,7 @@ public class StructureWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+		this.charset = charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		formatter = charset == null ? new StructureFormatter() : 
 			new StructureFormatter(charset);
 		formatter.setMask(mask);
@@ -147,8 +150,8 @@ public class StructureWriter extends Node {
 	public void run() {
 		//write header
 		if (header != null ){
-			buffer.put(header.getBytes());
 			try {
+				buffer.put(header.getBytes(charset));
 				ByteBufferUtils.flush(buffer,writer);
 			} catch (IOException e) {
 				resultMsg=e.getMessage();
@@ -192,8 +195,8 @@ public class StructureWriter extends Node {
 		//write footer
 		if (footer != null ){
 			buffer.clear();
-			buffer.put(footer.getBytes());
 			try {
+				buffer.put(footer.getBytes(charset));
 				ByteBufferUtils.flush(buffer,writer);
 			} catch (IOException e) {
 				resultMsg=e.getMessage();
