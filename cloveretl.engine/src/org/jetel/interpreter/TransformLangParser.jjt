@@ -851,7 +851,7 @@ void BuildInFunction() #void :
 
 void BuildInProcedure() #void : {}
 {
-	"print_err" "(" AdditiveExpression() ["," <BOOLEAN_LITERAL> ] ")" #PrintErrNode
+	PrintErrNode()
 	|"print_stack" "(" ")" #PrintStackNode(0)
 	|"breakpoint" "(" ")" #BreakpointNode(0)
 	| PrintLogNode()
@@ -937,6 +937,13 @@ void Num2StrNode() :
     ")"
 }
 
+
+void PrintErrNode() :
+{ Token t;}
+{
+	"print_err" "(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtThis.setPrintLine(Boolean.parseBoolean(t.image));} ] ")" 
+}
+
 void PrintLogNode() : 
 {
 	Token t;
@@ -955,6 +962,7 @@ void PrintLogNode() :
 	
 	","
 	AdditiveExpression()
+	")"
 }
 
 void SequenceNode() :
@@ -963,7 +971,7 @@ void SequenceNode() :
 }
 {
 	"sequence" "(" 
-	t=<STRING_LITERAL> { jjtThis.setName(t.image); } 
+	t=<IDENTIFIER> { jjtThis.setName(t.image); } 
 	[ ","
 	(  <INT_VAR> { jjtThis.setReturnType(INT_VAR); }
 	| <LONG_VAR> {  jjtThis.setReturnType(LONG_VAR); }
@@ -985,26 +993,28 @@ void LookupNode() :
 	(
 		"lookup"  { jjtThis.setOperation(0); }
 		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } "," 
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","  // LOOKUP NAME/ID
 		AdditiveExpression() //KEYS GO HERE
 		("," AdditiveExpression())+
 		")"
-		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); } 
+		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); }  // WHICH FIELD 
 	)
 	(
 		"lookup_next" { jjtThis.setOperation(1); }
 		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } "," 
 		")"
 		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); } 
 	)
 	(
+		// how many records we have found
 		"lookup_found" { jjtThis.setOperation(2); }
 		"("
 		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
 		")"
 	)
 	(
+		// do something with lookup
 		"lookup_admin" 
 		"("
 		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
