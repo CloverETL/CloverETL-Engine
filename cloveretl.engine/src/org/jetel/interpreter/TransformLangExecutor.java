@@ -1089,7 +1089,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFPrintErrNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         Object a = stack.pop();
-        if (node.jjtGetNumChildren()>1){
+        if (node.printLine){
             StringBuilder buf=new StringBuilder((a != null ? a.toString() : "<null>"));
             buf.append(" (on line: ").append(node.getLineNumber());
             buf.append(" col: ").append(node.getColumnNumber()).append(")");
@@ -1822,7 +1822,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFSequenceNode node,Object data){
         Object seqVal=null;
         if (node.sequence==null){
-            node.sequence=graph.getSequence(node.sequenceName);
+            if (graph!=null){
+                node.sequence=graph.getSequence(node.sequenceName);
+            }else{
+                throw new TransformLangExecutorRuntimeException(node,
+                        "Can't obtain Sequence \""+node.sequenceName+
+                        "\" from graph - graph is not assigned");
+            }
             if (node.sequence==null){
                 throw new TransformLangExecutorRuntimeException(node,
                         "Can't obtain Sequence \""+node.sequenceName+
@@ -1832,7 +1838,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         switch(node.opType){
         case CLVFSequenceNode.OP_RESET:
             node.sequence.reset();
-            return data;
+            seqVal=Stack.NUM_ZERO;
+            break;
         case CLVFSequenceNode.OP_CURRENT:
             switch(node.retType){
             case LONG_VAR:
@@ -1914,9 +1921,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFPrintLogNode node, Object data) {
         if (runtimeLogger == null) {
             throw new TransformLangExecutorRuntimeException(node,
-                    "Can NOT perform" + "log operation - no logger defined");
+                    "Can NOT perform logging operation - no logger defined");
         }
-        Object msg = stack.pop();
+        node.jjtGetChild(0).jjtAccept(this, data);
+        Object msg =  stack.pop();
         switch (node.level) {
         case 1: //| "debug" 
             runtimeLogger.debug(msg);
