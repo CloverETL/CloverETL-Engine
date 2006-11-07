@@ -36,7 +36,7 @@ import org.jetel.exception.ComponentNotReadyException;
 public interface Sequence {
     
     /**
-     * Method with returns sequence?s name (ID). It is deemed that all sequences are
+     * Method which returns sequence's name (ID). It is deemed that all sequences are
      * kept in directory and accessed by client's transformations by their names.
      * @return sequence name 
      */
