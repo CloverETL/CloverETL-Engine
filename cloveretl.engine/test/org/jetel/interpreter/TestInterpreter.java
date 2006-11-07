@@ -38,11 +38,17 @@ import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.data.sequence.Sequence;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.sequence.PrimitiveSequence;
 
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 /**
  * @author dpavlis
  * @since  10.8.2004
@@ -54,10 +60,13 @@ public class TestInterpreter extends TestCase {
 
 	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
 	DataRecord record,record1,out,out1;
+    TransformationGraph graph;
 	
 	protected void setUp() {
 	    Defaults.init();
 	    
+        graph=new TransformationGraph();
+        
 		metadata=new DataRecordMetadata("in",DataRecordMetadata.DELIMITED_RECORD);
 		
 		metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
@@ -109,6 +118,9 @@ public class TestInterpreter extends TestCase {
 		record.getField("Born").setNull(true);
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
+        
+        Sequence seq = new PrimitiveSequence("test",graph,"test");
+        graph.addSequence("test", seq);
 	}
 	
 	protected void tearDown() {
@@ -121,8 +133,8 @@ public class TestInterpreter extends TestCase {
 		System.out.println("int test:");
 		String expStr = "int i; i=0; print_err(i); \n"+
 						"int j; j=-1; print_err(j);\n"+
-						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt);\n"+
-						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt);\n"+
+						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt, true);\n"+
+						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt, true);\n"+
 						"int field; field=$Value; print_err(field)";
 
 		try {
@@ -299,7 +311,7 @@ public class TestInterpreter extends TestCase {
 	public void test_string(){
 		System.out.println("\nstring test:");
 		int lenght=1000;
-		StringBuffer tmp = new StringBuffer(lenght);
+        StringBuilder tmp = new StringBuilder(lenght);
 		for (int i=0;i<lenght;i++){
 			tmp.append(i%10);
 		}
@@ -329,12 +341,12 @@ public class TestInterpreter extends TestCase {
 		      
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("0",((StringBuffer)result[0]).toString());
-		      assertEquals("hello",((StringBuffer)result[1]).toString());
-		      assertEquals(record.getField("Name").getValue().toString(),((StringBuffer)result[2]).toString());
-		      assertEquals(record.getField("City").getValue().toString(),((StringBuffer)result[3]).toString());
-		      assertEquals(tmp.toString(),((StringBuffer)result[4]).toString());
-		      assertEquals("a\u0101\u0102A",((StringBuffer)result[5]).toString());
+		      assertEquals("0",((StringBuilder)result[0]).toString());
+		      assertEquals("hello",((StringBuilder)result[1]).toString());
+		      assertEquals(record.getField("Name").getValue().toString(),((StringBuilder)result[2]).toString());
+		      assertEquals(record.getField("City").getValue().toString(),((StringBuilder)result[3]).toString());
+		      assertEquals(tmp.toString(),((StringBuilder)result[4]).toString());
+		      assertEquals("a\u0101\u0102A",((StringBuilder)result[5]).toString());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1787,6 +1799,77 @@ public class TestInterpreter extends TestCase {
 		    	throw new RuntimeException("Parse exception",e);
 	    }
 	}
+    
+    
+    public void test_logger(){
+        System.out.println("\nLogger test:");
+        String expStr = "/*raise_error(\"my testing error\") */; print_log(debug,10 * 15);";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+
+              
+              parseTree.dump("");
+              
+              
+        } catch (ParseException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Parse exception",e);
+        }
+    }
+
+    public void test_sequence(){
+        System.out.println("\nLogger test:");
+        String expStr = "print_err(sequence(test).next);\n"+
+                        "print_err(sequence(test).next);\n"+
+                        "int i; for(i=0;i<10;++i) print_err(sequence(test).next);\n"+
+                        "i=sequence(test).current; print_err(i,true); i=sequence(test).reset; \n"+
+                        "for(i=0;i<10;++i) print_err(sequence(test).next);\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+
+              
+              parseTree.dump("");
+              
+              
+        } catch (ParseException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Parse exception",e);
+        }
+    }
+
     
     public void print_code(String text){
         String[] lines=text.split("\n");
