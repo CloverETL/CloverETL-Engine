@@ -64,7 +64,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"AGGREGATE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev, CRC32, MD5</td>
+ *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev, CRC32, MD5, FIRST, LAST</td>
  *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
  *  <tr><td><b>charset</b></td><td>character encoding of the input data stream for CRC32 and MD5 functions (if not specified, then value from defaultProperties DataFormatter.DEFAULT_CHARSET_ENCODER is used)</td>
