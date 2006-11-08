@@ -25,7 +25,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser3;
+import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -89,7 +89,7 @@ public class PortDataConsumer implements DataConsumer {
 		if (metadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 			parser = new DelimitedDataParser();
 		} else {
-			parser= FixLenDataParser3.createParser(metadata.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
+			parser= FixLenDataParser.createParser(metadata.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
 		}
 	}
 

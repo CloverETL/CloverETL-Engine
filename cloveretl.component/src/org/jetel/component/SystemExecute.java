@@ -34,7 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.FixLenDataParser3;
+import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.XMLConfigurationException;
@@ -265,7 +265,7 @@ public class SystemExecute extends Node{
 			if (meta.getRecType()==DataRecordMetadata.DELIMITED_RECORD) {
 				parser=new DelimitedDataParser();
 			}else {
-				parser= FixLenDataParser3.createParser(meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
+				parser= FixLenDataParser.createParser(meta.getRecordProperties().getBooleanProperty(DataRecordMetadata.BYTE_MODE_ATTR, false));
 			}
 		}else{
 			parser=null;

@@ -36,7 +36,7 @@ import org.jetel.util.StringUtils;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/15/06  
  */
-public class FixLenCharDataParser extends FixLenDataParser3 {
+public class FixLenCharDataParser extends FixLenDataParser {
 
 	private CharBuffer charBuffer;
 
