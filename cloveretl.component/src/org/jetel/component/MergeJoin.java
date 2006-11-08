@@ -21,6 +21,8 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -31,7 +33,6 @@ import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -39,7 +40,6 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -131,49 +131,60 @@ import org.w3c.dom.Element;
  * @created     4. June 2003
  */
 public class MergeJoin extends Node {
+	public enum Join {
+		INNER,
+		LEFT_OUTER,
+		FULL_OUTER,
+	}
 
 	private static final String XML_FULLOUTERJOIN_ATTRIBUTE = "fullOuterJoin";
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	private static final String XML_JOINTYPE_ATTRIBUTE = "joinType";
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "MERGE_JOIN";
 
 	private final static int WRITE_TO_PORT = 0;
 	private final static int DRIVER_ON_PORT = 0;
-	private final static int SLAVE_ON_PORT = 1;
-
-	private final static int CURRENT = 0;
-	private final static int PREVIOUS = 1;
-	private final static int TEMPORARY = 1;
+	private final static int FIRST_SLAVE_PORT = 1;
 
 	private String transformClassName;
 	private String transformSource = null;
 
 	private RecordTransform transformation = null;
 
-	private boolean leftOuterJoin = false;
-	private boolean fullOuterJoin = false;
-
-	private String[] joinKeys;
-	private String[] slaveOverrideKeys = null;
-
-	private RecordKey recordKeys[];
-
-	private ByteBuffer dataBuffer;
-	private FileRecordBuffer recordBuffer;
-
-	// for passing data records into transform function
-	private final static DataRecord[] inRecords = new DataRecord[2];
-	private DataRecord[] outRecords=new DataRecord[1];
+	private DataRecord[] inRecords;
+	private DataRecord[] outRecords;
 
 	private Properties transformationParameters;
 	
-	static Log logger = LogFactory.getLog(MergeJoin.class);
+//	private static Log logger = LogFactory.getLog(MergeJoin.class);
 	
+	static Log logger = LogFactory.getLog(HashJoin.class);
+
+	private String[][] joiners;
+	private Join join;
+
+	private boolean slaveDuplicates;
+
+	private int inputCnt;
+	private int slaveCnt;
+	
+	private RecordKey driverKey;
+	private RecordKey[] slaveKeys;
+
+	InputReader[] reader;
+	InputReader minReader;
+	boolean[] minIndicator;
+	int minCnt;
+
+	OutputPort outPort;
+
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
@@ -182,238 +193,79 @@ public class MergeJoin extends Node {
 	 * @param  transformClass  class (name) to be used for transforming data
 	 * @param  leftOuterJoin   indicates, whether to perform left outer join
 	 */
-	public MergeJoin(String id, String[] joinKeys, String transform,
-			String transformClass, boolean leftOuterJoin) {
+	public MergeJoin(String id, String[][] joiners, String transform,
+			String transformClass, Join join, boolean slaveDuplicates) {
 		super(id);
-		this.joinKeys = joinKeys;
+		this.joiners = joiners;
 		this.transformSource = transform;
 		this.transformClassName = transformClass;
-		this.leftOuterJoin = leftOuterJoin;
+		this.join = join;
+		this.slaveDuplicates = slaveDuplicates;
 	}
 
-	/**
-	 *  Sets on/off fullOuterJoin indicator
-	 *
-	 * @param  outerJoin  The new leftOuterJoin value
-	 */
-	public void setFullOuterJoin(boolean outerJoin) {
-		fullOuterJoin = outerJoin;
-		// if full outer then left as well
-		// (it is set only to relax checking for both left & full outer)
-		if (fullOuterJoin){
-		    leftOuterJoin=true;
+	private int loadNext() throws InterruptedException, IOException {
+		minCnt = 0;
+		int minIdx = 0;
+		for (int i = 0; i < inputCnt; i++) {
+			if (minIndicator[i]) {
+				reader[i].loadNextRun();
+			}
+			switch (reader[minIdx].compare(reader[i])) {
+			case -1: // current is greater than minimal
+				minIndicator[i] = false;
+				break;
+			case 0: // current is equal to minimal
+				minCnt++;
+				minIndicator[i] = true;
+				break;
+			case 1: // current is lesser than minimal
+				minCnt = 1;
+				minIdx = i;
+				minIndicator[i] = true;
+				break; // all previous indicators will be reset later
+			}
+		} // for
+		for (int i = minIdx - 1; i >= 0; i--) {
+			minIndicator[i] = false;
 		}
+		minReader = reader[minIdx];
+		if (reader[minIdx].getSample() == null) {	// no more data
+			minCnt = 0;
+		}
+		return minCnt;
 	}
 
-	/**
-	 *  Sets specific key (string) for slave records<br>
-	 *  Can be used if slave record has different names
-	 *  for fields composing the key
-	 *
-	 * @param  slaveKeys  The new slaveOverrideKey value
-	 */
-	public void setSlaveOverrideKey(String[] slaveKeys) {
-		this.slaveOverrideKeys = slaveKeys;
-	}
-
-
-	/**
-	 *  Populates record buffer with all slave records having the same key
-	 *
-	 * @param  port                      Description of the Parameter
-	 * @param  nextRecord                Description of the Parameter
-	 * @param  key                       Description of the Parameter
-	 * @param  currRecord                Description of the Parameter
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 * @exception  JetelException        Description of the Exception
-	 */
-	private void fillRecordBuffer(InputPort port, DataRecord currRecord, DataRecord nextRecord, RecordKey key)
-			 throws IOException, InterruptedException, JetelException {
-
-		recordBuffer.clear();
-		if (currRecord != null) {
-			dataBuffer.clear();
-			currRecord.serialize(dataBuffer);
-			dataBuffer.flip();
-			recordBuffer.push(dataBuffer);
-			while (nextRecord != null) {
-				nextRecord = port.readRecord(nextRecord);
-				if (nextRecord != null) {
-					switch (key.compare(currRecord, nextRecord)) {
-						case 0:
-							dataBuffer.clear();
-							nextRecord.serialize(dataBuffer);
-							dataBuffer.flip();
-							recordBuffer.push(dataBuffer);
-							break;
-						case -1:
-							return;
-						case 1:
-							throw new JetelException("Slave record out of order!");
-					}
+	private boolean flushMin() throws IOException, InterruptedException {
+		// create initial combination
+		for (int i = 0; i < inputCnt; i++) {
+				inRecords[i] = minIndicator[i] ? reader[i].next() : null;
+		}
+		while (true) {
+			outRecords[0].reset();
+			if (!transformation.transform(inRecords, outRecords)) {
+				return false;
+			}
+			outPort.writeRecord(outRecords[0]);
+			// generate next combination
+			int chngCnt = 0;
+			for (int i = inputCnt - 1; i >= 0; i--) {
+				if (!minIndicator[i]) {
+					continue;
 				}
-			}
-		}
-	}
-
-
-	/**
-	 *  Finds corresponding slave record for current driver (if there is some)
-	 *
-	 * @param  driver                    Description of the Parameter
-	 * @param  slave                     Description of the Parameter
-	 * @param  slavePort                 Description of the Parameter
-	 * @param  key                       Description of the Parameter
-	 * @return                           The correspondingRecord value
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 */
-	private int getCorrespondingRecord(DataRecord driver, DataRecord slave, InputPort slavePort, RecordKey key[])
-			 throws IOException, InterruptedException {
-
-		while (slave != null) {
-			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave)) {
-				case 1:
-				    if (fullOuterJoin){
-				        return 1;
-				    }else{
-					slave = slavePort.readRecord(slave);
-				    }
+				chngCnt++;
+				inRecords[i] = reader[i].next();
+				if (inRecords[i] != null) {	// have new combination
 					break;
-				case 0:
-					return 0;
-				case -1:
-					return -1;
+				}
+				if (chngCnt == minCnt) { // no more combinations available
+					return true;
+				}
+				// need rewind
+				reader[i].rewindRun();
+				inRecords[i] = reader[i].next();	// this is supposed to return non-null value
 			}
 		}
-		return -1;
-		// no more records on slave port
 	}
-
-
-	/**
-	 *  Outputs all combinations of current driver record and all slaves with the
-	 *  same key
-	 *
-	 * @param  driver                    Description of the Parameter
-	 * @param  slave                     Description of the Parameter
-	 * @param  out                       Description of the Parameter
-	 * @param  port                      Description of the Parameter
-	 * @return                           Description of the Return Value
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 */
-	private boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
-			 throws IOException, InterruptedException {
-		recordBuffer.rewind();
-		dataBuffer.clear();
-		inRecords[0] = driver;
-		inRecords[1] = slave;
-		outRecords[0]= out;
-
-		while (recordBuffer.shift(dataBuffer) != null) {
-			dataBuffer.flip();
-			slave.deserialize(dataBuffer);
-			// **** call transform function here ****
-            try{
-                if (!transformation.transform(inRecords, outRecords)) {
-                    resultCode = Node.RESULT_ERROR;
-                    resultMsg = transformation.getMessage();
-                    return false;
-                }              
-            }catch(NullPointerException ex){
-                logger.error("Null pointer exception when transforming input data",ex);
-                logger.info("Possibly incorrectly handled outer-join situation");
-                throw new RuntimeException("Null pointer exception when transforming input data",ex);
-            }
-			port.writeRecord(out);
-			dataBuffer.clear();
-		}
-		return true;
-	}
-
-
-	/**
-	 *  If there is no corresponding slave record and is defined left outer join, then
-	 *  output driver only.
-	 *
-	 * @param  driver                    Description of the Parameter
-	 * @param  out                       Description of the Parameter
-	 * @param  port                      Description of the Parameter
-	 * @return                           Description of the Return Value
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 */
-	private boolean flushDriverOnly(DataRecord driver, DataRecord out, OutputPort port)
-			 throws IOException, InterruptedException {
-		inRecords[0] = driver;
-		inRecords[1] = null;
-		outRecords[0]= out;
-
-		try{
-		    if (!transformation.transform(inRecords, outRecords)) {
-		        resultMsg = transformation.getMessage();
-		        return false;
-		    }
-		}catch(NullPointerException ex){
-		    logger.error("Null pointer exception when transforming input data",ex);
-		    logger.info("Possibly incorrectly handled outer-join situation");
-		    throw new RuntimeException("Null pointer exception when transforming input data",ex);
-		}
-		port.writeRecord(out);
-		return true;
-	}
-
-	/**
-	 *  If there is no corresponding driver record and is defined full outer join, then
-	 *  output slave only.
-	 *
-	 * @param  driver                    Description of the Parameter
-	 * @param  out                       Description of the Parameter
-	 * @param  port                      Description of the Parameter
-	 * @return                           Description of the Return Value
-	 * @exception  IOException           Description of the Exception
-	 * @exception  InterruptedException  Description of the Exception
-	 */
-	private boolean flushSlaveOnly(DataRecord slave, DataRecord out, OutputPort port)
-	throws IOException, InterruptedException {
-	    inRecords[0] = null;
-	    inRecords[1] = slave;
-	    outRecords[0]= out;
-	    
-	    try{
-		    if (!transformation.transform(inRecords, outRecords)) {
-		        resultMsg = transformation.getMessage();
-		        return false;
-		    }
-		}catch(NullPointerException ex){
-		    logger.error("Null pointer exception when transforming input data",ex);
-		    logger.info("Possibly incorrectly handled outer-join situation");
-		    throw new RuntimeException("Null pointer exception when transforming input data",ex);
-		}
-	    port.writeRecord(out);
-	    return true;
-	}
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  metadata  Description of the Parameter
-	 * @param  count     Description of the Parameter
-	 * @return           Description of the Return Value
-	 */
-	private DataRecord[] allocateRecords(DataRecordMetadata metadata, int count) {
-		DataRecord[] data = new DataRecord[count];
-
-		for (int i = 0; i < count; i++) {
-			data[i] = new DataRecord(metadata);
-			data[i].init();
-		}
-		return data;
-	}
-
-
 
 	/**
 	 *  Main processing method for the SimpleCopy object
@@ -421,94 +273,21 @@ public class MergeJoin extends Node {
 	 * @since    April 4, 2002
 	 */
 	public void run() {
-		boolean isDriverDifferent;
-
-		// get all ports involved
-		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
-		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
-
-		//initialize input records driver & slave
-		DataRecord[] driverRecords = allocateRecords(driverPort.getMetadata(), 2);
-		DataRecord[] slaveRecords = allocateRecords(slavePort.getMetadata(), 2);
-
-		// initialize output record
-		DataRecord outRecord = new DataRecord(outPort.getMetadata());
-		outRecord.init();
-
-		// tmp record for switching contents
-		DataRecord tmpRec;
-		// create file buffer for slave records - system TEMP path
-		recordBuffer = new FileRecordBuffer(null);
-
-		//for the first time (as initialization), we expect that records are different
-		isDriverDifferent = true;
-
 		try {
-			// first initial load of records
-			driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-			slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
-			while (runIt && driverRecords[CURRENT] != null) {
-				if (isDriverDifferent) {
-					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords[CURRENT], slavePort, recordKeys)) {
-						case -1:
-							// driver lower
-							// no corresponding slave
-							if (leftOuterJoin) {
-								flushDriverOnly(driverRecords[CURRENT], outRecord, outPort);
-							}
-							driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-							isDriverDifferent = true;
-							continue;
-						case 0:
-							// match
-							fillRecordBuffer(slavePort, slaveRecords[CURRENT], slaveRecords[TEMPORARY], recordKeys[SLAVE_ON_PORT]);
-							// switch temporary --> current
-							tmpRec = slaveRecords[CURRENT];
-							slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
-							slaveRecords[TEMPORARY] = tmpRec;
-							isDriverDifferent = false;
-							break;
-						case 1:
-							// looks like full outer join is defined
-						    if (fullOuterJoin){
-						        flushSlaveOnly(slaveRecords[CURRENT], outRecord, outPort);
-						        slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
-						        continue;
-						    }else{ // should not happen if no outer join
-						        throw new RuntimeException(getType() + " - program internal error !");
-						    }
-					}
+			for (loadNext(); minCnt > 0; loadNext()) {
+				if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
+					continue;
 				}
-				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], outRecord, outPort);
-				// get next driver
-
-				driverRecords[TEMPORARY] = driverPort.readRecord(driverRecords[TEMPORARY]);
-				if (driverRecords[TEMPORARY] != null) {
-					// different driver record ??
-					switch (recordKeys[DRIVER_ON_PORT].compare(driverRecords[CURRENT], driverRecords[TEMPORARY])) {
-						case 0:
-							break;
-						case -1:
-							// detected change;
-							isDriverDifferent = true;
-							break;
-						case 1:
-							throw new JetelException("Driver record out of order!");
-					}
+				if (join == Join.LEFT_OUTER && !minIndicator[0]) {	// driver record for current key not available
+					continue;
 				}
-				// switch temporary --> current
-				tmpRec = driverRecords[CURRENT];
-				driverRecords[CURRENT] = driverRecords[TEMPORARY];
-				driverRecords[TEMPORARY] = tmpRec;
-				SynchronizeUtils.cloverYield();
-			}
-			// if full outer join defined and there are some slave records left, flush them
-			if (fullOuterJoin) {
-			    	while(slaveRecords[CURRENT]!=null){
-			    	    flushSlaveOnly(slaveRecords[CURRENT], outRecord, outPort);
-			    	    slaveRecords[CURRENT]=slavePort.readRecord(slaveRecords[CURRENT]);
-			    	}
+				if (!flushMin()) {
+					resultCode = Node.RESULT_ERROR;
+					resultMsg = transformation.getMessage();
+					transformation.finished();
+					broadcastEOF();
+					return;
+				}
 			}
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
@@ -540,32 +319,68 @@ public class MergeJoin extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		Class tClass;
 		// test that we have at least one input port and one output
-		if (inPorts.size() < 2) {
-			throw new ComponentNotReadyException("At least two input ports have to be defined!");
+		if (inPorts.size() < 1) {
+			throw new ComponentNotReadyException("At least one input port have to be defined!");
 		} else if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
-		if (slaveOverrideKeys == null) {
-			slaveOverrideKeys = joinKeys;
+		inputCnt = inPorts.size();
+		slaveCnt = inputCnt - 1;
+		if (joiners.length < 1) {
+			throw new ComponentNotReadyException("not enough join keys specified");
+		} else if (joiners.length < inputCnt) {
+			logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+			String[][] replJoiners = new String[inputCnt][];
+			for (int i = 0; i < joiners.length; i++) {
+				replJoiners[i] = joiners[i];
+			}
+			// use driver key list for all missing slave key specifications
+			for (int i = joiners.length; i < inputCnt; i++) {
+				replJoiners[i] = joiners[0];
+			}
+			joiners = replJoiners;
 		}
-		recordKeys = new RecordKey[2];
-		recordKeys[0] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
-		recordKeys[1] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
-		recordKeys[0].init();
-		recordKeys[1].init();
-
+		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+		driverKey.init();
+		slaveKeys = new RecordKey[slaveCnt];
+		for (int idx = 0; idx < slaveCnt; idx++) {
+			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+			slaveKeys[idx].init();
+		}
+		reader = new InputReader[inputCnt];
+		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
+		if (slaveDuplicates) {
+			for (int i = 0; i < slaveCnt; i++) {
+				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+			}
+		} else {
+			for (int i = 0; i < slaveCnt; i++) {
+				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+			}			
+		}
+		minReader = reader[0];
+		minIndicator = new boolean[inputCnt];
+		for (int i = 0; i < inputCnt; i++) {
+			minIndicator[i] = true;
+		}
+		inRecords = new DataRecord[inputCnt];
+		outRecords = new DataRecord[]{new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
+		outRecords[0].init();
+		outPort = getOutputPort(WRITE_TO_PORT);
 		// init transformation
-		DataRecordMetadata[] inMetadata =(DataRecordMetadata[]) getInMetadata().toArray(new DataRecordMetadata[0]);
-        DataRecordMetadata[] outMetadata=new DataRecordMetadata[] {getOutputPort(WRITE_TO_PORT).getMetadata()};
+		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {
+				getOutputPort(WRITE_TO_PORT).getMetadata()};
+		DataRecordMetadata[] inMetadata = new DataRecordMetadata[inputCnt];
+		for (int idx = 0; idx < inputCnt; idx++) {
+			inMetadata[idx] = getInputPort(idx).getMetadata();
+		}
         try {
             transformation = RecordTransformFactory.createTransform(
             		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
         } catch(Exception e) {
             throw new ComponentNotReadyException(this, e);
         }
-		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
 
 
@@ -592,35 +407,56 @@ public class MergeJoin extends Node {
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
 		
-		if (joinKeys != null) {
-			StringBuffer buf = new StringBuffer(joinKeys[0]);
-			for (int i=1; i< joinKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + joinKeys[i]); 
+		String joinStr = "";
+		for (int i = 0; true; i++) {
+			for (int j = 0; true; j++) {
+				joinStr += joiners[i][j];
+				if (j == joiners[i].length - 1) {
+					break;	// leave inner loop
+				}
+				joinStr += ",";
 			}
-			xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, buf.toString());
-		}
-		
-		if (slaveOverrideKeys != null) {
-			StringBuffer buf = new StringBuffer(slaveOverrideKeys[0]);
-			for (int i=1; i< slaveOverrideKeys.length; i++) {
-				buf.append(Defaults.Component.KEY_FIELDS_DELIMITER + slaveOverrideKeys[i]); 
+			if (i == joiners.length - 1) {
+				break;
 			}
-			xmlElement.setAttribute(XML_SLAVEOVERRIDEKEY_ATTRIBUTE, buf.toString());
+			joinStr += i == 0 ? "*" : "|";
 		}
+
+		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, joinStr);
 		
-		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(this.leftOuterJoin));
-		xmlElement.setAttribute(XML_FULLOUTERJOIN_ATTRIBUTE, String.valueOf(this.fullOuterJoin));
-		
+		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
+				join == Join.FULL_OUTER ? "fullOuter" : join == Join.LEFT_OUTER ? "leftOuter" : "inner");
+
+		xmlElement.setAttribute(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, String.valueOf(slaveDuplicates));
+
 		if (transformationParameters != null) {
 			Enumeration propertyAtts = transformationParameters.propertyNames();
 			while (propertyAtts.hasMoreElements()) {
 				String attName = (String)propertyAtts.nextElement();
 				xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
 			}
-		}
-		
+		}		
 	}
 
+
+	private static String[][] parseJoiners(String joinBy) throws XMLConfigurationException {
+		String[] spl = joinBy.split("\\*", 2);
+		String[] slaveKeys = new String[0];
+		if (spl.length > 1) {
+			slaveKeys = spl[1].split("\\|");
+		}
+		String[] keys = new String[1 + slaveKeys.length];
+		keys[0] =  spl[0];
+		for (int i = 0; i < slaveKeys.length; i++) {
+			keys[1 + i] = slaveKeys[i];
+		}
+		String[][] res = new String[keys.length][];
+
+		for (int i = 0; i < keys.length; i++) {
+			res[i] = keys[i].split(",");
+		}
+		return res;
+	}
 
 	/**
 	 *  Description of the Method
@@ -634,26 +470,33 @@ public class MergeJoin extends Node {
 		MergeJoin join;
 
 		try {
+			String joinStr = xattribs.getString(XML_JOINTYPE_ATTRIBUTE, "inner");
+			Join joinType;
+			if (joinStr == null || joinStr.equalsIgnoreCase("inner")) {
+				joinType = Join.INNER;
+			} else if (joinStr.equalsIgnoreCase("leftOuter")) {
+				joinType = Join.LEFT_OUTER;
+			} else if (joinStr.equalsIgnoreCase("fullOuter")) {
+				joinType = Join.FULL_OUTER;
+			} else {
+				throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" 
+						+ "Invalid joinType specification: " + joinStr);				
+			}
+
+			String[][] joiners = parseJoiners(xattribs.getString(XML_JOINKEY_ATTRIBUTE, ""));
+
             join = new MergeJoin(
                     xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+                    joiners,
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
-                    xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE,false));
-			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
-				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
-						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-
-			}
-			if (xattribs.exists(XML_FULLOUTERJOIN_ATTRIBUTE)) {
-				join.setFullOuterJoin(xattribs.getBoolean(XML_FULLOUTERJOIN_ATTRIBUTE));
-			}
+                    joinType,
+                    xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,
 	                		XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE,
 	                		XML_LEFTOUTERJOIN_ATTRIBUTE,XML_SLAVEOVERRIDEKEY_ATTRIBUTE,
-	                		XML_FULLOUTERJOIN_ATTRIBUTE}));
-			
+	                		XML_FULLOUTERJOIN_ATTRIBUTE}));			
 			return join;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -668,5 +511,324 @@ public class MergeJoin extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
-}
+	
+	/**
+	 * Interface specifying operations for reading ordered record input
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
+	private interface InputReader {
+		public boolean loadNextRun() throws InterruptedException, IOException;
+		public void rewindRun();
+		public DataRecord getSample();
+		public DataRecord next() throws IOException, InterruptedException;
+		public RecordKey getKey();
+		public int compare(InputReader other);
+	}
 
+	private static class DriverReader implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private int recCounter;
+		private boolean blocked;
+
+		public DriverReader(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			recCounter = 0;
+			blocked = false;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			if (inPort == null) {
+				return false;
+			}
+			if (recCounter == 0) {	// first call of this function
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					inPort = null;
+					rec[NEXT] = rec[CURRENT] = null;
+					return false;
+				}
+				recCounter = 1;
+				return true;
+			}
+
+			if (blocked) {
+				blocked = false;
+				return true;
+			}
+			do {
+				swap();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					inPort = null;
+					rec[NEXT] = rec[CURRENT] = null;
+					return false;
+				}
+				recCounter++;
+			} while (key.compare(rec[CURRENT], rec[NEXT]) == 0);
+			return true;
+		}
+
+		public void rewindRun() {
+			throw new UnsupportedOperationException();
+		}
+
+		public DataRecord getSample() {
+			return blocked ? rec[CURRENT] : rec[NEXT];
+		}
+
+		public DataRecord next() throws IOException, InterruptedException {
+			if (blocked || inPort == null) {
+				return null;
+			}
+			swap();
+			if (inPort.readRecord(rec[NEXT]) == null) {
+				inPort = null;
+				rec[NEXT] = null;
+				blocked = false;
+			} else {
+				recCounter++;
+				blocked = key.compare(rec[CURRENT], rec[NEXT]) != 0;
+			}
+			return rec[CURRENT];
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+			if (rec1 == null) {
+				return rec2 == null ? 0 : 1;	// null is greater than any other reader
+			} else if (rec2 == null) {
+				return -1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+
+	}
+	
+	private static class SlaveReaderDup implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private FileRecordBuffer recBuf;
+		private ByteBuffer rawRec = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+		private boolean firstRun;
+		private boolean getFirst;
+		DataRecord deserializedRec;
+
+		public SlaveReaderDup(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.deserializedRec = new DataRecord(inPort.getMetadata());
+			this.deserializedRec.init();
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.recBuf = new FileRecordBuffer(null);
+			this.firstRun = true;
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			getFirst = true;
+			if (inPort == null) {
+				rec[CURRENT] = rec[NEXT] = null;
+				return false;
+			} 
+			if (firstRun) {	// first call of this function
+				firstRun = false;
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[CURRENT] = rec[NEXT] = null;
+					inPort = null;
+					return false;
+				}
+			}
+			recBuf.clear();
+			swap();
+			while (true) {
+				rec[NEXT].reset();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = null;
+					inPort = null;
+					return true;
+				}
+				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+					return true;
+				}
+				// move record to buffer
+				rawRec.clear();
+				rec[NEXT].serialize(rawRec);
+				rawRec.flip();
+				recBuf.push(rawRec);				
+			}
+		}
+
+		public void rewindRun() {
+			getFirst = true;
+			recBuf.rewind();
+		}
+
+		public DataRecord getSample() {
+			if (firstRun) {
+				return null;
+			}
+			return rec[CURRENT];
+		}
+
+		public DataRecord next() throws IOException {
+			if (firstRun) {
+				return null;
+			}
+			if (getFirst) {
+				getFirst = false;
+				return rec[CURRENT];
+			}
+			rawRec.clear();
+			if (recBuf.shift(rawRec) == null) {
+				return null;
+			}
+			rawRec.flip();
+			deserializedRec.deserialize(rawRec);
+			return deserializedRec;
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+			if (rec1 == null) {
+				return rec2 == null ? 0 : -1;
+			} else if (rec2 == null) {
+				return 1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+	}
+
+	private static class SlaveReader implements InputReader {
+		private static final int CURRENT = 0;
+		private static final int NEXT = 1;
+
+		private InputPort inPort;
+		private RecordKey key;
+		private DataRecord[] rec = new DataRecord[2];
+		private boolean firstRun;
+		private boolean needsRewind;
+
+		public SlaveReader(InputPort inPort, RecordKey key) {
+			this.inPort = inPort;
+			this.key = key;
+			this.rec[CURRENT] = new DataRecord(inPort.getMetadata());
+			this.rec[NEXT] = new DataRecord(inPort.getMetadata());
+			this.rec[CURRENT].init();
+			this.rec[NEXT].init();
+			this.firstRun = true;
+			this.needsRewind = true;
+		}
+		
+		private void swap() {
+			DataRecord tmp = rec[CURRENT];
+			rec[CURRENT] = rec[NEXT];
+			rec[NEXT] = tmp;
+		}
+
+		public boolean loadNextRun() throws InterruptedException, IOException {
+			if (inPort == null) {
+				rec[CURRENT] = rec[NEXT] = null;
+				return false;
+			} 
+			if (firstRun) {	// first call of this function
+				firstRun = false;
+				// load first record of the run
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[CURRENT] = rec[NEXT] = null;
+					inPort = null;
+					return false;
+				}
+			}
+			swap();
+			while (true) {
+			// current record is now the first one from the run to be loaded
+			// set current record to the last one from the run to be loaded and next record to the first one
+			// from the following run
+			needsRewind = false;
+				rec[NEXT].reset();
+				if (inPort.readRecord(rec[NEXT]) == null) {
+					rec[NEXT] = null;
+					inPort = null;
+					return true;
+				}
+				if (key.compare(rec[CURRENT], rec[NEXT]) != 0) {	// beginning of new run
+					return true;
+				}
+				swap();
+			}
+		}
+
+		public void rewindRun() {
+		}
+
+		public DataRecord getSample() {
+			if (firstRun) {
+				return null;
+			}
+			return rec[CURRENT];
+		}
+
+		public DataRecord next() throws IOException {
+			if (firstRun || needsRewind) {
+				return null;
+			}
+			needsRewind = true;
+			return rec[CURRENT];
+		}
+
+		public RecordKey getKey() {
+			return key;
+		}
+		
+		public int compare(InputReader other) {
+			DataRecord rec1 = getSample();
+			DataRecord rec2 = other.getSample();
+			if (rec1 == null) {
+				return rec2 == null ? 0 : -1;
+			} else if (rec2 == null) {
+				return 1;
+			}
+			return key.compare(other.getKey(), rec1, rec2);
+		}
+	}
+
+}
