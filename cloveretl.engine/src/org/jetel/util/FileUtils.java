@@ -33,6 +33,7 @@ import java.nio.channels.WritableByteChannel;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -113,7 +114,6 @@ public class FileUtils {
 	 * @return
 	 */
 	public static String getStringFromURL(String fileURL){
-	    String string = null;
         URL url;
 		try{
 			url = new URL(fileURL); 
@@ -149,9 +149,11 @@ public class FileUtils {
     /**
      * Creates ReadableByteChannel from the url definition.
      * <p>All standard url format are acceptable plus extended form of url by zip & gzip construction:</p>
-     * Example: zip:&lt;url_to_file&gt;#&lt;inzip_path_to_file&gt; <br>
-     * Example: gzip:&lt;url_to_file&gt; <br>
-     * 
+     * Examples:
+     * <dl>
+     *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
+     *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
+     * </dl>
      * @param input URL of file to read
      * @return
      * @throws IOException
@@ -182,7 +184,7 @@ public class FileUtils {
             try {
                 url = new URL("file:" + strURL);
             } catch(MalformedURLException ex) {
-                throw new RuntimeException("Wrong URL of file specified: " + ex.getMessage());
+                throw new IOException("Wrong URL of file specified: " + ex.getMessage());
             }
         }
 
@@ -204,26 +206,46 @@ public class FileUtils {
             zin.close();
             //no channel found report
             if(zipAnchor == null) {
-                throw new RuntimeException("Zip file is empty.");
+                throw new IOException("Zip file is empty.");
             } else {
-                throw new RuntimeException("Wrong anchor (" + zipAnchor + ") to zip file.");
+                throw new IOException("Wrong anchor (" + zipAnchor + ") to zip file.");
             }
         }else if (input.startsWith("gzip:")) {
-            GZIPInputStream gzin = new GZIPInputStream(url.openStream(),Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+            GZIPInputStream gzin = new GZIPInputStream(url.openStream(), Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzin);
         }
         
         return Channels.newChannel(url.openStream());
     }
 
+	/**
+     * Creates WritableByteChannel from the url definition.
+     * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>
+     * Examples:
+     * <dl>
+     *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
+     *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
+     * </dl>
+	 * @param input
+	 * @param appendData
+	 * @return
+	 * @throws IOException
+	 */
 	public static WritableByteChannel getWritableChannel(String input, boolean appendData) throws IOException {
         String strURL = input;
-		OutputStream os;
+        String zipAnchor = null;
+        OutputStream os;
 		URL url;
 		
         //resolve url format for zip files
 		if(input.startsWith("zip:")) {
-        	strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+            if(strURL.contains("#")) {
+                strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+                zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+            } else {
+                strURL = input.substring(input.indexOf(':') + 1);
+                zipAnchor = "default_output";
+            }
         }
         
 		//open channel
@@ -237,18 +259,20 @@ public class FileUtils {
 				try {
 					url = new URL("file:" + strURL);
 				} catch(MalformedURLException ex) {
-					throw new RuntimeException("Wrong URL of file specified: " + ex.getMessage());
+					throw new IOException("Wrong URL of file specified: " + ex.getMessage());
 				}
 			}
 			os = url.openConnection().getOutputStream();
 		}
 		//resolve url format for zip files
 		if(input.startsWith("zip:")) {
-			String zipAnchor = input.substring(input.lastIndexOf('#') + 1);
 			ZipOutputStream zout = new ZipOutputStream(os);
 			ZipEntry entry = new ZipEntry(zipAnchor);
 			zout.putNextEntry(entry);
 			return Channels.newChannel(zout);
+        } else if (input.startsWith("gzip:")) {
+            GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+            return Channels.newChannel(gzos);
         } else {
         	return Channels.newChannel(os);
         }
