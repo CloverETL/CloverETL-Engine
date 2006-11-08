@@ -18,7 +18,6 @@
 *
 */
 package org.jetel.component.aggregate;
-import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -34,8 +33,8 @@ import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.IntegerDataField;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.data.RecordKey;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.Base64;
@@ -59,6 +58,8 @@ public class AggregateFunction implements Iterator {
     private final static int FNC_STDEV = 5;
     private final static int FNC_CRC32 = 6;
     private final static int FNC_MD5 = 7;
+    private final static int FNC_FIRST = 8;
+    private final static int FNC_LAST = 9;
 
 	private final static String S_FNC_MIN = "MIN";
 	private final static String S_FNC_MAX = "MAX";
@@ -68,8 +69,10 @@ public class AggregateFunction implements Iterator {
     private final static String S_FNC_STDEV = "STDEV";
     private final static String S_FNC_CRC32 = "CRC32";
     private final static String S_FNC_MD5 = "MD5";
+    private final static String S_FNC_FIRST = "FIRST";
+    private final static String S_FNC_LAST = "LAST";
 
-	private final static String[] FNC_INDEX = {S_FNC_MIN, S_FNC_MAX, S_FNC_SUM, S_FNC_COUNT, S_FNC_AVG, S_FNC_STDEV, S_FNC_CRC32, S_FNC_MD5};
+	private final static String[] FNC_INDEX = {S_FNC_MIN, S_FNC_MAX, S_FNC_SUM, S_FNC_COUNT, S_FNC_AVG, S_FNC_STDEV, S_FNC_CRC32, S_FNC_MD5, S_FNC_FIRST, S_FNC_LAST};
 	
 	private DataRecordMetadata inMetadata;
 	private DataRecordMetadata outMetadata;
@@ -155,6 +158,10 @@ public class AggregateFunction implements Iterator {
                 functionNumber = FNC_CRC32;
             } else if(functionName.equalsIgnoreCase(S_FNC_MD5)) {
                 functionNumber = FNC_MD5;
+            } else if(functionName.equalsIgnoreCase(S_FNC_FIRST)) {
+                functionNumber = FNC_FIRST;
+            } else if(functionName.equalsIgnoreCase(S_FNC_LAST)) {
+                functionNumber = FNC_LAST;
 			} else {
 				throw new RuntimeException("Unknown aggregate function: " + functionName);
 			}
@@ -203,7 +210,9 @@ public class AggregateFunction implements Iterator {
 			    if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
 			        throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 			if(functionNumber == FNC_MIN
-			        || functionNumber == FNC_MAX)
+			        || functionNumber == FNC_MAX
+                    || functionNumber == FNC_FIRST
+                    || functionNumber == FNC_LAST)
 			    if(!(fieldMetadata.isNumeric())) {
 			        if(fieldMetadata.getType() != outMetadata.getField(recordKey.getLenght() + i).getType())
 					    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
@@ -483,6 +492,16 @@ public class AggregateFunction implements Iterator {
                     currentDF.toByteBuffer(dataBuffer, encoder);
                     md5.update(dataBuffer.array());
                     break;
+                case FNC_FIRST:
+                    if(firstLoop) {
+                        data.setValue(currentValue);
+                        firstLoop = false;
+                    }
+                    break;
+                case FNC_LAST:
+                    data.setValue(currentValue);
+                    firstLoop = false;
+                    break;
 			}
 		}
 		
@@ -500,6 +519,8 @@ public class AggregateFunction implements Iterator {
 			switch(function) {
 				case FNC_MIN:
 				case FNC_MAX:
+                case FNC_FIRST:
+                case FNC_LAST:
 					if(firstLoop) {
 						result = null;
 					} else {
@@ -651,6 +672,20 @@ public class AggregateFunction implements Iterator {
                         md5.update(dataBuffer.array());
                     }
                     break;
+                case FNC_FIRST:
+                    if(!dataMap.containsKey(keyStr)) {
+                        dataMap.put(keyStr, new Data(0, currentValue, currentDF));
+                    }
+                    break;
+                case FNC_LAST:
+                    if(!dataMap.containsKey(keyStr)) {
+                        dataMap.put(keyStr, new Data(0, currentValue, currentDF));
+                    } else {
+                        Data d = (Data) dataMap.get(keyStr);
+                        d.setValue(currentValue);
+                    }
+                    break;
+
 			}
 		}
 
@@ -674,6 +709,8 @@ public class AggregateFunction implements Iterator {
 				case FNC_MIN:
 				case FNC_MAX:
 				case FNC_SUM:
+                case FNC_FIRST:
+                case FNC_LAST:
 					return resultValue;
 				case FNC_COUNT:
 					myInteger.value = data.count;
