@@ -32,7 +32,7 @@ import org.jetel.exception.JetelException;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/14/06  
  */
-public class FixLenByteDataParser extends FixLenDataParser3 {
+public class FixLenByteDataParser extends FixLenDataParser {
 
 	private int dataPos;
 	private int dataLim;

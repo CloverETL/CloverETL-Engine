@@ -30,7 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
-import org.jetel.data.parser.FixLenDataParser3;
+import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -113,7 +113,7 @@ public class FixLenDataReader extends Node {
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	
-	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	static Log logger = LogFactory.getLog(FixLenDataReader.class);
 	
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "FIXLEN_DATA_READER";
@@ -121,7 +121,7 @@ public class FixLenDataReader extends Node {
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
 
-	private FixLenDataParser3 parser;
+	private FixLenDataParser parser;
     private MultiFileReader reader;
     private PolicyType policyType;
     private boolean skipFirstLine = false;

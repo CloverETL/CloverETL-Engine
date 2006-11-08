@@ -61,7 +61,7 @@ import org.jetel.util.QuotingDecoder;
  */
 public class DelimitedDataParser implements Parser {
 
-	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	static Log logger = LogFactory.getLog(DelimitedDataParser.class);
 	
 	private String charSet = null;
 	private IParserExceptionHandler exceptionHandler;

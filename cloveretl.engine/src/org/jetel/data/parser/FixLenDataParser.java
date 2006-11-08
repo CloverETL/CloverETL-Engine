@@ -43,7 +43,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 09/05/06  
  */
-public abstract class FixLenDataParser3 implements Parser {
+public abstract class FixLenDataParser implements Parser {
 
 	protected IParserExceptionHandler exceptionHandler = null;
 
@@ -66,7 +66,7 @@ public abstract class FixLenDataParser3 implements Parser {
 	 */
 	protected boolean eof;
 
-	static Log logger = LogFactory.getLog(FixLenDataParser3.class);
+	static Log logger = LogFactory.getLog(FixLenDataParser.class);
 	
 	protected int fieldCnt;
 	protected int[] fieldLengths;
@@ -74,7 +74,7 @@ public abstract class FixLenDataParser3 implements Parser {
 	protected int fieldIdx;
 	protected int recordIdx;
 
-	FixLenDataParser3(String charset) {
+	FixLenDataParser(String charset) {
 		// initialize charset decoder
 		if (charset == null) {  
 			decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -257,7 +257,7 @@ public abstract class FixLenDataParser3 implements Parser {
 		return;
 	}
 	
-	public static FixLenDataParser3 createParser(boolean byteMode) {
+	public static FixLenDataParser createParser(boolean byteMode) {
 		if (byteMode) {
 			return new FixLenByteDataParser();
 		} else {
