@@ -436,7 +436,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			recordMetadata.setLocaleStr(recLocaleStr);
 		}
 		recordMetadata.setRecordProperties(recordProperties);
-		if(recordDelimiter != null) {
+		if(!StringUtils.isEmpty(recordDelimiter)) {
 			recordMetadata.setRecordDelimiter(StringUtils.stringToSpecChar(recordDelimiter).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
 		}
 		
