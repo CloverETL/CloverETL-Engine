@@ -295,7 +295,7 @@ public class MergeJoin extends Node {
 	 */
 	public void run() {
 		try {
-			for (loadNext(); minCnt > 0; loadNext()) {
+			for (loadNext(); minCnt > 0 && runIt; loadNext()) {
 				if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
 					continue;
 				}
