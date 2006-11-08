@@ -68,18 +68,17 @@ import org.w3c.dom.Element;
  *  to store all the slave records in hashtable.<br>
  *  Each driver record is joined with corresponding slave records according
  *  to join keys specification. 
- *	For each driver record, slave record is looked up in Hashtable which is created
- *	from all records on slave port.
+ *	For each driver record, slave records are looked up in Hashtables which are created
+ *	from all records on slave inputs.
  *	Tuple of driver and slave records is sent to transformation class.<br>
  *	The method <i>transform</i> is called for every tuple of driver and
  *  corresponding slaves.<br>
- *	It skips driver records for which there is no corresponding slave - unless outer
- *	join is specified, when only driver record is passed to <i>transform</i> method.<br>
- *  In this case be sure, that your transform code is prepared processe null input records. 
  *  There are three join modes available: inner, left outer, full outer.<br>
- *  Inner mode skips driver records with missing slaves. Left outer mode process even
- *  driver records with missing slaves. Full outer mode additionally calls transformation
- *  method for run-away slaves - those without driver.<br>
+ *  Inner mode processess only driver records for which all associated slaves are available.
+ *  Left outer mode furthermore processes driver records with missing slaves.
+ *  Full outer mode additionally calls transformation method for slaves without driver.<br>
+ *  In case you use outer mode, be sure your transformation code is able to handle null
+ *  input records.
  *	Hash join does not require input data to be sorted. But it spends some time at the beginning
  *	initializing hashtable of slave records.
  *	It is generally good idea to specify how many records are expected to be stored in each hashtable
@@ -91,13 +90,13 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
  *    <td>
- *        [0] - driver records<br>
- *	  [1] - slave records<br>
+ *        [0] - driver record input<br>
+ *	      [1+] - slave record inputs<br>
  *    </td></tr>
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - one output port
+ *        [0] - sole output port
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
@@ -112,8 +111,9 @@ import org.w3c.dom.Element;
  *    <tr><td><b>joinKey</b></td><td>join key specification in format<br>
  *    <tt>[driver_key_list1]{*[slave_key_list1]}|[driver_key_list2]{*[slave_key_list2]}|...</tt><br>
  *    Each key list consists of comma-separated field names. In case slave key list is missing,
- *    it is supposed to be identical with driver key list. Order of driver/slave key list pairs corresponds
- *    to order of slave input ports. Therefore number of pairs should be equal to number of slave inputs.</td></tr>
+ *    it is supposed to be identical with corresponding driver key list. Order of driver/slave key list pairs corresponds
+ *    to order of slave input ports. In case driver key list is missing for some slave, the component
+ *    will use first driver key list.</td></tr>
  *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td>
@@ -123,11 +123,11 @@ import org.w3c.dom.Element;
  *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
- *    duplicate records are discarded - only the last one read from port stays.</td></tr>
+ *    duplicate records are discarded - only the first one is used for join.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *	  
- *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false"&gt;
+ *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID*ID" joinType="inner"&gt;
  *import org.jetel.component.DataRecordTransform;
  *import org.jetel.data.*;
  * 
@@ -202,10 +202,13 @@ public class HashJoin extends Node {
 	/**
 	 *Constructor for the HashJoin object
 	 *
-	 * @param  id              Description of the Parameter
-	 * @param  joinKeys        Description of the Parameter
-	 * @param  transformClass  Description of the Parameter
-	 * @param  leftOuterJoin   Description of the Parameter
+	 * @param id		Description of the Parameter
+	 * @param driverJoiners	Array of driver joiners (each element contains list of join keys for one slave)
+	 * @param slaveJoiners	Array of slave joiners (each element contains list of join keys for one slave)
+	 * @param transform
+	 * @param transformClass  class (name) to be used for transforming data
+	 * @param join join type
+	 * @param slaveDuplicates enables/disables duplicate slaves
 	 */
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, String transform,
 			String transformClass, Join join) {
@@ -239,11 +242,8 @@ public class HashJoin extends Node {
 	}
 
 
-	/**
-	 * Description of the Method
-	 * 
-	 * @exception ComponentNotReadyException
-	 *                Description of the Exception
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one input port and one output
@@ -327,10 +327,9 @@ public class HashJoin extends Node {
 	public void setTransformationParameters(Properties transformationParameters) {
 		this.transformationParameters = transformationParameters;
 	}
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#run()
 	 */
 	public void run() {
 		InputReader[] slaveReader = new InputReader[slaveCnt];
@@ -584,7 +583,13 @@ public class HashJoin extends Node {
 		}
 	}
 
-
+	/**
+	 * Parses join string.
+	 * @param joinBy Join string
+	 * @return Each element of outer array contains array of arrays of strings. Each subarray represents one driver/slave key list.
+	 * First element of outer array is for driver key lists, the second one is for slave key lists.
+	 * @throws XMLConfigurationException
+	 */
 	private static String[][][] parseJoiners(String joinBy) throws XMLConfigurationException {
 		String[][][] res = new String[2][][];
 		String[] pairs = joinBy.split("\\|");
@@ -673,6 +678,11 @@ public class HashJoin extends Node {
 		this.slaveDuplicates = slaveDuplicates;
 	}
 	
+	/**
+	 * Represents a set of slave records with identical key.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
 	private static class MapItem {
 		public ArrayList<DataRecord> records;
 		public boolean indicator;
@@ -682,6 +692,11 @@ public class HashJoin extends Node {
 		}
 	}
 	
+	/**
+	 * Reads records from one slave input and stores them to appropriate data structures.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
 	private class InputReader extends Thread {
 		private InputPort inPort;
 		private Map<HashKey, MapItem> map;

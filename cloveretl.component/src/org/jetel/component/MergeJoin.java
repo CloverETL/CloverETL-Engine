@@ -21,8 +21,6 @@ package org.jetel.component;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -60,27 +58,29 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Description:</i> </h4></td>
  *      <td>
- *        Joins sorted records on input ports. It expects that on port [0], there is a
- *	driver and on port [1] is slave<br>
- *	For each driver record, all slave records with corresponding key are found and
- *	sent to transformation class.<br>
- *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
- *	It skips driver records for which there is no corresponding slave - unless outer
- *	join (<code>leftOuterJoin</code> option) is specified, when only driver record is passed to <i>transform</i> method.<br>
- *  If full outer join (<code>fullOuterJoin</code> option) is enabled, then <i>transform</i> is called even if no corresponding
- *  driver record is found for particular slave. In these cases be sure, that your transform code is prepared 
- *  processe null input records. 
+ *  Joins sorted records on input ports. It expects driver stream at port [0] and 
+ *  slave streams at other input ports.
+ *  Each driver record is joined with corresponding slave records according
+ *  to join keys specification.<br> 
+ *	The method <i>transform</i> is every tuple composed of driver and corresponding
+ *  slaves.<br>
+ *  There are three join modes available: inner, left outer, full outer.<br>
+ *  Inner mode processess only driver records for which all associated slaves are available.
+ *  Left outer mode furthermore processes driver records with missing slaves.
+ *  Full outer mode additionally calls transformation method for slaves without driver.<br>
+ *  In case you use outer mode, be sure your transformation code is able to handle null
+ *  input records.
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
  *    <td>
- *        [0] - driver records<br>
- *	  [1] - slave records<br>
+ *        [0] - sorted driver record input<br>
+ *	  [1+] - sorted slave record inputs<br>
  *    </td></tr>
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - one output port
+ *        [0] - sole output port
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
@@ -92,20 +92,24 @@ import org.w3c.dom.Element;
  *    <th>XML attributes:</th>
  *    <tr><td><b>type</b></td><td>"MERGE_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
- *    <tr><td><b>joinKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td></tr>
- *    <tr><td><b>slaveOverrideKey</b><br><i>optional</i></td><td>can be used to specify different key field names for records on slave input;
- * field names separated by :;|  {colon, semicolon, pipe}</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>join key specification in format<br>
+ *    <tt>[driver_key_list1]{*[slave_key_list1]|[slave_key_list1]|...}</tt><br>
+ *    Each key list consists of comma-separated field names. In case any slave key list is missing,
+ *    the component will use the sole driver key list instead of it.
+ *    Order of slave key lists corresponds to order of slave input ports.
+ *    </td></tr>
  *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
  *   <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
- *    <tr><td><b>leftOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i> See description of the Sorted join component.</td></tr>
- * 	  <tr><td><b>fullOuterJoin</b><br><i>optional</i></td><td>true/false <i>default: FALSE</i> See description of the Sorted join component.</td></tr>
+ *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
+ *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
+ *    duplicate records are discarded - only the last one is used for join.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
- *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID" leftOuterJoin="false"&gt;
+ *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID*EmployeeID" joinType="inner"&gt;
  *import org.jetel.component.DataRecordTransform;
  *import org.jetel.data.*;
  * 
@@ -125,10 +129,14 @@ import org.w3c.dom.Element;
  *}
  *
  *&lt;/Node&gt;</pre>
- * @author      dpavlis
+ * @author      dpavlis, Jan Hadrava
  * @since       April 4, 2002
  * @revision    $Revision$
  * @created     4. June 2003
+ */
+/**
+ * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ *
  */
 public class MergeJoin extends Node {
 	public enum Join {
@@ -188,10 +196,12 @@ public class MergeJoin extends Node {
 	/**
 	 *  Constructor for the SortedJoin object
 	 *
-	 * @param  id              id of component
-	 * @param  joinKeys        field names composing key
-	 * @param  transformClass  class (name) to be used for transforming data
-	 * @param  leftOuterJoin   indicates, whether to perform left outer join
+	 * @param id		id of component
+	 * @param joiners	parsed join string (first element contains driver key list, following elements contain slave key lists)
+	 * @param transform
+	 * @param transformClass  class (name) to be used for transforming data
+	 * @param join join type
+	 * @param slaveDuplicates enables/disables duplicate slaves
 	 */
 	public MergeJoin(String id, String[][] joiners, String transform,
 			String transformClass, Join join, boolean slaveDuplicates) {
@@ -203,6 +213,13 @@ public class MergeJoin extends Node {
 		this.slaveDuplicates = slaveDuplicates;
 	}
 
+	/**
+	 * Replace minimal record runs with the following ones. Change min indicator array
+	 * to reflect new set of runs.
+	 * @return Number of minimal runs, zero when no more data are available.
+	 * @throws InterruptedException
+	 * @throws IOException
+	 */
 	private int loadNext() throws InterruptedException, IOException {
 		minCnt = 0;
 		int minIdx = 0;
@@ -235,6 +252,12 @@ public class MergeJoin extends Node {
 		return minCnt;
 	}
 
+	/**
+	 * Tranform all tuples created from minimal input runs.
+	 * @return
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	private boolean flushMin() throws IOException, InterruptedException {
 		// create initial combination
 		for (int i = 0; i < inputCnt; i++) {
@@ -267,10 +290,8 @@ public class MergeJoin extends Node {
 		}
 	}
 
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#run()
 	 */
 	public void run() {
 		try {
@@ -312,11 +333,8 @@ public class MergeJoin extends Node {
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
 		// test that we have at least one input port and one output
@@ -438,7 +456,12 @@ public class MergeJoin extends Node {
 		}		
 	}
 
-
+	/**
+	 * Parses join string.
+	 * @param joinBy Join string
+	 * @return Array of arrays of strings. Each subarray represents one driver/slave key list
+	 * @throws XMLConfigurationException
+	 */
 	private static String[][] parseJoiners(String joinBy) throws XMLConfigurationException {
 		String[] spl = joinBy.split("\\*", 2);
 		String[] slaveKeys = new String[0];
@@ -513,19 +536,58 @@ public class MergeJoin extends Node {
 	}
 	
 	/**
-	 * Interface specifying operations for reading ordered record input
+	 * Interface specifying operations for reading ordered record input.
 	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
 	 *
 	 */
 	private interface InputReader {
+		/**
+		 * Loads next run (set of records with identical keys)  
+		 * @return
+		 * @throws InterruptedException
+		 * @throws IOException
+		 */
 		public boolean loadNextRun() throws InterruptedException, IOException;
-		public void rewindRun();
-		public DataRecord getSample();
+
+		/**
+		 * Retrieves one record from current run. Modifies internal data so that next call
+		 * of this operation will return following record. 
+		 * @return null on end of run, retrieved record otherwise
+		 * @throws IOException
+		 * @throws InterruptedException
+		 */
 		public DataRecord next() throws IOException, InterruptedException;
+
+		/**
+		 * Resets current run so that it can be read again.  
+		 */
+		public void rewindRun();
+		
+		/**
+		 * Retrieves one record from current run. Doesn't affect results of sebsequent next() operations.
+		 * @return
+		 */
+		public DataRecord getSample();
+
+		/**
+		 * Returns key used to compare data records. 
+		 * @return
+		 */
 		public RecordKey getKey();
+		
+		/**
+		 * Compares reader with another one. The comparison is based on key values of record in the current run
+		 * @param other
+		 * @return
+		 */
 		public int compare(InputReader other);
 	}
 
+	/**
+	 * Reader for driver input. Doesn't use record buffer but also doesn't support rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
 	private static class DriverReader implements InputReader {
 		private static final int CURRENT = 0;
 		private static final int NEXT = 1;
@@ -625,6 +687,11 @@ public class MergeJoin extends Node {
 
 	}
 	
+	/**
+	 * Slave reader with duplicates support. Uses file buffer to store duplicate records. Support rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
 	private static class SlaveReaderDup implements InputReader {
 		private static final int CURRENT = 0;
 		private static final int NEXT = 1;
@@ -737,6 +804,12 @@ public class MergeJoin extends Node {
 		}
 	}
 
+	/**
+	 * Slave reader without duplicates support. Pretends that all runs contain only one record.
+	 * Doesn't use buffer, supports rewind operation.
+	 * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 */
 	private static class SlaveReader implements InputReader {
 		private static final int CURRENT = 0;
 		private static final int NEXT = 1;
