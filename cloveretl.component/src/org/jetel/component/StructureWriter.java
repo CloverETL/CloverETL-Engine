@@ -96,12 +96,12 @@ import org.w3c.dom.Element;
  */
 public class StructureWriter extends Node {
 
-	private static final String XML_APPEND_ATTRIBUTE = "append";
-	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
-	private static final String XML_CHARSET_ATTRIBUTE = "charset";
-	private static final String XML_MASK_ATTRIBUTE = "mask";
-	private static final String XML_HEADER_ATTRIBUTE = "header";
-	private static final String XML_FOOTER_ATTRIBUTE = "footer";
+	public static final String XML_APPEND_ATTRIBUTE = "append";
+	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	public static final String XML_CHARSET_ATTRIBUTE = "charset";
+	public static final String XML_MASK_ATTRIBUTE = "mask";
+	public static final String XML_HEADER_ATTRIBUTE = "header";
+	public static final String XML_FOOTER_ATTRIBUTE = "footer";
 
 	private String fileURL;
 	private boolean appendData;
