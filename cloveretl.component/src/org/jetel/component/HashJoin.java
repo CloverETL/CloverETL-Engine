@@ -254,9 +254,33 @@ public class HashJoin extends Node {
 			throw new ComponentNotReadyException(
 					"At least one output port has to be defined!");
 		}
-		slaveCnt = inPorts.size() - 1;
-		if (driverJoiners.length < slaveCnt || slaveJoiners.length < slaveCnt) {
-			throw new ComponentNotReadyException("driver-slave key pair not specified for all slave inputs");
+		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+		if (driverJoiners.length < 1) {
+			throw new ComponentNotReadyException("driver key list not specified");
+		}
+		if (driverJoiners.length < slaveCnt) {
+			logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
+			String[][] replJoiners = new String[slaveCnt][];
+			for (int i = 0; i < driverJoiners.length; i++) {
+				replJoiners[i] = driverJoiners[i];
+			}
+			// use first master key specification to deduce all missing driver key specifications
+			for (int i = driverJoiners.length; i < slaveCnt; i++) {
+				replJoiners[i] = driverJoiners[0];
+			}
+			driverJoiners = replJoiners;
+		}
+		if (driverJoiners.length < slaveCnt) {
+			logger.warn("Slave keys aren't specified for all slave inputs - deducing missing keys");
+			String[][] replJoiners = new String[slaveCnt][];
+			for (int i = 0; i < slaveJoiners.length; i++) {
+				replJoiners[i] = slaveJoiners[i];
+			}
+			// use first master key specification to deduce all missing driver key specifications
+			for (int i = slaveJoiners.length; i < slaveCnt; i++) {
+				replJoiners[i] = driverJoiners[0];
+			}
+			slaveJoiners = replJoiners;
 		}
 
 		driverKeys = new RecordKey[slaveCnt];
