@@ -29,6 +29,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.CoderResult;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -55,7 +56,9 @@ public class DelimitedDataFormatter implements Formatter {
 	private CharBuffer charBuffer;
 	private ByteBuffer dataBuffer;
 	private int numFields;
-	
+	private boolean isRecordDelimiter;
+    private String recordDelimiter;
+    
 	private static String NEW_LINE_STR;
 
 	// Associations
@@ -86,10 +89,9 @@ public class DelimitedDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata) {
-		this.metadata = _metadata;
+	public void init(DataRecordMetadata metadata) {
+		this.metadata = metadata;
 
-		metadata = _metadata;
 		// create array of delimiters & initialize them
 		delimiters = new String[metadata.getNumFields()];
 		delimiterLength= new int[metadata.getNumFields()];
@@ -99,6 +101,12 @@ public class DelimitedDataFormatter implements Formatter {
 		}
 		
 		numFields=metadata.getNumFields(); // buffer numFields
+        
+        //record delimiters initialization
+        isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
+        if(isRecordDelimiter) {
+            recordDelimiter = metadata.getRecordDelimiter();
+        }
 	}
 
     /* (non-Javadoc)
@@ -170,45 +178,40 @@ public class DelimitedDataFormatter implements Formatter {
 			charBuffer.put(fieldVal);
 			charBuffer.put(delimiters[i]);
 		}
+        if(isRecordDelimiter) {
+            charBuffer.put(recordDelimiter);
+        }
+        
 		charBuffer.flip();
 		return encode();
 	}
 
 	private int encode() throws IOException {
+        CoderResult result;
 		int newStart = dataBuffer.position();
-        encoder.encode(charBuffer, dataBuffer, true);
+        
+        result = encoder.encode(charBuffer, dataBuffer, true);
+        if (result.isError()){
+            throw new IOException(result.toString() + " when converting to " + encoder.charset());
+        }
+        
         int encLen = dataBuffer.position() - newStart;
         if (!charBuffer.hasRemaining()) {	// all data encoded
         	return encLen;
         }
-       	// write previous data
+       	
+        // write previous data
         dataBuffer.flip();
     	writer.write(dataBuffer);
     	dataBuffer.clear();
-    	// encode remaining part of data
-        encoder.encode(charBuffer, dataBuffer, true);
-        return encLen + dataBuffer.position();
-	}
+    	
+        // encode remaining part of data
+        result = encoder.encode(charBuffer, dataBuffer, true);
+        if (result.isError()){
+            throw new IOException(result.toString() + " when converting to " + encoder.charset());
+        }
 
-	/**
-	 * Output names of record's fields to output stream
-	 * 
-	 * @throws IOException
-	 */
-	public int writeFieldNames() throws IOException {
-		String fieldVal;
-		charBuffer.clear();
-		for (int i = 0; i < numFields; i++) {
-			fieldVal=metadata.getField(i).getName();
-			if ((fieldVal.length()+delimiterLength[i]) > charBuffer.remaining())
-			{
-				throw new IOException("Insufficient buffer size");
-			}			
-			charBuffer.put(fieldVal);
-			charBuffer.put(delimiters[i]);
-		}
-		charBuffer.flip();
-		return encode();		
+        return encLen + dataBuffer.position();
 	}
 
 /*	

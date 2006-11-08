@@ -20,6 +20,7 @@
 package org.jetel.data.formatter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -30,6 +31,7 @@ import java.util.Arrays;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -54,9 +56,10 @@ public class FixLenDataFormatter implements Formatter {
 	private int fieldLengths[];
 	private int bufferSize;
 	private ByteBuffer fieldFiller;
-	private byte[] crLF;
 	private String charSet = null;
-	
+    private boolean isRecordDelimiter;
+    private byte[] recordDelimiter;
+
 	// Attributes
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
@@ -73,7 +76,6 @@ public class FixLenDataFormatter implements Formatter {
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER ).newEncoder();
 		initFieldFiller();
 		encoder.reset();
-		crLF=System.getProperty("line.separator","\n").getBytes();
 		metadata = null;
 		recordCounter = 0;
 	}
@@ -93,7 +95,6 @@ public class FixLenDataFormatter implements Formatter {
 		encoder = Charset.forName(charEncoder).newEncoder();
 		initFieldFiller();
 		encoder.reset();
-		crLF=System.getProperty("line.separator","\n").getBytes();
 		metadata = null;
 		recordCounter = 0;
 	}
@@ -137,12 +138,20 @@ public class FixLenDataFormatter implements Formatter {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.formatter.Formatter#init(org.jetel.metadata.DataRecordMetadata)
 	 */
-	public void init(DataRecordMetadata _metadata) {
+	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		// create array of field sizes & initialize them
-		metadata = _metadata;
+		this.metadata = metadata;
 		fieldLengths = new int[metadata.getNumFields()];
-        //TODO set this to recordDelimiter.length()
-//			recordLength = oneRecordPerLinePolicy ? crLF.length : 0;
+        
+        isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
+        if(isRecordDelimiter) {
+            try {
+                recordDelimiter = metadata.getRecordDelimiter().getBytes(charSet);
+            } catch (UnsupportedEncodingException e) {
+                throw new ComponentNotReadyException(e);
+            }
+        }
+        recordLength = isRecordDelimiter ? recordDelimiter.length : 0;
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldLengths[i] = metadata.getField(i).getSize();
 			recordLength += fieldLengths[i];
@@ -188,48 +197,14 @@ public class FixLenDataFormatter implements Formatter {
 			fieldBuffer.limit(fieldLengths[i]);
 			dataBuffer.put(fieldBuffer);
 		}
-        //TODO add recordDelimiter into dataBuffer
-//		if(oneRecordPerLinePolicy){
-//			if (dataBuffer.remaining()<crLF.length){
-//				flushBuffer();
-//			}
-//			dataBuffer.put(crLF);
-//		}
-		return recordLength;
-	}
-
-	public int writeFieldNames() throws IOException {
-	    int size;
-	    CharBuffer charBuffer=CharBuffer.allocate(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			
-			if (fieldLengths[i] > dataBuffer.remaining()) {
+        //write record delimiter
+		if(isRecordDelimiter){
+			if (dataBuffer.remaining() < recordDelimiter.length) {
 				flushBuffer();
 			}
-			fieldBuffer.clear();
-			charBuffer.clear();
-			charBuffer.put(metadata.getField(i).getName()).flip();
-			encoder.encode(charBuffer,fieldBuffer,false);
-			fieldBuffer.flip();
-			
-			size = fieldBuffer.position();
-			if (size < fieldLengths[i]) {
-				fieldFiller.rewind();
-				fieldFiller.limit(fieldLengths[i]-size);
-				fieldBuffer.put(fieldFiller);
-				
-			}
-			fieldBuffer.flip();
-			fieldBuffer.limit(fieldLengths[i]);
-			dataBuffer.put(fieldBuffer);
+			dataBuffer.put(recordDelimiter);
 		}
-        //TODO add recordDelimiter into dataBuffer
-//		if(oneRecordPerLinePolicy){
-//			if (dataBuffer.remaining()<crLF.length){
-//				flushBuffer();
-//			}
-//			dataBuffer.put(crLF);
-//		}
+        
 		return recordLength;
 	}
 
