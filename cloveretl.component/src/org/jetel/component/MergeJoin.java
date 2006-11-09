@@ -148,9 +148,9 @@ public class MergeJoin extends Node {
 
 	private static final String XML_FULLOUTERJOIN_ATTRIBUTE = "fullOuterJoin";
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
-	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
+	public static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 	private static final String XML_JOINTYPE_ATTRIBUTE = "joinType";
-	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
+	public static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
