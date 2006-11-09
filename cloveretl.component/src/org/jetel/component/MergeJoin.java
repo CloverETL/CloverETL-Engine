@@ -31,6 +31,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -257,8 +258,9 @@ public class MergeJoin extends Node {
 	 * @return
 	 * @throws IOException
 	 * @throws InterruptedException
+	 * @throws TransformException 
 	 */
-	private boolean flushMin() throws IOException, InterruptedException {
+	private boolean flushMin() throws IOException, InterruptedException, TransformException {
 		// create initial combination
 		for (int i = 0; i < inputCnt; i++) {
 				inRecords[i] = minIndicator[i] ? reader[i].next() : null;
@@ -310,6 +312,11 @@ public class MergeJoin extends Node {
 					return;
 				}
 			}
+        } catch (TransformException ex) {
+            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
+            resultCode = Node.RESULT_ERROR;
+            closeAllOutputPorts();
+            return;
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;

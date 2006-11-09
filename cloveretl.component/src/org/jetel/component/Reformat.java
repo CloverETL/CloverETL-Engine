@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -194,6 +195,11 @@ public class Reformat extends Node {
 					}// skip record if transformation returned false
 				}
 				SynchronizeUtils.cloverYield();
+            } catch (TransformException ex) {
+                resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
+                resultCode = Node.RESULT_ERROR;
+                closeAllOutputPorts();
+                return;
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;

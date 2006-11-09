@@ -21,6 +21,8 @@ package org.jetel.component;
 
 import java.util.Properties;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -57,7 +59,7 @@ public interface RecordTransform {
 	 *@param  targetMetadata   Metadata describing target data record
 	 *@return                  True if OK, otherwise False
 	 */
-	public boolean init(Properties parameters,DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata);
+	public boolean init(Properties parameters, DataRecordMetadata[] sourcesMetadata, DataRecordMetadata[] targetMetadata) throws ComponentNotReadyException;
 
 
 	/**
@@ -74,7 +76,7 @@ public interface RecordTransform {
 	 *@param  target   Target DataRecord
 	 *@return          True if OK, otherwise False
 	 */
-	public boolean transform(DataRecord[] sources, DataRecord[] target);
+	public boolean transform(DataRecord[] sources, DataRecord[] target) throws TransformException;
 
 
 	/**
@@ -124,5 +126,6 @@ public interface RecordTransform {
      */
     public void setGraph(TransformationGraph graph);
 	
+    public TransformationGraph getGraph();
 }
 

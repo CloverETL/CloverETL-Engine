@@ -83,9 +83,8 @@ public class RecordTransformFactory {
             default:
                 // logger.error("Can't determine transformation code type at
                 // component ID :"+node.getId());
-                throw new RuntimeException(
-                        "Can't determine transformation code type at component ID :"
-                                + node.getId());
+                throw new ComponentNotReadyException(
+                        "Can't determine transformation code type at component ID :" + node.getId());
             }
         }
 

@@ -24,6 +24,8 @@ import java.util.Properties;
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.database.IConnection;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -91,7 +93,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @param  targetMetadata  Array of metadata objects describing source data records
 	 * @return                        True if successfull, otherwise False
 	 */
-	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata) {
+	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata) throws ComponentNotReadyException {
 		this.parameters=parameters;
 		this.sourceMetadata=sourceRecordsMetadata;
 		this.targetMetadata=targetRecordsMetadata;
@@ -105,7 +107,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * 
 	 * @return	true if user's initialization was performed successfully
 	 */
-	public boolean init(){
+	public boolean init() throws ComponentNotReadyException {
 	    return true;
 	}
 	
@@ -119,7 +121,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 * @return                True if transformation was successfull, otherwise False
 	 * @see		org.jetel.data.DataRecord#copyFieldsByPosition()
 	 */
-	public abstract boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords);
+	public abstract boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords) throws TransformException;
 	
 
 	/**
@@ -213,6 +215,13 @@ public abstract class DataRecordTransform implements RecordTransform {
      */
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.component.RecordTransform#getGraph()
+     */
+    public TransformationGraph getGraph() {
+        return graph;
     }
 }
 
