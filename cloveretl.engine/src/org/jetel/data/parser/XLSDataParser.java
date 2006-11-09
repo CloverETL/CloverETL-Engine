@@ -66,7 +66,7 @@ public class XLSDataParser implements Parser {
 	
 	static Log logger = LogFactory.getLog(XLSDataParser.class);
 	
-	private DataRecordMetadata metadata;
+	private DataRecordMetadata metadata = null;
 	private IParserExceptionHandler exceptionHandler;
 	private String sheetName = null;
 	private int sheetNumber = 0;
@@ -278,8 +278,16 @@ public class XLSDataParser implements Parser {
         format = wb.createDataFormat();
         currentRow = firstRow;
         lastRow = sheet.getLastRowNum();
-        fieldNumber = new int[metadata.getNumFields()][2];
-        //mapping metadata with columns in xls
+        if (metadata != null) {
+        	mapFields();
+        }
+    }
+
+    /**
+     * Method for mapping metadata with columns in xls
+     * 
+     */
+    private void mapFields() throws ComponentNotReadyException{
         for (int i=0;i<fieldNumber.length;i++){
             fieldNumber[i][CLOVER_NUMBER] = -1;
         }
@@ -292,8 +300,9 @@ public class XLSDataParser implements Parser {
         case CLOVER_FIELDS_AND_XLS_NAMES:cloverfieldsAndXlsNames(fieldNames);break;
         default:noMetadataInfo();break;
         }
+    	
     }
-
+    
 	/**
 	 * If any of the metadata attribute wasn't set cell order coresponds with field order in metadata
 	 */
