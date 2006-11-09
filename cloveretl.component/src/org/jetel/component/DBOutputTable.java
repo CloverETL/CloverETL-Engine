@@ -136,17 +136,17 @@ import org.w3c.dom.Element;
  */
 public class DBOutputTable extends Node {
 
-	private static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
-	private static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
-	private static final String XML_COMMIT_ATTRIBUTE = "commit";
-	private static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
-	private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
-	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
-	private static final String XML_DBTABLE_ATTRIBUTE = "dbTable";
-	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_SQLQUERY_ATRIBUTE = "sqlQuery";
-	private static final String XML_BATCHSIZE_ATTRIBUTE = "batchSize";
-	private static final String XML_URL_ATTRIBUTE = "url";
+	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
+	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
+	public static final String XML_COMMIT_ATTRIBUTE = "commit";
+	public static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
+	public static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
+	public static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	public static final String XML_DBTABLE_ATTRIBUTE = "dbTable";
+	public static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	public static final String XML_SQLQUERY_ATRIBUTE = "sqlQuery";
+	public static final String XML_BATCHSIZE_ATTRIBUTE = "batchSize";
+	public static final String XML_URL_ATTRIBUTE = "url";
 	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
