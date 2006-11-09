@@ -32,6 +32,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -193,6 +194,11 @@ public class DBJoin extends Node {
 						//get next record from database with the same key
 						inRecords[1] = lookupTable.getNext();					}
 				}
+            } catch (TransformException ex) {
+                resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
+                resultCode = Node.RESULT_ERROR;
+                closeAllOutputPorts();
+                return;
 			} catch (IOException ex) {
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;

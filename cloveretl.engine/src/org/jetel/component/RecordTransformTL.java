@@ -198,5 +198,12 @@ public class RecordTransformTL implements RecordTransform {
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
+
+    /* (non-Javadoc)
+     * @see org.jetel.component.RecordTransform#getGraph()
+     */
+    public TransformationGraph getGraph() {
+        return graph;
+    }
 }
 

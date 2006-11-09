@@ -33,6 +33,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -374,10 +375,11 @@ public class AproxMergeJoin extends Node {
 	 * @return                           Description of the Return Value
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
+	 * @throws TransformException 
 	 */
 	private boolean flushCombinations(DataRecord driver, DataRecord slave, 
 			DataRecord outConforming,DataRecord outSuspicious, OutputPort conformingPort, 
-			OutputPort suspiciousPort) throws IOException, InterruptedException {
+			OutputPort suspiciousPort) throws IOException, InterruptedException, TransformException {
 		recordBuffer.rewind();
 		dataBuffer.clear();
 		inRecords[0] = driver;
@@ -524,6 +526,11 @@ public class AproxMergeJoin extends Node {
 				SynchronizeUtils.cloverYield();
 			}
 			// if full outer join defined and there are some slave records left, flush them
+        } catch (TransformException ex) {
+            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
+            resultCode = Node.RESULT_ERROR;
+            closeAllOutputPorts();
+            return;
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;

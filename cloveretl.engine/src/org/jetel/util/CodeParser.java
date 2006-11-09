@@ -466,19 +466,18 @@ public class CodeParser {
         //}
 
         recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
-        try {
-            fieldNum = (Integer) inputFieldsNames[recordNum.intValue()]
-                    .get(fieldRef[1]);
-        } catch (ArrayIndexOutOfBoundsException ex) {
-            throw new RuntimeException(
-                    "Nonexisting index to array containing input records :"
-                            + ex.getMessage());
-        }
         if (recordNum == null) {
-            throw new RuntimeException("Input record does not exist: "
-                    + fieldRef[0]);
+            throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
         }
-
+        try {
+            fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
+        } catch (ArrayIndexOutOfBoundsException ex) {
+            throw new RuntimeException("Nonexisting index to array containing input records :" + ex.getMessage());
+        }
+        if (fieldNum == null) {
+            throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
+        }
+        
         //	register that field has been referenced
         if (useSymbolicNames) {
             DataRecordMetadata recMeta = inputRecordsMeta[recordNum.intValue()];
@@ -490,8 +489,7 @@ public class CodeParser {
         }
 
         // code for accessing record
-        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum)
-                .append("]");
+        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum).append("]");
         // code for accessing field
         code.append(".getField(");
         if (useSymbolicNames) {
@@ -503,11 +501,9 @@ public class CodeParser {
 
         // apply proper get method for field type
         try {
-            fieldType = inputRecordsMeta[recordNum.intValue()]
-                    .getFieldType(fieldNum.intValue());
+            fieldType = inputRecordsMeta[recordNum.intValue()].getFieldType(fieldNum.intValue());
         } catch (NullPointerException ex) {
-            throw new RuntimeException("Field does not exist: " + fieldRef[1]
-                    + " in input record: " + fieldRef[0]);
+            throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
         }
         switch (fieldType) {
         case DataFieldMetadata.STRING_FIELD:
@@ -570,19 +566,20 @@ public class CodeParser {
         //}
 
         recordNum = (Integer) inputRecordsNames.get(fieldRef[0]);
+        if (recordNum == null) {
+            throw new RuntimeException("Input record does not exist: " + fieldRef[0]);
+        }
         if (fieldRef.length > 1) { // we reference field as well
             try {
-                fieldNum = (Integer) inputFieldsNames[recordNum.intValue()]
-                        .get(fieldRef[1]);
+                fieldNum = (Integer) inputFieldsNames[recordNum.intValue()].get(fieldRef[1]);
             } catch (ArrayIndexOutOfBoundsException ex) {
                 throw new RuntimeException(
                         "Nonexisting index to array containing input records :"
                                 + ex.getMessage());
             }
-        }
-        if (recordNum == null) {
-            throw new RuntimeException("Input record does not exist: "
-                    + fieldRef[0]);
+            if (fieldNum == null) {
+                throw new RuntimeException("Field does not exist: " + fieldRef[1] + " in input record: " + fieldRef[0]);
+            }
         }
 
         //	register that field has been referenced
@@ -596,8 +593,7 @@ public class CodeParser {
         }
 
         // code for accessing record
-        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum)
-                .append("]");
+        code.append(IN_RECORDS_ARRAY_NAME_STR).append("[").append(recordNum).append("]");
         // code for accessing field
         if (fieldNum != null) {
             code.append(".getField(");

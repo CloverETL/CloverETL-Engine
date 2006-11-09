@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -213,9 +214,10 @@ public class DataIntersection extends Node {
 	 * @return                           Description of the Return Value
 	 * @exception  IOException           Description of the Exception
 	 * @exception  InterruptedException  Description of the Exception
+	 * @throws TransformException 
 	 */
 	private final boolean flushCombinations(DataRecord driver, DataRecord slave, DataRecord out, OutputPort port)
-	throws IOException, InterruptedException {
+	throws IOException, InterruptedException, TransformException {
 	    inRecords[0] = driver;
 	    inRecords[1] = slave;
 	    outRecords[0]= out;
@@ -340,6 +342,11 @@ public class DataIntersection extends Node {
 	    	    flushSlaveOnly(slaveRecord, outPortB);
 	    	    slaveRecord=slavePort.readRecord(slaveRecord);
 	    	}
+        } catch (TransformException ex) {
+            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
+            resultCode = Node.RESULT_ERROR;
+            closeAllOutputPorts();
+            return;
 		} catch (IOException ex) {
 			resultMsg = ex.getMessage();
 			resultCode = Node.RESULT_ERROR;
