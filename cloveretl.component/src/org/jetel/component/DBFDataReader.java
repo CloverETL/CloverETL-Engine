@@ -69,7 +69,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>type</b></td><td>"DBF_DATA_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the input table file</td>
- *  <tr><td><b>DataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
+ *  <tr><td><b>dataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>Which character set to use for decoding field's data.  Default value is deduced from DBF table header. If it is
  *  specified as part of metadata at record level, then it is take from there.</td>
  *  </tr>
@@ -97,7 +97,7 @@ import org.w3c.dom.Element;
 
 public class DBFDataReader extends Node {
 
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	/**  Description of the Field */
