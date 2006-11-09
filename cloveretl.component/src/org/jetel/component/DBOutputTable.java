@@ -76,6 +76,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>dbTable</b><br><i>optional</i></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>fieldMap</b><br><i>optional</i></td><td>Pairs of clover fields and db fields (cloverField=dbField) separated by :;| {colon, semicolon, pipe}.<br>
+ *  It specifies mapping from source (Clover's) fields to DB table fields.
  *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
  *  <tr><td><b>commit</b><br><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, DEFAULT is 100.<br>If
@@ -128,6 +130,11 @@ import org.w3c.dom.Element;
  *  &lt;/SQLCode&gt;
  *  &lt;/Node&gt;</pre>
  * <br>
+ *  <i>Example below shows usage of "fieldMap" attribute </i>
+ * <pre>&lt;Node dbConnection="DBConnection0" dbTable="employee_tmp" fieldMap=
+ * "EMP_NO=emp_no;FIRST_NAME=first_name;LAST_NAME=last_name;PHONE_EXT=phone_ext"
+ * id="OUTPUT" type="DB_OUTPUT_TABLE"/&gt;</pre>
+ * <br>
  * @author      dpavlis
  * @since       September 27, 2002
  * @revision    $Revision$
@@ -139,6 +146,7 @@ public class DBOutputTable extends Node {
 	public static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
 	public static final String XML_BATCHMODE_ATTRIBUTE = "batchMode";
 	public static final String XML_COMMIT_ATTRIBUTE = "commit";
+	public static final String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
 	public static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
 	public static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
 	public static final String XML_SQLCODE_ELEMENT = "SQLCode";
@@ -668,18 +676,31 @@ public class DBOutputTable extends Node {
     					null);
 			}
 			
-			if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
-				outputTable.setDBFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			}
 			
 			if (xattribs.exists(XML_DBTABLE_ATTRIBUTE)) {
 				outputTable.setDBTableName(xattribs.getString(XML_DBTABLE_ATTRIBUTE));
 			}
-			
-			if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
-				outputTable.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
+				String[] pairs = xattribs.getString(XML_FIELDMAP_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				String[] cloverFields = new String[pairs.length];
+				String[] dbFields = new String[pairs.length];
+				int equalIndex;
+				for (int i=0;i<pairs.length;i++){
+					equalIndex = pairs[i].indexOf('=');
+					cloverFields[i] = pairs[i].substring(0,equalIndex);
+					dbFields[i] = (pairs[i].substring(equalIndex +1));
+				}
+				outputTable.setCloverFields(cloverFields);
+				outputTable.setDBFields(dbFields);
+			}else {
+				if (xattribs.exists(XML_DBFIELDS_ATTRIBUTE)) {
+					outputTable.setDBFields(xattribs.getString(XML_DBFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+				}
+	
+				if (xattribs.exists(XML_CLOVERFIELDS_ATTRIBUTE)) {
+					outputTable.setCloverFields(xattribs.getString(XML_CLOVERFIELDS_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+				}
 			}
-			
 			if (xattribs.exists(XML_COMMIT_ATTRIBUTE)) {
 				outputTable.setRecordsInCommit(xattribs.getInteger(XML_COMMIT_ATTRIBUTE));
 			}
