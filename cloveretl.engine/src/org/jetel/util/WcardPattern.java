@@ -149,26 +149,19 @@ public class WcardPattern {
 	 * @return false for pattern without wildcards, true otherwise. 
 	 */
 	private boolean splitPattern(String pat, StringBuffer dir, StringBuffer filePat) {
-
 		dir.setLength(0);
 		filePat.setLength(0);
 
-		for (int charIdx = 0; charIdx < pat.length(); charIdx++) {
-			for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
-				if (pat.charAt(charIdx) == WCARD_CHAR[wcardIdx]) {	// current char is a wildcard
-//					// get position of last preceding directory separator
-					int sepPos = pat.lastIndexOf(File.separatorChar, charIdx);
-					if (sepPos == -1) {		// no directory separator
-						dir.insert(0, "." + File.separatorChar);
-						filePat.insert(0, pat);
-					} else { // split
-						dir.insert(0, pat.substring(0, sepPos + 1));
-						filePat.insert(0, pat.substring(sepPos + 1));
-					}
-					return true;	// pattern contains at least one wildcard
-				}
+		File f = new File(pat);
+		dir.append(f.getParent());
+		filePat.append(f.getName());
+
+		for (int wcardIdx = 0; wcardIdx < WCARD_CHAR.length; wcardIdx++) {
+			if (filePat.indexOf("" + WCARD_CHAR[wcardIdx]) >= 0) { // wildcard found
+				return true;
 			}
 		}
+
 		// no wildcard in pattern
 		return false;
 	}
@@ -190,7 +183,8 @@ public class WcardPattern {
 					FilenameFilter filter = new wcardFilter(filePat.toString());
 					String[] curMatch = dir.list(filter);
 					for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
-						mfiles.add(dirName.toString() + curMatch[fnIdx]);
+						File f = new File(dirName.toString(), curMatch[fnIdx]);
+						mfiles.add(f.getAbsolutePath());
 					}
 				}
 			}
