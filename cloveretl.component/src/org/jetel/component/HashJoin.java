@@ -34,6 +34,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -153,6 +154,10 @@ import org.w3c.dom.Element;
  * @revision    $Revision$
  * @created     09. March 2004
  */
+/**
+ * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
+ *
+ */
 public class HashJoin extends Node {
 	public enum Join {
 		INNER,
@@ -198,6 +203,11 @@ public class HashJoin extends Node {
 	static Log logger = LogFactory.getLog(HashJoin.class);
 
 	private int slaveCnt;
+
+	private InputPort driverPort;
+	private OutputPort outPort;
+	DataRecord[] inRecords;
+	DataRecord[] outRecords;
 
 	/**
 	 *Constructor for the HashJoin object
@@ -254,6 +264,10 @@ public class HashJoin extends Node {
 			throw new ComponentNotReadyException(
 					"At least one output port has to be defined!");
 		}
+
+		driverPort = getInputPort(DRIVER_ON_PORT);
+		outPort = getOutputPort(WRITE_TO_PORT);
+
 		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
 		if (driverJoiners.length < 1) {
 			throw new ComponentNotReadyException("driver key list not specified");
@@ -283,10 +297,17 @@ public class HashJoin extends Node {
 			slaveJoiners = replJoiners;
 		}
 
+		inRecords = new DataRecord[1 + slaveCnt];
+		inRecords[0] = new DataRecord(driverPort.getMetadata());
+		inRecords[0].init();
+		outRecords = new DataRecord[1];
+		outRecords[0] = new DataRecord(outPort.getMetadata());
+		outRecords[0].init();
+
 		driverKeys = new RecordKey[slaveCnt];
 		slaveKeys = new RecordKey[slaveCnt];
 		for (int idx = 0; idx < slaveCnt; idx++) {
-			driverKeys[idx] = new RecordKey(driverJoiners[idx], getInputPort(DRIVER_ON_PORT).getMetadata());
+			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
 			driverKeys[idx].init();
 			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
 			slaveKeys[idx].init();
@@ -328,10 +349,10 @@ public class HashJoin extends Node {
 		this.transformationParameters = transformationParameters;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
+	/**
+	 * read records from all slave input ports and stores them to hashtables 
 	 */
-	public void run() {
+	private void loadSlaveData() {
 		InputReader[] slaveReader = new InputReader[slaveCnt];
 		// read slave ports in separate threads
 		for (int idx = 0; idx < slaveCnt; idx++) {
@@ -355,57 +376,85 @@ public class HashJoin extends Node {
 				}
 			}
 		}
-		slaveReader = null;
+	}
 
-		// now we can suppose maps are filled with records from slave input ports
-		
-		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
-		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
+	/**
+	 * Flush orphaned slaves.
+	 * @throws TransformException
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 */
+	private void flushOrphaned() throws TransformException, IOException, InterruptedException {
+		// flush slaves without driver record
+		for (int idx = 0; idx < slaveCnt + 1; idx++) {
+			inRecords[idx] = null;
+		}
+		for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+			for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
+				if (pair.getValue().indicator && slaveDuplicates) {
+					continue;	// all slave records in collection were already used
+				}
+				Iterator<DataRecord> itor = pair.getValue().records.iterator();
+				if (pair.getValue().indicator) {
+					itor.next();	// first slave record in collection was already used
+				}
+				// process unused records
+				while (itor.hasNext()) {
+					if (!runIt) {
+						return;
+					}
+					DataRecord record = itor.next();
+					inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
+					if (!transformation.transform(inRecords, outRecords)) {
+						resultCode = Node.RESULT_ERROR;
+						resultMsg = transformation.getMessage();
+						transformation.finished();
+						setEOF(WRITE_TO_PORT);
+						return;
+					}
+					outPort.writeRecord(outRecords[0]);
+					outRecords[0].reset();
+				} // for 
+			} // for
+			inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
+		} // for all slaves
+	}
 
-		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
-		driverRecord.init();
-		DataRecord[] inRecords = new DataRecord[1 + slaveCnt];
-		inRecords[0] = driverRecord;
-		DataRecord[] outRecords = new DataRecord[1];
-		outRecords[0] = new DataRecord(outPort.getMetadata());
-		outRecords[0].init();
+	/**
+	 * Reads all driver records and performs transformation for them
+	 * @throws TransformException
+	 * @throws InterruptedException 
+	 * @throws IOException 
+	 */
+	private void flush() throws TransformException, IOException, InterruptedException {
 		HashKey[] hashKey = new HashKey[slaveCnt];
 		MapItem[] slaveRecords = new MapItem[slaveCnt];
+		DataRecord driverRecord = inRecords[0];
+
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			hashKey[idx] = new HashKey(driverKeys[idx], driverRecord);
 		}
+
 		while (runIt) {
 			int slaveIdx;
-			try {
-				if (driverPort.readRecord(driverRecord) == null) { // no more input data
-					resultCode = Node.RESULT_OK;
-					resultMsg = "succeeded";
-					break;
-				}
-				for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-					slaveRecords[slaveIdx] = hashMap[slaveIdx].get(hashKey[slaveIdx]);
-					if (slaveRecords[slaveIdx] == null) {
-						if (join == Join.INNER) {	// missing slave
-							break;
-						}
-						slaveRecords[slaveIdx] = new MapItem();
-						slaveRecords[slaveIdx].records.add(null);
+			if (driverPort.readRecord(driverRecord) == null) { // no more input data
+				resultCode = Node.RESULT_OK;
+				resultMsg = "succeeded";
+				break;
+			}
+			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
+				slaveRecords[slaveIdx] = hashMap[slaveIdx].get(hashKey[slaveIdx]);
+				if (slaveRecords[slaveIdx] == null) {
+					if (join == Join.INNER) {	// missing slave
+						break;
 					}
-					slaveRecords[slaveIdx].indicator = true;
+					slaveRecords[slaveIdx] = new MapItem();
+					slaveRecords[slaveIdx].records.add(null);
 				}
-				if (slaveIdx < slaveCnt) {	// missing slaves
-					continue;	// read next driver
-				}
-			} catch (InterruptedException e) {
-				logger.error(getId() + ": thread forcibly aborted", e);
-				resultCode = Node.RESULT_ERROR;
-				resultMsg = "thread forcibly interrupted";
-				break;
-			} catch (IOException e) {
-				logger.error(getId() + ": thread failed", e);
-				resultCode = Node.RESULT_FATAL_ERROR;
-				resultMsg = "thread failed";
-				break;
+				slaveRecords[slaveIdx].indicator = true;
+			}
+			if (slaveIdx < slaveCnt) {	// missing slaves
+				continue;	// read next driver
 			}
 
 			// we need to generate all combinations of slaves 
@@ -424,103 +473,52 @@ public class HashJoin extends Node {
 				}
 				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
 
-				try{
-					if (!transformation.transform(inRecords, outRecords)) {
-						resultCode = Node.RESULT_ERROR;
-						resultMsg = transformation.getMessage();
-						transformation.finished();
-						setEOF(WRITE_TO_PORT);
-						return;
-					}
-				} catch(NullPointerException ex){
-					if (join == Join.INNER) {
-						throw ex;
-					}
-					logger.error("Null pointer exception when transforming input data",ex);
-					logger.info("Possibly incorrectly handled outer situation");
-					throw new RuntimeException("Null pointer exception when transforming input data",ex);
-				}
-				try {
-					outPort.writeRecord(outRecords[0]);
-					outRecords[0].reset();
-				} catch (IOException ex) {
-					resultMsg = ex.getMessage();
+				if (!transformation.transform(inRecords, outRecords)) {
 					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					transformation.finished();
-					setEOF(WRITE_TO_PORT);
-					return;
-				} catch (Exception ex) {
-					resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-					resultCode = Node.RESULT_FATAL_ERROR;
+					resultMsg = transformation.getMessage();
 					transformation.finished();
 					setEOF(WRITE_TO_PORT);
 					return;
 				}
+				outPort.writeRecord(outRecords[0]);
+				outRecords[0].reset();
 	 		}
 			SynchronizeUtils.cloverYield();
-		} // while
-		if (join == Join.FULL_OUTER) {
-			for (int idx = 0; idx < slaveCnt + 1; idx++) {
-				inRecords[idx] = null;
+		} // while		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#run()
+	 */
+	public void run() {		
+		try {
+			loadSlaveData();
+			flush();
+			if (join == Join.FULL_OUTER) {
+				flushOrphaned();
 			}
-			for (int slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
-				for (Entry<HashKey, MapItem> pair: hashMap[slaveIdx].entrySet()) {
-					if (pair.getValue().indicator && slaveDuplicates) {
-						continue;	// all slave records in collection were already used
-					}
-					Iterator<DataRecord> itor = pair.getValue().records.iterator();
-					if (pair.getValue().indicator) {
-						itor.next();	// first slave record in collection was already used
-					}
-					// process unused records
-					while (itor.hasNext()) {
-						DataRecord record = itor.next();
-						inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
-						try{
-							if (!transformation.transform(inRecords, outRecords)) {
-								resultCode = Node.RESULT_ERROR;
-								resultMsg = transformation.getMessage();
-								transformation.finished();
-								setEOF(WRITE_TO_PORT);
-								return;
-							}
-						} catch(NullPointerException ex){
-							logger.error("Null pointer exception when transforming input data",ex);
-							logger.info("Possibly incorrectly handled outer situation");
-							throw new RuntimeException("Null pointer exception when transforming input data",ex);
-						}
-						try {
-							outPort.writeRecord(outRecords[0]);
-							outRecords[0].reset();
-						} catch (IOException ex) {
-							resultMsg = ex.getMessage();
-							resultCode = Node.RESULT_ERROR;
-							closeAllOutputPorts();
-							transformation.finished();
-							setEOF(WRITE_TO_PORT);
-							return;
-						} catch (Exception ex) {
-							resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-							resultCode = Node.RESULT_FATAL_ERROR;
-							transformation.finished();
-							setEOF(WRITE_TO_PORT);
-							return;
-						}
-						
-					} // for 
-				} // for
-				inRecords[FIRST_SLAVE_PORT + slaveIdx] = null;
-			} // for all slaves
-		}
+			if (runIt) {
+				resultMsg = "OK";
+				resultCode = Node.RESULT_OK;
+			} else {
+				resultMsg = "STOPPED";
+				resultCode = Node.RESULT_ABORTED;
+			}
+		} catch (TransformException e) {
+			logger.error(getId() + ": transform operation failed", e);
+			resultCode = Node.RESULT_FATAL_ERROR;
+			resultMsg = "failed";
+		} catch (IOException e) {
+			logger.error(getId() + ": thread failed", e);
+			resultCode = Node.RESULT_FATAL_ERROR;
+			resultMsg = "failed";
+		} catch (InterruptedException e) {
+			logger.error(getId() + ": thread forcibly aborted", e);
+			resultCode = Node.RESULT_ABORTED;
+			resultMsg = "interrupted";
+		}		
 		transformation.finished();
 		setEOF(WRITE_TO_PORT);
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
 	}
 
 	/**
