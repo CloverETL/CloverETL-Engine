@@ -77,7 +77,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dbTable</b><br><i>optional</i></td><td>name of the DB table to populate data with</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>fieldMap</b><br><i>optional</i></td><td>Pairs of clover fields and db fields (cloverField=dbField) separated by :;| {colon, semicolon, pipe}.<br>
- *  It specifies mapping from source (Clover's) fields to DB table fields.
+ *  It specifies mapping from source (Clover's) fields to DB table fields. It should be used instead of <i>cloverFields</i> and <i>dbFields</i>
+ *  attributes, because it provides more clear mapping. If <i>fieldMap</i> attribute is found <i>cloverFields</i> and <i>dbFields</i> attributes are ignored.
  *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields to be populated<br>
  *  Input fields are mappend onto target fields (listed) in the order they are present in Clover's record.</td>
  *  <tr><td><b>commit</b><br><i>optional</i></td><td>determines how many records are in one db commit. Minimum 1, DEFAULT is 100.<br>If
