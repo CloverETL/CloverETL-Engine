@@ -269,11 +269,11 @@ public class CodeParser {
     public void setSourceCode(CharSequence charSeq) {
         sourceCode.setLength(0);
         sourceCode.ensureCapacity(charSeq.length());
-        sourceCode.append("\t\t");
+        sourceCode.append("\t\t\t");
         for (int i = 0; i < charSeq.length(); i++) {
             sourceCode.append(charSeq.charAt(i));
             if (charSeq.charAt(i) == '\n') {
-                sourceCode.append("\t\t");
+                sourceCode.append("\t\t\t");
             }
         }
     }
@@ -818,11 +818,12 @@ public class CodeParser {
 		//imports
 		transCode.append("// automatically generated on ");
 		transCode.append(java.util.Calendar.getInstance().getTime()).append("\n");
-		transCode.append("import org.jetel.data.*; \n");
-		transCode.append("import org.jetel.graph.*; \n");
-		transCode.append("import org.jetel.metadata.*; \n");
-		transCode.append("import org.jetel.component.*; \n");
-		transCode.append("import org.jetel.data.sequence.*; \n");
+		transCode.append("import org.jetel.data.*;\n");
+		transCode.append("import org.jetel.graph.*;\n");
+		transCode.append("import org.jetel.metadata.*;\n");
+        transCode.append("import org.jetel.component.*;\n");
+        transCode.append("import org.jetel.exception.*;\n");
+		transCode.append("import org.jetel.data.sequence.*;\n");
 		
 		// add any user specified imports
 		if (classImports!=null){
@@ -864,8 +865,7 @@ public class CodeParser {
 		//definition parameters
 		for(Iterator it = parameters.values().iterator(); it.hasNext();) {
 		    final String param = (String) it.next();
-		    transCode.append("\tString ").append(PARAM_CODE_PREFIX).append(param).append(" = graph.getGraphProperties().getProperty(\"").
-		    					append(param).append("\");\n"); 
+		    transCode.append("\tString ").append(PARAM_CODE_PREFIX).append(param).append(";\n"); 
 		}
 		//init method
 		transCode.append("\n\t/**\n"
@@ -873,13 +873,23 @@ public class CodeParser {
 		   	 			+ "\t * beginning of transformation process. Any object allocation/initialization should\n"
 		        		+ "\t * happen here.\n"
         				+ "\t */\n");
-		transCode.append("\tpublic boolean init() {\n");
+		transCode.append("\tpublic boolean init() throws ComponentNotReadyException {\n");
 		//initialization sequeneces
 		for(Iterator it = sequences.values().iterator(); it.hasNext();) {
 		    final String seq = (String) it.next();
-		    transCode.append("\t\t").append(seq).append(" = graph.getSequence(\"").
-		    					append(seq).append("\");\n"); 
+		    transCode.append("\t\t").append(seq).append(" = graph.getSequence(\"").append(seq).append("\");\n");
+            transCode.append("\t\t" + "if(" + seq + " == null) {\n");
+            transCode.append("\t\t\tthrow new ComponentNotReadyException(\"Sequence id='" + seq + "' does not exist.\");\n");
+            transCode.append("\t\t}\n\n");
 		}
+        //initialization parameters
+        for(Iterator it = parameters.values().iterator(); it.hasNext();) {
+            final String param = (String) it.next();
+            transCode.append("\t\t").append(PARAM_CODE_PREFIX).append(param).append(" = graph.getGraphProperties().getProperty(\"").append(param).append("\");\n"); 
+            transCode.append("\t\t" + "if(" + PARAM_CODE_PREFIX + param + " == null) {\n");
+            transCode.append("\t\t\tthrow new ComponentNotReadyException(\"Graph parameter '" + param + "' does not exist.\");\n");
+            transCode.append("\t\t}\n\n");
+        }
 		transCode.append("\t\treturn true;\n");
 		transCode.append("\t}\n\n");
 		//transformation
@@ -888,13 +898,17 @@ public class CodeParser {
    	 			+ "\t * This method is called as one step in transforming flow of\n"
         		+ "\t * records.\n"
 				+ "\t */\n");
-		transCode.append("\tpublic boolean transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + "){\n");
-		transCode.append("\t\t// user's code STARTs from here !\n\n");
+		transCode.append("\tpublic boolean transform(DataRecord[] " + IN_RECORDS_ARRAY_NAME_STR + ", DataRecord[] " + OUT_RECORDS_ARRAY_NAME_STR + ") throws TransformException {\n");
+        transCode.append("\t\ttry {\n");
 
-		//add double tab before all lines of code
+		//add triple tab before all lines of code
+        transCode.append("\t\t\t// user's code STARTs from here !\n\n");
 		sourceCode.insert(0, transCode.toString());
-
-		sourceCode.append("\n\t\t// user's code ENDs here !\n");
+        sourceCode.append("\n\t\t\t// user's code ENDs here !\n");
+        
+		sourceCode.append("\t\t} catch(Exception e) {\n");
+        sourceCode.append("\t\t\tthrow new TransformException(\"Error in extern transformation class \" + " + className + ".class.getName() + \": \" + e.getMessage());\n");
+        sourceCode.append("\t\t}\n");
 		sourceCode.append("\t\treturn true;\n");
 		sourceCode.append("\t}\n\n");
 		
