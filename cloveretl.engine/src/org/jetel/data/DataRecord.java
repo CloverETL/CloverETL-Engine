@@ -294,11 +294,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since
 	 */
 	public DataField getField(int _fieldNum) {
-		try {
-			return fields[_fieldNum];
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
+	    return fields[_fieldNum];
 	}
 
 
@@ -311,11 +307,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since
 	 */
 	public DataField getField(String _name) {
-		try {
-			return fields[metadata.getFieldPosition(_name)];
-		} catch (IndexOutOfBoundsException e) {
-			return null;
-		}
+	    return fields[metadata.getFieldPosition(_name)];
 	}
 
 
