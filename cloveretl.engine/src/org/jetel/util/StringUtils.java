@@ -495,6 +495,21 @@ public class StringUtils {
     }
     
     /**
+     * This method finds index of first charater, which can be part of identifier
+     * 
+     * @param str String for searching
+     * @param fromIndex
+     * @return index of first character, which can be in identifier name
+     */
+    public static int findIdentifierBegining(CharSequence str, int fromIndex){
+    	int index = fromIndex;
+    	while (index < str.length() && !Character.isUnicodeIdentifierPart(str.charAt(index))){
+    		index++;
+    	}
+    	return index;
+    }
+
+    /**
      * This method finds maximal lenth from set of Strings
      * 
      * @param strings 
