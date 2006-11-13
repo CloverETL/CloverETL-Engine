@@ -27,6 +27,7 @@ import java.sql.Types;
 import java.util.List;
 import java.util.ListIterator;
 
+import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.DateDataField;
@@ -434,6 +435,10 @@ public abstract class CopySQLData {
 				if (jetelFieldType == DataFieldMetadata.STRING_FIELD) {
 					return new CopyBoolean(record, fromIndex, toIndex);
 				}
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return new CopyByte(record, fromIndex, toIndex);
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
 			default:
@@ -892,6 +897,54 @@ public abstract class CopySQLData {
 		}
 
 	}
+    
+    static class CopyByte extends CopySQLData {
+        /**
+         *  Constructor for the CopyByte object
+         *
+         * @param  record      Description of Parameter
+         * @param  fieldSQL    Description of Parameter
+         * @param  fieldJetel  Description of Parameter
+         * @since              October 7, 2002
+         */
+        CopyByte(DataRecord record, int fieldSQL, int fieldJetel) {
+            super(record, fieldSQL, fieldJetel);
+        }
+
+
+        /**
+         *  Sets the Jetel attribute of the CopyByte object
+         *
+         * @param  resultSet         The new Jetel value
+         * @exception  SQLException  Description of Exception
+         * @since                    October 7, 2002
+         */
+        void setJetel(ResultSet resultSet) throws SQLException {
+            byte[] i = resultSet.getBytes(fieldSQL);
+            if (resultSet.wasNull()) {
+                ((ByteDataField) field).setValue((Object)null);
+            } else {
+                ((ByteDataField) field).setValue(i);
+            }
+        }
+
+
+        /**
+         *  Sets the SQL attribute of the CopyByte object
+         *
+         * @param  pStatement        The new SQL value
+         * @exception  SQLException  Description of Exception
+         * @since                    October 7, 2002
+         */
+        void setSQL(PreparedStatement pStatement) throws SQLException {
+            if (!field.isNull()) {
+                pStatement.setBytes(fieldSQL, ((ByteDataField) field).getByteArray());
+            } else {
+                pStatement.setNull(fieldSQL, java.sql.Types.BINARY);
+            }
+
+        }
+    }
 
 }
 
