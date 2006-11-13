@@ -87,6 +87,8 @@ public class XLSDataParser implements Parser {
 	
 	private final int XLS_NUMBER = 0;
 	private final int CLOVER_NUMBER = 1;
+	
+	private final static int MAX_NAME_LENGTH = 10;
 
 	/**
 	 * Constructor
@@ -521,12 +523,23 @@ public class XLSDataParser implements Parser {
 	
 	public String[] getNames(){
 		ArrayList<String> names = new ArrayList<String>();
-		row = sheet.getRow(metadataRow);
-		//go through each not empty cell
-		for (Iterator i=row.cellIterator();i.hasNext();){
-			cell = (HSSFCell)i.next();
-			names.add(XLSDataFormatter.getCellCode(cell.getCellNum()) + " - " +
-					getStringFromCell(cell));
+		if (metadataRow > -1) {
+			row = sheet.getRow(metadataRow);
+			//go through each not empty cell
+			for (Iterator i=row.cellIterator();i.hasNext();){
+				cell = (HSSFCell)i.next();
+				names.add(XLSDataFormatter.getCellCode(cell.getCellNum()) + " - " +
+						getStringFromCell(cell));
+			}
+		}else{
+			row = sheet.getRow(firstRow);
+			String cellString; 
+			for (Iterator i=row.cellIterator();i.hasNext();){
+				cell = (HSSFCell)i.next();
+				cellString = getStringFromCell(cell);
+				names.add(XLSDataFormatter.getCellCode(cell.getCellNum()) + " - " +
+						cellString.substring(0, Math.min(cellString.length(), MAX_NAME_LENGTH)));
+			}
 		}
 		return names.toArray(new String[0]);
 	}
