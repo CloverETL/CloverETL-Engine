@@ -2,13 +2,12 @@
 package org.jetel.component;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.sequence.Sequence;
@@ -16,7 +15,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.StringUtils;
+import org.jetel.util.WcardPattern;
 
 public class CustomizedRecordTransform implements RecordTransform {
 	
@@ -24,10 +23,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	private DataRecordMetadata[] sourceMetadata;
 	private DataRecordMetadata[] targetMetadata;
 
-	private Map<String, String> rules = new HashMap<String, String>();
-	private Map<Integer[], Rule> transformMap = new HashMap<Integer[], Rule>();
+	private Map<String, String> rules = new LinkedHashMap<String, String>();
+	private Map<Integer[], Rule> transformMap = new LinkedHashMap<Integer[], Rule>();
 	
-	private Map<String, Sequence> sequences;
+	private int rulesIndex = 0;
+	private int transformMapIndex = 0;
 	
 	private static final int REC_NO = 0;
 	private static final int FIELD_NO = 1;
@@ -38,7 +38,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	private int ruleType;
 	private Integer[] field = new Integer[2];
 	private Rule rule;
-	private String sequenceName;
+	private String sequenceID;
 
 
 	public void addRule(String patternOut, String pattern) {
@@ -111,6 +111,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	public boolean init(Properties parameters, DataRecordMetadata[] sourcesMetadata,
 			DataRecordMetadata[] targetMetadata) throws ComponentNotReadyException {
+		if (sourcesMetadata == null || targetMetadata == null)
+			return false;
 		this.parameters=parameters;
 		this.sourceMetadata=sourcesMetadata;
 		this.targetMetadata=targetMetadata;
@@ -120,10 +122,40 @@ public class CustomizedRecordTransform implements RecordTransform {
 	private boolean init() throws ComponentNotReadyException{
 		Entry<String, String> rulesEntry;
 		Rule rule;
+		int type;
+		int recNo;
+		int fieldNo;
+		String field;
+		String ruleString;
 		ArrayList<String> outFields;
-		ArrayList<String> inFields;
+		ArrayList<String> inFields = null;
 		for (Iterator<Entry<String, String>> i = rules.entrySet().iterator();i.hasNext();){
 			rulesEntry = i.next();
+			outFields = findFields(rulesEntry.getKey(), targetMetadata);
+			ruleString = rulesEntry.getValue();
+			type = guessRuleType(ruleString);
+			Iterator<String> inFieldIterator = null;
+			if (type == Rule.FIELD) {
+				inFields = findFields(ruleString, sourceMetadata);
+				inFieldIterator = inFields.iterator();
+			}
+			for (Iterator<String> outFieldIterator = outFields.iterator();outFieldIterator.hasNext();){
+				field = outFieldIterator.next();
+				recNo = Integer.valueOf(field.substring(0, field.indexOf(DOT)));
+				fieldNo = Integer.valueOf(field.substring(field.indexOf(DOT)+1));
+				rule = transformMap.remove(new Integer[]{recNo,fieldNo});
+				if (rule == null) {
+					rule = new Rule(type,null);
+				}else{
+					rule.setType(type);
+				}
+				if (type != Rule.FIELD){
+					rule.setValue(ruleString);
+				}else{
+					rule.setValue(inFieldIterator.next());
+				}
+				transformMap.put(new Integer[]{recNo,fieldNo}, rule);
+			}
 		}
 		return true;
 	}
@@ -131,32 +163,36 @@ public class CustomizedRecordTransform implements RecordTransform {
 	private ArrayList<String> findFields(String pattern,DataRecordMetadata[] metadata){
 		ArrayList<String> list = new ArrayList<String>();
 		String recordNoString = pattern.substring(0,pattern.indexOf(DOT));
-		Pattern recordPattern = Pattern.compile(recordNoString);
-		Matcher recordMatcher;
-		Pattern fieldPattern = Pattern.compile(pattern.substring(pattern.indexOf(DOT)+1));
-		Matcher fieldMatcher;
-		int recNo = -1;
+		String fieldNoString = pattern.substring(pattern.indexOf(DOT)+1);
+		int fieldNo;
+		int recNo;
 		try {
 			recNo = Integer.parseInt(recordNoString);
-			for (int i=0;i<metadata[recNo].getNumFields();i++){
-				fieldMatcher = fieldPattern.matcher(metadata[recNo].getField(i).getName());
-				if (fieldMatcher.matches()){
-					list.add(String.valueOf(recNo) + DOT + metadata[recNo].getField(i).getName());
+			try {
+				fieldNo = Integer.parseInt(fieldNoString);
+				list.add(recordNoString + DOT + fieldNoString);
+			}catch(NumberFormatException e){
+				for (int i=0;i<metadata[recNo].getNumFields();i++){
+					if (WcardPattern.checkName(fieldNoString, metadata[recNo].getField(i).getName())){
+						list.add(String.valueOf(recNo) + DOT + i);
+					}
 				}
 			}
 		}catch (NumberFormatException e){
 			for (int i=0;i<metadata.length;i++){
-				recordMatcher = recordPattern.matcher(metadata[i].getName());
-				if (recordMatcher.matches()){
-					for (int j=0;j<metadata[i].getNumFields();j++){
-						fieldMatcher = fieldPattern.matcher(metadata[i].getField(j).getName());
-						if (fieldMatcher.matches()){
-							list.add(String.valueOf(i) + DOT + metadata[i].getField(j).getName());
+				if (WcardPattern.checkName(recordNoString, metadata[i].getName()))
+					try {
+						fieldNo = Integer.parseInt(fieldNoString);
+						list.add(String.valueOf(i) + DOT + fieldNoString);
+					}catch(NumberFormatException e1){
+						for (int j=0;j<metadata[i].getNumFields();j++){
+							if (WcardPattern.checkName(fieldNoString, metadata[i].getField(j).getName())){
+								list.add(String.valueOf(i) + DOT + j);
+							}
 						}
 					}
 				}
 			}
-		}
 		return list;
 	}
 	
@@ -177,22 +213,30 @@ public class CustomizedRecordTransform implements RecordTransform {
 			ruleType = fieldRule.getValue().type;
 			field = fieldRule.getKey();
 			rule = fieldRule.getValue();
-			if (ruleType == Rule.FIELD) {
-				target[field[REC_NO]].getField(field[FIELD_NO])
-						.setValue(rule.getValue(sources));
-			}else if (ruleType == Rule.SEQUENCE){
-				sequenceName = rule.value.substring(0, rule.value.indexOf(DOT));
-				target[field[REC_NO]].getField(field[FIELD_NO])
-					.setValue(rule.getValue(sequences.get(sequenceName)));
-			}else{
+			switch (ruleType) {
+			case Rule.FIELD:
+				target[field[REC_NO]].getField(field[FIELD_NO]).setValue(
+						rule.getValue(sources));
+				break;
+			case Rule.SEQUENCE:
+				sequenceID = rule.value.substring(0, rule.value.indexOf(DOT));
+				target[field[REC_NO]].getField(field[FIELD_NO]).setValue(
+						rule.getValue(getGraph().getSequence(sequenceID)));
+				break;
+			case Rule.PARAMETER:
+				target[field[REC_NO]].getField(field[FIELD_NO]).fromString(
+						getGraph().getGraphProperties().getProperty(rule.getValue()));
+				break;
+			default://constant
 				target[field[REC_NO]].getField(field[FIELD_NO]).fromString(rule.getValue());
+				break;
 			}
 		}
 		return true;
 	}
 	
-	private String resolveField(String pattern){
-		String[] parts = pattern.split(String.valueOf(DOT));
+	private static String resolveField(String pattern){
+		String[] parts = pattern.split("\\.");
 		switch (parts.length) {
 		case 2:
 			if (parts[0].startsWith("$")){// ${recNo.field}
@@ -209,12 +253,32 @@ public class CustomizedRecordTransform implements RecordTransform {
 		default:return null;
 		}
 	}
+
+	int guessRuleType(String pattern){
+		String field = CustomizedRecordTransform.resolveField(pattern);
+		if (field != null) {
+			if (field.toLowerCase().startsWith("seq.") || 
+					field.substring(field.indexOf(DOT)+1).startsWith("next") || 
+					field.substring(field.indexOf(DOT)+1).startsWith("current")) {
+				return Rule.SEQUENCE;
+			}else{
+				return Rule.FIELD;
+			}
+		}else{
+			if (pattern.startsWith("$")){
+				return Rule.PARAMETER;
+			}else{
+				return Rule.CONSTANT;
+			}
+		}
+	}
 	
 	class Rule {
 		
 		final static int FIELD = 0;
 		final static int CONSTANT = 1;
 		final static int SEQUENCE = 2;
+		final static int PARAMETER = 3;
 		
 		int type;
 		String value;
@@ -228,6 +292,18 @@ public class CustomizedRecordTransform implements RecordTransform {
 			return value;
 		}
 		
+		void setValue(String value){
+			this.value = value;
+		}
+		
+		int getType() {
+			return type;
+		}
+
+		void setType(int type) {
+			this.type = type;
+		}
+
 		Object getValue(DataRecord[] records){
 			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
 			int recNo = dotIndex > -1 ? Integer.parseInt(value.substring(0, dotIndex)) : 0;
@@ -237,7 +313,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		Object getValue(Sequence sequence){
 			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
-			String method = dotIndex > -1 ? value.substring(dotIndex +1) : value;
+			String method = dotIndex > -1 ? value.substring(dotIndex +1) : "nextValueInt()";
 			if (method.equals("currentValueString()")){
 				return sequence.currentValueString();
 			}
@@ -259,6 +335,21 @@ public class CustomizedRecordTransform implements RecordTransform {
 			return value;
 		}
 		
+	}
+
+	public Map<String, String> getRules() {
+		return rules;
+	}
+
+	public ArrayList<String> getResolvedRules() {
+		ArrayList<String> list = new ArrayList<String>(transformMap.size());
+		Entry<Integer[], Rule> entry;
+		for (Iterator<Entry<Integer[], Rule>> i = transformMap.entrySet().iterator();i.hasNext();){
+			entry = i.next();
+			list.add(String.valueOf(entry.getKey()[REC_NO]) + DOT + entry.getKey()[FIELD_NO] + 
+					"=" + entry.getValue().getValue());
+		}
+		return list;
 	}
 
 }
