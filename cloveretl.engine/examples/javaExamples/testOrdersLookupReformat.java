@@ -47,7 +47,8 @@ public class testOrdersLookupReformat extends DataRecordTransform{
 		try{
 			lookupMetadata=metadataReader.read(new FileInputStream("employees.fmt"));
 			Parser parser=new DelimitedDataParser();
-			parser.open(new FileInputStream("employees.dat"),lookupMetadata);
+			parser.init(lookupMetadata);
+			parser.setDataSource(new FileInputStream("employees.dat"));
 			lookup=new SimpleLookupTable("lookup",lookupMetadata,lookupKey,parser );
 //			try {
 				lookup.init();
