@@ -56,7 +56,8 @@ public class testDataParsing {
 	
 	DelimitedDataParser parser=new DelimitedDataParser();
 	try{
-		parser.open(in,metadata);
+		parser.init(metadata);
+		parser.setDataSource(in);
 	}catch(ComponentNotReadyException ex){
 		ex.printStackTrace();
 	}
