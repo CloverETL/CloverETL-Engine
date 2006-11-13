@@ -393,6 +393,8 @@ public class SQLUtil {
                 return Types.BIGINT;
             case DataFieldMetadata.DECIMAL_FIELD:
                 return Types.DECIMAL;
+            case DataFieldMetadata.BYTE_FIELD:
+                return Types.BINARY;
 			default:
 				return -1;
 			// unknown or not possible to translate
@@ -476,6 +478,11 @@ public class SQLUtil {
 			case Types.TIME:
 			case Types.TIMESTAMP:
 				return DataFieldMetadata.DATE_FIELD;
+                //-----------------
+            case Types.BINARY:
+            case Types.VARBINARY:
+            case Types.LONGVARBINARY:
+                return DataFieldMetadata.BYTE_FIELD;
 			//-----------------
 			// proximity assignment
 			case Types.BOOLEAN:
