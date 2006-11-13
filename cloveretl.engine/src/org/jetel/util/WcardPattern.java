@@ -70,6 +70,10 @@ public class WcardPattern {
 		public boolean accept(File dir, String name) {
 			return rePattern.matcher(name).matches();
 		}
+		
+		public boolean accept(String name){
+			return rePattern.matcher(name).matches();
+		}
 
 	}
 
@@ -192,4 +196,8 @@ public class WcardPattern {
 		return mfiles;
 	}
 
+	public static boolean checkName(String pattern, String name){
+		return new wcardFilter(pattern).accept(name);
+	}
+	
 }
