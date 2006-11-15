@@ -84,25 +84,32 @@ public class ConnectionFactory {
      */
     public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
         Class tClass;
-        ConnectionDescription connectionDescription = null;
-       
+        String className = null;
+        ConnectionDescription connectionDescription = (ConnectionDescription) connectionMap.get(connectionType);
+        
         try {
-            connectionDescription = (ConnectionDescription) connectionMap.get(connectionType);
-            
-            //activate plugin if necessary
-            PluginDescriptor pluginDescriptor = connectionDescription.getPluginDescriptor();
-            if(!pluginDescriptor.isActive()) {
-                pluginDescriptor.activatePlugin();
+            if(connectionDescription == null) { 
+                //unknown connection type, we suppose connectionType as full class name classification
+                className = connectionType;
+                //find class of connection
+                tClass = Class.forName(connectionType); 
+            } else {
+                className = connectionDescription.getClassName();
+                //activate plugin if necessary
+                PluginDescriptor pluginDescriptor = connectionDescription.getPluginDescriptor();
+                if(!pluginDescriptor.isActive()) {
+                    pluginDescriptor.activatePlugin();
+                }
+                
+                //find class of connection
+                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
-            
-            //find class of connection
-            tClass = Class.forName(connectionDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName(),ex);
-            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + connectionDescription.getClassName(),ex);
+            logger.error("Unknown connection: " + connectionType + " class: " + className);
+            throw new RuntimeException("Unknown connection: " + connectionType + " class: " + className);
         } catch(Exception ex) {
-            logger.error("Unknown connection type: " + connectionType,ex);
-            throw new RuntimeException("Unknown connection type: " + connectionType,ex);
+            logger.error("Unknown connection type: " + connectionType);
+            throw new RuntimeException("Unknown connection type: " + connectionType);
         }
         try {
             //create instance of connection

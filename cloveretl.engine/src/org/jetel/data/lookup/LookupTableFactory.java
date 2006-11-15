@@ -83,22 +83,29 @@ public class LookupTableFactory {
      */
     public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, org.w3c.dom.Node nodeXML) {
         Class tClass;
-        LookupTableDescription lookupTableDescription = null;
-
-        try{
-            lookupTableDescription = (LookupTableDescription) lookupTableMap.get(lookupTableType);
-            
-            //activate plugin if necessary
-            PluginDescriptor pluginDescriptor = lookupTableDescription.getPluginDescriptor();
-            if(!pluginDescriptor.isActive()) {
-                pluginDescriptor.activatePlugin();
+        String className = null;
+        LookupTableDescription lookupTableDescription = (LookupTableDescription) lookupTableMap.get(lookupTableType);
+        
+        try {
+            if(lookupTableDescription == null) { 
+                //unknown lookup table type, we suppose lookupTableType as full class name classification
+                className = lookupTableType;
+                //find class of lookupTable
+                tClass = Class.forName(lookupTableType); 
+            } else {
+                className = lookupTableDescription.getClassName();
+                //activate plugin if necessary
+                PluginDescriptor pluginDescriptor = lookupTableDescription.getPluginDescriptor();
+                if(!pluginDescriptor.isActive()) {
+                    pluginDescriptor.activatePlugin();
+                }
+                
+                //find class of lookupTable
+                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
-            
-            //find class of lookup table
-            tClass = Class.forName(lookupTableDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown lookup table: " + lookupTableType + " class: " + lookupTableDescription.getClassName());
-            throw new RuntimeException("Unknown lookup table: " + lookupTableType + " class: " + lookupTableDescription.getClassName());
+            logger.error("Unknown lookup table: " + lookupTableType + " class: " + className);
+            throw new RuntimeException("Unknown lookup table: " + lookupTableType + " class: " + className);
         } catch(Exception ex) {
             logger.error("Unknown lookup table type: " + lookupTableType);
             throw new RuntimeException("Unknown lookup table type: " + lookupTableType);

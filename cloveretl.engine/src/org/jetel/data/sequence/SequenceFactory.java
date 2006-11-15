@@ -84,22 +84,29 @@ public class SequenceFactory {
      */
     public final static Sequence createSequence(TransformationGraph graph, String sequenceType, org.w3c.dom.Node nodeXML) {
         Class tClass;
-        SequenceDescription sequenceDescription = null;
-
-        try{
-            sequenceDescription = (SequenceDescription) sequenceMap.get(sequenceType);
-            
-            //activate plugin if necessary
-            PluginDescriptor pluginDescriptor = sequenceDescription.getPluginDescriptor();
-            if(!pluginDescriptor.isActive()) {
-                pluginDescriptor.activatePlugin();
+        String className = null;
+        SequenceDescription sequenceDescription = (SequenceDescription) sequenceMap.get(sequenceType);
+        
+        try {
+            if(sequenceDescription == null) { 
+                //unknown sequence type, we suppose sequenceType as full class name classification
+                className = sequenceType;
+                //find class of sequence
+                tClass = Class.forName(sequenceType); 
+            } else {
+                className = sequenceDescription.getClassName();
+                //activate plugin if necessary
+                PluginDescriptor pluginDescriptor = sequenceDescription.getPluginDescriptor();
+                if(!pluginDescriptor.isActive()) {
+                    pluginDescriptor.activatePlugin();
+                }
+                
+                //find class of component
+                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
-            
-            //find class of sequence
-            tClass = Class.forName(sequenceDescription.getClassName(), true, pluginDescriptor.getClassLoader());
         } catch(ClassNotFoundException ex) {
-            logger.error("Unknown sequence: " + sequenceType + " class: " + sequenceDescription.getClassName());
-            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + sequenceDescription.getClassName());
+            logger.error("Unknown sequence: " + sequenceType + " class: " + className);
+            throw new RuntimeException("Unknown sequence: " + sequenceType + " class: " + className);
         } catch(Exception ex) {
             logger.error("Unknown sequence type: " + sequenceType);
             throw new RuntimeException("Unknown sequence type: " + sequenceType);
