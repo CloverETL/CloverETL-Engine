@@ -23,10 +23,8 @@
  */
 package org.jetel.interpreter;
 
-import java.util.Map;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
 
 /**
  * @author david

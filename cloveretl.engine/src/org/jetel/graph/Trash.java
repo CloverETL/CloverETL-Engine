@@ -18,11 +18,11 @@
 *
 */
 package org.jetel.graph;
-import java.io.*;
-import java.nio.*;
-import org.jetel.data.*;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+
+import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.graph.OutputPort;
 
 /**
  * A class that represents Trash port - any data written into it is immediately discarded

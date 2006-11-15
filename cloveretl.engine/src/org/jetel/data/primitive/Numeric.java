@@ -25,8 +25,6 @@ package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 
-import org.jetel.data.primitive.Decimal;
-
 /**
  * @author david
  * @since  22.6.2005

@@ -20,6 +20,7 @@
 package org.jetel.component;
 
 import java.util.Properties;
+
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
