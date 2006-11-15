@@ -136,11 +136,11 @@ public class SimpleSequence extends GraphElement implements Sequence {
     }
     
     public int currentValueInt(){
-        return (int)sequenceValue;
+        return (int) currentValueLong();
     }
     
     public int nextValueInt(){
-        return (int)nextValueLong();
+        return (int) nextValueLong();
     }
     
     public String currentValueString(){
