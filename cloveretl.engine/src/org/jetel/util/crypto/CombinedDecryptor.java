@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.crypto;
 
 import java.security.GeneralSecurityException;
 import java.security.Key;
@@ -25,65 +25,52 @@ import java.security.Key;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 /**
- * Data encryption class using symmetric cipher to crypt the data and asymmetric cipher to crypt symmetric key.
+ * Data encryption class decrypting data using symmetric key decrypted by an asymmetric key.
  * 
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  * @since 06/11/10
  */
-public class CombinedEncryptor {
+public class CombinedDecryptor {
 	// TODO add methods equivalent to Cipher's update&doFinal to support encryption of large data
 	private static final String symAlg = "AES";
-	private static final int symKeyLen = 128;
 
 	private Cipher symCipher;
-	private byte[] hiddenSecret;
 
 	/**
 	 * Sole ctor.
-	 * @param asymKey Asymmetric to for encryption of generated symmetric key.
+	 * @param asymKey Asymmetric key to be used to decrypt symmetric key.
+	 * @param hiddenSecret Asymmetrically encrypted symmetric key.
 	 * @throws GeneralSecurityException
 	 */
-	public CombinedEncryptor(Key asymKey) throws GeneralSecurityException {
-		init(asymKey);
+	public CombinedDecryptor(Key asymKey, byte[] hiddenSecret) throws GeneralSecurityException {
+		init(asymKey, hiddenSecret);
 	}
 	
-	private void init(Key asymKey) throws GeneralSecurityException {
-		KeyGenerator kgen = KeyGenerator.getInstance(symAlg);
-		kgen.init(symKeyLen);
-		SecretKey symKey = kgen.generateKey();
+	private void init(Key asymKey, byte[] hiddenSecret) throws GeneralSecurityException {
 		Cipher asymCipher = Cipher.getInstance(asymKey.getAlgorithm());
-		asymCipher.init(Cipher.ENCRYPT_MODE, asymKey);
-        hiddenSecret = asymCipher.doFinal(symKey.getEncoded());
-        symCipher = Cipher.getInstance(symAlg);
-        symCipher.init(Cipher.ENCRYPT_MODE, symKey);
+		asymCipher.init(Cipher.DECRYPT_MODE, asymKey);
+		SecretKeySpec kspec = new SecretKeySpec(asymCipher.doFinal(hiddenSecret), symAlg);
+		symCipher = Cipher.getInstance(symAlg);
+		symCipher.init(Cipher.DECRYPT_MODE, kspec);
 	}
 
 	/**
-	 * 
-	 * @return Asymmetrically encrypted symmetric key.
-	 */
-	public byte[] getHiddenSecret() {
-		return hiddenSecret;
-	}
-	
-	/**
-	 * Continues multi-part encryption.
-	 * @param data Data to encrypt.
-	 * @return encrypted data.
+	 * Continues multi-part decryption.
+	 * @param data Data to decrypt.
+	 * @return Decrypted data.
 	 */
 	public byte[] update(byte[] data) {
 		return symCipher.update(data);
 	}
 
 	/**
-	 * Continues multi-part encryption.
-	 * @param data Data to encrypt.
-	 * @param offset Beginning of data to encrypt.
-	 * @param len Length of data to encrypt.
+	 * Continues multi-part decryption.
+	 * @param data Data to decrypt.
+	 * @param offset Beginning of data to decrypt.
+	 * @param len Length of data to decrypt.
 	 * @return Encrypted data.
 	 */
 	public byte[] update(byte[] data, int offset, int len) {
@@ -91,8 +78,8 @@ public class CombinedEncryptor {
 	}
 
 	/**
-	 * Finishes multi-part encryption
-	 * @param data Data to encrypt.
+	 * Finishes multi-part decryption
+	 * @param data Data to decrypt.
 	 * @return
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
@@ -102,8 +89,8 @@ public class CombinedEncryptor {
 	}
 
 	/**
-	 * Finishes multi-part encryption
-	 * @param data Data to encrypt.
+	 * Finishes multi-part decryption
+	 * @param data Data to decrypt.
 	 * @return
 	 * @throws IllegalBlockSizeException
 	 * @throws BadPaddingException
