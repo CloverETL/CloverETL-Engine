@@ -40,8 +40,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
-import org.jetel.util.Enigma;
 import org.jetel.util.JetelVersion;
+import org.jetel.util.crypto.Enigma;
 
 /**
  *  class for executing transformations described in XML layout file<br><br>

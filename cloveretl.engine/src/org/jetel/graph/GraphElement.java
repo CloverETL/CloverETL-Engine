@@ -6,10 +6,8 @@
 package org.jetel.graph;
 
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
-import org.w3c.dom.Element;
 
 
 /**

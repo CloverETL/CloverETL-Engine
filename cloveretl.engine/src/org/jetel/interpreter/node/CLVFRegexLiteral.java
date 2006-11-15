@@ -2,10 +2,11 @@
 
 package org.jetel.interpreter.node;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
-
-import java.util.regex.*;
 
 public class CLVFRegexLiteral extends SimpleNode {
 	

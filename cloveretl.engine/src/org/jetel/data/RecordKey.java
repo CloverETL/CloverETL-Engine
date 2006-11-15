@@ -20,7 +20,9 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Map;
+
 import org.jetel.metadata.DataRecordMetadata;
 
 /**

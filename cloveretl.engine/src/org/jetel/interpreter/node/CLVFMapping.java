@@ -2,11 +2,11 @@
 
 package org.jetel.interpreter.node;
 
-import org.jetel.interpreter.ExpParser;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.interpreter.TransformLangExecutorRuntimeException;
+import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.ParseException;
+import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.metadata.DataRecordMetadata;
 
