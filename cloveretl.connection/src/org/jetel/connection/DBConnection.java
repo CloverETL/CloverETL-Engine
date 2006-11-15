@@ -49,9 +49,9 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.Enigma;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
+import org.jetel.util.crypto.Enigma;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
