@@ -94,22 +94,29 @@ public class ComponentFactory {
 	 */
 	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
 		Class tClass;
-        ComponentDescription componentDescription = null;
-
-        try{
-            componentDescription = (ComponentDescription) componentMap.get(componentType);
-            
-            //activate plugin if necessary
-            PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
-            if(!pluginDescriptor.isActive()) {
-                pluginDescriptor.activatePlugin();
+        String className = null;
+        ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
+        
+        try {
+            if(componentDescription == null) { 
+                //unknown component type, we suppose componentType as full class name classification
+                className = componentType;
+                //find class of component
+                tClass = Class.forName(componentType); 
+            } else {
+                className = componentDescription.getClassName();
+                //activate plugin if necessary
+                PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
+                if(!pluginDescriptor.isActive()) {
+                    pluginDescriptor.activatePlugin();
+                }
+                
+                //find class of component
+        		tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
-            
-            //find class of component
-			tClass = Class.forName(componentDescription.getClassName(), true, pluginDescriptor.getClassLoader());
 		} catch(ClassNotFoundException ex) {
-            logger.error("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
-			throw new RuntimeException("Unknown component: " + componentType + " class: " + componentDescription.getClassName());
+            logger.error("Unknown component: " + componentType + " class: " + className);
+			throw new RuntimeException("Unknown component: " + componentType + " class: " + className);
 		} catch(Exception ex) {
             logger.error("Unknown component type: " + componentType);
             throw new RuntimeException("Unknown component type: " + componentType);
