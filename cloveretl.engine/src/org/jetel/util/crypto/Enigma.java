@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.util;
+package org.jetel.util.crypto;
 
 import java.security.AlgorithmParameters;
 import java.security.spec.AlgorithmParameterSpec;
@@ -26,6 +26,7 @@ import javax.crypto.Cipher;
 import javax.crypto.SecretKey;
 
 import org.jetel.exception.JetelException;
+import org.jetel.util.Base64;
 
 /**
  * Class for encrypting/decrypting strings (mostly passwords) stored by CloverETL
