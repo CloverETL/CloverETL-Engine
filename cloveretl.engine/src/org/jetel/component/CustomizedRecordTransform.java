@@ -12,7 +12,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.DateDataField;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
@@ -25,21 +24,24 @@ import org.jetel.util.WcardPattern;
 
 public class CustomizedRecordTransform implements RecordTransform {
 	
-	private Properties parameters;
-	private DataRecordMetadata[] sourceMetadata;
-	private DataRecordMetadata[] targetMetadata;
+	protected Properties parameters;
+	protected DataRecordMetadata[] sourceMetadata;
+	protected DataRecordMetadata[] targetMetadata;
 
-	private Map<String, String> rules = new LinkedHashMap<String, String>();
-	private Rule[][] transformMapArray;
+	protected TransformationGraph graph;
 	
-	private static final int REC_NO = 0;
-	private static final int FIELD_NO = 1;
+	protected Map<String, String> rules = new LinkedHashMap<String, String>();
+	protected Rule[][] transformMapArray;
+	protected int[][] order;
 	
-	private static final char DOT = '.';
-	private static final char COLON =':';
-	private static final char FORMAT_CHAR = '&';
+	protected static final int REC_NO = 0;
+	protected static final int FIELD_NO = 1;
 	
-	private int ruleType;
+	protected static final char DOT = '.';
+	protected static final char COLON =':';
+	protected static final char PARAMETER_CHAR = '$'; 
+	
+	private	 int ruleType;
 	private String ruleString;
 	private String sequenceID;
 
@@ -206,6 +208,22 @@ public class CustomizedRecordTransform implements RecordTransform {
 		addSequenceToFieldRule(0,fieldNo, sequence);
 	}
 	
+	public void addSequenceToFieldRule(String patternOut, Sequence sequence){
+		addSequenceToFieldRule(patternOut, sequence.getId());
+	}
+	
+	public void addSequenceToFieldRule(int recNo, int fieldNo, Sequence sequence){
+		addSequenceToFieldRule(String.valueOf(recNo) + DOT + fieldNo, sequence.getId());
+	}
+	
+	public void addSequenceToFieldRule(int recNo, String field, Sequence sequence){
+		addSequenceToFieldRule(String.valueOf(recNo) + DOT + field, sequence.getId());
+	}
+	
+	public void addSequenceToFieldRule(int fieldNo, Sequence sequence){
+		addSequenceToFieldRule(0,fieldNo, sequence.getId());
+	}
+
 	public void addParameterToFieldRule(String patternOut, String parameterName){
 		String field = resolveField(patternOut);
 		if (field != null) {
@@ -233,8 +251,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 
 	public TransformationGraph getGraph() {
-		// TODO Auto-generated method stub
-		return null;
+		return graph;
 	}
 
 	public String getMessage() {
@@ -299,11 +316,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 		}
 		transformMapArray = new Rule[targetMetadata.length][maxNumFields(targetMetadata)];
+		order = new int[transformMap.size()][2];
+		int index = 0;
 		for (Entry<String, Rule> i : transformMap.entrySet()) {
 			field = i.getKey();
-			recFieldNo[REC_NO] = Integer.valueOf(field.substring(0, field.indexOf(DOT)));
-			recFieldNo[FIELD_NO] = Integer.valueOf(field.substring(field.indexOf(DOT)+1));
-			transformMapArray[recFieldNo[REC_NO]][recFieldNo[FIELD_NO]] = i.getValue();
+			order[index][REC_NO] = Integer.valueOf(field.substring(0, field.indexOf(DOT)));
+			order[index][FIELD_NO] = Integer.valueOf(field.substring(field.indexOf(DOT)+1));
+			transformMapArray[order[index][REC_NO] ][order[index][FIELD_NO]] = i.getValue();
+			index++;
 		}
 		return true;
 	}
@@ -461,8 +481,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 	
 	public void setGraph(TransformationGraph graph) {
-		// TODO Auto-generated method stub
-
+		this.graph = graph;
 	}
 
 	public void signal(Object signalObject) {
@@ -472,42 +491,53 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	public boolean transform(DataRecord[] sources, DataRecord[] target)
 			throws TransformException {
-		for (int i = 0; i < transformMapArray.length; i++) {
-			for (int j = 0; j < transformMapArray[i].length; j++) {
-				if (transformMapArray[i][j] != null) {
-					ruleType = transformMapArray[i][j].getType();
-					ruleString = transformMapArray[i][j].getValue();
-					switch (ruleType) {
-					case Rule.FIELD:
-						target[i].getField(j).setValue(
-								transformMapArray[i][j].getValue(sources));
-						break;
-					case Rule.SEQUENCE:
-						sequenceID = ruleString.substring(0,ruleString.indexOf(DOT));
-						target[i].getField(j).setValue(
-								transformMapArray[i][j].getValue(getGraph()
-										.getSequence(sequenceID)));
-						break;
-					case Rule.PARAMETER:
-						target[i].getField(j).fromString(
-								parameters.getProperty((ruleString)));
-						break;
-					default://constant
-						if (target[i].getField(j).getType() == DataFieldMetadata.DATE_FIELD
-								|| target[i].getField(j).getType() == DataFieldMetadata.DATETIME_FIELD) {
-							try {
-								Date date = SimpleDateFormat.getDateInstance().parse(ruleString);
-								target[i].getField(j).setValue(date);
-							} catch (ParseException e) {
-								// value was set as String not a Date
-								target[i].getField(j).fromString(ruleString);
-							}
-						}else{
-							target[i].getField(j).fromString(ruleString);
-						}
-						break;
+		for (int i = 0; i < order.length; i++) {
+			ruleType = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getType();
+			ruleString = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue();
+			switch (ruleType) {
+			case Rule.FIELD:
+				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
+				break;
+			case Rule.SEQUENCE:
+				sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
+						: ruleString.substring(0, ruleString.indexOf(DOT));
+				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(getGraph()
+								.getSequence(sequenceID)));
+				break;
+			case Rule.PARAMETER:
+				if (ruleString.startsWith("${")){
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
+							getGraph().getGraphProperties().getProperty(
+									ruleString.substring(2, ruleString.lastIndexOf('}'))));
+				}else if (ruleString.startsWith(String.valueOf(PARAMETER_CHAR))){
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
+						parameters.getProperty((ruleString)));
+				}else{
+					String parameterValue = parameters.getProperty(PARAMETER_CHAR + ruleString);
+					if (parameterValue == null ){
+						parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
 					}
-				}				
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
+							parameterValue);
+				}
+				break;
+			default:// constant
+				if (target[order[i][REC_NO]].getField(order[i][FIELD_NO]).getType() == DataFieldMetadata.DATE_FIELD
+						|| target[order[i][REC_NO]].getField(order[i][FIELD_NO]).getType() == DataFieldMetadata.DATETIME_FIELD) {
+					try {
+						Date date = SimpleDateFormat.getDateInstance()
+								.parse(ruleString);
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(date);
+					} catch (ParseException e) {
+						// value was set as String not a Date
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
+					}
+				} else {
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
+				}
+				break;
 			}
 		}
 		return true;
