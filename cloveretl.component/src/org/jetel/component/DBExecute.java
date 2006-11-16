@@ -100,20 +100,23 @@ public class DBExecute extends Node {
 	private static final String XML_INTRANSACTION_ATTRIBUTE = "inTransaction";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
 	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
+	private static final String XML_DBSQL_ATTRIBUTE = "sqlQuery";
 	private static final String XML_URL_ATTRIBUTE = "url";
     private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
+    private static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
 	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
-	private String[] dbSQL;
+	private String sqlQuery;
+    private String[] dbSQL;
 	private boolean oneTransaction = false;
 	private boolean printStatements = false;
 	private boolean procedureCall = false;
+    private String sqlStatementDelimiter;
     
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_EXECUTE";
-	private final static String SQL_STATEMENT_DELIMITER = ";";
+	private final static String DEFAULT_SQL_STATEMENT_DELIMITER = ";";
 
 	static Log logger = LogFactory.getLog(DBExecute.class);
 	private String url = null;
@@ -128,7 +131,9 @@ public class DBExecute extends Node {
 	 * @since                    September 27, 2002
 	 */
 	public DBExecute(String id, String dbConnectionName, String dbSQL) {
-	    this(id,dbConnectionName,new String[]{dbSQL});
+        super(id);
+        this.dbConnectionName=dbConnectionName;
+	    this.sqlQuery=dbSQL;
 
 	}
 
@@ -149,7 +154,9 @@ public class DBExecute extends Node {
 	}
 	
 	public DBExecute(String id, DBConnection dbConnection, String dbSQL){
-	    this(id,dbConnection,new String[]{dbSQL});
+        super(id);
+        this.dbConnection=dbConnection;
+        this.sqlQuery=dbSQL;
 	}
 
 	public DBExecute(String id, DBConnection dbConnection, String dbSQL[]){
@@ -179,6 +186,10 @@ public class DBExecute extends Node {
             }
             dbConnection = (DBConnection) conn;
 	    }
+        if (dbSQL==null){
+            String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
+            dbSQL=sqlQuery.split(delimiter);
+        }
 	}
 
 
@@ -302,16 +313,23 @@ public class DBExecute extends Node {
 		xmlElement.setAttribute(XML_INTRANSACTION_ATTRIBUTE, String.valueOf(this.oneTransaction));
 		xmlElement.setAttribute(XML_PROCEDURE_CALL_ATTRIBUTE,String.valueOf(procedureCall));
         
+        if (sqlStatementDelimiter!=null){
+            xmlElement.setAttribute(XML_STATEMENT_DELIMITER, sqlStatementDelimiter);
+        }
+        
+        
 		// use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
 			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
 		} else {
 			Document doc = xmlElement.getOwnerDocument();
-			Element childElement = doc.createElement(XML_SQLCODE_ELEMENT);
+			Element childElement = doc.createElement(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME);
+            childElement.setAttribute(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME_ATTRIBUTE, XML_SQLCODE_ELEMENT);
 			// join given SQL commands
 			StringBuffer buf = new StringBuffer(dbSQL[0]);
+            String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
 			for (int i=1; i<dbSQL.length; i++) {
-				buf.append(SQL_STATEMENT_DELIMITER + dbSQL[i] + "\n");
+				buf.append(delimiter + dbSQL[i] + "\n");
 			}
 			Text textElement = doc.createTextNode(buf.toString());
 			childElement.appendChild(textElement);
@@ -356,8 +374,8 @@ public class DBExecute extends Node {
             }
             executeSQL = new DBExecute(xattribs
                     .getString(XML_ID_ATTRIBUTE), xattribs
-                    .getString(XML_DBCONNECTION_ATTRIBUTE), query
-                    .split(SQL_STATEMENT_DELIMITER));
+                    .getString(XML_DBCONNECTION_ATTRIBUTE), 
+                    query);
 
             if (xattribs.exists(XML_INTRANSACTION_ATTRIBUTE)) {
                 executeSQL.setTransaction(xattribs
@@ -374,6 +392,9 @@ public class DBExecute extends Node {
             }
             if (xattribs.exists(XML_PROCEDURE_CALL_ATTRIBUTE)){
                 executeSQL.setProcedureCall(xattribs.getBoolean(XML_PROCEDURE_CALL_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_STATEMENT_DELIMITER)){
+                executeSQL.setSqlStatementDelimiter(xattribs.getString(XML_STATEMENT_DELIMITER));
             }
             
         } catch (Exception ex) {
@@ -405,6 +426,22 @@ public class DBExecute extends Node {
 
     public void setProcedureCall(boolean procedureCall) {
         this.procedureCall = procedureCall;
+    }
+
+
+    /**
+     * @return the sqlStatementDelimiter
+     */
+    public String getSqlStatementDelimiter() {
+        return sqlStatementDelimiter;
+    }
+
+
+    /**
+     * @param sqlStatementDelimiter the sqlStatementDelimiter to set
+     */
+    public void setSqlStatementDelimiter(String sqlStatementDelimiter) {
+        this.sqlStatementDelimiter = sqlStatementDelimiter;
     }
 
 }
