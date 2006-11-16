@@ -392,8 +392,8 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process Node element attributes "id" & "type"
 			try {
-				nodeID = attributes.getString(GraphElement.XML_ID_ATTRIBUTE);
-				nodeType = attributes.getString(GraphElement.XML_TYPE_ATTRIBUTE);
+				nodeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
+				nodeType = attributes.getString(IGraphElement.XML_TYPE_ATTRIBUTE);
                 nodeEnabled = attributes.getString(Node.XML_ENABLED_ATTRIBUTE, EnabledEnum.ENABLED.toString());
                 nodePassThroughInputPort = attributes.getInteger("passThroughInputPort", 0);
                 nodePassThroughOutputPort = attributes.getInteger("passThroughOutputPort", 0);
@@ -449,7 +449,7 @@ public class TransformationGraphXMLReaderWriter {
 
 			// process edge element attributes "id" & "fileURL"
 			try{
-			edgeID = attributes.getString(GraphElement.XML_ID_ATTRIBUTE);
+			edgeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
 			edgeMetadataID = attributes.getString("metadata");
 			fromNodeAttr = attributes.getString("fromNode");
 			toNodeAttr = attributes.getString("toNode");

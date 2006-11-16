@@ -8,9 +8,10 @@ package org.jetel.database;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
-public interface IConnection {
+public interface IConnection extends IGraphElement {
 
     /**
      * Method which connects to database and if successful, sets various
