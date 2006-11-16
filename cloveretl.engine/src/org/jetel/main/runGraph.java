@@ -145,8 +145,7 @@ public class runGraph {
             System.out.println("Graph definition loaded from STDIN");
             in = System.in;
         } else {
-            System.out.println("Graph definition file: "
-                    + args[args.length - 1]);
+            System.out.println("Graph definition file: " + args[args.length - 1]);
             URL fileURL=null;
             try {
                 fileURL = new URL(args[args.length - 1]);
@@ -154,16 +153,14 @@ public class runGraph {
                 try{
                     fileURL = new URL("file:"+args[args.length - 1]);
                 }catch(MalformedURLException ex1){
-                    System.err.println("Error - graph definition file can't be read: "
-                            + ex1.getMessage());
+                    System.err.println("Error - graph definition file can't be read: " + ex1.getMessage());
                     System.exit(-1);
                 }
             }
             try{
                 in=fileURL.openStream();
             } catch (IOException e) {
-                System.err.println("Error - graph definition file can't be read: "
-                        + e.getMessage());
+                System.err.println("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
             }
         }
@@ -176,7 +173,10 @@ public class runGraph {
             //graph parameters defined on command line are applied after composing of graph from xml file 
             graph.loadGraphProperties(properties);
 
-			graph.init();
+			if(!graph.init()) {
+			    System.exit(-1); //graph initialization failed
+            }
+            
 			if (verbose) {
 				//this can be called only after graph.init()
 				graph.dumpGraphConfiguration();
