@@ -480,6 +480,21 @@ public class StringUtils {
 	}
 
     /**
+     * This method finds index of string from string array
+     * 
+     * @param str String to find
+     * @param array String array for searching
+     * @return index or found String or -1 if String was not found
+     */
+    public static int findStringIgnoreCase(String str,String[] array){
+		for (int i=0;i<array.length;i++){
+			if (str.equalsIgnoreCase(array[i])) return i;
+		}
+		return -1;
+	}
+
+    
+    /**
      * This method finds index of first charater, which can't be part of identifier
      * 
      * @param str String for searching
