@@ -637,7 +637,7 @@ public class TransformationGraphXMLReaderWriter {
                    }
 	            }else if (attributes.exists("name")){
 	                graph.getGraphProperties().setProperty(attributes.getString("name"),
-	                        attributes.resloveReferences(attributes.getString("value")));
+	                        attributes.resolveReferences(attributes.getString("value")));
 	            }else{
 	                throw new XMLConfigurationException("Invalid property definition :"+propertyElements.item(i));
 	            }
