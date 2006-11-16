@@ -549,7 +549,7 @@ public class ComponentXMLAttributes {
 	 * (substituted with parameters' values)
 	 * @return String with references resolved.
 	 */
-	public String resloveReferences(String input) throws AttributeNotFoundException{
+	public String resolveReferences(String input) throws AttributeNotFoundException{
 	    return refResolver.resolveRef(input);
 	}
 
