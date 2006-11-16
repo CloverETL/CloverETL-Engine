@@ -20,14 +20,21 @@
 package org.jetel.util;
 
 import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -150,11 +157,14 @@ public class CodeParser {
 	private Map parameters = new HashMap();
 	private Set refInputFieldNames = new LinkedHashSet();
 	private Set refOutputFieldNames = new LinkedHashSet();
+   
 	
 	private boolean useSymbolicNames=true;
-
+    
 	private final static int SOURCE_CODE_BUFFER_INITIAL_SIZE = 512;
-	private final static String GET_OPCODE_STR = "${in.";
+	private final static String DEFAULT_OUTPUT_FILE_CHARSET = "UTF-8";
+    
+    private final static String GET_OPCODE_STR = "${in.";
 	private final static String GET_OPCODE_REGEX = "\\$\\{in.";
 	
 	private final static String OBJ_IN_ACCESS_OPCODE_STR= "@{in.";
@@ -173,7 +183,7 @@ public class CodeParser {
 	private final static String SEQ_OPCODE_STR = "${seq.";
 	private final static String SEQ_OPCODE_REGEX = "\\$\\{seq.";
 
-  private final static String OBJ_SEQ_OPCODE_STR = "@{seq.";
+	private final static String OBJ_SEQ_OPCODE_STR = "@{seq.";
 	private final static String OBJ_SEQ_OPCODE_REGEX = "@\\{seq.";
 
 	private final static String OPCODE_END_STR = "}";
@@ -242,6 +252,29 @@ public class CodeParser {
         return sourceCode.toString();
     }
 
+    
+    public String getClassName() {
+        Pattern pattern = Pattern.compile("class\\s+(\\w+)");
+        Matcher matcher =  pattern.matcher(sourceCode);
+        
+        if (matcher.find()){
+            return matcher.group(1);
+        }
+
+        return null;
+    }
+    
+    public boolean setClassName(String newName) {
+        Pattern pattern = Pattern.compile("class\\s+(\\w+)");
+        Matcher matcher =  pattern.matcher(sourceCode);
+        
+        if (matcher.find()){
+            matcher.replaceFirst("class "+newName);
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * Description of the Method
      * 
@@ -251,11 +284,16 @@ public class CodeParser {
      *                Description of the Exception
      */
     public void saveSourceCode(String filename) throws IOException {
-        PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(
-                filename)));
-        for (int i = 0; i < sourceCode.length(); i++) {
-            out.write(sourceCode.charAt(i));
-        }
+        saveSourceCode(new File(filename));
+
+    }
+
+    public void saveSourceCode(File file) throws IOException {
+        Writer out = new BufferedWriter(new OutputStreamWriter(
+                new FileOutputStream(file), DEFAULT_OUTPUT_FILE_CHARSET));
+
+        out.append(sourceCode);
+
         out.close();
 
     }
@@ -813,7 +851,7 @@ public class CodeParser {
 	 * @param  className  The feature to be added to the TransformCodeStub attribute
 	 */
 	public void addTransformCodeStub(String className) {
-		StringBuffer transCode = new StringBuffer(512);
+		StringBuffer transCode = new StringBuffer(SOURCE_CODE_BUFFER_INITIAL_SIZE);
 
 		//imports
 		transCode.append("// automatically generated on ");
