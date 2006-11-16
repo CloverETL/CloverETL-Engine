@@ -22,6 +22,7 @@ package org.jetel.data.lookup;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -44,7 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since  8.7.2004
  *
  */
-public interface LookupTable {
+public interface LookupTable extends IGraphElement {
 	
 	/**
 	 * Called when the lookup table is first used/needed. Usually at

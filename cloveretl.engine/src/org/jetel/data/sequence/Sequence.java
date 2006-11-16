@@ -24,6 +24,7 @@
 package org.jetel.data.sequence;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.graph.IGraphElement;
 
 
 /**
@@ -33,7 +34,7 @@ import org.jetel.exception.ComponentNotReadyException;
  * TODO To change the template for this generated type comment go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-public interface Sequence {
+public interface Sequence extends IGraphElement {
     
     /**
      * Method which returns sequence's name (ID). It is deemed that all sequences are

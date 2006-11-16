@@ -22,7 +22,7 @@
 
 package org.jetel.exception;
 
-import org.jetel.graph.GraphElement;
+import org.jetel.graph.IGraphElement;
 
 /** A class that represents general Jetel exception
  * 
@@ -32,7 +32,7 @@ import org.jetel.graph.GraphElement;
 public class ComponentNotReadyException extends Exception {
   
   // Attributes
-  GraphElement graphElement;
+  IGraphElement graphElement;
   // Associations
 
   // Operations
@@ -44,22 +44,22 @@ public class ComponentNotReadyException extends Exception {
       super(ex);
   }
 
-  public ComponentNotReadyException(GraphElement element,Exception ex){
+  public ComponentNotReadyException(IGraphElement element,Exception ex){
       super(ex);
       this.graphElement=element;
   }
   
-  public ComponentNotReadyException(GraphElement element,String message,Exception ex){
+  public ComponentNotReadyException(IGraphElement element,String message,Exception ex){
       super(message,ex);
       this.graphElement=element;
   }
   
-  public ComponentNotReadyException(GraphElement element,String message){
+  public ComponentNotReadyException(IGraphElement element,String message){
       super(message);
       this.graphElement=element;
   }
   
-  public GraphElement getGraphElement(){
+  public IGraphElement getGraphElement(){
       return graphElement;
   }
 

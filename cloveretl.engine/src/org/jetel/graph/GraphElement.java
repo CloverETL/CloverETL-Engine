@@ -21,13 +21,7 @@ import org.jetel.util.StringUtils;
  * 
  * @author Martin Zatopek
  */
-public abstract class GraphElement {
-
-    /**
-     * XML attribute of every cloverETL element.
-     */
-    public final static String XML_ID_ATTRIBUTE = "id";
-    public final static String XML_TYPE_ATTRIBUTE = "type";
+public abstract class GraphElement implements IGraphElement {
 
     final private String id;
 
@@ -78,44 +72,52 @@ public abstract class GraphElement {
         this.name = name;
     }
     
-    /**
-     * Check the element configuration.<br>
-     * This method is called for each graph element before the graph is executed. This method should
-     * verify that all required parameters are set and element may be use.
-     * @return    <b>true</b> if element configuration is OK, otherwise <b>false</b>
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#checkConfig()
      */
     public abstract boolean checkConfig();
 
-    /**
-     *  Initialization of Node
-     *
-     *@exception  ComponentNotReadyException  Error when trying to initialize
-     *      Node/Component
-     *@since                                  April 2, 2002
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#init()
      */
     public abstract void init() throws ComponentNotReadyException;
 
-    /**
-     * Free all allocated resources.
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#free()
      */
     public abstract void free();
     
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#getGraph()
+     */
     public TransformationGraph getGraph() {
         return graph;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#setGraph(org.jetel.graph.TransformationGraph)
+     */
     public void setGraph(TransformationGraph graph) {
         this.graph = graph;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#getId()
+     */
     public String getId() {
         return id;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#getName()
+     */
     public String getName() {
         return name;
     }
 
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#setName(java.lang.String)
+     */
     public void setName(String name) {
         this.name = name;
     }
