@@ -2,6 +2,7 @@
 package org.jetel.component;
 
 import java.util.Calendar;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 
@@ -77,7 +78,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		SetVal.setString(record,0,"  HELLO ");
 		SetVal.setString(record1,0,"  My name ");
 		SetVal.setInt(record,1,135);
-		SetVal.setDouble(record1,1,13.5);
+		SetVal.setDouble(record1,1,13);
 		SetVal.setString(record,2,"Some silly longer string.");
 		SetVal.setString(record1,2,"Prague");
 		SetVal.setValue(record1,3,Calendar.getInstance().getTime());
@@ -97,8 +98,16 @@ public class CustomizedRecordTransformTest extends TestCase {
 	}
 	
 	public void test_fieldToField() {
-		transform.addRule("0.1", "0.1");
-		transform.addRule("1.?a*", "1.?a*");
+		System.out.println("Field to field test:");
+		transform.addFieldToFieldRule("0.1", "0.1");
+		transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
+		transform.addFieldToFieldRule("${out.0.Name}", "${in.0.0}");
+		transform.addFieldToFieldRule(2, "1.2");
+		transform.addFieldToFieldRule(0, 3, "${1.3}");
+		transform.addFieldToFieldRule(0, "Value", "${in.1.Age}");
+		transform.addFieldToFieldRule("*.City", 0, 2);
+		transform.addFieldToFieldRule("{out1.3}", 0, 3);
+		transform.addFieldToFieldRule("${out.1.V*}", 0, "Value");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -114,14 +123,50 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
-		assertEquals(record.getField(1).getValue(), out.getField(1).getValue());
-		assertEquals(record1.getField(0).getValue().toString(), out1.getField(0).getValue().toString());
-		assertEquals(record1.getField(4).getValue(), out1.getField(4).getValue());
+		assertEquals(out.getField(0).getValue().toString(), record.getField(0).getValue().toString());
+		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
+		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out.getField(3).getValue(), record1.getField(3).getValue());
+		assertEquals(out.getField(4).getValue(), ((Double)record1.getField(1).getValue()).intValue());
+		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
+		assertEquals(out1.getField(1).getValue(),0.0);
+		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out1.getField(3).getValue(), record.getField(3).getValue());
+		assertEquals(out1.getField(4).getValue(), record1.getField(4).getValue());
 		System.out.println(record.toString());
 		System.out.println(record1.toString());
 		System.out.println(out.toString());
 		System.out.println(out1.toString());
 	}
 
+	public void test_fieldToConstant(){
+		System.out.println("Constant to field test:");
+		transform.addFieldToFieldRule("*.Name", "Agata");
+		transform.addConstantToFieldRule(3, new GregorianCalendar(23,3,73).getTime());
+		transform.addConstantToFieldRule(0, 4, 45.55);
+		try {
+			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
+				new DataRecordMetadata[]{metaOut,metaOut1});
+		} catch (ComponentNotReadyException e) {
+			e.printStackTrace();
+		}
+		List<String> rules = transform.getResolvedRules();
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		try {
+			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
+		} catch (TransformException e) {
+			e.printStackTrace();
+		}
+		assertEquals(out.getField(0).getValue().toString(), "Agata");
+		assertEquals(out1.getField(0).getValue().toString(), "Agata");
+		assertEquals(out.getField(3).getValue(), new GregorianCalendar(23,3,73).getTime());
+		assertEquals(out.getField(4).getValue().toString(), 45.55);
+		System.out.println(record.toString());
+		System.out.println(record1.toString());
+		System.out.println(out.toString());
+		System.out.println(out1.toString());
+	}
 
 }
