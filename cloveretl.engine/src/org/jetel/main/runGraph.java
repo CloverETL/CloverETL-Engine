@@ -166,13 +166,11 @@ public class runGraph {
         }
 		TransformationGraph graph = new TransformationGraph();
         TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
+        graph.loadGraphProperties(properties);
 
 		try {
 			graphReader.read(in);
             
-            //graph parameters defined on command line are applied after composing of graph from xml file 
-            graph.loadGraphProperties(properties);
-
 			if(!graph.init()) {
 			    System.exit(-1); //graph initialization failed
             }
