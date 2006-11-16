@@ -383,7 +383,7 @@ public final class TransformationGraph {
 				logger.info(dbCon + " ... OK");
 			} catch (Exception ex) {
 				logger.info(dbCon + " ... !!! ERROR !!!");
-				logger.error("Can't connect to database: " + ex.getMessage(),ex);
+				logger.error("Can't connect to database", ex);
 				return false;
 			}
 		}
@@ -398,7 +398,7 @@ public final class TransformationGraph {
 				logger.info(seq + " ... OK");
 			} catch (Exception ex) {
 				logger.info(seq + " ... !!! ERROR !!!");
-				logger.error("Can't initialize sequence: " + ex.getMessage(),ex);
+				logger.error("Can't initialize sequence", ex);
 				return false;
 			}
 		}
@@ -786,6 +786,12 @@ public final class TransformationGraph {
 
     public Map<String, Edge> getEdges() {
         return edges;
+    }
+    
+    public void checkConfig() {
+        for(Phase phase : getPhases()) {
+            phase.checkConfig();
+        }
     }
 }
 /*

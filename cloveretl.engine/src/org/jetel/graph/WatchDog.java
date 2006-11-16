@@ -331,7 +331,7 @@ class WatchDog extends Thread {
 		boolean result;
 		currentPhase = phase;
 		List leafNodes = new LinkedList();
-		phase.check();
+		phase.checkConfig();
 		// init phase
 		if (!phase.init()) {
 			// something went wrong !

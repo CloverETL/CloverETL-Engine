@@ -174,7 +174,7 @@ public class Phase implements Comparable {
 	 *
 	 * @return    Description of the Return Value
 	 */
-	public boolean check() {
+	public boolean checkConfig() {
 		return true;
 	}
 
