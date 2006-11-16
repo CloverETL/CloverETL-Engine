@@ -1,6 +1,7 @@
 
 package org.jetel.component;
 
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -11,11 +12,13 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.DateDataField;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
 import org.jetel.util.WcardPattern;
@@ -25,7 +28,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 	private Properties parameters;
 	private DataRecordMetadata[] sourceMetadata;
 	private DataRecordMetadata[] targetMetadata;
-	private SimpleDateFormat dateFormat = null;
 
 	private Map<String, String> rules = new LinkedHashMap<String, String>();
 	private Rule[][] transformMapArray;
@@ -35,9 +37,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	
 	private static final char DOT = '.';
 	private static final char COLON =':';
+	private static final char FORMAT_CHAR = '&';
 	
 	private int ruleType;
-	private Rule rule;
+	private String ruleString;
 	private String sequenceID;
 
 
@@ -88,7 +91,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void addConstantToFieldRule(String patternOut, int value){
 		String field = resolveField(patternOut);
 		if (field != null) {
-			rules.put(field, String.valueOf(value));
+			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + value);
 		}else{
 //			throw new TransformException("Wrong output field mask");
 		}
@@ -97,7 +100,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void addConstantToFieldRule(String patternOut, double value){
 		String field = resolveField(patternOut);
 		if (field != null) {
-			rules.put(field, String.valueOf(value));
+			rules.put(field,String.valueOf(Rule.CONSTANT) + COLON + value);
 		}else{
 //			throw new TransformException("Wrong output field mask");
 		}
@@ -105,14 +108,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	public void addConstantToFieldRule(String patternOut, Date value){
 		String field = resolveField(patternOut);
-		String dateString;
-		if (dateFormat == null) {
-			dateString = SimpleDateFormat.getDateInstance().format(value);
-		}else{
-			dateString = dateFormat.format(value);
-		}
 		if (field != null) {
-			rules.put(field, dateString);
+			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + 
+					SimpleDateFormat.getDateInstance().format(value));
 		}else{
 //			throw new TransformException("Wrong output field mask");
 		}
@@ -121,7 +119,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	public void addConstantToFieldRule(String patternOut, Numeric value){
 		String field = resolveField(patternOut);
 		if (field != null) {
-			rules.put(field, String.valueOf(value));
+			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + value);
 		}else{
 //			throw new TransformException("Wrong output field mask");
 		}
@@ -180,7 +178,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 
 	public void addConstantToFieldRule(int fieldNo, Date value){
-		addConstantToFieldRule(0, fieldNo, String.valueOf(value));
+		addConstantToFieldRule(0, fieldNo, value);
 	}
 
 	public void addConstantToFieldRule(int fieldNo, Numeric value){
@@ -477,25 +475,36 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int i = 0; i < transformMapArray.length; i++) {
 			for (int j = 0; j < transformMapArray[i].length; j++) {
 				if (transformMapArray[i][j] != null) {
-					ruleType = transformMapArray[i][j].type;
+					ruleType = transformMapArray[i][j].getType();
+					ruleString = transformMapArray[i][j].getValue();
 					switch (ruleType) {
 					case Rule.FIELD:
 						target[i].getField(j).setValue(
 								transformMapArray[i][j].getValue(sources));
 						break;
 					case Rule.SEQUENCE:
-						sequenceID = transformMapArray[i][j].value.substring(0,
-								rule.value.indexOf(DOT));
+						sequenceID = ruleString.substring(0,ruleString.indexOf(DOT));
 						target[i].getField(j).setValue(
-								rule.getValue(getGraph()
+								transformMapArray[i][j].getValue(getGraph()
 										.getSequence(sequenceID)));
 						break;
 					case Rule.PARAMETER:
 						target[i].getField(j).fromString(
-								parameters.getProperty((rule.getValue())));
+								parameters.getProperty((ruleString)));
 						break;
 					default://constant
-						target[i].getField(j).fromString(rule.getValue());
+						if (target[i].getField(j).getType() == DataFieldMetadata.DATE_FIELD
+								|| target[i].getField(j).getType() == DataFieldMetadata.DATETIME_FIELD) {
+							try {
+								Date date = SimpleDateFormat.getDateInstance().parse(ruleString);
+								target[i].getField(j).setValue(date);
+							} catch (ParseException e) {
+								// value was set as String not a Date
+								target[i].getField(j).fromString(ruleString);
+							}
+						}else{
+							target[i].getField(j).fromString(ruleString);
+						}
 						break;
 					}
 				}				
@@ -540,14 +549,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return list;
 	}
 
-	public SimpleDateFormat getDateFormat() {
-		return dateFormat;
-	}
-
-	public void setDateFormat(SimpleDateFormat dateFormat) {
-		this.dateFormat = dateFormat;
-	}
-	
 	private int maxNumFields(DataRecordMetadata[] metadata){
 		int numFields = 0;
 		for (int i = 0; i < metadata.length; i++) {
