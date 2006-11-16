@@ -537,7 +537,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	    StringBuffer strBuf=new StringBuffer(255);
 	    strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
 	    strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
-	    strBuf.append("]:user[").append(config.getProperty(XML_NAME_ATTRIBUTE)).append("]");
+	    strBuf.append("]:user[").append(config.getProperty(XML_USER_ATTRIBUTE)).append("]");
 		return strBuf.toString();
 	}
 	
