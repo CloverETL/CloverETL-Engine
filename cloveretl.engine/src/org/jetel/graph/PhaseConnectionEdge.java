@@ -45,6 +45,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private DataRecordTape dataTape;
 	private int writeCounter;
 	private int readCounter;
+    private long writeByteCounter;
+    private long readByteCounter;
 	private boolean isOpen;
 	private boolean isReadMode;
 	private boolean wasInitialized;
@@ -92,6 +94,9 @@ public class PhaseConnectionEdge extends EdgeBase {
 		return isReadMode ? readCounter: writeCounter;
 	}
 
+    public long getByteCounter(){
+        return isReadMode ? readByteCounter : writeByteCounter;
+    }
 
 	/**
 	 *  Gets the Open attribute of the Edge object
@@ -117,6 +122,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		// first by phase of the writer, then by phase of the reader, we initilize only once
 		if (!wasInitialized) {
 			writeCounter = readCounter=0;
+            writeByteCounter=readByteCounter=0;
 			dataTape.open();
 			dataTape.addDataChunk();
 			wasInitialized = true;
@@ -142,6 +148,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 			return null;
 		}
 		if (dataTape.get(record)){
+            readByteCounter+=record.getSizeSerialized();
 		    readCounter++;
 		    return record;
 		}else{
@@ -166,6 +173,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		} 
 		
 		if (dataTape.get(record)){
+            readByteCounter+=record.remaining();
 		    readCounter++;
 		    return true;
 		}else{
@@ -189,6 +197,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 		recordBuffer.clear();
 		record.serialize(recordBuffer);
 		recordBuffer.flip();
+        writeByteCounter+=recordBuffer.remaining();
 		dataTape.put(recordBuffer);
 		writeCounter++;
 	}
@@ -206,6 +215,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	    if (isReadMode){
 		    throw new IOException("Error: Mixed read/write operation on DataRecordTape !");
 		}
+        writeByteCounter+=record.remaining();
 	    dataTape.put(record);
 	    writeCounter++;
 	}
