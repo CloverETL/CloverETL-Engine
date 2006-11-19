@@ -46,6 +46,7 @@ public class DirectEdge extends EdgeBase {
 	private ByteBuffer writeBuffer;
 	private ByteBuffer tmpDataRecord;
 	private int recordCounter;
+    private long byteCounter;
 	private boolean isClosed=false;
     private boolean readerWait=false;
     private volatile boolean writerWait=false;
@@ -77,6 +78,10 @@ public class DirectEdge extends EdgeBase {
 	}
 
 
+    public long getByteCounter(){
+        return byteCounter; 
+    }
+    
 	
 	/**
 	 *  Gets the Open attribute of the Edge object
@@ -101,6 +106,7 @@ public class DirectEdge extends EdgeBase {
 		readBuffer= ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		writeBuffer=ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		recordCounter = 0;
+        byteCounter=0;
 		readBuffer.flip(); // we start with empty read buffer
 		tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
@@ -216,6 +222,8 @@ public class DirectEdge extends EdgeBase {
         writeBuffer.put(tmpDataRecord);
         // record.serialize(writeBuffer);
 
+        byteCounter+=length;
+        
         recordCounter++;
 		// one more record written
 	}
@@ -237,6 +245,7 @@ public class DirectEdge extends EdgeBase {
         writeBuffer.putInt(dataLength);
         writeBuffer.put(record);
 
+        byteCounter+=dataLength;
         recordCounter++;
 	    
 	}

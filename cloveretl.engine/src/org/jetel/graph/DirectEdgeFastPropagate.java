@@ -43,6 +43,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     
     protected EdgeRecordBufferPool recordBuffer;
     protected int recordCounter;
+    protected long byteCounter;
 
     // Attributes
     
@@ -64,6 +65,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         return recordCounter;
     }
 
+    public long getByteCounter(){
+        return byteCounter;
+    }
 
     
     /**
@@ -89,6 +93,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordBuffer=new EdgeRecordBufferPool(Defaults.Graph.DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS, 
                                             Defaults.Record.MAX_RECORD_SIZE);
         recordCounter = 0;
+        byteCounter=0;
     }
 
 
@@ -167,8 +172,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         buffer.clear();
         record.serialize(buffer);   // serialize the record
         buffer.flip();
-        recordBuffer.setFull(buffer);
         
+        byteCounter+=buffer.remaining();        
+        recordBuffer.setFull(buffer);      
         recordCounter++;
         // one more record written
     }
@@ -192,6 +198,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         buffer.clear();
         buffer.put(record);
         buffer.flip();
+        
+        byteCounter+=buffer.remaining();
+        
         recordBuffer.setFull(buffer);
         record.rewind();
         recordCounter++;
