@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.data;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -261,12 +262,30 @@ public class ByteDataField extends DataField implements Comparable{
 		return new String(value);
 	}
 
+    
+    
+   
+    /**
+     * Formats internal byte array value into string representation
+     * 
+     * @param charset charset to be used for converting bytes into String
+     * @return String representation of byte array
+     * @since 19.11.2006
+     */
+    public String toString(String charset) {
+        try{
+            return new String(value,charset);
+        }catch(UnsupportedEncodingException ex){
+            throw new RuntimeException(ex.toString()+" when calling toString() on field \""+
+                    this.metadata.getName()+"\"",ex);
+        }
+    }
 
 	/**
 	 *  Parses byte array value from string (convers characters in string into byte
 	 *  array using system's default charset encoder)
 	 *
-	 *@param  valueStr  Description of Parameter
+	 *@param  valueStr  value
 	 *@since            October 29, 2002
 	 */
 	public void fromString(String valueStr) {
@@ -278,6 +297,27 @@ public class ByteDataField extends DataField implements Comparable{
         setNull(false);
 	}
 
+    /**
+     * Parses byte array value from string (convers characters in string into byte
+     *  array using specified charset encoder)
+     * 
+     * @param valueStr  value
+     * @param charset charset to be used for encoding String into bytes
+     * @since 19.11.2006
+     */
+    public void fromString(String valueStr,String charset){
+        if(valueStr == null || valueStr.length() == 0) {
+            setNull(true);
+            return;
+        }
+        try{
+            this.value = valueStr.getBytes(charset);
+        }catch(UnsupportedEncodingException ex){
+            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
+                    this.metadata.getName()+"\"",ex);
+        }
+        setNull(false);
+    }
 
 	/**
 	 *  Description of the Method
