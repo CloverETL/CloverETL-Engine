@@ -79,6 +79,7 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 */
 	protected int recordCounter;
 
+    protected long byteCounter;
 
 	// Attributes
 
@@ -140,6 +141,10 @@ public class Trash implements OutputPort, OutputPortDirect {
 	public int getRecordCounter() {
 		return recordCounter;
 	}
+    
+    public long getByteCounter(){
+        return byteCounter;
+    }
 
 
 	/**
@@ -175,6 +180,7 @@ public class Trash implements OutputPort, OutputPortDirect {
 		// initialize & open the data pipe
 		// we are ready to supply data
 		recordCounter = 0;
+        byteCounter=0;
 	}
 
 
@@ -188,6 +194,7 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 */
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
 		recordCounter++;
+        byteCounter+=record.getSizeSerialized();
 		// one more record written
 	}
 
@@ -201,8 +208,10 @@ public class Trash implements OutputPort, OutputPortDirect {
 	 * @since                            August 13, 2002
 	 */
 	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		recordCounter++;
+		byteCounter+=record.remaining();
+        recordCounter++;
 	}
+    
 
 
 
