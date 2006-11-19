@@ -144,7 +144,14 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		return edge.getRecordCounter();
 	}
 
-
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.InputPort#getByteCounter()
+	 */
+	public long getByteCounter(){
+	    return edge.getByteCounter();
+    }
+    
+    
 	/**
 	 *  Gets the Reader attribute of the Edge object
 	 *

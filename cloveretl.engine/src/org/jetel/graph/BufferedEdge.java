@@ -42,6 +42,7 @@ public class BufferedEdge extends EdgeBase {
  	private final static int BUFFER_COMPACT_LIMIT_PERCENT = 85;
 	
 	protected int recordCounter;
+    protected long byteCounter;
 	
 	// data buffer which keeps data records written by
 	// producer
@@ -96,6 +97,10 @@ public class BufferedEdge extends EdgeBase {
 	}
 
 
+    public long getByteCounter(){
+        return byteCounter;
+    }
+    
 	
 	/**
 	 *  Gets the Open attribute of the Edge object
@@ -122,6 +127,7 @@ public class BufferedEdge extends EdgeBase {
 		dataRecord=new DataRecord(proxy.metadata);
 	    dataRecord.init();
 		recordCounter = 0;
+        byteCounter=0;
 		noRecs=readPosition=0;
 		deadlockTick = 0;
 		isOpen=true;
@@ -229,6 +235,7 @@ public class BufferedEdge extends EdgeBase {
 		}
 	    record.serialize(dataBuffer);
 	    deadlockTick=0;
+        byteCounter+=size;
 	    recordCounter++;
 	    noRecs++;
 	    notify();
@@ -250,6 +257,7 @@ public class BufferedEdge extends EdgeBase {
 		}
 	    dataBuffer.put(record);
 	    deadlockTick=0;
+        byteCounter+=size;
 	    recordCounter++;
 	    noRecs++;
 	    notify();

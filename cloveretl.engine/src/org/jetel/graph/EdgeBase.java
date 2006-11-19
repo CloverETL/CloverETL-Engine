@@ -90,6 +90,12 @@ public abstract class EdgeBase {
 	 */
 	public abstract int getRecordCounter();
 
+    /**
+     * Gets the byteCounter attribute of the Edge object
+     * 
+     * @return The byteCounter value
+     */
+    public abstract long getByteCounter();
 
 	/**
 	 *  Description of the Method
