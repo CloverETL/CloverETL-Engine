@@ -34,6 +34,7 @@ public class ByteDataFieldTest  extends TestCase {
     
     ByteDataField byteField;
     
+    static final String TEST_STRING="THIS is test !@#$%^&*()ěščřžýíé";
     
 protected void setUp() {
     int i=0;
@@ -56,7 +57,8 @@ protected void tearDown() {
 	public void test_1_ByteDataField() {
         byteField.setValue(byteArray);
         assertEquals(byteArray, byteField.getByteArray());
-        System.out.println(byteField.toString());
+        byteField.fromString(TEST_STRING,"UTF-8");
+        assertEquals(TEST_STRING, byteField.toString("UTF-8"));
 	}
 
 
