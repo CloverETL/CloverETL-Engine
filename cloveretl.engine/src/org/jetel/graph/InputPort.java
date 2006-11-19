@@ -90,10 +90,18 @@ public interface InputPort {
 	/**
 	 *  Gets the number of records passed (so far) through this port
 	 *
-	 * @return    The RecordCounter value
+	 * @return    number of records which passed this port
 	 * @since     May 17, 2002
 	 */
 	public int getRecordCounter();
+    
+    /**
+     * Gets the number of bytes passed (so far) through this port
+     * 
+     * @return  number of bytes which passed this port
+     */
+    public long getByteCounter();
+    
 	
 	/**
 	 * Method which tests whether data is awaiting/ready to be read
