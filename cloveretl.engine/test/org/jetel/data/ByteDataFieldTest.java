@@ -19,6 +19,8 @@
 
 package org.jetel.data;
 
+import org.jetel.metadata.DataFieldMetadata;
+
 import junit.framework.TestCase;
 
 /**
@@ -27,8 +29,20 @@ import junit.framework.TestCase;
  */
 public class ByteDataFieldTest  extends TestCase {
 //TODO implement ByteDataFieldTest
-protected void setUp() { 
-
+    byte[] byteArray=new byte[]{0x01,0x02,0x03,0x04,0x05,0x40};
+    Byte[] ByteArray=new Byte[byteArray.length+1];
+    
+    ByteDataField byteField;
+    
+    
+protected void setUp() {
+    int i=0;
+    for(byte b: byteArray){
+        ByteArray[i++]=new Byte(b);
+    }
+    ByteArray[byteArray.length]=0x41;
+    
+    byteField=new ByteDataField(new DataFieldMetadata("byte",DataFieldMetadata.BYTE_FIELD,(short)10));
 }
 
 protected void tearDown() {
@@ -40,6 +54,9 @@ protected void tearDown() {
 	 *
 	 */
 	public void test_1_ByteDataField() {
+        byteField.setValue(byteArray);
+        assertEquals(byteArray, byteField.getByteArray());
+        System.out.println(byteField.toString());
 	}
 
 
@@ -48,6 +65,9 @@ protected void tearDown() {
 	 *
 	 */
 	public void test_2_ByteDataField() {
+        byteField.setValue(ByteArray);
+        System.out.println(byteField.toString());
+        
 	}
 
 	/**
@@ -55,6 +75,7 @@ protected void tearDown() {
 	 *
 	 */
 	public void test_1_setValue() {
+        
 	}
 
 	/**
