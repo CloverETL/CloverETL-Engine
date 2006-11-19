@@ -487,7 +487,7 @@ public class StringDataField extends DataField implements CharSequence{
 	    } while((length >> 7) > 0);
     	count++;
 
-		return value.length()*SIZE_OF_CHAR+count;
+		return length*SIZE_OF_CHAR+count;
 	}
 	
 	/**
