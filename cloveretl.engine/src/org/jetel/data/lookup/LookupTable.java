@@ -107,6 +107,27 @@ public interface LookupTable extends IGraphElement {
 	 */
 	public DataRecord getNext();
 	
+    
+    
+    /**
+     * Stores data into lookup-table under specified key
+     * 
+     * @param key
+     * @param data
+     * @return  true if success
+     * @since 19.11.2006
+     */
+    public boolean put(Object key, DataRecord data);
+    
+    
+    /**
+     * Removes data from lookup-table identified by provided key
+     * 
+     * @param key
+     * @return  true if success
+     * @since 19.11.2006
+     */
+    public boolean remove(Object key); 
 	
 	/**
 	 * Returns number of DataRecords found by last get() method call.<br>
