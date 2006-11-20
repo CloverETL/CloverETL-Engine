@@ -21,6 +21,7 @@ package org.jetel.lookup;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.security.InvalidAlgorithmParameterException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -178,16 +179,23 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	            lookupTable = new HashMap(DEFAULT_INITIAL_CAPACITY);
 	        }
 	    }
-		// populate the lookupTable (Map) with data
-		try {
-            while (dataParser.getNext(record) != null) {
-                DataRecord storeRecord=record.duplicate();
-            	lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+		/* populate the lookupTable (Map) with data
+         * if provided dataParser is not null, otherwise it is assumed that the lookup
+         * table will be populated later by calling put() method
+         */
+        
+        if (dataParser != null) {
+            try {
+                while (dataParser.getNext(record) != null) {
+                    DataRecord storeRecord = record.duplicate();
+                    lookupTable.put(new HashKey(indexKey, storeRecord),
+                            storeRecord);
+                }
+            } catch (JetelException e) {
+                throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
-        } catch (JetelException e) {
-            throw new ComponentNotReadyException(e.getMessage());
+            dataParser.close();
         }
-		dataParser.close();
 		numFound=0;
 	}
 	
@@ -305,6 +313,30 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     public boolean checkConfig() {
         return true;
     }
+    
+    /**
+     * @param   key not used
+     * @param   data Data to store in lookup table by using previously defined key
+     * @see org.jetel.data.lookup.LookupTable#put(java.lang.Object, org.jetel.data.DataRecord)
+     */
+    public boolean put(Object key,DataRecord data){
+        DataRecord storeRecord=data.duplicate();
+        lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+        return true;
+    }
 
+    /**
+     * @param   key a DataRecord object which will be used (together with previously
+     * defined key) for locating & deleting data)
+     * @see org.jetel.data.lookup.LookupTable#remove(java.lang.Object)
+     */
+    public boolean remove(Object key) {
+        if (key instanceof DataRecord) {
+            DataRecord storeRecord = (DataRecord) key;
+            return lookupTable.remove(new HashKey(indexKey, storeRecord))!=null;
+        }else{
+            throw new IllegalArgumentException("Requires key parameter of type "+DataRecord.class.getName());
+        }
+    }
 }
 
