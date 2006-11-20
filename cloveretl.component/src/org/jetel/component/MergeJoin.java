@@ -94,7 +94,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>type</b></td><td>"MERGE_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>join key specification in format<br>
- *    <tt>[driver_key_list1]{*[slave_key_list1]|[slave_key_list1]|...}</tt><br>
+ *    <tt>[driver_key_list]{*[slave_key_list1]|[slave_key_list2]|...}</tt><br>
  *    Each key list consists of comma-separated field names. In case any slave key list is missing,
  *    the component will use the sole driver key list instead of it.
  *    Order of slave key lists corresponds to order of slave input ports.
