@@ -514,4 +514,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		// TODO Auto-generated method stub
 		
 	}
+    
+    public boolean put(Object key,DataRecord value){
+        throw new UnsupportedOperationException("Operation put() not supported");
+    }
+    
+    public boolean remove(Object key){
+        throw new UnsupportedOperationException("Operation remove() not supported");
+    }
+    
 }
