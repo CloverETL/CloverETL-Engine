@@ -66,7 +66,8 @@ import org.xml.sax.helpers.DefaultHandler;
  *  <tr><td><b>type</b></td><td>"XML_EXTRACT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sourceUri</b></td><td>location of source XML data to process</td>
- *  <tr><td><i>subelement:</i><br><b>&lt;mapping&gt;</b></td><td></td>
+ *  <tr><td><b>useNestedNodes</b></td><td>true if nested unmapped XML elements will be used as data source</td>
+ *  <tr><td><b>mapping</b></td><td>&lt;mapping&gt;</td>
  *  </tr>
  *  </table>
  *
@@ -149,6 +150,7 @@ public class XMLExtract extends Node {
     private static final Log    LOG = LogFactory.getLog(XMLExtract.class);
 
     private static final String XML_SOURCEURI_ATTRIBUTE = "sourceUri";
+    private static final String XML_USENESTEDNODES_ATTRIBUTE = "useNestedNodes";
     private static final String XML_MAPPING_ATTRIBUTE = "mapping";
 
     private static final String XML_MAPPING = "Mapping";
@@ -168,6 +170,8 @@ public class XMLExtract extends Node {
     
     // Where the XML comes from
     private InputSource m_inputSource;
+    
+    private boolean useNestedNodes = true;
     
     /**
      * SAX Handler that will dispatch the elements to the different ports.
@@ -227,7 +231,7 @@ public class XMLExtract extends Node {
 
                 //sequence fields initialization
                 String sequenceFieldName = m_activeMapping.getSequenceField();
-                if(sequenceFieldName != null) {
+                if(sequenceFieldName != null && m_activeMapping.getOutRecord().hasField(sequenceFieldName)) {
                     Sequence sequence = m_activeMapping.getSequence();
                     DataField sequenceField = m_activeMapping.getOutRecord().getField(sequenceFieldName);
                     if(sequenceField.getType() == DataFieldMetadata.INTEGER_FIELD) {
@@ -242,7 +246,8 @@ public class XMLExtract extends Node {
                 }
             }
             
-            if (m_activeMapping != null) {
+            if(m_activeMapping != null //used only if we right now recognize new mapping element or if we want to use nested unmapped nodes as a source of data
+                    && (useNestedNodes || mapping != null)) {
                 // In a matched element (i.e. we are creating a DataRecord)
                 // Store all attributes as columns (this hasn't been
                 // used/tested)                
@@ -255,9 +260,8 @@ public class XMLExtract extends Node {
                        attrName = xmlCloverMap.get(attrName);
                     }
                     
-                    DataField field = m_activeMapping.getOutRecord().getField(attrName);
-                    if (field != null) {
-                        field.fromString(attributes.getValue(i));
+                    if (m_activeMapping.getOutRecord().hasField(attrName)) {
+                        m_activeMapping.getOutRecord().getField(attrName).fromString(attributes.getValue(i));
                     }
                 }
             }
@@ -286,8 +290,10 @@ public class XMLExtract extends Node {
                     localName = xml2clover.get(localName);
                 }
                 // Store the characters processed by the characters() call back
-                DataField field = m_activeMapping.getOutRecord().getField(localName);
-                if (field != null) {
+                //only if we have corresponding output field and we are on the right level or we want to use data from nested unmapped nodes
+                if (m_activeMapping.getOutRecord().hasField(localName) 
+                        && (useNestedNodes || m_level - 1 <= m_activeMapping.getLevel())) {
+                    DataField field = m_activeMapping.getOutRecord().getField(localName);
                     // If field is nullable and there's no character data set it
                     // to null
                     if (!m_hasCharacters) {
@@ -357,16 +363,16 @@ public class XMLExtract extends Node {
                                 m_activeMapping.setParentKey(null);
                             } else {
                                 for(int i = 0; i < parentKey.length; i++) {
-                                    DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
-                                    DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
-                                    if (generatedKeyField == null) {
+                                    boolean existGeneratedKeyField = generatedKey.length == 1 ? outRecord.hasField(generatedKey[0]) : outRecord.hasField(generatedKey[i]);
+                                    boolean existParentKeyField = m_activeMapping.getParent().getOutRecord().hasField(parentKey[i]);
+                                    if (!existGeneratedKeyField) {
                                         LOG
                                                 .warn(getId()
                                                 + ": XML Extract Mapping's generatedKey field was not found. "
                                                 + (generatedKey.length == 1 ? generatedKey[0] : generatedKey[i]));
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
-                                    } else if (parentKeyField == null) {
+                                    } else if (!existParentKeyField) {
                                         LOG
                                                 .warn(getId()
                                                 + ": XML Extract Mapping's parentKey field was not found. "
@@ -374,6 +380,8 @@ public class XMLExtract extends Node {
                                         m_activeMapping.setGeneratedKey(null);
                                         m_activeMapping.setParentKey(null);
                                     } else {
+                                        DataField generatedKeyField = generatedKey.length == 1 ? outRecord.getField(generatedKey[0]) : outRecord.getField(generatedKey[i]);
+                                        DataField parentKeyField = m_activeMapping.getParent().getOutRecord().getField(parentKey[i]);
                                         if(generatedKey.length != parentKey.length) {
                                             if(generatedKeyField.getType() != DataFieldMetadata.STRING_FIELD) {
                                                 LOG
@@ -615,6 +623,10 @@ public class XMLExtract extends Node {
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
             extract.setInputSource(new InputSource(xattribs.getString(XML_SOURCEURI_ATTRIBUTE)));
+            
+            if(xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
+                extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
+            }
             
             // Process the mappings
             NodeList nodes;
@@ -880,6 +892,10 @@ public class XMLExtract extends Node {
      */
     public void setInputSource(InputSource inputSource) {
         m_inputSource = inputSource;
+    }
+    
+    public void setUseNestedNodes(boolean useNestedNodes) {
+        this.useNestedNodes = useNestedNodes;
     }
     
     /**
