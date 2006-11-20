@@ -126,15 +126,17 @@ public class ByteDataField extends DataField implements Comparable{
     }
     
 	/**
-	 *  Sets the value of the field
+	 *  Sets the value of the field - accepts byte[], Byte, Byte[]
 	 *
-	 *@param  _value  The new Value value
+	 *@param  _value  The new value
 	 *@since          October 29, 2002
 	 */
 	public void setValue(Object value) {
         if(value == null) {
 		    setNull(true);
-        } else if(value instanceof Byte) {
+        }else if (value instanceof byte[]){
+            setValue((byte[])value);
+        }else if(value instanceof Byte) {
             setValue(((Byte) value).byteValue());
         } else if(value instanceof Byte[]) {
             //convert Byte[] into byte[]
