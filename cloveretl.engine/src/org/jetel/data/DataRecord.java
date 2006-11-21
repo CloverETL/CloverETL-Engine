@@ -310,6 +310,14 @@ public class DataRecord implements Serializable, Comparable {
 	    return fields[metadata.getFieldPosition(_name)];
 	}
 
+    /**
+     * Returns true if record contains a field with a given name.
+     * @param name
+     * @return
+     */
+    public boolean hasField(String name) {
+        return metadata.getField(name) != null;
+    }
 
 	/**
 	 *  An attribute that returns metadata object describing the record
