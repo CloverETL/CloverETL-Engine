@@ -54,7 +54,7 @@ protected void tearDown() {
 	 *  Test for @link org.jetel.data.ByteDataField.ByteDataField(DataFieldMetadata _metadata)
 	 *
 	 */
-	public void test_1_ByteDataField() {
+	public void test_1_setValue() {
         byteField.setValue(byteArray);
         assertEquals(byteArray, byteField.getByteArray());
         byteField.fromString(TEST_STRING,"UTF-8");
@@ -66,7 +66,7 @@ protected void tearDown() {
 	 *  Test for @link org.jetel.data.ByteDataField.ByteDataField(DataFieldMetadata _metadata, byte[] value)
 	 *
 	 */
-	public void test_2_ByteDataField() {
+	public void test_2_setValue() {
         byteField.setValue(ByteArray);
         System.out.println(byteField.toString());
         
@@ -76,15 +76,16 @@ protected void tearDown() {
 	 *  Test for @link org.jetel.data.ByteDataField.setValue(Object _value)
 	 *
 	 */
-	public void test_1_setValue() {
-        
+	public void test_3_setValue() {
+        byteField.setValue((Object)byteArray);
+        assertEquals(byteArray,byteField.getValue());
 	}
 
 	/**
 	 *  Test for @link org.jetel.data.ByteDataField.setValue(byte[] value)
 	 *
 	 */
-	public void test_2_setValue() {
+	public void test_4_setValue() {
 	}
 
 	/**
