@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph demonstrates functionality of NORMALIZER component with normalization specified by inline TransformLang source."
+name="Testing NORMALIZER">
+<Global>
+<Metadata fileURL="metadata/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node enabled="enabled" guiHeight="25" guiName="NORMALIZER" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
+<attr name="normalize">
+function transform(idx) {
+	if (idx == 1) {
+		return;
+	}
+	$OrderID := $OrderID;
+	$CustomerID := $CustomerID;
+	$EmployeeID := $EmployeeID;
+}
+
+function count() {
+	return 2;
+}
+</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/normalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="Metadata1" outPort="0 (INPUT1)" toNode="NORMALIZE:0"/>
+<Edge fromNode="NORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="Metadata1" outPort="0 (JOIN)" toNode="WRITER:0"/>
+</Phase>
+</Graph>
