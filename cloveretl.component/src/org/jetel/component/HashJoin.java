@@ -476,8 +476,6 @@ public class HashJoin extends Node {
 				if (!transformation.transform(inRecords, outRecords)) {
 					resultCode = Node.RESULT_ERROR;
 					resultMsg = transformation.getMessage();
-					transformation.finished();
-					setEOF(WRITE_TO_PORT);
 					return;
 				}
 				outPort.writeRecord(outRecords[0]);
