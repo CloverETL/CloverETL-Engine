@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline Java source."
+name="Testing NORMALIZER">
+<Global>
+<Metadata fileURL="metadata/orders.fmt" id="Metadata1"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
+<Node key="EmployeeID" order="ignore" enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" type="DENORMALIZER">
+<attr name="denormalize">
+import org.jetel.component.DataRecordDenormalize;
+import org.jetel.data.*;
+
+public class DenormalizeTest extends DataRecordDenormalize {
+	private DataRecord lastRecord;
+	public DenormalizeTest() {
+		lastRecord = null;
+	}
+
+	public boolean addInputRecord(DataRecord inRecord) {
+		lastRecord = inRecord;
+		return true;
+	}
+	public boolean getOutputRecord(DataRecord outRecord) {
+		outRecord.copyFrom(lastRecord);
+		return true;
+	}
+}
+</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="Metadata1" outPort="0 (INPUT1)" toNode="DENORMALIZE:0"/>
+<Edge fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="Metadata1" outPort="0 (JOIN)" toNode="WRITER:0"/>
+</Phase>
+</Graph>
