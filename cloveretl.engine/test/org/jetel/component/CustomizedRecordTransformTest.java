@@ -2,19 +2,18 @@
 package org.jetel.component;
 
 import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import junit.framework.TestCase;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
-import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.TransformException;
@@ -22,8 +21,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.sequence.PrimitiveSequence;
-
-import junit.framework.TestCase;
 
 public class CustomizedRecordTransformTest extends TestCase {
 	
@@ -193,6 +190,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addSequenceToFieldRule("*.Age", graph.getSequence("ID"));
 		transform.addSequenceToFieldRule(4, "ID");
 		transform.addSequenceToFieldRule("${1.Na*}", "ID.currentValueString()");
+		transform.addSequenceToFieldRule(1, 2, "${seq.ID.nextValueString()}");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -212,6 +210,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out1.getField(1).getValue(), 2.0);
 		assertEquals(out.getField(4).getValue(), 3);
 		assertEquals(out1.getField(0).getValue().toString(), "3");
+		assertEquals(out1.getField(2).getValue().toString(), "4");
 		System.out.println(record.toString());
 		System.out.println(record1.toString());
 		System.out.println(out.toString());
