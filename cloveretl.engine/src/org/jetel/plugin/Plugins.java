@@ -50,11 +50,11 @@ public class Plugins {
     /**
      * Collection of PluginDescriptor(s).
      */
-    private static Map pluginDescriptors = new HashMap();
+    private static Map pluginDescriptors;
 
-    private static Map activePlugins = new HashMap();
+    private static Map activePlugins;
     
-    private static Map deactivePlugins = new HashMap();
+    private static Map deactivePlugins;
 
     private static File[] pluginDirectories;
     
@@ -63,6 +63,11 @@ public class Plugins {
     }
     
     public static void init(String directory) {
+        //remove all previous settings
+        pluginDescriptors = new HashMap();
+        activePlugins = new HashMap();
+        deactivePlugins = new HashMap();
+
         if(directory == null) {
             directory = Defaults.DEFAULT_PLUGINS_DIRECTORY;
         }
