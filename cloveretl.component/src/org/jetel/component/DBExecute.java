@@ -61,9 +61,10 @@ import org.w3c.dom.Text;
  *  <tr><td><b>type</b></td><td>"DB_EXECUTE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>dbSQL</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database.
- *  If several statements should be executed, separate them by [;] (semicolon). They will be executed one by one.</td>
+ *  <tr><td><b>sqlQuery</b></td><td>SQL/DML/DDL statement(s) which has to be executed on database.
+ *  If several statements should be executed, separate them by [;] (semicolon - default value; see sqlStatementDelimiter). They will be executed one by one.</td>
  *  </tr>
+ *  <tr><td><b>sqlStatementDelimiter</b><br><i>optional</i></td><td>delimiter of sql statement in sqlQuery attribute</td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url</td>
  *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
  * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
@@ -74,7 +75,7 @@ import org.w3c.dom.Text;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" dbSQL="drop table employee_z"/&gt;</pre>
+ *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" sqlQuery="drop table employee_z"/&gt;</pre>
  *  <pre>&lt;Node id="DATABASE_RUN" type="DB_EXECUTE" dbConnection="NorthwindDB" inTransaction="Y"&gt;
  *  &lt;SQLCode&gt;
  *	create table testTab (
