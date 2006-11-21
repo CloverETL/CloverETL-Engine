@@ -201,4 +201,14 @@
 		<parameter id="className" value="org.jetel.component.StructureWriter"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="NORMALIZER"/>
+		<parameter id="className" value="org.jetel.component.Normalizer"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="DENORMALIZER"/>
+		<parameter id="className" value="org.jetel.component.Denormalizer"/>
+	</extension>
+
 </plugin>
