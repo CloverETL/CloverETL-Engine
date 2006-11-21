@@ -124,4 +124,54 @@ public final class ByteBufferUtils {
     		}
     	}
     }
+    
+    /**
+     * Encodes length (int value) into set of bytes occupying
+     * least space
+     * 
+     * @param buffer    ByteBuffer to which encode length
+     * @param length
+     * @since 21.11.2006
+     */
+    public static final void encodeLength(ByteBuffer buffer,int length){
+        if (length <= Byte.MAX_VALUE) {
+            buffer.put((byte) length);
+        } else {
+
+            do {
+                buffer.put((byte) (0x80 | (byte) length));
+                length = length >> 7;
+            } while ((length >> 7) > 0);
+            buffer.put((byte) length);
+        }
+    }
+    
+    /**
+     * Decode previously encoded length (int value)
+     * 
+     * @param buffer    ByteBuffer from which decode values
+     * @return
+     * @since 21.11.2006
+     * @see org.jetel.util.ByteBufferUtils.encodeLength()
+     */
+    public static final int decodeLength(ByteBuffer buffer){
+        int length=0; 
+        int size=0;
+        int offset = 0;
+        
+        size = buffer.get();
+        if (size>0){
+            return size;
+        }
+        
+        while(size<0) {
+           length = length | ((size & 0x7F) << (offset /*7 * count++*/));
+           offset+=7;
+           size = buffer.get();
+        }
+        length = length | ((size & 0x7F) << (offset));
+        
+       return length;
+    }
+    
 }
