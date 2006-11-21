@@ -207,7 +207,7 @@ public class ByteDataField extends DataField implements Comparable{
 
 
 	/**
-	 *  Gets the decimal value represented by this object (as Decimal object)
+	 *  Gets the value represented by this object (as byte[] object)
 	 *
 	 *@return    The Value value
 	 *@since     October 29, 2002
