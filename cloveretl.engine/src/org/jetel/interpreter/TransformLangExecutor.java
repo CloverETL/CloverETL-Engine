@@ -1639,7 +1639,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         // open call frame
         stack.pushFuncCallFrame();
         // store call parameters from stack as local variables
-        for (int i=executionNode.numParams-1;i>=0; stack.storeLocalVar(i--,data[i]));
+        for (int i=executionNode.numParams-1;i>=0; i--) {
+        	stack.storeLocalVar(i, data[i]);
+        }
        
         // execute function body
         // loop execution
