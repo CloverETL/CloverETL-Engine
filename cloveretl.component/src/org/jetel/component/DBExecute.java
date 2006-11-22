@@ -101,7 +101,8 @@ public class DBExecute extends Node {
 	private static final String XML_INTRANSACTION_ATTRIBUTE = "inTransaction";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
 	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
-	private static final String XML_DBSQL_ATTRIBUTE = "sqlQuery";
+	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
+    private static final String XML_DBSQL_ATTRIBUTE = "dbSQL";
 	private static final String XML_URL_ATTRIBUTE = "url";
     private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
     private static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
@@ -321,7 +322,7 @@ public class DBExecute extends Node {
         
 		// use attribute for single SQL command, SQLCode element for multiple
 		if (this.dbSQL.length == 1) {
-			xmlElement.setAttribute(XML_DBSQL_ATTRIBUTE, this.dbSQL[0]);
+			xmlElement.setAttribute(XML_SQLQUERY_ATTRIBUTE, this.dbSQL[0]);
 		} else {
 			Document doc = xmlElement.getOwnerDocument();
 			Element childElement = doc.createElement(ComponentXMLAttributes.XML_ATTRIBUTE_NODE_NAME);
@@ -355,7 +356,9 @@ public class DBExecute extends Node {
         String query = null;
 
         try {
-            if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
+            if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)) {
+                query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
+            } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
                 query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
             } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
                 query = xattribs
