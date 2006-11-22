@@ -39,6 +39,11 @@ import org.jetel.util.StringUtils;
  * @see         org.jetel.metadata.DataRecordMetadata
  */
 public class DataFieldMetadata implements Serializable {
+	
+	public static int INTEGER_LENGTH = 10;
+	public static int LONG_LENGTH = 63;
+	public static int DOUBLE_LENGTH = 1024 + 1074;
+	public static int DOUBLE_SCALE = 1074;
 
 	/**
 	 *  Name of the field
@@ -586,6 +591,148 @@ public class DataFieldMetadata implements Serializable {
 	
 	public int hashCode(){
 		return (int)this.fieldType;
+	}
+	
+	/**
+	 * This method checks if value from this field can be put safe in another field
+	 * 
+	 * @param anotherField
+	 * @return true if conversion is save, false in another case
+	 */
+	public boolean isSubtype(DataFieldMetadata anotherField){
+		int anotherFieldLength;
+		int anotherFieldScale;
+		switch (fieldType) {
+		case BYTE_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+				return true;
+			default:
+				return false;
+			}
+		case STRING_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+				return true;
+			default:
+				return false;
+			}
+		case DATE_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+			case DATE_FIELD:
+			case DATETIME_FIELD:
+				return true;
+			default:
+				return false;
+			}
+		case DATETIME_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+			case DATETIME_FIELD:
+				return true;
+			default:
+				return false;
+			}
+		case INTEGER_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+			case INTEGER_FIELD:
+			case LONG_FIELD:
+			case NUMERIC_FIELD:
+				return true;
+			case DECIMAL_FIELD:
+				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+				if (anotherFieldLength - anotherFieldScale >= INTEGER_LENGTH) {
+					return true;
+				}else{
+					return false;
+				}
+			default:
+				return false;
+			}
+		case LONG_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+			case LONG_FIELD:
+			case NUMERIC_FIELD:
+				return true;
+			case DECIMAL_FIELD:
+				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+				if (anotherFieldLength - anotherFieldScale >= LONG_LENGTH) {
+					return true;
+				}else{
+					return false;
+				}
+			default:
+				return false;
+			}
+		case NUMERIC_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+			case NUMERIC_FIELD:
+				return true;
+			case DECIMAL_FIELD:
+				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+				if (anotherFieldLength >= DOUBLE_LENGTH && anotherFieldScale >= DOUBLE_SCALE) {
+					return true;
+				}else{
+					return false;
+				}
+			default:
+				return false;
+			}
+		case DECIMAL_FIELD:
+			switch (anotherField.getType()) {
+			case BYTE_FIELD:
+			case STRING_FIELD:
+				return true;
+			case DECIMAL_FIELD:
+				anotherFieldLength = Integer.valueOf(anotherField.getProperty(LENGTH_ATTR));
+				anotherFieldScale = Integer.valueOf(anotherField.getProperty(SCALE_ATTR));
+				if (anotherFieldLength >= Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) && 
+						anotherFieldScale >= Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR))) {
+					return true;
+				}else{
+					return false;
+				}
+			case NUMERIC_FIELD:
+				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) <= DOUBLE_LENGTH && 
+						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) <= DOUBLE_SCALE ) {
+					return true;
+				}else{
+					return false;
+				}
+			case INTEGER_FIELD:
+				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - 
+						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) 
+						<= INTEGER_LENGTH ) {
+					return true;
+				}else{
+					return false;
+				}
+			case LONG_FIELD:
+				if (Integer.valueOf(fieldProperties.getProperty(LENGTH_ATTR)) - 
+						Integer.valueOf(fieldProperties.getProperty(SCALE_ATTR)) 
+						<= LONG_LENGTH ) {
+					return true;
+				}else{
+					return false;
+				}
+			default:
+				return false;
+			}
+		}
+		return false;
 	}
 
 }
