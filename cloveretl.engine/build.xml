@@ -7,10 +7,16 @@
 	  </classpath>
 	</taskdef>
 	
+	<!-- =========================== VERSIONs =========================== -->
+	<property name="major_version" value="2"/>
+	<property name="minor_version" value="0"/>
+	<property name="revision_version" value="2"/>
+	
+	
 	<!-- =========================== DEFAULT DIRECTORIES =========================== -->
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/javadoc"/>
-	<property name="dir.dist.default" value="${basedir}/dist"/>
+	<property name="dir.dist.default" value="${basedir}/build"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.src" value="src"/>
@@ -29,15 +35,83 @@
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
 	</target>
 
-
 	<target name="plugin.build" description="Private target for building usage. Don't call direct.">
 		<echo message="Building plugin - ${plugin.dir}"/>
 		<ant dir="${plugin.dir}" inheritAll="false">
 			<property name="dir.dist" value="${dir.dist}"/>
 			<property name="major_version" value="${major_version}"/>
 			<property name="minor_version" value="${minor_version}"/>
+			<property name="revision_version" value="${revision_version}"/>
 		</ant>
 	</target>
+
+	<target name="dist.src"  description="Creates source distribution">
+		<property name="src.distribution.dir" value="${basedir}/dist.src"/>
+		<delete dir="${src.distribution.dir}" />
+		<mkdir dir="${src.distribution.dir}/cloverETL"/>
+		
+		<!-- call source target for all plugins -->
+		<foreach list="${plugin.list}" inheritall="true" target="plugin.src" param="plugin.dir"/>
+
+		<!-- copy source for engine itself -->
+		<property name="src.distribution.dir.engine" value="${src.distribution.dir}/cloverETL/cloveretl.engine"/>
+
+		<copy todir="${src.distribution.dir.engine}/src">
+			<fileset dir="${dir.src}" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/docs">
+			<fileset dir="${dir.docs}" />
+		</copy>
+		
+		<copy todir="${src.distribution.dir.engine}/lib">
+			<fileset dir="${dir.lib}" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/plugins">
+			<fileset dir="plugins" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/test">
+			<fileset dir="test" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}">
+			<fileset file="ant-contrib.jar" />
+			<fileset file="build.xml" />
+			<fileset file="build.properties" />
+		</copy>
+		
+		<!-- create zip package for source distribution -->
+		<zip destfile="${src.distribution.dir}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${src.distribution.dir}"/>
+
+		<delete dir="${src.distribution.dir}/cloverETL"/>
+	</target>
+
+	<target name="plugin.src" description="Private target for copy source of plugin. Don't call direct.">
+		<echo message="Copy source from plugin - ${plugin.dir}"/>
+		<ant dir="${plugin.dir}" target="dist.src" inheritAll="false">
+			<property name="dist.src" value="${src.distribution.dir}/cloverETL"/>
+		</ant>
+	</target>
+
+	<target name="dist.bin" depends="build" description="Creates binary distribution">
+		<property name="distribution.dir" value="${basedir}/dist"/>
+		<delete dir="${distribution.dir}" />
+		
+		<!-- binary distribution -->
+		<mkdir dir="${distribution.dir}/cloverETL"/>
+
+		<copy todir="${distribution.dir}/cloverETL">
+			<fileset dir="${dir.dist}" />
+		</copy>
+
+		<!-- create zip distribution package -->
+		<zip destfile="${distribution.dir}/cloverETL.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${distribution.dir}"/>
+
+		<delete dir="${distribution.dir}/cloverETL"/>
+	</target>
+
 
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
@@ -128,6 +202,7 @@
 		<buildnumber file="build.number" />
 		<input message="Engine - Please enter MAJOR release number:"	addproperty="major_version" />
 		<input message="Engine - Please enter MINOR release number:"	addproperty="minor_version" />
+		<input message="Engine - Please enter REVISION release number:"	addproperty="revision_version" />
 	</target>
 	
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
@@ -161,9 +236,10 @@
 
 	<target name="javadoc" depends="checkproperties,set_revision" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
+		<property name="dist.subdir" value="cloverETL"/>
 		<delete dir="${dir.doc}" />
-		<mkdir dir="${dir.doc}" />
-		<javadoc destdir="${dir.doc}" packagenames="*"
+		<mkdir dir="${dir.doc}/${dist.subdir}" />
+		<javadoc destdir="${dir.doc}/${dist.subdir}" packagenames="*"
 			author="true">
 			<sourcepath path="${dir.src}"/>
 			<sourcepath path="../cloveretl.component/src"/>
@@ -182,6 +258,11 @@
 				<![CDATA[<address>Copyright &#169; 2002-2006 Javlin consulting s.r.o</address>]]>
 			</bottom>
 		</javadoc>
+		
+		<!-- create zip package for javadoc -->
+		<zip destfile="${dir.doc}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
+
+		<delete dir="${dir.doc}/${dist.subdir}"/>
 	</target>
 	
 </project>
