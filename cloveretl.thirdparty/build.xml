@@ -16,6 +16,23 @@
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
+	<target name="dist.src"  description="Creates source distribution">
+		<condition property="dist.src" value="dist.src">
+			<not>
+				<isset property="dist.src"/>
+			</not>
+		</condition>
+
+		<copy todir="${dist.src}/cloveretl.thirdparty/src">
+			<fileset dir="${dir.src}" />
+		</copy>
+		
+		<copy todir="${dist.src}/cloveretl.thirdparty">
+			<fileset file="build.xml" />
+			<fileset file="plugin.xml" />
+		</copy>
+	</target>
+
 	<!-- The "clean" target deletes previously compiled files. -->
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
 		<delete dir="${dir.bin}"/>
@@ -96,6 +113,7 @@
 		<buildnumber file="build.number" />
 		<input message="Components - Please enter MAJOR release number:"	addproperty="major_version" />
 		<input message="Components - Please enter MINOR release number:"	addproperty="minor_version" />
+		<input message="Engine - Please enter REVISION release number:"	addproperty="revision_version" />
 	</target>
 	
 	<!-- make a temp copy of source - necessary for substitute release number constants in source code -->
