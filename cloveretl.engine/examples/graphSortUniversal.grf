@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph illustrates usage of Sort component. It sorts data based on specified key. &#10;It also shows how to use parameters/global properties within graph.&#10; &#10;Execute it using org.jetel.main.runGraph -P:sortKey=&lt;..your.fieldName..&gt; -P:metadata=&lt;..metadata filename..&gt; -P:data=&lt;..datafile..&gt; &#10;" name="TestingSort">
+<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph illustrates usage of Sort component. It sorts data based on specified key. &#10;It also shows how to use parameters/global properties within graph.&#10; &#10;Execute it using org.jetel.main.runGraph -P:sortKey=&lt;..your.fieldName..&gt; -P:metadata=&lt;..metadata filename..&gt; -P:data=&lt;..datafile..&gt; &#10;" guiVersion="1.5" licenseType="Evaluation license" modified="Wed Nov 22 12:21:01 CET 2006" name="TestingSort" revision="1.1">
 <Global>
 <Metadata fileURL="${metadata}" id="InMetadata"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Property id="GraphParameter1" name="outputdata" value="output/customers.sorted"/>
 <Property id="GraphParameter2" name="sortKey" value="CUSTOMERID"/>
 <Property id="GraphParameter3" name="metadata" value="metadata/customers.fmt"/>
-<Property id="GraphParameter4" name="data" value="data/Customers.txt"/>
+<Property id="GraphParameter4" name="data" value="data/customers_delimited.txt"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}/${data}" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
