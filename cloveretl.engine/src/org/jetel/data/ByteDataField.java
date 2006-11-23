@@ -261,6 +261,9 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since     October 29, 2002
 	 */
 	public String toString() {
+		if (value == null) {
+			return "";
+		}
 		return new String(value);
 	}
 
