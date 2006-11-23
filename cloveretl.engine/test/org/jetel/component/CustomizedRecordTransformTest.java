@@ -14,7 +14,9 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
 import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
+import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
@@ -48,7 +50,10 @@ public class CustomizedRecordTransformTest extends TestCase {
 		metadata.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
 		metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
 		metadata.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
-		metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+		metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.DECIMAL_FIELD, "\n"));
+		metadata.getField("Value").setFieldProperties(new Properties());
+		metadata.getField("Value").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, "100");
+		metadata.getField("Value").getFieldProperties().setProperty(DataFieldMetadata.SCALE_ATTR, "10");
 		
 		metadata1=new DataRecordMetadata("in1",DataRecordMetadata.DELIMITED_RECORD);
 		
@@ -78,7 +83,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		metaOut1.getField("Born").setFormatStr("dd-MM-yyyy");
 		metaOut1.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
 		metaOut1.getField("Age").setFieldProperties(new Properties());
-		metaOut1.getField("Age").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DataFieldMetadata.INTEGER_LENGTH) + 1);
+		metaOut1.getField("Age").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DataFieldMetadata.INTEGER_LENGTH+1));
 		metaOut1.getField("Age").getFieldProperties().setProperty(DataFieldMetadata.SCALE_ATTR, "1");
 
 		record = new DataRecord(metadata);
@@ -116,16 +121,17 @@ public class CustomizedRecordTransformTest extends TestCase {
 	
 	public void test_fieldToField() {
 		System.out.println("Field to field test:");
-		transform.setFieldPolicy(PolicyType.CONTROLLED);
+//		transform.setFieldPolicy(PolicyType.CONTROLLED);
+//		transform.setFieldPolicy(PolicyType.STRICT);
 		transform.addFieldToFieldRule("0.1", "0.1");
 		transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
 		transform.addFieldToFieldRule("${out.0.Name}", "${in.1.3}");
 		transform.addFieldToFieldRule(2, "1.2");
 		transform.addFieldToFieldRule(1, 3, "${1.3}");
-		transform.addFieldToFieldRule(0, "Value", "${in.1.Age}");
 		transform.addFieldToFieldRule("*.City", 0, 2);
 		transform.addFieldToFieldRule("{out1.3}", 0, 3);
 		transform.addFieldToFieldRule("${out.1.V*}", 0, "Value");
+		transform.addFieldToFieldRule(1, 1, "in.Value");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -141,19 +147,18 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
-		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
-		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
-		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
-		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal((Double)record1.getField(1).getValue(),4,1));
-		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
-		assertEquals(out1.getField(1).getValue(),0.0);
-		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
-		assertEquals(out1.getField(3).getValue(), record1.getField(3).getValue());
-		assertEquals(out1.getField(4).getValue(), record1.getField(4).getValue());
 		System.out.println(record.toString());
 		System.out.println(record1.toString());
 		System.out.println(out.toString());
 		System.out.println(out1.toString());
+		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
+		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
+		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
+		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out1.getField(3).getValue(), record1.getField(3).getValue());
+		assertEquals(out1.getField(4).getValue(), ((Decimal)record.getField(4).getValue()).getInt());
+		assertEquals(out1.getField(1).getValue(), record.getField(4).getValue());
 	}
 
 	public void test_constantToField(){
@@ -185,7 +190,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out.getField(3).getValue(), new GregorianCalendar(1973,3,23).getTime());
 		assertEquals(out.getField(1).getValue(), 45.55);
 		assertEquals(out1.getField(4).getValue(), 100);
-		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(new BigDecimal("36474.738393")).getDouble());
+		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(36474.738393,DataFieldMetadata.INTEGER_LENGTH + 1,1));
 		assertEquals(out.getField(2).getValue().toString(), "Prague");
 		assertEquals(out1.getField(2).getValue().toString(), "Prague");
 		assertEquals(out1.getField(3).getValue(), new GregorianCalendar(2006,10,16).getTime());
@@ -252,7 +257,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 			e.printStackTrace();
 		}
 		assertEquals((Double)out.getField(1).getValue(), DecimalFactory.getDecimal(properties.getProperty("$ADULT")).getDouble());
-		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(properties.getProperty("$ADULT")).getDouble());
+		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),DataFieldMetadata.INTEGER_LENGTH +1,1));
 		assertEquals(out1.getField(0).getValue().toString(), graph.getGraphProperties().getStringProperty("WORKSPACE"));
 		assertEquals(out.getField(2).getValue().toString(), properties.getProperty("$MyCity"));
 		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphProperties().getStringProperty("YourCity"));
