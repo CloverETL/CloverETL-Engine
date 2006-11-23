@@ -274,6 +274,21 @@ public class DataRecordMetadata implements Serializable {
 		}
 	}
 
+	/**
+	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
+	 *
+	 * @param  fieldNo      Description of the Parameter
+	 * @return              The field type as String
+	 */
+	public String getFieldTypeAsString(int fieldNo) {
+		DataFieldMetadata fieldMetadata = getField(fieldNo);
+		if (fieldMetadata != null) {
+			return fieldMetadata.getTypeAsString();
+		} else {
+			return DataFieldMetadata.type2Str(DataFieldMetadata.UNKNOWN_FIELD);
+		}
+	}
+
 
 	/**
 	 *  Gets the Map where keys are FieldNames and values Field Order Numbers
