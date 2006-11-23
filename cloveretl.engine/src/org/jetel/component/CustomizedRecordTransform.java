@@ -182,7 +182,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param field input record's field name
 	 */
 	public void addFieldToFieldRule(String patternOut, int recNo, String field){
-		addFieldToFieldRule(patternOut, recNo + DOT + field);
+		addFieldToFieldRule(patternOut, String.valueOf(recNo) + DOT + field);
 	}
 	
 	/**
@@ -630,6 +630,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 		String ruleString;
 		String[] outFields = new String[0];
 		String[] inFields;
+		DataFieldMetadata inField;
+		DataFieldMetadata outField;
+		boolean checkTypes;
 		//iteration over each user given rule
 		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
@@ -663,26 +666,31 @@ public class CustomizedRecordTransform implements RecordTransform {
 						transformMap.put(outFields[i], rule);
 					}else{//type == Rule.FIELD
 						try {
-							if (fieldPolicy == PolicyType.STRICT && 
-									targetMetadata[getRecNo(field)].getFieldType(getFieldNo(field)) 
-									!= sourceMetadata[getRecNo(inFields[0])].getFieldType(getFieldNo(inFields[0]))){
+							outField = targetMetadata[getRecNo(field)].getField(getFieldNo(field));
+							inField = sourceMetadata[getRecNo(inFields[0])].getField(getFieldNo(inFields[0]));
+							//check if both fields are of type DECIMAL, if yes inField must be subtype of outField
+							if (outField.getType() == inField.getType()){
+								if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD ){
+									checkTypes = inField.isSubtype(outField);
+								}else{
+									checkTypes = true;
+								}
+							}else {
+								checkTypes = false;
+							}
+							if (fieldPolicy == PolicyType.STRICT && !checkTypes){
 								logger.warn("Found fields with the same names but other types: ");
 								logger.warn(targetMetadata[getRecNo(field)].getName() + DOT + 
-										targetMetadata[getRecNo(field)].getField(getFieldNo(field)).getName() + 
-										" type - " + targetMetadata[getRecNo(field)].getFieldType(getFieldNo(field)));
+										outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
 								logger.warn(sourceMetadata[getRecNo(inFields[0])].getName() + DOT + 
-										sourceMetadata[getRecNo(inFields[0])].getField(getFieldNo(inFields[0])).getName() + 
-										" type - " + sourceMetadata[getRecNo(inFields[0])].getFieldType(getFieldNo(inFields[0])));
+										inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
 							}else if (fieldPolicy == PolicyType.CONTROLLED && 
-									!sourceMetadata[getRecNo(inFields[0])].getField(getFieldNo(inFields[0]))
-									.isSubtype(targetMetadata[getRecNo(field)].getField(getFieldNo(field)))){
+									!inField.isSubtype(outField)){
 								logger.warn("Found fields with the same names but incompatible types: ");
 								logger.warn(targetMetadata[getRecNo(field)].getName() + DOT + 
-										targetMetadata[getRecNo(field)].getField(getFieldNo(field)).getName() + 
-										" type - " + targetMetadata[getRecNo(field)].getFieldType(getFieldNo(field)));
+										outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
 								logger.warn(sourceMetadata[getRecNo(inFields[0])].getName() + DOT + 
-										sourceMetadata[getRecNo(inFields[0])].getField(getFieldNo(inFields[0])).getName() + 
-										" type - " + sourceMetadata[getRecNo(inFields[0])].getFieldType(getFieldNo(inFields[0])));
+										inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
 							}else{
 								rule.setValue(inFields[0]);
 								transformMap.put(outFields[i], rule);
@@ -761,36 +769,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 					index = StringUtils.findString(outFieldsName[i][j],
 							inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (fieldPolicy == PolicyType.STRICT && 
-								targetMetadata[i].getFieldType(j) != sourceMetadata[i].getFieldType(index)){
-							logger.warn("Found fields with the same names but other types: ");
-							logger.warn(targetMetadata[i].getName() + DOT + 
-									targetMetadata[i].getField(j).getName() + 
-									" type - " + targetMetadata[i].getFieldType(j));
-							logger.warn(sourceMetadata[i].getName() + DOT + 
-									sourceMetadata[i].getField(index).getName() + 
-									" type - " + sourceMetadata[i].getFieldType(index));
-						}else if (fieldPolicy == PolicyType.CONTROLLED && 
-								!sourceMetadata[i].getField(index).isSubtype(targetMetadata[i].getField(j))){
-							logger.warn("Found fields with the same names but incompatible types: ");
-							logger.warn(targetMetadata[i].getName() + DOT + 
-									targetMetadata[i].getField(j).getName() + 
-									" type - " + targetMetadata[i].getFieldType(j));
-							logger.warn(sourceMetadata[i].getName() + DOT + 
-									sourceMetadata[i].getField(index).getName() + 
-									" type - " + sourceMetadata[i].getFieldType(index));
-						}else{//map fields
-							rule = transformMap.remove(String.valueOf(i) + DOT + j);
-							if (rule == null) {
-								rule = new Rule(Rule.FIELD, String.valueOf(i) + DOT
-										+ index);
-							} else {
-								rule.setType(Rule.FIELD);
-								rule.setValue(String.valueOf(i) + DOT + index);
-							}
-							transformMap.put(String.valueOf(i) + DOT + j, rule);
+						if (putMapping(i, j, i, index, transformMap)){
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
+							break;
 						}
 					}
 				}				
@@ -804,36 +786,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findString(outFieldsName[i][j],
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (fieldPolicy == PolicyType.STRICT && 
-									targetMetadata[i].getFieldType(j) != sourceMetadata[k].getFieldType(index)){
-								logger.warn("Found fields with the same names but other types: ");
-								logger.warn(targetMetadata[i].getName() + DOT + 
-										targetMetadata[i].getField(j).getName() + 
-										" type - " + targetMetadata[i].getFieldType(j));
-								logger.warn(sourceMetadata[k].getName() + DOT + 
-										sourceMetadata[k].getField(index).getName() + 
-										" type - " + sourceMetadata[i].getFieldType(index));
-							}else if (fieldPolicy == PolicyType.CONTROLLED && 
-									!sourceMetadata[k].getField(index).isSubtype(targetMetadata[i].getField(j))){
-								logger.warn("Found fields with the same names but incompatible types: ");
-								logger.warn(targetMetadata[i].getName() + DOT + 
-										targetMetadata[i].getField(j).getName() + 
-										" type - " + targetMetadata[i].getFieldType(j));
-								logger.warn(sourceMetadata[i].getName() + DOT + 
-										sourceMetadata[k].getField(index).getName() + 
-										" type - " + sourceMetadata[k].getFieldType(index));
-							}else{//map fields
-								rule = transformMap.remove(String.valueOf(i) + DOT	+ j);
-								if (rule == null) {
-									rule = new Rule(Rule.FIELD, String.valueOf(k)
-											+ DOT + index);
-								} else {
-									rule.setType(Rule.FIELD);
-									rule.setValue(String.valueOf(k) + DOT + index);
-								}
-								transformMap.put(String.valueOf(i) + DOT + j, rule);
+							if (putMapping(i, j, i, index, transformMap)){
 								outFieldsName[i][j] = null;
-								inFieldsName[i][index] = null;
+								inFieldsName[k][index] = null;
 								break;
 							}
 						}
@@ -848,36 +803,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 					index = StringUtils.findStringIgnoreCase(
 							outFieldsName[i][j], inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (fieldPolicy == PolicyType.STRICT && 
-								targetMetadata[i].getFieldType(j) != sourceMetadata[i].getFieldType(index)){
-							logger.warn("Found fields with the same names but other types: ");
-							logger.warn(targetMetadata[i].getName() + DOT + 
-									targetMetadata[i].getField(j).getName() + 
-									" type - " + targetMetadata[i].getFieldType(j));
-							logger.warn(sourceMetadata[i].getName() + DOT + 
-									sourceMetadata[i].getField(index).getName() + 
-									" type - " + sourceMetadata[i].getFieldType(index));
-						}else if (fieldPolicy == PolicyType.CONTROLLED && 
-								!sourceMetadata[i].getField(index).isSubtype(targetMetadata[i].getField(j))){
-							logger.warn("Found fields with the same names but incompatible types: ");
-							logger.warn(targetMetadata[i].getName() + DOT + 
-									targetMetadata[i].getField(j).getName() + 
-									" type - " + targetMetadata[i].getFieldType(j));
-							logger.warn(sourceMetadata[i].getName() + DOT + 
-									sourceMetadata[i].getField(index).getName() + 
-									" type - " + sourceMetadata[i].getFieldType(index));
-						}else{//map fields
-							rule = transformMap.remove(String.valueOf(i) + DOT + j);
-							if (rule == null) {
-								rule = new Rule(Rule.FIELD, String.valueOf(i) + DOT
-										+ index);
-							} else {
-								rule.setType(Rule.FIELD);
-								rule.setValue(String.valueOf(i) + DOT + index);
-							}
-							transformMap.put(String.valueOf(i) + DOT + j, rule);
+						if (putMapping(i, j, i, index, transformMap)){
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
+							break;
 						}
 					}
 				}				
@@ -891,36 +820,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findStringIgnoreCase(
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (fieldPolicy == PolicyType.STRICT && 
-									targetMetadata[i].getFieldType(j) != sourceMetadata[k].getFieldType(index)){
-								logger.warn("Found fields with the same names but other types: ");
-								logger.warn(targetMetadata[i].getName() + DOT + 
-										targetMetadata[i].getField(j).getName() + 
-										" type - " + targetMetadata[i].getFieldType(j));
-								logger.warn(sourceMetadata[i].getName() + DOT + 
-										sourceMetadata[k].getField(index).getName() + 
-										" type - " + sourceMetadata[i].getFieldType(index));
-							}else if (fieldPolicy == PolicyType.CONTROLLED && 
-									!sourceMetadata[i].getField(index).isSubtype(targetMetadata[i].getField(j))){
-								logger.warn("Found fields with the same names but incompatible types: ");
-								logger.warn(targetMetadata[i].getName() + DOT + 
-										targetMetadata[i].getField(j).getName() + 
-										" type - " + targetMetadata[i].getFieldType(j));
-								logger.warn(sourceMetadata[i].getName() + DOT + 
-										sourceMetadata[k].getField(index).getName() + 
-										" type - " + sourceMetadata[k].getFieldType(index));
-							}else{//map fields
-								rule = transformMap.remove(String.valueOf(i) + DOT	+ j);
-								if (rule == null) {
-									rule = new Rule(Rule.FIELD, String.valueOf(k)
-											+ DOT + index);
-								} else {
-									rule.setType(Rule.FIELD);
-									rule.setValue(String.valueOf(k) + DOT + index);
-								}
-								transformMap.put(String.valueOf(i) + DOT + j, rule);
+							if (putMapping(i, j, i, index, transformMap)){
 								outFieldsName[i][j] = null;
-								inFieldsName[i][index] = null;
+								inFieldsName[k][index] = null;
 								break;
 							}
 						}
@@ -928,6 +830,72 @@ public class CustomizedRecordTransform implements RecordTransform {
 				}
 			}
 		}
+	}
+	
+	/**
+	 * This method puts mapping into given output and input field to transform
+	 * 	map if theese fields have correct types due to policy type
+	 * 
+	 * @param outRecNo number of record from output metadata
+	 * @param outFieldNo number of field from output metadata
+	 * @param inRecNo number of record from input metadata
+	 * @param inFieldNo number of field from input metadata
+	 * @param transformMap
+	 * @return true if mapping was put into map, false in other case
+	 */
+	private boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
+			Map<String, Rule> transformMap){
+		Rule rule;
+		boolean checkTypes;
+		//true, if fields have the same type and if the type is DECIMAL 
+		//in field has to be subtype of out field
+		if (targetMetadata[outRecNo].getFieldType(outFieldNo) == 
+			sourceMetadata[inRecNo].getFieldType(inFieldNo)){
+			if (targetMetadata[outRecNo].getFieldType(outFieldNo) == 
+				DataFieldMetadata.DECIMAL_FIELD ){
+				checkTypes = sourceMetadata[inRecNo].getField(inFieldNo)
+				.isSubtype(targetMetadata[outRecNo].getField(outFieldNo));
+			}else{
+				checkTypes = true;
+			}
+		}else {
+			checkTypes = false;
+		}
+		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
+			logger.warn("Found fields with the same names but other types: ");
+			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+					targetMetadata[outRecNo].getField(outFieldNo).getName() + 
+					" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
+					+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+					sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
+					" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
+					+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+		}else if (fieldPolicy == PolicyType.CONTROLLED && 
+				!sourceMetadata[inRecNo].getField(inFieldNo).isSubtype(
+						targetMetadata[outRecNo].getField(outFieldNo))){
+			logger.warn("Found fields with the same names but incompatible types: ");
+			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+					targetMetadata[outRecNo].getField(outFieldNo).getName() + 
+					" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
+					+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+					sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
+					" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
+					+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+		}else{//map fields
+			rule = transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
+			if (rule == null) {
+				rule = new Rule(Rule.FIELD, String.valueOf(inRecNo)
+						+ DOT + inFieldNo);
+			} else {
+				rule.setType(Rule.FIELD);
+				rule.setValue(String.valueOf(inRecNo) + DOT + inFieldNo);
+			}
+			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
+			return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -1166,7 +1134,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param metadata
 	 * @return maximal length of metadatas
 	 */
-	private int maxNumFields(DataRecordMetadata[] metadata){
+	protected int maxNumFields(DataRecordMetadata[] metadata){
 		int numFields = 0;
 		for (int i = 0; i < metadata.length; i++) {
 			if (metadata[i].getNumFields() > numFields) {
@@ -1182,7 +1150,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField recNo.FieldNo
 	 * @return record number
 	 */
-	private Integer getRecNo(String recField){
+	protected Integer getRecNo(String recField){
 		return Integer.valueOf(recField.substring(0, recField.indexOf(DOT)));
 	}
 	
@@ -1192,8 +1160,21 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField
 	 * @return field number
 	 */
-	private Integer getFieldNo(String recField){
+	protected Integer getFieldNo(String recField){
 		return Integer.valueOf(recField.substring(recField.indexOf(DOT) + 1));
+	}
+	
+	protected String getDecimalParams(DataFieldMetadata field){
+		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD){
+			return "";
+		}
+		StringBuilder params = new StringBuilder(5);
+		params.append('(');
+		params.append(field.getProperty(DataFieldMetadata.LENGTH_ATTR));
+		params.append(',');
+		params.append(field.getProperty(DataFieldMetadata.SCALE_ATTR));
+		params.append(')');
+		return params.toString();
 	}
 	
 	/**
