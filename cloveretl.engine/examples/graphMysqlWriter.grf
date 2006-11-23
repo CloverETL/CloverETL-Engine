@@ -1,19 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of MySQL Writer Component" guiVersion="1.5" licenseType="Evaluation license" modified="Wed Nov 22 12:11:27 CET 2006" name="graphSystemExecute" revision="1.1">
 <Global>
-<Metadata id="Metadata0">
-<Record _recordDelimiter="" name="defaultRecordName" type="delimited">
-<Field delimiter="\t" locale="cs.CZ" name="first_name" nullable="true" type="string"/>
-<Field delimiter="\n" locale="cs.CZ" name="last_name" nullable="true" type="string"/>
-</Record>
-</Metadata>
+<Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Property id="GraphParameter1" name="ENGINE" value="/home/avackova/home/eclipse/cloverETL/cloverETL"/>
 <Property id="GraphParameter2" name="SYSTEM" value="linux"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
-<Node database="test" dbTable="employee" enabled="enabled" guiHeight="25" guiName="MYSQL_WRITER" guiWidth="50" guiX="195" guiY="20" hostname="koule" id="MYSQL_WRITER" myload="${ENGINE}/plugins/org.jetel.component/lib/${SYSTEM}/myload" type="MYSQL_DATA_WRITER" username="test"/>
+<Node database="test" dbTable="employees" enabled="enabled" guiHeight="25" guiName="MYSQL_WRITER" guiWidth="50" guiX="195" guiY="20" hostname="koule" id="MYSQL_WRITER" myload="${ENGINE}/plugins/org.jetel.component/lib/${SYSTEM}/myload" type="MYSQL_DATA_WRITER" username="test"/>
 <Edge fromNode="INPUT:0" guiBendpoints="" id="Edge1" inPort="0 (MYSQL_WRITER)" metadata="Metadata0" outPort="0 (INPUT)" toNode="MYSQL_WRITER:0"/>
 </Phase>
 </Graph>
