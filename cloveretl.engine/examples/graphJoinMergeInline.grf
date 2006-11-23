@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph demonstrates how to use MERGE_JOIN component for 3way join." name="Testing Hash Joiner">
+<Global>
+<Metadata fileURL="metadata/orders.fmt" id="InMetadata1"/>
+<Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
+<Metadata fileURL="metadata/joinedOrders3way.fmt" id="OutMetadata"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" id="INPUT1" type="DELIMITED_DATA_READER"
+fileURL="${WORKSPACE}/data/orders.dat"
+/>
+<Node enabled="enabled" id="INPUT2" type="DELIMITED_DATA_READER"
+fileURL="${WORKSPACE}/data/employees.dat"
+/>
+<Node enabled="enabled" id="INPUT3" type="DELIMITED_DATA_READER"
+fileURL="${WORKSPACE}/data/employees.dat"
+/>
+
+<Node enabled="enabled" id="SORT1" type="SORT"
+sortKey="EmployeeID" 
+/>
+<Node enabled="enabled" id="SORT2" type="SORT"
+sortKey="EmployeeID" 
+/>
+<Node enabled="enabled" id="SORT3" type="SORT"
+sortKey="ReportsTo" 
+/>
+
+<Edge fromNode="INPUT1:0" id="INEDGE1s" metadata="InMetadata1"  toNode="SORT1:0"/>
+<Edge fromNode="INPUT2:0" id="INEDGE2s" metadata="InMetadata2"  toNode="SORT2:0"/>
+<Edge fromNode="INPUT3:0" id="INEDGE3s" metadata="InMetadata2"  toNode="SORT3:0"/>
+
+<Node enabled="enabled" id="JOIN" type="MERGE_JOIN"
+joinKey="EmployeeID*EmployeeID|ReportsTo" joinType="leftOuter"
+slaveDuplicates="true"
+><attr name="transform">
+import org.jetel.component.DataRecordTransform;
+import org.jetel.data.*;
+
+
+public class reformatJoinTest extends DataRecordTransform{
+
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		if (source[0] != null) {
+			target[0].getField(0).setValue(source[0].getField(0).getValue());	// OrderID
+  			target[0].getField(1).setValue(source[0].getField(1).getValue());	// CustomerID
+			target[0].getField(2).setValue(source[0].getField(2).getValue());	// EmployeeID
+		} else {
+		    target[0].getField(1).setValue("*MISSING*");
+		}
+		if (source[1]!=null){
+			target[0].getField(4).setValue(source[1].getField(1).toString() + ", " + source[1].getField(2).toString());	// Name
+		} else {
+			target[0].getField(4).setValue("*MISSING*");
+		}
+		if (source[2]!=null){
+			target[0].getField(5).setValue(source[2].getField(1).toString() + ", " + source[2].getField(2).toString());	// Subordinate
+		} else {
+			target[0].getField(5).setValue("*MISSING*");
+		}
+		target[0].getField(3).setValue("*MISSING*");
+		return true;
+	}
+}
+
+</attr>
+</Node>
+
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
+
+<Edge fromNode="SORT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (INPUT1)" toNode="JOIN:0"/>
+<Edge fromNode="SORT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (JOIN)" metadata="InMetadata2" outPort="0 (INPUT2)" toNode="JOIN:1"/>
+<Edge fromNode="SORT3:0" guiBendpoints="" id="INEDGE3" inPort="2 (JOIN)" metadata="InMetadata2" outPort="0 (INPUT3)" toNode="JOIN:2"/>
+
+<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="WRITER:0"/>
+
+</Phase>
+</Graph>
