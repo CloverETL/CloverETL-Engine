@@ -204,8 +204,9 @@ public class LdapParser implements Parser {
 	        	 * We assume that all search result have the same
 	        	 * class hierarchy, so we can take an one of them.
 	        	 */
-	        	// TODO (if dnList.size() == 0) ... 	        	
-				initTransMap((String)dnList.get(0));
+	        	if (dnList.size() != 0) {  	        	
+	        		initTransMap((String)dnList.get(0));
+	        	}
 			} catch (Exception e) {
 				throw new ComponentNotReadyException("Bad metadata name in LdapReader component");
 			}
