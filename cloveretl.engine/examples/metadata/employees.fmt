@@ -16,5 +16,5 @@
 	<Field name="Extension" type="string" delimiter=";"/>
 	<Field name="Photo" type="string" delimiter=";"/>
 	<Field name="Memo" type="string" delimiter=";"/>
-	<Field name="ReportsTo" type="numeric" delimiter="\n" format="#" />
+	<Field name="ReportsTo" type="string" delimiter="\n"/>
 </Record>
