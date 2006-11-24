@@ -147,7 +147,9 @@ public class ByteDataField extends DataField implements Comparable{
                 result[i++] = b.byteValue();
             }
             setValue(result);
-		} else {
+		}else if (value instanceof DataField){
+			fromString(((DataField)value).toString());
+		}else {
 		    throw new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
 		}
 	}

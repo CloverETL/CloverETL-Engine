@@ -155,6 +155,8 @@ public class StringDataField extends DataField implements CharSequence{
             setValue((CharSequence) value);
         } else if (value instanceof char[]) {
             setValue(new String((char[]) value));
+        } else if (value instanceof DataField) {
+        	setValue(value.toString());
         } else {
             throw new IllegalArgumentException(getMetadata().getName() + " field can not be set from class " + value.getClass().getName());
         }
