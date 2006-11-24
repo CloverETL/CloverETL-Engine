@@ -31,6 +31,7 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
@@ -111,11 +112,12 @@ import org.w3c.dom.Element;
  *    <tr><td><b>type</b></td><td>"HASH_JOIN"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>join key specification in format<br>
- *    <tt>[driver_key_list1]{*[slave_key_list1]}|[driver_key_list2]{*[slave_key_list2]}|...</tt><br>
- *    Each key list consists of comma-separated field names. In case slave key list is missing,
- *    it is supposed to be identical with corresponding driver key list. Order of driver/slave key list pairs corresponds
- *    to order of slave input ports. In case driver key list is missing for some slave, the component
- *    will use first driver key list.</td></tr>
+ *    <tt>mapping1#mapping2...</tt>, where <tt>mapping</tt> has format
+ *    <tt>driver_field1=slave_field1|driver_field2=slave_field2|...</tt><br>
+ *    In case slave_field is missing it is supposed to be the same as the driver_field. When driver_field
+ *    is missing (ie there's nothin before '='), it will be taken from the first mapping. 
+ *    Order of mappings corresponds to order of slave input ports. In case a mapping is empty or missing for some slave, the component
+ *    will use first mapping instead of it.</td></tr>
  *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td>
@@ -172,6 +174,9 @@ public class HashJoin extends Node {
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
+	// legacy attributes
+	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
+	private static final String XML_SLAVEOVERRIDEKEY_ATTRIBUTE = "slaveOverrideKey";
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "HASH_JOIN";
@@ -285,7 +290,7 @@ public class HashJoin extends Node {
 			}
 			driverJoiners = replJoiners;
 		}
-		if (driverJoiners.length < slaveCnt) {
+		if (slaveJoiners.length < slaveCnt) {
 			logger.warn("Slave keys aren't specified for all slave inputs - deducing missing keys");
 			String[][] replJoiners = new String[slaveCnt][];
 			for (int i = 0; i < slaveJoiners.length; i++) {
@@ -537,29 +542,7 @@ public class HashJoin extends Node {
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
 
-		String joinStr = "";
-		for (int i = 0; true; i++) {
-			for (int j = 0; true; j++) {
-				joinStr += driverJoiners[i][j];
-				if (j == driverJoiners[i].length - 1) {
-					break;	// leave inner loop
-				}
-				joinStr += ",";
-			}
-			joinStr += "*";
-			for (int j = 0; true; j++) {
-				joinStr += slaveJoiners[i][j];
-				if (j == slaveJoiners[i].length - 1) {
-					break;	// leave inner loop
-				}
-				joinStr += ",";
-			}
-			if (i == driverJoiners.length - 1) {
-				break;	// leave outer loop
-			}
-			joinStr += "|";
-		}
-		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, joinStr);
+		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(driverJoiners, slaveJoiners));
 
 
 		xmlElement.setAttribute(XML_JOINTYPE_ATTRIBUTE,
@@ -580,6 +563,31 @@ public class HashJoin extends Node {
 		}
 	}
 
+	private static String createJoinSpec(String[][] driverJoiners, String[][] slaveJoiners) {
+		if (driverJoiners.length != slaveJoiners.length) {
+			return null;
+		}
+
+		String joinStr = "";
+		for (int i = 0; true; i++) {
+			if (driverJoiners[i].length != slaveJoiners[i].length) {
+				return null;
+			}
+			for (int j = 0; true; j++) {
+				joinStr += driverJoiners[i][j] + "=" + slaveJoiners[i][j];
+				if (j == driverJoiners[i].length - 1) {
+					break;	// leave inner loop
+				}
+				joinStr += Defaults.Component.KEY_FIELDS_DELIMITER;
+			}
+			if (i == driverJoiners.length - 1) {
+				break;	// leave outer loop
+			}
+			joinStr += "#";
+		}
+		return joinStr;
+	}
+
 	/**
 	 * Parses join string.
 	 * @param joinBy Join string
@@ -587,19 +595,37 @@ public class HashJoin extends Node {
 	 * First element of outer array is for driver key lists, the second one is for slave key lists.
 	 * @throws XMLConfigurationException
 	 */
-	private static String[][][] parseJoiners(String joinBy) throws XMLConfigurationException {
+	private static String[][][] parseJoiners(String joinBy) throws XMLConfigurationException {	
 		String[][][] res = new String[2][][];
-		String[] pairs = joinBy.split("\\|");
-		res[0] = new String[pairs.length][];
-		res[1] = new String[pairs.length][];
+		String[] mappings = joinBy.split("#");
+		res[0] = new String[mappings.length][];
+		res[1] = new String[mappings.length][];
 
-		for (int i = 0; i < pairs.length; i++) {
-			String[] keys = pairs[i].split("\\*");
-			if (keys.length < 1 && keys.length > 2) {
-				throw new XMLConfigurationException("Invalid join pair: " + pairs[i]);
+		for (int i = 0; i < mappings.length; i++) {
+			if (i > 0 && mappings[i].length() == 0) {
+				// use first mapping instead of the empty one
+				res[0][i] = res[0][0];
+				res[1][i] = res[1][0];
+				continue;
 			}
-			res[0][i] = keys[0].split(",");
-			res[1][i] = keys[keys.length == 1 ? 0 : 1].split(",");
+			String[] pairs = mappings[i].split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			res[0][i] = new String[pairs.length];	// master key
+			res[1][i] = new String[pairs.length];	// slave key
+			for (int j = 0; j < pairs.length; j++) {
+				String[] fields = pairs[j].split("=", 2);
+				if (fields.length == 0) {
+					throw new XMLConfigurationException("Invalid key mapping: " + mappings[i]);
+				}
+				if (fields.length == 1 || fields[1].length() == 0) {	// only master field is specified
+					res[0][i][j] = res[1][i][j] = fields[0];	// use it for both master and slave
+				} else if (fields[0].length() == 0 && i > 0) {			// only slave key is specified
+					res[0][i][j] = res[0][0][j];	// inherit master from first mapping 
+					res[1][i][j] = fields[1];
+				} else {
+					res[0][i][j] = fields[0];
+					res[1][i][j] = fields[1];
+				}
+			}
 		}
 		return res;
 	}
@@ -630,6 +656,21 @@ public class HashJoin extends Node {
 			}
 
 			String[][][] joiners = parseJoiners(xattribs.getString(XML_JOINKEY_ATTRIBUTE, ""));
+
+			// legacy attributes handling {
+			if (!xattribs.exists(XML_JOINTYPE_ATTRIBUTE) && xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE, false)) {
+				joinType = Join.LEFT_OUTER;
+			}
+			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
+				String[] slaveKeys = xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				if (slaveKeys.length != joiners[0][0].length) {
+					throw new XMLConfigurationException("Driver key and slave key doesn't match");
+				}
+				for (int i = 0; i < joiners[1].length; i++) {
+					joiners[1][i] = slaveKeys; 
+				}
+			}
+			// }
 
 			join = new HashJoin(
 					xattribs.getString(XML_ID_ATTRIBUTE),
@@ -663,7 +704,7 @@ public class HashJoin extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         //TODO
         return status;
-    }
+	}
 
 	public String getType(){
 		return COMPONENT_TYPE;
@@ -741,6 +782,7 @@ public class HashJoin extends Node {
 			resultMsg = "thread aborted";
 			resultCode = RESULT_ABORTED;
 		}
-	}	
+	}
+
 }
 

@@ -32,7 +32,8 @@ sortKey="ReportsTo"
 <Edge fromNode="INPUT3:0" id="INEDGE3s" metadata="InMetadata2"  toNode="SORT3:0"/>
 
 <Node enabled="enabled" id="JOIN" type="MERGE_JOIN"
-joinKey="EmployeeID*EmployeeID|ReportsTo" joinType="leftOuter"
+joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo"
+joinType="leftOuter"
 slaveDuplicates="true"
 ><attr name="transform">
 import org.jetel.component.DataRecordTransform;

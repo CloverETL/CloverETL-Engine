@@ -19,7 +19,8 @@ fileURL="${WORKSPACE}/data/customers_delimited.txt"
 />
 
 <Node enabled="enabled" id="JOIN" type="HASH_JOIN"
-joinKey="EmployeeID*EmployeeID|CustomerID*CUSTOMERID" joinType="leftOuter"
+joinKey="EmployeeID=EmployeeID#CustomerID=CUSTOMERID"
+joinType="leftOuter"
 slaveDuplicates="true"
 ><attr name="transform">
 import org.jetel.component.DataRecordTransform;
