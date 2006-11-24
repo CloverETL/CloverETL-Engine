@@ -263,7 +263,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since     October 29, 2002
 	 */
 	public String toString() {
-		if (value == null) {
+		if (isNull()) {
 			return "";
 		}
 		return new String(value);
@@ -280,6 +280,9 @@ public class ByteDataField extends DataField implements Comparable{
      * @since 19.11.2006
      */
     public String toString(String charset) {
+        if (isNull()) {
+            return "";
+        }
         try{
             return new String(value,charset);
         }catch(UnsupportedEncodingException ex){
