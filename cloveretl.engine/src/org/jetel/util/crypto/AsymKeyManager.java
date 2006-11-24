@@ -20,9 +20,10 @@
 package org.jetel.util.crypto;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -32,6 +33,7 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 
 /**
  * Class for generating, storing and loading keys for asymmetric cryptography
@@ -41,7 +43,7 @@ import java.security.spec.X509EncodedKeySpec;
  */
 public class AsymKeyManager {
 	private static final String alg="RSA";
-	private static final int keyLen = 1024;
+	public static final int keyLen = 1024;
 	private static final int maxKeySize = 4096;
 
 	/**
@@ -52,45 +54,38 @@ public class AsymKeyManager {
 	 * @throws IOException
 	 * @throws NoSuchAlgorithmException
 	 */
-	public static KeyPair generatePair(String pubFile, String privFile) throws IOException, NoSuchAlgorithmException {
+	public static KeyPair generatePair(OutputStream pubOutput, OutputStream privOutput) throws IOException, NoSuchAlgorithmException {
 		KeyPairGenerator kpgen = KeyPairGenerator.getInstance(alg);
 		kpgen.initialize(keyLen);
 		KeyPair pair = kpgen.generateKeyPair();
-		if (pubFile != null) {
-			FileOutputStream outStream = new FileOutputStream(pubFile);
-			outStream.write(pair.getPublic().getEncoded());
-			outStream.close();
+		if (pubOutput != null) {
+			pubOutput.write(pair.getPublic().getEncoded());
+			pubOutput.close();
 		}
-		if (privFile != null) {
-			FileOutputStream outStream = new FileOutputStream(privFile);
-			outStream.write(pair.getPrivate().getEncoded());
-			outStream.close();
+		if (privOutput != null) {
+			privOutput.write(pair.getPrivate().getEncoded());
+			privOutput.close();
 		}
 		return pair;
 	}
 
 	/**
-	 * Loads public key from file.
+	 * Loads public key from a given input stream.
 	 * @param pubFile
 	 * @return
 	 * @throws IOException
 	 * @throws InvalidKeySpecException
 	 * @throws NoSuchAlgorithmException
 	 */
-	public static PublicKey readPublic(String pubFile) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
-		try {
-			FileInputStream inStream = new FileInputStream(pubFile);
-			byte[] buf = new byte[maxKeySize];
-			int n = inStream.read(buf);
-			byte[] encoded = new byte[n];
-			for (int i = 0; i < n; i++) {
-				encoded[i] = buf[i];
-			}
-			X509EncodedKeySpec kspec = new X509EncodedKeySpec(buf);
-			return KeyFactory.getInstance(alg).generatePublic(kspec);
-		} catch (FileNotFoundException e) {
-			return null;
+	public static PublicKey readPublic(InputStream inStream) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
+		byte[] buf = new byte[maxKeySize];
+		int n = inStream.read(buf);
+		byte[] encoded = new byte[n];
+		for (int i = 0; i < n; i++) {
+			encoded[i] = buf[i];
 		}
+		X509EncodedKeySpec kspec = new X509EncodedKeySpec(buf);
+		return KeyFactory.getInstance(alg).generatePublic(kspec);
 	}
 
 	/**
@@ -101,30 +96,38 @@ public class AsymKeyManager {
 	 * @throws NoSuchAlgorithmException
 	 * @throws IOException
 	 */
-	public static PrivateKey readPrivate(String privFile) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
-		try {
-			FileInputStream inStream = new FileInputStream(privFile);
-			byte[] buf = new byte[maxKeySize];
-			int n = inStream.read(buf);
-			byte[] encoded = new byte[n];
-			for (int i = 0; i < n; i++) {
-				encoded[i] = buf[i];
-			}
-			PKCS8EncodedKeySpec kspec = new PKCS8EncodedKeySpec(buf);
-			return KeyFactory.getInstance(alg).generatePrivate(kspec);
-		} catch (FileNotFoundException e) {
-			return null;
+	public static PrivateKey readPrivate(InputStream inStream) throws InvalidKeySpecException, NoSuchAlgorithmException, IOException {
+		byte[] buf = new byte[maxKeySize];
+		int n = inStream.read(buf);
+		byte[] encoded = new byte[n];
+		for (int i = 0; i < n; i++) {
+			encoded[i] = buf[i];
 		}
+		PKCS8EncodedKeySpec kspec = new PKCS8EncodedKeySpec(buf);
+		return KeyFactory.getInstance(alg).generatePrivate(kspec);
 	}
 
 	/* Usage example for AsymKeyManager, CombinedDecriptor, CombinedEncryptor */ 
 	public static void main(String args[]) throws NoSuchAlgorithmException, IOException, InvalidKeySpecException {
 		try {
-			CombinedEncryptor enc = new CombinedEncryptor(AsymKeyManager.readPrivate("key.priv"));
-			CombinedDecryptor dec = new CombinedDecryptor(AsymKeyManager.readPublic("key.pub"), enc.getHiddenSecret());
-			byte[] indata = new byte[]{1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0};
-			byte[] outdata = dec.doFinal(enc.doFinal(indata));
-			outdata = null;
+            //generate pair of public and private keys
+            AsymKeyManager.generatePair(new FileOutputStream("key.pub"), new FileOutputStream("key.priv"));
+
+            //data definition
+            byte[] indata = new byte[]{1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0};
+            
+            //encryption
+			CombinedEncryptor enc = new CombinedEncryptor(AsymKeyManager.readPrivate(new FileInputStream("key.priv")));
+            byte[] symetricKey = enc.getHiddenSecret();            
+            byte[] encryptedData = enc.doFinal(indata);
+            
+            //decryption
+			CombinedDecryptor dec = new CombinedDecryptor(AsymKeyManager.readPublic(new FileInputStream("key.pub")), symetricKey);
+			byte[] outdata = dec.doFinal(encryptedData);
+
+            //print results
+            System.out.println(Arrays.toString(outdata));
+            System.out.println(enc.getHiddenSecret().length);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
