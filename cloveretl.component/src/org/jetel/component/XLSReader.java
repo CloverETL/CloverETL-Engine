@@ -32,6 +32,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.XLSDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -224,10 +225,11 @@ public class XLSReader extends Node {
 	 * 
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
-	@Override
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		XLSReader aXLSReader = null;

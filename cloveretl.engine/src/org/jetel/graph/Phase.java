@@ -25,6 +25,8 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 
 /**
@@ -174,8 +176,12 @@ public class Phase implements Comparable {
 	 *
 	 * @return    Description of the Return Value
 	 */
-	public boolean checkConfig() {
-		return true;
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        for(Node node : getNodes()) {
+            node.checkConfig(status);
+        }
+
+        return status;
 	}
 
 

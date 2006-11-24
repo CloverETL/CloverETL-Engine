@@ -6,6 +6,7 @@
 package org.jetel.graph;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
 
@@ -75,7 +76,7 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#checkConfig()
      */
-    public abstract boolean checkConfig();
+    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#init()

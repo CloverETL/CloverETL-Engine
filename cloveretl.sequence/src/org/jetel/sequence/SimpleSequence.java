@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -276,8 +277,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
         }
 	}
 
-    public boolean checkConfig() {
-        return true;
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
     }
 
 }

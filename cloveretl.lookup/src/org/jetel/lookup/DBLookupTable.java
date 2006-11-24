@@ -32,6 +32,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
@@ -498,8 +499,10 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#checkConfig()
      */
-    public boolean checkConfig() {
-        return true;
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
     }
 
 	public int getCacheNumber() {

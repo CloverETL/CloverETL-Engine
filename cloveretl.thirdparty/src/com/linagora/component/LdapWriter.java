@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -348,9 +349,11 @@ public class LdapWriter extends Node {
 	}
 
 	
-	public boolean checkConfig(){
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 	
 	/**
 	 * return the type (identifier) of the

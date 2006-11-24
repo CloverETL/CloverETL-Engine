@@ -28,6 +28,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -261,9 +262,11 @@ public class Normalizer extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 
 	/**
 	 * Sets normalization parameters.

@@ -29,6 +29,7 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.parser.DataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -346,9 +347,11 @@ public class DataReader extends Node {
 	 *
 	 * @return    Description of the Return Value
 	 */
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 	
 	public String getType(){
 		return COMPONENT_TYPE;
