@@ -147,14 +147,16 @@ public class ByteDataField extends DataField implements Comparable{
                 result[i++] = b.byteValue();
             }
             setValue(result);
-		}else if (value instanceof DataField){
-			fromString(((DataField)value).toString());
 		}else {
 		    throw new BadDataFormatException("Not a byte/byte_array " + value.getClass().getName());
 		}
 	}
 
 
+	@Override
+	public void setValue(DataField _value) {
+		fromString(((DataField)_value).toString());
+	}
 	/**
 	 *  Sets the value of the field
 	 *

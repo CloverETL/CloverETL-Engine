@@ -133,9 +133,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
             setValue((Number) _value);
         } else if (_value instanceof Decimal) {
             setValue((Decimal) _value);
-		}else if (_value instanceof DataField){
-			setValue(((DataField)_value).getValue());
-		}else {
+		} else {
 		    throw new BadDataFormatException(getMetadata().getName() + " field can not be set with this object - " + _value.toString(), _value.toString());
 		}
 	}
