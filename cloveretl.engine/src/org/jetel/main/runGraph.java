@@ -35,6 +35,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
@@ -78,6 +79,52 @@ public class runGraph {
     public final static String PASSWORD_SWITCH = "-pass";
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
 	
+    
+    /**
+     * Clover.ETL engine initialization. Should be called only once.
+     * @param pluginsRootDirectory directory path, where plugins specification is located 
+     *        (can be null, then is used constant from Defaults.DEFAULT_PLUGINS_DIRECTORY)
+     * @param password password for encrypting some hidden part of graphs
+     *        <br>i.e. connections passwordss can be encrypted
+     */
+    public static void initEngine(String pluginsRootDirectory, String password) {
+        
+        //init password decryptor
+        if(password != null) {
+            Enigma.getInstance().init(password);
+        }
+        
+        //init framework constants
+        Defaults.init();
+
+        //init clover plugins system
+        Plugins.init(pluginsRootDirectory);
+      
+    }
+    
+    
+    /**
+     * Instantiates transformation graph from a given input stream and presets a given properties.
+     * @param inStream
+     * @param properties
+     * @return
+     * @throws XMLConfigurationException
+     * @throws GraphConfigurationException
+     */
+    public static TransformationGraph loadGraph(InputStream inStream, Properties properties) throws XMLConfigurationException, GraphConfigurationException {
+        TransformationGraph graph = new TransformationGraph();
+        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
+        graph.loadGraphProperties(properties);
+
+        graphReader.read(inStream);
+        
+        if(!graph.init()) {
+            throw new GraphConfigurationException("Graph initialization failed.");
+        }
+        
+        return graph;
+    }
+    
 	/**
 	 *  Description of the Method
 	 *
@@ -86,18 +133,20 @@ public class runGraph {
 	public static void main(String args[]) {
 		boolean verbose = false;
         boolean loadFromSTDIN = false;
-		Properties properties=new Properties();
+		Properties properties = new Properties();
 		int trackingInterval=-1;
 		String pluginsRootDirectory = null;
-        Defaults.init();
+        String password = null;
 		
 		System.out.println("***  CloverETL framework/transformation graph runner ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
 		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
 		System.out.println();
+        
 		if (args.length < 1) {
 			printHelp();
 			System.exit(-1);
 		}
+        
 		// process command line arguments
 		for (int i = 0; i < args.length; i++) {
 			if (args[i].startsWith(VERBOSE_SWITCH)) {
@@ -127,7 +176,7 @@ public class runGraph {
                 pluginsRootDirectory = args[i];
             }else if (args[i].startsWith(PASSWORD_SWITCH)){
                 i++;
-                Enigma.getInstance().init(args[i]);
+                password = args[i]; 
             }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
@@ -136,10 +185,10 @@ public class runGraph {
             }
 		}
 		
-        //init clover plugins system
-        Plugins.init(pluginsRootDirectory);
+        //engine initialization - should be called only once
+        runGraph.initEngine(pluginsRootDirectory, password);
         
-		// load graph definition from XML
+		//prapere input stream with XML graph definition
         InputStream in = null;
         if (loadFromSTDIN) {
             System.out.println("Graph definition loaded from STDIN");
@@ -164,21 +213,16 @@ public class runGraph {
                 System.exit(-1);
             }
         }
-		TransformationGraph graph = new TransformationGraph();
-        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-        graph.loadGraphProperties(properties);
+        
+        //loading graph from the input stream
+        TransformationGraph graph = null;
+        try {
+            graph = runGraph.loadGraph(in, properties);
 
-		try {
-			graphReader.read(in);
-            
-			if(!graph.init()) {
-			    System.exit(-1); //graph initialization failed
+            if (verbose) {
+                //this can be called only after graph.init()
+                graph.dumpGraphConfiguration();
             }
-            
-			if (verbose) {
-				//this can be called only after graph.init()
-				graph.dumpGraphConfiguration();
-			}
         }catch(XMLConfigurationException ex){
             logger.error("Error in reading graph from XML !", ex);
             if (verbose) {
@@ -191,14 +235,15 @@ public class runGraph {
                 ex.printStackTrace(System.err);
             }
             System.exit(-1);
-		} catch (RuntimeException ex) {
-			logger.error("Error during graph initialization !", ex);
+        } catch (RuntimeException ex) {
+            logger.error("Error during graph initialization !", ex);
             if (verbose) {
                 ex.printStackTrace(System.err);
             }
-			System.exit(-1);
-		}
-		// set tracking interval
+            System.exit(-1);
+        }
+        
+        // set tracking interval
 		if(trackingInterval!=-1){
 			graph.setTrackingInterval(trackingInterval*1000);
 		}
