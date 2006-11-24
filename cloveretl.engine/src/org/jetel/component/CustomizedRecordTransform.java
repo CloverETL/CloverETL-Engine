@@ -31,7 +31,6 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Numeric;
@@ -91,7 +90,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected TransformationGraph graph;
 	
 	protected PolicyType fieldPolicy = PolicyType.LENIENT;
-	static Log logger = LogFactory.getLog(CustomizedRecordTransform.class);
+	protected Log logger;
 	protected String errorMessage;
 	
 	/**
@@ -118,19 +117,20 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 
 	/**
+	 * @param logger
+	 */
+	public CustomizedRecordTransform(Log logger) {
+		this.logger = logger;
+	}
+
+	/**
 	 * Mathod for adding field mapping rule
 	 * 
 	 * @param patternOut output fields' pattern
 	 * @param patternIn input field's pattern
 	 */
 	public void addFieldToFieldRule(String patternOut, String patternIn) {
-		String outField = resolveField(patternOut);
-		String inField = resolveField(patternIn);
-		if (outField != null && inField != null) {
-			rules.put(outField, String.valueOf(Rule.FIELD) + COLON + inField);
-		}else{
-			throw new IllegalArgumentException("Wrong field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.FIELD) + COLON + patternIn);
 	}
 
 	/**
@@ -207,12 +207,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign (can be string representation of any type)
 	 */
 	public void addConstantToFieldRule(String patternOut, String value){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + value);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
 	
 	/**
@@ -222,12 +217,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, int value){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + value);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
 	
 	/**
@@ -237,12 +227,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, double value){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field,String.valueOf(Rule.CONSTANT) + COLON + value);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut,String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
 
 	/**
@@ -252,13 +237,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Date value){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + 
+		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + 
 					SimpleDateFormat.getDateInstance().format(value));
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
 	}
 
 	/**
@@ -268,12 +248,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Numeric value){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.CONSTANT) + COLON + value);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
 
 	/**
@@ -445,15 +420,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 *  or "${seq.MySequence.nextIntValue()}" 
 	 */
 	public void addSequenceToFieldRule(String patternOut, String sequence){
-		String field = resolveField(patternOut);
 		String sequenceString = sequence.startsWith("${") ? 
 				sequence.substring(sequence.indexOf(DOT)+1, sequence.length() -1) 
 				: sequence;
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.SEQUENCE) + COLON + sequenceString);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.SEQUENCE) + COLON + sequenceString);
 	}
 	
 	/**
@@ -543,12 +513,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param parameterName
 	 */
 	public void addParameterToFieldRule(String patternOut, String parameterName){
-		String field = resolveField(patternOut);
-		if (field != null) {
-			rules.put(field, String.valueOf(Rule.PARAMETER) + COLON + parameterName);
-		}else{
-//			throw new TransformException("Wrong output field mask");
-		}
+		rules.put(patternOut, String.valueOf(Rule.PARAMETER) + COLON + parameterName);
 	}
 
 	/**
@@ -637,8 +602,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//iteration over each user given rule
 		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
+			field = resolveField(rulesEntry.getKey());
+			if (field == null){
+				errorMessage = "Wrong pattern for output fields: " + rulesEntry.getKey();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			}
 			//find output fields from pattern
-			outFields = findFields(rulesEntry.getKey(), targetMetadata).toArray(new String[0]);
+			outFields = findFields(field, targetMetadata).toArray(new String[0]);
 			inFields = new String[0];
 			//find type: Rule.FIELD, Rule.CONSTANT,	Rule.SEQUENCE, Rule.PARAMETER
 			type = Integer.parseInt(rulesEntry.getValue().substring(0, rulesEntry.getValue().indexOf(COLON)));
@@ -646,6 +617,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 			ruleString = rulesEntry.getValue().substring(rulesEntry.getValue().indexOf(COLON)+1);
 			if (type == Rule.FIELD) {
 				//find input fields from pattern
+				ruleString = resolveField(ruleString);
+				if (ruleString == null){
+					errorMessage = "Wrong pattern for output fields: " + ruleString;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
 				inFields = findFields(ruleString, sourceMetadata).toArray(new String[0]);
 			}
 			if (type == Rule.FIELD && inFields.length > 1){
@@ -698,8 +675,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 							}
 						} catch (ArrayIndexOutOfBoundsException e) {
 							// inFields.length()=0
-							throw new ComponentNotReadyException("There is no input" +
-									" fields matching \"" + ruleString + "\" pattern");
+							errorMessage = "There is no input field matching \""
+								+ ruleString + "\" pattern";
+							logger.error(errorMessage);
+							throw new ComponentNotReadyException(errorMessage);
 						}
 					}
 				}
@@ -980,8 +959,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 								             .getValue(getGraph().getSequence(sequenceID)));
 					} catch (NullPointerException e1) {
 						// there is not sequence with given ID assosiated with current graph
-						throw new TransformException("There is no sequence \"" + 
-								sequenceID +"\" in graph");
+						errorMessage = "There is no sequence \"" + sequenceID + 
+							"\" in graph";
+						logger.error(errorMessage);
+						throw new TransformException(errorMessage);
 					}
 				break;
 			case Rule.PARAMETER:
@@ -999,6 +980,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 					if (parameterValue == null ){
 						//try to find parameter with given name among graph parameters 
 						parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
+					}
+					if (parameterValue == null){
+						logger.warn("Not found parameter: " + ruleString);
 					}
 					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
 							parameterValue);
@@ -1018,6 +1002,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 						try {
 							target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
 						} catch (BadDataFormatException e1) {
+							errorMessage = e1.getLocalizedMessage();
+							logger.error(errorMessage);
 							throw new TransformException("",e1);
 						}
 					}
@@ -1025,6 +1011,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 					try {
 						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
 					} catch (BadDataFormatException e) {
+						errorMessage = e.getLocalizedMessage();
+						logger.error(errorMessage);
 						throw new TransformException("",e);
 					}
 				}
