@@ -100,6 +100,15 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @since
 	 */
 	public abstract void setValue(Object _value);
+	
+	/**
+	 * An operation that sets value of the data field from another data field.
+	 * 
+	 * @param _value data field for getting value
+	 */
+	public void setValue(DataField _value){
+		setValue(((DataField)_value).getValue());
+	}
 
 
 	/**
