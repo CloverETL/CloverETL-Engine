@@ -640,7 +640,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 						rule.setType(type);
 					}
 					if (type != Rule.FIELD) {
-						rule.setValue(ruleString);
+						rule = validateRule(type,ruleString);
 						transformMap.put(outFields[i], rule);
 					}else{//type == Rule.FIELD
 						try {
@@ -698,6 +698,50 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return true;
 	}
 	
+	protected Rule validateRule(int ruleType,String ruleString) throws ComponentNotReadyException {
+//	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString) throws ComponentNotReadyException {
+		switch (ruleType) {
+		case Rule.PARAMETER:
+			String parameterValue;
+			if (ruleString.startsWith("${")){//get graph parameter
+				parameterValue = getGraph().getGraphProperties().getProperty(
+						ruleString.substring(2, ruleString.lastIndexOf('}')));
+			}else if (ruleString.startsWith(String.valueOf(PARAMETER_CHAR))){
+				//get parameter from node properties
+				parameterValue = parameters.getProperty((ruleString));
+			}else{
+				//try to find parameter with given name in node properties
+				parameterValue = parameters.getProperty(PARAMETER_CHAR + ruleString);
+				if (parameterValue == null ){
+					//try to find parameter with given name among graph parameters 
+					parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
+				}
+				if (parameterValue == null){
+//					if (targetMetadata[recNo].getField(fieldNo).isNullable() || 
+//							targetMetadata[recNo].getField(fieldNo).isDefaultValue()){
+						logger.warn("Not found parameter: " + ruleString);
+//					}else{
+//						errorMessage = "Not found parameter: " + ruleString;
+//						logger.error(errorMessage);
+//						throw new ComponentNotReadyException(errorMessage);
+//					}
+				}
+			}
+			if (parameterValue != null) {
+				//TODO
+			}
+			return new Rule(Rule.CONSTANT,parameterValue);
+		case Rule.SEQUENCE:
+			sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
+					: ruleString.substring(0, ruleString.indexOf(DOT));
+			if (getGraph().getSequence(sequenceID ) == null){
+				logger.warn("There is no sequence \"" + sequenceID + "\" in graph");
+			}
+		default:
+			return new Rule(ruleType,ruleString);
+		}
+	}
+	
 	/**
 	 * Method, which puts mapping rules to map. First it tries to find fields with
 	 * 	identical names in corresponding input and output metadata. If not all 
@@ -728,7 +772,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param outFields output fields to mapping
 	 * @param inFields input fields for mapping
 	 */
-	private void putMappingByNames(Map<String, Rule> transformMap, 
+	protected void putMappingByNames(Map<String, Rule> transformMap, 
 			String[] outFields, String[] inFields){
 		String[][] outFieldsName = new String[targetMetadata.length][maxNumFields(targetMetadata)];
 		for (int i = 0; i < outFields.length; i++) {
@@ -822,7 +866,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param transformMap
 	 * @return true if mapping was put into map, false in other case
 	 */
-	private boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
+	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
 			Map<String, Rule> transformMap){
 		Rule rule;
 		boolean checkTypes;
@@ -884,7 +928,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param metadata
 	 * @return list of fields matching given metadata
 	 */
-	private ArrayList<String> findFields(String pattern,DataRecordMetadata[] metadata){
+	protected ArrayList<String> findFields(String pattern,DataRecordMetadata[] metadata){
 		ArrayList<String> list = new ArrayList<String>();
 		String recordNoString = pattern.substring(0,pattern.indexOf(DOT));
 		String fieldNoString = pattern.substring(pattern.indexOf(DOT)+1);
@@ -953,40 +997,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 				//ruleString can be only sequence ID or with method eg. sequenceID.getNextLongValue()
 				sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
 						: ruleString.substring(0, ruleString.indexOf(DOT));
-				try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
-								             .getValue(getGraph().getSequence(sequenceID)));
-					} catch (NullPointerException e1) {
-						// there is not sequence with given ID assosiated with current graph
-						errorMessage = "There is no sequence \"" + sequenceID + 
-							"\" in graph";
-						logger.error(errorMessage);
-						throw new TransformException(errorMessage);
-					}
+				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
+								.getValue(getGraph().getSequence(sequenceID)));
 				break;
-			case Rule.PARAMETER:
-				if (ruleString.startsWith("${")){//get graph parameter
-					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
-							getGraph().getGraphProperties().getProperty(
-									ruleString.substring(2, ruleString.lastIndexOf('}'))));
-				}else if (ruleString.startsWith(String.valueOf(PARAMETER_CHAR))){
-					//get parameter from node properties
-					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
-						parameters.getProperty((ruleString)));
-				}else{
-					//try to find parameter with given name in node properties
-					String parameterValue = parameters.getProperty(PARAMETER_CHAR + ruleString);
-					if (parameterValue == null ){
-						//try to find parameter with given name among graph parameters 
-						parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
-					}
-					if (parameterValue == null){
-						logger.warn("Not found parameter: " + ruleString);
-					}
-					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
-							parameterValue);
-				}
+			case Rule.PARAMETER://in method init changed to constant
 				break;
 			default:// constant
 				//for DateDataField constant could be stored in string representation
@@ -1028,7 +1043,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param pattern
 	 * @return pattern in format record.field of null if it is not possible
 	 */
-	private static String resolveField(String pattern){
+	protected static String resolveField(String pattern){
 		String[] parts = pattern.split("\\.");
 		switch (parts.length) {
 		case 2:
@@ -1216,6 +1231,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 		 * @throws TransformException 
 		 */
 		Object getValue(Sequence sequence) throws TransformException{
+			if (sequence == null){
+				return null;
+			}
 			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
 			String method = dotIndex > -1 ? value.substring(dotIndex +1) : "nextValueInt()";
 			if (method.equals("currentValueString()")){
