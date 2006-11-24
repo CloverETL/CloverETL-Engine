@@ -10,6 +10,7 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
@@ -33,7 +34,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 	
 	@Override
 	protected void setUp() throws Exception {
-		transform = new CustomizedRecordTransform();
+		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
 	    Defaults.init();
 	    
@@ -144,10 +145,10 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
-		System.out.println(record.toString());
-		System.out.println(record1.toString());
-		System.out.println(out.toString());
-		System.out.println(out1.toString());
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
 		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
 		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
