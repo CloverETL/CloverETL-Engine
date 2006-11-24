@@ -204,6 +204,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addSequenceToFieldRule(4, "ID");
 		transform.addSequenceToFieldRule("${1.Na*}", "ID.currentValueString()");
 		transform.addSequenceToFieldRule(1, 2, "${seq.ID.nextValueString()}");
+		transform.addSequenceToFieldRule(0, "Name", "id");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
