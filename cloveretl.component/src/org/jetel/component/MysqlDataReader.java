@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -209,9 +210,11 @@ public class MysqlDataReader extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 
 	@Override
 	public void init() throws ComponentNotReadyException {

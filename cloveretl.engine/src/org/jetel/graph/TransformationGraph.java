@@ -40,6 +40,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.PropertyRefResolver;
@@ -788,10 +789,16 @@ public final class TransformationGraph {
         return edges;
     }
     
-    public void checkConfig() {
-        for(Phase phase : getPhases()) {
-            phase.checkConfig();
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        if(status == null) {
+            status = new ConfigurationStatus();
         }
+        
+        for(Phase phase : getPhases()) {
+            phase.checkConfig(status);
+        }
+        
+        return status;
     }
 }
 /*

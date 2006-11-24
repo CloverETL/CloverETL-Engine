@@ -42,6 +42,7 @@ import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
@@ -766,7 +767,8 @@ public class TransformationGraphXMLReaderWriter {
 
         public String getType() { return null; }
 
-        public boolean checkConfig() { return false; }
+        @Override
+        public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
 
         public void run() { }
 

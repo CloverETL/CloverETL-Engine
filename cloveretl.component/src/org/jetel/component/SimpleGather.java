@@ -23,6 +23,7 @@ import java.io.IOException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -232,9 +233,11 @@ public class SimpleGather extends Node {
 
 
 	/**  Description of the Method */
-	public boolean checkConfig() {
-		return true;
-	}
+        @Override
+        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+            //TODO
+            return status;
+        }
 	
 	public String getType(){
 		return COMPONENT_TYPE;

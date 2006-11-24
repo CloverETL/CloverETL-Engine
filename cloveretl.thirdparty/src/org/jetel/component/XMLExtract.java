@@ -21,6 +21,7 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -876,8 +877,10 @@ public class XMLExtract extends Node {
         return COMPONENT_TYPE;
     }
     
-    public boolean checkConfig() {
-        return true;
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
     }
     
     public org.w3c.dom.Node toXML() {

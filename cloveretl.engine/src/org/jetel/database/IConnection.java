@@ -8,6 +8,7 @@ package org.jetel.database;
 import java.util.Properties;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.IGraphElement;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -31,7 +32,7 @@ public interface IConnection extends IGraphElement {
     /**
      * NOTE: copy from GraphElement
      */
-    public abstract boolean checkConfig();
+    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /**
      * NOTE: copy from GraphElement

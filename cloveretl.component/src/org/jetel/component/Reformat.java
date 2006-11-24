@@ -27,6 +27,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -328,9 +329,11 @@ public class Reformat extends Node {
 	 *
 	 * @return    Description of the Return Value
 	 */
-	public boolean checkConfig() {
-		return true;
-	}
+        @Override
+        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+            //TODO
+            return status;
+        }
 
 	public String getType(){
 		return COMPONENT_TYPE;

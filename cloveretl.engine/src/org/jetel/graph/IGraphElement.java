@@ -20,6 +20,7 @@
 package org.jetel.graph;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 
 public interface IGraphElement {
 
@@ -34,9 +35,8 @@ public interface IGraphElement {
      * Check the element configuration.<br>
      * This method is called for each graph element before the graph is executed. This method should
      * verify that all required parameters are set and element may be use.
-     * @return    <b>true</b> if element configuration is OK, otherwise <b>false</b>
      */
-    public abstract boolean checkConfig();
+    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /**
      *  Initialization of Node

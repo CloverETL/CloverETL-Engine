@@ -31,6 +31,7 @@ import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -688,8 +689,10 @@ public class ExtSort extends Node {
      *
      * @return    Description of the Return Value
      */
-    public boolean checkConfig() {
-        return true;
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
     }
 
     /* (non-Javadoc)

@@ -27,6 +27,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
@@ -262,9 +263,11 @@ public class DBFDataReader extends Node {
 
 
 	/**  Description of the Method */
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 	
 	public String getType(){
 		return COMPONENT_TYPE;

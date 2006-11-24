@@ -21,6 +21,7 @@ package org.jetel.sequence;
 
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -66,8 +67,9 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.graph.GraphElement#checkConfig()
      */
     @Override
-    public boolean checkConfig() {
-        return true;
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
     }
 
     /**

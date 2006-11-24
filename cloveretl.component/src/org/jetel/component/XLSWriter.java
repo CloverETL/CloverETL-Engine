@@ -27,6 +27,7 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -167,10 +168,11 @@ public class XLSWriter extends Node {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
-	@Override
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()

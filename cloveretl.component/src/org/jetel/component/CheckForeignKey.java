@@ -36,6 +36,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.SetVal;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -390,9 +391,11 @@ import org.w3c.dom.Element;
     	 *
     	 * @return    Description of the Return Value
     	 */
-    	public boolean checkConfig() {
-    		return true;
-    	}
+        @Override
+        public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+            //TODO
+            return status;
+        }
     
     	public String getType(){
     		return COMPONENT_TYPE;

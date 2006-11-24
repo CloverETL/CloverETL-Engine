@@ -24,6 +24,7 @@ import java.io.IOException;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
@@ -313,9 +314,11 @@ public class DBInputTable extends Node {
 
 
 	/**  Description of the Method */
-	public boolean checkConfig() {
-		return true;
-	}
+    @Override
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //TODO
+        return status;
+    }
 	
 	public String getType(){
 		return COMPONENT_TYPE;

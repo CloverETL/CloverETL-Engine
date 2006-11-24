@@ -24,7 +24,10 @@
 package org.jetel.data.sequence;
 
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.IGraphElement;
+
+import sun.tools.tree.CheckContext;
 
 
 /**
@@ -84,7 +87,7 @@ public interface Sequence extends IGraphElement {
     /**
      * NOTE: copy from GraphElement
      */
-    public abstract boolean checkConfig();
+    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
 
     /**
      * Initializes sequence object. It is called after the sequence class is instantiated.
