@@ -32,6 +32,7 @@ import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
@@ -91,6 +92,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	
 	protected PolicyType fieldPolicy = PolicyType.LENIENT;
 	static Log logger = LogFactory.getLog(CustomizedRecordTransform.class);
+	protected String errorMessage;
 	
 	/**
 	 * Map "rules" stores rules given by user in following form:
@@ -127,7 +129,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (outField != null && inField != null) {
 			rules.put(outField, String.valueOf(Rule.FIELD) + COLON + inField);
 		}else{
-//			throw new TransformException("Wrong field mask");
+			throw new IllegalArgumentException("Wrong field mask");
 		}
 	}
 
@@ -591,8 +593,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	}
 
 	public String getMessage() {
-		// TODO Auto-generated method stub
-		return null;
+		return errorMessage;
 	}
 
 	public Object getSemiResult() {
@@ -761,7 +762,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 				sourceMetadata[getRecNo(inFields[i])].getField(getFieldNo(inFields[i])).getName();
 		}
 		int index;
-		Rule rule;
 		//find identical in corresponding records
 		for (int i = 0; (i < outFieldsName.length) && (i < inFieldsName.length); i++) {
 			for (int j = 0; j < outFieldsName[i].length; j++) {
@@ -967,17 +967,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			ruleString = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue();
 			switch (ruleType) {
 			case Rule.FIELD:
-				try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
-					} catch (IllegalArgumentException e2) {
-						// target field is of type String
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources).toString());
-					}catch(BadDataFormatException e2){
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources).toString());
-					}
+				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
 				break;
 			case Rule.SEQUENCE:
 				//ruleString can be only sequence ID or with method eg. sequenceID.getNextLongValue()
@@ -1214,17 +1205,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 		/**
 		 * When rule type is FIELD it means that "value" is in form recNo.fieldNo,
-		 * 	where <i> recNo</i> and <i>fieldNo</i> are integers. This method get 
-		 * 	value of proper data field from proper record
+		 * 	where <i> recNo</i> and <i>fieldNo</i> are integers. This method gets 
+		 *  proper data field from proper record
 		 * 
 		 * @param records
-		 * @return value of proper data field from proper record
+		 * @return proper data field from proper record
 		 */
-		Object getValue(DataRecord[] records){
+		DataField getValue(DataRecord[] records){
 			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
 			int recNo = dotIndex > -1 ? Integer.parseInt(value.substring(0, dotIndex)) : 0;
 			int fieldNo = dotIndex > -1 ? Integer.parseInt(value.substring(dotIndex + 1)) : Integer.parseInt(value); 
-			return records[recNo].getField(fieldNo).getValue();
+			return records[recNo].getField(fieldNo);
 		}
 		
 		/**
