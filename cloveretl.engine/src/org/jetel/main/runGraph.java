@@ -21,7 +21,6 @@ package org.jetel.main;
 
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -30,12 +29,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
-import org.jetel.data.lookup.LookupTableFactory;
-import org.jetel.data.sequence.SequenceFactory;
-import org.jetel.database.ConnectionFactory;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
@@ -114,7 +108,9 @@ public class runGraph {
     public static TransformationGraph loadGraph(InputStream inStream, Properties properties) throws XMLConfigurationException, GraphConfigurationException {
         TransformationGraph graph = new TransformationGraph();
         TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-        graph.loadGraphProperties(properties);
+        if(properties != null) {
+            graph.loadGraphProperties(properties);
+        }
 
         graphReader.read(inStream);
         
