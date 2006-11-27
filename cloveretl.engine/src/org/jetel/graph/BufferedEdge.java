@@ -26,11 +26,14 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.DynamicRecordBuffer;
 
 /**
- * A class that represents DirectEdge - data connection between two NODEs.<br>
- * This Edge is in-memory buffered for better performance, however the buffer is limited in number of records
- * it can keep - the size is determined by INTERNAL_BUFFERS_NUM constant.
+ * A class that represents Edge - data connection between two NODEs.<br>
+ * This EDGE buffers data in-memory and if this buffer is exhausted then
+ * on disk to allow unlimited buffering for writer.<br>
+ * It internally allocates two buffers (for reading,writing) of 
+ * <code>BUFFERED_EDGE_INTERNAL_BUFFER_SIZE</code>.
  *
  * @author     D.Pavlis
  * @see        org.jetel.graph.InputPort
@@ -39,41 +42,13 @@ import org.jetel.data.Defaults;
  */
 public class BufferedEdge extends EdgeBase {
 
- 	private final static int BUFFER_COMPACT_LIMIT_PERCENT = 85;
-	
 	protected int recordCounter;
     protected long byteCounter;
-	
-	// data buffer which keeps data records written by
-	// producer
-	private ByteBuffer dataBuffer;
-	
-	// internal counter - how many records are currently in buffer
-	private volatile int noRecs;
-	// from which position in the buffer we should do next read
-	private int readPosition;
-	
-	protected boolean isOpen;
-	
-	// if this position is reached
-	// while reading data,  we compact data buffer
-	private int compactLimitPosition;
-	
-	/**
-	 * Comment for <code>deadlockTick</code>
-	 * Deadlock detector. Gets increased each time watchdog
-	 * checks this Edge. Each compleded write or record operation
-	 * resets it. If counting reaches certain maximum, it is a signal
-	 * that this edge is probably in deadlock state.
-	 */
-	private volatile int deadlockTick;
-	
-	// used internally when when reading data from buffer
-	private DataRecord dataRecord;
+    protected int internalBufferSize;
 
-	private int internalBufferSize;
-	
-	
+    protected DynamicRecordBuffer recordBuffer;
+    
+	protected boolean isOpen;
 	
 	public BufferedEdge(Edge proxy) {
 	    this(proxy,Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE);
@@ -122,34 +97,13 @@ public class BufferedEdge extends EdgeBase {
 	public void init() throws IOException {
 		// initialize & open the data pipe
 		// we are ready to supply data
-	    dataBuffer=ByteBuffer.allocateDirect(internalBufferSize);
-	    compactLimitPosition=(dataBuffer.capacity()*BUFFER_COMPACT_LIMIT_PERCENT)/100;
-		dataRecord=new DataRecord(proxy.metadata);
-	    dataRecord.init();
+        recordBuffer=new DynamicRecordBuffer(internalBufferSize);
+        recordBuffer.init();
 		recordCounter = 0;
         byteCounter=0;
-		noRecs=readPosition=0;
-		deadlockTick = 0;
 		isOpen=true;
 	}
 
-
-	/**
-	 * Increase deadlockTic counter by one.
-	 */
-	public void tick(){
-	    deadlockTick++;
-	}
-
-	/**
-	 * Get status of deadlockTic counter;
-	 * 
-	 * @return	deadlockTic counter
-	 */
-	public int getTick(){
-	    return deadlockTick;
-	}
-	
 	// Operations
 	/**
 	 * An operation that does read one DataRecord from Edge
@@ -161,28 +115,9 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            April 2, 2002
 	 */
 
-	public synchronized DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
-	    if (!isOpen && noRecs==0){
-		    return null;
-		}
-	    
-		while(noRecs==0){
-		    wait();
-		    if (!isOpen && noRecs==0){
-			    return null;
-			}
-		}
-		int tmpPosition=dataBuffer.position();
-		dataBuffer.position(readPosition);
-		record.deserialize(dataBuffer);
-		readPosition=dataBuffer.position();
-		dataBuffer.position(tmpPosition);
-		noRecs--;
-		packBuffer();
-		deadlockTick=0;
-		notify();
-		return record;
-	}
+	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
+        return recordBuffer.readRecord(record);
+    }
 
 
 	/**
@@ -194,30 +129,9 @@ public class BufferedEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public synchronized boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		if (!isOpen && noRecs==0){
-		    return false;
-		}
-	    
-		while(noRecs==0){
-		    wait();
-		    if (!isOpen && noRecs==0){
-			    return false;
-			}
-		}
-		int tmpPosition=dataBuffer.position();
-		dataBuffer.position(readPosition);
-		dataRecord.deserialize(dataBuffer);
-		readPosition=dataBuffer.position();
-		dataBuffer.position(tmpPosition);
-		dataRecord.serialize(record);
-		record.flip();
-		noRecs--;
-		packBuffer();
-		deadlockTick=0;
-		notify();
-		return true;
-	}
+	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+        return recordBuffer.readRecod(record);
+    }
 
 
 	/**
@@ -228,17 +142,8 @@ public class BufferedEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
-	public synchronized void writeRecord(DataRecord record) throws IOException, InterruptedException {
-	    int size=record.getSizeSerialized();
-	    while (size>dataBuffer.remaining()){
-	        wait();
-		}
-	    record.serialize(dataBuffer);
-	    deadlockTick=0;
-        byteCounter+=size;
-	    recordCounter++;
-	    noRecs++;
-	    notify();
+	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
+	   recordBuffer.writeRecord(record);
 	}
 
 
@@ -250,44 +155,17 @@ public class BufferedEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public synchronized void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		int size=record.remaining();
-	    while (size>dataBuffer.remaining()){
-	        wait();
-		}
-	    dataBuffer.put(record);
-	    deadlockTick=0;
-        byteCounter+=size;
-	    recordCounter++;
-	    noRecs++;
-	    notify();
-	}
-
-
-	private final void packBuffer(){
-	    int position=dataBuffer.position();
-	    
-	    if (readPosition==position){
-	        dataBuffer.clear();
-	        readPosition=0;
-	    }else if (readPosition>=compactLimitPosition){
-	        int diff=position-readPosition;
-	        dataBuffer.position(readPosition);
-	        dataBuffer.compact();
-	        dataBuffer.position(diff);
-	        readPosition=0;
-	    }
-	}
-	
+	public  void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+	    recordBuffer.writeRecord(record);
+    }
 
 	/**
 	 *  Description of the Method
 	 *
 	 * @since    April 2, 2002
 	 */
-	public synchronized void open() {
+	public  void open() {
 		isOpen=true;
-		notify();
 	}
 
 
@@ -296,13 +174,16 @@ public class BufferedEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public synchronized void close() {
-		isOpen=false;
-		notify();
+	public  void close() {
+        try{
+            recordBuffer.setEOF();
+        }catch(IOException ex){
+            throw new RuntimeException("Error when closing BufferedEdge: "+ex.getMessage(),ex);
+        }
 	}
 
 	public boolean hasData(){
-		return (noRecs!=0);
+		return (recordBuffer.hasData());
 	}
 
     /**
@@ -312,6 +193,7 @@ public class BufferedEdge extends EdgeBase {
         if (internalBufferSize>Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE)
             this.internalBufferSize = internalBufferSize;
     }
+    
 }
 /*
  *  end class DirectEdge
