@@ -35,7 +35,7 @@ import java.nio.channels.FileChannel;
  *  buffer is cca 4GB.
  *
  *@author     dpavlis
- *@created    21. kvìten 2003
+ *@created    21. kvï¿½ten 2003
  *@since      December 09, 2002
  */
 public class FileRecordBuffer {
@@ -203,9 +203,9 @@ public class FileRecordBuffer {
 	 *@return                Description of the Return Value
 	 */
 	private final boolean needRemap(int position, int requestedSize) {
-		if (position < mapPosition || position > (mapPosition + dataBuffer.remaining())) {
-			return true;
-		} else if (position - mapPosition + requestedSize > dataBuffer.remaining()) {
+        final int remaining=dataBuffer.remaining();
+		if (position < mapPosition || position > (mapPosition + remaining) ||
+                (position - mapPosition + requestedSize > remaining)) {
 			return true;
 		} else {
 			return false;
