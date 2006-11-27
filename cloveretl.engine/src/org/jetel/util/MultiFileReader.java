@@ -84,9 +84,15 @@ public class MultiFileReader {
         WcardPattern pat = new WcardPattern();
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
         this.filenameItor = pat.filenames().iterator();
-        if(!nextSource()) {
-            logger.warn("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
+
+        try {
+            if(!nextSource()) {
+                noInputFile = true;
+                throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
+            }
+        } catch (JetelException e) {
             noInputFile = true;
+            throw new ComponentNotReadyException("FileURL attribute (" + fileURL + ") doesn't contain valid file url.");
         }
     }
 
@@ -117,8 +123,9 @@ public class MultiFileReader {
 	/**
      * Switch to the next source file.
 	 * @return
+	 * @throws JetelException 
 	 */
-	private boolean nextSource() {
+	private boolean nextSource() throws JetelException {
 		ReadableByteChannel stream = null; 
 		while (filenameItor.hasNext()) {
 			filename = filenameItor.next();
@@ -130,8 +137,7 @@ public class MultiFileReader {
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;
 			} catch (IOException e) {
-				logger.error("Skipping unreadable file " + filename, e);
-				continue;
+				throw new JetelException("File is unreachable: " + filename, e);
 			} catch (JetelException e) {
 				logger.error("An error occured while skipping records in file " + filename + ", the file will be ignored", e);
 				continue;
@@ -146,8 +152,9 @@ public class MultiFileReader {
 	/**
 	 * This private method try to skip records given in <code>skip</code> variable.
      * @param skip number of skipped records
+	 * @throws JetelException 
 	 */
-	private void skip(int skip) {
+	private void skip(int skip) throws JetelException {
         int skipped = 0;
 
         do {
