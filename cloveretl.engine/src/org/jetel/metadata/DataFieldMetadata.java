@@ -28,6 +28,7 @@ import java.util.Properties;
 import org.jetel.data.Defaults;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
+import org.jetel.util.TypedProperties;
 
 /**
  *  A class that represents metadata describing one particular data field.<br>
@@ -85,7 +86,7 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private String codeStr;
 
-	private Properties fieldProperties;
+	private TypedProperties fieldProperties;
 	
 	/**
 	 * Locale string. Both language and country can be specified - if both
@@ -481,7 +482,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @return    The fieldProperties value
 	 */
-	public Properties getFieldProperties() {
+	public TypedProperties getFieldProperties() {
 		return fieldProperties;
 	}
 
@@ -504,7 +505,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  properties  The new recordProperties value
 	 */
 	public void setFieldProperties(Properties properties) {
-		fieldProperties = properties;
+		fieldProperties = new TypedProperties(properties);
 		
 		//set default attribute values
 		if(fieldType == DECIMAL_FIELD) {
