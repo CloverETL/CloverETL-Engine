@@ -168,6 +168,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addConstantToFieldRule(1, "Age", DecimalFactory.getDecimal(new BigDecimal("36474.738393")));
 		transform.addConstantToFieldRule("${out.*.2}", "Prague");
 		transform.addConstantToFieldRule(1, 3, "16-11-2006");
+		transform.addConstantToFieldRule(4, "1.111111111");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -183,6 +184,10 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals(out.getField(0).toString(), "Agata");
 		assertEquals(out1.getField(0).getValue().toString(), "Agata");
 		assertEquals(out.getField(3).getValue(), new GregorianCalendar(1973,3,23).getTime());
@@ -192,10 +197,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out.getField(2).getValue().toString(), "Prague");
 		assertEquals(out1.getField(2).getValue().toString(), "Prague");
 		assertEquals(out1.getField(3).getValue(), new GregorianCalendar(2006,10,16).getTime());
-		System.out.println(record.toString());
-		System.out.println(record1.toString());
-		System.out.println(out.toString());
-		System.out.println(out1.toString());
+		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(1.111111111,4,1));
 	}
 
 	public void test_sequenceToField(){
@@ -255,14 +257,14 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (TransformException e) {
 			e.printStackTrace();
 		}
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals((Double)out.getField(1).getValue(), DecimalFactory.getDecimal(properties.getProperty("$ADULT")).getDouble());
 		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),DataFieldMetadata.INTEGER_LENGTH +1,1));
 		assertEquals(out1.getField(0).getValue().toString(), graph.getGraphProperties().getStringProperty("WORKSPACE"));
 		assertEquals(out.getField(2).getValue().toString(), properties.getProperty("$MyCity"));
 		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphProperties().getStringProperty("YourCity"));
-		System.out.println(record.toString());
-		System.out.println(record1.toString());
-		System.out.println(out.toString());
-		System.out.println(out1.toString());
 	}
 }
