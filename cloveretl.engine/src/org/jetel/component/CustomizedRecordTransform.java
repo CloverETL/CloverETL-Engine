@@ -20,12 +20,17 @@
 
 package org.jetel.component;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.Format;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -33,6 +38,10 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.DecimalDataField;
+import org.jetel.data.Defaults;
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
@@ -596,9 +605,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 		String ruleString;
 		String[] outFields = new String[0];
 		String[] inFields;
-		DataFieldMetadata inField;
-		DataFieldMetadata outField;
-		boolean checkTypes;
 		//iteration over each user given rule
 		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
@@ -624,6 +630,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 					throw new ComponentNotReadyException(errorMessage);
 				}
 				inFields = findFields(ruleString, sourceMetadata).toArray(new String[0]);
+				if (inFields.length == 0){
+					errorMessage = "There is no input field matching \""
+						+ ruleString + "\" pattern";
+					logger.warn(errorMessage);
+					continue;
+					
+				}
 			}
 			if (type == Rule.FIELD && inFields.length > 1){
 				//find mapping by names
@@ -634,53 +647,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 					field = outFields[i];
 					//check if there is just any rule for given output field
 					rule = transformMap.remove(getRecNo(field) + DOT + getFieldNo(field));
-					if (rule == null) {//there wasn't any rule for this field
-						rule = new Rule(type,null);
-					}else{//replace old rule by new one
-						rule.setType(type);
+					if (type == Rule.FIELD) {
+						ruleString = inFields[0];
 					}
-					if (type != Rule.FIELD) {
-						rule = validateRule(type,ruleString);
+					rule = validateRule(getRecNo(field),getFieldNo(field),type,ruleString);
+					if (rule != null) {
 						transformMap.put(outFields[i], rule);
-					}else{//type == Rule.FIELD
-						try {
-							outField = targetMetadata[getRecNo(field)].getField(getFieldNo(field));
-							inField = sourceMetadata[getRecNo(inFields[0])].getField(getFieldNo(inFields[0]));
-							//check if both fields are of type DECIMAL, if yes inField must be subtype of outField
-							if (outField.getType() == inField.getType()){
-								if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD ){
-									checkTypes = inField.isSubtype(outField);
-								}else{
-									checkTypes = true;
-								}
-							}else {
-								checkTypes = false;
-							}
-							if (fieldPolicy == PolicyType.STRICT && !checkTypes){
-								logger.warn("Found fields with the same names but other types: ");
-								logger.warn(targetMetadata[getRecNo(field)].getName() + DOT + 
-										outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
-								logger.warn(sourceMetadata[getRecNo(inFields[0])].getName() + DOT + 
-										inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
-							}else if (fieldPolicy == PolicyType.CONTROLLED && 
-									!inField.isSubtype(outField)){
-								logger.warn("Found fields with the same names but incompatible types: ");
-								logger.warn(targetMetadata[getRecNo(field)].getName() + DOT + 
-										outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
-								logger.warn(sourceMetadata[getRecNo(inFields[0])].getName() + DOT + 
-										inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
-							}else{
-								rule.setValue(inFields[0]);
-								transformMap.put(outFields[i], rule);
-							}
-						} catch (ArrayIndexOutOfBoundsException e) {
-							// inFields.length()=0
-							errorMessage = "There is no input field matching \""
-								+ ruleString + "\" pattern";
-							logger.error(errorMessage);
-							throw new ComponentNotReadyException(errorMessage);
-						}
-					}
+					}						
 				}
 			}
 		}
@@ -698,8 +671,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return true;
 	}
 	
-	protected Rule validateRule(int ruleType,String ruleString) throws ComponentNotReadyException {
-//	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString) throws ComponentNotReadyException {
+	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString) throws ComponentNotReadyException {
+		char fieldType = targetMetadata[recNo].getFieldType(fieldNo);
 		switch (ruleType) {
 		case Rule.PARAMETER:
 			String parameterValue;
@@ -717,29 +690,260 @@ public class CustomizedRecordTransform implements RecordTransform {
 					parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
 				}
 				if (parameterValue == null){
-//					if (targetMetadata[recNo].getField(fieldNo).isNullable() || 
-//							targetMetadata[recNo].getField(fieldNo).isDefaultValue()){
-						logger.warn("Not found parameter: " + ruleString);
-//					}else{
-//						errorMessage = "Not found parameter: " + ruleString;
-//						logger.error(errorMessage);
-//						throw new ComponentNotReadyException(errorMessage);
-//					}
+					errorMessage = "Not found parameter: " + ruleString;
+					logger.warn(errorMessage);
+					if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || 
+							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
+						return null;
+					}
 				}
 			}
-			if (parameterValue != null) {
-				//TODO
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
+					fieldType != DataFieldMetadata.STRING_FIELD ) &&
+					parameterValue != null) {
+				checkConstant(recNo, fieldNo, parameterValue);
 			}
 			return new Rule(Rule.CONSTANT,parameterValue);
+		case Rule.CONSTANT:
+			if (ruleString.equals("null") && !(targetMetadata[recNo].getField(fieldNo).isNullable() || 
+							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
+				errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
+				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+				logger.warn(errorMessage);
+				return null;
+			}
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
+					fieldType != DataFieldMetadata.STRING_FIELD ) &&
+					ruleString != null) {
+				checkConstant(recNo, fieldNo, ruleString);
+			}
+			break;
 		case Rule.SEQUENCE:
 			sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
 					: ruleString.substring(0, ruleString.indexOf(DOT));
-			if (getGraph().getSequence(sequenceID ) == null){
+			Sequence sequence = getGraph().getSequence(sequenceID );
+			if (sequence == null){
 				logger.warn("There is no sequence \"" + sequenceID + "\" in graph");
+				if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || 
+							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
+					errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
+					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+					logger.warn(errorMessage);
+					return null;
+				}
 			}
-		default:
-			return new Rule(ruleType,ruleString);
+			String method = ruleString.indexOf(DOT) > -1 ? 
+					ruleString.substring(ruleString.indexOf(DOT) +1) : "nextValueInt()";
+			char methodType;
+			if (method.toLowerCase().contains("int")) {
+				methodType = DataFieldMetadata.INTEGER_FIELD;
+			}else if (method.toLowerCase().contains("long")){
+				methodType = DataFieldMetadata.LONG_FIELD;
+			}else {
+				methodType = DataFieldMetadata.STRING_FIELD;
+			}
+			if (!checkTypes(fieldPolicy, fieldType, null, methodType, null)){
+				if (fieldPolicy == PolicyType.STRICT) {
+					errorMessage = "Sequence method:" + ruleString + " does not " +
+							"match field type:\n"+ targetMetadata[recNo].getName() + 
+							DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
+							" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
+							getDecimalParams(targetMetadata[recNo].getField(fieldNo));
+					logger.warn(errorMessage);
+					return null;
+				}
+				if (fieldPolicy == PolicyType.CONTROLLED){
+					errorMessage = "Sequence method:" + ruleString + " does not " +
+					"match field type:\n"+ targetMetadata[recNo].getName() + 
+					DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
+					" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
+					getDecimalParams(targetMetadata[recNo].getField(fieldNo));
+					logger.warn(errorMessage);
+					return null;
+				}
+			}
+			break;
+		case Rule.FIELD:
+			if (!checkTypes(fieldPolicy, recNo, fieldNo, getRecNo(ruleString), getFieldNo(ruleString))){
+				if (fieldPolicy == PolicyType.STRICT) {
+					errorMessage = "Output field type does not match input field " +
+							"type:\n" +targetMetadata[recNo].getName() + DOT + 
+							targetMetadata[recNo].getField(fieldNo).getName() + 
+							" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
+							getDecimalParams(targetMetadata[recNo].getField(fieldNo)) + "\n" +
+							sourceMetadata[getRecNo(ruleString)].getName() + DOT +
+							sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
+							" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
+							getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
+					logger.warn(errorMessage);
+					return null;
+				}
+				if (fieldPolicy == PolicyType.CONTROLLED){
+					errorMessage = "Output field type is not compatible with input field " +
+					"type:\n" +targetMetadata[recNo].getName() + DOT + 
+					targetMetadata[recNo].getField(fieldNo).getName() + 
+					" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
+					getDecimalParams(targetMetadata[recNo].getField(fieldNo)) + "\n" +
+					sourceMetadata[getRecNo(ruleString)].getName() + DOT +
+					sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
+					" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
+					getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
+					logger.warn(errorMessage);
+					return null;
+				}
+			}
 		}
+		return new Rule(ruleType,ruleString);
+	}
+	
+	private boolean checkTypes(PolicyType policy, char outType, int[] outTypeDecimalParams,
+			char inType, int[] inTypeDEcimalParams){
+		boolean checkTypes;
+		if (outType == inType){
+			if (outType == DataFieldMetadata.DECIMAL_FIELD ){
+				checkTypes = inTypeDEcimalParams[0] <= outTypeDecimalParams[0] && 
+				inTypeDEcimalParams[1] <= outTypeDecimalParams[1];
+			}else{
+				checkTypes = true;
+			}
+		}else {
+			checkTypes = false;
+		}
+		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
+			return false;
+		}else if (fieldPolicy == PolicyType.CONTROLLED && 
+				!DataFieldMetadata.isSubtype(inType, inTypeDEcimalParams, outType, outTypeDecimalParams)){
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkTypes(PolicyType policyType, int outRecNo, int outFieldNo, 
+			int inRecNo, int inFieldNo){
+		DataFieldMetadata outField = targetMetadata[outRecNo].getField(outFieldNo);
+		DataFieldMetadata inField = sourceMetadata[inRecNo].getField(inFieldNo);
+		boolean checkTypes;
+		//check if both fields are of type DECIMAL, if yes inField must be subtype of outField
+		if (outField.getType() == inField.getType()){
+			if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD ){
+				checkTypes = inField.isSubtype(outField);
+			}else{
+				checkTypes = true;
+			}
+		}else {
+			checkTypes = false;
+		}
+		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
+//			logger.warn("Found fields with the same names but other types: ");
+//			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+//					outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
+//			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+//					inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
+			return false;
+		}else if (fieldPolicy == PolicyType.CONTROLLED && 
+				!inField.isSubtype(outField)){
+//			logger.warn("Found fields with the same names but incompatible types: ");
+//			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+//					outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
+//			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+//					inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
+			return false;
+		}
+		return true;
+	}
+	
+	private boolean checkConstant(int recNo, int fieldNo, String constant) throws ComponentNotReadyException{
+		char type = targetMetadata[recNo].getFieldType(fieldNo);
+		Object value;
+		Format format = null; 
+        String formatString = targetMetadata[recNo].getField(fieldNo).getFormatStr();;
+        Locale locale;
+        // handle locale
+        if (targetMetadata[recNo].getField(fieldNo).getLocaleStr() != null) {
+            String[] localeLC = targetMetadata[recNo].getField(fieldNo).getLocaleStr()
+            			.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
+            if (localeLC.length > 1) {
+                locale = new Locale(localeLC[0], localeLC[1]);
+            } else {
+                locale = new Locale(localeLC[0]);
+            }
+        } else {
+            locale = null;
+        }
+		switch (type) {
+		case DataFieldMetadata.DATE_FIELD:
+		case DataFieldMetadata.DATETIME_FIELD:
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    format = new SimpleDateFormat(formatString, locale);
+                } else {
+                    format = new SimpleDateFormat(formatString);
+                }
+                ((DateFormat)format).setLenient(false);
+            } else if (locale != null) {
+            	format = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
+            	((DateFormat)format).setLenient(false);
+            }else{
+            	format = DateFormat.getDateInstance();
+            	((DateFormat)format).setLenient(false);
+             }
+            try{
+            	value = ((SimpleDateFormat)format).parse(constant);
+            }catch(ParseException e){
+				errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(e);
+            }
+			break;
+		case DataFieldMetadata.DECIMAL_FIELD:
+			try {
+					value = DecimalFactory.getDecimal(constant);
+				} catch (NumberFormatException e) {
+					errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(e);
+				}
+			break;
+		case DataFieldMetadata.INTEGER_FIELD:
+		case DataFieldMetadata.LONG_FIELD:
+		case DataFieldMetadata.NUMERIC_FIELD:
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    format = new DecimalFormat(formatString, new DecimalFormatSymbols(locale));
+                } else {
+                    format = new DecimalFormat(formatString);
+                }
+            } else if (locale != null) {
+            	format = DecimalFormat.getInstance(locale);
+            }else{
+            	format = DecimalFormat.getInstance();
+            }
+            try{
+            	value = ((DecimalFormat)format).parse(constant);
+            }catch(ParseException e){
+				errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(e);
+            }
+            if (type == DataFieldMetadata.LONG_FIELD || type == DataFieldMetadata.INTEGER_FIELD && !(value instanceof Long)){
+				errorMessage = constant + " is not Long type to record: " + targetMetadata[recNo].getName() 
+				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+           }
+            if (type == DataFieldMetadata.INTEGER_FIELD && 
+            		((Long)value > Integer.MAX_VALUE || (Long)value < Integer.MIN_VALUE )){
+				errorMessage = constant + " not in range to record: " + targetMetadata[recNo].getName() 
+				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+           }
+			break;
+		}
+		return true;
 	}
 	
 	/**
@@ -869,43 +1073,30 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
 			Map<String, Rule> transformMap){
 		Rule rule;
-		boolean checkTypes;
-		//true, if fields have the same type and if the type is DECIMAL 
-		//in field has to be subtype of out field
-		if (targetMetadata[outRecNo].getFieldType(outFieldNo) == 
-			sourceMetadata[inRecNo].getFieldType(inFieldNo)){
-			if (targetMetadata[outRecNo].getFieldType(outFieldNo) == 
-				DataFieldMetadata.DECIMAL_FIELD ){
-				checkTypes = sourceMetadata[inRecNo].getField(inFieldNo)
-				.isSubtype(targetMetadata[outRecNo].getField(outFieldNo));
-			}else{
-				checkTypes = true;
+		if (!checkTypes(fieldPolicy, outRecNo, outFieldNo, inRecNo, inFieldNo)){
+			if (fieldPolicy == PolicyType.STRICT){
+				logger.warn("Found fields with the same names but other types: ");
+				logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+						targetMetadata[outRecNo].getField(outFieldNo).getName() + 
+						" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
+						+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+				logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+						sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
+						" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
+						+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
 			}
-		}else {
-			checkTypes = false;
-		}
-		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
-			logger.warn("Found fields with the same names but other types: ");
-			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
-					targetMetadata[outRecNo].getField(outFieldNo).getName() + 
-					" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
-					+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
-			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
-					sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
-					" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
-					+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
-		}else if (fieldPolicy == PolicyType.CONTROLLED && 
-				!sourceMetadata[inRecNo].getField(inFieldNo).isSubtype(
-						targetMetadata[outRecNo].getField(outFieldNo))){
-			logger.warn("Found fields with the same names but incompatible types: ");
-			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
-					targetMetadata[outRecNo].getField(outFieldNo).getName() + 
-					" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
-					+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
-			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
-					sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
-					" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
-					+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+			if (fieldPolicy == PolicyType.CONTROLLED){
+				logger.warn("Found fields with the same names but incompatible types: ");
+				logger.warn(targetMetadata[outRecNo].getName() + DOT + 
+						targetMetadata[outRecNo].getField(outFieldNo).getName() + 
+						" type - " + targetMetadata[outRecNo].getFieldTypeAsString(outFieldNo) 
+						+ getDecimalParams(targetMetadata[outRecNo].getField(outFieldNo)));
+				logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
+						sourceMetadata[inRecNo].getField(inFieldNo).getName() + 
+						" type - " + sourceMetadata[inRecNo].getFieldTypeAsString(inFieldNo) 
+						+ getDecimalParams(sourceMetadata[inRecNo].getField(inFieldNo)));
+			}
+			return false;
 		}else{//map fields
 			rule = transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
 			if (rule == null) {
@@ -918,7 +1109,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
 			return true;
 		}
-		return false;
 	}
 	
 	/**
