@@ -605,6 +605,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since             April 2, 2002
 	 */
 	public void deletePort(int _portNum, char _portType) {
+        throw new UnsupportedOperationException("Deleting port is not supported !");
 	}
 
 
@@ -721,12 +722,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
 		while (iterator.hasNext()) {
 			port = (OutputPort) iterator.next();
-
-			try {
-				port.close();
-			} catch (IndexOutOfBoundsException ex) {
-				ex.printStackTrace();
-			}
+			port.close();
 		}
 	}
 
@@ -748,12 +744,13 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since           April 11, 2002
 	 */
 	public void closeOutputPort(int portNum) {
-		try {
-			((OutputPort) outPorts.get(new Integer(portNum))).close();
-		} catch (IndexOutOfBoundsException ex) {
-			ex.printStackTrace();
-		}
-	}
+        OutputPort port = (OutputPort) outPorts.get(new Integer(portNum));
+        if (port == null) {
+            throw new RuntimeException(this.getId()+" - can't close output port \"" + portNum
+                    + "\" - does not exists!");
+        }
+        port.close();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
