@@ -22,6 +22,7 @@
 
 package org.jetel.graph;
 import java.io.IOException;
+import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
@@ -56,7 +57,7 @@ public class DirectEdge extends EdgeBase {
 	// Attributes
 	
 
-	private final static int EOF=Integer.MIN_VALUE;
+	private final static int EOF=Integer.MAX_VALUE;
 	private	final static int SIZEOF_INT=4;	
 
 	/**
@@ -133,7 +134,7 @@ public class DirectEdge extends EdgeBase {
 	    }
 	    try{
 	        // create the record/read it from buffer
-	        if (readBuffer.getInt()<0){
+	        if (readBuffer.getInt()==EOF){
 	            isClosed=true;
 	            return null; // EOF
 	        }
@@ -165,7 +166,7 @@ public class DirectEdge extends EdgeBase {
 	    try{
 	        // create the record/read it from buffer
 	        int length=readBuffer.getInt();
-	        if (length<0){
+	        if (length==EOF){
 	            isClosed=true;
 	            return false;
 	        }
@@ -208,25 +209,36 @@ public class DirectEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            April 2, 2002
 	 */
-	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-		
-	    tmpDataRecord.clear();
-	    record.serialize(tmpDataRecord);
-	    tmpDataRecord.flip();
-	    int length=tmpDataRecord.remaining();
-	    
-	    if ((length+SIZEOF_INT)>writeBuffer.remaining()){
-	        flushWriteBuffer();
-	    }
-        writeBuffer.putInt(length);
-        writeBuffer.put(tmpDataRecord);
+	public void writeRecord(DataRecord record) throws IOException,
+            InterruptedException {
+
+        tmpDataRecord.clear();
+        try {
+            record.serialize(tmpDataRecord);
+        } catch (BufferOverflowException ex) {
+            throw new IOException(
+                    "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+        }
+        tmpDataRecord.flip();
+        int length = tmpDataRecord.remaining();
+
+        if ((length + SIZEOF_INT) > writeBuffer.remaining()) {
+            flushWriteBuffer();
+        }
+        try {
+            writeBuffer.putInt(length);
+            writeBuffer.put(tmpDataRecord);
+        } catch (BufferOverflowException ex) {
+            throw new IOException(
+                    "WriteBuffer is not big enough to accomodate data record !");
+        }
         // record.serialize(writeBuffer);
 
-        byteCounter+=length;
-        
+        byteCounter += length;
+
         recordCounter++;
-		// one more record written
-	}
+        // one more record written
+    }
 
 	/**
 	 *  Description of the Method
@@ -236,19 +248,26 @@ public class DirectEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-		int dataLength=record.remaining();
-	    
-	    if ((dataLength+SIZEOF_INT)>writeBuffer.remaining()){
-	        flushWriteBuffer();
-	    }
-        writeBuffer.putInt(dataLength);
-        writeBuffer.put(record);
+	public void writeRecordDirect(ByteBuffer record) throws IOException,
+            InterruptedException {
+        int dataLength = record.remaining();
 
-        byteCounter+=dataLength;
+        if ((dataLength + SIZEOF_INT) > writeBuffer.remaining()) {
+            flushWriteBuffer();
+        }
+
+        try {
+            writeBuffer.putInt(dataLength);
+            writeBuffer.put(record);
+        } catch (BufferOverflowException ex) {
+            throw new IOException(
+                    "WriteBuffer is not big enough to accomodate data record !");
+        }
+
+        byteCounter += dataLength;
         recordCounter++;
-	    
-	}
+
+    }
 
 	private synchronized void flushWriteBuffer() throws InterruptedException{
 	    if(readerWait) {
