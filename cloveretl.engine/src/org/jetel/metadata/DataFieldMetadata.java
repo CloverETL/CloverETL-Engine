@@ -735,6 +735,30 @@ public class DataFieldMetadata implements Serializable {
 		return false;
 	}
 
+	/**
+	 * This method checks if type1 is subtype of type2 
+	 * 
+	 * @param type1
+	 * @param decimalParams1 length and scale for decimal field
+	 * @param type2
+	 * @param decimalParams2 length and scale for decimal field
+	 * @return true if conversion is save, false in another case
+	 */
+	public static boolean isSubtype(char type1, int[] decimalParams1, char type2, int[] decimalParams2){
+		DataFieldMetadata field = new DataFieldMetadata();
+		field.fieldType = type1;
+		if (decimalParams1 != null){
+			field.fieldProperties.setProperty(LENGTH_ATTR, String.valueOf(decimalParams1[0]));
+			field.fieldProperties.setProperty(SCALE_ATTR, String.valueOf(decimalParams1[1]));
+		}
+		DataFieldMetadata anotherField = new DataFieldMetadata();
+		anotherField.fieldType = type2;
+		if (decimalParams2 != null){
+			anotherField.fieldProperties.setProperty(LENGTH_ATTR, String.valueOf(decimalParams2[0]));
+			anotherField.fieldProperties.setProperty(SCALE_ATTR, String.valueOf(decimalParams2[1]));
+		}
+		return field.isSubtype(anotherField);
+	}
 }
 /*
  *  end class DataFieldMetadata
