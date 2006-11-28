@@ -28,6 +28,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -38,11 +39,10 @@ import java.util.Map.Entry;
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
-import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.data.primitive.NumericFormat;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -216,6 +216,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign (can be string representation of any type)
 	 */
 	public void addConstantToFieldRule(String patternOut, String value){
+		if (value == null) {
+			value = "null";
+		}
 		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
 	
@@ -235,6 +238,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param patternOut output fields' pattern
 	 * @param value value to assign
 	 */
+	public void addConstantToFieldRule(String patternOut, long value){
+		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+	}
+
+	/**
+	 * Mathod for adding constant assigning to output fields rule
+	 * 
+	 * @param patternOut output fields' pattern
+	 * @param value value to assign
+	 */
 	public void addConstantToFieldRule(String patternOut, double value){
 		rules.put(patternOut,String.valueOf(Rule.CONSTANT) + COLON + value);
 	}
@@ -246,8 +259,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Date value){
-		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + 
-					SimpleDateFormat.getDateInstance().format(value));
+		if (value == null) {
+			rules.put(patternOut, "null");
+		}else{
+			rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + 
+						SimpleDateFormat.getDateInstance().format(value));
+		}
 	}
 
 	/**
@@ -257,7 +274,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Numeric value){
-		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+		if (value == null) {
+			rules.put(patternOut, "null");
+		}else{
+			rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+		}
 	}
 
 	/**
@@ -279,6 +300,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value value to assign 
 	 */
 	public void addConstantToFieldRule(int recNo, int fieldNo, int value){
+		addConstantToFieldRule(String.valueOf(recNo) + DOT + fieldNo, value);
+	}
+
+	/**
+	 * Mathod for adding constant assigning to output fields rule
+	 * 
+	 * @param recNo output record's number
+	 * @param fieldNo output record's field number
+	 * @param value value value to assign 
+	 */
+	public void addConstantToFieldRule(int recNo, int fieldNo, long value){
 		addConstantToFieldRule(String.valueOf(recNo) + DOT + fieldNo, value);
 	}
 
@@ -344,6 +376,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param fieldNo output record's field name
 	 * @param value value value to assign 
 	 */
+	public void addConstantToFieldRule(int recNo, String field, long value){
+		addConstantToFieldRule(String.valueOf(recNo) + DOT + field, value);
+	}
+
+	/**
+	 * Mathod for adding constant assigning to output fields rule
+	 * 
+	 * @param recNo output record's number
+	 * @param fieldNo output record's field name
+	 * @param value value value to assign 
+	 */
 	public void addConstantToFieldRule(int recNo, String field, double value){
 		addConstantToFieldRule(String.valueOf(recNo) + DOT + field, value);
 	}
@@ -387,6 +430,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value value to assign
 	 */
 	public void addConstantToFieldRule(int fieldNo, int value){
+		addConstantToFieldRule(0, fieldNo, String.valueOf(value));
+	}
+
+	/**
+	 * Mathod for adding constant assigning to output fields from 0th output record rule
+	 * 
+	 * @param fieldNo output record's field number
+	 * @param value value value to assign
+	 */
+	public void addConstantToFieldRule(int fieldNo, long value){
 		addConstantToFieldRule(0, fieldNo, String.valueOf(value));
 	}
 
@@ -608,6 +661,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//iteration over each user given rule
 		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
+			//find output fields pattern
 			field = resolveField(rulesEntry.getKey());
 			if (field == null){
 				errorMessage = "Wrong pattern for output fields: " + rulesEntry.getKey();
@@ -633,15 +687,21 @@ public class CustomizedRecordTransform implements RecordTransform {
 				if (inFields.length == 0){
 					errorMessage = "There is no input field matching \""
 						+ ruleString + "\" pattern";
-					logger.warn(errorMessage);
-					continue;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 					
 				}
 			}
 			if (type == Rule.FIELD && inFields.length > 1){
 				//find mapping by names
-				putMappingByNames(transformMap,outFields,inFields);
-			}else{
+				if (putMappingByNames(transformMap,outFields,inFields) == 0) {
+					errorMessage = "Not found any field for mapping by names due to rule:\n" + 
+					field + " - output fields pattern\n" + 
+					ruleString + " - input fields pattern";
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+			}else{//for each output field the same rule
 				//for each output field from pattern put rule to map
 				for (int i=0;i<outFields.length;i++){
 					field = outFields[i];
@@ -651,9 +711,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 						ruleString = inFields[0];
 					}
 					rule = validateRule(getRecNo(field),getFieldNo(field),type,ruleString);
-					if (rule != null) {
-						transformMap.put(outFields[i], rule);
-					}						
+					transformMap.put(outFields[i], rule);
 				}
 			}
 		}
@@ -671,6 +729,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return true;
 	}
 	
+	/**
+	 * This method checks if given rule can be applied to given output field
+	 * 
+	 * @param recNo output record number
+	 * @param fieldNo output record's field number
+	 * @param ruleType type of rule (Rule.FIELD, Rule.CONSTANT,	Rule.SEQUENCE, Rule.PARAMETER)
+	 * @param ruleString
+	 * @return rule with correct parameters
+	 * @throws ComponentNotReadyException
+	 */
 	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString) throws ComponentNotReadyException {
 		char fieldType = targetMetadata[recNo].getFieldType(fieldNo);
 		switch (ruleType) {
@@ -691,31 +759,41 @@ public class CustomizedRecordTransform implements RecordTransform {
 				}
 				if (parameterValue == null){
 					errorMessage = "Not found parameter: " + ruleString;
-					logger.warn(errorMessage);
 					if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || 
 							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
-						return null;
+						logger.error(errorMessage);
+						throw new ComponentNotReadyException(errorMessage);
+					}else{
+						logger.warn(errorMessage);
 					}
 				}
 			}
+			//check if parameter value can be set to given field
+			StringBuilder correctParameterValue = new StringBuilder(
+					parameterValue == null ? "null" : parameterValue); 
 			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					parameterValue != null) {
-				checkConstant(recNo, fieldNo, parameterValue);
+				checkConstant(recNo, fieldNo, correctParameterValue);
 			}
-			return new Rule(Rule.CONSTANT,parameterValue);
+			//change parameter rule to constant rule with parameter value
+			return new Rule(Rule.CONSTANT,correctParameterValue.toString());
 		case Rule.CONSTANT:
 			if (ruleString.equals("null") && !(targetMetadata[recNo].getField(fieldNo).isNullable() || 
 							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
 				errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
 				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.warn(errorMessage);
-				return null;
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
 			}
+			//check if constant can be set to given field
+			StringBuilder correctConstant = new StringBuilder(ruleString);
 			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					ruleString != null) {
-				checkConstant(recNo, fieldNo, ruleString);
+				if (checkConstant(recNo, fieldNo, correctConstant)) {
+					ruleString = correctConstant.toString();
+				}
 			}
 			break;
 		case Rule.SEQUENCE:
@@ -728,29 +806,47 @@ public class CustomizedRecordTransform implements RecordTransform {
 							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
 					errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
 					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-					logger.warn(errorMessage);
-					return null;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 				}
 			}
+			//check sequence method
 			String method = ruleString.indexOf(DOT) > -1 ? 
 					ruleString.substring(ruleString.indexOf(DOT) +1) : "nextValueInt()";
-			char methodType;
-			if (method.toLowerCase().contains("int")) {
-				methodType = DataFieldMetadata.INTEGER_FIELD;
-			}else if (method.toLowerCase().contains("long")){
-				methodType = DataFieldMetadata.LONG_FIELD;
-			}else {
+			char methodType = DataFieldMetadata.UNKNOWN_FIELD;
+			if (method.toLowerCase().startsWith("currentvaluestring") || 
+					method.toLowerCase().startsWith("currentstring") || 
+					method.toLowerCase().startsWith("nextvaluestring") || 
+					method.toLowerCase().startsWith("nextstring")){
 				methodType = DataFieldMetadata.STRING_FIELD;
 			}
-			if (!checkTypes(fieldPolicy, fieldType, null, methodType, null)){
+			if (method.toLowerCase().startsWith("currentvalueint") || 
+					method.toLowerCase().startsWith("currentint") || 
+					method.toLowerCase().startsWith("nextvalueint") || 
+					method.toLowerCase().startsWith("nextint")){
+				methodType = DataFieldMetadata.INTEGER_FIELD;
+			}
+			if (method.toLowerCase().startsWith("currentvaluelong") || 
+					method.toLowerCase().startsWith("currentlong") || 
+					method.toLowerCase().startsWith("nextvaluelong") || 
+					method.toLowerCase().startsWith("nextlong")){
+				methodType = DataFieldMetadata.LONG_FIELD;
+			}
+			if (methodType == DataFieldMetadata.UNKNOWN_FIELD){
+				errorMessage = "Unknown sequence method: " + method;
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			}
+			//check if value from sequence can be set to given field
+			if (!checkTypes(fieldType, null, methodType, null)){
 				if (fieldPolicy == PolicyType.STRICT) {
 					errorMessage = "Sequence method:" + ruleString + " does not " +
 							"match field type:\n"+ targetMetadata[recNo].getName() + 
 							DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
 							" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
 							getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.warn(errorMessage);
-					return null;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 				}
 				if (fieldPolicy == PolicyType.CONTROLLED){
 					errorMessage = "Sequence method:" + ruleString + " does not " +
@@ -758,13 +854,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 					DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
 					" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
 					getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.warn(errorMessage);
-					return null;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 				}
 			}
 			break;
 		case Rule.FIELD:
-			if (!checkTypes(fieldPolicy, recNo, fieldNo, getRecNo(ruleString), getFieldNo(ruleString))){
+			//check input and output fields types
+			if (!checkTypes(recNo, fieldNo, getRecNo(ruleString), getFieldNo(ruleString))){
 				if (fieldPolicy == PolicyType.STRICT) {
 					errorMessage = "Output field type does not match input field " +
 							"type:\n" +targetMetadata[recNo].getName() + DOT + 
@@ -775,8 +872,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 							sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
 							" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
 							getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
-					logger.warn(errorMessage);
-					return null;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 				}
 				if (fieldPolicy == PolicyType.CONTROLLED){
 					errorMessage = "Output field type is not compatible with input field " +
@@ -788,18 +885,32 @@ public class CustomizedRecordTransform implements RecordTransform {
 					sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
 					" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
 					getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
-					logger.warn(errorMessage);
-					return null;
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
 				}
 			}
 		}
 		return new Rule(ruleType,ruleString);
 	}
 	
-	private boolean checkTypes(PolicyType policy, char outType, int[] outTypeDecimalParams,
+	/**
+	 * This method checks if data field of type "inType" is subtype of data field
+	 *  of type "outType". If types are DECIMAL can be check decimal parameters 
+	 *  (LENGTH and SCALE)
+	 * 
+	 * @param outType type to be supertype
+	 * @param outTypeDecimalParams if outType=DataFieldMetadata.DECIMAL_FIELD
+	 * 	represents LENGTH and SCALE
+	 * @param inType type to be subtype
+	 * @param inTypeDEcimalParams if inType=DataFieldMetadata.DECIMAL_FIELD
+	 * 	represents LENGTH and SCALE
+	 * @return "true" if inType is subtype of outType, "false" in other cases
+	 */
+	protected boolean checkTypes(char outType, int[] outTypeDecimalParams,
 			char inType, int[] inTypeDEcimalParams){
 		boolean checkTypes;
 		if (outType == inType){
+			//if DECIMAL type check LENGTH and SCALE 
 			if (outType == DataFieldMetadata.DECIMAL_FIELD ){
 				checkTypes = inTypeDEcimalParams[0] <= outTypeDecimalParams[0] && 
 				inTypeDEcimalParams[1] <= outTypeDecimalParams[1];
@@ -818,8 +929,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return true;
 	}
 	
-	private boolean checkTypes(PolicyType policyType, int outRecNo, int outFieldNo, 
-			int inRecNo, int inFieldNo){
+	/**
+	 * This method checks if input field is subtype of output type
+	 * 
+	 * @param outRecNo output record number
+	 * @param outFieldNo output record's field number
+	 * @param inRecNo input record number
+	 * @param inFieldNo input record's field number
+	 * @return "true" if input field is subtype of output field, "false" in other cases
+	 */
+	protected boolean checkTypes(int outRecNo, int outFieldNo, int inRecNo, int inFieldNo){
 		DataFieldMetadata outField = targetMetadata[outRecNo].getField(outFieldNo);
 		DataFieldMetadata inField = sourceMetadata[inRecNo].getField(inFieldNo);
 		boolean checkTypes;
@@ -834,31 +953,33 @@ public class CustomizedRecordTransform implements RecordTransform {
 			checkTypes = false;
 		}
 		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
-//			logger.warn("Found fields with the same names but other types: ");
-//			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
-//					outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
-//			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
-//					inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
 			return false;
 		}else if (fieldPolicy == PolicyType.CONTROLLED && 
 				!inField.isSubtype(outField)){
-//			logger.warn("Found fields with the same names but incompatible types: ");
-//			logger.warn(targetMetadata[outRecNo].getName() + DOT + 
-//					outField.getName() + " type - " + outField.getTypeAsString() + getDecimalParams(outField));
-//			logger.warn(sourceMetadata[inRecNo].getName() + DOT + 
-//					inField.getName() + " type - " + inField.getTypeAsString() + getDecimalParams(inField));
 			return false;
 		}
 		return true;
 	}
 	
-	private boolean checkConstant(int recNo, int fieldNo, String constant) throws ComponentNotReadyException{
+	/**
+	 * Check if constant can be set to given fields. In some cases the method can 
+	 * 	change constant string representation to proper form
+	 * 
+	 * @param recNo output record number
+	 * @param fieldNo output record's field number
+	 * @param constant string representation of constatnt to be checked
+	 * @return "true" if constant can be set to given field. In some cases string
+	 * 	representation of constant can be changed
+	 * @throws ComponentNotReadyException
+	 */
+	private boolean checkConstant(int recNo, int fieldNo, StringBuilder constant) throws ComponentNotReadyException{
 		char type = targetMetadata[recNo].getFieldType(fieldNo);
 		Object value;
 		Format format = null; 
-        String formatString = targetMetadata[recNo].getField(fieldNo).getFormatStr();;
+		//field format string
+        String formatString = targetMetadata[recNo].getField(fieldNo).getFormatStr();
         Locale locale;
-        // handle locale
+        // handle field locale
         if (targetMetadata[recNo].getField(fieldNo).getLocaleStr() != null) {
             String[] localeLC = targetMetadata[recNo].getField(fieldNo).getLocaleStr()
             			.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
@@ -873,6 +994,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		switch (type) {
 		case DataFieldMetadata.DATE_FIELD:
 		case DataFieldMetadata.DATETIME_FIELD:
+			//get date format from locale and format string
             if ((formatString != null) && (formatString.length() != 0)) {
                 if (locale != null) {
                     format = new SimpleDateFormat(formatString, locale);
@@ -887,28 +1009,57 @@ public class CustomizedRecordTransform implements RecordTransform {
             	format = DateFormat.getDateInstance();
             	((DateFormat)format).setLenient(false);
              }
-            try{
-            	value = ((SimpleDateFormat)format).parse(constant);
+            try{//parse constant string representation
+            	value = ((SimpleDateFormat)format).parse(constant.toString());
             }catch(ParseException e){
-				errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(e);
+            	try {//value could be formatted in method addConstantToFieldRule(String patternOut, Date value)
+                	value = (DateFormat.getDateInstance()).parse(constant.toString());
+                	constant.setLength(0);
+                	//format constatnt with proper format
+                	constant.append(((SimpleDateFormat)format).format((Date)value));
+            	}catch(ParseException e1){
+					errorMessage = e1.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() + 
+					". Expected pattern: " + ((SimpleDateFormat)format).toPattern();
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(e);
+            	}
             }
 			break;
 		case DataFieldMetadata.DECIMAL_FIELD:
-			try {
-					value = DecimalFactory.getDecimal(constant);
-				} catch (NumberFormatException e) {
-					errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
+			//get numeric format from locale and format string
+            if ((formatString != null) && (formatString.length() != 0)) {
+                if (locale != null) {
+                    format = new NumericFormat(formatString, new DecimalFormatSymbols(locale));
+                } else {
+                    format = new NumericFormat(formatString);
+                }
+            } else if (locale != null) {
+            	format = new NumericFormat(locale);
+            }else{
+            	format = new NumericFormat();
+            }
+            try{//parse constant string representation
+            	value = DecimalFactory.getDecimal(constant.toString(), (NumericFormat)format);
+            }catch(NullPointerException e){//Can't get BigDecimal from string, try get Number
+               	try {
+                	value = (DecimalFormat.getInstance()).parse(constant.toString());
+                	constant.setLength(0);
+                	//format constatnt with proper format
+                	constant.append(((NumericFormat)format).format(value));
+               	}catch(ParseException e1){
+					errorMessage = e1.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() +
+					". Expected pattern: " + ((DecimalFormat)format).toPattern();
 					logger.error(errorMessage);
 					throw new ComponentNotReadyException(e);
-				}
+               	}
+            }
 			break;
 		case DataFieldMetadata.INTEGER_FIELD:
 		case DataFieldMetadata.LONG_FIELD:
 		case DataFieldMetadata.NUMERIC_FIELD:
+			//get decimal format from locale and format string
             if ((formatString != null) && (formatString.length() != 0)) {
                 if (locale != null) {
                     format = new DecimalFormat(formatString, new DecimalFormatSymbols(locale));
@@ -920,15 +1071,28 @@ public class CustomizedRecordTransform implements RecordTransform {
             }else{
             	format = DecimalFormat.getInstance();
             }
-            try{
-            	value = ((DecimalFormat)format).parse(constant);
+            try{//parse constant string representation
+            	value = ((DecimalFormat)format).parse(constant.toString());
             }catch(ParseException e){
-				errorMessage = e.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(e);
+				try{//value could be formatted in one of method addConstantToFieldRule
+					value = new Long(constant.toString());
+				}catch(NumberFormatException eL){
+					try{
+						value = new Double(constant.toString());
+					}catch(NumberFormatException eD){
+						errorMessage = eD.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
+						+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() +
+						". Expected pattern: " + ((DecimalFormat)format).toPattern();
+						logger.error(errorMessage);
+						throw new ComponentNotReadyException(e);
+					}
+				}
+				constant.setLength(0);
+               	constant.append(((DecimalFormat)format).format((Number)value));
             }
-            if (type == DataFieldMetadata.LONG_FIELD || type == DataFieldMetadata.INTEGER_FIELD && !(value instanceof Long)){
+            if (type == DataFieldMetadata.LONG_FIELD || 
+            		type == DataFieldMetadata.INTEGER_FIELD && 
+            		!(value instanceof Long)){
 				errorMessage = constant + " is not Long type to record: " + targetMetadata[recNo].getName() 
 				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
 				logger.error(errorMessage);
@@ -975,9 +1139,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param transformMap map to put rules
 	 * @param outFields output fields to mapping
 	 * @param inFields input fields for mapping
+	 * @return number of mappings put to transform map
 	 */
-	protected void putMappingByNames(Map<String, Rule> transformMap, 
+	protected int putMappingByNames(Map<String, Rule> transformMap, 
 			String[] outFields, String[] inFields){
+		int count = 0;
 		String[][] outFieldsName = new String[targetMetadata.length][maxNumFields(targetMetadata)];
 		for (int i = 0; i < outFields.length; i++) {
 			outFieldsName[getRecNo(outFields[i])][getFieldNo(outFields[i])] = 
@@ -997,6 +1163,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 							inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
 						if (putMapping(i, j, i, index, transformMap)){
+							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
 							break;
@@ -1014,6 +1181,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
 							if (putMapping(i, j, i, index, transformMap)){
+								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
 								break;
@@ -1031,6 +1199,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 							outFieldsName[i][j], inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
 						if (putMapping(i, j, i, index, transformMap)){
+							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
 							break;
@@ -1048,6 +1217,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
 							if (putMapping(i, j, i, index, transformMap)){
+								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
 								break;
@@ -1057,6 +1227,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 				}
 			}
 		}
+		return count;
 	}
 	
 	/**
@@ -1073,7 +1244,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
 			Map<String, Rule> transformMap){
 		Rule rule;
-		if (!checkTypes(fieldPolicy, outRecNo, outFieldNo, inRecNo, inFieldNo)){
+		if (!checkTypes(outRecNo, outFieldNo, inRecNo, inFieldNo)){
 			if (fieldPolicy == PolicyType.STRICT){
 				logger.warn("Found fields with the same names but other types: ");
 				logger.warn(targetMetadata[outRecNo].getName() + DOT + 
@@ -1194,33 +1365,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			case Rule.PARAMETER://in method init changed to constant
 				break;
 			default:// constant
-				//for DateDataField constant could be stored in string representation
-				if (target[order[i][REC_NO]].getField(order[i][FIELD_NO]).getType() == DataFieldMetadata.DATE_FIELD
-						|| target[order[i][REC_NO]].getField(order[i][FIELD_NO]).getType() == DataFieldMetadata.DATETIME_FIELD) {
-					try {
-						//get date from string
-						Date date = SimpleDateFormat.getDateInstance()
-								.parse(ruleString);
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(date);
-					} catch (ParseException e) {
-						// value was set as String not a Date
-						try {
-							target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
-						} catch (BadDataFormatException e1) {
-							errorMessage = e1.getLocalizedMessage();
-							logger.error(errorMessage);
-							throw new TransformException("",e1);
-						}
-					}
-				} else {//not DateDataField
-					try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
-					} catch (BadDataFormatException e) {
-						errorMessage = e.getLocalizedMessage();
-						logger.error(errorMessage);
-						throw new TransformException("",e);
-					}
-				}
+					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
 				break;
 			}
 		}
@@ -1252,8 +1397,20 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}
 	}
 
-	public Map<String, String> getRules() {
-		return rules;
+	/**
+	 * Gets rule in form they were set by user
+	 * 
+	 * @return rules
+	 */
+	public ArrayList<String> getRules() {
+		ArrayList<String> list = new ArrayList<String>();
+		Entry<String, String> entry;
+		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
+			entry = iterator.next();
+			list.add(getRuleTypeAsString(Integer.valueOf(entry.getValue().substring(0, 1))) + 
+					":" + entry.getKey() + "=" + entry.getValue().substring(2));
+		}
+		return list;
 	}
 
 	/**
@@ -1303,6 +1460,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}
 		return list;
 	}
+	
+	//TODO gettery na ploa bez prawidel, z parwidlami itd.
 
 	public PolicyType getFieldPolicy() {
 		return fieldPolicy;
@@ -1361,6 +1520,21 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return params.toString();
 	}
 	
+	private String getRuleTypeAsString(int type){
+		switch (type) {
+		case Rule.CONSTANT:
+			return Rule.CONSTANT_RULE;
+		case Rule.FIELD:
+			return Rule.FIELD_RULE;
+		case Rule.PARAMETER:
+			return Rule.PARAMETER_RULE;
+		case Rule.SEQUENCE:
+			return Rule.SEQUENCE_RULE;
+		default:
+			return "UNKNOWN_RULE";
+		}
+	}
+
 	/**
 	 *Private class for storing transformation rules
 	 */
@@ -1371,6 +1545,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 		final static int CONSTANT = 1;
 		final static int SEQUENCE = 2;
 		final static int PARAMETER = 3;
+		
+		final static String FIELD_RULE = "FIELD_RULE";
+		final static String CONSTANT_RULE = "CONSTANT_RULE";
+		final static String SEQUENCE_RULE = "SEQUENCE_RULE";
+		final static String PARAMETER_RULE = "PARAMETER_RULE";
 		
 		int type;
 		String value;
@@ -1420,31 +1599,32 @@ public class CustomizedRecordTransform implements RecordTransform {
 		 * @return value from sequence
 		 * @throws TransformException 
 		 */
-		Object getValue(Sequence sequence) throws TransformException{
+		Object getValue(Sequence sequence){
 			if (sequence == null){
 				return null;
 			}
 			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
 			String method = dotIndex > -1 ? value.substring(dotIndex +1) : "nextValueInt()";
-			if (method.equals("currentValueString()")){
+			if (method.toLowerCase().startsWith("currentvaluestring") || method.toLowerCase().startsWith("currentstring")){
 				return sequence.currentValueString();
 			}
-			if (method.equals("nextValueString()")){
+			if (method.toLowerCase().startsWith("nextvaluestring") || method.toLowerCase().startsWith("nextstring")){
 				return sequence.nextValueString();
 			}
-			if (method.equals("currentValueInt()")){
+			if (method.toLowerCase().startsWith("currentvalueint") || method.toLowerCase().startsWith("currentint")){
 				return sequence.currentValueInt();
 			}
-			if (method.equals("nextValueInt()")){
+			if (method.toLowerCase().startsWith("nextvalueint") || method.toLowerCase().startsWith("nextint")){
 				return sequence.nextValueInt();
 			}
-			if (method.equals("currentValueLong()")){
+			if (method.toLowerCase().startsWith("currentvaluelong") || method.toLowerCase().startsWith("currentlong")){
 				return sequence.currentValueLong();
 			}
-			if (method.equals("nextValueLong()")){
+			if (method.toLowerCase().startsWith("nextvaluelong") || method.toLowerCase().startsWith("nextlong")){
 				return sequence.nextValueLong();
 			}
-			throw new TransformException("Unknown method \"" + method + "\".");
+			//in method validateRule checked, that has to be one of method above
+			return null;
 		}
 		
 	}
