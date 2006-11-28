@@ -66,9 +66,9 @@ public class NumericFormat extends NumberFormat {
     	dFormat = new DecimalFormat(pattern,symbols);
    }
    
-    /* (non-Javadoc)
-	 * @see java.text.NumberFormat#parse(java.lang.String, java.text.ParsePosition)
-	 */
+    /**
+     * @return BigDecimal
+     */
 	public Number parse(String source, ParsePosition parsePosition){
 		boolean exponentForm = false;
 		char decimalSeparator = dFormat.getDecimalFormatSymbols().getDecimalSeparator();
@@ -110,6 +110,7 @@ public class NumericFormat extends NumberFormat {
 		}
 		try {
 			BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
+			parsePosition.setIndex(chars.length);
 			if (exponentForm){
 				return bigDecimal.movePointRight(exponentPart);
 			}else{
