@@ -53,7 +53,7 @@ public interface JmsMsg2DataRecord {
 	/**
 	 * Transform JMS message to data record.
 	 * @param msg The message to be transformed
-	 * @return Data record
+	 * @return Data record; null indicates that the message is not accepted by the processor. 
 	 * @throws JMSException
 	 */
 	public DataRecord extractRecord(Message msg) throws JMSException;
