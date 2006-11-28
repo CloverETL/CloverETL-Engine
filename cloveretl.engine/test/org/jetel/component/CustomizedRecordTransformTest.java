@@ -3,6 +3,7 @@ package org.jetel.component;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -136,7 +137,13 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getResolvedRules();
+		List<String> rules = transform.getRules();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
@@ -162,12 +169,12 @@ public class CustomizedRecordTransformTest extends TestCase {
 	public void test_constantToField(){
 		System.out.println("Constant to field test:");
 		transform.addConstantToFieldRule("*.Name", "Agata");
-		transform.addConstantToFieldRule(3, new GregorianCalendar(1973,3,23).getTime());
+		transform.addConstantToFieldRule(1,3, new GregorianCalendar(1973,3,23).getTime());
 		transform.addConstantToFieldRule(0, 1, 45.55);
 		transform.addConstantToFieldRule("${out*.Valu?}", 100);
 		transform.addConstantToFieldRule(1, "Age", DecimalFactory.getDecimal(new BigDecimal("36474.738393")));
 		transform.addConstantToFieldRule("${out.*.2}", "Prague");
-		transform.addConstantToFieldRule(1, 3, "16-11-2006");
+		transform.addConstantToFieldRule(0, 3, "Nov 28, 2006");
 		transform.addConstantToFieldRule(4, "1.111111111");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
@@ -175,7 +182,13 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getResolvedRules();
+		List<String> rules = transform.getRules();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
@@ -190,13 +203,13 @@ public class CustomizedRecordTransformTest extends TestCase {
 		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals(out.getField(0).toString(), "Agata");
 		assertEquals(out1.getField(0).getValue().toString(), "Agata");
-		assertEquals(out.getField(3).getValue(), new GregorianCalendar(1973,3,23).getTime());
+		assertEquals(out1.getField(3).getValue(), new GregorianCalendar(1973,3,23).getTime());
 		assertEquals(out.getField(1).getValue(), 45.55);
 		assertEquals(out1.getField(4).getValue(), 100);
 		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(36474.738393,DataFieldMetadata.INTEGER_LENGTH + 1,1));
 		assertEquals(out.getField(2).getValue().toString(), "Prague");
 		assertEquals(out1.getField(2).getValue().toString(), "Prague");
-		assertEquals(out1.getField(3).getValue(), new GregorianCalendar(2006,10,16).getTime());
+		assertEquals(out.getField(3).getValue(), new GregorianCalendar(2006,10,28).getTime());
 		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(1.111111111,4,1));
 	}
 
@@ -213,7 +226,13 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getResolvedRules();
+		List<String> rules = transform.getRules();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
@@ -248,7 +267,13 @@ public class CustomizedRecordTransformTest extends TestCase {
 		} catch (ComponentNotReadyException e) {
 			e.printStackTrace();
 		}
-		List<String> rules = transform.getResolvedRules();
+		List<String> rules = transform.getRules();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
