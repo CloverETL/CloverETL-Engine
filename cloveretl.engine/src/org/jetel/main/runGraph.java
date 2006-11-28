@@ -35,6 +35,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
+import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.crypto.Enigma;
 
@@ -191,16 +192,10 @@ public class runGraph {
             in = System.in;
         } else {
             System.out.println("Graph definition file: " + args[args.length - 1]);
-            URL fileURL=null;
-            try {
-                fileURL = new URL(args[args.length - 1]);
-            }catch(MalformedURLException ex2){
-                try{
-                    fileURL = new URL("file:"+args[args.length - 1]);
-                }catch(MalformedURLException ex1){
-                    System.err.println("Error - graph definition file can't be read: " + ex1.getMessage());
-                    System.exit(-1);
-                }
+            URL fileURL = FileUtils.getFileURL(args[args.length - 1]);
+            if(fileURL == null) {
+                System.err.println("Error - graph definition file can't be read.");
+                System.exit(-1);
             }
             try{
                 in=fileURL.openStream();
