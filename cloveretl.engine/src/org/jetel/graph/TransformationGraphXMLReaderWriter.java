@@ -632,12 +632,12 @@ public class TransformationGraphXMLReaderWriter {
 	            if (attributes.exists("fileURL")){
 	                String fileURL = attributes.getString("fileURL");
 	               try{
-                    graph.loadGraphProperties(fileURL);
+                    graph.loadGraphPropertiesSafe(fileURL);
                    }catch(IOException ex){
                        throw new XMLConfigurationException("Can't load property definition from "+fileURL,ex); 
                    }
 	            }else if (attributes.exists("name")){
-	                graph.getGraphProperties().setProperty(attributes.getString("name"),
+	                graph.getGraphProperties().setPropertySafe(attributes.getString("name"),
 	                        attributes.resolveReferences(attributes.getString("value")));
 	            }else{
 	                throw new XMLConfigurationException("Invalid property definition :"+propertyElements.item(i));

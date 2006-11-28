@@ -43,6 +43,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.FileUtils;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.TypedProperties;
 /*
@@ -714,22 +715,25 @@ public final class TransformationGraph {
 		if (graphProperties == null) {
 			graphProperties = new TypedProperties();
 		}
-		URL url = null;
-        try {
-            url = new URL(fileURL); 
-        } catch(MalformedURLException e) {
-            // try to patch the url
-            try {
-                url = new URL("file:" + fileURL);
-            } catch(MalformedURLException ex) {
-                logger.error("Wrong URL/filename of file specified: " + fileURL, ex);
-                throw new IOException(ex.getMessage());
-            }
-        }
+        URL url = FileUtils.getFileURL(fileURL);
         InputStream inStream = new BufferedInputStream(url.openStream());
 		graphProperties.load(inStream);
 	}
 
+    /**
+     * Same as TransformationGraph.loadGraphProperties() method.
+     * Existing properties are not overwritten.
+     * @param fileURL
+     * @throws IOException
+     */
+    public void loadGraphPropertiesSafe(String fileURL) throws IOException {
+        if (graphProperties == null) {
+            graphProperties = new TypedProperties();
+        }
+        URL url = FileUtils.getFileURL(fileURL);
+        InputStream inStream = new BufferedInputStream(url.openStream());
+        graphProperties.loadSafe(inStream);
+    }
 
 	/**
 	 *  Populates global graph properties from specified property
