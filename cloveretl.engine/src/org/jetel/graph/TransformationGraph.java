@@ -716,6 +716,10 @@ public final class TransformationGraph {
 			graphProperties = new TypedProperties();
 		}
         URL url = FileUtils.getFileURL(fileURL);
+        if(url == null) {
+            logger.error("Wrong URL/filename of file specified: " + fileURL);
+            throw new IOException("Wrong URL/filename of file specified: " + fileURL);
+        }
         InputStream inStream = new BufferedInputStream(url.openStream());
 		graphProperties.load(inStream);
 	}
@@ -731,6 +735,10 @@ public final class TransformationGraph {
             graphProperties = new TypedProperties();
         }
         URL url = FileUtils.getFileURL(fileURL);
+        if(url == null) {
+            logger.error("Wrong URL/filename of file specified: " + fileURL);
+            throw new IOException("Wrong URL/filename of file specified: " + fileURL);
+        }
         InputStream inStream = new BufferedInputStream(url.openStream());
         graphProperties.loadSafe(inStream);
     }
