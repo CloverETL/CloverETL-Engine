@@ -56,14 +56,13 @@ public class TypedProperties extends Properties {
      * Doesn't overwrite existing properties.
      * @see java.util.Properties#load(java.io.InputStream)
      */
-    @Override
-    public synchronized void load(InputStream inStream) throws IOException {
+    public synchronized void loadSafe(InputStream inStream) throws IOException {
         Properties tempProperties = new Properties();
         tempProperties.load(inStream);
         
         for(Enumeration e = tempProperties.propertyNames(); e.hasMoreElements();) {
             String propertyName = (String) e.nextElement();
-            setProperty(propertyName, tempProperties.getProperty(propertyName));
+            setPropertySafe(propertyName, tempProperties.getProperty(propertyName));
         }
     }
     
@@ -71,8 +70,7 @@ public class TypedProperties extends Properties {
      * Doesn't overwrite existing properties.
      * @see java.util.Properties#setProperty(java.lang.String, java.lang.String)
      */
-    @Override
-    public synchronized Object setProperty(String key, String value) {
+    public synchronized Object setPropertySafe(String key, String value) {
         if(getProperty(key) == null) {
             return super.setProperty(key, value);
         } else {
