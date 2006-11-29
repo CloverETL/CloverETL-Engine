@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.nio.BufferOverflowException;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -48,6 +49,7 @@ public class DirectEdge extends EdgeBase {
 	private ByteBuffer tmpDataRecord;
 	private int recordCounter;
     private long byteCounter;
+    private AtomicInteger bufferedRecords; 
 	private boolean isClosed=false;
     private boolean readerWait=false;
     private volatile boolean writerWait=false;
@@ -83,6 +85,9 @@ public class DirectEdge extends EdgeBase {
         return byteCounter; 
     }
     
+    public int getBufferedRecords(){
+        return bufferedRecords.get();
+    }
 	
 	/**
 	 *  Gets the Open attribute of the Edge object
@@ -108,6 +113,7 @@ public class DirectEdge extends EdgeBase {
 		writeBuffer=ByteBuffer.allocateDirect(Defaults.Graph.DIRECT_EDGE_INTERNAL_BUFFER_SIZE);
 		recordCounter = 0;
         byteCounter=0;
+        bufferedRecords=new AtomicInteger(0);
 		readBuffer.flip(); // we start with empty read buffer
 		tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 	}
@@ -142,7 +148,8 @@ public class DirectEdge extends EdgeBase {
 	    }catch(BufferUnderflowException ex){
 	        throw new IOException(ex.getMessage());
 	    }
-	    
+        bufferedRecords.decrementAndGet();
+        
 		return record;
 	}
 
@@ -178,7 +185,7 @@ public class DirectEdge extends EdgeBase {
 	    }catch(BufferUnderflowException ex){
 	        throw new IOException(ex.getMessage());
 	    }
-	    
+        bufferedRecords.decrementAndGet();
 	    
 	    return true;
 	}
@@ -238,6 +245,7 @@ public class DirectEdge extends EdgeBase {
 
         recordCounter++;
         // one more record written
+        bufferedRecords.incrementAndGet();
     }
 
 	/**
@@ -266,6 +274,7 @@ public class DirectEdge extends EdgeBase {
 
         byteCounter += dataLength;
         recordCounter++;
+        bufferedRecords.incrementAndGet();
 
     }
 
@@ -302,6 +311,9 @@ public class DirectEdge extends EdgeBase {
 		readBuffer.clear();
 		readBuffer.flip();
 		writeBuffer.clear();
+        bufferedRecords.set(0);
+        recordCounter=0;
+        byteCounter=0;
 	}
 
 

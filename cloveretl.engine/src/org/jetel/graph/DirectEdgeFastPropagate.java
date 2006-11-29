@@ -23,6 +23,8 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 
@@ -44,6 +46,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     protected EdgeRecordBufferPool recordBuffer;
     protected int recordCounter;
     protected long byteCounter;
+    protected AtomicInteger bufferedRecords;
 
     // Attributes
     
@@ -70,6 +73,10 @@ public class DirectEdgeFastPropagate extends EdgeBase {
     }
 
     
+    public int getBufferedRecords(){
+        return bufferedRecords.get();
+    }
+    
     /**
      *  Gets the Open attribute of the Edge object
      *
@@ -94,6 +101,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
                                             Defaults.Record.MAX_RECORD_SIZE);
         recordCounter = 0;
         byteCounter=0;
+        bufferedRecords=new AtomicInteger(0); 
     }
 
 
@@ -122,7 +130,8 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         record.deserialize(buffer);
         
         recordBuffer.setFree(buffer);
-
+        bufferedRecords.decrementAndGet();
+        
         return record;
     }
 
@@ -150,6 +159,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordBuffer.setFree(buffer);
         // free the buffer
         record.flip();
+        
+        bufferedRecords.decrementAndGet();
+        
         return true;
     }
 
@@ -176,6 +188,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         byteCounter+=buffer.remaining();        
         recordBuffer.setFull(buffer);      
         recordCounter++;
+        bufferedRecords.incrementAndGet();
         // one more record written
     }
 
@@ -204,6 +217,7 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordBuffer.setFull(buffer);
         record.rewind();
         recordCounter++;
+        bufferedRecords.incrementAndGet();
     }
 
 
@@ -216,6 +230,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
      */
     public void open() {
         recordBuffer.open();
+        bufferedRecords.set(0);
+        recordCounter=0;
+        byteCounter=0;
     }
 
 
