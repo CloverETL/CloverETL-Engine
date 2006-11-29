@@ -84,19 +84,31 @@ public abstract class EdgeBase {
 
 
 	/**
-	 *  Gets the recordCounter attribute of the Edge object
+	 *  Gets the recordCounter - how many records passed through
+     *  this edge so far.
 	 *
 	 *@return    The recordCounter value
 	 */
 	public abstract int getRecordCounter();
 
     /**
-     * Gets the byteCounter attribute of the Edge object
+     * Gets the byteCounter - how many bytes passed through
+     *  this edge so far.
      * 
      * @return The byteCounter value
      */
     public abstract long getByteCounter();
 
+    
+    /**
+     * Gets number of records currently buffered within this
+     * edge
+     * 
+     * @return
+     * @since 28.11.2006
+     */
+    public abstract int getBufferedRecords();
+    
 	/**
 	 *  Description of the Method
 	 *

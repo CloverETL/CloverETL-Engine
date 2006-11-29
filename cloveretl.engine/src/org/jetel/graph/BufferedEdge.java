@@ -76,6 +76,10 @@ public class BufferedEdge extends EdgeBase {
         return byteCounter;
     }
     
+    public int getBufferedRecords(){
+        return recordBuffer.getBufferedRecords();
+    }
+    
 	
 	/**
 	 *  Gets the Open attribute of the Edge object

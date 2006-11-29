@@ -152,6 +152,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	    return edge.getByteCounter();
     }
     
+     public int getBufferedRecords(){
+         return edge.getBufferedRecords();
+     }
+    
     
 	/**
 	 *  Gets the Reader attribute of the Edge object
