@@ -35,8 +35,11 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
+import org.apache.poi.hssf.record.formula.Ptg;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -52,6 +55,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
+import org.jetel.util.TypedProperties;
 import org.jetel.util.WcardPattern;
 
 /**
@@ -120,6 +124,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected static final char COLON =':';
 	protected static final char PARAMETER_CHAR = '$'; 
 	
+	protected final static String PARAM_OPCODE_REGEX = "\\$\\{par\\.(.*)\\}";
+	protected final static Pattern PARAM_PATTERN = Pattern.compile(PARAM_OPCODE_REGEX);
+	protected final static String SEQ_OPCODE_REGEX = "\\$\\{seq\\.(.*)\\}";
+	protected final static Pattern SEQ_PATTERN = Pattern.compile(SEQ_OPCODE_REGEX);
+	protected final static String FIELD_OPCODE_REGEX = "\\$\\{out\\.(.*)\\}";
+	protected final static Pattern FIELD_PATTERN = Pattern.compile(FIELD_OPCODE_REGEX);
+	
 	private	 int ruleType;
 	private String ruleString;
 	private String sequenceID;
@@ -135,7 +146,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 * Mathod for adding field mapping rule
 	 * 
-	 * @param patternOut output fields' pattern
+	 * @param patternOut output field's pattern
 	 * @param patternIn input field's pattern
 	 */
 	public void addFieldToFieldRule(String patternOut, String patternIn) {
@@ -572,9 +583,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * Mathod for adding rule: assigning parameter value to output fields
 	 * 
 	 * @param patternOut output fields' pattern
-	 * @param parameterName
+	 * @param parameterName (can be in form ${par.parameterName})
 	 */
 	public void addParameterToFieldRule(String patternOut, String parameterName){
+		if (parameterName.indexOf(DOT) > -1 ) {
+			parameterName = parameterName.substring(parameterName.indexOf(DOT) + 1, parameterName.length() -1);
+		}
 		rules.put(patternOut, String.valueOf(Rule.PARAMETER) + COLON + parameterName);
 	}
 
@@ -583,7 +597,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @param recNo output record's number
 	 * @param fieldNo output record's field number
-	 * @param parameterName
+	 * @param parameterName (can be in form ${par.parameterName})
 	 */
 	public void addParameterToFieldRule(int recNo, int fieldNo, String parameterName){
 		addParameterToFieldRule(String.valueOf(recNo) + DOT + fieldNo, parameterName);
@@ -594,7 +608,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @param recNo output record's number
 	 * @param field output record's field name
-	 * @param parameterName
+	 * @param parameterName (can be in form ${par.parameterName})
 	 */
 	public void addParameterToFieldRule(int recNo, String field, String parameterName){
 		addParameterToFieldRule(String.valueOf(recNo) + DOT + field, parameterName);
@@ -604,10 +618,39 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * Mathod for adding rule: assigning parameter value to output fields in 0th output record
 	 * 
 	 * @param fieldNo output record's field number
-	 * @param parameterName
+	 * @param parameterName (can be in form ${par.parameterName})
 	 */
 	public void addParameterToFieldRule(int fieldNo, String parameterName){
 		addParameterToFieldRule(0,fieldNo, parameterName);
+	}
+	
+	/**
+	 * Method for adding rule in CloverETL syntax
+	 * This method calls proper add....Rule depending on syntax of pattern
+	 * 
+	 * @see org.jetel.util.CodeParser
+	 * @param patternOut output field's pattern
+	 * @param pattern rule for output field as: ${par.parameterName}, ${seq.sequenceID},
+	 * 	${in.inRecordPattern.inFieldPattern}. If "pattern" doesn't much to any above, 
+	 * 	it is regarded as constant. 
+	 */
+	public void addRule(String patternOut, String pattern){
+		Matcher matcher = PARAM_PATTERN.matcher(pattern);
+		if (matcher.find()) {
+			addParameterToFieldRule(patternOut, pattern);
+		}else{
+			matcher = SEQ_PATTERN.matcher(pattern);
+			if (matcher.find()){
+				addSequenceToFieldRule(patternOut, pattern);
+			}else{
+				matcher = FIELD_PATTERN.matcher(pattern);
+				if (matcher.find()){
+					addFieldToFieldRule(patternOut, pattern);
+				}else{
+					addConstantToFieldRule(patternOut, pattern);
+				}
+			}
+		}
 	}
 	
 	public void finished() {
@@ -670,6 +713,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			//find output fields from pattern
 			outFields = findFields(field, targetMetadata).toArray(new String[0]);
+			if (outFields.length == 0){
+				errorMessage = "There is no output field matching \""
+					+ field + "\" pattern";
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+				
+			}
 			inFields = new String[0];
 			//find type: Rule.FIELD, Rule.CONSTANT,	Rule.SEQUENCE, Rule.PARAMETER
 			type = Integer.parseInt(rulesEntry.getValue().substring(0, rulesEntry.getValue().indexOf(COLON)));
@@ -906,7 +956,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 	represents LENGTH and SCALE
 	 * @return "true" if inType is subtype of outType, "false" in other cases
 	 */
-	protected boolean checkTypes(char outType, int[] outTypeDecimalParams,
+	private boolean checkTypes(char outType, int[] outTypeDecimalParams,
 			char inType, int[] inTypeDEcimalParams){
 		boolean checkTypes;
 		if (outType == inType){
@@ -920,10 +970,23 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}else {
 			checkTypes = false;
 		}
+		DataFieldMetadata outField = new DataFieldMetadata("out",outType,(short)1);
+		if (outTypeDecimalParams != null){
+			TypedProperties properties = new TypedProperties();
+			properties.put(DataFieldMetadata.LENGTH_ATTR, outTypeDecimalParams[0]);
+			properties.put(DataFieldMetadata.SCALE_ATTR, outTypeDecimalParams[1]);
+			outField.setFieldProperties(properties);
+		}
+		DataFieldMetadata inField = new DataFieldMetadata("out",inType,(short)1);
+		if (inTypeDEcimalParams != null){
+			TypedProperties properties = new TypedProperties();
+			properties.put(DataFieldMetadata.LENGTH_ATTR, inTypeDEcimalParams[0]);
+			properties.put(DataFieldMetadata.SCALE_ATTR, inTypeDEcimalParams[1]);
+			inField.setFieldProperties(properties);
+		}
 		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
 			return false;
-		}else if (fieldPolicy == PolicyType.CONTROLLED && 
-				!DataFieldMetadata.isSubtype(inType, inTypeDEcimalParams, outType, outTypeDecimalParams)){
+		}else if (fieldPolicy == PolicyType.CONTROLLED && !inField.isSubtype(outField)){
 			return false;
 		}
 		return true;
@@ -954,8 +1017,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}
 		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
 			return false;
-		}else if (fieldPolicy == PolicyType.CONTROLLED && 
-				!inField.isSubtype(outField)){
+		}else if (fieldPolicy == PolicyType.CONTROLLED && !inField.isSubtype(outField)){
 			return false;
 		}
 		return true;
@@ -1461,7 +1523,91 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return list;
 	}
 	
-	//TODO gettery na ploa bez prawidel, z parwidlami itd.
+	/**
+	 * Gets output fields, for which there wasn't set any rule
+	 * 
+	 * @return indexes (output record number, output field number) of fields without rule 
+	 */
+	public ArrayList<Integer[]> getFieldsWithoutRules(){
+		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
+		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
+			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
+				if (fieldNo < targetMetadata[recNo].getNumFields() && 
+						transformMapArray[recNo][fieldNo] == null) {
+					list.add(new Integer[]{recNo,fieldNo});
+				}
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * Gets input fields not mapped on output fields
+	 * 
+	 * @return indexes (output record number, output field number) of not used input fields
+	 */
+	public ArrayList<Integer[]> getNotUsedFields(){
+		String[] inFields = findFields("*.*", sourceMetadata).toArray(new String[0]);
+		Rule rule;
+		int index;
+		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
+			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
+				rule = transformMapArray[recNo][fieldNo];
+				if (rule != null && rule.getType() == Rule.FIELD) {
+					index = StringUtils.findString(rule.getValue(), inFields);
+					if (index != -1) {
+						inFields[index] = null;
+					}
+				}
+			}
+		}
+		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
+		for (int i = 0; i < inFields.length; i++) {
+			if (inFields[i] != null){
+				list.add(new Integer[]{getRecNo(inFields[i]),getFieldNo(inFields[i])});
+			}
+		}
+		return list;
+	}
+	
+	/**
+	 * Gets rule for given output field 
+	 * 
+	 * @param recNo output record number
+	 * @param fieldNo output record's field number
+	 * @return rule for given output field 
+	 */
+	public String getRule(int recNo, int fieldNo){
+		Rule rule = transformMapArray[recNo][fieldNo];
+		if (rule == null) {
+			return null;
+		}
+		return getRuleTypeAsString(rule.getType()) + COLON + rule.getValue();
+	}
+	
+	/**
+	 * Gets output fields, which mapped given input field
+	 * 
+	 * @param inRecNo input record number
+	 * @param inFieldNo input record's field number
+	 * @return indexes (output record number, output field number) of fields, which mapped given input field
+	 */
+	public ArrayList<Integer[]> getRulesWithField(int inRecNo,int inFieldNo){
+		ArrayList<Integer[]> list = new ArrayList<Integer[]>();
+		Rule rule;
+		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
+			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
+				rule = transformMapArray[recNo][fieldNo];
+				if (rule != null && rule.getType() == Rule.FIELD) {
+					if (getRecNo(rule.getValue()) == inRecNo && 
+							getFieldNo(rule.getValue()) == inFieldNo){
+						list.add(new Integer[]{recNo, fieldNo});
+					}
+				}
+			}
+		}
+		return list;
+	}
 
 	public PolicyType getFieldPolicy() {
 		return fieldPolicy;
@@ -1477,7 +1623,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param metadata
 	 * @return maximal length of metadatas
 	 */
-	protected int maxNumFields(DataRecordMetadata[] metadata){
+	private int maxNumFields(DataRecordMetadata[] metadata){
 		int numFields = 0;
 		for (int i = 0; i < metadata.length; i++) {
 			if (metadata[i].getNumFields() > numFields) {
@@ -1493,7 +1639,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField recNo.FieldNo
 	 * @return record number
 	 */
-	protected Integer getRecNo(String recField){
+	private Integer getRecNo(String recField){
 		return Integer.valueOf(recField.substring(0, recField.indexOf(DOT)));
 	}
 	
@@ -1503,11 +1649,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField
 	 * @return field number
 	 */
-	protected Integer getFieldNo(String recField){
+	private Integer getFieldNo(String recField){
 		return Integer.valueOf(recField.substring(recField.indexOf(DOT) + 1));
 	}
 	
-	protected String getDecimalParams(DataFieldMetadata field){
+	/**
+	 * This method gets LENGTH and SCALE from decimal data field
+	 * 
+	 * @param field
+	 * @return string (LENGTH,SCALE)
+	 */
+	private String getDecimalParams(DataFieldMetadata field){
 		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD){
 			return "";
 		}
@@ -1538,7 +1690,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 *Private class for storing transformation rules
 	 */
-	class Rule {
+	private class Rule {
 		
 		//Types of rule
 		final static int FIELD = 0;
