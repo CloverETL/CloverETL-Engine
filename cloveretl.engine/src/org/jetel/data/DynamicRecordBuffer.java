@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import static org.jetel.util.ByteBufferUtils.decodeLength;
 import static org.jetel.util.ByteBufferUtils.encodeLength;
@@ -55,7 +56,7 @@ public class DynamicRecordBuffer {
 	private LinkedList<DiskSlot> emptyFileBuffers;
     private LinkedList<DiskSlot> fullFileBuffers;
     
-    private volatile int bufferedRecords;
+    private AtomicInteger bufferedRecords;
     
     private boolean awaitingData;
     
@@ -110,7 +111,7 @@ public class DynamicRecordBuffer {
         tmpDataRecord=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         lastSlot=-1;
         awaitingData=true;
-        bufferedRecords=0;
+        bufferedRecords=new AtomicInteger(0);
         readDataBuffer.flip();
     }
     
@@ -174,7 +175,7 @@ public class DynamicRecordBuffer {
 		readDataBuffer.clear();
         writeDataBuffer.clear();
         awaitingData=true;
-        bufferedRecords=0;
+        bufferedRecords.set(0);
         readDataBuffer.flip();
         
 	}
@@ -201,7 +202,7 @@ public class DynamicRecordBuffer {
 			//writeDataBuffer.putInt(recordSize);
             encodeLength(writeDataBuffer,recordSize);
 			writeDataBuffer.put(record);
-            bufferedRecords++;
+            bufferedRecords.incrementAndGet();
 		} catch (BufferOverflowException ex) {
 			throw new IOException("WriteBuffer is not big enough to accomodate data record !");
 		}
@@ -237,7 +238,7 @@ public class DynamicRecordBuffer {
             // writeDataBuffer.putInt(recordSize);
             encodeLength(writeDataBuffer, length);
             writeDataBuffer.put(tmpDataRecord);
-            bufferedRecords++;
+            bufferedRecords.incrementAndGet();
         } catch (BufferOverflowException ex) {
             throw new IOException(
                     "WriteBuffer is not big enough to accomodate data record !");
@@ -340,7 +341,7 @@ public class DynamicRecordBuffer {
         record.put(readDataBuffer);
         readDataBuffer.limit(oldLimit);
         record.flip();
-        bufferedRecords--;
+        bufferedRecords.decrementAndGet();
         return true;
 	}
 
@@ -371,7 +372,7 @@ public class DynamicRecordBuffer {
         }
             
         record.deserialize(readDataBuffer);
-        bufferedRecords--;
+        bufferedRecords.decrementAndGet();
         return record;
         
         
@@ -445,7 +446,7 @@ public class DynamicRecordBuffer {
      * @since 20.11.2006
      */
     public int getBufferedRecords() {
-        return bufferedRecords;
+        return bufferedRecords.get();
     }
     
     private static class DiskSlot {
