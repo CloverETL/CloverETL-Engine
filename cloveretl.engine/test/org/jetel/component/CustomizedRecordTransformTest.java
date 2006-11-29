@@ -32,6 +32,8 @@ public class CustomizedRecordTransformTest extends TestCase {
 	TransformationGraph graph;
 	DataRecordMetadata metadata, metadata1, metaOut, metaOut1;
 	DataRecord record, record1, out, out1;
+	DataRecordMetadata[] inMetadata;
+	DataRecordMetadata[] outMatedata;
 	
 	@Override
 	protected void setUp() throws Exception {
@@ -85,6 +87,9 @@ public class CustomizedRecordTransformTest extends TestCase {
 		metaOut1.getField("Age").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, String.valueOf(DataFieldMetadata.INTEGER_LENGTH+1));
 		metaOut1.getField("Age").getFieldProperties().setProperty(DataFieldMetadata.SCALE_ATTR, "1");
 
+		inMetadata = new DataRecordMetadata[]{metadata, metadata1};
+		outMatedata = new DataRecordMetadata[]{ metaOut, metaOut1};
+		
 		record = new DataRecord(metadata);
 		record.init();
 		record1 = new DataRecord(metadata1);
@@ -128,7 +133,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addFieldToFieldRule(2, "1.2");
 		transform.addFieldToFieldRule(1, 3, "${1.3}");
 		transform.addFieldToFieldRule("*.City", 0, 2);
-		transform.addFieldToFieldRule("{out1.3}", 0, 3);
+		transform.addFieldToFieldRule("${out1.3}", 0, 3);
 		transform.addFieldToFieldRule("${out.1.V*}", 0, "Value");
 		transform.addFieldToFieldRule(1, 1, "in.Value");
 		try {
@@ -147,6 +152,33 @@ public class CustomizedRecordTransformTest extends TestCase {
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
+		}
+		System.out.println("Rule for field 0.0:");
+		System.out.println(transform.getRule(0, 0));
+		System.out.println("Rules with field 0.1");
+		fields = transform.getRulesWithField(0, 1);
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
 		try {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
 		} catch (TransformException e) {
@@ -161,7 +193,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
 		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
 		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
-		assertEquals(out1.getField(3).getValue(), record1.getField(3).getValue());
+		assertEquals(out1.getField(3).getValue(), record.getField(3).getValue());
 		assertEquals(out1.getField(4).getValue(), ((Decimal)record.getField(4).getValue()).getInt());
 		assertEquals(out1.getField(1).getValue(), record.getField(4).getValue());
 	}
@@ -191,6 +223,23 @@ public class CustomizedRecordTransformTest extends TestCase {
 		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
+		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
@@ -236,6 +285,23 @@ public class CustomizedRecordTransformTest extends TestCase {
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
 		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
+		}
 		try {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
 		} catch (TransformException e) {
@@ -276,6 +342,23 @@ public class CustomizedRecordTransformTest extends TestCase {
 		System.out.println("Resolved rules:");
 		for (Iterator<String> i = rules.iterator();i.hasNext();){
 			System.out.println(i.next());
+		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
 		}
 		try {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
