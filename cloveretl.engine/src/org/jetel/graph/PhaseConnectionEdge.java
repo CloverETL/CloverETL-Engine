@@ -98,6 +98,10 @@ public class PhaseConnectionEdge extends EdgeBase {
         return isReadMode ? readByteCounter : writeByteCounter;
     }
 
+    public int getBufferedRecords(){
+        return writeCounter-readCounter;
+    }
+    
 	/**
 	 *  Gets the Open attribute of the Edge object
 	 *
