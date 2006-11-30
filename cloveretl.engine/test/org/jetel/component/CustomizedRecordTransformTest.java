@@ -74,7 +74,8 @@ public class CustomizedRecordTransformTest extends TestCase {
 		metaOut.getField("Value").setFieldProperties(new Properties());
 		metaOut.getField("Value").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, "4");
 		metaOut.getField("Value").getFieldProperties().setProperty(DataFieldMetadata.SCALE_ATTR, "1");
-				
+		metaOut.getField("Value").setNullable(false);
+		
 		metaOut1=new DataRecordMetadata("out1",DataRecordMetadata.DELIMITED_RECORD);
 		
 		metaOut1.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
@@ -136,6 +137,8 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addFieldToFieldRule("${out1.3}", 0, 3);
 		transform.addFieldToFieldRule("${out.1.V*}", 0, "Value");
 		transform.addFieldToFieldRule(1, 1, "in.Value");
+		transform.addRule("out.Born", "${in.in1.Born}");
+		transform.addFieldToFieldRule("out.Value", "in1.Value");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -183,6 +186,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
 		} catch (TransformException e) {
 			e.printStackTrace();
+			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
 		}
 		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
 		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
@@ -191,6 +195,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
 		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
 		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
+		assertEquals(out.getField(3).getValue(), record1.getField(3).getValue());
 		assertEquals(out1.getField(0).getValue().toString(), record1.getField(0).getValue().toString());
 		assertEquals(out1.getField(2).getValue().toString(), record.getField(2).getValue().toString());
 		assertEquals(out1.getField(3).getValue(), record.getField(3).getValue());
@@ -208,6 +213,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addConstantToFieldRule("${out.*.2}", "Prague");
 		transform.addConstantToFieldRule(0, 3, "Nov 28, 2006");
 		transform.addConstantToFieldRule(4, "1.111111111");
+		transform.addRule("0.Name", "test");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -250,7 +256,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
 		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
 		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
-		assertEquals(out.getField(0).toString(), "Agata");
+		assertEquals(out.getField(0).toString(), "test");
 		assertEquals(out1.getField(0).getValue().toString(), "Agata");
 		assertEquals(out1.getField(3).getValue(), new GregorianCalendar(1973,3,23).getTime());
 		assertEquals(out.getField(1).getValue(), 45.55);
@@ -269,6 +275,8 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addSequenceToFieldRule("${1.Na*}", "ID.currentValueString()");
 		transform.addSequenceToFieldRule(1, 2, "${seq.ID.nextValueString()}");
 		transform.addSequenceToFieldRule(0, "Name", "id");
+		transform.addRule("out.City", "${seq.ID.nextString}");
+		transform.addSequenceToFieldRule("out.Born", graph.getSequence("ID"));
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
@@ -306,12 +314,14 @@ public class CustomizedRecordTransformTest extends TestCase {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
 		} catch (TransformException e) {
 			e.printStackTrace();
+			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
 		}
 		assertEquals(out.getField(1).getValue(), 1.0);
 		assertEquals(out1.getField(1).getValue(), DecimalFactory.getDecimal(2.0));
 		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(3.0));
 		assertEquals(out1.getField(0).getValue().toString(), "3");
 		assertEquals(out1.getField(2).getValue().toString(), "4");
+		assertEquals(out.getField(2).getValue().toString(), "5");
 		System.out.println(record.toString());
 		System.out.println(record1.toString());
 		System.out.println(out.toString());
@@ -324,6 +334,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addParameterToFieldRule(1, 0, "${WORKSPACE}");
 		transform.addParameterToFieldRule(2, "MyCity");
 		transform.addParameterToFieldRule(1, "City", "YourCity");
+		transform.addRule("out.Value", "${par.ADULT}");
 		Properties properties = new Properties();
 		properties.setProperty("$ADULT", "18");
 		properties.setProperty("$MyCity", "Prague");
@@ -374,5 +385,6 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out1.getField(0).getValue().toString(), graph.getGraphProperties().getStringProperty("WORKSPACE"));
 		assertEquals(out.getField(2).getValue().toString(), properties.getProperty("$MyCity"));
 		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphProperties().getStringProperty("YourCity"));
+		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),4,1));
 	}
 }
