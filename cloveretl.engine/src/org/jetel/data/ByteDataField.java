@@ -77,7 +77,7 @@ public class ByteDataField extends DataField implements Comparable{
 		} else {
 			value = new byte[_metadata.getSize()];
 		}
-		setNull(true);
+//		setNull(true);
 	}
 
 
