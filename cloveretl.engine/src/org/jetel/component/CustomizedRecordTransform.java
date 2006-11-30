@@ -128,7 +128,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected final static Pattern PARAM_PATTERN = Pattern.compile(PARAM_OPCODE_REGEX);
 	protected final static String SEQ_OPCODE_REGEX = "\\$\\{seq\\.(.*)\\}";
 	protected final static Pattern SEQ_PATTERN = Pattern.compile(SEQ_OPCODE_REGEX);
-	protected final static String FIELD_OPCODE_REGEX = "\\$\\{out\\.(.*)\\}";
+	protected final static String FIELD_OPCODE_REGEX = "\\$\\{in\\.(.*)\\}";
 	protected final static Pattern FIELD_PATTERN = Pattern.compile(FIELD_OPCODE_REGEX);
 	
 	private	 int ruleType;
@@ -744,7 +744,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			if (type == Rule.FIELD && inFields.length > 1){
 				//find mapping by names
-				if (putMappingByNames(transformMap,outFields,inFields) == 0) {
+				if (putMappingByNames(transformMap,outFields,inFields, rulesEntry.getKey() + "=" + rulesEntry.getValue().substring(2)) == 0) {
 					errorMessage = "Not found any field for mapping by names due to rule:\n" + 
 					field + " - output fields pattern\n" + 
 					ruleString + " - input fields pattern";
@@ -760,7 +760,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 					if (type == Rule.FIELD) {
 						ruleString = inFields[0];
 					}
-					rule = validateRule(getRecNo(field),getFieldNo(field),type,ruleString);
+					rule = validateRule(getRecNo(field),getFieldNo(field),type,
+							ruleString, rulesEntry.getKey() + "=" + rulesEntry.getValue().substring(2));
 					transformMap.put(outFields[i], rule);
 				}
 			}
@@ -789,7 +790,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return rule with correct parameters
 	 * @throws ComponentNotReadyException
 	 */
-	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString) throws ComponentNotReadyException {
+	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString,
+			String ruleSource) throws ComponentNotReadyException {
 		char fieldType = targetMetadata[recNo].getFieldType(fieldNo);
 		switch (ruleType) {
 		case Rule.PARAMETER:
@@ -827,7 +829,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 				checkConstant(recNo, fieldNo, correctParameterValue);
 			}
 			//change parameter rule to constant rule with parameter value
-			return new Rule(Rule.CONSTANT,correctParameterValue.toString());
+			return new Rule(Rule.CONSTANT,correctParameterValue.toString(), ruleSource);
 		case Rule.CONSTANT:
 			if (ruleString.equals("null") && !(targetMetadata[recNo].getField(fieldNo).isNullable() || 
 							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
@@ -940,7 +942,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 				}
 			}
 		}
-		return new Rule(ruleType,ruleString);
+		return new Rule(ruleType,ruleString, ruleSource);
 	}
 	
 	/**
@@ -1001,7 +1003,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param inFieldNo input record's field number
 	 * @return "true" if input field is subtype of output field, "false" in other cases
 	 */
-	protected boolean checkTypes(int outRecNo, int outFieldNo, int inRecNo, int inFieldNo){
+	private boolean checkTypes(int outRecNo, int outFieldNo, int inRecNo, int inFieldNo){
 		DataFieldMetadata outField = targetMetadata[outRecNo].getField(outFieldNo);
 		DataFieldMetadata inField = sourceMetadata[inRecNo].getField(inFieldNo);
 		boolean checkTypes;
@@ -1112,7 +1114,7 @@ public class CustomizedRecordTransform implements RecordTransform {
                	}catch(ParseException e1){
 					errorMessage = e1.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
 					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() +
-					". Expected pattern: " + ((DecimalFormat)format).toPattern();
+					". Expected pattern: " + ((NumericFormat)format).toPattern();
 					logger.error(errorMessage);
 					throw new ComponentNotReadyException(e);
                	}
@@ -1204,7 +1206,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return number of mappings put to transform map
 	 */
 	protected int putMappingByNames(Map<String, Rule> transformMap, 
-			String[] outFields, String[] inFields){
+			String[] outFields, String[] inFields, String rule){
 		int count = 0;
 		String[][] outFieldsName = new String[targetMetadata.length][maxNumFields(targetMetadata)];
 		for (int i = 0; i < outFields.length; i++) {
@@ -1224,7 +1226,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 					index = StringUtils.findString(outFieldsName[i][j],
 							inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (putMapping(i, j, i, index, transformMap)){
+						if (putMapping(i, j, i, index, rule, transformMap)){
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
@@ -1242,7 +1244,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findString(outFieldsName[i][j],
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, i, index, transformMap)){
+							if (putMapping(i, j, i, index, rule, transformMap)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
@@ -1260,7 +1262,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 					index = StringUtils.findStringIgnoreCase(
 							outFieldsName[i][j], inFieldsName[i]);
 					if (index > -1) {//output field name found amoung input fields
-						if (putMapping(i, j, i, index, transformMap)){
+						if (putMapping(i, j, i, index, rule, transformMap)){
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
@@ -1278,7 +1280,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findStringIgnoreCase(
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, i, index, transformMap)){
+							if (putMapping(i, j, i, index, rule, transformMap)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
@@ -1304,7 +1306,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return true if mapping was put into map, false in other case
 	 */
 	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
-			Map<String, Rule> transformMap){
+			String ruleString, Map<String, Rule> transformMap){
 		Rule rule;
 		if (!checkTypes(outRecNo, outFieldNo, inRecNo, inFieldNo)){
 			if (fieldPolicy == PolicyType.STRICT){
@@ -1334,10 +1336,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 			rule = transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
 			if (rule == null) {
 				rule = new Rule(Rule.FIELD, String.valueOf(inRecNo)
-						+ DOT + inFieldNo);
+						+ DOT + inFieldNo, ruleString);
 			} else {
 				rule.setType(Rule.FIELD);
-				rule.setValue(String.valueOf(inRecNo) + DOT + inFieldNo);
+				rule.setValue(String.valueOf(inRecNo) + DOT + inFieldNo, ruleString);
 			}
 			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
 			return true;
@@ -1413,21 +1415,50 @@ public class CustomizedRecordTransform implements RecordTransform {
 			ruleString = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue();
 			switch (ruleType) {
 			case Rule.FIELD:
-				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
+				try {
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
+					} catch (BadDataFormatException e) {
+						errorMessage = "Can't set value from field " + 
+							sourceMetadata[getRecNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())].getName() + 
+							DOT + targetMetadata[getRecNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())].getField(getFieldNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())).getName() + 
+							" to field " + targetMetadata[order[i][REC_NO]].getName() + 
+							DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
+							"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
+						logger.error(errorMessage);
+						throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
+					}
 				break;
 			case Rule.SEQUENCE:
 				//ruleString can be only sequence ID or with method eg. sequenceID.getNextLongValue()
 				sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
 						: ruleString.substring(0, ruleString.indexOf(DOT));
-				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-						transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
-								.getValue(getGraph().getSequence(sequenceID)));
+				try {
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
+										.getValue(getGraph().getSequence(sequenceID)));
+					} catch (BadDataFormatException e) {
+						errorMessage = "Can't set value from sequence " + sequenceID + 
+							" to field " + targetMetadata[order[i][REC_NO]].getName() + 
+							DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
+							"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
+						logger.error(errorMessage);
+						throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
+					}
 				break;
 			case Rule.PARAMETER://in method init changed to constant
 				break;
 			default:// constant
-					target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
+					try {
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
+					} catch (BadDataFormatException e) {
+						errorMessage = "Can't set value " + ruleString + 
+						" to field " + targetMetadata[order[i][REC_NO]].getName() + 
+						DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
+						"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
+					logger.error(errorMessage);
+					throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
+					}
 				break;
 			}
 		}
@@ -1705,18 +1736,25 @@ public class CustomizedRecordTransform implements RecordTransform {
 		
 		int type;
 		String value;
+		String source;
 		
-		Rule(int type, String value){
+		Rule(int type, String value, String source){
 			this.type = type;
 			this.value = value;
+			this.source = source;
 		}
 		
+		String getSource() {
+			return source;
+		}
+
 		String getValue(){
 			return value;
 		}
 		
-		void setValue(String value){
+		void setValue(String value, String source){
 			this.value = value;
+			this.source = source;
 		}
 		
 		int getType() {
