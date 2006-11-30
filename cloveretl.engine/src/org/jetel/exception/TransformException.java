@@ -35,14 +35,51 @@ public class TransformException extends JetelException {
      * 
      */
     private static final long serialVersionUID = 1L;
+    
+    private int recNo;
+    private int fieldNo;
 
-    public TransformException(String message) {
+    /**
+	 * @param message
+	 * @param recNo
+	 * @param fieldNo
+	 */
+	public TransformException(String message, int recNo, int fieldNo) {
+		super(message);
+		this.recNo = recNo;
+		this.fieldNo = fieldNo;
+	}
+	
+	public TransformException(String message, Throwable cause, int recNo, int fieldNo) {
+		super(message, cause);
+		this.recNo = recNo;
+		this.fieldNo = fieldNo;
+	}
+
+
+	public TransformException(String message) {
         super(message);
     }
 
     public TransformException(String message, Throwable cause) {
         super(message, cause);
     }
+
+	public int getFieldNo() {
+		return fieldNo;
+	}
+
+	public void setFieldNo(int fieldNo) {
+		this.fieldNo = fieldNo;
+	}
+
+	public int getRecNo() {
+		return recNo;
+	}
+
+	public void setRecNo(int recNo) {
+		this.recNo = recNo;
+	}
 
 
     
