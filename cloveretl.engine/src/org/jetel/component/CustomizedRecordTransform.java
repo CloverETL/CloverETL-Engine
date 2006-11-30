@@ -653,6 +653,47 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}
 	}
 	
+	/**
+	 * This method deletes rule for given fields, which was set before
+	 * 
+	 * @param patternOut output field pattern for deleting rule
+	 */
+	public void deleteRule(String patternOut){
+		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+	}
+	
+	/**
+	 * This method deletes rule for given field, which was set before
+	 * 
+	 * @param outRecNo output record number
+	 * @param outFieldNo output record's field number
+	 */
+	public void deleteRule(int outRecNo, int outFieldNo){
+		String patternOut = String.valueOf(outRecNo) + DOT + outFieldNo;
+		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+	}
+	
+	/**
+	 * This method deletes rule for given field, which was set before
+	 * 
+	 * @param outRecNo  output record number
+	 * @param outField output record's field name
+	 */
+	public void deleteRule(int outRecNo, String outField){
+		String patternOut = String.valueOf(outRecNo) + DOT + outField;
+		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+	}
+
+	/**
+	 * This method deletes rule for given field in 0th output record, which was set before
+	 * 
+	 * @param outFieldNo output record's field number
+	 */
+	public void deleteRule(int outFieldNo){
+		String patternOut = String.valueOf(0) + DOT + outFieldNo;
+		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+	}
+	
 	public void finished() {
 		// TODO Auto-generated method stub
 
@@ -725,6 +766,12 @@ public class CustomizedRecordTransform implements RecordTransform {
 			type = Integer.parseInt(rulesEntry.getValue().substring(0, rulesEntry.getValue().indexOf(COLON)));
 			//find rule: patternIn, constant, sequence ID (optionally with method) or parameter name
 			ruleString = rulesEntry.getValue().substring(rulesEntry.getValue().indexOf(COLON)+1);
+			if (type == Rule.DELETE){
+				for (int i = 0; i < outFields.length; i++) {
+					rule = transformMap.remove(outFields[i]);
+				}		
+				continue;
+			}
 			if (type == Rule.FIELD) {
 				//find input fields from pattern
 				ruleString = resolveField(ruleString);
@@ -1713,6 +1760,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			return Rule.PARAMETER_RULE;
 		case Rule.SEQUENCE:
 			return Rule.SEQUENCE_RULE;
+		case Rule.DELETE:
+			return Rule.DELETE_RULE;
 		default:
 			return "UNKNOWN_RULE";
 		}
@@ -1728,11 +1777,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 		final static int CONSTANT = 1;
 		final static int SEQUENCE = 2;
 		final static int PARAMETER = 3;
+		final static int DELETE = 9;
 		
 		final static String FIELD_RULE = "FIELD_RULE";
 		final static String CONSTANT_RULE = "CONSTANT_RULE";
 		final static String SEQUENCE_RULE = "SEQUENCE_RULE";
 		final static String PARAMETER_RULE = "PARAMETER_RULE";
+		final static String DELETE_RULE = "DELETE_RULE";
 		
 		int type;
 		String value;
