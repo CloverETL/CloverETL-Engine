@@ -3,7 +3,6 @@ package org.jetel.component;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
@@ -391,4 +390,63 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out1.getField(2).getValue().toString(), graph.getGraphProperties().getStringProperty("YourCity"));
 		assertEquals(out.getField(4).getValue(), DecimalFactory.getDecimal(Integer.valueOf(properties.getProperty("$ADULT")),4,1));
 	}
+	
+	public void test_complex(){
+		System.out.println("Complex:");
+		transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
+		transform.addFieldToFieldRule("*.City", 0, 2);
+		transform.addConstantToFieldRule(1,3, new GregorianCalendar(1973,3,23).getTime());
+		transform.addConstantToFieldRule(4, "1.111111111");
+		transform.addSequenceToFieldRule("*.Age", graph.getSequence("ID"));
+		transform.addRule("out.City", "${seq.ID.nextString}");
+		transform.addParameterToFieldRule(1, 0, "${WORKSPACE}");
+		transform.addParameterToFieldRule(1, "City", "YourCity");
+		transform.deleteRule(1, "Age");
+		Properties properties = new Properties();
+		properties.setProperty("$ADULT", "18");
+		properties.setProperty("$MyCity", "Prague");
+		try {
+			transform.init(properties, new DataRecordMetadata[]{metadata, metadata1}, 
+				new DataRecordMetadata[]{metaOut,metaOut1});
+		} catch (ComponentNotReadyException e) {
+			e.printStackTrace();
+		}
+		List<String> rules = transform.getRules();
+		System.out.println("Rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		rules = transform.getResolvedRules();
+		System.out.println("Resolved rules:");
+		for (Iterator<String> i = rules.iterator();i.hasNext();){
+			System.out.println(i.next());
+		}
+		List<Integer[]> fields = transform.getFieldsWithoutRules();
+		System.out.println("Fields without rules:");
+		Integer[] index;
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(outMatedata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					outMatedata[index[0]].getField(index[1]).getName());
+		}
+		fields = transform.getNotUsedFields();
+		System.out.println("Not used input fields:");
+		for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+			index = i.next();
+			System.out.println(inMetadata[index[0]].getName() + 
+					CustomizedRecordTransform.DOT + 
+					inMetadata[index[0]].getField(index[1]).getName());
+		}
+		try {
+			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
+		} catch (TransformException e) {
+			e.printStackTrace();
+		}
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
+	}
+	
 }
