@@ -28,9 +28,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
+import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -39,7 +40,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
-import org.apache.poi.hssf.record.formula.Ptg;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -62,7 +62,7 @@ import org.jetel.util.WcardPattern;
  * 
  * Class used for generating data transformation. It has methods for mapping input
  *  fields on output fields, assigning constants, sequence methods and parameter's 
- *  values to output fields.
+ *  values to output fields. 
  *  
  *  <h4>Patterns for data fields can be given in three ways:</h4>
  *  <ol>
@@ -77,8 +77,9 @@ import org.jetel.util.WcardPattern;
  * <ol>
  * <li>setGraph()</li>
  * <li>setFieldPolicy(PolicyType)</li>
- * <li>add...Rule()<br>
- * .<br>
+ * <li>add...Rule(...)<br>
+ * .<br></li>
+ * <li>deleteRule(...)<br>
  * .<br></li>
  * <li>init()</li>
  * <li>transform() <i>for each input&amp;output records pair</i></li>
@@ -86,6 +87,143 @@ import org.jetel.util.WcardPattern;
  * <li>finished()
  * </ol>
  * 
+ * <h4>Example:</h4>
+ * <h5>Records:</h5>
+ * <pre>
+ *	in:
+ *	#0|Name|S->  HELLO 
+ *	#1|Age|N->135.0
+ *	#2|City|S->Some silly longer string.
+ *	#3|Born|D->
+ *	#4|Value|d->-999.0000000000
+ *	
+ *	in1:
+ *	#0|Name|S->  My name 
+ *	#1|Age|N->13.25
+ *	#2|City|S->Prague
+ *	#3|Born|D->Thu Nov 30 09:54:07 CET 2006
+ *	#4|Value|i->
+ *	
+ *	out:
+ *	#0|Name|B->
+ *	#1|Age|N->
+ *	#2|City|S->
+ *	#3|Born|D->
+ *	#4|Value|d->
+ *	
+ *	out1:
+ *	#0|Name|S->  
+ *	#1|Age|d->
+ *	#2|City|S->
+ *	#3|Born|D->
+ *	#4|Value|i->
+ * <h5>Java code:</h5>
+ * <pre>
+ * 	CustomizedRecordTransform transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
+ *  transform.setGraph(graph);
+ *  transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
+ *  transform.addFieldToFieldRule("*.City", 0, 2);
+ *  transform.addConstantToFieldRule(1,3, new GregorianCalendar(1973,3,23).getTime());
+ *  transform.addConstantToFieldRule(4, "1.111111111");
+ *  transform.addSequenceToFieldRule("*.Age", graph.getSequence("ID"));
+ *  transform.addRule("out.City", "${seq.ID.nextString}");
+ *  transform.addParameterToFieldRule(1, 0, "${WORKSPACE}");
+ *  transform.addParameterToFieldRule(1, "City", "YourCity");
+ *  transform.deleteRule(1, "Age");
+ *  transform.init(properties, new DataRecordMetadata[]{metadata, metadata1}, new DataRecordMetadata[]{metaOut,metaOut1});
+ *  List<String> rules = transform.getRules();
+ *  System.out.println("Rules:");
+ *  for (Iterator<String> i = rules.iterator();i.hasNext();){
+ *  	System.out.println(i.next());
+ *  }
+ *  rules = transform.getResolvedRules();
+ *  System.out.println("Resolved rules:");
+ *  for (Iterator<String> i = rules.iterator();i.hasNext();){
+ *  	System.out.println(i.next());
+ *  }
+ *  List<Integer[]> fields = transform.getFieldsWithoutRules();
+ *  System.out.println("Fields without rules:");
+ *  Integer[] index;
+ *  for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+ *  	index = i.next();
+ *  	System.out.println(outMatedata[index[0]].getName() + CustomizedRecordTransform.DOT + 
+ *  			outMatedata[index[0]].getField(index[1]).getName());
+ *  }
+ *  fields = transform.getNotUsedFields();
+ *  System.out.println("Not used input fields:");
+ *  for (Iterator<Integer[]> i = fields.iterator();i.hasNext();){
+ *  	index = i.next();
+ *  	System.out.println(inMetadata[index[0]].getName() + CustomizedRecordTransform.DOT + 
+ *  			inMetadata[index[0]].getField(index[1]).getName());
+ *  }
+ *  transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
+ *  System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+ *  System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+ *  System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+ *  System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
+ *<h5>Output:</h5>
+ * <pre>
+ *  Rules:
+ *  FIELD_RULE:${1.?a*}=${1.*e}
+ *  FIELD_RULE:*.City=0.2
+ *  CONSTANT_RULE:1.3=Apr 23, 1973
+ *  CONSTANT_RULE:0.4=1.111111111
+ *  SEQUENCE_RULE:*.Age=ID
+ *  SEQUENCE_RULE:out.City=ID.nextString
+ *  PARAMETER_RULE:1.0=${WORKSPACE}
+ *  PARAMETER_RULE:1.City=YourCity
+ *  DELETE_RULE:1.Age=1.Age
+ *  Resolved rules:
+ *  out.Age=${seq.ID}
+ *  out.City=${seq.ID.nextString}
+ *  out.Value=1.111111111
+ *  out1.Name=/home/avackova/workspace
+ *  out1.City=London
+ *  out1.Born=23-04-1973
+ *  out1.Value=in1.Value
+ *  Fields without rules:
+ *  out.Name
+ *  out.Born
+ *  out1.Age
+ *  Not used input fields:
+ *  in.Name
+ *  in.Age
+ *  in.City
+ *  in.Born
+ *  in.Value
+ *  in1.Name
+ *  in1.Age
+ *  in1.City
+ *  in1.Born
+ *  in:
+ *  #0|Name|S->  HELLO 
+ *  #1|Age|N->135.0
+ *  #2|City|S->Some silly longer string.
+ *  #3|Born|D->
+ *  #4|Value|d->-999.0000000000
+ *  
+ *  in1:
+ *  #0|Name|S->  My name 
+ *  #1|Age|N->13.25
+ *  #2|City|S->Prague
+ *  #3|Born|D->Thu Nov 30 10:40:15 CET 2006
+ *  #4|Value|i->
+ *  
+ *  out:
+ *  #0|Name|B-> 
+ *  #1|Age|N->2.0
+ *  #2|City|S->1
+ *  #3|Born|D->
+ *  #4|Value|d->1.1
+ *  
+ *  out1:
+ *  #0|Name|S->/home/user/workspace
+ *  #1|Age|d->
+ *  #2|City|S->London
+ *  #3|Born|D->23-04-1973
+ *  #4|Value|i->
+ *</pre>
+ *
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
