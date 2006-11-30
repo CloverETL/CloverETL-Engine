@@ -88,38 +88,39 @@ import org.jetel.util.WcardPattern;
  * </ol>
  * 
  * <h4>Example:</h4>
- * <h5>Records:</h5>
+ * <b>Records:</b>
  * <pre>
- *	in:
- *	#0|Name|S->  HELLO 
- *	#1|Age|N->135.0
- *	#2|City|S->Some silly longer string.
- *	#3|Born|D->
- *	#4|Value|d->-999.0000000000
- *	
- *	in1:
- *	#0|Name|S->  My name 
- *	#1|Age|N->13.25
- *	#2|City|S->Prague
- *	#3|Born|D->Thu Nov 30 09:54:07 CET 2006
- *	#4|Value|i->
- *	
- *	out:
- *	#0|Name|B->
- *	#1|Age|N->
- *	#2|City|S->
- *	#3|Born|D->
- *	#4|Value|d->
- *	
- *	out1:
- *	#0|Name|S->  
- *	#1|Age|d->
- *	#2|City|S->
- *	#3|Born|D->
- *	#4|Value|i->
- * <h5>Java code:</h5>
+ * in:
+ * #0|Name|S->  HELLO 
+ * #1|Age|N->135.0
+ * #2|City|S->Some silly longer string.
+ * #3|Born|D->
+ * #4|Value|d->-999.0000000000
+ * 
+ * in1:
+ * #0|Name|S->  My name 
+ * #1|Age|N->13.25
+ * #2|City|S->Prague
+ * #3|Born|D->Thu Nov 30 09:54:07 CET 2006
+ * #4|Value|i->
+ *
+ * out:
+ * #0|Name|B->
+ * #1|Age|N->
+ * #2|City|S->
+ * #3|Born|D->
+ * #4|Value|d->
+ *
+ * out1:
+ * #0|Name|S->  
+ * #1|Age|d->
+ * #2|City|S->
+ * #3|Born|D->
+ * #4|Value|i->
+ * </pre>
+ * <b>Java code:</b>
  * <pre>
- * 	CustomizedRecordTransform transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
+ *  CustomizedRecordTransform transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
  *  transform.setGraph(graph);
  *  transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
  *  transform.addFieldToFieldRule("*.City", 0, 2);
@@ -161,7 +162,8 @@ import org.jetel.util.WcardPattern;
  *  System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
  *  System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
  *  System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
- *<h5>Output:</h5>
+ * </pre>  
+ *<b>Output:</b>
  * <pre>
  *  Rules:
  *  FIELD_RULE:${1.?a*}=${1.*e}
