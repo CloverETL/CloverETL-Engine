@@ -53,6 +53,8 @@ public class DataFieldFactory {
 				return new IntegerDataField(fieldMetadata,plain);
 			case DataFieldMetadata.BYTE_FIELD:
 				return new ByteDataField(fieldMetadata,plain);
+			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+				return new CompressedByteDataField(fieldMetadata,plain);
 			case DataFieldMetadata.LONG_FIELD:
 				return new LongDataField(fieldMetadata,plain);
 			default:
