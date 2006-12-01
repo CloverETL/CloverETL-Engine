@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.component;
+package org.jetel.component.denormalize;
 
 import java.util.Properties;
 
@@ -27,14 +27,14 @@ import org.jetel.exception.TransformException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Interface to be implemented by classes implementing normalization, ie decomposition of
- * one input record to several output records.
+ * Interface to be implemented by classes implementing denormalization, ie composition of
+ * one output record from several input records.
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 11/21/06  
- * @see org.jetel.component.Normalizer
+ * @see org.jetel.component.Denormalizer
  *
  */
-public interface RecordNormalize {
+public interface RecordDenormalize {
 	/**
 	 *  Initializes normalize class/function. This method is called only once at the
 	 * beginning of normalization process. Any object allocation/initialization should
@@ -51,20 +51,20 @@ public interface RecordNormalize {
 	throws ComponentNotReadyException;
 
 	/**
-	 * @param source Input record
-	 * @return Number of output records which will be create from specified input record 
-	 */
-	public int count(DataRecord source);
-	
-	/**
-	 * 
-	 * @param source Input record
-	 * @param target Output records
-	 * @param idx Sequential number of output record (starting from 0)
-	 * @return true for success, false otherwise
+	 * Passes one input record to the composing class.
+	 * @param inRecord
+	 * @return true on success, false otherwise
 	 * @throws TransformException
 	 */
-	public boolean transform(DataRecord source, DataRecord target, int idx) throws TransformException;
+	public boolean addInputRecord(DataRecord inRecord) throws TransformException;
+
+	/**
+	 * Retrieves composed output record.
+	 * @param outRecord
+	 * @return
+	 * @throws TransformException
+	 */
+	public boolean getOutputRecord(DataRecord outRecord) throws TransformException;
 
 	/**
 	 * Releases used resources.
@@ -74,6 +74,7 @@ public interface RecordNormalize {
 	/**
 	 *  Returns description of error if one of the methods failed. Can be
 	 * also used to get any message produced by transformation.
+	 *
 	 */
 	public String getMessage();
 
