@@ -574,6 +574,7 @@ public class CodeParser {
             code.append(".getDecimal()");
             break;
         case DataFieldMetadata.BYTE_FIELD:
+        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
             code.insert(0, "((ByteDataField)");
             code.append(")");
             code.append(".getValue()");
@@ -733,6 +734,7 @@ public class CodeParser {
 				code.insert(0,"((DecimalDataField)");
 				break;
 			case DataFieldMetadata.BYTE_FIELD:
+			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
 			    code.insert(0,"((ByteDataField)");
 			break;
 			default:
