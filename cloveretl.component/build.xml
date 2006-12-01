@@ -14,6 +14,11 @@
 	<!--load external properties-->
 	<property file="../cloveretl.engine/build.properties"/>
 
+	<!-- =========================== LIBRARIES ============================= -->
+	<fileset id="component-libs" dir="${dir.lib}">
+		<include name="**/*.jar"/>
+	</fileset>
+
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
 
@@ -83,6 +88,7 @@
 			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
 			<classpath>
 				<pathelement path="${commons-logging}"/>
+				<fileset refid="component-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
