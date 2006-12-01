@@ -21,8 +21,11 @@ package org.jetel.component;
 
 import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.component.partition.HashPartition;
 import org.jetel.component.partition.PartitionFunction;
+import org.jetel.component.partition.PartitionTL;
 import org.jetel.component.partition.RangePartition;
 import org.jetel.component.partition.RoundRobinPartition;
 import org.jetel.data.DataRecord;
@@ -37,6 +40,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -110,13 +114,17 @@ public class Partition extends Node {
 
 	private RecordKey partitionKey;
 	private HashKey hashKey;
+	private String partitionSource;
 
 	//	 instantiate proper partitioning function
 	private PartitionFunction partitionFce;
 
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
-
 	private static final String XML_RANGES_ATTRIBUTE = "ranges";
+	private static final String XML_PARTITIONCLASS_ATTRIBUTE = "partitionClass";
+	private static final String XML_PARTIONSOURCE_ATTRIBUTE = "partitionSource";
+
+	static Log logger = LogFactory.getLog(Partition.class);
 
 	/**
 	 *  Constructor for the Partition object
@@ -136,10 +144,6 @@ public class Partition extends Node {
         this.partitionKeyNames = partitionKeyNames;
     }
 	
-	public void setPartitionRanges(String[] partitionRanges){
-	    this.partitionRanges=partitionRanges;
-	}
-    
 	/**
 	 * Method which can be used to set custom partitioning function
 	 * 
@@ -147,6 +151,10 @@ public class Partition extends Node {
 	 */
 	public void setPartitionFunction(PartitionFunction fce){
 	    this.partitionFce=fce;
+	}
+
+	public void setPartitionFunction(String source){
+	    this.partitionSource=source;
 	}
 
 	/**
@@ -207,28 +215,46 @@ public class Partition extends Node {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}
 		// initialize partition key - if defined
-		if (partitionKeyNames!=null){
-		    partitionKey = new RecordKey(partitionKeyNames, getInputPort(0).getMetadata());
-		    try {
-		        partitionKey.init();
-		    } catch (Exception e) {
-		        throw new ComponentNotReadyException(e.getMessage());
-		    }
+	    if (partitionKeyNames != null) {
+			partitionKey = new RecordKey(partitionKeyNames,
+					getInputPort(0).getMetadata());
 		}
-		if (partitionFce==null){
-		    if (partitionKey!=null){
-			    if (partitionRanges!=null){
-			        partitionFce=new RangePartition(partitionRanges);
-			    }else{
-			        partitionFce=new HashPartition();
-			    }
-			}else{
-			    partitionFce=new RoundRobinPartition(); 
+		if (partitionKey != null) {
+			try {
+				partitionKey.init();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e.getMessage());
 			}
+		}
+		if (partitionFce == null) {
+			partitionFce = createPartitionDynamic(partitionSource);
 		}
 		partitionFce.init(outPorts.size(),partitionKey);
 	}
 
+	private PartitionFunction createPartitionDynamic(String psorCode) throws ComponentNotReadyException {
+		if (psorCode.contains(RecordTransformTL.TL_TRANSFORM_CODE_ID)) {
+			return new PartitionTL(psorCode, getInputPort(0).getMetadata(), null, logger);
+		}else{
+			DynamicJavaCode dynCode = new DynamicJavaCode(psorCode);
+	        dynCode.setCaptureCompilerOutput(true);
+	        logger.info(" (compiling dynamic source) ");
+	        // use DynamicJavaCode to instantiate transformation class
+	        Object transObject = null;
+	        try {
+	            transObject = dynCode.instantiate();
+	        } catch (RuntimeException ex) {
+	            logger.debug(dynCode.getCompilerOutput());
+	            logger.debug(dynCode.getSourceCode());
+	            throw new ComponentNotReadyException("Parttion code is not compilable.\n" + "Reason: " + ex.getMessage());
+	        }
+	        if (transObject instanceof PartitionFunction) {
+	            return (PartitionFunction)transObject;
+	        } else {
+	            throw new ComponentNotReadyException("Provided partition class doesn't implement required interface.");
+	        }
+		}
+    }
 
 	/**
 	 *  Description of the Method
@@ -269,16 +295,39 @@ public class Partition extends Node {
 	   public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Partition partition;
-		
+		PartitionFunction partitionFce = null;
 		try {
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE));
-		    if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)){
-					partition.setPartitionKeyNames(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+		    if (xattribs.exists(XML_PARTITIONCLASS_ATTRIBUTE)) {
+		        try {
+		        	partitionFce =  (PartitionFunction)Class.forName(xattribs.getString(XML_ID_ATTRIBUTE)).newInstance();
+		        }catch (InstantiationException ex){
+		            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
+		        }catch (IllegalAccessException ex){
+		            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
+		        }catch (ClassNotFoundException ex) {
+		            throw new ComponentNotReadyException("Can't find specified partition function class: " + xattribs.getString(XML_ID_ATTRIBUTE));
+		        }
+		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){
+		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
+		    }else{
+			    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
+			    	partitionFce = new RangePartition(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+			    }
+			    if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)){
+						partition.setPartitionKeyNames(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
+						if (partitionFce == null){
+							partitionFce = new HashPartition();
+						}
+			    }
+			    if (partitionFce == null){
+			    	partitionFce = new RoundRobinPartition();
+			    }
 		    }
-		    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
-		        partition.setPartitionRanges(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-		    }
-		    return partition;
+			if (partitionFce != null) {
+				partition.setPartitionFunction(partitionFce);
+			}		    
+			return partition;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -299,6 +348,8 @@ public class Partition extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+
 	
 }
 
