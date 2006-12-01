@@ -50,7 +50,7 @@ public class ByteDataField extends DataField implements Comparable{
 	protected byte[] value;
 	private static final int ARRAY_LENGTH_INDICATOR_SIZE = Integer.SIZE / 8;
 	
-	private final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
+	protected final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
 	
 
 
@@ -72,12 +72,8 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	public ByteDataField(DataFieldMetadata _metadata, boolean plain) {
 		super(_metadata);
-		if (_metadata.getSize() < 1) {
-			value = new byte[INITIAL_BYTE_ARRAY_CAPACITY];
-		} else {
-			value = new byte[_metadata.getSize()];
-		}
-//		setNull(true);
+		value = null;
+		setNull(true);
 	}
 
 
@@ -93,6 +89,12 @@ public class ByteDataField extends DataField implements Comparable{
 		setValue(value);
 	}
 
+	private void prepareBuf() {
+		if (this.value == null) {
+			int len = metadata.getSize();
+			this.value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
+		}
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#copy()
@@ -105,10 +107,10 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
 	public void copyFrom(DataField fromField){
-	    if (fromField instanceof ByteDataField){
+	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField)){
 	        if (!fromField.isNull){
 	            int length = ((ByteDataField) fromField).value.length;
-	            if (this.value.length != length){
+	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
 	            }
 	            System.arraycopy(this.value, 0, ((ByteDataField) fromField).value, 0, length);
@@ -155,7 +157,7 @@ public class ByteDataField extends DataField implements Comparable{
 
 	@Override
 	public void setValue(DataField _value) {
-		fromString(((DataField)_value).toString());
+		fromString(_value == null ? null : _value.toString());
 	}
 	/**
 	 *  Sets the value of the field
@@ -178,6 +180,10 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since         October 29, 2002
 	 */
 	public void setValue(byte value) {
+		if (this.value == null) {
+			int len = metadata.getSize();
+			this.value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
+		}
 		Arrays.fill(this.value, value);
 		setNull(false);
 	}
@@ -217,7 +223,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since     October 29, 2002
 	 */
 	public Object getValue() {
-		return isNull ? null : value;
+		return isNull ? null : getByteArray();
 	}
 
     /**
@@ -243,7 +249,7 @@ public class ByteDataField extends DataField implements Comparable{
         if(isNull) {
             return 0;
         }
-		return value[position];
+		return getByteArray()[position];
 	}
 
 
@@ -268,7 +274,7 @@ public class ByteDataField extends DataField implements Comparable{
 		if (isNull()) {
 			return "";
 		}
-		return new String(value);
+		return new String(getByteArray());
 	}
 
     
@@ -286,7 +292,7 @@ public class ByteDataField extends DataField implements Comparable{
             return "";
         }
         try{
-            return new String(value,charset);
+            return new String(getByteArray(),charset);
         }catch(UnsupportedEncodingException ex){
             throw new RuntimeException(ex.toString()+" when calling toString() on field \""+
                     this.metadata.getName()+"\"",ex);
@@ -339,7 +345,12 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since              October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
+		if (value == null) {
+			int len = metadata.getSize();
+			value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
+		}
 		dataBuffer.get(value);
+		setNull(false);
 	}
 
 
