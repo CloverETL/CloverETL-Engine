@@ -394,6 +394,7 @@ public class SQLUtil {
             case DataFieldMetadata.DECIMAL_FIELD:
                 return Types.DECIMAL;
             case DataFieldMetadata.BYTE_FIELD:
+            case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
                 return Types.BINARY;
 			default:
 				return -1;
