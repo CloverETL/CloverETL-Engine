@@ -25,8 +25,8 @@
 package com.linagora.component;
 
 import java.io.IOException;
+
 import javax.naming.NamingException;
-import javax.naming.directory.SearchControls;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -83,9 +83,7 @@ import com.linagora.ldap.LdapFormatter;
  *  <tr><td><b>type</b></td><td>"LDAP_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>ldapUrl</b><td>Ldap url of the directory, on the form "ldap://host:port/"</td>
- *  <tr><td><b>base</b></td><td>Base DN used for the LDAP search</td>
- *  <tr><td><b>filter</b></td><td>Filter used for the LDAP connection</td>
- *  <tr><td><b>scope</b><br></td>Scope of the search request, must be one of <b>object</b>, <b>onelevel</b> or <b>subtree</b><td></td>
+ *  <tr><td><b>action</b></td><td>Choose one of these options: add_entry, remove_entry, replace_attributes, remove_attributes</td>
  *  <tr><td><b>user</b><br><i>optional</i></td>The user DN to used when connecting to directory.<td></td>
  *  <tr><td><b>password</b><br><i>optional</i></td>The password to used when connecting to directory.<td></td>
  * <!-- to be added <tr><td><b>DataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td></tr> -->
