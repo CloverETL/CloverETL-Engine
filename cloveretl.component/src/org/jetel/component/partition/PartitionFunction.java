@@ -23,6 +23,7 @@ package org.jetel.component.partition;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.exception.ComponentNotReadyException;
 
 /**
  * Simple interface for partition functions.
@@ -49,6 +50,6 @@ public interface PartitionFunction {
 	     * partition be determined
 	     */
 	    
-	    void init(int numPartitions,RecordKey partitionKey);
+	    void init(int numPartitions,RecordKey partitionKey) throws ComponentNotReadyException;
 	    
 }
