@@ -17,7 +17,7 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.component;
+package org.jetel.component.normalize;
 
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
@@ -25,7 +25,9 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
+import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.TransformException;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
@@ -34,10 +36,10 @@ import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Implements denormalization based on TransformLang source specified by user.
+ * Implements normalization based on TransformLang source specified by user. 
  * User defines following functions (asterisk denotes the mandatory ones):<ul>
- * <li>* function addInputRecord()</li>
- * <li>* function getOutputRecord()</li>
+ * <li>* function count()</li>
+ * <li>* function transform(idx)</li>
  * <li>function init()</li> 
  * <li>function finished()</li>
  * </ul>
@@ -45,10 +47,10 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since 11/21/06  
  * @see org.jetel.component.Normalizer
  */
-public class RecordDenormalizeTL implements RecordDenormalize {
+public class RecordNormalizeTL implements RecordNormalize {
 
-	private static final String ADDINPUT_FUNCTION_NAME="addInputRecord";
-	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
+	private static final String LENGTH_FUNCTION_NAME="count";
+	private static final String TRANSFORM_FUNCTION_NAME="transform";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
 
@@ -57,18 +59,18 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 
 	protected Properties parameters;
     private TransformLangExecutor executor;
-    private CLVFFunctionDeclaration addInputFunction, getOutputFunction, finishedFunction, initFunction;
+    private CLVFFunctionDeclaration lengthFunction, transformFunction, finishedFunction, initFunction;
 
     private String errorMessage;
 
     /**Constructor for the DataRecordTransform object */
-    public RecordDenormalizeTL(Log logger,String srcCode) {
+    public RecordNormalizeTL(Log logger,String srcCode) {
         this.srcCode=srcCode;
         this.logger=logger;
     }
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#init(java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
+	 * @see org.jetel.component.RecordNormalize#init(java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
 	 */
 	public boolean init(Properties parameters,
 			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
@@ -101,17 +103,17 @@ public class RecordDenormalizeTL implements RecordDenormalize {
         }
         
         executor=new TransformLangExecutor(parameters);
-        addInputFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(ADDINPUT_FUNCTION_NAME);
-        getOutputFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(GETOUTPUT_FUNCTION_NAME);
+        lengthFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(LENGTH_FUNCTION_NAME);
+        transformFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(TRANSFORM_FUNCTION_NAME);
         finishedFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(FINISHED_FUNCTION_NAME);
         initFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(INIT_FUNCTION_NAME);
-        if (addInputFunction==null){
-            errorMessage="Transformation addInputFunction not declared/defined";
+        if (transformFunction==null){
+            errorMessage="Transformation transformFunction not declared/defined";
             logger.error(errorMessage);
             return false;
         }
-        if (getOutputFunction==null){
-            errorMessage="Transformation getOutputFunction not declared/defined";
+        if (lengthFunction==null){
+            errorMessage="Transformation lengthFunction not declared/defined";
             logger.error(errorMessage);
             return false;
         }
@@ -136,35 +138,36 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
+	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
 	 */
-	public boolean addInputRecord(DataRecord inRecord) {
-        executor.setInputRecords(new DataRecord[]{inRecord});
+	public int count(DataRecord source) {
+        executor.setInputRecords(new DataRecord[]{source});
 		executor.setOutputRecords(new DataRecord[]{});
 
-		// execute transformation transformFunction
-		executor.executeFunction(addInputFunction, null);
+		// execute lengthFunction
+		executor.executeFunction(lengthFunction, null);
 
-		Boolean result = (Boolean) executor.getResult();
-		return result != null ? result.booleanValue() : true;
+		CloverInteger result = (CloverInteger) executor.getResult();
+		return result.intValue();
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
+	 * @see org.jetel.component.RecordNormalize#transform(org.jetel.data.DataRecord, org.jetel.data.DataRecord, int)
 	 */
-	public boolean getOutputRecord(DataRecord outRecord) {
-	    executor.setInputRecords(new DataRecord[]{});
-		executor.setOutputRecords(new DataRecord[]{outRecord});
-	
+	public boolean transform(DataRecord source, DataRecord target, int idx)
+			throws TransformException {
+        executor.setInputRecords(new DataRecord[]{source});
+		executor.setOutputRecords(new DataRecord[]{target});
+
 		// execute transformation transformFunction
-		executor.executeFunction(getOutputFunction, null);
-	
+		executor.executeFunction(transformFunction, new Object[]{new CloverInteger(idx)});
+
 		Boolean result = (Boolean) executor.getResult();
 		return result != null ? result.booleanValue() : true;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#finished()
+	 * @see org.jetel.component.RecordNormalize#finished()
 	 */
 	public void finished() {
 		if (finishedFunction != null) {
@@ -173,7 +176,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.RecordDenormalize#getMessage()
+	 * @see org.jetel.component.RecordNormalize#getMessage()
 	 */
 	public String getMessage() {
 		return errorMessage;

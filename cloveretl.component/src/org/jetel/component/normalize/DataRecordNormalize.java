@@ -17,55 +17,51 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.component;
+package org.jetel.component.normalize;
 
 import java.util.Properties;
 
-import javax.jms.JMSException;
-import javax.jms.Message;
-
-import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Interface to be implemented by message processors for component JmsReader.
+ * Base class for various normalization implementations.
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
- * @since 11/28/06  
- * @see org.jetel.component.JmsReader
- *
+ * @since 11/21/06  
+ * @see org.jetel.component.Denormalizer
  */
-public interface JmsMsg2DataRecord {
-	/**
-	 * Initialize the processor.
-	 * @param metadata Metadata for the records which will be processed by other methods.
-	 * @param props Contains remaining init parameters.
-	 * @throws ComponentNotReadyException
+public abstract class DataRecordNormalize implements RecordNormalize {
+
+	protected Properties parameters;
+	protected DataRecordMetadata sourceMetadata;
+	protected DataRecordMetadata targetMetadata;
+		
+	protected String errorMessage;
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordNormalize#finished()
 	 */
-	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException;
-	
-	/**
-	 * May be used to end processing of input JMS messages
-	 * @return
+	public void finished() {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordNormalize#init(org.jetel.graph.TransformationGraph, java.util.Properties, org.jetel.metadata.DataRecordMetadata, org.jetel.metadata.DataRecordMetadata)
 	 */
-	public boolean endOfInput();
-	
-	/**
-	 * Transform JMS message to data record.
-	 * @param msg The message to be transformed
-	 * @return Data record; null indicates that the message is not accepted by the processor. 
-	 * @throws JMSException
+	public boolean init(Properties parameters,
+			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
+			throws ComponentNotReadyException {
+		this.parameters = parameters;
+		this.sourceMetadata = sourceMetadata;
+		this.targetMetadata = targetMetadata;
+		this.errorMessage = null;
+		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.RecordNormalize#getMessage()
 	 */
-	public DataRecord extractRecord(Message msg) throws JMSException;
-	
-	/**
-	 * Releases resources. 
-	 */
-	public void finished();
-	
-	/**
-	 * Nomen omen.
-	 * @return
-	 */
-	public String getErrorMsg();
+	public String getMessage() {
+		return errorMessage;
+	}
+
 }

@@ -17,49 +17,59 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 *
 */
-package org.jetel.component;
+package org.jetel.component.jmswriter;
 
 import java.util.Properties;
 
+import javax.jms.JMSException;
+import javax.jms.Message;
+import javax.jms.Session;
+
+import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Simple partial implementation of JmsMsg2DataRecord interface. Supposed to be extended by full implementations.
+ * Simple partial implementation of DataRecord2JmsMsg interface. Supposed to be extended by full implementations.
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 11/28/06  
  */
-public abstract class JmsMsg2DataRecordBase implements JmsMsg2DataRecord {
+public abstract class DataRecord2JmsMsgBase implements DataRecord2JmsMsg {
 	protected String errMsg;
+	protected DataRecordMetadata metadata; 
+	protected Session session;
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#init(org.jetel.metadata.DataRecordMetadata, java.util.Properties)
+	 * @see org.jetel.component.DataRecord2JmsMsg#init(org.jetel.metadata.DataRecordMetadata, javax.jms.Session, java.util.Properties)
 	 */
-	public void init(DataRecordMetadata metadata, Properties props) throws ComponentNotReadyException {
+	public void init(DataRecordMetadata metadata, Session session, Properties props) throws ComponentNotReadyException {
 		errMsg = null;
+		this.metadata = metadata;
+		this.session = session;
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#endOfInput()
-	 */
-	public boolean endOfInput() {
-		return false;
-	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#finished()
+	 * @see org.jetel.component.DataRecord2JmsMsg#finished()
 	 */
 	public void finished() {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.component.JmsMsg2DataRecord#getErrorMsg()
+	 * @see org.jetel.component.DataRecord2JmsMsg#createLastMsg(org.jetel.data.DataRecord)
+	 */
+	public Message createLastMsg(DataRecord record) throws JMSException {
+		return record == null ? null : createMsg(record);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.DataRecord2JmsMsg#getErrorMsg()
 	 */
 	public String getErrorMsg() {
 		return errMsg;
 	}
 
 	/**
+	 * Sets error message. Suppposed to be used in subclasses.
 	 * @param errMsg
 	 */
 	protected void setErrorMsg(String errMsg) {
