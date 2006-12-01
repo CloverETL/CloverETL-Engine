@@ -310,9 +310,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				DataFieldMetadata.INTEGER_FIELD,
 				DataFieldMetadata.LONG_FIELD,
 				DataFieldMetadata.DECIMAL_FIELD, 
-				DataFieldMetadata.BYTE_FIELD };
+				DataFieldMetadata.BYTE_FIELD, 
+				DataFieldMetadata.BYTE_FIELD_COMPRESSED };
 		String[] fieldTypeParts = { "string", "date", "datetime", "numeric",
-				"integer", "long", "decimal", "byte" };
+				"integer", "long", "decimal", "byte", "cbyte" };
 
 		Document doc = metadataElement.getOwnerDocument();
 		for (int i = 0; i < record.getNumFields(); i++) {
@@ -588,6 +589,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		if (fieldType.equalsIgnoreCase("byte")) {
 			return DataFieldMetadata.BYTE_FIELD;
+		}
+		if (fieldType.equalsIgnoreCase("cbyte")) {
+			return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 		}
 
 		throw new RuntimeException("Unrecognized field type specified!");

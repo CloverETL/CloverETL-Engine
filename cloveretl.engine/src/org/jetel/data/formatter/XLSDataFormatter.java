@@ -194,7 +194,8 @@ public class XLSDataFormatter implements Formatter {
 			value = record.getField(i).getValue();
 			if (value == null) continue;
 			cell.setCellStyle(cellStyle[i]);
-			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.STRING_FIELD){
+			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.BYTE_FIELD_COMPRESSED
+					|| metaType == DataFieldMetadata.STRING_FIELD){
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
 				cell.setCellValue(value.toString());
 			}else{

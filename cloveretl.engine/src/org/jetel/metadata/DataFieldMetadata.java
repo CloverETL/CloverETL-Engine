@@ -125,6 +125,9 @@ public class DataFieldMetadata implements Serializable {
 	public final static char BYTE_FIELD = 'B';
 
 	/**  Description of the Field */
+	public final static char BYTE_FIELD_COMPRESSED = 'Z';
+
+	/**  Description of the Field */
 	public final static char SEQUENCE_FIELD = 'q';
 
 	/**  Description of the Field */
@@ -552,6 +555,8 @@ public class DataFieldMetadata implements Serializable {
 			    return "decimal";
 			case DataFieldMetadata.BYTE_FIELD:
 			    return "byte";
+			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+			    return "cbyte";
 			case DataFieldMetadata.DATETIME_FIELD:
 			    return "datetime";
 			case DataFieldMetadata.SEQUENCE_FIELD:
@@ -576,6 +581,8 @@ public class DataFieldMetadata implements Serializable {
 		    return DataFieldMetadata.DECIMAL_FIELD;
 		else if(fieldType.compareToIgnoreCase("byte") == 0)
 		    return DataFieldMetadata.BYTE_FIELD;
+		else if(fieldType.compareToIgnoreCase("cbyte") == 0)
+		    return DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 		else if(fieldType.compareToIgnoreCase("datetime") == 0)
 		    return DataFieldMetadata.DATETIME_FIELD;
 		else if(fieldType.compareToIgnoreCase("sequence") == 0)
@@ -605,8 +612,10 @@ public class DataFieldMetadata implements Serializable {
 		int anotherFieldScale;
 		switch (fieldType) {
 		case BYTE_FIELD:
+		case BYTE_FIELD_COMPRESSED:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 				return true;
 			default:
 				return false;
@@ -614,6 +623,7 @@ public class DataFieldMetadata implements Serializable {
 		case STRING_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 				return true;
 			default:
@@ -622,6 +632,7 @@ public class DataFieldMetadata implements Serializable {
 		case DATE_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 			case DATE_FIELD:
 			case DATETIME_FIELD:
@@ -632,6 +643,7 @@ public class DataFieldMetadata implements Serializable {
 		case DATETIME_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 			case DATETIME_FIELD:
 				return true;
@@ -641,6 +653,7 @@ public class DataFieldMetadata implements Serializable {
 		case INTEGER_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 			case INTEGER_FIELD:
 			case LONG_FIELD:
@@ -660,6 +673,7 @@ public class DataFieldMetadata implements Serializable {
 		case LONG_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 			case LONG_FIELD:
 			case NUMERIC_FIELD:
@@ -678,6 +692,7 @@ public class DataFieldMetadata implements Serializable {
 		case NUMERIC_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 			case NUMERIC_FIELD:
 				return true;
@@ -695,6 +710,7 @@ public class DataFieldMetadata implements Serializable {
 		case DECIMAL_FIELD:
 			switch (anotherField.getType()) {
 			case BYTE_FIELD:
+			case BYTE_FIELD_COMPRESSED:
 			case STRING_FIELD:
 				return true;
 			case DECIMAL_FIELD:

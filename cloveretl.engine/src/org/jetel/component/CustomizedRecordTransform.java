@@ -1010,7 +1010,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			//check if parameter value can be set to given field
 			StringBuilder correctParameterValue = new StringBuilder(
 					parameterValue == null ? "null" : parameterValue); 
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||	// TODO this seems to be a bug 
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					parameterValue != null) {
 				checkConstant(recNo, fieldNo, correctParameterValue);
@@ -1027,7 +1027,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			//check if constant can be set to given field
 			StringBuilder correctConstant = new StringBuilder(ruleString);
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||	// TODO fix the bug 
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					ruleString != null) {
 				if (checkConstant(recNo, fieldNo, correctConstant)) {
