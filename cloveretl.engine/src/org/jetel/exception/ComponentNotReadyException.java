@@ -23,6 +23,7 @@
 package org.jetel.exception;
 
 import org.jetel.graph.IGraphElement;
+import org.jetel.util.StringUtils;
 
 /** A class that represents general Jetel exception
  * 
@@ -33,6 +34,8 @@ public class ComponentNotReadyException extends Exception {
   
   // Attributes
   IGraphElement graphElement;
+  
+  String attributeName;
   // Associations
 
   // Operations
@@ -63,6 +66,14 @@ public class ComponentNotReadyException extends Exception {
       return graphElement;
   }
 
+  public String getAttributeName() {
+      return attributeName;
+  }
+
+  public void setAttributeName(String attributeName) {
+      this.attributeName = attributeName;
+  }
+  
     public String toString() {
         StringBuffer message = new StringBuffer(80);
         if (graphElement!=null){
@@ -70,10 +81,11 @@ public class ComponentNotReadyException extends Exception {
             if (graphElement.getName()!=null) message.append(graphElement.getName());
             message.append("]-");
         }
+        if(!StringUtils.isEmpty(attributeName)) {
+            message.append("[attribute = " + attributeName + "]-");
+        }
         message.append(super.getMessage());
         return message.toString();
     }
-  
-  
-  
+
 } /* end class NoMoreDataException */
