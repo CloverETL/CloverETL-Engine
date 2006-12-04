@@ -30,6 +30,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -49,6 +50,7 @@ public class PartitionTL implements PartitionFunction {
     
     
 	private WrapperTL wrapper;
+	private TransformationGraph graph;
 
     /**
      * @param srcCode code written in CloverETL language
@@ -66,7 +68,8 @@ public class PartitionTL implements PartitionFunction {
 	 */
 	public int getOutputPort(DataRecord record) {
 		try {
-			return ((CloverInteger)wrapper.execute("getOutputPort", record)).getInt();
+			return ((CloverInteger)wrapper.execute(GETOUTPUTPORT_FUNCTION_NAME, 
+					record)).getInt();
 		} catch (JetelException e) {
 			throw new RuntimeException(e);
 		}
@@ -76,12 +79,23 @@ public class PartitionTL implements PartitionFunction {
 	 * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
 	 */
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
+		if (graph != null) {
+			wrapper.setGraph(graph);
+		}
 		wrapper.init();
 		try {
 			wrapper.execute("init");
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
+	}
+
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
 	}
 
 }
