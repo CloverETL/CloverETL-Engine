@@ -21,25 +21,20 @@
 
 package org.jetel.component.partition;
 
-import java.io.ByteArrayInputStream;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
-import org.jetel.component.RecordTransformTL;
 import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangExecutor;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFFunctionDeclaration;
-import org.jetel.interpreter.node.CLVFStart;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
+ * Class for executing partition function written in CloverETL language
+ * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -53,26 +48,28 @@ public class PartitionTL implements PartitionFunction {
     public static final String GETOUTPUTPORT_FUNCTION_NAME="getOutputPort";
     
     
-    private DataRecordMetadata metadata;
-    private String srcCode;
-    private Log logger;
-	private Properties parameters;
 	private WrapperTL wrapper;
 
+    /**
+     * @param srcCode code written in CloverETL language
+     * @param metadata
+     * @param parameters
+     * @param logger
+     */
     public PartitionTL(String srcCode, DataRecordMetadata metadata, 
     		Properties parameters, Log logger) {
-        this.srcCode=srcCode;
-        this.logger=logger;
-        this.parameters = parameters;
-        this.metadata = metadata;
         wrapper = new WrapperTL(srcCode, metadata, parameters, logger);
     }
-
+    
     /* (non-Javadoc)
 	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
 	 */
 	public int getOutputPort(DataRecord record) {
-		return ((CloverInteger)wrapper.execute("getOutputPort", record)).getInt();
+		try {
+			return ((CloverInteger)wrapper.execute("getOutputPort", record)).getInt();
+		} catch (JetelException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -80,7 +77,11 @@ public class PartitionTL implements PartitionFunction {
 	 */
 	public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
 		wrapper.init();
-		wrapper.execute("init");
+		try {
+			wrapper.execute("init");
+		} catch (JetelException e) {
+			//do nothing: function init is not necessary
+		}
 	}
 
 }
