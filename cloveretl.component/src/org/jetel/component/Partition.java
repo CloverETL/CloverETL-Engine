@@ -268,10 +268,12 @@ public class Partition extends Node {
 	 */
 	private PartitionFunction createPartitionDynamic(String psorCode) throws ComponentNotReadyException {
 		//check if source code is in CloverETL format
-		if (psorCode.contains(RecordTransformTL.TL_TRANSFORM_CODE_ID) ||
+		if (psorCode.contains(WrapperTL.TL_TRANSFORM_CODE_ID) ||
 				PATTERN_TL_CODE.matcher(psorCode).find()) {
-			return new PartitionTL(psorCode, getInputPort(0).getMetadata(), 
-					parameters, logger);
+			PartitionTL function =  new PartitionTL(psorCode, 
+					getInputPort(0).getMetadata(), parameters, logger);
+			function.setGraph(getGraph());
+			return function;
 		}else{//get partition function form java code
 			DynamicJavaCode dynCode = new DynamicJavaCode(psorCode);
 	        dynCode.setCaptureCompilerOutput(true);

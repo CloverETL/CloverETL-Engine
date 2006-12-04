@@ -335,7 +335,7 @@ public class Normalizer extends Node {
      */
     public static int guessTransformType(String transform){
       
-        if (transform.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1){
+        if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
