@@ -40,6 +40,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileReader;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -262,7 +263,12 @@ public class DataReader extends Node {
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
         reader.setNumRecords(numRecords);
-        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        try {
+            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+        } catch(ComponentNotReadyException e) {
+            e.setAttributeName(XML_FILE_ATTRIBUTE);
+            throw e;
+        }
 	}
 
 
@@ -354,7 +360,11 @@ public class DataReader extends Node {
             init();
             free();
         } catch (ComponentNotReadyException e) {
-            status.add(new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL));
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
         }
         return status;
     }
