@@ -68,7 +68,7 @@ public class RecordTransformTL implements RecordTransform {
 	 * @return                        True if successfull, otherwise False
 	 */
 	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata)
-	throws ComponentNotReadyException{
+			throws ComponentNotReadyException{
 		wrapper.setMetadata(sourceRecordsMetadata, targetRecordsMetadata);
 		wrapper.setParameters(parameters);
 		if (graph != null){
@@ -81,21 +81,17 @@ public class RecordTransformTL implements RecordTransform {
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
+		
+		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		
 		return true;
  	}
 
 	
 	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords)
-	throws TransformException{
-		try {
-			Object result = wrapper.execute(TRANSFORM_FUNCTION_NAME, inputRecords,
-					outputRecords);
-			return result == null ? true : (Boolean)result;
-		} catch (JetelException e) {
-			errorMessage = e.getLocalizedMessage();
-			logger.error(errorMessage);
-			throw new TransformException(e.getMessage(),e);
-		}
+			throws TransformException{
+		Object result = wrapper.executePreparedFunction(inputRecords,outputRecords);
+		return result == null ? true : (Boolean)result;
     }
 	
 
