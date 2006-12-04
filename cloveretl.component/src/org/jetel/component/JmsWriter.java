@@ -36,7 +36,9 @@ import javax.naming.InitialContext;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jmswriter.DataRecord2JmsMsg;
+import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -75,12 +77,7 @@ import org.w3c.dom.Element;
 *  <th>XML attributes:</th>
 *  <tr><td><b>type</b></td><td>"JMS_WRITER"</td></tr>
 *  <tr><td><b>id</b></td><td>component identification</td>
-*  <tr><td><b>iniCtxFactory</b></td><td>JNDI initial context factory</td>
-*  <tr><td><b>providerUrl</b></td><td>JNDI provider URL</td>
-*  <tr><td><b>connectionFactory</b></td><td>factory creating JMS connections</td>
-*  <tr><td><b>username</b></td><td>username for connection factory</td>
-*  <tr><td><b>password</b></td><td>password for connection factory</td>
-*  <tr><td><b>destId</b></td><td>JMS destination</td>
+*  <tr><td><b>connection</b></td><td>JMS connection ID</td>
 *  <tr><td><b>processorCode</b></td><td>Inline Java code defining processor class</td>
 *  <tr><td><b>processorClass</b></td><td>Name of processor class</td>
 *  </tr>
@@ -95,54 +92,33 @@ public class JmsWriter extends Node {
 
 	static Log logger = LogFactory.getLog(MysqlDataReader.class);
 
-	private static final String XML_INICTX_FACTORY_ATTRIBUTE = "iniCtxFactory";
-	private static final String XML_PROVIDER_URL_ATTRIBUTE = "providerUrl";
-	private static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
-	private static final String XML_USERNAME_ATTRIBUTE = "username";
-	private static final String XML_PASSWORD_ATTRIBUTE = "password";
-	private static final String XML_DESTINATION_ATTRIBUTE = "destId";
+	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 	private static final String XML_PSORCODE_ATTRIBUTE = "processorCode";
 	private static final String XML_PSORCLASS_ATTRIBUTE = "processorClass";
 
 	// component attributes
-	private String iniCtxFtory;
-	private String providerUrl;
-	private String conFtory;
-	private String user;
-	private String pwd;
-	private String destId;
+	private String conId;
 	private String psorClass;
 	private String psorCode;
 	private Properties psorProperties;
 
 	private InputPort inPort;
 	
-	private Connection connection;
+	private JmsConnection connection;
 	private MessageProducer producer;	
 	private DataRecord2JmsMsg psor;
 
 	/** Sole ctor.
 	 * @param id Component ID
-	 * @param iniCtxFtory Initial context factory 
-	 * @param providerUrl Provider URL
-	 * @param conFtory JMS Connection factory name
-	 * @param user Username for connection factory
-	 * @param pwd Password for connection factory
-	 * @param destId JMS destination ID
+	 * @param conId JMS connection ID
 	 * @param psorClass Processor class
 	 * @param psorCode Inline processor definition
 	 * @param psorProperties Properties to be passed to data processor.
 	 */
-	public JmsWriter(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId, String psorClass, String psorCode,
+	public JmsWriter(String id, String conId, String psorClass, String psorCode,
 			Properties psorProperties) {
 		super(id);
-		this.iniCtxFtory = iniCtxFtory;
-		this.providerUrl = providerUrl;
-		this.conFtory = conFtory;
-		this.user = user;
-		this.pwd = pwd;
-		this.destId = destId;
+		this.conId = conId;
 		this.psorClass = psorClass;
 		this.psorCode = psorCode;
 		this.psorProperties = psorProperties;
@@ -158,30 +134,22 @@ public class JmsWriter extends Node {
 		if (psorClass == null && psorCode == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
+		IConnection c = getGraph().getConnection(conId);
+		if (c == null || !(c instanceof JmsConnection)) {
+			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
+		}
 
+		connection = (JmsConnection)c;
 		inPort = getInputPort(0);
-		
-		Context ctx = null;
+		psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+
 		try {
-			if (iniCtxFtory != null) {
-				Hashtable<String, String> properties = new Hashtable<String, String>();
-				properties.put(Context.INITIAL_CONTEXT_FACTORY, iniCtxFtory);
-				properties.put(Context.PROVIDER_URL, providerUrl);
-				ctx = new InitialContext(properties);			
-			} else {	// use jndi.properties
-				ctx = new InitialContext();
-			}
-		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);		    
-			connection = ftory.createConnection(user, pwd);
-			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
-			Destination destination = (Destination)ctx.lookup(destId);
-			producer = session.createProducer(destination);
-			psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
-			psor.init(inPort.getMetadata(), session, psorProperties);
-			connection.start();
+			connection.init();
+			producer = connection.createProducer();
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
+		psor.init(inPort.getMetadata(), connection.getSession(), psorProperties);
 	}
 
 	/** Creates processor instance of a class specified by its name.
@@ -233,6 +201,7 @@ public class JmsWriter extends Node {
 	 * @see org.jetel.graph.Node#run()
 	 */
 	public void run() {
+		connection.connect();
 		DataRecord currentRecord = new DataRecord(inPort.getMetadata());
 		currentRecord.init();
 		DataRecord nextRecord = new DataRecord(inPort.getMetadata());
@@ -278,7 +247,6 @@ public class JmsWriter extends Node {
 			}
 		}
         closeConnection();
-        broadcastEOF();
 	}
 
 	/**
@@ -286,9 +254,9 @@ public class JmsWriter extends Node {
 	 */
 	private void closeConnection() {
 		try {
-			connection.close();
+			producer.close();
 		} catch (JMSException e) {
-			logger.error("Cannot close JMS connection", e);
+			// ignore it, the connection is probably already closed
 		}
 	}
 	
@@ -306,23 +274,8 @@ public class JmsWriter extends Node {
 		super.toXML(xmlElement);
 	
 		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-		if (iniCtxFtory != null) {
-			xmlElement.setAttribute(XML_INICTX_FACTORY_ATTRIBUTE, iniCtxFtory);
-		}
-		if (providerUrl != null) {
-			xmlElement.setAttribute(XML_PROVIDER_URL_ATTRIBUTE, providerUrl);
-		}
-		if (conFtory != null) {
-			xmlElement.setAttribute(XML_CON_FACTORY_ATTRIBUTE, conFtory);
-		}
-		if (user != null) {
-			xmlElement.setAttribute(XML_USERNAME_ATTRIBUTE, user);
-		}
-		if (pwd != null) {
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, pwd);
-		}
-		if (destId != null) {
-			xmlElement.setAttribute(XML_DESTINATION_ATTRIBUTE, destId);
+		if (conId != null) {
+			xmlElement.setAttribute(XML_CONNECTION_ATTRIBUTE, conId);
 		}
 		if (psorCode != null) {
 			xmlElement.setAttribute(XML_PSORCODE_ATTRIBUTE, psorCode);
@@ -350,20 +303,12 @@ public class JmsWriter extends Node {
 		
 		try {
 			jmsReader = new JmsWriter(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
-					xattribs.getString(XML_PROVIDER_URL_ATTRIBUTE, null),
-					xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
-					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
-					xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
-					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.DataRecord2JmsMsgProperties"),
+					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jmswriter.DataRecord2JmsMsgProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
-							XML_ID_ATTRIBUTE, XML_INICTX_FACTORY_ATTRIBUTE,
-							XML_PROVIDER_URL_ATTRIBUTE, XML_CON_FACTORY_ATTRIBUTE,
-							XML_USERNAME_ATTRIBUTE, XML_PASSWORD_ATTRIBUTE,
-							XML_DESTINATION_ATTRIBUTE, XML_PSORCLASS_ATTRIBUTE,
-							XML_PSORCODE_ATTRIBUTE
+							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
+							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
 					}));
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);

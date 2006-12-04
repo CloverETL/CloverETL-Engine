@@ -20,23 +20,18 @@
 package org.jetel.component;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageConsumer;
-import javax.jms.Session;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jmsreader.JmsMsg2DataRecord;
+import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
@@ -72,12 +67,7 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"JMS_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>iniCtxFactory</b></td><td>JNDI initial context factory</td>
- *  <tr><td><b>providerUrl</b></td><td>JNDI provider URL</td>
- *  <tr><td><b>connectionFactory</b></td><td>factory creating JMS connections</td>
- *  <tr><td><b>username</b></td><td>username for connection factory</td>
- *  <tr><td><b>password</b></td><td>password for connection factory</td>
- *  <tr><td><b>destId</b></td><td>JMS destination</td>
+ *  <tr><td><b>connection</b></td><td>JMS connection ID</td>
  *  <tr><td><b>selector</b></td><td>JMS selector specifying messages to be processed</td>
  *  <tr><td><b>processorCode</b></td><td>Inline Java code defining processor class</td>
  *  <tr><td><b>processorClass</b></td><td>Name of processor class</td>
@@ -96,12 +86,7 @@ public class JmsReader extends Node {
 
 	static Log logger = LogFactory.getLog(MysqlDataReader.class);
 
-	private static final String XML_INICTX_FACTORY_ATTRIBUTE = "iniCtxFactory";
-	private static final String XML_PROVIDER_URL_ATTRIBUTE = "providerUrl";
-	private static final String XML_CON_FACTORY_ATTRIBUTE = "connectionFactory";
-	private static final String XML_USERNAME_ATTRIBUTE = "username";
-	private static final String XML_PASSWORD_ATTRIBUTE = "password";
-	private static final String XML_DESTINATION_ATTRIBUTE = "destId";
+	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 	private static final String XML_SELECTOR_ATTRIBUTE = "selector";
 	private static final String XML_PSORCODE_ATTRIBUTE = "processorCode";
 	private static final String XML_PSORCLASS_ATTRIBUTE = "processorClass";
@@ -109,12 +94,7 @@ public class JmsReader extends Node {
 	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
 
 	// component attributes
-	private String iniCtxFtory;
-	private String providerUrl;
-	private String conFtory;
-	private String user;
-	private String pwd;
-	private String destId;
+	private String conId;
 	private String selector;
 	private String psorClass;
 	private String psorCode;
@@ -122,18 +102,13 @@ public class JmsReader extends Node {
 	private int timeout;
 	private Properties psorProperties;
 
-	private Connection connection;
+	private JmsConnection connection;
 	private MessageConsumer consumer;	
 	private JmsMsg2DataRecord psor;
 	
 	/** Sole ctor.
 	 * @param id Component ID
-	 * @param iniCtxFtory Initial context factory 
-	 * @param providerUrl Provider URL
-	 * @param conFtory JMS Connection factory name
-	 * @param user Username for connection factory
-	 * @param pwd Password for connection factory
-	 * @param destId JMS destination ID
+	 * @param conId JMS connection ID
 	 * @param selector JMS message selector
 	 * @param psorClass Processor class
 	 * @param psorCode Inline processor definition
@@ -141,16 +116,10 @@ public class JmsReader extends Node {
 	 * @param timeout Timeout
 	 * @param psorProperties Properties to be passed to msg processor.
 	 */
-	public JmsReader(String id, String iniCtxFtory, String providerUrl, String conFtory,
-			String user, String pwd, String destId, String selector, String psorClass, String psorCode,
+	public JmsReader(String id, String conId, String selector, String psorClass, String psorCode,
 			int maxMsgCount, int timeout, Properties psorProperties) {
 		super(id);
-		this.iniCtxFtory = iniCtxFtory;
-		this.providerUrl = providerUrl;
-		this.conFtory = conFtory;
-		this.user = user;
-		this.pwd = pwd;
-		this.destId = destId;
+		this.conId = conId;
 		this.selector = selector;
 		this.psorClass = psorClass;
 		this.psorCode = psorCode;
@@ -169,27 +138,20 @@ public class JmsReader extends Node {
 		if (psorClass == null && psorCode == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
-		Context ctx = null;
+		IConnection c = getGraph().getConnection(conId);
+		if (c == null || !(c instanceof JmsConnection)) {
+			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
+		}
+
+		connection = (JmsConnection)c;
 		try {
-			if (iniCtxFtory != null) {
-				Hashtable<String, String> properties = new Hashtable<String, String>();
-				properties.put(Context.INITIAL_CONTEXT_FACTORY, iniCtxFtory);
-				properties.put(Context.PROVIDER_URL, providerUrl);
-				ctx = new InitialContext(properties);			
-			} else {	// use jndi.properties
-				ctx = new InitialContext();
-			}
-		    ConnectionFactory ftory = (ConnectionFactory)ctx.lookup(conFtory);		    
-			connection = ftory.createConnection(user, pwd);
-			Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);			
-			Destination destination = (Destination)ctx.lookup(destId);
-			consumer = session.createConsumer(destination, selector);
-			psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
-			psor.init(getOutputPort(0).getMetadata(), psorProperties);
-			connection.start();
+			connection.init();
+			consumer = connection.createConsumer(selector);
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
+		psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 	}
 
 	/** Creates processor instance of a class specified by its name.
@@ -272,8 +234,9 @@ public class JmsReader extends Node {
 	 * @see org.jetel.graph.Node#run()
 	 */
 	public void run() {
-		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
 		try {
+			connection.connect();
+			(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
 			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
 				DataRecord rec = psor.extractRecord(msg);
 				if (rec == null) {
@@ -310,7 +273,7 @@ public class JmsReader extends Node {
 	 */
 	synchronized private void closeConnection() {
 		try {
-			connection.close();
+			consumer.close();
 		} catch (JMSException e) {
 			// ignore it, the connection is probably already closed
 		}
@@ -330,26 +293,11 @@ public class JmsReader extends Node {
 		super.toXML(xmlElement);
 	
 		xmlElement.setAttribute(XML_ID_ATTRIBUTE, getId());
-		if (iniCtxFtory != null) {
-			xmlElement.setAttribute(XML_INICTX_FACTORY_ATTRIBUTE, iniCtxFtory);
-		}
-		if (providerUrl != null) {
-			xmlElement.setAttribute(XML_PROVIDER_URL_ATTRIBUTE, providerUrl);
-		}
-		if (conFtory != null) {
-			xmlElement.setAttribute(XML_CON_FACTORY_ATTRIBUTE, conFtory);
-		}
-		if (user != null) {
-			xmlElement.setAttribute(XML_USERNAME_ATTRIBUTE, user);
-		}
-		if (pwd != null) {
-			xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, pwd);
-		}
-		if (destId != null) {
-			xmlElement.setAttribute(XML_DESTINATION_ATTRIBUTE, destId);
+		if (conId != null) {
+			xmlElement.setAttribute(XML_CONNECTION_ATTRIBUTE, conId);
 		}
 		if (selector != null) {
-			xmlElement.setAttribute(XML_DESTINATION_ATTRIBUTE, selector);
+			xmlElement.setAttribute(XML_SELECTOR_ATTRIBUTE, selector);
 		}
 		if (psorCode != null) {
 			xmlElement.setAttribute(XML_PSORCODE_ATTRIBUTE, psorCode);
@@ -379,22 +327,14 @@ public class JmsReader extends Node {
 		
 		try {
 			jmsReader = new JmsReader(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_INICTX_FACTORY_ATTRIBUTE, null),
-					xattribs.getString(XML_PROVIDER_URL_ATTRIBUTE, null),
-					xattribs.getString(XML_CON_FACTORY_ATTRIBUTE, null),
-					xattribs.getString(XML_USERNAME_ATTRIBUTE, null),
-					xattribs.getString(XML_PASSWORD_ATTRIBUTE, null),
-					xattribs.getString(XML_DESTINATION_ATTRIBUTE, null),
+					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.JmsMsg2DataRecordProperties"),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jmsreader.JmsMsg2DataRecordProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
 					xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 
-							XML_ID_ATTRIBUTE, XML_INICTX_FACTORY_ATTRIBUTE,
-							XML_PROVIDER_URL_ATTRIBUTE, XML_CON_FACTORY_ATTRIBUTE,
-							XML_USERNAME_ATTRIBUTE, XML_PASSWORD_ATTRIBUTE,
-							XML_DESTINATION_ATTRIBUTE, XML_SELECTOR_ATTRIBUTE,
+							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE, XML_SELECTOR_ATTRIBUTE,
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE,
 							XML_MAXMSGCNT_ATTRIBUTE, XML_TIMEOUT_ATTRIBUTE
 					}));

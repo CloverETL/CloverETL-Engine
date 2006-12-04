@@ -11,4 +11,8 @@
 		<parameter id="type" value="JDBC"/>
 		<parameter id="className" value="org.jetel.connection.DBConnection"/>
 	</extension>
+	<extension point-id="connection">
+		<parameter id="type" value="JMS"/>
+		<parameter id="className" value="org.jetel.connection.JmsConnection"/>
+	</extension>
 </plugin>
