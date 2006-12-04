@@ -211,4 +211,14 @@
 		<parameter id="className" value="org.jetel.component.Denormalizer"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="JMS_READER"/>
+		<parameter id="className" value="org.jetel.component.JmsReader"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="JMS_WRITER"/>
+		<parameter id="className" value="org.jetel.component.JmsWriter"/>
+	</extension>
+
 </plugin>
