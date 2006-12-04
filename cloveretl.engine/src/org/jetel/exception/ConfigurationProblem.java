@@ -42,6 +42,8 @@ public class ConfigurationProblem {
 
     private Priority priority;
     
+    private String attributeName;
+    
     public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority) {
         this.message = message;
         this.severity = severity;
@@ -63,5 +65,13 @@ public class ConfigurationProblem {
 
     public Severity getSeverity() {
         return severity;
+    }
+
+    public String getAttributeName() {
+        return attributeName;
+    }
+
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
     }
 }
