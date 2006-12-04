@@ -1,15 +1,35 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2006 Javlin Consulting <info@javlinconsulting>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 
 package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
+import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
@@ -17,6 +37,18 @@ import org.jetel.interpreter.node.CLVFFunctionDeclaration;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 
+/**
+ * This class is used for executing code written in CloverETL transform language.
+ * Before executing it is necessary to call init() method (usually when calling 
+ * init() function)
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Dec 4, 2006
+ *
+ */
 public class WrapperTL {
 
     public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is Clover's TransformLanguage
@@ -31,9 +63,15 @@ public class WrapperTL {
     private TransformLangExecutor executor;
     
     private String errorMessage;
+    private TransformationGraph graph;
     
 	/**
-	 * @param srcCode
+	 * Constructor
+	 * 
+	 * @param srcCode code written in CloverETL language
+	 * @param sourceMetadata
+	 * @param targetMetadata
+	 * @param parameters transformation parameters
 	 * @param logger
 	 */
 	public WrapperTL(String srcCode, DataRecordMetadata[] sourceMetadata,
@@ -45,11 +83,23 @@ public class WrapperTL {
 		this.targetMetadata = targetMetadata;
 	}
     
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param sourceMetadata
+	 * @param targetMetadata
+	 * @param logger
+	 */
 	public WrapperTL(String srcCode, DataRecordMetadata[] sourceMetadata,
 			DataRecordMetadata[] targetMetadata, Log logger) {
 		this(srcCode, sourceMetadata, targetMetadata, null, logger);
 	}
 
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param metadata when output and input metadata are identical or only one needed
+	 * @param parameters transformation parameters
+	 * @param logger
+	 */
 	public WrapperTL(String srcCode, DataRecordMetadata metadata,
 			Properties parameters, Log logger) {
 		this(srcCode,new DataRecordMetadata[]{metadata}, 
@@ -57,28 +107,54 @@ public class WrapperTL {
 	}
 
 	
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param parameters transformation parameters
+	 * @param logger
+	 */
 	public WrapperTL(String srcCode, Properties parameters, Log logger) {
 		this(srcCode,null, null, parameters, logger);
 	}
 
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param metadata when output and input metadata are identical or only one needed
+	 * @param logger
+	 */
 	public WrapperTL(String srcCode, DataRecordMetadata metadata, Log logger) {
 		this(srcCode,new DataRecordMetadata[]{metadata}, 
 				new DataRecordMetadata[]{metadata}, null, logger);
 	}
 
 	
+	/**
+	 * @param srcCode code written in CloverETL language
+	 * @param logger
+	 */
 	public WrapperTL(String srcCode, Log logger) {
 		this(srcCode,null, null, null, logger);
 	}
 
+	/**
+	 * This method parses source code written in CloverETL language and initializes
+	 * 	CloverETL language executor. It has to be called before executing any function
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
 	public void init() throws ComponentNotReadyException{
         CLVFStart parseTree=null;
-        if (sourceMetadata != null) {
-        	parser = new TransformLangParser(sourceMetadata, targetMetadata, 
-        			new ByteArrayInputStream(srcCode.getBytes()));
-        }else{
-        	parser = new TransformLangParser(new ByteArrayInputStream(srcCode.getBytes()));
-        }
+        //creating parser
+        try {
+			if (sourceMetadata != null) {
+				parser = new TransformLangParser(sourceMetadata, targetMetadata, 
+						new ByteArrayInputStream(srcCode.getBytes("UTF-8")), "UTF-8");
+			}else{
+				parser = new TransformLangParser(new ByteArrayInputStream(srcCode.getBytes("UTF-8")), "UTF-8");
+			}
+		} catch (UnsupportedEncodingException e) {
+			// can't happen: coding and encoding with the same charset
+		}
+		//initializing parser
         try {
             parseTree = parser.Start();
             parseTree.init();
@@ -101,11 +177,12 @@ public class WrapperTL {
         
         if (parser.getParseExceptions().size()>0){
             errorMessage=((Exception)parser.getParseExceptions().get(0)).getMessage();
-            logger.error(errorMessage);
             throw new ComponentNotReadyException(errorMessage);
         }
         
+        //initializing executor
         executor=new TransformLangExecutor(parameters);
+        executor.setRuntimeLogger(logger);
        
         // execute global declarations, etc
         try{
@@ -118,33 +195,90 @@ public class WrapperTL {
     	
     }
 	
+	/**
+	 * This method executes function wriiten in CloverETL language
+	 * 
+	 * @param functionName function name
+	 * @param inputRecords input records 
+	 * @param outputRecords output records 
+	 * @return result of executing function
+	 * @throws JetelException
+	 */
 	public Object execute(String functionName, DataRecord[] inputRecords, 
-			DataRecord[] outputRecords){
+			DataRecord[] outputRecords) throws JetelException{
 		CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
-		if (function == null) {
-			return null;
+		if (function == null) {//function with given name not found
+			throw new JetelException("Function " + functionName + " not found");
 		}
+		//set input and output records (if given)
 		if (inputRecords != null) {
 			executor.setInputRecords(inputRecords);
 		}		
 		if (outputRecords != null){
 			executor.setOutputRecords(outputRecords);
 		}
+		//execute function
 		executor.executeFunction(function,null);
-        
-        Object result = executor.getResult();
-        if (result!=null){
-            return result;
-        }
-        return true;
+        //return result
+        return executor.getResult();
 	}
 	
-	public Object execute(String functionName, DataRecord inRecord){
+	/**
+	 * This method executes function wriiten in CloverETL language
+	 * 
+	 * @param functionName
+	 * @param inRecord
+	 * @return
+	 * @throws JetelException
+	 */
+	public Object execute(String functionName, DataRecord inRecord)throws JetelException{
 		return execute(functionName, new DataRecord[]{inRecord}, null);
 	}
 	
-	public Object execute(String functionName){
-		return execute(functionName, null);
+	/**
+	 * This method executes function wriiten in CloverETL language
+	 * 
+	 * @param functionName
+	 * @param inRecord
+	 * @return
+	 * @throws JetelException
+	 */
+	public Object execute(String functionName)throws JetelException{
+		return execute(functionName, null, null);
+	}
+
+	/**
+	 * @return transformation graph
+	 */
+	public TransformationGraph getGraph() {
+		return graph;
+	}
+
+	/**
+	 * Sets transformation graph
+	 * 
+	 * @param graph
+	 */
+	public void setGraph(TransformationGraph graph) {
+		this.graph = graph;
+		executor.setGraph(graph);
+	}
+
+	/**
+	 * @return error messages
+	 */
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	/**
+	 * Sets transformation parameters
+	 * 
+	 * @param parameters
+	 */
+	public void setParameters(Properties parameters) {
+		this.parameters = parameters;
+		executor.setGlobalParameters(parameters);
 	}
 
 }
