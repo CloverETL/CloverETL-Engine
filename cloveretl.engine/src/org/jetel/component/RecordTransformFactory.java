@@ -72,7 +72,7 @@ public class RecordTransformFactory {
                         logger, dynaTransCode);
                 break;
             case TRANSFORM_CLOVER_TL:
-                transformation = new RecordTransformTL(logger, transform);
+                transformation = new RecordTransformTL(transform, logger);
                 break;
             case TRANSFORM_JAVA_PREPROCESS:
                 transformation = RecordTransformFactory.loadClassDynamic(
@@ -225,7 +225,7 @@ public class RecordTransformFactory {
      */
     public static int guessTransformType(String transform){
       
-        if (transform.indexOf(RecordTransformTL.TL_TRANSFORM_CODE_ID) != -1){
+        if (transform.indexOf(WrapperTL.TL_TRANSFORM_CODE_ID) != -1){
             // clover internal transformation language
             return TRANSFORM_CLOVER_TL;
         }
