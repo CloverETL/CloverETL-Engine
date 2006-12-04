@@ -180,11 +180,8 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since         October 29, 2002
 	 */
 	public void setValue(byte value) {
-		if (this.value == null) {
-			int len = metadata.getSize();
-			this.value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
-		}
-		Arrays.fill(this.value, value);
+	    prepareBuf();
+	    Arrays.fill(this.value, value);
 		setNull(false);
 	}
 
@@ -345,10 +342,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since              October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) {
-		if (value == null) {
-			int len = metadata.getSize();
-			value = new byte[len > 0 ? len : INITIAL_BYTE_ARRAY_CAPACITY];
-		}
+		prepareBuf();
 		dataBuffer.get(value);
 		setNull(false);
 	}
