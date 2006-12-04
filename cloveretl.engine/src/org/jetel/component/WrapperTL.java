@@ -61,6 +61,7 @@ public class WrapperTL {
     
     private TransformLangParser parser;
     private TransformLangExecutor executor;
+    private CLVFFunctionDeclaration function;
     
     private String errorMessage;
     private TransformationGraph graph;
@@ -252,6 +253,60 @@ public class WrapperTL {
 		return execute(functionName, null, null);
 	}
 
+	/**
+	 * If there is expected that the function will be executed many times, it is 
+	 * possible to set this function as "default" for quicker execution
+	 * 
+	 * @param functionName name of function, which will be executed many times
+	 * @throws ComponentNotReadyException
+	 */
+	public void prepareFunctionExecution(String functionName)throws ComponentNotReadyException{
+		function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
+		if (function == null) {//function with given name not found
+			throw new ComponentNotReadyException("Function " + functionName + " not found");
+		}
+	}
+	
+	/**
+	 * This method exexutes function set before as default (see above)
+	 * 
+	 * @param inputRecords
+	 * @param outputRecords
+	 * @return
+	 */
+	public Object executePreparedFunction(DataRecord[] inputRecords, DataRecord[] outputRecords){
+		//set input and output records (if given)
+		if (inputRecords != null) {
+			executor.setInputRecords(inputRecords);
+		}		
+		if (outputRecords != null){
+			executor.setOutputRecords(outputRecords);
+		}
+		//execute function
+		executor.executeFunction(function,null);
+        //return result
+        return executor.getResult();
+	}
+	
+	/**
+	 * This method exexutes function set before as default (see above)
+	 * 
+	 * @param inRecord
+	 * @return
+	 */
+	public Object executePreparedFunction(DataRecord inRecord){
+		return executePreparedFunction(new DataRecord[]{inRecord}, null);
+	}
+	
+	/**
+	 * This method exexutes function set before as default (see above)
+	 * 
+	 * @return
+	 */
+	public Object executePreparedFunction(){
+		return executePreparedFunction(null, null);
+	}
+	
 	/**
 	 * @return transformation graph
 	 */
