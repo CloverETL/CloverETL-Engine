@@ -3,6 +3,12 @@
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
+<Connection id="dest" type="JMS"
+iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory"
+providerUrl="vm://localhost"
+connectionFactory="ConnectionFactory"
+destId="dynamicQueues/Clover"
+/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" id="Input" type="DELIMITED_DATA_READER"
@@ -14,21 +20,15 @@ fileURL="${WORKSPACE}/output/jms.out"
 />
 
 <Node enabled="enabled" id="JmsWriter" type="JMS_WRITER"
-iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-providerUrl="vm://localhost"
-connectionFactory="ConnectionFactory"
-destId="dynamicTopics/Clover"
-processorClass="org.jetel.component.DataRecord2JmsMsgProperties"
+connection="dest"
+_processorClass="org.jetel.component.DataRecord2JmsMsgProperties"
 
 bodyField="LastName"
 />
 
 <Node enabled="enabled" id="JmsReader" type="JMS_READER"
-iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory"
-providerUrl="vm://localhost"
-connectionFactory="ConnectionFactory"
-destId="dynamicTopics/Clover"
-processorClass="org.jetel.component.JmsMsg2DataRecordProperties"
+connection="dest"
+_processorClass="org.jetel.component.JmsMsg2DataRecordProperties"
 timeout="4000" maxMsgCount="0"
 
 bodyField="LastName"
