@@ -19,18 +19,16 @@
 */
 package org.jetel.component;
 
-import java.io.ByteArrayInputStream;
-import java.util.Iterator;
 import java.util.Properties;
+
+import javax.swing.text.StyledEditorKit.BoldAction;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangExecutor;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFFunctionDeclaration;
-import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -45,28 +43,21 @@ import org.jetel.metadata.DataRecordMetadata;
 
 public class RecordTransformTL implements RecordTransform {
 
-    public static final String TL_TRANSFORM_CODE_ID="//#TL";  // magic header determining that the source code is Clover's TransformLanguage
-    
     public static final String TRANSFORM_FUNCTION_NAME="transform";
     public static final String FINISHED_FUNCTION_NAME="finished";
     public static final String INIT_FUNCTION_NAME="init";
     
     protected TransformationGraph graph;
-    protected TransformLangExecutor executor;
-    protected CLVFFunctionDeclaration transformFunction, finishedFunction, initFunction;
-    protected String srcCode;
     protected Log logger;
 
     protected String errorMessage;
 	
-	protected Properties parameters;
-	protected DataRecordMetadata[] sourceMetadata;
-	protected DataRecordMetadata[] targetMetadata;
+	protected WrapperTL wrapper;
 
     /**Constructor for the DataRecordTransform object */
-    public RecordTransformTL(Log logger,String srcCode) {
-        this.srcCode=srcCode;
+    public RecordTransformTL(String srcCode, Log logger) {
         this.logger=logger;
+        wrapper = new WrapperTL(srcCode, logger);
     }
 
 	/**
@@ -76,81 +67,35 @@ public class RecordTransformTL implements RecordTransform {
 	 * @param  targetMetadata  Array of metadata objects describing source data records
 	 * @return                        True if successfull, otherwise False
 	 */
-	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata) {
-
-        CLVFStart parseTree=null;
-        TransformLangParser parser = new TransformLangParser(sourceRecordsMetadata,
-                targetRecordsMetadata,new ByteArrayInputStream(srcCode.getBytes()));
-        
-        try {
-            parseTree = parser.Start();
-            parseTree.init();
-        }catch(ParseException ex){
-            ex.printStackTrace();
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }catch(Exception ex){
-            ex.printStackTrace();
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }
-        
-        // log & report any parse exceptions
-        for(Iterator iter=parser.getParseExceptions().iterator();iter.hasNext();){
-            logger.error(iter.next());
-        }
-        
-        if (parser.getParseExceptions().size()>0){
-            errorMessage=((Exception)parser.getParseExceptions().get(0)).getMessage();
-            return false;
-        }
-        
-        executor=new TransformLangExecutor(parameters);
-        transformFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(TRANSFORM_FUNCTION_NAME);
-        finishedFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(FINISHED_FUNCTION_NAME);
-        initFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(INIT_FUNCTION_NAME);
-        if (transformFunction==null){
-            errorMessage="Transformation transformFunction not declared/defined";
-            logger.error(errorMessage);
-            return false;
-        }
-       
-        // execute global declarations, etc
-        try{
-            executor.visit(parseTree,null);
-        }catch (Exception ex){
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }
-        
-        //execute init transformFunction
-        if (initFunction!=null){
-            executor.executeFunction(initFunction,null); 
-        }
-        
-        this.parameters=parameters;
-		this.sourceMetadata=sourceRecordsMetadata;
-		this.targetMetadata=targetRecordsMetadata;
-        
-        return true;
-	}
+	public boolean init(Properties parameters, DataRecordMetadata[] sourceRecordsMetadata, DataRecordMetadata[] targetRecordsMetadata)
+	throws ComponentNotReadyException{
+		wrapper.setMetadata(sourceRecordsMetadata, targetRecordsMetadata);
+		wrapper.setParameters(parameters);
+		if (graph != null){
+	        wrapper.setGraph(graph);
+		}
+		wrapper.init();
+		try {
+			Object result = wrapper.execute(INIT_FUNCTION_NAME);
+			return result == null ? true : (Boolean)result;
+		} catch (JetelException e) {
+			//do nothing: function init is not necessary
+		}
+		return true;
+ 	}
 
 	
-	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords){
-        executor.setInputRecords(inputRecords);
-        executor.setOutputRecords(outputRecords);
-        
-        // execute transformation transformFunction
-        executor.executeFunction(transformFunction,null);
-        
-        Boolean result=(Boolean)executor.getResult();
-        if (result!=null){
-            return result.booleanValue();
-        }
-        return true;
+	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords)
+	throws TransformException{
+		try {
+			Object result = wrapper.execute(TRANSFORM_FUNCTION_NAME, inputRecords,
+					outputRecords);
+			return result == null ? true : (Boolean)result;
+		} catch (JetelException e) {
+			errorMessage = e.getLocalizedMessage();
+			logger.error(errorMessage);
+			throw new TransformException(e.getMessage(),e);
+		}
     }
 	
 
@@ -187,9 +132,11 @@ public class RecordTransformTL implements RecordTransform {
 	 */
 	public void finished(){
         // execute finished transformFunction
-        if (finishedFunction!=null){
-            executor.executeFunction(finishedFunction,null); 
-        }
+		try {
+			wrapper.execute(FINISHED_FUNCTION_NAME);
+		} catch (JetelException e) {
+			//do nothing: function finished is not necessary
+		}
 	}
 	
     /* (non-Javadoc)
