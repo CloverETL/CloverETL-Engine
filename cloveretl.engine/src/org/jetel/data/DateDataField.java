@@ -392,7 +392,7 @@ public class DateDataField extends DataField implements Comparable{
 	public void deserialize(ByteBuffer buffer) {
 		long tmpl = buffer.getLong();
 		if (tmpl == 0) {
-			setValue(null);
+			setNull(true);
 			return;
 		}
 		if (value == null) {
