@@ -28,10 +28,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
@@ -1010,7 +1008,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			//check if parameter value can be set to given field
 			StringBuilder correctParameterValue = new StringBuilder(
 					parameterValue == null ? "null" : parameterValue); 
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||	// TODO this seems to be a bug 
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
+					fieldType != DataFieldMetadata.BYTE_FIELD_COMPRESSED ||
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					parameterValue != null) {
 				checkConstant(recNo, fieldNo, correctParameterValue);
@@ -1027,7 +1026,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			//check if constant can be set to given field
 			StringBuilder correctConstant = new StringBuilder(ruleString);
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||	// TODO fix the bug 
+			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||
+					fieldType != DataFieldMetadata.BYTE_FIELD_COMPRESSED ||
 					fieldType != DataFieldMetadata.STRING_FIELD ) &&
 					ruleString != null) {
 				if (checkConstant(recNo, fieldNo, correctConstant)) {
