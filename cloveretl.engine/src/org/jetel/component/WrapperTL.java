@@ -183,8 +183,13 @@ public class WrapperTL {
         //initializing executor
         executor=new TransformLangExecutor(parameters);
         executor.setRuntimeLogger(logger);
-       
-        // execute global declarations, etc
+		if (parameters != null) {
+			executor.setGlobalParameters(parameters);
+		}		
+		if (graph != null) {
+			executor.setGraph(graph);
+		}		
+		// execute global declarations, etc
         try{
             executor.visit(parseTree,null);
         }catch (Exception ex){
@@ -261,7 +266,6 @@ public class WrapperTL {
 	 */
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
-		executor.setGraph(graph);
 	}
 
 	/**
@@ -278,7 +282,15 @@ public class WrapperTL {
 	 */
 	public void setParameters(Properties parameters) {
 		this.parameters = parameters;
-		executor.setGlobalParameters(parameters);
+	}
+	
+	public void setMetadata(DataRecordMetadata[] sourceMetadata, DataRecordMetadata[] targetMetadata){
+		this.sourceMetadata = sourceMetadata;
+		this.targetMetadata = targetMetadata;
 	}
 
+	public void setMatadata(DataRecordMetadata metadata){
+		this.sourceMetadata = new DataRecordMetadata[]{metadata};
+		this.targetMetadata = new DataRecordMetadata[]{metadata};
+	}
 }
