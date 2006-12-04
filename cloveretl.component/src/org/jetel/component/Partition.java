@@ -20,6 +20,9 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,8 +50,7 @@ import org.w3c.dom.Element;
 /**
  *  <h3>Partition Component</h3> <!-- Partitions input data into
  * set of partitions (each connected output port becomes one partition.
- * Data is partitioned using different algorithms. Three (RoundRobin,Hash,Rage) are
- * implemented -->
+ * Data is partitioned using different algorithms.  -->
  *
  * <table border="1">
  * <th>Component:</th>
@@ -62,10 +64,15 @@ import org.w3c.dom.Element;
  * flow (port) will be the record sent to.<br>
  * Which partition algorithm becomes active depends on following:
  * <ul>
- * <li>If <code>partitionKey</code> is <b>NOT</b> specified/defined, RoundRobin algorithm is used.
- * <li>If <code>partitionKey</code> <b>IS</b> specified and <b>NO</b> <code>ranges</code> is specified, then
+ * <li>If <code>partitionClass</code> or <code>partitionSource</code> is defined, there
+ * is used specified function for partition
+ * <li>If <b>NO </b><code>partitionClass</code> <b>NOR </b>, <code>partitionSource</code>,
+ *  <b>NO </b><code>partitionKey</code> is  specified/defined, RoundRobin algorithm is used.
+ * <li>If <code>partitionKey</code> <b>IS</b> specified and <b>NO</b> <code>ranges</code>
+ * <b>NOR </b><code>partitionClass</code> <b>NOR </b> <code>partitionSource</code> is specified, then
  * partition by calculated hash value is used. The formula used is: <code>hashValue / MAX_HASH_VALUE * #connected_output_ports) MOD #connected_output_ports</code>
- * <li>If <b>BOTH</b> <code>partitionKey</code> and <code>ranges</code> are specified, then partition by
+ * <li>If <b>BOTH</b> <code>partitionKey</code> and <code>ranges</code> are specified 
+ * (but not <code>partitionClass</code> nor <code>partitionSource</code>), then partition by
  * range is used - <i>partitionKey's</i> value is sequentially compared with defined range boundaris. If
  * the value is less or equal to specified boundary, then the record is sent out through the port corresponding
  * to that boundary.<br><i>Note: when boundaries are used, only 1 field can be specified as partitionKey.</i>
@@ -83,6 +90,9 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"PARTITION"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
+ *  <tr><td><b>partitionClass</b><br><i>optional</i></td><td>name of the class to be
+ *   used for partioning data
+ *  <tr><td><b>partitionSource</b><br><i>optional</i></td><td>partition function for partition dataset. Can be java code or in CloverETL transform language
  *  <tr><td><b>partitionKey</b><br><i>optional</i></td><td>key which specifies which fields (one or more) will be used for calculating hash valu
  * used for determinig output port. If ranges attribute is not defined, then partition method partition by hash will be used.</td>
  * <tr><td><b>ranges</b><br><i>optional</i></td><td>definition of intervals against which
@@ -97,6 +107,16 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="PARTITION_BY_KEY" type="PARTITION" partitionKey="age"/&gt;</pre>
  *  <pre>&lt;Node id="PARTITION_BY_RANGE" type="PARTITION" partitionKey="age" ranges="18;30;60;80"/&gt;</pre>
+ *  <pre>&lt;Node id="PARTITION" type="PARTITION"&gt;
+ *  &lt;attr name="partitionSource"&gt;
+ *  //#TL
+ *  function getOutputPort(){
+ *  if ($EmployeeID .lt. 3) return 0
+ *  else if ($EmployeeID .lt. 5) return 1
+ *  else return 2
+ *  }
+ *  &lt;/attr&gt;
+ *  &lt;/Node&gt;
  *
  * @author      dpavlis
  * @since       February 28, 2005
@@ -109,15 +129,17 @@ public class Partition extends Node {
 
 	private final static int READ_FROM_PORT=0;
 	
-	private String[] partitionKeyNames;
-	private String[] partitionRanges;
+	private String[] partitionKeyNames = null;
+	private String[] partitionRanges = null;
+	private String partitionClass = null;
+	private String partitionSource = null;
 
 	private RecordKey partitionKey;
 	private HashKey hashKey;
-	private String partitionSource;
 
 	//	 instantiate proper partitioning function
 	private PartitionFunction partitionFce;
+	private Properties parameters;
 
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_RANGES_ATTRIBUTE = "ranges";
@@ -125,8 +147,10 @@ public class Partition extends Node {
 	private static final String XML_PARTIONSOURCE_ATTRIBUTE = "partitionSource";
 
 	static Log logger = LogFactory.getLog(Partition.class);
+	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME); 
 
-	/**
+
+    /**
 	 *  Constructor for the Partition object
 	 *
 	 * @param  id         Description of the Parameter
@@ -226,16 +250,29 @@ public class Partition extends Node {
 				throw new ComponentNotReadyException(e.getMessage());
 			}
 		}
+		//create parttion function if still is not created
 		if (partitionFce == null) {
 			partitionFce = createPartitionDynamic(partitionSource);
+		}else{
+			partitionClass = partitionFce.getClass().getName();
 		}
 		partitionFce.init(outPorts.size(),partitionKey);
 	}
 
+	/**
+	 * Method for creation parttion function from CloverETL language or java source
+	 * 
+	 * @param psorCode source code
+	 * @return Partition function
+	 * @throws ComponentNotReadyException
+	 */
 	private PartitionFunction createPartitionDynamic(String psorCode) throws ComponentNotReadyException {
-		if (psorCode.contains(RecordTransformTL.TL_TRANSFORM_CODE_ID)) {
-			return new PartitionTL(psorCode, getInputPort(0).getMetadata(), null, logger);
-		}else{
+		//check if source code is in CloverETL format
+		if (psorCode.contains(RecordTransformTL.TL_TRANSFORM_CODE_ID) ||
+				PATTERN_TL_CODE.matcher(psorCode).find()) {
+			return new PartitionTL(psorCode, getInputPort(0).getMetadata(), 
+					parameters, logger);
+		}else{//get partition function form java code
 			DynamicJavaCode dynCode = new DynamicJavaCode(psorCode);
 	        dynCode.setCaptureCompilerOutput(true);
 	        logger.info(" (compiling dynamic source) ");
@@ -272,6 +309,10 @@ public class Partition extends Node {
 			}
 			
 			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE,buf.toString());
+		}else if (partitionClass != null){
+			xmlElement.setAttribute(XML_PARTITIONCLASS_ATTRIBUTE, partitionClass);
+		}else{
+			xmlElement.setAttribute(XML_PARTIONSOURCE_ATTRIBUTE, partitionSource);
 		}
 		
 		if (partitionRanges != null) {
@@ -281,6 +322,11 @@ public class Partition extends Node {
 			}
 			
 			xmlElement.setAttribute(XML_RANGES_ATTRIBUTE,buf.toString());
+		}
+		Enumeration propertyAtts = parameters.propertyNames();
+		while (propertyAtts.hasMoreElements()) {
+			String attName = (String)propertyAtts.nextElement();
+			xmlElement.setAttribute(attName,parameters.getProperty(attName));
 		}
 	}
 
@@ -298,7 +344,7 @@ public class Partition extends Node {
 		PartitionFunction partitionFce = null;
 		try {
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE));
-		    if (xattribs.exists(XML_PARTITIONCLASS_ATTRIBUTE)) {
+		    if (xattribs.exists(XML_PARTITIONCLASS_ATTRIBUTE)) {//load class with partition function
 		        try {
 		        	partitionFce =  (PartitionFunction)Class.forName(xattribs.getString(XML_ID_ATTRIBUTE)).newInstance();
 		        }catch (InstantiationException ex){
@@ -308,9 +354,9 @@ public class Partition extends Node {
 		        }catch (ClassNotFoundException ex) {
 		            throw new ComponentNotReadyException("Can't find specified partition function class: " + xattribs.getString(XML_ID_ATTRIBUTE));
 		        }
-		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){
+		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){//set source for parttion function to load dynamic in init() method
 		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
-		    }else{
+		    }else{//set proper standard partition function
 			    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
 			    	partitionFce = new RangePartition(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
 			    }
@@ -326,13 +372,24 @@ public class Partition extends Node {
 		    }
 			if (partitionFce != null) {
 				partition.setPartitionFunction(partitionFce);
-			}		    
+			}	
+			partition.setFunctionParameters(xattribs.attributes2Properties(
+					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,
+							XML_PARTITIONCLASS_ATTRIBUTE, XML_PARTITIONKEY_ATTRIBUTE,
+							XML_RANGES_ATTRIBUTE}));
 			return partition;
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
 	}
 
+	    /**
+	     * @param functionParameters The functionParameters to set.
+	     */
+	    public void setFunctionParameters(Properties parameters) {
+	        this.parameters = parameters;
+	    }
+	    
 
 	/**
 	 *  Description of the Method
