@@ -35,7 +35,7 @@ import javax.naming.InitialContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.jmswriter.DataRecord2JmsMsg;
+import org.jetel.component.jms.DataRecord2JmsMsg;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;

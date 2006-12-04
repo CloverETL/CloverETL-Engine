@@ -28,7 +28,7 @@ import javax.jms.MessageConsumer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.component.jmsreader.JmsMsg2DataRecord;
+import org.jetel.component.jms.JmsMsg2DataRecord;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
