@@ -19,18 +19,13 @@
 */
 package org.jetel.component.denormalize;
 
-import java.io.ByteArrayInputStream;
-import java.util.Iterator;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
+import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.interpreter.ParseException;
-import org.jetel.interpreter.TransformLangExecutor;
-import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFFunctionDeclaration;
-import org.jetel.interpreter.node.CLVFStart;
+import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -52,19 +47,12 @@ public class RecordDenormalizeTL implements RecordDenormalize {
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
 
-    private String srcCode;
-    private Log logger;
-
-	protected Properties parameters;
-    private TransformLangExecutor executor;
-    private CLVFFunctionDeclaration addInputFunction, getOutputFunction, finishedFunction, initFunction;
-
     private String errorMessage;
+    private WrapperTL wrapper;
 
     /**Constructor for the DataRecordTransform object */
     public RecordDenormalizeTL(Log logger,String srcCode) {
-        this.srcCode=srcCode;
-        this.logger=logger;
+    	wrapper = new WrapperTL(srcCode, logger);
     }
 
 	/* (non-Javadoc)
@@ -73,102 +61,52 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	public boolean init(Properties parameters,
 			DataRecordMetadata sourceMetadata, DataRecordMetadata targetMetadata)
 			throws ComponentNotReadyException {
-        CLVFStart parseTree=null;
-        TransformLangParser parser = new TransformLangParser(new DataRecordMetadata[]{sourceMetadata},
-        		new DataRecordMetadata[]{targetMetadata},new ByteArrayInputStream(srcCode.getBytes()));
-        
-        try {
-            parseTree = parser.Start();
-            parseTree.init();
-        }catch(ParseException ex){
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }catch(Exception ex){
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }
-        
-        // log & report any parse exceptions
-        for(Iterator iter=parser.getParseExceptions().iterator();iter.hasNext();){
-            logger.error(iter.next());
-        }
-        
-        if (parser.getParseExceptions().size()>0){
-            errorMessage=((Exception)parser.getParseExceptions().get(0)).getMessage();
-            return false;
-        }
-        
-        executor=new TransformLangExecutor(parameters);
-        addInputFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(ADDINPUT_FUNCTION_NAME);
-        getOutputFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(GETOUTPUT_FUNCTION_NAME);
-        finishedFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(FINISHED_FUNCTION_NAME);
-        initFunction=(CLVFFunctionDeclaration)parser.getFunctions().get(INIT_FUNCTION_NAME);
-        if (addInputFunction==null){
-            errorMessage="Transformation addInputFunction not declared/defined";
-            logger.error(errorMessage);
-            return false;
-        }
-        if (getOutputFunction==null){
-            errorMessage="Transformation getOutputFunction not declared/defined";
-            logger.error(errorMessage);
-            return false;
-        }
-       
-        // execute global declarations, etc
-        try{
-            executor.visit(parseTree,null);
-        }catch (Exception ex){
-            logger.error(ex);
-            errorMessage=ex.getMessage();
-            return false;
-        }
-        
-        //execute init transformFunction
-        if (initFunction!=null){
-            executor.executeFunction(initFunction,null); 
-        }
-        
-        this.parameters=parameters;
-        
-        return true;
+		wrapper.setMetadata(new DataRecordMetadata[]{sourceMetadata}, 
+				new DataRecordMetadata[]{targetMetadata});
+		wrapper.setParameters(parameters);
+		wrapper.init();
+		try {
+			Object result = wrapper.execute(INIT_FUNCTION_NAME);
+			return result == null ? true : (Boolean)result;
+		} catch (JetelException e) {
+			//do nothing: function init is not necessary
+		}
+		
+		wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
+		
+		return true;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean addInputRecord(DataRecord inRecord) {
-        executor.setInputRecords(new DataRecord[]{inRecord});
-		executor.setOutputRecords(new DataRecord[]{});
-
-		// execute transformation transformFunction
-		executor.executeFunction(addInputFunction, null);
-
-		Boolean result = (Boolean) executor.getResult();
-		return result != null ? result.booleanValue() : true;
+		try {
+			Object result = wrapper.execute(ADDINPUT_FUNCTION_NAME, inRecord);
+			return result != null ? (Boolean)result : true;
+		} catch (JetelException e) {
+			errorMessage = e.getLocalizedMessage();
+			throw new RuntimeException(e.getLocalizedMessage(),e);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
-	    executor.setInputRecords(new DataRecord[]{});
-		executor.setOutputRecords(new DataRecord[]{outRecord});
-	
-		// execute transformation transformFunction
-		executor.executeFunction(getOutputFunction, null);
-	
-		Boolean result = (Boolean) executor.getResult();
-		return result != null ? result.booleanValue() : true;
+		Object result = wrapper.executePreparedFunction(null,
+				new DataRecord[]{outRecord});
+		return result == null ? true : (Boolean)result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#finished()
 	 */
 	public void finished() {
-		if (finishedFunction != null) {
-			executor.executeFunction(finishedFunction, null);
+		try {
+			wrapper.execute(FINISHED_FUNCTION_NAME);
+		} catch (JetelException e) {
+			//do nothing: function finished is not necessary
 		}
 	}
 
