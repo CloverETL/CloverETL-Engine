@@ -72,7 +72,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
+		wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME,GETOUTPUT_FUNCTION_NAME);
 		
 		return true;
 	}
@@ -81,20 +81,15 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean addInputRecord(DataRecord inRecord) {
-		try {
-			Object result = wrapper.execute(ADDINPUT_FUNCTION_NAME, inRecord);
-			return result != null ? (Boolean)result : true;
-		} catch (JetelException e) {
-			errorMessage = e.getLocalizedMessage();
-			throw new RuntimeException(e.getLocalizedMessage(),e);
-		}
+		Object result = wrapper.executePreparedFunction(0, inRecord);
+		return result == null ? true : (Boolean)result;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
-		Object result = wrapper.executePreparedFunction(null,
+		Object result = wrapper.executePreparedFunction(1, null,
 				new DataRecord[]{outRecord});
 		return result == null ? true : (Boolean)result;
 	}
