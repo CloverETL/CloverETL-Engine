@@ -83,6 +83,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *              format CDATA #IMPLIED 
  *              locale CDATA #IMPLIED
  *              nullable NMTOKEN (true | false) #IMPLIED &quot;true&quot;
+ *              compressed NMTOKEN (true | false) #IMPLIED &quot;false&quot;
  *              default CDATA #IMPLIED &gt;
  *   
  * </pre>
@@ -459,6 +460,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String delimiter = null;
 			String nullable = null;
 			String localeStr = null;
+			String compressed = null;
 			char fieldType = ' ';
 			Properties fieldProperties = new Properties();
 
@@ -482,12 +484,18 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					nullable = itemValue;
 				} else if (itemName.equalsIgnoreCase("locale")) {
 					localeStr = itemValue;
+				} else if (itemName.equalsIgnoreCase("compressed")) {
+					compressed = itemValue;
 				} else {
 					if (fieldProperties == null) {
 						fieldProperties = new Properties();
 					}
 					fieldProperties.setProperty(itemName, itemValue);
 				}
+			}
+
+			if (fieldType == DataFieldMetadata.BYTE_FIELD && Boolean.valueOf(compressed)) {
+				fieldType = DataFieldMetadata.BYTE_FIELD_COMPRESSED;
 			}
 
 			if ((fieldType == ' ') || (name == null)) {
