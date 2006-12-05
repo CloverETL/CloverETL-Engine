@@ -61,7 +61,7 @@ public class WrapperTL {
     
     private TransformLangParser parser;
     private TransformLangExecutor executor;
-    private CLVFFunctionDeclaration function;
+    private CLVFFunctionDeclaration[] function;
     
     private String errorMessage;
     private TransformationGraph graph;
@@ -260,15 +260,41 @@ public class WrapperTL {
 	 * @param functionName name of function, which will be executed many times
 	 * @throws ComponentNotReadyException
 	 */
-	public void prepareFunctionExecution(String functionName)throws ComponentNotReadyException{
-		function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
-		if (function == null) {//function with given name not found
-			throw new ComponentNotReadyException("Function " + functionName + " not found");
+	public void prepareFunctionExecution(String...functionName) throws ComponentNotReadyException{
+		function = new CLVFFunctionDeclaration[functionName.length];
+		for (int i=0;i<function.length;i++){
+			function[i] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName[i]);
+			if (function[i] == null) {//function with given name not found
+				throw new ComponentNotReadyException("Function " + functionName[i] + " not found");
+			}
 		}
 	}
 	
 	/**
 	 * This method exexutes function set before as default (see above)
+	 * 
+	 * @param functionNumber number of function
+	 * @param inputRecords
+	 * @param outputRecords
+	 * @return
+	 */
+	public Object executePreparedFunction(int functionNumber, 
+			DataRecord[] inputRecords, DataRecord[] outputRecords){
+		//set input and output records (if given)
+		if (inputRecords != null) {
+			executor.setInputRecords(inputRecords);
+		}		
+		if (outputRecords != null){
+			executor.setOutputRecords(outputRecords);
+		}
+		//execute function
+		executor.executeFunction(function[functionNumber],null);
+        //return result
+        return executor.getResult();
+	}
+
+	/**
+	 * This method exexutes 0th function set before as default (see above)
 	 * 
 	 * @param inputRecords
 	 * @param outputRecords
@@ -283,7 +309,7 @@ public class WrapperTL {
 			executor.setOutputRecords(outputRecords);
 		}
 		//execute function
-		executor.executeFunction(function,null);
+		executor.executeFunction(function[0],null);
         //return result
         return executor.getResult();
 	}
@@ -294,19 +320,38 @@ public class WrapperTL {
 	 * @param inRecord
 	 * @return
 	 */
-	public Object executePreparedFunction(DataRecord inRecord){
-		return executePreparedFunction(new DataRecord[]{inRecord}, null);
+	public Object executePreparedFunction(int functionNumber, DataRecord inRecord){
+		return executePreparedFunction(functionNumber, new DataRecord[]{inRecord}, null);
 	}
 	
 	/**
+	 * This method exexutes 0th function set before as default (see above)
+	 * 
+	 * @param inRecord
+	 * @return
+	 */
+	public Object executePreparedFunction(DataRecord inRecord){
+		return executePreparedFunction(new DataRecord[]{inRecord}, null);
+	}
+
+	/**
 	 * This method exexutes function set before as default (see above)
+	 * 
+	 * @return
+	 */
+	public Object executePreparedFunction(int functionNumber){
+		return executePreparedFunction(null, null);
+	}
+	
+	/**
+	 * This method exexutes 0th function set before as default (see above)
 	 * 
 	 * @return
 	 */
 	public Object executePreparedFunction(){
 		return executePreparedFunction(null, null);
 	}
-	
+
 	/**
 	 * @return transformation graph
 	 */
