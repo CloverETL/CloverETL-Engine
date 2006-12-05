@@ -74,7 +74,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
+		wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME,TRANSFORM_FUNCTION_NAME);
 		
 		return true;
 	}
@@ -83,12 +83,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
 	 */
 	public int count(DataRecord source) {
-		try {
-			return ((CloverInteger)wrapper.execute(LENGTH_FUNCTION_NAME, source)).getInt();
-		} catch (JetelException e) {
-			errorMessage = e.getLocalizedMessage();
-			throw new RuntimeException(e.getLocalizedMessage(),e);
-		}
+		return ((CloverInteger)wrapper.executePreparedFunction(0,source)).getInt();
 	}
 
 	/* (non-Javadoc)
@@ -96,8 +91,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public boolean transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
-		Object result = wrapper.executePreparedFunction(new DataRecord[]{source},
-				new DataRecord[]{target});
+		Object result = wrapper.executePreparedFunction(1, 
+				new DataRecord[]{source}, new DataRecord[]{target});
 		return result == null ? true : (Boolean)result;
 	}
 
