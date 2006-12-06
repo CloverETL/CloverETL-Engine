@@ -302,8 +302,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			//check Clover and db metadata
 			ResultSetMetaData dbMeta = resultSet.getMetaData();
 			if (transMap.length != dbMeta.getColumnCount()){
-				StringBuilder message = new StringBuilder("Another number of fields " +
-						"in given db metadata and real db metadata!!!\n" +
+				StringBuilder message = new StringBuilder("Different number of fields " +
+						"in defined DB metadata and metadata obtained from database!!!\n" +
 						"Clover metadata:\n");
 				for (int i=0;i<dbMetadata.getNumFields();i++){
 					message.append(dbMetadata.getField(i).getName() + " - " + 
@@ -314,7 +314,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					message.append(dbMeta.getColumnLabel(i) + " - " + 
 							dbMeta.getColumnTypeName(i) + "\n");
 				}
-				throw new IndexOutOfBoundsException(message.toString());
+				throw new RuntimeException(message.toString());
 			}
 		}
 		//get data from results
