@@ -25,6 +25,10 @@ package org.jetel.data;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Calendar;
+
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 import sun.nio.ByteBuffered;
 
@@ -39,9 +43,11 @@ import junit.framework.TestCase;
  */
 public class DynamicRecordBufferTest extends TestCase {
 
-    
+    DataRecordMetadata metadata;
+    DataRecord record;
     DynamicRecordBuffer buffer;
     ByteBuffer byteBuffer1,byteBuffer2;
+    final static String str1="THIS IS A TESTING DATA STRING THIS IS A TESTING DATA STRING";
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
@@ -49,7 +55,7 @@ public class DynamicRecordBufferTest extends TestCase {
     protected void setUp() throws Exception {
         super.setUp();
         Defaults.init();
-        buffer=new DynamicRecordBuffer();
+        buffer=new DynamicRecordBuffer(Defaults.Record.MAX_RECORD_SIZE);
         buffer.init();
         byteBuffer1=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         byteBuffer2=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
@@ -60,19 +66,41 @@ public class DynamicRecordBufferTest extends TestCase {
         int limit2=byteBuffer2.asCharBuffer().append("THIS IS A TESTING DATA STRING *********************************************************** THIS IS A TESTING DATA STRING THIS IS A TESTING DATA STRING *****").position();
         byteBuffer2.flip();
         byteBuffer2.limit(limit2);
+        
+        metadata=new DataRecordMetadata("in",DataRecordMetadata.DELIMITED_RECORD);
+        
+        metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
+        metadata.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
+        metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
+        metadata.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
+        metadata.addField(new DataFieldMetadata("Value",DataFieldMetadata.INTEGER_FIELD, "\n"));
+        
+        record = new DataRecord(metadata);
+        record.init();
+        
+        SetVal.setString(record,0,"  HELLO ");
+        SetVal.setInt(record,1,135);
+        SetVal.setString(record,2,"Some silly longer string.");
+        record.getField("Born").setNull(true);
+        SetVal.setInt(record,4,-999);
+        
     }
 
   
     /**
      * Test method for {@link org.jetel.data.DynamicRecordBuffer#writeRecord(java.nio.ByteBuffer)}.
      */
-    public void testWriteRecord() throws IOException {
+ /*   public void testWriteRecord() throws IOException {
         // first, write 100 records
-        for(int i=0;i<500;i++){
+        for(int i=0;i<3000;i++){
+            byteBuffer1.clear();
+            int limit=byteBuffer1.asCharBuffer().put(String.valueOf(i)).put(str1).position();
+            byteBuffer1.flip();
+            byteBuffer1.limit(limit*2);
             buffer.writeRecord(byteBuffer1);
-            byteBuffer1.rewind();
-            buffer.writeRecord(byteBuffer2);
-            byteBuffer2.rewind();
+            //byteBuffer1.rewind();
+            //buffer.writeRecord(byteBuffer2);
+            //byteBuffer2.rewind();
         }
         buffer.setEOF();
         System.out.println("has file:"+buffer.isHasFile());
@@ -86,12 +114,38 @@ public class DynamicRecordBufferTest extends TestCase {
             }
         buffer.close();
     }
-
+*/
     /**
      * Test method for {@link org.jetel.data.DynamicRecordBuffer#readRecod(java.nio.ByteBuffer)}.
      */
     public void testReadRecod() throws IOException{
-       
+        for(int i=0;i<900;i++){
+            buffer.writeRecord(record);
+        }
+        System.out.println("has file:"+buffer.isHasFile());
+        System.out.println("buffered records:"+buffer.getBufferedRecords());
+        System.in.read();
+        int count;
+        for(count=0;count<800;count++){
+            if (buffer.readRecord(record)==null) break;
+            System.out.println("**** "+count+"****");
+            System.out.print(record);
+        }
+        System.in.read();
+        for(int i=0;i<1200;i++){
+            buffer.writeRecord(record);
+        }
+        buffer.setEOF();
+        System.out.println("has file:"+buffer.isHasFile());
+        System.out.println("buffered records:"+buffer.getBufferedRecords());
+        System.in.read();
+        for(int i=0;;i++){
+            if (buffer.readRecord(record)==null) break;
+            System.out.println("**** "+i+"****");
+            System.out.print(record);
+        }
+   
+        buffer.close();
     }
 
     /**
