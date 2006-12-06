@@ -21,6 +21,7 @@ package org.jetel.lookup;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 import org.jetel.connection.CopySQLData;
@@ -34,6 +35,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
@@ -297,8 +299,24 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		// initialize trans map if needed
 		if (transMap==null){
 		    initInternal();
+			//check Clover and db metadata
+			ResultSetMetaData dbMeta = resultSet.getMetaData();
+			if (transMap.length != dbMeta.getColumnCount()){
+				StringBuilder message = new StringBuilder("Another number of fields " +
+						"in given db metadata and real db metadata!!!\n" +
+						"Clover metadata:\n");
+				for (int i=0;i<dbMetadata.getNumFields();i++){
+					message.append(dbMetadata.getField(i).getName() + " - " + 
+							dbMetadata.getFieldTypeAsString(i) + "\n");
+				}
+				message.append("Database metadata:\n");
+				for (int i=1;i<=dbMeta.getColumnCount();i++){
+					message.append(dbMeta.getColumnLabel(i) + " - " + 
+							dbMeta.getColumnTypeName(i) + "\n");
+				}
+				throw new IndexOutOfBoundsException(message.toString());
+			}
 		}
-		
 		//get data from results
 		for (int i = 0; i < transMap.length; i++) {
 			transMap[i].sql2jetel(resultSet);
