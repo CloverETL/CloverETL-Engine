@@ -65,7 +65,9 @@ import org.w3c.dom.Element;
  *	For each driver record, slave record is looked up in database.
  *	Pair of driver and slave records is sent to transformation class.<br>
  *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
- *	It skips driver records for which there is no corresponding slave.
+ *	It skips driver records for which there is no corresponding slave - unless 
+ *	outer join (leftOuterJoin option) is specified, when only driver record is 
+ *	passed to transform method. 
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -96,6 +98,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
  *  <tr><td><b>maxCashed</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
+ *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
  *    </table>
  *    <h4>Example:</h4> <pre>
  *    &lt;Node id="dbjoin0" type="DBJOIN"&gt;
@@ -122,6 +125,7 @@ public class DBJoin extends Node {
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
 	private static final String XML_MAX_CASHED_ATTRIBUTE = "maxCashed";
+	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 
 	public final static String COMPONENT_TYPE = "DBJOIN";
 	
@@ -137,6 +141,7 @@ public class DBJoin extends Node {
 	private String query;
 	private String metadataName;
 	private int maxCashed;
+	private boolean leftOuterJoin = false;
 
 	private Properties transformationParameters=null;
 	
@@ -188,12 +193,17 @@ public class DBJoin extends Node {
 				if (inRecord!=null) {
 					//find slave record in database
 					inRecords[1] = lookupTable.get(inRecord);
+					if (inRecords[1] == null && leftOuterJoin) {
+						inRecords[1] = new DataRecord(dbMetadata);
+						inRecords[1].init();
+					}
 					while (inRecords[1]!=null){
 						if (transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT,outRecord[0]);
 						}
 						//get next record from database with the same key
-						inRecords[1] = lookupTable.getNext();					}
+						inRecords[1] = lookupTable.getNext();					
+					}
 				}
             } catch (TransformException ex) {
                 resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
@@ -254,10 +264,13 @@ public class DBJoin extends Node {
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCashed);
 		lookupTable.init();
+		if (dbMetadata == null){
+			dbMetadata = lookupTable.getMetadata();
+		}
+        try {
 		recordKey = new RecordKey(joinKey,inMetadata[0]);
 		recordKey.init();
 		lookupTable.setLookupKey(recordKey);
-        try {
             transformation = RecordTransformFactory.createTransform(
             		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
         } catch(Exception e) {
@@ -286,6 +299,9 @@ public class DBJoin extends Node {
 			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
 				dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));
 			}
+			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)){
+				dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
+			}
 			dbjoin.setMaxCashed(xattribs.getInteger(XML_MAX_CASHED_ATTRIBUTE,100));
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -309,6 +325,10 @@ public class DBJoin extends Node {
 
 	private void setMaxCashed(int maxCashed) {
 		this.maxCashed = maxCashed;
+	}
+
+	private void setLeftOuterJoin(boolean leftOuterJoin) {
+		this.leftOuterJoin = leftOuterJoin;
 	}
 	
 }
