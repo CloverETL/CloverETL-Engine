@@ -164,7 +164,12 @@ public class runGraph {
         	    properties.setProperty(tmp.substring(0,tmp.indexOf("=")),tmp.substring(tmp.indexOf("=") +1)); 
 			}else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
 				i++;
-				trackingInterval = Integer.parseInt(args[i]);
+                try{
+                    trackingInterval = Integer.parseInt(args[i]);
+                }catch(NumberFormatException ex){
+                    System.err.println("Invalid tracking parameter: \""+args[i]+"\"");
+                    System.exit(-1);
+                }
 			}else if (args[i].startsWith(INFO_SWITCH)){
 			    printInfo();
 			    System.exit(0);
