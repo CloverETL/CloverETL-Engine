@@ -186,22 +186,21 @@ public class DBJoin extends Node {
 		outRecord[0].init();
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		DataRecord lookupRecord = null;
-		DataRecord[] inRecords = new DataRecord[] {inRecord,lookupRecord};
+		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
 		while (inRecord!=null && runIt) {
 			try {
 				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
 					//find slave record in database
-					lookupRecord = lookupTable.get(inRecord);
+					inRecords[1] = lookupTable.get(inRecord);
 					do{
-						if ((lookupRecord != null || leftOuterJoin ) && 
+						if ((inRecords[1] != null || leftOuterJoin ) && 
 								transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT,outRecord[0]);
 						}
 						//get next record from database with the same key
-						lookupRecord = lookupTable.getNext();					
-					}while (inRecords[1]!=null);
+						inRecords[1] = lookupTable.getNext();					
+					}while (inRecords[1] != null);
 				}
             } catch (TransformException ex) {
                 resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
