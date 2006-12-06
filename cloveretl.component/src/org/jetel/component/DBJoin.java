@@ -182,29 +182,26 @@ public class DBJoin extends Node {
 	public void run() {
 		//initialize in and out records
 		InputPort inPort=getInputPort(WRITE_TO_PORT);
-		DataRecord inRecord = new DataRecord(inPort.getMetadata());
-		inRecord.init();
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
 		outRecord[0].init();
-		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
+		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		inRecord.init();
+		DataRecord lookupRecord = null;
+		DataRecord[] inRecords = new DataRecord[] {inRecord,lookupRecord};
 		while (inRecord!=null && runIt) {
 			try {
 				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
 					//find slave record in database
-					inRecords[1] = lookupTable.get(inRecord);
-					if (inRecords[1] == null && leftOuterJoin) {
-						inRecords[1] = new DataRecord(dbMetadata == null ? 
-								lookupTable.getMetadata() : dbMetadata);
-						inRecords[1].init();
-					}
-					while (inRecords[1]!=null){
-						if (transformation.transform(inRecords, outRecord)) {
+					lookupRecord = lookupTable.get(inRecord);
+					do{
+						if ((lookupRecord != null || leftOuterJoin ) && 
+								transformation.transform(inRecords, outRecord)) {
 							writeRecord(WRITE_TO_PORT,outRecord[0]);
 						}
 						//get next record from database with the same key
-						inRecords[1] = lookupTable.getNext();					
-					}
+						lookupRecord = lookupTable.getNext();					
+					}while (inRecords[1]!=null);
 				}
             } catch (TransformException ex) {
                 resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
@@ -216,7 +213,7 @@ public class DBJoin extends Node {
 				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
 				return;
-			}catch (IndexOutOfBoundsException ex){
+			}catch (RuntimeException ex){
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
