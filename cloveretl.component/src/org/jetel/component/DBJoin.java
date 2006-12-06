@@ -194,7 +194,8 @@ public class DBJoin extends Node {
 					//find slave record in database
 					inRecords[1] = lookupTable.get(inRecord);
 					if (inRecords[1] == null && leftOuterJoin) {
-						inRecords[1] = new DataRecord(dbMetadata);
+						inRecords[1] = new DataRecord(dbMetadata == null ? 
+								lookupTable.getMetadata() : dbMetadata);
 						inRecords[1].init();
 					}
 					while (inRecords[1]!=null){
@@ -211,6 +212,11 @@ public class DBJoin extends Node {
                 closeAllOutputPorts();
                 return;
 			} catch (IOException ex) {
+				resultMsg = ex.getMessage();
+				resultCode = Node.RESULT_ERROR;
+				closeAllOutputPorts();
+				return;
+			}catch (IndexOutOfBoundsException ex){
 				resultMsg = ex.getMessage();
 				resultCode = Node.RESULT_ERROR;
 				closeAllOutputPorts();
@@ -264,18 +270,16 @@ public class DBJoin extends Node {
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCashed);
 		lookupTable.init();
-		if (dbMetadata == null){
-			dbMetadata = lookupTable.getMetadata();
-		}
         try {
-		recordKey = new RecordKey(joinKey,inMetadata[0]);
-		recordKey.init();
-		lookupTable.setLookupKey(recordKey);
-            transformation = RecordTransformFactory.createTransform(
-            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
-        }
+			recordKey = new RecordKey(joinKey, inMetadata[0]);
+			recordKey.init();
+			lookupTable.setLookupKey(recordKey);
+			transformation = RecordTransformFactory.createTransform(
+					transformSource, transformClassName, this, inMetadata,
+					outMetadata, transformationParameters);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		}
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
