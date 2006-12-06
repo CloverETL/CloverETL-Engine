@@ -83,7 +83,7 @@ public class CompressedByteDataField extends ByteDataField {
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
 	            }
-	            System.arraycopy(this.value, 0, ((CompressedByteDataField) fromField).value, 0, length);
+	            System.arraycopy(((CompressedByteDataField) fromField).value, 0, this.value, 0, length);
 	        }
 	        setNull(fromField.isNull);
 	        dataLen = ((CompressedByteDataField)fromField).dataLen;
