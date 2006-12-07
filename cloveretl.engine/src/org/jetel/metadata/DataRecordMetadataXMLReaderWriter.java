@@ -151,7 +151,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
 	private static final String NULLABLE_ATTR = "nullable";
-	private static final String COMPRESSED_ATTR = "nullable";
+	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
 	
