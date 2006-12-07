@@ -24,6 +24,8 @@ import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
 
+import org.jetel.data.Defaults;
+
 /**
  * Class for gzip compression/decompression. It creates compressor/decompressor for any thread
  * which demands compression/decompression. Each thread has only one compressor/decompressor.
@@ -43,7 +45,7 @@ public class ZipUtils {
 	private static Compresser getCompresser() {
 		Compresser compresser = compressors.get();
 		if (compresser == null) {
-			compresser = new Compresser();
+			compresser = new Compresser(Defaults.Record.DEFAULT_COMPRESSION_LEVEL);
 			compressors.set(compresser);
 		}
 		return compresser;
@@ -188,8 +190,9 @@ public class ZipUtils {
 		private ByteArrayOutputStream outStream;
 		private byte[] outBuf;
 
-		public Compresser() {
+		public Compresser(int level) {
 			deflater = new Deflater();
+			deflater.setLevel(level);
 			outBuf = null;
 			outStream = null;
 		}

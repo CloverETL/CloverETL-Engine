@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
+import java.util.zip.Deflater;
 
 /**
  *  Helper class which contains some framework-wide constants defitions.<br>
@@ -133,6 +134,7 @@ public final class Defaults {
 	public final static class Record {
 		public static void init() {
 			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 8192);
+			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL", Deflater.DEFAULT_COMPRESSION);
 		}
 		
 		/**
@@ -141,6 +143,7 @@ public final class Defaults {
 		 *  affects the memory footprint !!!
 		 */
 		public static int MAX_RECORD_SIZE;// = 8192;
+		public static int DEFAULT_COMPRESSION_LEVEL;// = Deflater.DEFAULT_COMPRESSION;
 	}
 
 	/**
