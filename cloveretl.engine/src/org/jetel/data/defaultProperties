@@ -77,6 +77,8 @@ DataFieldMetadata.DECIMAL_LENGTH = 8
 # Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
 DataFieldMetadata.DECIMAL_SCALE = 2
 
+Record.DEFAULT_COMPRESSION_LEVEL=9
+
 #****************************************************************************
 # !!! DO NOT EDIT BELOW UNLESS YOU ARE ABSOLUTELY SURE WHAT YOU ARE DOING !!!
 #****************************************************************************
