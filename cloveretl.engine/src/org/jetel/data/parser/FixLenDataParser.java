@@ -69,7 +69,8 @@ public abstract class FixLenDataParser implements Parser {
 	static Log logger = LogFactory.getLog(FixLenDataParser.class);
 	
 	protected int fieldCnt;
-	protected int[] fieldLengths;
+	protected int[] fieldStart;
+	protected int[] fieldEnd;
 	protected int recordLength;
 	protected int fieldIdx;
 	protected int recordIdx;
@@ -98,11 +99,17 @@ public abstract class FixLenDataParser implements Parser {
 		recordIdx = 0;
 		fieldIdx = 0;
 
-		recordLength = 0;
-		fieldLengths = new int[fieldCnt];
+		recordLength = metadata.getRecordSize();
+		fieldStart = new int[fieldCnt];
+		fieldEnd = new int[fieldCnt];
+		int prevEnd = 0;
 		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
-			fieldLengths[fieldIdx] = metadata.getField(fieldIdx).getSize();
-			recordLength += fieldLengths[fieldIdx]; 
+			fieldStart[fieldIdx] = prevEnd + metadata.getField(fieldIdx).getShift();
+			fieldEnd[fieldIdx] = fieldStart[fieldIdx] + metadata.getField(fieldIdx).getSize();
+			prevEnd = fieldEnd[fieldIdx];
+			if (fieldStart[fieldIdx] < 0 || fieldEnd[fieldIdx] > recordLength) {
+				throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+			}
 		}
 	}
 

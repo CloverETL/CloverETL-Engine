@@ -63,6 +63,11 @@ public class DataFieldMetadata implements Serializable {
 	 */
 	private short size = 0;
 
+	/**
+	 * Relative shift of the beginning of the field
+	 */
+	private short shift = 0;
+
 	private char fieldType = ' ';
 
 	/**
@@ -145,13 +150,14 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  _type       Description of Parameter
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, char _type, String _delimiter) {
+	public DataFieldMetadata(String _name, char _type, String _delimiter, short shift) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
 		this.name = _name;
 		this.delimiter = _delimiter;
 		this.fieldType = _type;
+		this.shift = shift;
 		this.fieldProperties = null;
 		this.localeStr=null;
 	}
@@ -164,12 +170,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  _delimiter  String to be used as a delimiter for this field
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, String _delimiter) {
+	public DataFieldMetadata(String _name, String _delimiter, short shift) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
 		this.name = _name;
 		this.delimiter = _delimiter;
+		this.shift = shift;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
 		this.localeStr=null;
@@ -183,17 +190,17 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  size   Description of Parameter
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, short size) {
+	public DataFieldMetadata(String _name, short size, short shift) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
 		this.name = _name;
 		this.size = size;
+		this.shift = shift;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
 		this.localeStr=null;
 	}
-
 
 	/**
 	 *  Constructor for fixLength type of field
@@ -203,12 +210,13 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  size   Description of Parameter
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, char _type, short size) {
+	public DataFieldMetadata(String _name, char _type, short size, short shift) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
 		this.name = _name;
 		this.size = size;
+		this.shift = shift;
 		this.fieldType = _type;
 		this.fieldProperties = null;
 		this.localeStr=null;
@@ -229,6 +237,7 @@ public class DataFieldMetadata implements Serializable {
 		ret.setName(getName());
 	    ret.setDelimiter(getDelimiter());
 	    ret.setFormatStr(getFormatStr());
+	    ret.setShift(getShift());
 	    ret.setSize(getSize());
 		ret.setType(getType());
 		ret.setNullable(isNullable());
@@ -361,6 +370,27 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 
+	/**
+	 *  Returns position of the field in data record (used only when dealing with fixed-size type of record)
+	 *
+	 * @return    The Length value
+	 * @since
+	 */
+	public short getShift() {
+		return shift;
+	}
+
+
+	/**
+	 *  Sets position of the field in data record (used only when dealing with fixed-size type of record)
+	 *
+	 * @param  _size  The new size value
+	 */
+	public void setShift(short shift) {
+		this.shift = shift;
+	}
+
+	
 	/**
 	 *  Returns the specified maximum field size (used only when dealing with fixed-size type of record)
 	 *

@@ -23,6 +23,7 @@ package org.jetel.metadata;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -56,6 +57,7 @@ public class DataRecordMetadata implements Serializable {
 	private String name;
 	private char recType;
 	private String[] recordDelimiters;
+	private short recordSize;
 	private String localeStr;
 
 	private TypedProperties recordProperties;
@@ -112,6 +114,7 @@ public class DataRecordMetadata implements Serializable {
 
 		ret.setRecordDelimiter(getRecordDelimiters());
 		ret.setLocaleStr(getLocaleStr());
+		ret.setRecordSize(getRecordSize());
 
 		//copy record properties
         ret.setRecordProperties(getRecordProperties());
@@ -357,7 +360,6 @@ public class DataRecordMetadata implements Serializable {
 		}
 	}
 
-
 	/**
 	 *  Sets the Record Type (Delimited/Fix-length)
 	 *
@@ -377,6 +379,28 @@ public class DataRecordMetadata implements Serializable {
 	 */
 	public char getRecType() {
 		return recType;
+	}
+
+	public void setRecordSize(short recSize) {
+		this.recordSize = recSize;
+	}
+	
+	public short getRecordSize() {
+		if (recordSize != 0) {
+			return recordSize;
+		}
+		if (recType != FIXEDLEN_RECORD) {
+			return -1;	// unknown size
+		}
+		// compute size of fixed record (without trailing filler)
+		short recSize = (short)0;
+		short prevEnd = 0;
+		for (Object obj: fields) {
+			DataFieldMetadata field = (DataFieldMetadata)obj;
+			prevEnd += field.getSize() + field.getShift();
+			recSize = (short)Math.max(recSize, prevEnd);
+		}
+		return recSize;
 	}
 
 
@@ -479,7 +503,7 @@ public class DataRecordMetadata implements Serializable {
 		//if no fields then create default fields with sizes as in objects
 		if (fieldsNumber == 0) {
 			for (int i = 0; i < fieldWidths.length; i++) {
-				addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i]));
+				addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i], (short)0));
 			}
 		} else {
 			//fields exist
@@ -490,7 +514,7 @@ public class DataRecordMetadata implements Serializable {
 					aField.setSize(fieldWidths[i]);
 				} else {
 					// insert new fileds, if any
-					addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i]));
+					addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i], (short)0));
 				}
 			}
 			if (fieldsNumber > fieldWidths.length) {

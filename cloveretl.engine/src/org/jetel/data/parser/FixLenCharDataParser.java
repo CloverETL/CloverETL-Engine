@@ -135,20 +135,18 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		if (rawRec == null) {
 			return null;	// end of input
 		}
-		int savedLimit = rawRec.limit();
+
+		int recStart = rawRec.position();
+		int recEnd = rawRec.limit();
 		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			try {
-				if (rawRec.remaining() == 0) {
+				if (recStart + fieldStart[fieldIdx] >= recEnd) {	// there are no data available for this field
 					record.getField(fieldIdx).setToDefaultValue();
 					continue;
 				}
-				int nextFieldPos;	// absolute position of the beginning of next field
-				if (rawRec.remaining() > fieldLengths[fieldIdx]) {
-					nextFieldPos = rawRec.position() + fieldLengths[fieldIdx];
-				} else {
-					nextFieldPos = rawRec.limit();
-				}
-				rawRec.limit(nextFieldPos);
+				rawRec.position(recStart);	// to avoid exceptions while setting position&limit of the field 
+				rawRec.limit(Math.min(recStart + fieldEnd[fieldIdx], recEnd));
+				rawRec.position(recStart + fieldStart[fieldIdx]);
 				if (record.getField(fieldIdx).getType()
 						== org.jetel.metadata.DataFieldMetadata.STRING_FIELD) // string value expected
 				{
@@ -161,8 +159,6 @@ public class FixLenCharDataParser extends FixLenDataParser {
 					StringUtils.trimTrailing(rawRec);
 				}
 				record.getField(fieldIdx).fromString(rawRec.toString());
-				rawRec.limit(savedLimit);
-				rawRec.position(nextFieldPos);	// consume current field
 			} catch (BadDataFormatException e) {
 					fillXHandler(record, rawRec != null ? rawRec.toString() : null, e);
 					return record;

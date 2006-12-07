@@ -36,7 +36,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 
 	private int dataPos;
 	private int dataLim;
-
+	
 	/**
 	 * Create instance for specified charset.
 	 * @param charset
@@ -68,16 +68,22 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	 * @throws JetelException
 	 */
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
+		if (getData(recordLength) != recordLength) {
+			if (byteBuffer.remaining() != 0) {
+				throw new BadDataFormatException("Incomplete record data");
+			} else {
+				return null;
+			}			
+		}
+
+		int recStart = byteBuffer.position();
 		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			try {
 				// set buffer scope to next field
-				if (!getNextField()) {
-					if (fieldIdx == 0) {	// correct end of data
-						return null;
-					}
-					// incomplete last record
-					throw new BadDataFormatException("Incomplete record data");
-				}
+				byteBuffer.position(recStart);	// to avoid exceptions while setting position&limit of the field 
+				byteBuffer.limit(recStart + fieldEnd[fieldIdx]);
+				byteBuffer.position(recStart + fieldStart[fieldIdx]);
+
 				try {
 					record.getField(fieldIdx).fromByteBuffer(byteBuffer, decoder);
 				} catch (CharacterCodingException e) { // convert it to bad-format exception
@@ -102,7 +108,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	public int skip(int nRec) throws JetelException {
 		int skipped;
 		for (skipped = 0; skipped < nRec; skipped++) {
-			if (!getData(recordLength)) {	// end of file reached
+			if (getData(recordLength) != recordLength) {	// end of file reached
 				break;
 			}
 		}
@@ -110,23 +116,16 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		return skipped;
 	}
 		
-	public boolean getNextField() throws JetelException {
-		if (!getData(fieldLengths[fieldIdx])) {
-			return false;
-		}
-		return true;
-	}
-
 	/**
 	 * Reads raw data for one record from input and fills specified
 	 * buffer with them. For outBuff==null raw data in input. 
 	 * @param outBuf Output buffer to be filled with raw data.
-	 * @return false when no more data are available, true otherwise.
+	 * @return size of available data
 	 * @throws JetelException
 	 */
-	private boolean getData(int dataLen) throws JetelException {
+	private int getData(int dataLen) throws JetelException {
 		if (eof) {	// no more data in input channel
-			return false;
+			return 0;
 		}
 
 		// set buffer scope so that it will cover all unprocessed data
@@ -136,23 +135,23 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		if (byteBuffer.remaining() < dataLen) {	// need to get more data from channel
 			byteBuffer.compact();
 			try {
-				int size = inChannel.read(byteBuffer);	// write to buffer
+				inChannel.read(byteBuffer);				// write to buffer
 				byteBuffer.flip();						// prepare buffer for reading
-				if (size == -1 || byteBuffer.remaining() < dataLen) {	// not enough data available
-					eof = true;
-					return false;	// no more data available 
-				}
 			} catch (IOException e) {
 				throw new JetelException(e.getMessage());
 			}
 			dataPos = 0;
 			dataLim = byteBuffer.limit();
 		}
-		// move beginning of data scope
-		dataPos += dataLen;
+		if (byteBuffer.remaining() < dataLen) {	// not enough data available
+			eof = true;
+			dataPos += byteBuffer.remaining();
+		} else {
+			dataPos += dataLen;
+		}
 		// set scope for requested piece of data
 		byteBuffer.limit(dataPos);
-		return true;
+		return byteBuffer.remaining();
 	}
 
 }

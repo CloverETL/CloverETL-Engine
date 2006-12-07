@@ -68,6 +68,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at the end if output file exists or replace it (values: true/false). Default is false</td>
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td>
  *  <tr><td><b>filler</b><br><i>optional</i></td><td>allows specifying what character will be used for padding output fields. Default is " " (space)></td>
+ *  <tr><td><b>recordFiller</b><br><i>optional</i></td><td>allows specifying what character will be used for padding gaps between fields in output records. Default is "."></td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  </table>
@@ -87,7 +88,8 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
-	private static final String XML_FILLER = "filler";
+	private static final String XML_FIELD_FILLER = "filler";
+	private static final String XML_RECORD_FILLER = "filler";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	
@@ -203,8 +205,11 @@ public class FixLenDataWriter extends Node {
 		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 		}
 		
-		if (formatter.getFiller() != null){
-		    xmlElement.setAttribute(XML_FILLER, formatter.getFiller().toString());
+		if (formatter.getFieldFiller() != null){
+		    xmlElement.setAttribute(XML_FIELD_FILLER, formatter.getFieldFiller().toString());
+		}
+		if (formatter.getRecordFiller() != null){
+		    xmlElement.setAttribute(XML_RECORD_FILLER, formatter.getRecordFiller().toString());
 		}
 		if (recordsPerFile > 0) {
 			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
@@ -239,8 +244,11 @@ public class FixLenDataWriter extends Node {
 			    aFixLenDataWriterNIO.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
 			}
 		
-			if (xattribs.exists(XML_FILLER)){
-			    aFixLenDataWriterNIO.setFiller(xattribs.getString(XML_FILLER));
+			if (xattribs.exists(XML_FIELD_FILLER)){
+			    aFixLenDataWriterNIO.setFieldFiller(xattribs.getString(XML_FIELD_FILLER));
+			}
+			if (xattribs.exists(XML_RECORD_FILLER)){
+			    aFixLenDataWriterNIO.setRecordFiller(xattribs.getString(XML_RECORD_FILLER));
 			}
             if(xattribs.exists(XML_RECORDS_PER_FILE)) {
                 aFixLenDataWriterNIO.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
@@ -284,8 +292,18 @@ public class FixLenDataWriter extends Node {
      * 
      * @param filler The filler to set.
      */
-    public void setFiller(String filler) {
-        this.formatter.setFiller(filler.charAt(0));
+    public void setFieldFiller(String filler) {
+        this.formatter.setFieldFiller(filler.charAt(0));
+    }
+
+    /**
+     * Which character (1st from specified string) will
+     * be used as record filler for padding output records
+     * 
+     * @param filler The filler to be set.
+     */
+    public void setRecordFiller(String filler) {
+        this.formatter.setRecordFiller(filler.charAt(0));
     }
 
     public void setBytesPerFile(int bytesPerFile) {

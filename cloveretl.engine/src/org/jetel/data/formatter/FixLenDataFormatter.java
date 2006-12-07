@@ -27,7 +27,11 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -47,23 +51,30 @@ import org.jetel.metadata.DataRecordMetadata;
 public class FixLenDataFormatter implements Formatter {
 
 	private ByteBuffer dataBuffer;
-	private ByteBuffer fieldBuffer;
 	private DataRecordMetadata metadata;
 
 	private WritableByteChannel writer;
 	private CharsetEncoder encoder;
 	private int recordCounter;
 	private int recordLength;
-	private int fieldLengths[];
 	private int bufferSize;
-	private ByteBuffer fieldFiller;
+	private ByteBuffer fieldFillerBuf;
+	private ByteBuffer recordFillerBuf;
 	private String charSet = null;
     private boolean isRecordDelimiter;
     private byte[] recordDelimiter;
 
+    private int fieldCnt;
+    private int[] fieldStart;
+    private int[] fieldEnd;
+    private int gapCnt;
+    private int[] gapStart;
+    private int[] gapEnd;
+
 	// Attributes
 	// use space (' ') to fill/pad field
-	private final static char DEFAULT_FILLER_CHAR = ' ';
+	private final static char DEFAULT_FIELDFILLER_CHAR = ' ';
+	private final static char DEFAULT_RECORDFILLER_CHAR = '=';
 	
 	/**
 	 *  Constructor for the FixLenDataFormatter object
@@ -73,9 +84,9 @@ public class FixLenDataFormatter implements Formatter {
 	public FixLenDataFormatter() {
 		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER ).newEncoder();
-		initFieldFiller();
+		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
+		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
 		encoder.reset();
 		metadata = null;
 		recordCounter = 0;
@@ -92,9 +103,9 @@ public class FixLenDataFormatter implements Formatter {
 		writer = null;
 		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
 		encoder = Charset.forName(charEncoder).newEncoder();
-		initFieldFiller();
+		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
+		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
 		encoder.reset();
 		metadata = null;
 		recordCounter = 0;
@@ -102,38 +113,59 @@ public class FixLenDataFormatter implements Formatter {
 
 
 	/**
-	 *  Initialization of the FieldFiller buffer
+	 *  Initialization of the filler buffers
 	 */
 	private void initFieldFiller(char filler) {
 		// populate fieldFiller so it can be used later when need occures
 		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
-		Arrays.fill(fillerArray,filler);
-
+		Arrays.fill(fillerArray, filler);
+		
 		try {
-			fieldFiller = encoder.encode(CharBuffer.wrap(fillerArray));
+			fieldFillerBuf = encoder.encode(CharBuffer.wrap(fillerArray));
 		} catch (Exception ex) {
-			throw new RuntimeException("Failed initialization of FIELD_FILLER buffer :" + ex);
+			throw new RuntimeException("Failed initialization of filler buffers :" + ex);
 		}
 	}
 
-	private void initFieldFiller(){
-	    initFieldFiller(DEFAULT_FILLER_CHAR);
+	/**
+	 *  Initialization of the filler buffers
+	 */
+	private void initRecordFiller(char filler) {
+		// populate fieldFiller so it can be used later when need occures
+		char[] fillerArray = new char[Defaults.DataFormatter.FIELD_BUFFER_LENGTH];
+		Arrays.fill(fillerArray, filler);
+		
+		try {
+			recordFillerBuf = encoder.encode(CharBuffer.wrap(fillerArray));
+		} catch (Exception ex) {
+			throw new RuntimeException("Failed initialization of filler buffers :" + ex);
+		}
 	}
-	
+
 	/**
 	 * Specify which character should be used as filler for
 	 * padding fields when outputting
 	 * 
 	 * @param filler	character used for padding
 	 */
-    Character filler;
-	public void setFiller(char filler) {
-        this.filler = new Character(filler);
+    Character fieldFiller;
+	public void setFieldFiller(char filler) {
+        this.fieldFiller = new Character(filler);
 	    initFieldFiller(filler);
 	}
 
-    public Character getFiller() {
-        return filler;
+    public Character getFieldFiller() {
+        return fieldFiller;
+    }
+
+    Character recordFiller;
+	public void setRecordFiller(char filler) {
+        this.recordFiller = new Character(recordFiller);
+	    initRecordFiller(filler);
+	}
+
+    public Character getRecordFiller() {
+        return recordFiller;
     }
 
 	/* (non-Javadoc)
@@ -142,7 +174,6 @@ public class FixLenDataFormatter implements Formatter {
 	public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
 		// create array of field sizes & initialize them
 		this.metadata = metadata;
-		fieldLengths = new int[metadata.getNumFields()];
         
         isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
         if(isRecordDelimiter) {
@@ -152,12 +183,53 @@ public class FixLenDataFormatter implements Formatter {
                 throw new ComponentNotReadyException(e);
             }
         }
-        recordLength = isRecordDelimiter ? recordDelimiter.length : 0;
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			fieldLengths[i] = metadata.getField(i).getSize();
-			recordLength += fieldLengths[i];
+		recordLength = metadata.getRecordSize();
+
+		if (dataBuffer.capacity() < recordLength + (isRecordDelimiter ? recordDelimiter.length : 0)) {
+			throw new RuntimeException("Output buffer too small to hold data record " + metadata.getName());			
 		}
 
+		fieldCnt = metadata.getNumFields();
+		fieldStart = new int[fieldCnt];
+		fieldEnd = new int[fieldCnt];
+		int prevEnd = 0;
+		for (int fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
+			fieldStart[fieldIdx] = prevEnd + metadata.getField(fieldIdx).getShift();
+			fieldEnd[fieldIdx] = fieldStart[fieldIdx] + metadata.getField(fieldIdx).getSize();
+			prevEnd = fieldEnd[fieldIdx];
+			if (fieldStart[fieldIdx] < 0 || fieldEnd[fieldIdx] > recordLength) {
+				throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+			}
+		}
+		// find gaps
+		SortedMap<Integer, Integer> smap = new TreeMap<Integer, Integer>();
+		for (int fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
+			smap.put(new Integer(fieldStart[fieldIdx]), new Integer(fieldIdx));
+		}
+		ArrayList<Integer> gapStartList = new ArrayList<Integer>();
+		ArrayList<Integer> gapEndList = new ArrayList<Integer>();
+		int gapPos = 0;
+		for (Integer fieldIdx : smap.values()) {
+			int fieldPos = fieldStart[fieldIdx.intValue()];
+			if (fieldPos > gapPos) {
+				gapStartList.add(new Integer(gapPos));
+				gapEndList.add(new Integer(fieldPos));
+			}
+			if (fieldEnd[fieldIdx.intValue()] > gapPos) {
+				gapPos = fieldEnd[fieldIdx.intValue()]; 
+			}
+		}
+		if (recordLength > gapPos) {
+			gapStartList.add(new Integer(gapPos));
+			gapEndList.add(new Integer(recordLength));
+		}
+		gapCnt = gapStartList.size();
+		gapStart = new int[gapCnt];
+		gapEnd = new int[gapCnt];
+		for (int gapIdx = 0; gapIdx < gapCnt; gapIdx++) {
+			gapStart[gapIdx] = gapStartList.get(gapIdx).intValue();
+			gapEnd[gapIdx] = gapEndList.get(gapIdx).intValue();
+		}			
 	}
 
     /* (non-Javadoc)
@@ -177,36 +249,49 @@ public class FixLenDataFormatter implements Formatter {
         // reset CharsetDecoder
         encoder.reset();
     }
-    
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
+	 */
 	public int write(DataRecord record) throws IOException {
-		int size;
-		for (int i = 0; i < metadata.getNumFields(); i++) {
-			
-			if (fieldLengths[i] > dataBuffer.remaining()) {
-				flushBuffer();
-			}
-			fieldBuffer.clear();
-			record.getField(i).toByteBuffer(fieldBuffer, encoder);
-			size = fieldBuffer.position();
-			if (size < fieldLengths[i]) {
-				fieldFiller.rewind();
-				fieldFiller.limit(fieldLengths[i]-size);
-				fieldBuffer.put(fieldFiller);
-				
-			}
-			fieldBuffer.flip();
-			fieldBuffer.limit(fieldLengths[i]);
-			dataBuffer.put(fieldBuffer);
+		int recPos = dataBuffer.position();
+		int totalLen = recordLength + (isRecordDelimiter ? recordDelimiter.length : 0);
+
+		if (recPos + totalLen > dataBuffer.capacity()) {
+			flushBuffer();
+			recPos = 0;
 		}
-        //write record delimiter
-		if(isRecordDelimiter){
-			if (dataBuffer.remaining() < recordDelimiter.length) {
-				flushBuffer();
+
+		// write fields
+		for (int i = 0; i < fieldCnt; i++) {
+			dataBuffer.position(0);	// to avoid exceptions being thrown while setting buffer limit
+			dataBuffer.limit(recPos + fieldEnd[i]);
+			dataBuffer.position(recPos + fieldStart[i]);
+			record.getField(i).toByteBuffer(dataBuffer, encoder);
+			if (dataBuffer.hasRemaining()) {
+				fieldFillerBuf.rewind();
+				fieldFillerBuf.limit(dataBuffer.remaining());
+				dataBuffer.put(fieldFillerBuf);				
 			}
+		}
+		// fill gaps
+		for (int i = 0; i < gapCnt; i++) {
+			dataBuffer.position(0);	// to avoid exceptions being thrown while setting buffer limit
+			dataBuffer.limit(recPos + gapEnd[i]);
+			dataBuffer.position(recPos + gapStart[i]);
+			recordFillerBuf.rewind();
+			recordFillerBuf.limit(dataBuffer.remaining());
+			dataBuffer.put(recordFillerBuf);
+		}
+        // write record delimiter
+		if(isRecordDelimiter){
+			dataBuffer.limit(recPos + recordLength + recordDelimiter.length);
+			dataBuffer.position(recPos + recordLength);
 			dataBuffer.put(recordDelimiter);
 		}
-        
-		return recordLength;
+        dataBuffer.limit(dataBuffer.capacity());
+        dataBuffer.position(recPos + totalLen);
+		return totalLen;
 	}
 
 	/**
@@ -237,6 +322,17 @@ public class FixLenDataFormatter implements Formatter {
 		dataBuffer.clear();
 	}
 
+	private void flushBuffer(int limit) throws IOException {
+		int savedLimit = dataBuffer.limit();
+		dataBuffer.limit(limit);
+		dataBuffer.flip();
+		writer.write(dataBuffer);
+		dataBuffer.position(limit);
+		dataBuffer.limit(savedLimit);
+		dataBuffer.compact();
+		dataBuffer.position(dataBuffer.limit());
+		dataBuffer.limit(dataBuffer.capacity());
+	}
 
 	/**
 	 *  Flushes the content of internal data buffer
