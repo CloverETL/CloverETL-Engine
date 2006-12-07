@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph description="This graph demonstrates how to use HASH_JOIN component for 3way join. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" name="Testing Hash Joiner">
+<Global>
+<Metadata id="Metadata1">
+<Record name="rec" type="delimited">
+	<Field name="blob" type="cbyte" delimiter="\n" />
+</Record>
+</Metadata>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+
+<Phase number="0">
+<Node enabled="enabled" id="INPUT1" type="DATA_READER"
+fileURL="${WORKSPACE}/data/employees.dat"
+/>
+
+<Node enabled="enabled" id="COPY1" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY2" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY3" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY4" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY5" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY6" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY7" type="SIMPLE_COPY"/>
+<Node enabled="enabled" id="COPY8" type="SIMPLE_COPY"/>
+
+<Node enabled="enabled" id="WRITER" type="TRASH"
+ fileURL="${WORKSPACE}/output/employees.out" append="false" 
+ />
+
+<Edge fromNode="INPUT1:0" id="EDGE1" metadata="Metadata1" toNode="COPY1:0"/>
+<Edge fromNode="COPY1:0" id="EDGE2" metadata="Metadata1" toNode="COPY2:0"/>
+<Edge fromNode="COPY2:0" id="EDGE3" metadata="Metadata1" toNode="COPY3:0"/>
+<Edge fromNode="COPY3:0" id="EDGE4" metadata="Metadata1" toNode="COPY4:0"/>
+<Edge fromNode="COPY4:0" id="EDGE5" metadata="Metadata1" toNode="COPY5:0"/>
+<Edge fromNode="COPY5:0" id="EDGE6" metadata="Metadata1" toNode="COPY6:0"/>
+<Edge fromNode="COPY6:0" id="EDGE7" metadata="Metadata1" toNode="COPY7:0"/>
+<Edge fromNode="COPY7:0" id="EDGE8" metadata="Metadata1" toNode="COPY8:0"/>
+<Edge fromNode="COPY8:0" id="EDGE9" metadata="Metadata1" toNode="WRITER:0"/>
+
+</Phase>
+
+</Graph>
