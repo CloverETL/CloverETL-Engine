@@ -276,12 +276,12 @@ public class DBFAnalyzer {
 		record.setRecordProperties(recProp);
 		
 		// add "hidden" field indicatind deletion status
-		record.addField(new DataFieldMetadata("_IS_DELETED_",DataFieldMetadata.STRING_FIELD,(short)1));
+		record.addField(new DataFieldMetadata("_IS_DELETED_",DataFieldMetadata.STRING_FIELD,(short)1, (short)0));
 		for (int i=0;i<dbfNumFields;i++){
 			// create field definition based on what we read from DBF file header
 			DataFieldMetadata field=new DataFieldMetadata(dbfFields[i].name,
 					dbfFieldType2Clover(dbfFields[i].type),
-					dbfFields[i].length);
+					dbfFields[i].length, (short)0);
 
 			// if DATE DBF type, then set format/date mask
 			if (dbfFields[i].type=='D'){

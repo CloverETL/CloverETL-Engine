@@ -144,12 +144,15 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String CODE_ELEMENT = "Code";
 	private static final String NAME_ATTR = "name"; 
     private static final String TYPE_ATTR = "type";
+    private static final String RECORD_SIZE_ATTR = "recordSize";
     private static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
 	private static final String LOCALE_ATTR = "locale";
 	private static final String NULLABLE_ATTR = "nullable";
+	private static final String COMPRESSED_ATTR = "nullable";
+	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
 	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
@@ -290,6 +293,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
             metadataElement.setAttribute(RECORD_DELIMITER_ATTR, record.getRecordDelimiter());
         }
 
+        if (record.getRecordSize() != 0) {
+            metadataElement.setAttribute(RECORD_SIZE_ATTR, String.valueOf(record.getRecordSize()));
+        }
+
 		Properties prop = record.getRecordProperties();
 		if (prop != null) {
 			Enumeration enumeration = prop.propertyNames();
@@ -330,6 +337,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			            fieldTypeFormat(field.getType(), fieldTypeLimits,
 						fieldTypeParts));
 
+				fieldElement.setAttribute(SHIFT_ATTR, String.valueOf(field.getShift()));
 				if (record.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 					fieldElement.setAttribute(DELIMITER_ATTR,
 					        StringUtils.specCharToString(field.getDelimiter()));
@@ -389,6 +397,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		String recordName = null;
 		String recordType = null;
 		String recordDelimiter = null;
+		String sizeStr = null;
 		String recLocaleStr = null;
 		String itemName;
 		String itemValue;
@@ -415,6 +424,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recLocaleStr = itemValue;
 			} else if (itemName.equalsIgnoreCase("recordDelimiter")) {
 				recordDelimiter = itemValue;
+			} else if (itemName.equalsIgnoreCase(RECORD_SIZE_ATTR)) {
+				sizeStr = itemValue;
 			} else {
 				if (recordProperties == null) {
 					recordProperties = new Properties();
@@ -441,6 +452,14 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		if(!StringUtils.isEmpty(recordDelimiter)) {
 			recordMetadata.setRecordDelimiter(StringUtils.stringToSpecChar(recordDelimiter).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
 		}
+
+		short recSize = 0;
+		try {
+			recSize = Short.parseShort(sizeStr);
+		} catch (NumberFormatException e) {
+			// ignore 
+		}
+		recordMetadata.setRecordSize(recSize);
 		
 		/*
 		 * parse metadata of FIELDs
@@ -457,6 +476,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String defaultValue = null;
 			String name = null;
 			String size = null;
+			String shift = null;
 			String delimiter = null;
 			String nullable = null;
 			String localeStr = null;
@@ -474,6 +494,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					name = itemValue;
 				} else if (itemName.equalsIgnoreCase("size")) {
 					size = itemValue;
+				} else if (itemName.equalsIgnoreCase(SHIFT_ATTR)) {
+					shift = itemValue;
 				} else if (itemName.equalsIgnoreCase("delimiter")) {
 					delimiter = itemValue;
 				} else if (itemName.equalsIgnoreCase("format")) {
@@ -484,7 +506,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					nullable = itemValue;
 				} else if (itemName.equalsIgnoreCase("locale")) {
 					localeStr = itemValue;
-				} else if (itemName.equalsIgnoreCase("compressed")) {
+				} else if (itemName.equalsIgnoreCase(COMPRESSED_ATTR)) {
 					compressed = itemValue;
 				} else {
 					if (fieldProperties == null) {
@@ -504,6 +526,13 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 								+ i);
 			}
 
+			short shiftVal = 0;
+			try {
+				shiftVal = Short.parseShort(shift);
+			} catch (NumberFormatException e) {
+				// ignore 
+			}
+
 			// create FixLength field or Delimited base on Record Type
 			if (recordMetadata.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
 				if (size == null) {
@@ -511,7 +540,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 							"Attribute \"size\" not defined for field #" + i);
 				}
 				field = new DataFieldMetadata(name, fieldType,
-						getFieldSize(size));
+						getFieldSize(size), shiftVal);
 			} else if (recordMetadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 				if (delimiter == null) {
 					throw new DOMException(DOMException.NOT_FOUND_ERR,
@@ -519,7 +548,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 									+ i);
 				}
 				field = new DataFieldMetadata(name, fieldType, StringUtils
-						.stringToSpecChar(delimiter));
+						.stringToSpecChar(delimiter), shiftVal);
 			} else { //mixed dataRecord type
 				if (delimiter == null && size == null) {
 					throw new DOMException(DOMException.NOT_FOUND_ERR,
@@ -527,9 +556,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 									+ i);
 				}
 				if(delimiter != null)
-					field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter));
+					field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter), shiftVal);
 				else
-					field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
+					field = new DataFieldMetadata(name, fieldType, getFieldSize(size), shiftVal);
 			}
 			
 			// set properties

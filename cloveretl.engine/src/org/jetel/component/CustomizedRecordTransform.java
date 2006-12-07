@@ -1159,14 +1159,14 @@ public class CustomizedRecordTransform implements RecordTransform {
 		}else {
 			checkTypes = false;
 		}
-		DataFieldMetadata outField = new DataFieldMetadata("out",outType,(short)1);
+		DataFieldMetadata outField = new DataFieldMetadata("out",outType,(short)1,(short)0);
 		if (outTypeDecimalParams != null){
 			TypedProperties properties = new TypedProperties();
 			properties.put(DataFieldMetadata.LENGTH_ATTR, outTypeDecimalParams[0]);
 			properties.put(DataFieldMetadata.SCALE_ATTR, outTypeDecimalParams[1]);
 			outField.setFieldProperties(properties);
 		}
-		DataFieldMetadata inField = new DataFieldMetadata("out",inType,(short)1);
+		DataFieldMetadata inField = new DataFieldMetadata("out",inType,(short)1,(short)0);
 		if (inTypeDEcimalParams != null){
 			TypedProperties properties = new TypedProperties();
 			properties.put(DataFieldMetadata.LENGTH_ATTR, inTypeDEcimalParams[0]);
