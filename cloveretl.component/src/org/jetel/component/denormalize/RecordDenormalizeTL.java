@@ -68,9 +68,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 				new DataRecordMetadata[]{targetMetadata});
 		wrapper.setParameters(parameters);
 		wrapper.init();
+		Object result = null;
 		try {
-			Object result = wrapper.execute(INIT_FUNCTION_NAME);
-			return result == null ? true : (Boolean)result;
+			result = wrapper.execute(INIT_FUNCTION_NAME, null);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
@@ -78,7 +78,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
 		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
 		
-		return true;
+		return result == null ? true : (Boolean)result;
 	}
 
 	/* (non-Javadoc)
@@ -86,7 +86,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 */
 	public boolean addInputRecord(DataRecord inRecord) {
 		Object result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
-				inRecord);
+				inRecord, null);
 		return result == null ? true : (Boolean)result;
 	}
 
@@ -95,7 +95,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
 		Object result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
-				null, new DataRecord[]{outRecord});
+				null, new DataRecord[]{outRecord},null);
 		return result == null ? true : (Boolean)result;
 	}
 
@@ -104,7 +104,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 */
 	public void finished() {
 		try {
-			wrapper.execute(FINISHED_FUNCTION_NAME);
+			wrapper.execute(FINISHED_FUNCTION_NAME, null);
 		} catch (JetelException e) {
 			//do nothing: function finished is not necessary
 		}
