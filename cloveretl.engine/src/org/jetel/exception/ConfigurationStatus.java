@@ -21,6 +21,9 @@ package org.jetel.exception;
 
 import java.util.LinkedList;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 /**
  * This class is return value of all checkConfig() methods in the engine.
  * 
@@ -31,6 +34,8 @@ import java.util.LinkedList;
  */
 public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
 
+    private static Log logger = LogFactory.getLog(ConfigurationStatus.class);
+
     public enum Severity {
         ERROR, INFO, WARNING
     };
@@ -39,4 +44,9 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
         HIGH, NORMAL, LOW
     };
 
+    public void log() {
+        for(ConfigurationProblem problem : this) {
+            problem.log(logger);
+        }
+    }
 }

@@ -62,4 +62,11 @@ public interface IGraphElement {
 
     public abstract void setName(String name);
 
+    /**
+     * @return <b>true</b> if graph element is checked by checkConfig method; else <b>false</b>
+     */
+    public abstract boolean isChecked();
+
+    public abstract void setChecked(boolean checked);
+
 }

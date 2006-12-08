@@ -23,13 +23,13 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.TransformationGraph;
@@ -238,6 +238,10 @@ public class runGraph {
             }
             System.exit(-1);
         }
+        
+        //check graph elements configuration
+        ConfigurationStatus status = graph.checkConfig(null);
+        status.log();
         
         // set tracking interval
 		if(trackingInterval!=-1){

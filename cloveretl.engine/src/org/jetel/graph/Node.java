@@ -31,7 +31,11 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.w3c.dom.Element;
 
 
@@ -864,6 +868,27 @@ public abstract class Node extends GraphElement implements Runnable {
         outPortsSize = outPortsArray.length;
     }
     
+    protected ConfigurationStatus checkInputPorts(ConfigurationStatus status, int min, int max) {
+        if(getInPorts().size() < min) {
+            status.add(new ConfigurationProblem("At least " + min + " input port can be defined!", Severity.ERROR, this, Priority.NORMAL));
+        }
+        if(getInPorts().size() > max) {
+            status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+        }
+
+        return status;
+    }
+
+    protected ConfigurationStatus checkOutputPorts(ConfigurationStatus status, int min, int max) {
+        if(getOutPorts().size() < min) {
+            status.add(new ConfigurationProblem("At least " + min + " output port can be defined!", Severity.ERROR, this, Priority.NORMAL));
+        }
+        if(getOutPorts().size() > max) {
+            status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
+        }
+
+        return status;
+    }
 }
 /*
  *  end class Node

@@ -19,6 +19,7 @@
 */
 package org.jetel.exception;
 
+import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
@@ -51,6 +52,20 @@ public class ConfigurationProblem {
         this.priority = priority;
     }
 
+    public void log(Log logger) {
+        switch(severity) {
+        case INFO:
+            logger.info(message);
+            break;
+        case WARNING:
+            logger.warn(message);
+            break;
+        case ERROR:
+            logger.error(message);
+            break;
+        }
+    }
+    
     public GraphElement getGraphElement() {
         return graphElement;
     }
