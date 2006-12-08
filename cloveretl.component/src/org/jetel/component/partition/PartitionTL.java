@@ -79,7 +79,7 @@ public class PartitionTL implements PartitionFunction {
 		}
 		wrapper.init();
 		try {
-			wrapper.execute("init");
+			wrapper.execute(INIT_FUNCTION_NAME);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
