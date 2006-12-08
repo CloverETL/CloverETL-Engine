@@ -215,7 +215,7 @@ public class WrapperTL {
 	 * @throws JetelException
 	 */
 	public Object execute(String functionName, DataRecord[] inputRecords, 
-			DataRecord[] outputRecords) throws JetelException{
+			DataRecord[] outputRecords, Object[] data) throws JetelException{
 		CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
 		if (function == null) {//function with given name not found
 			throw new JetelException("Function " + functionName + " not found");
@@ -228,7 +228,7 @@ public class WrapperTL {
 			executor.setOutputRecords(outputRecords);
 		}
 		//execute function
-		executor.executeFunction(function,null);
+		executor.executeFunction(function,data);
         //return result
         return executor.getResult();
 	}
@@ -241,8 +241,9 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Object execute(String functionName, DataRecord inRecord)throws JetelException{
-		return execute(functionName, new DataRecord[]{inRecord}, null);
+	public Object execute(String functionName, DataRecord inRecord, Object[] data)
+			throws JetelException{
+		return execute(functionName, new DataRecord[]{inRecord}, null, data);
 	}
 	
 	/**
@@ -253,8 +254,8 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Object execute(String functionName)throws JetelException{
-		return execute(functionName, null, null);
+	public Object execute(String functionName, Object[] data)throws JetelException{
+		return execute(functionName, null, null, data);
 	}
 
 	/**
@@ -265,8 +266,7 @@ public class WrapperTL {
 	 * @throws ComponentNotReadyException
 	 */
 	public int prepareFunctionExecution(String functionName) throws ComponentNotReadyException{
-		functionCounter++;
-		if (functionCounter > functionNumber) {
+		if (functionCounter + 1 > functionNumber) {
 			functionNumber *= 2;
 			CLVFFunctionDeclaration[] tmp = function;
  			function = new CLVFFunctionDeclaration[functionNumber];
@@ -274,11 +274,10 @@ public class WrapperTL {
 		}		
 		function[functionCounter] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
 		if (function[functionCounter] == null) {//function with given name not found
-			functionCounter--;
 			throw new ComponentNotReadyException("Function " + functionName + 
 					" not found");
 		}
-		return functionCounter;
+		return functionCounter++;
 	}
 	
 	/**
@@ -287,10 +286,11 @@ public class WrapperTL {
 	 * @param functionNumber number of function
 	 * @param inputRecords
 	 * @param outputRecords
+	 * @param data function parameters
 	 * @return
 	 */
 	public Object executePreparedFunction(int functionNumber, 
-			DataRecord[] inputRecords, DataRecord[] outputRecords){
+			DataRecord[] inputRecords, DataRecord[] outputRecords, Object[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
 			executor.setInputRecords(inputRecords);
@@ -299,7 +299,7 @@ public class WrapperTL {
 			executor.setOutputRecords(outputRecords);
 		}
 		//execute function
-		executor.executeFunction(function[functionNumber],null);
+		executor.executeFunction(function[functionNumber],data);
         //return result
         return executor.getResult();
 	}
@@ -309,9 +309,11 @@ public class WrapperTL {
 	 * 
 	 * @param inputRecords
 	 * @param outputRecords
+	 * @param data function parameters
 	 * @return
 	 */
-	public Object executePreparedFunction(DataRecord[] inputRecords, DataRecord[] outputRecords){
+	public Object executePreparedFunction(DataRecord[] inputRecords, 
+			DataRecord[] outputRecords, Object[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
 			executor.setInputRecords(inputRecords);
@@ -320,19 +322,21 @@ public class WrapperTL {
 			executor.setOutputRecords(outputRecords);
 		}
 		//execute function
-		executor.executeFunction(function[0],null);
+		executor.executeFunction(function[0],data);
         //return result
         return executor.getResult();
 	}
-	
+
 	/**
 	 * This method exexutes function set before as default (see above)
 	 * 
 	 * @param inRecord
 	 * @return
 	 */
-	public Object executePreparedFunction(int functionNumber, DataRecord inRecord){
-		return executePreparedFunction(functionNumber, new DataRecord[]{inRecord}, null);
+	public Object executePreparedFunction(int functionNumber, DataRecord inRecord,
+			Object[] data){
+		return executePreparedFunction(functionNumber, 
+				new DataRecord[]{inRecord}, null, data);
 	}
 	
 	/**
@@ -341,8 +345,8 @@ public class WrapperTL {
 	 * @param inRecord
 	 * @return
 	 */
-	public Object executePreparedFunction(DataRecord inRecord){
-		return executePreparedFunction(new DataRecord[]{inRecord}, null);
+	public Object executePreparedFunction(DataRecord inRecord, Object[] data){
+		return executePreparedFunction(new DataRecord[]{inRecord}, null, data);
 	}
 
 	/**

@@ -21,8 +21,6 @@ package org.jetel.component;
 
 import java.util.Properties;
 
-import javax.swing.text.StyledEditorKit.BoldAction;
-
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
@@ -75,22 +73,23 @@ public class RecordTransformTL implements RecordTransform {
 	        wrapper.setGraph(graph);
 		}
 		wrapper.init();
+		Object result = null;
 		try {
-			Object result = wrapper.execute(INIT_FUNCTION_NAME);
-			return result == null ? true : (Boolean)result;
+			result = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
 		
 		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return true;
+		return result == null ? true : (Boolean)result;
  	}
 
 	
 	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords)
 			throws TransformException{
-		Object result = wrapper.executePreparedFunction(inputRecords,outputRecords);
+		Object result = wrapper.executePreparedFunction(inputRecords,
+				outputRecords,null);
 		return result == null ? true : (Boolean)result;
     }
 	
@@ -129,7 +128,7 @@ public class RecordTransformTL implements RecordTransform {
 	public void finished(){
         // execute finished transformFunction
 		try {
-			wrapper.execute(FINISHED_FUNCTION_NAME);
+			wrapper.execute(FINISHED_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function finished is not necessary
 		}
