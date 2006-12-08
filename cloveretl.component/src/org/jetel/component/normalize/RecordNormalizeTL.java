@@ -70,9 +70,9 @@ public class RecordNormalizeTL implements RecordNormalize {
 				new DataRecordMetadata[]{targetMetadata});
 		wrapper.setParameters(parameters);
 		wrapper.init();
+		Object result = null;
 		try {
-			Object result = wrapper.execute(INIT_FUNCTION_NAME);
-			return result == null ? true : (Boolean)result;
+			result = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
@@ -80,7 +80,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
 		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return true;
+		return result == null ? true : (Boolean)result;
 	}
 
 	/* (non-Javadoc)
@@ -88,7 +88,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public int count(DataRecord source) {
 		return ((CloverInteger)wrapper.executePreparedFunction(lenghtFunctionIdentifier,
-				source)).getInt();
+				source,null)).getInt();
 	}
 
 	/* (non-Javadoc)
@@ -97,7 +97,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 	public boolean transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
 		Object result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
-				new DataRecord[]{source}, new DataRecord[]{target});
+				new DataRecord[]{source}, new DataRecord[]{target}, 
+				new Object[]{new CloverInteger(idx)});
 		return result == null ? true : (Boolean)result;
 	}
 
@@ -106,7 +107,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public void finished() {
 		try {
-			wrapper.execute(FINISHED_FUNCTION_NAME);
+			wrapper.execute(FINISHED_FUNCTION_NAME,null);
 		} catch (JetelException e) {
 			//do nothing: function finished is not necessary
 		}
