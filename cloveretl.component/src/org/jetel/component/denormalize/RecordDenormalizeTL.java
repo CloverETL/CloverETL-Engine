@@ -46,6 +46,9 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	private static final String GETOUTPUT_FUNCTION_NAME="getOutputRecord";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
+    
+    private int addInpuRecordIdentifier;
+    private int getOutputRecordIdentifier;
 
     private String errorMessage;
     private WrapperTL wrapper;
@@ -72,7 +75,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME,GETOUTPUT_FUNCTION_NAME);
+		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
+		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
 		
 		return true;
 	}
@@ -81,7 +85,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean addInputRecord(DataRecord inRecord) {
-		Object result = wrapper.executePreparedFunction(0, inRecord);
+		Object result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
+				inRecord);
 		return result == null ? true : (Boolean)result;
 	}
 
@@ -89,8 +94,8 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
-		Object result = wrapper.executePreparedFunction(1, null,
-				new DataRecord[]{outRecord});
+		Object result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
+				null, new DataRecord[]{outRecord});
 		return result == null ? true : (Boolean)result;
 	}
 
