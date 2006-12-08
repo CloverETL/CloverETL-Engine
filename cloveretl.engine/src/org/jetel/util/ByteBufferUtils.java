@@ -130,7 +130,7 @@ public final class ByteBufferUtils {
      * least space
      * 
      * @param buffer    ByteBuffer to which encode length
-     * @param length
+     * @param length    
      * @since 21.11.2006
      */
     public static final void encodeLength(ByteBuffer buffer,int length){
@@ -165,13 +165,30 @@ public final class ByteBufferUtils {
         }
         
         while(size<0) {
-           length = length | ((size & 0x7F) << (offset /*7 * count++*/));
+           length = length | ((size & 0x7F) << (offset));
            offset+=7;
            size = buffer.get();
         }
         length = length | ((size & 0x7F) << (offset));
         
        return length;
+    }
+    
+    /**
+     * Returns how many bytes are needed to encode
+     * length (value) using algorithm above
+     * 
+     * @param length
+     * @return
+     * @since 8.12.2006
+     */
+    public static final int lengthEncoded(int length){
+        int count=0; 
+            do {
+                count++;
+                length = length >> 7;
+            } while (length > 0);
+        return count;
     }
     
 }
