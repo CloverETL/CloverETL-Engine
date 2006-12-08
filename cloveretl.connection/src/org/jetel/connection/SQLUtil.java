@@ -133,7 +133,7 @@ public class SQLUtil {
 
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
 			try {
-				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), DEFAULT_DELIMITER);
+				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), DEFAULT_DELIMITER, (short)0);
 
 			} catch (Exception ex) {
 				throw new RuntimeException(ex.getMessage() + " field name " + dbMetadata.getColumnName(i));
