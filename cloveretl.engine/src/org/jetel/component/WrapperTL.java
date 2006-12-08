@@ -61,7 +61,11 @@ public class WrapperTL {
     
     private TransformLangParser parser;
     private TransformLangExecutor executor;
-    private CLVFFunctionDeclaration[] function;
+
+    private int functionCounter = 0;
+    private int functionNumber = 10;
+    private CLVFFunctionDeclaration[] function = new CLVFFunctionDeclaration[functionNumber];
+    
     
     private String errorMessage;
     private TransformationGraph graph;
@@ -260,14 +264,21 @@ public class WrapperTL {
 	 * @param functionName name of function, which will be executed many times
 	 * @throws ComponentNotReadyException
 	 */
-	public void prepareFunctionExecution(String...functionName) throws ComponentNotReadyException{
-		function = new CLVFFunctionDeclaration[functionName.length];
-		for (int i=0;i<function.length;i++){
-			function[i] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName[i]);
-			if (function[i] == null) {//function with given name not found
-				throw new ComponentNotReadyException("Function " + functionName[i] + " not found");
-			}
+	public int prepareFunctionExecution(String functionName) throws ComponentNotReadyException{
+		functionCounter++;
+		if (functionCounter > functionNumber) {
+			functionNumber *= 2;
+			CLVFFunctionDeclaration[] tmp = function;
+ 			function = new CLVFFunctionDeclaration[functionNumber];
+ 			System.arraycopy(tmp, 0, function, 0, tmp.length);
+		}		
+		function[functionCounter] = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
+		if (function[functionCounter] == null) {//function with given name not found
+			functionCounter--;
+			throw new ComponentNotReadyException("Function " + functionName + 
+					" not found");
 		}
+		return functionCounter;
 	}
 	
 	/**
