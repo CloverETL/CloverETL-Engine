@@ -63,7 +63,7 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public CompressedByteDataField(DataFieldMetadata _metadata, byte[] value) {
 		super(_metadata, ZipUtils.compress(value));
-		dataLen = value.length;
+		dataLen = value == null ? 0 : value.length;
 	}
 	
 	/* (non-Javadoc)
