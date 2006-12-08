@@ -249,13 +249,7 @@ public class DataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
-		// test that we have <1,2> output ports
-        if (outPorts.size() < 1) {
-            throw new ComponentNotReadyException(getId() + ": at least one output port can be defined!");
-        }
-		if (outPorts.size() > 2) {
-			throw new ComponentNotReadyException(getId() + ": at most two output ports can be defined!");
-		}
+        super.init();
         
 		// initialize multifile reader based on prepared parser
         reader = new MultiFileReader(parser, fileURL);
@@ -356,6 +350,11 @@ public class DataReader extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 0);
+        checkOutputPorts(status, 1, 2);
+
         try {
             init();
             free();
@@ -366,6 +365,7 @@ public class DataReader extends Node {
             }
             status.add(problem);
         }
+        
         return status;
     }
 	
