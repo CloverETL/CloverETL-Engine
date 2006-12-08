@@ -143,6 +143,10 @@ public final class Defaults {
 		 *  affects the memory footprint !!!
 		 */
 		public static int MAX_RECORD_SIZE;// = 8192;
+		/**
+		 * Compression level for compressed data fields (CompressedByteField - cbyte).
+		 * Should be set to a value from interval 0-9.
+		 */
 		public static int DEFAULT_COMPRESSION_LEVEL;// = Deflater.DEFAULT_COMPRESSION;
 	}
 

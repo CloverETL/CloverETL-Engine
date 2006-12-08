@@ -10,6 +10,9 @@
 
 Record.MAX_RECORD_SIZE = 8192
 
+#Compression level for compressed data fields (cbyte).
+Record.DEFAULT_COMPRESSION_LEVEL=5
+
 #FIELD_BUFFER_LENGTH - this is constant for textual data parsers. 
 #It determines what is the maximum size of one particular data field in text format. 
 #If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
@@ -76,8 +79,6 @@ DataFieldMetadata.DECIMAL_LENGTH = 8
 #Determines default scale od decimal data field metadata.<br>
 # Example: <Field type="decimal" name="usrid" length="10" <b>scale="2"</b> delimiter=";"  nullable="true" />
 DataFieldMetadata.DECIMAL_SCALE = 2
-
-Record.DEFAULT_COMPRESSION_LEVEL=9
 
 #****************************************************************************
 # !!! DO NOT EDIT BELOW UNLESS YOU ARE ABSOLUTELY SURE WHAT YOU ARE DOING !!!
