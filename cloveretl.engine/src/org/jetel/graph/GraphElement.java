@@ -5,6 +5,8 @@
  */
 package org.jetel.graph;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.InvalidGraphObjectNameException;
@@ -24,12 +26,16 @@ import org.jetel.util.StringUtils;
  */
 public abstract class GraphElement implements IGraphElement {
 
+    private static Log logger = LogFactory.getLog(GraphElement.class);
+
     final private String id;
 
     private TransformationGraph graph;
     
     private String name;
 
+    private boolean checked;
+    
     /**
      * Constructor.
      * @param id
@@ -71,17 +77,25 @@ public abstract class GraphElement implements IGraphElement {
         this.id = id;
         this.graph = graph;
         this.name = name;
+        this.checked = false;
     }
     
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#checkConfig()
      */
-    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
+    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        checked = true;
+        return status;
+    }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#init()
      */
-    public abstract void init() throws ComponentNotReadyException;
+    public void init() throws ComponentNotReadyException {
+        if(!isChecked()) {
+            logger.warn("Graph element " + this + " is not checked by checkConfig() method. Please call TransformationGraph.checkConfig() first.");
+        }
+    }
 
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#free()
@@ -122,5 +136,23 @@ public abstract class GraphElement implements IGraphElement {
     public void setName(String name) {
         this.name = name;
     }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#isChecked()
+     */
+    public boolean isChecked() {
+        return checked;
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.IGraphElement#setChecked(boolean)
+     */
+    public void setChecked(boolean checked) {
+        this.checked = checked;
+    }
     
+    @Override
+    public String toString() {
+        return (getName() == null ? "" : getName()) + "[" + getId() + "]";
+    }
 }
