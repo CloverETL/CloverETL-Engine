@@ -67,7 +67,8 @@ public class PartitionTL implements PartitionFunction {
 	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
 	 */
 	public int getOutputPort(DataRecord record) {
-		return ((CloverInteger)wrapper.executePreparedFunction(record)).getInt();
+		return ((CloverInteger)wrapper.executePreparedFunction(record, null))
+				.getInt();
 	}
 
 	/* (non-Javadoc)
@@ -79,7 +80,7 @@ public class PartitionTL implements PartitionFunction {
 		}
 		wrapper.init();
 		try {
-			wrapper.execute(INIT_FUNCTION_NAME);
+			wrapper.execute(INIT_FUNCTION_NAME, null);
 		} catch (JetelException e) {
 			//do nothing: function init is not necessary
 		}
