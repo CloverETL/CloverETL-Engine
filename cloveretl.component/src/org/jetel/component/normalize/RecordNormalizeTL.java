@@ -48,6 +48,9 @@ public class RecordNormalizeTL implements RecordNormalize {
 	private static final String TRANSFORM_FUNCTION_NAME="transform";
     private static final String FINISHED_FUNCTION_NAME="finished";
     private static final String INIT_FUNCTION_NAME="init";
+    
+    private int lenghtFunctionIdentifier;
+    private int transformFunctionIdentifier;
 
     private String errorMessage;
     private WrapperTL wrapper;
@@ -74,7 +77,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 			//do nothing: function init is not necessary
 		}
 		
-		wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME,TRANSFORM_FUNCTION_NAME);
+		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
+		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
 		return true;
 	}
@@ -83,7 +87,8 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
 	 */
 	public int count(DataRecord source) {
-		return ((CloverInteger)wrapper.executePreparedFunction(0,source)).getInt();
+		return ((CloverInteger)wrapper.executePreparedFunction(lenghtFunctionIdentifier,
+				source)).getInt();
 	}
 
 	/* (non-Javadoc)
@@ -91,7 +96,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public boolean transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
-		Object result = wrapper.executePreparedFunction(1, 
+		Object result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				new DataRecord[]{source}, new DataRecord[]{target});
 		return result == null ? true : (Boolean)result;
 	}
