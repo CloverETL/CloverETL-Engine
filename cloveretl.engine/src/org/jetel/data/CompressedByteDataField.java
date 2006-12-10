@@ -26,6 +26,7 @@ import java.nio.charset.CharsetEncoder;
 import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ZipUtils;
 
 /**
@@ -217,11 +218,10 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public void serialize(ByteBuffer buffer) {
         if(isNull) {
-            buffer.putInt(0);
-            buffer.putInt(0);
+            ByteBufferUtils.encodeLength(buffer, 0);
         } else {
-        	buffer.putInt(dataLen);
-            buffer.putInt(value.length);
+            ByteBufferUtils.encodeLength(buffer, dataLen);
+            ByteBufferUtils.encodeLength(buffer, value.length);
             buffer.put(value);
         }
 	}
@@ -231,15 +231,15 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public void deserialize(ByteBuffer buffer) {
 		
-		dataLen = buffer.getInt();
+		dataLen = ByteBufferUtils.decodeLength(buffer);
         
-        int bufLen = buffer.getInt();
-
-        if(bufLen == 0) {
+        if(dataLen == 0) {
             setNull(true);
             return;
         }
 
+        int bufLen = ByteBufferUtils.decodeLength(buffer);
+        
         if(value == null || bufLen != value.length) {
         	value = new byte[bufLen];
         }
@@ -304,10 +304,11 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.ByteDataField#getSizeSerialized()
 	 */
 	public int getSizeSerialized() {
+        final int length=value.length;
         if(isNull) {
-            return Integer.SIZE/8;
+            return ByteBufferUtils.lengthEncoded(0);
         } else {
-            return 2*Integer.SIZE/8 + value.length;
+            return 2*ByteBufferUtils.lengthEncoded(length) + length;
         }
 	}
     
