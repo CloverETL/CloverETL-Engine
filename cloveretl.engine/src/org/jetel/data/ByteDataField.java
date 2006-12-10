@@ -113,11 +113,13 @@ public class ByteDataField extends DataField implements Comparable{
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
 	            }
-	            System.arraycopy(this.value, 0, ((ByteDataField) fromField).value, 0, length);
+                System.arraycopy(((ByteDataField) fromField).value,
+                        0, this.value, 0, length);
 	        }
 	        setNull(fromField.isNull);
 	    }
 	}
+    
 	
     @Override
     public void setNull(boolean isNull) {
