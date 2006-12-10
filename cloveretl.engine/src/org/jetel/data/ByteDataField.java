@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.ByteBufferUtils;
 
 /**
  *  A class that represents array of bytes field.<br>
@@ -379,9 +380,9 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	public void serialize(ByteBuffer buffer) {
         if(isNull) {
-            buffer.putInt(0);
+            ByteBufferUtils.encodeLength(buffer, 0);
         } else {
-            buffer.putInt(value.length);
+            ByteBufferUtils.encodeLength(buffer, value.length);
             buffer.put(value);
         }
 	}
@@ -394,7 +395,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since          October 29, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		int length = buffer.getInt();
+		final int length = ByteBufferUtils.decodeLength(buffer);
         
         if(length == 0) {
             setNull(true);
@@ -485,10 +486,11 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see	      org.jetel.data.DataField
 	 */
 	public int getSizeSerialized() {
+        final int length=value.length;
         if(isNull) {
-            return ARRAY_LENGTH_INDICATOR_SIZE;
+            return ByteBufferUtils.lengthEncoded(0);
         } else {
-            return value.length + ARRAY_LENGTH_INDICATOR_SIZE;
+            return length + ByteBufferUtils.lengthEncoded(length);
         }
 	}
 

@@ -31,6 +31,7 @@ import java.text.RuleBasedCollator;
 
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.Compare;
 
 /**
@@ -326,16 +327,19 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-	    int length = value.length();
-	    int chars = length;
+	    final int length = value.length();
 	    
+        ByteBufferUtils.encodeLength(buffer, length);
+        
+        /* old code
 	    do {
 	    	buffer.put((byte)(0x80 | (byte) length));
             length = length >> 7;
 	    } while((length >> 7) > 0);
     	buffer.put((byte) length);
+       */
 	   
-		for(int counter = 0; counter < chars; counter++) {
+		for(int counter = 0; counter < length; counter++) {
 			buffer.putChar(value.charAt(counter));
 		}
 	}
@@ -348,16 +352,14 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-	    int length; 
-	    int size;
-	    length = size = 0;
-	    int count = 0;
-	    
-	    do {
+        final int length=ByteBufferUtils.decodeLength(buffer);
+        
+	    /*OLD CODE
+         * do {
 	       size = buffer.get();
 	       length = length | ((size & 0x7F) << (7 * count++));
 	    } while(size < 0);
-	   
+	   */
 		// empty value - so we can store new string
 		value.setLength(0);
 
@@ -482,16 +484,17 @@ public class StringDataField extends DataField implements CharSequence{
 	public int getSizeSerialized() {
 		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
 		// size of length indicator (basically int variable)
-	    int length=value.length();
-	    int count=0;
-	    
-	    do {
+	    final int length=value.length();
+        
+	   /*
+        * OLD CODE
+        *  do {
 	    	count++;
             length = length >> 7;
 	    } while((length >> 7) > 0);
-    	count++;
+    	count++;*/
 
-		return length*SIZE_OF_CHAR+count;
+		return length*SIZE_OF_CHAR+ByteBufferUtils.lengthEncoded(length);
 	}
 	
 	/**
