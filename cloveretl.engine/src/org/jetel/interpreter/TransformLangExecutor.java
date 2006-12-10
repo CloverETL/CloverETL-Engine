@@ -119,8 +119,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     /**
      * Set output data records for processing.<br>
      * Referenced output data fields will be resolved from
-     * these data records - assigment (in code) to output data field
-     * will result in assigment to one of these data records.
+     * these data records - assignment (in code) to output data field
+     * will result in assignment to one of these data records.
      * 
      * @param outputRecords array of output data records for setting values
      */
@@ -137,23 +137,50 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public void setGlobalParameters(Properties parameters){
         this.globalParameters=parameters;
     }
+
+    
+    /**
+     * Allows to store parameter/value on stack from
+     * where it can be read by executed script/function.
+     * @param obj   Object/value to be stored
+     * @since 10.12.2006
+     */
+    public void setParameter(Object obj){
+        stack.push(obj);
+    }
     
     /**
      * Method which returns result of executing parse tree.<br>
      * Basically, it returns whatever object was left on top of executor's
-     * stack.
+     * stack (usually as a result of last executed expression/operation).<br>
+     * It can be called repetitively in order to read all objects from stack.
      * 
-     * @return
+     * @return  Object saved on stack or NULL if no more objects are available
      */
     public Object getResult() {
         return stack.pop();
     }
     
+    /**
+     * Return value of globally defined variable determined by slot number.
+     * Slot can be obtained by calling <code>TransformLangParser.getGlobalVariableSlot(<i>varname</i>)</code>
+     * 
+     * @param varSlot
+     * @return  Object - depending of Global variable type
+     * @since 6.12.2006
+     */
     public Object getGlobalVariable(int varSlot){
         return stack.getGlobalVar(varSlot);
     }
     
 
+    /**
+     * Allows to set value of defined global variable.
+     * 
+     * @param varSlot
+     * @param value
+     * @since 6.12.2006
+     */
     public void setGlobalVariable(int varSlot,Object value){
         stack.storeGlobalVar(varSlot,value);
     }
@@ -306,7 +333,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 	}else{
                 		Object arguments[] = { a, b };
                 		throw new TransformLangExecutorRuntimeException(node,arguments,
-                        "compare - unsupported cmparison operator ["+tokenImage[node.cmpType]+"] for literals/expressions");
+                        "compare - unsupported comparison operator ["+tokenImage[node.cmpType]+"] for literals/expressions");
                 	}
                 } else {
                     Object arguments[] = { a, b };
@@ -497,7 +524,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             	result.div((Numeric) b);
             }catch(ArithmeticException ex){
             	Object[] arguments = { a, b };
-            	throw new TransformLangExecutorRuntimeException(node,arguments,"div - aritmetic exception - "+ex.getMessage());
+            	throw new TransformLangExecutorRuntimeException(node,arguments,"div - arithmetic exception - "+ex.getMessage());
             }
             stack.push(result);
         } else {
@@ -673,7 +700,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         } else {
             Object[] arguments = { a };
             throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "lenght - wrong type of literal");
+                    "length - wrong type of literal");
         }
 
         return data;
