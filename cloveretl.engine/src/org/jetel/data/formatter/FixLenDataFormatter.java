@@ -261,16 +261,15 @@ public class FixLenDataFormatter implements Formatter {
 			flushBuffer();
 			recPos = 0;
 		}
-
 		// write fields
+		dataBuffer.limit(dataBuffer.capacity());
 		for (int i = 0; i < fieldCnt; i++) {
-			dataBuffer.position(0);	// to avoid exceptions being thrown while setting buffer limit
-			dataBuffer.limit(recPos + fieldEnd[i]);
 			dataBuffer.position(recPos + fieldStart[i]);
 			record.getField(i).toByteBuffer(dataBuffer, encoder);
-			if (dataBuffer.hasRemaining()) {
+			int remn = recPos + fieldEnd[i] - dataBuffer.position();	// remaining bytes to be written
+			if (remn > 0) {
 				fieldFillerBuf.rewind();
-				fieldFillerBuf.limit(dataBuffer.remaining());
+				fieldFillerBuf.limit(remn);
 				dataBuffer.put(fieldFillerBuf);				
 			}
 		}
