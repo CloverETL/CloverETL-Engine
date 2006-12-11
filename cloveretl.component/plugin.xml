@@ -222,4 +222,9 @@
 		<parameter id="className" value="org.jetel.component.JmsWriter"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="LOOKUP_JOIN"/>
+		<parameter id="className" value="org.jetel.component.LookupJoin"/>
+	</extension>
+
 </plugin>
