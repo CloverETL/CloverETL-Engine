@@ -39,7 +39,7 @@ public class DecimalFactory {
     /**
      * How many decimal digits correspond to binary digits
      */
-    private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = 9;
+    private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = 18;
     //FIXME in 1.5 java we can use next two line
     //private static final double MAGIC_CONST = Math.log(10)/Math.log(2);
     //private static final int BOUNDS_FOR_DECIMAL_IMPLEMENTATION = (int) Math.floor((Integer.SIZE - 1) / MAGIC_CONST);
@@ -113,7 +113,10 @@ public class DecimalFactory {
 	}
 
 	public static Decimal getDecimal(int precision, int scale) {
-        if(precision <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION && scale <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION) {
+        if(precision < scale) {
+            throw new IllegalArgumentException("Precision can not be smaller than scale.");
+        }
+        if(precision <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION) {
             return new IntegerDecimal(precision, scale);
         }
 		return new HugeDecimal(null, precision, scale, true);
