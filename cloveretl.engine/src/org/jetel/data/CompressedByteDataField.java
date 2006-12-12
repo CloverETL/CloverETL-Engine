@@ -148,8 +148,8 @@ public class CompressedByteDataField extends ByteDataField {
 		return ZipUtils.decompress(super.value, dataLen);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.data.ByteDataField#fromString(java.lang.String)
+	/**
+	 * @deprecated
 	 */
 	public void fromString(String valueStr) {
         if(valueStr == null || valueStr.length() == 0) {
@@ -162,9 +162,9 @@ public class CompressedByteDataField extends ByteDataField {
         setNull(false);
 	}
 
-    /* (non-Javadoc)
-     * @see org.jetel.data.ByteDataField#fromString(java.lang.String, java.lang.String)
-     */
+	/**
+	 * @deprecated
+	 */
     public void fromString(String valueStr,String charset){
         if(valueStr == null || valueStr.length() == 0) {
             setNull(true);
@@ -172,6 +172,39 @@ public class CompressedByteDataField extends ByteDataField {
         }
         try{
             byte[] bytes = valueStr.getBytes(charset);
+            setValue(bytes);
+            dataLen = bytes.length;
+        }catch(UnsupportedEncodingException ex){
+            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
+                    this.metadata.getName()+"\"",ex);
+        }
+        setNull(false);
+    }
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.ByteDataField#fromString(java.lang.String)
+	 */
+	public void fromString(CharSequence seq) {
+        if(seq == null || seq.length() == 0) {
+            setNull(true);
+            return;
+        }
+        byte[] bytes = seq.toString().getBytes();
+        setValue(bytes);
+        dataLen = bytes.length;
+        setNull(false);
+	}
+
+    /* (non-Javadoc)
+     * @see org.jetel.data.ByteDataField#fromString(java.lang.String, java.lang.String)
+     */
+    public void fromString(CharSequence seq, String charset){
+        if(seq == null || seq.length() == 0) {
+            setNull(true);
+            return;
+        }
+        try{
+            byte[] bytes = seq.toString().getBytes(charset);
             setValue(bytes);
             dataLen = bytes.length;
         }catch(UnsupportedEncodingException ex){

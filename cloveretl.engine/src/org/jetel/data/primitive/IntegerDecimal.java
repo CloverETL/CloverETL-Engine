@@ -552,13 +552,13 @@ public final class IntegerDecimal implements Decimal {
     /**
      * @see org.jetel.data.Decimal#fromString(java.lang.String, java.text.NumberFormat)
      */
-    public void fromString(String string, NumberFormat numberFormat) {
-        if(string == null || string.length() == 0) {
+    public void fromString(CharSequence seq, NumberFormat numberFormat) {
+        if(seq == null || seq.length() == 0) {
             setNaN(true);
             return;
         }
         NumericFormat nf = new NumericFormat();
-        BigDecimal bd = (BigDecimal) nf.parse(string, new ParsePosition(0));
+        BigDecimal bd = nf.parse(seq);
         setValue(bd);
 //        value = Long.parseLong(string);
 //        if(!satisfyPrecision()) throw new NumberFormatException(); 

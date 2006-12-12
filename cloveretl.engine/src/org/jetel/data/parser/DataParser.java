@@ -469,16 +469,15 @@ public class DataParser implements Parser {
 	 * @param data
 	 */
 	private void populateField(DataRecord record, int fieldNum,	StringBuilder data) {
-        String strData = data.toString();
 		try {
-			record.getField(fieldNum).fromString(strData);
+			record.getField(fieldNum).fromString(data);
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
-                exceptionHandler.populateHandler(bdfe.getMessage(), record, recordCounter, fieldNum, strData, bdfe);
+                exceptionHandler.populateHandler(bdfe.getMessage(), record, recordCounter, fieldNum, data, bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
-                bdfe.setOffendingValue(strData);
+                bdfe.setOffendingValue(data);
                 throw bdfe;
             }
 		} catch(Exception ex) {

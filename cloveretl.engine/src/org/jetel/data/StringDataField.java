@@ -275,7 +275,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer).toString());
+		fromString(decoder.decode(dataBuffer));
 	}
 
 
@@ -314,11 +314,18 @@ public class StringDataField extends DataField implements CharSequence{
 	 *
 	 * @param  value  Description of the Parameter
 	 * @since         April 23, 2002
+	 * @deprecated
 	 */
 	public void fromString(String value) {
 		setValue(value);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
+	 */
+	public void fromString(CharSequence seq) {
+		setValue(seq);
+	}
 
 	/**
 	 *  Description of the Method
@@ -353,7 +360,7 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	public void deserialize(ByteBuffer buffer) {
         final int length=ByteBufferUtils.decodeLength(buffer);
-        
+	    
 	    /*OLD CODE
          * do {
 	       size = buffer.get();
@@ -485,7 +492,7 @@ public class StringDataField extends DataField implements CharSequence{
 		// lentgh in characters multiplied of 2 (each char occupies 2 bytes in UNICODE) plus
 		// size of length indicator (basically int variable)
 	    final int length=value.length();
-        
+	    
 	   /*
         * OLD CODE
         *  do {

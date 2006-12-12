@@ -158,9 +158,9 @@ public class FixLenCharDataParser extends FixLenDataParser {
 				if (skipTrailingBlanks) {
 					StringUtils.trimTrailing(rawRec);
 				}
-				record.getField(fieldIdx).fromString(rawRec.toString());
+				record.getField(fieldIdx).fromString(rawRec);
 			} catch (BadDataFormatException e) {
-					fillXHandler(record, rawRec != null ? rawRec.toString() : null, e);
+					fillXHandler(record, rawRec != null ? rawRec : null, e);
 					return record;
 			}
 		}

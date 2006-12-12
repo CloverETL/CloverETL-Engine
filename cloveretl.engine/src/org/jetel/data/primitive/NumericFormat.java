@@ -21,11 +21,13 @@
 package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
+import java.nio.CharBuffer;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
+import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -68,6 +70,7 @@ public class NumericFormat extends NumberFormat {
    
     /**
      * @return BigDecimal
+     * @deprecated
      */
 	public Number parse(String source, ParsePosition parsePosition){
 		boolean exponentForm = false;
@@ -111,6 +114,77 @@ public class NumericFormat extends NumberFormat {
 		try {
 			BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
 			parsePosition.setIndex(chars.length);
+			if (exponentForm){
+				return bigDecimal.movePointRight(exponentPart);
+			}else{
+				return bigDecimal;
+			}
+		}catch(NumberFormatException e){
+			return null;
+		}
+	}
+	
+	/**
+	 * @param source
+	 * @param parsePosition
+	 * @return
+	 */
+	public BigDecimal parse(CharSequence source){
+		boolean exponentForm = false;
+		char decimalSeparator = dFormat.getDecimalFormatSymbols().getDecimalSeparator();
+		boolean dSeparator = false;
+		char groupingSeparator = dFormat.getDecimalFormatSymbols().getGroupingSeparator();
+		String negativePrefix = dFormat.getNegativePrefix();
+		String positivePrefix = dFormat.getPositivePrefix();
+		int counter = 0;
+		int length=source.length();
+		char[] result = new char[length];
+		int start = 0;
+		try {
+			if (negativePrefix.contentEquals(source.subSequence(0, negativePrefix.length()))) {
+				result[counter++]='-';
+				start = negativePrefix.length();			
+			}else if (positivePrefix.contentEquals(source.subSequence(0, positivePrefix.length()))) {
+				start = positivePrefix.length();
+			}
+		} catch (IndexOutOfBoundsException e) {	// not enough space for prefix
+			// ignore
+		}
+		char[] chars;
+		if (source instanceof CharBuffer && ((CharBuffer)source).hasArray()) {	// optimization
+			chars = ((CharBuffer)source).array();
+			start += ((CharBuffer)source).arrayOffset() + ((CharBuffer)source).position();
+		} else {
+			chars = new char[length];
+			for (int idx = 0; idx < length; idx++) {
+				chars[idx] = source.charAt(idx);
+			}
+			start = 0;
+		}
+		int end = start + length;
+		int exponentPart=0;
+		for (int j=start;j<end;j++){
+			if (Character.isDigit(chars[j])){
+				result[counter++]=chars[j];
+			}else if (chars[j]==decimalSeparator){
+				if (!dSeparator){//there was not decimal separator before
+					result[counter++]='.';
+					dSeparator = true;
+				}else{//second decimal separator found, rest of string is ignored
+					break;
+				}
+			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
+				continue;
+			}else if (chars[j]==EXPONENT_SYMBOL[0] || chars[j]==EXPONENT_SYMBOL[1]){
+				exponentForm = true;
+				exponentPart = getExponentPart(chars,counter+1);
+				break;
+			}else{//unknown char or grouping separator is after decimal separator, rest of string is ignored 
+				break;
+			}
+		}
+		try {
+			BigDecimal bigDecimal = new BigDecimal(String.copyValueOf(result,0,counter));
 			if (exponentForm){
 				return bigDecimal.movePointRight(exponentPart);
 			}else{

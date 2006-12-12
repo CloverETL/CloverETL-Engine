@@ -39,7 +39,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     
     protected int fieldNumber;
     
-    protected String offendingValue;
+    protected CharSequence offendingValue;
     
     protected BadDataFormatException exception;
     
@@ -55,7 +55,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
             DataRecord record,
             int recordNumber,
             int fieldNumber,
-            String offendingValue,
+            CharSequence offendingValue,
             BadDataFormatException exception) {
         this.exceptionThrowed = true;
         this.errorMessage = errorMessage;
@@ -82,7 +82,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         return fieldNumber;
     }
     
-    public String getOffendingValue() {
+    public CharSequence getOffendingValue() {
         return offendingValue;
     }
     

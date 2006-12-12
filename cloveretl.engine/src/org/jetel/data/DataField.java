@@ -233,12 +233,18 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 *  Parses field's value from String
 	 *
-	 * @param  _str  Description of Parameter
-	 * @since
+	 * @param	_str	String representation of the value to be set
+	 * @deprecated  
 	 */
 	public abstract void fromString(String _str);
 
-
+	/**
+	 *  Parses field's value from string
+	 *
+	 * @param	seq	String representation of the value to be set  
+	 * @since 11.12.2006
+	 */
+	public abstract void fromString(CharSequence seq);
 
 	/**
 	 *  Get the field's value from ByteBuffer

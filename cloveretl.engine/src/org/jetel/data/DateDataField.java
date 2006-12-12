@@ -317,7 +317,7 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer).toString());
+		fromString(decoder.decode(dataBuffer));
 	}
 
 
@@ -346,6 +346,7 @@ public class DateDataField extends DataField implements Comparable{
 	 *
 	 * @param  _valueStr  Description of Parameter
 	 * @since             April 23, 2002
+	 * @deprecated
 	 */
 	public void fromString(String _valueStr) {
 		//parsePosition.setIndex(0);
@@ -366,6 +367,27 @@ public class DateDataField extends DataField implements Comparable{
 
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
+	 */
+	public void fromString(CharSequence seq) {
+		//parsePosition.setIndex(0);
+		if (seq == null || seq.length() == 0) {
+		    setNull(true);
+			return;
+		}
+		try {
+			if (dateFormat != null) {
+				value = dateFormat.parse(seq.toString());//, parsePosition);
+			} else {
+				value = SimpleDateFormat.getDateInstance().parse(seq.toString());
+			}
+			setNull(false);
+		} catch (ParseException e) {
+			throw new BadDataFormatException("not a Date", seq.toString());
+		}
+
+	}
 
 	/**
 	 *  Performs serialization of the internal value into ByteBuffer (used when
