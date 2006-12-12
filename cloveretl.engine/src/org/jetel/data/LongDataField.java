@@ -25,6 +25,8 @@ import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 
+import javolution.text.TypeFormat;
+
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
@@ -349,6 +351,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 *
 	 * @param  valueStr  Description of Parameter
 	 * @since            March 28, 2002
+	 * @deprecated
 	 */
 	public void fromString(String valueStr) {
 		if (valueStr == null || valueStr.length() == 0) {
@@ -363,6 +366,22 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
+	 */
+	public void fromString(CharSequence seq) {
+		if (seq == null || seq.length() == 0) {
+		    setNull(true);
+			return;
+		}
+		try {
+			value = TypeFormat.parseLong(seq);
+            setNull(this.value == Long.MIN_VALUE);
+		} catch (Exception ex) {
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+		}
+	}
+
 
 	/**
 	 *  Description of the Method
@@ -373,7 +392,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		fromString(decoder.decode(dataBuffer).toString());
+		fromString(decoder.decode(dataBuffer));
 	}
 
 

@@ -47,7 +47,7 @@ public interface IParserExceptionHandler {
             DataRecord record,
             int recordNumber,
             int fieldNumber,
-            String offendingValue,
+            CharSequence offendingValue,
             BadDataFormatException exception);
     
     public String getErrorMessage();
@@ -58,7 +58,7 @@ public interface IParserExceptionHandler {
 
     public int getFieldNumber();
     
-    public String getOffendingValue();
+    public CharSequence getOffendingValue();
     
     public Exception getException();
 

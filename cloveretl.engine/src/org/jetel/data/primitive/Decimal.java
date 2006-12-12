@@ -72,9 +72,7 @@ public interface Decimal extends Numeric {
 
     public void toByteBuffer(ByteBuffer dataBuffer);
 	
-	public void fromString(String value, NumberFormat numberFormat);
+	public void fromString(CharSequence seq, NumberFormat numberFormat);
 
-	public void fromCharBuffer(CharBuffer value, NumberFormat numberFormat);
-	
 	public int compareTo(Object value); //nas numeric interface, java.lang.number a tento decimal
 }

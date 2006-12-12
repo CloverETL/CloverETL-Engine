@@ -401,6 +401,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *
 	 *@param  valueStr  Description of Parameter
 	 *@since            March 28, 2002
+	 *@deprecated
 	 */
 	public void fromString(String valueStr) {
 		if(valueStr == null || valueStr.equals("")) {
@@ -415,17 +416,32 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
+	 */
+	public void fromString(CharSequence seq) {
+		if(seq == null || seq.length() == 0) {
+		    setNull(true);
+			return;
+		}
+		try {
+			value.fromString(seq, numberFormat);
+			setNull(value.isNaN());
+		} catch (Exception ex) {
+			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
+		}
+	}
 
 	/**
 	 *  Description of the Method
 	 *
-	 *@param  dataBuffer                    Description of Parameter
+	 *@param  dataBuffer                    Description of ParametervalueStr
 	 *@param  decoder                       Description of Parameter
 	 *@exception  CharacterCodingException  Description of Exception
 	 *@since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		value.fromCharBuffer(decoder.decode(dataBuffer), numberFormat);
+		value.fromString(decoder.decode(dataBuffer), numberFormat);
 	}
 
 

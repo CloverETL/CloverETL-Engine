@@ -120,7 +120,6 @@ public class ByteDataField extends DataField implements Comparable{
 	        setNull(fromField.isNull);
 	    }
 	}
-    
 	
     @Override
     public void setNull(boolean isNull) {
@@ -162,6 +161,7 @@ public class ByteDataField extends DataField implements Comparable{
 	public void setValue(DataField _value) {
 		fromString(_value == null ? null : _value.toString());
 	}
+
 	/**
 	 *  Sets the value of the field
 	 *
@@ -305,6 +305,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *
 	 *@param  valueStr  value
 	 *@since            October 29, 2002
+	 *@deprecated
 	 */
 	public void fromString(String valueStr) {
         if(valueStr == null || valueStr.length() == 0) {
@@ -322,6 +323,7 @@ public class ByteDataField extends DataField implements Comparable{
      * @param valueStr  value
      * @param charset charset to be used for encoding String into bytes
      * @since 19.11.2006
+     * @deprecated
      */
     public void fromString(String valueStr,String charset){
         if(valueStr == null || valueStr.length() == 0) {
@@ -330,6 +332,40 @@ public class ByteDataField extends DataField implements Comparable{
         }
         try{
             this.value = valueStr.getBytes(charset);
+        }catch(UnsupportedEncodingException ex){
+            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
+                    this.metadata.getName()+"\"",ex);
+        }
+        setNull(false);
+    }
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
+	 */
+	public void fromString(CharSequence seq) {
+        if(seq == null || seq.length() == 0) {
+            setNull(true);
+            return;
+        }
+        this.value = seq.toString().getBytes();
+        setNull(false);
+	}
+
+    /**
+     * Parses byte array value from string (converts characters in string into byte
+     *  array using specified charset encoder)
+     * 
+	 * @param  seq
+     * @param charset charset to be used for encoding String into bytes
+	 * @since            11.12.2006
+     */
+    public void fromString(CharSequence seq,String charset){
+        if(seq == null || seq.length() == 0) {
+            setNull(true);
+            return;
+        }
+        try{
+            this.value = seq.toString().getBytes(charset);
         }catch(UnsupportedEncodingException ex){
             throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
                     this.metadata.getName()+"\"",ex);

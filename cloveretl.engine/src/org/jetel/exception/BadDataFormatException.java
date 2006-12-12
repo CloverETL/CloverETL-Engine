@@ -26,7 +26,7 @@ package org.jetel.exception;
  */
 public class BadDataFormatException extends RuntimeException {
     
-	private String offendingValue;
+	private CharSequence offendingValue;
     
     private int recordNumber;
     
@@ -54,11 +54,11 @@ public class BadDataFormatException extends RuntimeException {
         this.offendingValue = offendingValue;
     }
 
-	public void setOffendingValue(String offendingValue) {
+	public void setOffendingValue(CharSequence offendingValue) {
 		this.offendingValue = offendingValue;
 	}
 
-	public String getOffendingValue() {
+	public CharSequence getOffendingValue() {
 		return offendingValue;
 	}
     

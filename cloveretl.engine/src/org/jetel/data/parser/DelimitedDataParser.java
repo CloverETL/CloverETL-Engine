@@ -445,7 +445,7 @@ public class DelimitedDataParser implements Parser {
 	 *@since            March 28, 2002
 	 */
 	private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
-        String strData = buffer2String(data, fieldNum);
+        CharSequence strData = buffer2String(data, fieldNum);
         try {
 			record.getField(fieldNum).fromString(strData);
 		} catch (BadDataFormatException bdfe) {
@@ -469,11 +469,11 @@ public class DelimitedDataParser implements Parser {
 	 *@param  buffer        Character buffer to work on
 	 *@return               String with quotes removed if specified
 	 */
-	private String buffer2String(CharBuffer buffer,int fieldNum) {
+	private CharSequence buffer2String(CharBuffer buffer,int fieldNum) {
 		if (metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
-			return qdecoder.decode(buffer).toString();
+			return qdecoder.decode(buffer);
 		}
-	    return buffer.toString();	    
+	    return buffer;	    
 	}
 
 

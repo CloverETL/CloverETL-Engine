@@ -194,7 +194,7 @@ public abstract class FixLenDataParser implements Parser {
 	 * @param offendingValue
 	 * @param exception
 	 */
-	protected void fillXHandler(DataRecord record, String offendingValue,
+	protected void fillXHandler(DataRecord record, CharSequence offendingValue,
         BadDataFormatException exception) {
 		
 		exception.setFieldNumber(fieldIdx);

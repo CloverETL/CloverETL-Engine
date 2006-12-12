@@ -605,6 +605,7 @@ public final class HugeDecimal implements Decimal {
     
 	/**
 	 * @see org.jetel.data.primitive.Decimal#fromString(java.lang.String, java.text.NumberFormat)
+	 * @deprecated
 	 */
 	public void fromString(String string, NumberFormat numberFormat) {
 		if(string == null || string.length() == 0) {
@@ -618,8 +619,13 @@ public final class HugeDecimal implements Decimal {
 	/**
 	 * @see org.jetel.data.primitive.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
 	 */
-	public void fromCharBuffer(CharBuffer buffer, NumberFormat numberFormat) {
-        fromString(buffer.toString(), numberFormat);
+	public void fromString(CharSequence source, NumberFormat numberFormat) {
+		if(source == null || source.length() == 0) {
+			setNaN(true);
+            return;
+		}
+		value = new BigDecimal(source.toString());
+		setNaN(false);		
 	}
 
     public int compareTo(Numeric value) {
