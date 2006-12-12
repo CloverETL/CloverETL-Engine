@@ -41,10 +41,10 @@ import org.jetel.util.TypedProperties;
  */
 public class DataFieldMetadata implements Serializable {
 	
-	public static int INTEGER_LENGTH = 10;
-	public static int LONG_LENGTH = 63;
-	public static int DOUBLE_LENGTH = 1024 + 1074;
-	public static int DOUBLE_SCALE = 1074;
+	public static int INTEGER_LENGTH = 9;
+	public static int LONG_LENGTH = 18;
+	public static int DOUBLE_SCALE = 323;
+	public static int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
 
 	/**
 	 *  Name of the field
