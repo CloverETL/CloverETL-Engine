@@ -19,10 +19,14 @@
 */
 package org.jetel.lookup;
 
+import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Iterator;
 
 import org.jetel.connection.CopySQLData;
 import org.jetel.connection.DBConnection;
@@ -544,4 +548,28 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         throw new UnsupportedOperationException("Operation remove() not supported");
     }
     
+    public Iterator<DataRecord> iterator() {
+        try {
+        	StringBuilder query = new StringBuilder(sqlQuery);
+        	int whereIndex = query.toString().toLowerCase().indexOf("where");
+        	int groupIndex = query.toString().toLowerCase().indexOf("group");
+        	int orderIndex = query.toString().toLowerCase().indexOf("order");
+        	if (whereIndex > -1){
+        		if (groupIndex > -1 || orderIndex > -1){
+        			query.delete(whereIndex, groupIndex);
+        		}else{
+        			query.setLength(whereIndex);
+        		}
+        	}
+        	Statement statement = dbConnection.getStatement(); 
+			resultSet = statement.executeQuery(query.toString());
+			ArrayList<DataRecord> records = new ArrayList<DataRecord>();
+			while (fetch()){
+				records.add(dbDataRecord.duplicate());
+			}
+			return records.iterator();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+   }
 }
