@@ -46,7 +46,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @since  8.7.2004
  *
  */
-public interface LookupTable extends IGraphElement {
+public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	
 	/**
 	 * Called when the lookup table is first used/needed. Usually at
