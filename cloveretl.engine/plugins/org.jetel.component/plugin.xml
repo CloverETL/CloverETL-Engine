@@ -226,4 +226,9 @@
 		<parameter id="className" value="org.jetel.component.LookupJoin"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="LOOKUP_TABLE"/>
+		<parameter id="className" value="org.jetel.component.LookupTableReaderWriter"/>
+	</extension>
+
 </plugin>
