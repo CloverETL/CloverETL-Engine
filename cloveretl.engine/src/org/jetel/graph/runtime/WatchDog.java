@@ -51,7 +51,7 @@ import org.jetel.util.StringUtils;
  * @since       July 29, 2002
  * @revision    $Revision$
  */
-class WatchDog extends Thread implements CloverRuntime {
+public class WatchDog extends Thread implements CloverRuntime {
 	private int trackingInterval;
 	private int watchDogStatus;
 	private TransformationGraph graph;
@@ -87,7 +87,7 @@ class WatchDog extends Thread implements CloverRuntime {
 	 * @param  phases  Description of the Parameter
 	 * @since          September 02, 2003
 	 */
-	WatchDog(TransformationGraph graph, Phase[] phases) {
+	public WatchDog(TransformationGraph graph, Phase[] phases) {
 		super("WatchDog");
 		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		setDaemon(true);
@@ -114,7 +114,7 @@ class WatchDog extends Thread implements CloverRuntime {
 	 * @param  phases    Description of the Parameter
 	 * @since            September 02, 2003
 	 */
-	WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
+	public WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
 		this(graph,phases);
 		trackingInterval = tracking;
 	}
@@ -308,7 +308,7 @@ class WatchDog extends Thread implements CloverRuntime {
 	 *
 	 * @since    July 29, 2002
 	 */
-	void abort() {
+	public void abort() {
 		Iterator iterator = currentPhase.getNodes().iterator();
 		Node node;
 
