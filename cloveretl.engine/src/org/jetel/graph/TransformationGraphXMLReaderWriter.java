@@ -770,7 +770,7 @@ public class TransformationGraphXMLReaderWriter {
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) { return status; }
 
-        public void run() { }
+        public Node.Result execute() { return Node.Result.OK; }
 
         public void init() throws ComponentNotReadyException { }
 

@@ -31,11 +31,16 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.CloverRuntimeException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.runtime.CloverRuntime;
+import org.jetel.graph.runtime.Message;
+import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 
@@ -52,6 +57,26 @@ import org.w3c.dom.Element;
  */
 public abstract class Node extends GraphElement implements Runnable {
 
+    public enum Result{
+        
+        RUNNING(0,"RUNNING"),
+        OK(1,"OK"),
+        ERROR(-1,"ERROR"),
+        ABORTED(-2,"ABORTED");
+        
+        private final int code;
+        private final String message;
+        
+        Result(int _code,String msg){
+            code=_code;
+            message=msg;
+        }
+        
+        public int code(){return code;}
+        public String message(){return message;}
+        
+    }
+    
     protected Thread nodeThread;
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
@@ -65,8 +90,8 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	protected volatile boolean runIt = true;
 
-	protected int resultCode;
-	protected String resultMsg;
+	protected Result runResult;
+    protected Throwable resultException;
 	
     protected Phase phase;
 
@@ -86,21 +111,6 @@ public abstract class Node extends GraphElement implements Runnable {
 	public final static char INPUT_PORT = 'I';
 	/**  Description of the Field */
 	public final static char LOG_PORT = 'L';
-
-	/**
-	 *  RESULT CODES DEFINITION
-	 *
-	 *@since    August 13, 2002
-	 */
-	public final static int RESULT_RUNNING = 0;
-	/**  Description of the Field */
-	public final static int RESULT_OK = 1;
-	/**  Description of the Field */
-	public final static int RESULT_ERROR = 2;
-	/**  Description of the Field */
-	public final static int RESULT_ABORTED = 3;
-	/**  Description of the Field */
-	public final static int RESULT_FATAL_ERROR = -1;
 
 	/**
 	 * XML attributes of every cloverETL component
@@ -148,31 +158,6 @@ public abstract class Node extends GraphElement implements Runnable {
 			ex.printStackTrace();
 		}
 	}
-
-
-	/**
-	 *  Returns brief message describing current status
-	 *
-	 *@return    The Status value
-	 *@since     April 2, 2002
-	 */
-	public String getStatus() {
-		switch (resultCode) {
-			case RESULT_RUNNING:
-				return "RUNNING";
-			case RESULT_OK:
-				return "OK";
-			case RESULT_ERROR:
-				return "ERROR";
-			case RESULT_FATAL_ERROR:
-				return "FATAL_ERROR";
-			case RESULT_ABORTED:
-				return "ABORTED";
-			default:
-				return "!invalid status!";
-		}
-	}
-
 
 
 	/**
@@ -350,8 +335,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return    The ResultCode value
 	 *@since     July 29, 2002
 	 */
-	public int getResultCode() {
-		return resultCode;
+	public Result getResultCode() {
+		return runResult;
 	}
 
 
@@ -363,19 +348,53 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@since     July 29, 2002
 	 */
 	public String getResultMsg() {
-		return resultMsg;
+		return runResult!=null ? runResult.message() : null;
 	}
 
+    /**
+     * Gets exception which caused Node to fail execution - if
+     * there was such failure.
+     * 
+     * @return
+     * @since 13.12.2006
+     */
+    public Throwable getResultException(){
+        return resultException;
+    }
 
 
 	// Operations
 	/**
-	 *  main executive method of Node
+	 *  main execution method of Node (calls in turn execute())
 	 *
 	 *@since    April 2, 2002
 	 */
-	public abstract void run();
+	public void run() {
+        runResult=Result.RUNNING; // set running result, so we know run() method was started
+        try {
+            runResult = execute();
+        } catch (IOException ex) {  // may be handled differently later
+            runResult=Result.ERROR;
+            resultException = ex;
+            Message msg = Message.createErrorMessage(this,
+                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+            getCloverRuntime().sendMessage(msg);
+            return;
+        } catch (InterruptedException ex) {
+            runResult=Result.ABORTED;
+            return;
+        } catch (Exception ex) { // may be handled differently later
+            runResult=Result.ERROR;
+            resultException = ex;
+            Message msg = Message.createErrorMessage(this,
+                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+            getCloverRuntime().sendMessage(msg);
+            return;
+        }
 
+    }
+    
+    public abstract Result execute() throws IOException, JetelException,InterruptedException;
 
 	/**
 	 *  Abort execution of Node - brutal force
@@ -387,11 +406,11 @@ public abstract class Node extends GraphElement implements Runnable {
         try {
             Thread.sleep(50);
         } catch (InterruptedException e) {
-            //EMPTY
+            //EMPTY INTENTIONALLY
         }
         
-		if (resultCode==RESULT_RUNNING){
-			resultCode = RESULT_ABORTED;
+		if (runResult==Result.RUNNING){
+			runResult = Result.ABORTED;
 			getNodeThread().interrupt();
 		}
 	}
@@ -433,6 +452,17 @@ public abstract class Node extends GraphElement implements Runnable {
 	}
 
 
+    /**
+     * Provides CloverRuntime - object providing
+     * various run-time services
+     * 
+     * @return
+     * @since 13.12.2006
+     */
+    public CloverRuntime getCloverRuntime(){
+        return getGraph().getRuntime();
+    }
+    
 	/**
 	 *  An operation that adds port to list of all InputPorts
 	 *
