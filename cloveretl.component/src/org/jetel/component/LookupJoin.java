@@ -145,6 +145,7 @@ public class LookupJoin extends Node {
 				return;
 			}
 		}
+		lookupTable.free();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";

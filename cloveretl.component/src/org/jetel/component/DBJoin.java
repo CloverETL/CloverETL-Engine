@@ -225,6 +225,7 @@ public class DBJoin extends Node {
 				return;
 			}
 		}
+		lookupTable.free();
 		broadcastEOF();
 		if (runIt) {
 			resultMsg = "OK";
