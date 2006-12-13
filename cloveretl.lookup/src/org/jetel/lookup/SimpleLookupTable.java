@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.InvalidAlgorithmParameterException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import org.jetel.data.DataRecord;
@@ -340,6 +341,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         }else{
             throw new IllegalArgumentException("Requires key parameter of type "+DataRecord.class.getName());
         }
+    }
+    
+    public Iterator<DataRecord> iterator() {
+    	return lookupTable.values().iterator();
     }
 }
 
