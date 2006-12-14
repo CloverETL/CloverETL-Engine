@@ -171,6 +171,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @since                   May 2, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 	    DataRecord record=new DataRecord(metadata);
 	    record.init();
 		
@@ -343,6 +344,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         }
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Iterable#iterator()
+     */
     public Iterator<DataRecord> iterator() {
     	return lookupTable.values().iterator();
     }
