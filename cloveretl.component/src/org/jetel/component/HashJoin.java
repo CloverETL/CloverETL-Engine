@@ -262,6 +262,7 @@ public class HashJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one input port and one output
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException(

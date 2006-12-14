@@ -218,6 +218,7 @@ public class MysqlDataReader extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		if (getInPorts().size() > 0) {
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		}

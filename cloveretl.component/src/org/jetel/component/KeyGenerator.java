@@ -352,6 +352,7 @@ import org.w3c.dom.Element;
 	}
 		
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have one input port and exactly one output
 		if (inPorts.size() != 1) {
 			throw new ComponentNotReadyException("One input port has to be defined!");

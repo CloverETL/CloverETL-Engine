@@ -80,6 +80,10 @@ public class LookupTableReaderWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		if (outPorts.size() > 0) {
+			readFromTable = true;
+		}		
+		lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
         	throw new ComponentNotReadyException("Lookup table \"" + lookupTableName + 
 			"\" not found.");
@@ -95,6 +99,7 @@ public class LookupTableReaderWriter extends Node {
 			for (DataRecord record : lookupTable) {
 				if (!runIt) break;
 				writeRecordBroadcast(record);
+				SynchronizeUtils.cloverYield();
 			}
 		} else {
 			InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -102,8 +107,10 @@ public class LookupTableReaderWriter extends Node {
 			inRecord.init();
 			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
 				lookupTable.put(null, inRecord);
+				SynchronizeUtils.cloverYield();
 			}
 		}
+		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	

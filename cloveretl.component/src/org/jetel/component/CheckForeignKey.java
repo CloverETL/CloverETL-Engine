@@ -187,7 +187,8 @@ import org.w3c.dom.Element;
          *                Description of the Exception
          */
         public void init() throws ComponentNotReadyException {
-            // test that we have at least one input port and one output
+    		super.init();
+           // test that we have at least one input port and one output
             if (inPorts.size() < 2) {
                 throw new ComponentNotReadyException(
                         "At least two input ports have to be defined!");

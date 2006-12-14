@@ -378,6 +378,7 @@ public class DataIntersection extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least two input ports and three output ports
 		if (inPorts.size() < 2) {
 			throw new ComponentNotReadyException("At least two input ports have to be defined!");

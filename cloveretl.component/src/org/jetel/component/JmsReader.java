@@ -132,6 +132,7 @@ public class JmsReader extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		if (getOutPorts().size() < 1) {
 			throw new ComponentNotReadyException("At least one output port is required");
 		}

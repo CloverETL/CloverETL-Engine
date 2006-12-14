@@ -179,6 +179,7 @@ public class XLSWriter extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		File out = new File(fileURL);
 		try {
 			if (!out.exists()){

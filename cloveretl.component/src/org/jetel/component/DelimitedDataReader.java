@@ -31,6 +31,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileReader;
 import org.jetel.util.SynchronizeUtils;
@@ -131,57 +132,30 @@ public class DelimitedDataReader extends Node {
 	}
 
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
-
-		try {
-			while (record != null && runIt) {
-                try {
-                    if((record = reader.getNext(record)) != null) {
-                        //broadcast the record to all connected Edges
-                        writeRecordBroadcast(record);
-                    }
-                } catch(BadDataFormatException bdfe) {
-                    if(policyType == PolicyType.STRICT) {
-                        throw bdfe;
-                    } else {
-                        logger.info(bdfe.getMessage());
-                    }
+		while (record != null && runIt) {
+            try {
+                if((record = reader.getNext(record)) != null) {
+                    //broadcast the record to all connected Edges
+                    writeRecordBroadcast(record);
                 }
-                SynchronizeUtils.cloverYield();
-			}
-        } catch(BadDataFormatException bdfe) {
-            resultMsg = bdfe.getMessage();
-            resultCode = Node.RESULT_ERROR;
-            reader.close();
-            closeAllOutputPorts();
-            return;
-		} catch (Exception ex) {
-            resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
-            resultCode = Node.RESULT_FATAL_ERROR;
-            reader.close();
-            return;
+            } catch(BadDataFormatException bdfe) {
+                if(policyType == PolicyType.STRICT) {
+                    throw bdfe;
+                } else {
+                    logger.info(bdfe.getMessage());
+                }
+            }
+            SynchronizeUtils.cloverYield();
 		}
-        
-		// we are done, close all connected output ports to indicate end of stream
 		reader.close();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;        
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/**
 	 *  Description of the Method
@@ -190,6 +164,7 @@ public class DelimitedDataReader extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one output port
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException(getId() + ": atleast one output port has to be defined!");

@@ -174,6 +174,7 @@ public class Normalizer extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		inPort = getInputPort(IN_PORT);
 		outPort = getOutputPort(OUT_PORT);	
 		inMetadata = inPort.getMetadata();

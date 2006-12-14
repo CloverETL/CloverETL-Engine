@@ -469,6 +469,7 @@ public class SystemExecute extends Node{
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	@Override public void init() throws ComponentNotReadyException {
+		super.init();
 		if (getInPorts().size()>1) 
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		if (getOutPorts().size()>1) 

@@ -213,6 +213,7 @@ public class CloverDataReader extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one output port has to be defined!");
 		}

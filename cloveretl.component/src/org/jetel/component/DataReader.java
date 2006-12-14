@@ -36,6 +36,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -150,80 +151,61 @@ public class DataReader extends Node {
 		parser = new DataParser(charset);
 	}
 
-
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
-        boolean logging = false;
-        if(getOutPorts().size() == 2) {
-            if(checkLogPortMetadata()) {
-                logging = true;
-            }
-        }
-		// we need to create data record - take the metadata from first output port
+	@Override
+	public Result execute() throws Exception {
+		boolean logging = false;
+		if (getOutPorts().size() == 2) {
+			if (checkLogPortMetadata()) {
+				logging = true;
+			}
+		}
+		// we need to create data record - take the metadata from first output
+		// port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
-        record.init();
-        // if we have second output port we can logging - create data record for log port
+		record.init();
+		// if we have second output port we can logging - create data record for
+		// log port
 		DataRecord logRecord = null;
-        if(logging) {
-            logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
-            logRecord.init();
-        }
+		if (logging) {
+			logRecord = new DataRecord(getOutputPort(LOG_PORT).getMetadata());
+			logRecord.init();
+		}
 		int errorCount = 0;
 
-		try {
-			while(runIt) {			
-                try {
-    				if((reader.getNext(record)) == null) {
-    					break;
-    				}
-    				writeRecord(OUTPUT_PORT, record);    				
-                } catch(BadDataFormatException bdfe) {
-                    if(policyType == PolicyType.STRICT) {
-                        throw bdfe;
-                    } else {
-                        if(logging) {
-                            //TODO implement log port framework
-                            ((IntegerDataField) logRecord.getField(0)).setValue(bdfe.getRecordNumber());
-                            ((StringDataField) logRecord.getField(1)).setValue(bdfe.getOffendingValue());
-                            ((StringDataField) logRecord.getField(2)).setValue(bdfe.getMessage());
-                            writeRecord(LOG_PORT, logRecord);
-                        } else {
-                            logger.info(bdfe.getMessage());
-                        }
-                        if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-                            logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-                            break;
-                        }
-                    }
-                }
-				SynchronizeUtils.cloverYield();
+		while (runIt) {
+			try {
+				if ((reader.getNext(record)) == null) {
+					break;
+				}
+				writeRecord(OUTPUT_PORT, record);
+			} catch (BadDataFormatException bdfe) {
+				if (policyType == PolicyType.STRICT) {
+					throw bdfe;
+				} else {
+					if (logging) {
+						// TODO implement log port framework
+						((IntegerDataField) logRecord.getField(0))
+								.setValue(bdfe.getRecordNumber());
+						((StringDataField) logRecord.getField(1)).setValue(bdfe
+								.getOffendingValue());
+						((StringDataField) logRecord.getField(2)).setValue(bdfe
+								.getMessage());
+						writeRecord(LOG_PORT, logRecord);
+					} else {
+						logger.info(bdfe.getMessage());
+					}
+					if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+						logger.error("DataParser (" + getName()
+								+ "): Max error count exceeded.");
+						break;
+					}
+				}
 			}
-		} catch (BadDataFormatException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			reader.close();
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			reader.close();
-			return;
+			SynchronizeUtils.cloverYield();
 		}
-		// we are done, close all connected output ports to indicate end of stream
 		reader.close();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 
