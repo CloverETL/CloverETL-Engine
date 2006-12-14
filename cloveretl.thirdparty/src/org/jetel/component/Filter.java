@@ -159,6 +159,7 @@ public class Filter extends Node {
 	 * @since    July 23, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one input port and one output
 		if (inPorts.size()<1){
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
