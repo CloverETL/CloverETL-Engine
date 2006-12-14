@@ -95,7 +95,6 @@ public class LookupTableReaderWriter extends Node {
 					return;
 				}
 			}
-			lookupTable.free();
 			closeAllOutputPorts();
 		}else{
 			InputPort inPort = getInputPort(READ_FROM_PORT);
@@ -137,7 +136,7 @@ public class LookupTableReaderWriter extends Node {
         	throw new ComponentNotReadyException("Lookup table \"" + lookupTableName + 
 			"\" not found.");
 		}
-		lookupTable.init();
+		lookupTable.init();//TODO check if it hasn't been initialized yet
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
