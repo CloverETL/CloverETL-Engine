@@ -402,7 +402,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@since                      May 2, 2002
 	 */
     public void init() throws ComponentNotReadyException {
-    	// if caching is required, crate map to store records
+		super.init();
+   	// if caching is required, crate map to store records
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
             resultCache.enableDuplicity();
@@ -548,8 +549,12 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         throw new UnsupportedOperationException("Operation remove() not supported");
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Iterable#iterator()
+     */
     public Iterator<DataRecord> iterator() {
         try {
+        	//remove WHERE condidion from sql query
         	StringBuilder query = new StringBuilder(sqlQuery);
         	int whereIndex = query.toString().toLowerCase().indexOf("where");
         	int groupIndex = query.toString().toLowerCase().indexOf("group");
