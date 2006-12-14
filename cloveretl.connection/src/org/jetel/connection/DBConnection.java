@@ -609,7 +609,8 @@ public class DBConnection extends GraphElement implements IConnection {
      * @see org.jetel.graph.GraphElement#init()
      */
     public void init() throws ComponentNotReadyException {
-        connect();
+		super.init();
+       connect();
     }
 
 

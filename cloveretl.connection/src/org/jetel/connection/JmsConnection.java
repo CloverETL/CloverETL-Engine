@@ -141,6 +141,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		try {
 			Context ctx = null;
 			if (iniCtxFtory != null) {
