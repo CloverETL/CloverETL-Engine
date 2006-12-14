@@ -175,6 +175,7 @@ public class DBExecute extends Node {
 	 * @since                                  September 27, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		//if (inPorts.size() >0 || outPorts.size >0) {
 		//	throw new ComponentNotReadyException("This is independent component. No INPUT or OUTPUT connectins may exist !");
 		//}

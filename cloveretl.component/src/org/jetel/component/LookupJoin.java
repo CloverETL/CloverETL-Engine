@@ -168,6 +168,7 @@ public class LookupJoin extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have one input port and one output
 		if (inPorts.size() != 1) {
 			throw new ComponentNotReadyException("Exactly one input port has to be defined!");

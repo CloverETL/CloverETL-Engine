@@ -555,6 +555,7 @@ public class AproxMergeJoin extends Node {
 	}
 
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at two input ports and four output
 		if (inPorts.size() != 2) {
 			throw new ComponentNotReadyException("Two input ports have to be defined!");

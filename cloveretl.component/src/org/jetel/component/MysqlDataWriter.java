@@ -183,6 +183,7 @@ public class MysqlDataWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		if (getInPorts().size() > 1) {
 			throw new ComponentNotReadyException(getId() + ": too many input ports");
 		}

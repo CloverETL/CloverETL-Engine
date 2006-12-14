@@ -204,6 +204,7 @@ public class Aggregate extends Node {
 	 *  Initialize method of aggregate component
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one input port and one output
 		if (inPorts.size() != 1) {
 			throw new ComponentNotReadyException("Exact one input port has to be defined!");

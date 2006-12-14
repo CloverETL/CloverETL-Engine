@@ -128,6 +128,7 @@ public class JmsWriter extends Node {
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		if (getInPorts().size() != 1) {
 			throw new ComponentNotReadyException("Exactly one input port is required");
 		}

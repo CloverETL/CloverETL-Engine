@@ -362,6 +362,7 @@ public class XLSReader extends Node {
 	 */
 	@Override
 	public void init() throws ComponentNotReadyException {
+		super.init();
         if (outPorts.size() < 1) {
             throw new ComponentNotReadyException(getId() + ": at least one output port can be defined!");
         }

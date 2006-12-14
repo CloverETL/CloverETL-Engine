@@ -232,6 +232,7 @@ public class Partition extends Node {
 	 * @since                                  April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one input port and one output
 		if (inPorts.size() < 1) {
 			throw new ComponentNotReadyException("At least one input port has to be defined!");
