@@ -1,0 +1,251 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2006 Javlin Consulting <info@javlinconsulting>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
+package org.jetel.metadata;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.HashMap;
+
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+
+/**
+ * Class implementing export of data record metadata to XSD.
+ * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
+ * @since 12/14/06  
+ */
+public class XsdMetadata {
+	private static final String NAMESPACE = "";
+	private static final String XMLSCHEMA = "http://www.w3.org/2001/XMLSchema";
+
+	// mapping from field type to XSD type representing the field type
+	private static final HashMap<Character, String> typeNames = new HashMap<Character, String>();
+	// mapping from field type to XSD type used as base for XSD type representing the field type
+	private static final HashMap<Character, String> primitiveNames = new HashMap<Character, String>();
+	// initialize mappings
+	static {
+		typeNames.put(new Character(DataFieldMetadata.BYTE_FIELD), "CloverByte");
+		typeNames.put(new Character(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "CloverByteCompressed");
+		typeNames.put(new Character(DataFieldMetadata.DATE_FIELD), "CloverDate");
+		typeNames.put(new Character(DataFieldMetadata.DATETIME_FIELD), "CloverDatetime");
+		typeNames.put(new Character(DataFieldMetadata.DECIMAL_FIELD), "CloverDecimal");
+		typeNames.put(new Character(DataFieldMetadata.INTEGER_FIELD), "CloverInteger");
+		typeNames.put(new Character(DataFieldMetadata.LONG_FIELD), "CloverLong");
+		typeNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "CloverNumeric");
+		typeNames.put(new Character(DataFieldMetadata.STRING_FIELD), "CloverString");
+
+		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD), "xsd:base64Binary");
+		primitiveNames.put(new Character(DataFieldMetadata.BYTE_FIELD_COMPRESSED), "xsd:base64Binary");
+		primitiveNames.put(new Character(DataFieldMetadata.DATE_FIELD), "xsd:date");
+		primitiveNames.put(new Character(DataFieldMetadata.DATETIME_FIELD), "xsd:dateTime");
+		primitiveNames.put(new Character(DataFieldMetadata.DECIMAL_FIELD), "xsd:decimal");
+		primitiveNames.put(new Character(DataFieldMetadata.INTEGER_FIELD), "xsd:int");
+		primitiveNames.put(new Character(DataFieldMetadata.LONG_FIELD), "xsd:long");
+		primitiveNames.put(new Character(DataFieldMetadata.NUMERIC_FIELD), "xsd:decimal");
+		primitiveNames.put(new Character(DataFieldMetadata.STRING_FIELD), "xsd:string");
+	}
+
+	// XSD document
+	private Document doc;
+
+	/**
+	 * Sole ctor. Creates XSD document representing specified data record metadata
+	 * @param metadata
+	 * @throws ParserConfigurationException
+	 */
+	public XsdMetadata(DataRecordMetadata metadata) throws ParserConfigurationException {
+		doc = createXsdDocument();
+		if (metadata == null) {
+			return;
+		}
+		DataFieldMetadata[] fields = metadata.getFields();
+		Element rootElement = doc.getDocumentElement();
+		Element recordElement = doc.createElement("xsd:element");
+		recordElement.setAttribute("name", metadata.getName());
+		recordElement.setAttribute("type", metadata.getName() + "Type");
+		rootElement.appendChild(recordElement);
+
+		Element typeElement = doc.createElement("xsd:complexType");
+		typeElement.setAttribute("name", metadata.getName() + "Type");
+		rootElement.appendChild(typeElement);
+		
+		Element seqElement = doc.createElement("xsd:sequence");
+		typeElement.appendChild(seqElement);
+		for (int idx = 0; idx < fields.length; idx++) {
+			String typeName = getXsdType(doc, fields[idx]);
+			Element fieldElement = doc.createElement("xsd:element");
+			fieldElement.setAttribute("name", fields[idx].getName());
+			fieldElement.setAttribute("type", typeName);
+			seqElement.appendChild(fieldElement);
+		}
+	}
+
+	/**
+	 * 
+	 * @return XSD representation of metadata
+	 */
+	public Document getXsd() {
+		return doc;
+	}
+
+	/**
+	 * Write XSD to specified file
+	 * @param filename
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public void write(String filename) throws FileNotFoundException, IOException {
+		OutputFormat fmt = new OutputFormat(doc);
+		fmt.setIndenting(true);
+		new XMLSerializer(new FileOutputStream(new File(filename)), fmt).serialize(doc);				
+	}
+
+	/**
+	 * Create "empty" XSD document
+	 * @return
+	 * @throws ParserConfigurationException
+	 */
+	private static Document createXsdDocument() throws ParserConfigurationException {
+		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+		Element preamble = doc.createElement("xsd:schema");
+		preamble.setAttribute("xmlns:xs", XMLSCHEMA);
+		if (NAMESPACE != null) {
+			preamble.setAttribute("targetNamespace", NAMESPACE);
+			preamble.setAttribute("xmlns", NAMESPACE);
+			preamble.setAttribute("elementFormDefault", "qualified");
+		}
+		doc.appendChild(preamble);
+		return doc;
+	}
+
+	/**
+	 * Create base XSD type for specified field type
+	 * @param doc
+	 * @param type
+	 * @return
+	 */
+	private static Element createBaseType(Document doc, char type) {
+		Element typeElement = doc.createElement("xsd:simpleType");
+		doc.getDocumentElement().appendChild(typeElement);
+		typeElement.setAttribute("name", "" + typeNames.get(new Character(type)));
+
+		Element restr = doc.createElement("xsd:restriction");
+		typeElement.appendChild(restr);
+		restr.setAttribute("base", primitiveNames.get(new Character(type)));
+		
+		switch (type) {
+		case DataFieldMetadata.NUMERIC_FIELD:
+			Element fr = doc.createElement("xsd:fractionDigits");
+			fr.setAttribute("value", "0");
+			restr.appendChild(fr);
+			break;
+		default:
+		}
+
+		return typeElement;
+	}
+
+	/**
+	 * Find specified XSD type in the XSD document.
+	 * @param doc
+	 * @param typeName
+	 * @return
+	 */
+	private static Element getXsdType(Document doc, String typeName) {
+		String[] searchTags = new String[]{"xsd:simpleType", "xsd:complexType"};
+		for (int tagIdx = 0; tagIdx < searchTags.length; tagIdx++) {
+			NodeList xsdTypes = doc.getDocumentElement().getElementsByTagName(searchTags[tagIdx]);
+			for (int idx = 0; idx < xsdTypes.getLength(); idx++) {
+				Element xsdType = (Element)xsdTypes.item(idx);
+				if (typeName.equals(xsdType.getAttribute("name"))) {
+					return xsdType;
+				}
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Create XSD type representing specified field. The resulting type is derived from field type's base type and
+	 * it may have additional restrictions. In case additional restrictions are not the necessary, the base type itself
+	 * is returned. In case appropriately restricted type already exists, the method doesn't create new type
+	 * and returns the existing one.
+	 * @param doc
+	 * @param field
+	 * @param baseType
+	 * @return
+	 */
+	private static Element createRestrictedType(Document doc, DataFieldMetadata field, Element baseType) {
+		// TODO more restrictions
+		Element sizeRestr = null;
+		String subname = "" + baseType.getAttribute("name");
+
+		// create various restrictions according to field metadata
+		if (field.getSize() > 0) {
+			subname += "Size" + field.getSize();
+			sizeRestr = doc.createElement("xsd:length"); // TODO special code for BYTE_FIELD
+			sizeRestr.setAttribute("value", String.valueOf(field.getSize()));
+		}
+
+		if (sizeRestr == null) {	// no additional restrictions
+			return baseType;
+		}
+		// try to obtain pre-existing restricted subtype 
+		Element subtype = getXsdType(doc, subname);
+		if (subtype != null) {	// return pre-existing restricted subtype
+			return subtype;
+		}
+		// create restricted subtype
+		Element restriction = doc.createElement("xsd:restriction");
+		restriction.appendChild(sizeRestr);
+		subtype = doc.createElement("xsd:simpleType");
+		subtype.setAttribute("name", subname);
+		subtype.appendChild(restriction);
+		doc.getDocumentElement().appendChild(subtype);
+		return subtype;
+	}
+
+	/**
+	 * Returns name of XSD type which represents specified field. In case such a type doesn't exists,
+	 * it's created.
+	 * @param doc
+	 * @param field
+	 * @return XSD type
+	 */
+	private static String getXsdType(Document doc, DataFieldMetadata field) {
+		Element baseType = getXsdType(doc, typeNames.get(new Character(field.getType())));
+		if (baseType == null) {
+			baseType = createBaseType(doc, field.getType());
+		}
+		return createRestrictedType(doc, field, baseType).getAttribute("name");
+	}
+
+}
