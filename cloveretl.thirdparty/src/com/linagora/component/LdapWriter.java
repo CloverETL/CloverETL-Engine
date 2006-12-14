@@ -186,6 +186,7 @@ public class LdapWriter extends Node {
 	 * @since                                  September, 2006
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one input port and one output
 		if (inPorts.size() != 1) {
 			throw new ComponentNotReadyException("One and only on input port has to be defined!");

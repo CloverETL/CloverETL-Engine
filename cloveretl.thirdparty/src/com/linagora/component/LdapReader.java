@@ -174,6 +174,7 @@ public class LdapReader extends Node {
 	}
 
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		// test that we have at least one output port
 		if (outPorts.size() < 1) {
 			throw new ComponentNotReadyException(getId() + ": atleast one output port has to be defined!");
