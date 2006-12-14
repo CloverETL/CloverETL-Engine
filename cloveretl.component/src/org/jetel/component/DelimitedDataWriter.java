@@ -27,13 +27,16 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileWriter;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -128,45 +131,21 @@ public class DelimitedDataWriter extends Node {
 	}
 
 
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		
-		try {
-			while (record != null && runIt) {
-				record = inPort.readRecord(record);
-				if (record != null) {
-                    writer.write(record);
-				}
+		while (record != null && runIt) {
+			record = inPort.readRecord(record);
+			if (record != null) {
+                writer.write(record);
 			}
-			SynchronizeUtils.cloverYield();
 		}
-		catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		}
-		catch (Exception ex) {
-			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
-		}
+		SynchronizeUtils.cloverYield();
 		writer.close();
-		if (runIt) {
-		    resultMsg = "OK"; 
-        } else {
-            resultMsg = "STOPPED";
-        }
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 	/**
 	 *  Description of the Method
 	 *
@@ -193,6 +172,25 @@ public class DelimitedDataWriter extends Node {
         
 	}
 	
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+ 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
+        return status;
+	}
 	/**
 	 *  Description of the Method
 	 *
@@ -251,12 +249,6 @@ public class DelimitedDataWriter extends Node {
 		return aDelimitedDataWriterNIO;
 	}
 
-    @Override
-    public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
-        return status;
-    }
-	
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
