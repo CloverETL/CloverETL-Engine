@@ -26,11 +26,15 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -73,70 +77,34 @@ public class LookupTableReaderWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	@Override
-	public void run() {
-		if (readFromTable) {
-			for (DataRecord record : lookupTable) {
-				if (!runIt) break;
-				try {
-					writeRecordBroadcast(record);
-				} catch (IOException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					return;
-				} catch (InterruptedException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					return;
-				}
-			}
-			closeAllOutputPorts();
-		}else{
-			InputPort inPort = getInputPort(READ_FROM_PORT);
-			DataRecord inRecord = new DataRecord(inPort.getMetadata());
-			inRecord.init();
-			try {
-				while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
-					lookupTable.put(null, inRecord);
-				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (InterruptedException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
-		}
-		SynchronizeUtils.cloverYield();
-		if (runIt) {
-            resultMsg = "OK";
-        } else {
-            resultMsg = "STOPPED";
-        }
-		resultCode = Node.RESULT_OK;
-		broadcastEOF();
-	}
 
 	@Override
 	public void init() throws ComponentNotReadyException {
-		if (outPorts.size() > 0) {
-			readFromTable = true;
-		}		
-		lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
         	throw new ComponentNotReadyException("Lookup table \"" + lookupTableName + 
 			"\" not found.");
 		}
-		lookupTable.init();//TODO check if it hasn't been initialized yet
+		if (!lookupTable.isInited()) {
+			lookupTable.init();
+		}		
+	}
+	
+	@Override
+	public Result execute() throws Exception {
+		if (readFromTable) {
+			for (DataRecord record : lookupTable) {
+				if (!runIt) break;
+				writeRecordBroadcast(record);
+			}
+		} else {
+			InputPort inPort = getInputPort(READ_FROM_PORT);
+			DataRecord inRecord = new DataRecord(inPort.getMetadata());
+			inRecord.init();
+			while ((inRecord = inPort.readRecord(inRecord)) != null && runIt) {
+				lookupTable.put(null, inRecord);
+			}
+		}
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
@@ -154,4 +122,24 @@ public class LookupTableReaderWriter extends Node {
 		xmlElement.setAttribute(XML_LOOKUP_TABLE_ATTRIBUTE,this.lookupTable.getId());
 	}
     
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+ 
+		checkInputPorts(status, 0, 1);
+        checkOutputPorts(status, 0, Integer.MAX_VALUE);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
+        return status;
+	}
 }
