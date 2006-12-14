@@ -40,6 +40,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -395,7 +396,7 @@ public class AproxMergeJoin extends Node {
 			if (conformity[0]>=conformityLimit) {
 				// **** call transform function here ****
 				if (!transformation.transform(inRecords, outConformingRecords)) {
-					resultMsg = transformation.getMessage();
+					logger.warn(transformation.getMessage());
 					return false;
 				}
 				//fill aditional fields
@@ -410,7 +411,7 @@ public class AproxMergeJoin extends Node {
 			}else{
 				// **** call transform function here ****
 				if (!transformationForSuspicious.transform(inRecords,outSuspiciousRecords)){
-					resultMsg = transformation.getMessage();
+					logger.warn(transformation.getMessage());
 					return false;
 				}
 				//fill aditional fields
@@ -445,7 +446,8 @@ public class AproxMergeJoin extends Node {
 		return data;
 	}
 
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		boolean isDriverDifferent;
 
 		// get all ports involved
@@ -528,32 +530,15 @@ public class AproxMergeJoin extends Node {
 			}
 			// if full outer join defined and there are some slave records left, flush them
         } catch (TransformException ex) {
-            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-            resultCode = Node.RESULT_ERROR;
-            closeAllOutputPorts();
-            return;
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
+        	logger.error("Error occurred in nested transformation: " + ex.getMessage(), ex);
+        	throw new JetelException("Error occurred in nested transformation: " + ex.getMessage(), ex);
 		}
 		// signal end of records stream to transformation function
 		transformation.finished();
 		broadcastEOF();		
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
+	
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		// test that we have at two input ports and four output

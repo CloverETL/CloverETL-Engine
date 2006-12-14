@@ -33,6 +33,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
@@ -111,12 +112,9 @@ public class Aggregate extends Node {
 		this.aggregateFunctionStr = aggregateFunctions;
 	}
 
-	/**
-	 *  Main processing method for the Aggregate object
-	 *
-	 */
-	public void run() {
-		if(sorted) {
+	@Override
+	public Result execute() throws Exception {
+		if (sorted) {
 			boolean firstLoop = true;
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
@@ -124,84 +122,56 @@ public class Aggregate extends Node {
 			DataRecord previousRecord = new DataRecord(inPort.getMetadata());
 			DataRecord tempRecord;
 			DataRecord outRecord = new DataRecord(outPort.getMetadata());
-			
+
 			currentRecord.init();
 			previousRecord.init();
 			outRecord.init();
-	
-			while (currentRecord != null && runIt) {
-				try {
-					currentRecord = inPort.readRecord(currentRecord);
-                    if(!firstLoop) {
-                        if (currentRecord == null || recordKey.compare(currentRecord, previousRecord) != 0) { //next group founded
-                            writeRecordBroadcast(aggregateFunction.getRecordForGroup(previousRecord, outRecord));
-                        }
-					} else {
-					    firstLoop = false;
-                    }
-					//switch previous and current record
-					if(currentRecord != null) {
-						aggregateFunction.addSortedRecord(currentRecord);
 
-						tempRecord = previousRecord;
-						previousRecord = currentRecord;
-						currentRecord = tempRecord;
+			while (currentRecord != null && runIt) {
+				currentRecord = inPort.readRecord(currentRecord);
+				if (!firstLoop) {
+					if (currentRecord == null
+							|| recordKey.compare(currentRecord, previousRecord) != 0) { // next group founded
+						writeRecordBroadcast(aggregateFunction
+								.getRecordForGroup(previousRecord, outRecord));
 					}
-				} catch (IOException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					return;
-				} catch (Exception ex) {
-					resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-					resultCode = Node.RESULT_FATAL_ERROR;
-					//closeAllOutputPorts();
-					return;
+				} else {
+					firstLoop = false;
+				}
+				// switch previous and current record
+				if (currentRecord != null) {
+					aggregateFunction.addSortedRecord(currentRecord);
+
+					tempRecord = previousRecord;
+					previousRecord = currentRecord;
+					currentRecord = tempRecord;
 				}
 			}
-		} else { //sorted == false
+		} else { // sorted == false
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 			DataRecord currentRecord = new DataRecord(inPort.getMetadata());
 			DataRecord outRecord = new DataRecord(outPort.getMetadata());
-	
+
 			currentRecord.init();
 			outRecord.init();
-			
-			try {
-				//read all data from input port to aggregateRecord
-				while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {
-						aggregateFunction.addUnsortedRecord(currentRecord);
-				}
-				//write agragated data to outputport from aggregateRecord
-				for(Iterator i = aggregateFunction.iterator(outRecord); i.hasNext(); ) {
-					writeRecordBroadcast((DataRecord) i.next());
-				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				//closeAllOutputPorts();
-				return;
+
+			// read all data from input port to aggregateRecord
+			while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {
+				aggregateFunction.addUnsortedRecord(currentRecord);
+			}
+			// write agragated data to outputport from aggregateRecord
+			for (Iterator i = aggregateFunction.iterator(outRecord); i.hasNext();) {
+				writeRecordBroadcast((DataRecord) i.next());
 			}
 		}
-		
+
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
-
 	/**
-	 *  Initialize method of aggregate component
+	 * Initialize method of aggregate component
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
