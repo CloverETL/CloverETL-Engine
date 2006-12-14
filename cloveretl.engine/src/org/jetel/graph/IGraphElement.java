@@ -67,6 +67,8 @@ public interface IGraphElement {
      */
     public abstract boolean isChecked();
 
-    public abstract void setChecked(boolean checked);
-
+    /**
+     * @return <b>true</b> if graph element is initialized by init() method; else <b>false</b>
+     */
+    public abstract boolean isInited();
 }
