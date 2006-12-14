@@ -50,7 +50,6 @@ public class LookupTableReaderWriter extends Node {
 
 	private String lookupTableName;
 	
-	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
 	
 	private boolean readFromTable = false;
@@ -83,8 +82,7 @@ public class LookupTableReaderWriter extends Node {
 			for (DataRecord record : lookupTable) {
 				if (!runIt) break;
 				try {
-//					writeRecordBroadcast(record);
-					writeRecord(WRITE_TO_PORT, record);
+					writeRecordBroadcast(record);
 				} catch (IOException ex) {
 					resultMsg = ex.getMessage();
 					resultCode = Node.RESULT_ERROR;
@@ -151,4 +149,10 @@ public class LookupTableReaderWriter extends Node {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
  	}
+    
+	public void toXML(org.w3c.dom.Element xmlElement) {
+		super.toXML(xmlElement);
+		xmlElement.setAttribute(XML_LOOKUP_TABLE_ATTRIBUTE,this.lookupTable.getId());
+	}
+    
 }
