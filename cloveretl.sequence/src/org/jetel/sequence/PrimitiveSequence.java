@@ -77,7 +77,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      */
     @Override
     public void init() throws ComponentNotReadyException {
-        //no op
+		super.init();
     }
 
     /**
