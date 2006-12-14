@@ -169,6 +169,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * All necessary internal initialization should be performed in this method.
      */
     public void init() throws ComponentNotReadyException {
+		super.init();
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file = new File(filename);
