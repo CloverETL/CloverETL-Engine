@@ -34,13 +34,11 @@ import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.CloverRuntimeException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.runtime.CloverRuntime;
 import org.jetel.graph.runtime.Message;
-import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 
@@ -394,7 +392,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
     }
     
-    public abstract Result execute() throws IOException, JetelException,InterruptedException;
+    public abstract Result execute() throws Exception;
 
 	/**
 	 *  Abort execution of Node - brutal force
