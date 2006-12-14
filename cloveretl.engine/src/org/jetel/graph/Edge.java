@@ -198,6 +198,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @since                   April 2, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
+		super.init();
 		/* if metadata is null and we have metadata stub, try to
 		 * load metadata from JDBC
 		 */
