@@ -33,6 +33,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
@@ -144,79 +145,34 @@ public class StructureWriter extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		//write header
 		if (header != null ){
-			try {
-				buffer.put(header.getBytes(charset));
-				ByteBufferUtils.flush(buffer,writer);
-			} catch (IOException e) {
-				resultMsg=e.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
+			buffer.put(header.getBytes(charset));
+			ByteBufferUtils.flush(buffer,writer);
 		}
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		//write records
 		while (record != null && runIt) {
-			try {
-				record = inPort.readRecord(record);
-				if (record != null) {
-					formatter.write(record);
-				}
-			}
-			catch (IOException ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
-			catch (Exception ex) {
-				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
-				return;
+			record = inPort.readRecord(record);
+			if (record != null) {
+				formatter.write(record);
 			}
 			SynchronizeUtils.cloverYield();
 		}
-		try {
-			formatter.flush();
-		} catch (IOException ex) {
-			resultMsg=ex.getMessage();
-			resultCode=Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		}
+		formatter.flush();
 		//write footer
 		if (footer != null ){
 			buffer.clear();
-			try {
-				buffer.put(footer.getBytes(charset));
-				ByteBufferUtils.flush(buffer,writer);
-			} catch (IOException e) {
-				resultMsg=e.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
+			buffer.put(footer.getBytes(charset));
+			ByteBufferUtils.flush(buffer,writer);
 		}
 		//close output
-		try {
-			writer.close();
-		} catch (IOException ex) {
-			resultMsg=ex.getMessage();
-			resultCode=Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		}
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
+		writer.close();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/* (non-Javadoc)

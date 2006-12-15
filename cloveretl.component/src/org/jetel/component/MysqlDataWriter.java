@@ -11,10 +11,12 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.exec.DataConsumer;
@@ -224,24 +226,18 @@ public class MysqlDataWriter extends Node {
 
 	}
 	
-	@Override public void run() {
-		resultCode = Node.RESULT_RUNNING;
+	@Override
+	public Result execute() throws Exception {
 		ProcBox pbox = new ProcBox(proc, producer, consumer, errConsumer);
-		int retval;
-		try {
-			retval = pbox.join();
-		} catch (InterruptedException e) {
-			resultCode = Node.RESULT_ABORTED;
-			resultMsg = e.getMessage();
-			return;
-		}
+		int retval = pbox.join();
 		if (retval != 0) {
 			logger.error(getId() + ": subprocess finished with error code " + retval);
-			resultCode = Node.RESULT_ERROR;
+			throw new JetelException(getId() + ": subprocess finished with error code " + retval);
 		} else {
-			resultCode = Node.RESULT_OK;
+			return runIt ? Node.Result.OK : Node.Result.ABORTED;
 		}
 	}
+	
 
 	@Override
 	public String getType() {

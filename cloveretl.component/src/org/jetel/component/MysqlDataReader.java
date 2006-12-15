@@ -14,10 +14,12 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.QuotingDecoderMysql;
@@ -259,17 +261,10 @@ public class MysqlDataReader extends Node {
 
 	}
 	
-	@Override public void run() {
-		resultCode = Node.RESULT_RUNNING;
+	@Override
+	public Result execute() throws Exception {
 		ProcBox pbox = new ProcBox(proc, null, consumer, errConsumer);
-		int retval;
-		try {
-			retval = pbox.join();
-		} catch (InterruptedException e) {
-			resultCode = Node.RESULT_ABORTED;
-			resultMsg = e.getMessage();
-			return;
-		}
+		int retval = pbox.join();
 		if (outPort != null) {
 			outPort.close();
 		} else {
@@ -279,14 +274,15 @@ public class MysqlDataReader extends Node {
 				logger.warn("Unable to close output file " + outputFile, e);
 			}
 		}
-		resultMsg = errConsumer.getMsg();
+		String resultMsg = errConsumer.getMsg();
 		if (retval != 0) {
-			logger.error(getId() + ": subprocess finished with error code " + retval);
-			resultCode = Node.RESULT_ERROR;
+			logger.error(getId() + ": subprocess finished with error code " + retval + "\n" + resultMsg);
+			throw new JetelException(resultMsg);
 		} else {
-			resultCode = Node.RESULT_OK;
+			return runIt ? Node.Result.OK : Node.Result.ABORTED;
 		}
 	}
+	
 
 	public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);

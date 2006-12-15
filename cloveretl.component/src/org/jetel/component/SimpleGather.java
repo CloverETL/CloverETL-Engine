@@ -29,6 +29,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -96,13 +97,8 @@ public class SimpleGather extends Node {
 
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleGather object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 		InputPort inPort;
 		/*
@@ -127,65 +123,31 @@ public class SimpleGather extends Node {
 		DataRecord record = new DataRecord(outPort.getMetadata());
 		DataRecord inRecord;
 		record.init();
-
-			try{
-			readFromPort = 0;
-			while (runIt && numActive > 0) {
-				inPort = inputPorts[readFromPort];
-				if (!isEOF[readFromPort] && (inPort.hasData() || !inPort.isOpen())) {
-				    emptyLoopCounter=0;
-				    try {
-						inRecord = inPort.readRecord(record);
-						if (inRecord != null) {
-							outPort.writeRecord(inRecord);
-						} else {
-							isEOF[readFromPort] = true;
-							numActive--;
-						}
-					} catch (IOException ex) {
-						resultMsg = ex.getMessage();
-						resultCode = Node.RESULT_ERROR;
-						closeAllOutputPorts();
-						return;
-					} catch (Exception ex) {
-						resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-						resultCode = Node.RESULT_FATAL_ERROR;
-						return;
-					}
-					SynchronizeUtils.cloverYield();
+		readFromPort = 0;
+		while (runIt && numActive > 0) {
+			inPort = inputPorts[readFromPort];
+			if (!isEOF[readFromPort] && (inPort.hasData() || !inPort.isOpen())) {
+				emptyLoopCounter = 0;
+				inRecord = inPort.readRecord(record);
+				if (inRecord != null) {
+					outPort.writeRecord(inRecord);
+				} else {
+					isEOF[readFromPort] = true;
+					numActive--;
 				}
-				readFromPort=(++readFromPort)%(inputPorts.length);
-				// have we reached the maximum empty loops count ?
-				if (emptyLoopCounter>NUM_EMPTY_LOOPS_TRESHOLD) {
-				    try{
-				        Thread.sleep(EMPTY_LOOPS_WAIT);
-				    }catch(InterruptedException ex){
-				        // end processing of data
-				        resultMsg="Interrputed !";
-				        resultCode=Node.RESULT_ERROR;
-				        return;
-				    }catch(Exception ex){
-				        resultMsg=ex.getMessage();
-				        resultCode=Node.RESULT_FATAL_ERROR;
-				        return;
-				    }
-                } else {
-                    emptyLoopCounter++;
-				}
-		}
-			}catch(Exception ex){
-			    ex.printStackTrace();
+				SynchronizeUtils.cloverYield();
 			}
-			
-		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
+			readFromPort = (++readFromPort) % (inputPorts.length);
+			// have we reached the maximum empty loops count ?
+			if (emptyLoopCounter > NUM_EMPTY_LOOPS_TRESHOLD) {
+				Thread.sleep(EMPTY_LOOPS_WAIT);
+			} else {
+				emptyLoopCounter++;
+			}
 		}
-		resultCode = Node.RESULT_OK;
+		broadcastEOF();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/**
 	 *  Description of the Method

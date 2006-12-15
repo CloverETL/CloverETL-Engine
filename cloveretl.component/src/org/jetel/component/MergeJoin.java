@@ -33,12 +33,14 @@ import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -296,53 +298,26 @@ public class MergeJoin extends Node {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {
-		try {
-			for (loadNext(); minCnt > 0 && runIt; loadNext()) {
-				if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
-					continue;
-				}
-				if (join == Join.LEFT_OUTER && !minIndicator[0]) {	// driver record for current key not available
-					continue;
-				}
-				if (!flushMin()) {
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = transformation.getMessage();
-					transformation.finished();
-					broadcastEOF();
-					return;
-				}
+	@Override
+	public Result execute() throws Exception {
+		for (loadNext(); minCnt > 0 && runIt; loadNext()) {
+			if (join == Join.INNER && minCnt != inputCnt) { // not all records for current key available
+				continue;
 			}
-        } catch (TransformException ex) {
-            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-            resultCode = Node.RESULT_ERROR;
-            closeAllOutputPorts();
-            return;
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
+			if (join == Join.LEFT_OUTER && !minIndicator[0]) {	// driver record for current key not available
+				continue;
+			}
+			if (!flushMin()) {
+				String resultMsg = transformation.getMessage();
+				transformation.finished();
+				broadcastEOF();
+				throw new JetelException(resultMsg);
+			}
+			transformation.finished();
+			broadcastEOF();		
 		}
-		// signal end of records stream to transformation function
-		transformation.finished();
-		broadcastEOF();		
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()

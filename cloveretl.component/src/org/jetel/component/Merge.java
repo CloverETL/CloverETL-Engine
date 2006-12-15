@@ -31,6 +31,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -174,13 +175,8 @@ public class Merge extends Node {
 		return numActive;
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		/*
 		 *  we need to keep track of all input ports - if they contain data or
 		 *  signalized that they are empty.
@@ -199,7 +195,6 @@ public class Merge extends Node {
 		for (int i = 0; i < isEOF.length; i++) {
 			isEOF[i] = false;
 		}
-
 		// initialize array of data records (for each input port one)
 		for (int i = 0; i < inPorts.length; i++) {
 			inputRecords[i] = new DataRecord(inPorts[i].getMetadata());
@@ -207,50 +202,23 @@ public class Merge extends Node {
 		}
 
 		// initially load in records from all connected inputs
-		try {
-			numActive = populateRecords(inputRecords, inPorts, isEOF);
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
-		}
-
+		numActive = populateRecords(inputRecords, inPorts, isEOF);
 		// main merging loop - till there is some open port, try to
 		// read and merge data from it
 		while (runIt && numActive > 0) {
 			index = getLowestRecIndex(inputRecords, isEOF);
 			if (index != -1) {
-				try {
-					outPort.writeRecord(inputRecords[index]);
-					inputRecords[index] = inPorts[index].readRecord(inputRecords[index]);
-					if (inputRecords[index] == null) {
-						numActive--;
-						isEOF[index] = true;
-					}
-				} catch (IOException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					return;
-				} catch (Exception ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_FATAL_ERROR;
-					return;
+				outPort.writeRecord(inputRecords[index]);
+				inputRecords[index] = inPorts[index]
+						.readRecord(inputRecords[index]);
+				if (inputRecords[index] == null) {
+					numActive--;
+					isEOF[index] = true;
 				}
 			}
 		}
 		setEOF(WRITE_TO_PORT);
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 

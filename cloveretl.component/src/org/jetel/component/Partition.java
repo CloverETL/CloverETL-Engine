@@ -42,6 +42,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.SynchronizeUtils;
@@ -181,12 +182,8 @@ public class Partition extends Node {
 	    this.partitionSource=source;
 	}
 
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort;
 		OutputPort[] outPorts;
 
@@ -196,33 +193,18 @@ public class Partition extends Node {
 		//create array holding incoming records
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-
-		while (inRecord!=null && runIt ) {
-		    try{
-		        inRecord=inPort.readRecord(inRecord);
-		        if (inRecord!=null){
-		            outPorts[partitionFce.getOutputPort(inRecord)].writeRecord(inRecord);
-		        }
-		    } catch (IOException ex) {
-		        resultMsg = ex.getMessage();
-		        resultCode = Node.RESULT_ERROR;
-		        closeAllOutputPorts();
-		        return;
-		    } catch (Exception ex) {
-		        resultMsg = ex.getClass().getName()+" : "+ex.getMessage();
-		        resultCode = Node.RESULT_FATAL_ERROR;
-		        return;
-		    }
-		    SynchronizeUtils.cloverYield();
+		while (inRecord != null && runIt) {
+			inRecord = inPort.readRecord(inRecord);
+			if (inRecord != null) {
+				outPorts[partitionFce.getOutputPort(inRecord)]
+						.writeRecord(inRecord);
+			}
+			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
+	
 
 
 	/**
