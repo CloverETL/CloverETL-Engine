@@ -30,6 +30,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
@@ -248,43 +249,25 @@ import org.w3c.dom.Element;
 		return resultString.toString();
 	}
 	
-	/**
-	 *  Main processing method for the KeyGerator object
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		DataRecord inRecord = new DataRecord(inMetadata);
 		inRecord.init();
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
-		while (inRecord!=null && runIt) {
-			try {
-				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
-				if (inRecord!=null) {
-					fillOutRecord(inRecord,outRecord,fieldMap,outKey,generateKey(inRecord,keys));
-					outPort.writeRecord(outRecord);
-					SynchronizeUtils.cloverYield();
-				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				closeAllOutputPorts();
-				return;
+		while (inRecord != null && runIt) {
+			inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
+			if (inRecord != null) {
+				fillOutRecord(inRecord, outRecord, fieldMap, outKey,
+						generateKey(inRecord, keys));
+				outPort.writeRecord(outRecord);
+				SynchronizeUtils.cloverYield();
 			}
 		}
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
+	
 
 	/**
 	 * This method fills keys[], lowerUpperCase[], removeBlankSpace[],

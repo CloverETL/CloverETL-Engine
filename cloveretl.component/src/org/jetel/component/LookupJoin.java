@@ -37,6 +37,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -94,12 +95,9 @@ public class LookupJoin extends Node {
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
+	
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		//initialize in and out records
 		InputPort inPort=getInputPort(WRITE_TO_PORT);
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
@@ -107,54 +105,27 @@ public class LookupJoin extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
-		while (inRecord!=null && runIt) {
-			try {
-				inRecord = inPort.readRecord(inRecord);
-				if (inRecord!=null) {
-					//find slave record in database
-					inRecords[1] = lookupTable.get(inRecord);
-					do{
-						if ((inRecords[1] != null || leftOuterJoin ) && 
-								transformation.transform(inRecords, outRecord)) {
-							writeRecord(WRITE_TO_PORT,outRecord[0]);
-						}
-						//get next record from database with the same key
-						inRecords[1] = lookupTable.getNext();					
-					}while (inRecords[1] != null);
-				}
-            } catch (TransformException ex) {
-                resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-                resultCode = Node.RESULT_ERROR;
-                closeAllOutputPorts();
-                return;
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}catch (RuntimeException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				closeAllOutputPorts();
-				return;
+		while (inRecord != null && runIt) {
+			inRecord = inPort.readRecord(inRecord);
+			if (inRecord != null) {
+				// find slave record in database
+				inRecords[1] = lookupTable.get(inRecord);
+				do {
+					if ((inRecords[1] != null || leftOuterJoin)
+							&& transformation.transform(inRecords, outRecord)) {
+						writeRecord(WRITE_TO_PORT, outRecord[0]);
+					}
+					// get next record from database with the same key
+					inRecords[1] = lookupTable.getNext();
+				} while (inRecords[1] != null);
 			}
 		}
 		lookupTable.free();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-	
+
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -181,7 +152,9 @@ public class LookupJoin extends Node {
         	throw new ComponentNotReadyException("Lookup table \"" + lookupTableName + 
         			"\" not found.");
         }
-		lookupTable.init();
+        if (!lookupTable.isInited()) {
+        	lookupTable.init();
+        }
         lookupMetadata = lookupTable.getMetadata();
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),lookupMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};

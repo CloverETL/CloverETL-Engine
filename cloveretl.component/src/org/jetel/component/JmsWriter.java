@@ -46,6 +46,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.w3c.dom.Element;
@@ -198,56 +199,36 @@ public class JmsWriter extends Node {
         }
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		connection.connect();
 		DataRecord currentRecord = new DataRecord(inPort.getMetadata());
 		currentRecord.init();
 		DataRecord nextRecord = new DataRecord(inPort.getMetadata());
 		nextRecord.init();
-		try {
-			nextRecord = inPort.readRecord(nextRecord);
-			while (runIt && nextRecord != null) {
-				// move next to current; read new next
-				DataRecord rec = currentRecord;
-				currentRecord = nextRecord;
-				nextRecord = inPort.readRecord(rec);
-				// last message may differ from the other ones
-				Message msg = nextRecord != null ? psor.createMsg(currentRecord) : psor.createLastMsg(currentRecord);
-				if (msg == null) {
-					throw new JetelException(psor.getErrorMsg());
-				}
-				producer.send(msg);
+		nextRecord = inPort.readRecord(nextRecord);
+		while (runIt && nextRecord != null) {
+			// move next to current; read new next
+			DataRecord rec = currentRecord;
+			currentRecord = nextRecord;
+			nextRecord = inPort.readRecord(rec);
+			// last message may differ from the other ones
+			Message msg = nextRecord != null ? psor.createMsg(currentRecord) : psor.createLastMsg(currentRecord);
+			if (msg == null) {
+				throw new JetelException(psor.getErrorMsg());
 			}
-			// send terminating message
-			if (runIt) {
-				Message termMsg = psor.createLastMsg(null);
-				if (termMsg != null) {
-					producer.send(termMsg);
-				}
-			}
-			psor.finished();
-			// set node status
-			if (runIt) {
-				resultMsg = "succeeded";
-				resultCode = Node.RESULT_OK;
-			} else {
-				resultMsg = "stopped";
-				resultCode = Node.RESULT_ABORTED;			
-			}
-		} catch (Exception e) {
-			if (runIt) {
-				logger.error("Component " + getId() + " terminated by exception", e);
-	            resultMsg = e.getMessage();
-	            resultCode = Node.RESULT_ERROR;
-			} else {
-				resultMsg = "stopped";
-				resultCode = Node.RESULT_ABORTED;							
+			producer.send(msg);
+		}
+		// send terminating message
+		if (runIt) {
+			Message termMsg = psor.createLastMsg(null);
+			if (termMsg != null) {
+				producer.send(termMsg);
 			}
 		}
+		psor.finished();
         closeConnection();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/**
