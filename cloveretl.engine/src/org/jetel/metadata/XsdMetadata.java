@@ -19,10 +19,16 @@
 */
 package org.jetel.metadata;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,10 +36,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl;
 import com.sun.org.apache.xml.internal.serialize.OutputFormat;
 import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 
@@ -123,9 +127,13 @@ public class XsdMetadata {
 	 * @throws IOException
 	 */
 	public void write(String filename) throws FileNotFoundException, IOException {
+		write(new BufferedOutputStream(new FileOutputStream(new File(filename))));
+	}
+
+	public void write(OutputStream output) throws IOException {
 		OutputFormat fmt = new OutputFormat(doc);
 		fmt.setIndenting(true);
-		new XMLSerializer(new FileOutputStream(new File(filename)), fmt).serialize(doc);				
+		new XMLSerializer(output, fmt).serialize(doc);				
 	}
 
 	/**
@@ -246,6 +254,37 @@ public class XsdMetadata {
 			baseType = createBaseType(doc, field.getType());
 		}
 		return createRestrictedType(doc, field, baseType).getAttribute("name");
+	}
+
+	/**
+	 * 
+	 * @param argv
+	 */
+	public static void main(String argv[]) {
+        try {
+        	InputStream input;
+        	if (argv.length < 1 || argv[0].equals("-")) {
+        		input = System.in;
+        	} else {
+        		input = new FileInputStream(argv[0]);
+        	}
+        	OutputStream output;
+        	if (argv.length < 2 || argv[1].equals("-")) {
+        		output = System.out;
+        	} else {
+        		output = new FileOutputStream(argv[1]);
+        	}
+        	
+            DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
+			DataRecordMetadata metadata = xmlReader.read(new BufferedInputStream(input));
+			(new XsdMetadata(metadata)).write(output);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
