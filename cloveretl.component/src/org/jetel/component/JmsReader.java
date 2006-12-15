@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.w3c.dom.Element;
@@ -231,42 +232,24 @@ public class JmsReader extends Node {
 		return lastMsg;
 	}
 		
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {
-		try {
-			connection.connect();
-			(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
-			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
-				DataRecord rec = psor.extractRecord(msg);
-				if (rec == null) {
-					logger.debug("Unable to extract data from JMS message; message skipped");
-					continue;
-				}
-				writeRecordBroadcast(rec);
+	@Override
+	public Result execute() throws Exception {
+		connection.connect();
+		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
+		for (Message msg = getMsg(); msg != null; msg = getMsg()) {
+			DataRecord rec = psor.extractRecord(msg);
+			if (rec == null) {
+				logger.debug("Unable to extract data from JMS message; message skipped");
+				continue;
 			}
-			psor.finished();
-			if (runIt) {
-				resultMsg = "succeeded";
-				resultCode = Node.RESULT_OK;
-			} else {
-				resultMsg = "stopped";
-				resultCode = Node.RESULT_ABORTED;			
-			}
-		} catch (Exception e) {
-			if (runIt) {
-				logger.error("Component " + getId() + " terminated by exception", e);
-	            resultMsg = e.getMessage();
-	            resultCode = Node.RESULT_ERROR;
-			} else {
-				resultMsg = "stopped";
-				resultCode = Node.RESULT_ABORTED;							
-			}
+			writeRecordBroadcast(rec);
 		}
+		psor.finished();
         closeConnection();
         broadcastEOF();
+		Result r = runIt ? Node.Result.OK : Node.Result.ABORTED;
 		runIt = false;	// for interruptor
+		return r;
 	}
 
 	/**
