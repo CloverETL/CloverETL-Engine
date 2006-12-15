@@ -256,8 +256,8 @@ public class XsdMetadata {
 	}
 
 	/**
-	 * 
-	 * @param argv
+	 * Converts metadata read from file to XSD written to file.
+	 * @param argv input_file, output_file. "-" for std input/output
 	 */
 	public static void main(String argv[]) {
         try {
