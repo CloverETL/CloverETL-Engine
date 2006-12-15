@@ -36,6 +36,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -171,12 +172,8 @@ public class ExtSort extends Node {
         this(id, sortKeys, DEFAULT_ASCENDING_SORT_ORDER);
     }
 
-    /**
-     * Main processing method for the SimpleCopy object
-     * 
-     * @since April 4, 2002
-     */
-    public void run() {
+    @Override
+    public Result execute() throws Exception {
         boolean doMerge = false;
         inPort = getInputPort(READ_FROM_PORT);
         inRecord = new DataRecord(inPort.getMetadata());
@@ -194,35 +191,24 @@ public class ExtSort extends Node {
          */
         // --- store input records into internal buffer
         while (tmpRecord != null && runIt) {
-            try {
-                tmpRecord = inPort.readRecord(inRecord);
-                if (tmpRecord != null) {
-                    if (!sorter.put(inRecord)) {
-                        // we need to sort & flush buffer on to tape and merge it later
-                        doMerge = true;
-                        sorter.sort();
-                        flushToTape();
-                        sorter.reset();
-                        if (!sorter.put(inRecord)) {
-                            throw new RuntimeException(
-                                    "Can't store record into sorter !");
-                        }
-                        tmpRecord = inRecord;
-                    }
-                }
-            } catch (IOException ex) {
-                resultMsg = ex.getMessage();
-                resultCode = Node.RESULT_ERROR;
-                closeAllOutputPorts();
-                return;
-            } catch (Exception ex) {
-                resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
-                resultCode = Node.RESULT_FATAL_ERROR;
-                //closeAllOutputPorts();
-                return;
-            }
-            SynchronizeUtils.cloverYield();
-        }
+			tmpRecord = inPort.readRecord(inRecord);
+			if (tmpRecord != null) {
+				if (!sorter.put(inRecord)) {
+					// we need to sort & flush buffer on to tape and merge it
+					// later
+					doMerge = true;
+					sorter.sort();
+					flushToTape();
+					sorter.reset();
+					if (!sorter.put(inRecord)) {
+						throw new RuntimeException(
+								"Can't store record into sorter !");
+					}
+					tmpRecord = inRecord;
+				}
+			}
+			SynchronizeUtils.cloverYield();
+		}
         /*
          * PHASE MERGE ------------
          */
@@ -230,64 +216,27 @@ public class ExtSort extends Node {
             if (doMerge) {
                 // sort whatever remains in sorter
                 sorter.sort();
-                try {
-                    flushToTape();
-                    // we don't need sorter any more - free all its resources
-                    sorter.free();
-                    // flush to disk whatever remains in tapes' buffers
-                    // tapeCarousel.flush();
-                    // merge partially sorted data from tapes
-                    phaseMerge();
-                } catch (IOException ex) {
-                    resultMsg = ex.getMessage();
-                    resultCode = Node.RESULT_ERROR;
-                    closeAllOutputPorts();
-                    return;
-                } catch (Exception ex) {
-                    resultMsg = ex.getClass().getName() + " : "
-                            + ex.getMessage();
-                    resultCode = Node.RESULT_FATAL_ERROR;
-                    //closeAllOutputPorts();
-                    return;
-                }
+                flushToTape();
             }
-            /*
-             * SEND RECORDS FROM SORTER DIRECTLY --------
-             */
-            else {
-                sorter.sort();
-                sorter.rewind();
+        }
+        /*
+         * SEND RECORDS FROM SORTER DIRECTLY --------
+         */
+        else {
+            sorter.sort();
+            sorter.rewind();
+            recordBuffer.clear();
+            // --- read sorted records
+            while (sorter.get(recordBuffer) && runIt) {
+                writeRecordBroadcastDirect(recordBuffer);
                 recordBuffer.clear();
-                // --- read sorted records
-                while (sorter.get(recordBuffer) && runIt) {
-                    try {
-                        writeRecordBroadcastDirect(recordBuffer);
-                        recordBuffer.clear();
-                    } catch (IOException ex) {
-                        resultMsg = ex.getMessage();
-                        resultCode = Node.RESULT_ERROR;
-                        closeAllOutputPorts();
-                        return;
-                    } catch (Exception ex) {
-                        resultMsg = ex.getClass().getName() + " : "
-                                + ex.getMessage();
-                        resultCode = Node.RESULT_FATAL_ERROR;
-                        //closeAllOutputPorts();
-                        return;
-                    }
-                    SynchronizeUtils.cloverYield();
-                }
-                sorter.free();
+                SynchronizeUtils.cloverYield();
             }
+            sorter.free();
         }
 
-        broadcastEOF();
-        if (runIt) {
-            resultMsg = "OK";
-        } else {
-            resultMsg = "STOPPED";
-        }
-        resultCode = Node.RESULT_OK;
+	    broadcastEOF();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
     }
 
 

@@ -30,11 +30,13 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
@@ -160,12 +162,8 @@ public class ExtFilter extends org.jetel.graph.Node {
 		
 	}
 
-	/**
-	 *  Main processing method for the Filter object
-	 *
-	 * @since    July 23, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPortDirect inPort=getInputPortDirect(READ_FROM_PORT);
 		OutputPortDirect outPort=getOutputPortDirect(WRITE_TO_PORT);
 		OutputPortDirect rejectedPort=getOutputPortDirect(REJECTED_PORT);
@@ -176,7 +174,6 @@ public class ExtFilter extends org.jetel.graph.Node {
         ByteBuffer recordBuffer=ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         
 	    executor.setInputRecords(new DataRecord[] {record});  
-        
 		while(isData && runIt){
 			try{
                 recordBuffer.clear();
@@ -194,28 +191,15 @@ public class ExtFilter extends org.jetel.graph.Node {
 					rejectedPort.writeRecordDirect(recordBuffer);
 				}
 
-			}catch(IOException ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
 			}catch(ClassCastException ex){
-				resultMsg="Invalid filter expression - does not evaluate to TRUE/FALSE !";
-				resultCode=Node.RESULT_FATAL_ERROR;
-				closeAllOutputPorts();
-				return;
-			}catch(Exception ex){
-				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
-				return;
+				logger.error("Invalid filter expression - does not evaluate to TRUE/FALSE !");
+				throw new JetelException("Invalid filter expression - does not evaluate to TRUE/FALSE !",ex);
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}	
-
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+	}
 
 	/**
 	 *  Description of the Method

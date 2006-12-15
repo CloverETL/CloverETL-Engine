@@ -36,12 +36,14 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
@@ -413,11 +415,10 @@ public class HashJoin extends Node {
 					DataRecord record = itor.next();
 					inRecords[FIRST_SLAVE_PORT + slaveIdx] = record;
 					if (!transformation.transform(inRecords, outRecords)) {
-						resultCode = Node.RESULT_ERROR;
-						resultMsg = transformation.getMessage();
+						logger.error(transformation.getMessage());
 						transformation.finished();
 						setEOF(WRITE_TO_PORT);
-						return;
+						throw new TransformException(transformation.getMessage());
 					}
 					outPort.writeRecord(outRecords[0]);
 					outRecords[0].reset();
@@ -445,8 +446,6 @@ public class HashJoin extends Node {
 		while (runIt) {
 			int slaveIdx;
 			if (driverPort.readRecord(driverRecord) == null) { // no more input data
-				resultCode = Node.RESULT_OK;
-				resultMsg = "succeeded";
 				break;
 			}
 			for (slaveIdx = 0; slaveIdx < slaveCnt; slaveIdx++) {
@@ -481,9 +480,10 @@ public class HashJoin extends Node {
 				inRecords[1 + slaveCnt - 1] = slaveRecords[slaveIdx].records.get(q);
 
 				if (!transformation.transform(inRecords, outRecords)) {
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = transformation.getMessage();
-					return;
+					logger.error(transformation.getMessage());
+					transformation.finished();
+					setEOF(WRITE_TO_PORT);
+					throw new TransformException(transformation.getMessage());
 				}
 				outPort.writeRecord(outRecords[0]);
 				outRecords[0].reset();
@@ -492,38 +492,16 @@ public class HashJoin extends Node {
 		} // while		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {		
-		try {
-			loadSlaveData();
-			flush();
-			if (join == Join.FULL_OUTER) {
-				flushOrphaned();
-			}
-			if (runIt) {
-				resultMsg = "OK";
-				resultCode = Node.RESULT_OK;
-			} else {
-				resultMsg = "STOPPED";
-				resultCode = Node.RESULT_ABORTED;
-			}
-		} catch (TransformException e) {
-			logger.error(getId() + ": transform operation failed", e);
-			resultCode = Node.RESULT_FATAL_ERROR;
-			resultMsg = "failed";
-		} catch (IOException e) {
-			logger.error(getId() + ": thread failed", e);
-			resultCode = Node.RESULT_FATAL_ERROR;
-			resultMsg = "failed";
-		} catch (InterruptedException e) {
-			logger.error(getId() + ": thread forcibly aborted", e);
-			resultCode = Node.RESULT_ABORTED;
-			resultMsg = "interrupted";
-		}		
+	@Override
+	public Result execute() throws Exception {
+		loadSlaveData();
+		flush();
+		if (join == Join.FULL_OUTER) {
+			flushOrphaned();
+		}
 		transformation.finished();
 		setEOF(WRITE_TO_PORT);
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/**
@@ -759,8 +737,6 @@ public class HashJoin extends Node {
 					DataRecord record = new DataRecord(metadata);
 					record.init();
 					if (inPort.readRecord(record) == null) { // no more input data
-						resultMsg = "succeeded";
-						resultCode = RESULT_OK;
 						return;
 					}
 					HashKey key = new HashKey(recKey, record);
@@ -780,8 +756,6 @@ public class HashJoin extends Node {
 					return;
 				}					
 			} // while
-			resultMsg = "thread aborted";
-			resultCode = RESULT_ABORTED;
 		}
 	}
 

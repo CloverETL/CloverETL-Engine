@@ -30,6 +30,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -124,13 +125,8 @@ public class Dedup extends Node {
 		}
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		int current;
 		int previous;
 		int groupItems;
@@ -142,72 +138,55 @@ public class Dedup extends Node {
 		current = 1;
 		previous = 0;
 		groupItems=0;
-		
 		while (records[current] != null && runIt) {
-			try {
-				records[current] = inPort.readRecord(records[current]);
-				if (records[current] != null) {
-				    if (isFirst) {
-				        if (keep==KEEP_FIRST) {
-				            writeRecordBroadcast(records[current]);
-				        }
-				        isFirst = false;
-				    } else { 
-				        if (isChange(records[current], records[previous])) {
-				            switch(keep){
-				            case KEEP_FIRST:
-				                writeRecordBroadcast(records[current]);
-				                break;
-				            case KEEP_LAST:
-				                writeRecordBroadcast(records[previous]);
-				                break;
-				            case KEEP_UNIQUE:
-				                if (groupItems==1){
-				                    writeRecordBroadcast(records[previous]);
-				                }
-				                break;
-				            }
-				            groupItems=0;
-				        }else{
-				            
-				        }
-				    }
-				    groupItems++;
-					// swap indexes
-					current = current ^ 1;
-					previous = previous ^ 1;
+			records[current] = inPort.readRecord(records[current]);
+			if (records[current] != null) {
+				if (isFirst) {
+					if (keep == KEEP_FIRST) {
+						writeRecordBroadcast(records[current]);
+					}
+					isFirst = false;
 				} else {
-					if (!isFirst && (keep==KEEP_LAST || (keep==KEEP_UNIQUE && groupItems==1))) {
-						writeRecordBroadcast(records[previous]);
+					if (isChange(records[current], records[previous])) {
+						switch (keep) {
+						case KEEP_FIRST:
+							writeRecordBroadcast(records[current]);
+							break;
+						case KEEP_LAST:
+							writeRecordBroadcast(records[previous]);
+							break;
+						case KEEP_UNIQUE:
+							if (groupItems == 1) {
+								writeRecordBroadcast(records[previous]);
+							}
+							break;
+						}
+						groupItems = 0;
+					} else {
+
 					}
 				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				//closeAllOutputPorts();
-				return;
+				groupItems++;
+				// swap indexes
+				current = current ^ 1;
+				previous = previous ^ 1;
+			} else {
+				if (!isFirst
+						&& (keep == KEEP_LAST || (keep == KEEP_UNIQUE && groupItems == 1))) {
+					writeRecordBroadcast(records[previous]);
+				}
 			}
 		}
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
-
 	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
+	 * Description of the Method
+	 * 
+	 * @exception ComponentNotReadyException
+	 *                Description of the Exception
+	 * @since April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();

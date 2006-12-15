@@ -31,6 +31,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileWriter;
 import org.w3c.dom.Element;
@@ -125,43 +126,21 @@ public class FixLenDataWriter extends Node {
 		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
-
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		
-		try {
-			while (record != null && runIt) {
-				record = inPort.readRecord(record);
-				if (record != null) {
-                    writer.write(record);
-				}
+		while (record != null && runIt) {
+			record = inPort.readRecord(record);
+			if (record != null) {
+                writer.write(record);
 			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
 		}
-
+		
 		writer.close();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 
