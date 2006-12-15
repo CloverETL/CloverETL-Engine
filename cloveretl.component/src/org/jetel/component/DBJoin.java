@@ -38,6 +38,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -176,10 +177,8 @@ public class DBJoin extends Node {
 		return COMPONENT_TYPE;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		//initialize in and out records
 		InputPort inPort=getInputPort(WRITE_TO_PORT);
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
@@ -187,8 +186,8 @@ public class DBJoin extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
+
 		while (inRecord!=null && runIt) {
-			try {
 				inRecord = inPort.readRecord(inRecord);
 				if (inRecord!=null) {
 					//find slave record in database
@@ -202,37 +201,10 @@ public class DBJoin extends Node {
 						inRecords[1] = lookupTable.getNext();					
 					}while (inRecords[1] != null);
 				}
-            } catch (TransformException ex) {
-                resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-                resultCode = Node.RESULT_ERROR;
-                closeAllOutputPorts();
-                return;
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}catch (RuntimeException ex){
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				ex.printStackTrace();
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
 		}
 		lookupTable.free();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/* (non-Javadoc)

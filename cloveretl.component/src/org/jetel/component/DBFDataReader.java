@@ -34,6 +34,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -136,42 +137,24 @@ public class DBFDataReader extends Node {
 		parser = new DBFDataParser(charset);
 	}
 
-
-
-	
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 
-		try {
-			// till it reaches end of data or it is stopped from outside
-			while (((record = parser.getNext(record)) != null) && runIt) {
-				//broadcast the record to all connected Edges
-				writeRecordBroadcast(record);
-				SynchronizeUtils.cloverYield(); // allow other threads to work
-			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
+		// till it reaches end of data or it is stopped from outside
+		while (((record = parser.getNext(record)) != null) && runIt) {
+			//broadcast the record to all connected Edges
+			writeRecordBroadcast(record);
+			SynchronizeUtils.cloverYield(); // allow other threads to work
 		}
-		// we are done, close all connected output ports to indicate end of stream
 		parser.close();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
+	
 
 	/**
 	 *  Description of the Method
