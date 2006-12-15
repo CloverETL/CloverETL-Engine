@@ -21,7 +21,6 @@
 
 package org.jetel.component;
 
-import java.io.IOException;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -32,12 +31,10 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -53,6 +50,7 @@ import org.w3c.dom.Element;
 public class LookupJoin extends Node {
 
 	private static final String XML_LOOKUP_TABLE_ATTRIBUTE = "lookupTable";
+	private static final String XML_FREE_LOOKUP_TABLE_ATTRIBUTE = "freeLookupTable";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
@@ -67,6 +65,7 @@ public class LookupJoin extends Node {
 	private RecordTransform transformation = null;
 	private String transformSource = null;
 	private String lookupTableName;
+	private boolean freeLookupTable = false;
 	
 	private String[] joinKey;
 	private boolean leftOuterJoin = false;
@@ -120,7 +119,9 @@ public class LookupJoin extends Node {
 				} while (inRecords[1] != null);
 			}
 		}
-		lookupTable.free();
+		if (freeLookupTable) {
+			lookupTable.free();
+		}
 		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
@@ -186,6 +187,7 @@ public class LookupJoin extends Node {
 			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)){
 				join.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
+			join.setFreeLookupTable(xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE,false));
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -202,6 +204,10 @@ public class LookupJoin extends Node {
 
 	private void setLeftOuterJoin(boolean leftOuterJoin) {
 		this.leftOuterJoin = leftOuterJoin;
+	}
+
+	private void setFreeLookupTable(boolean freeLookupTable) {
+		this.freeLookupTable = freeLookupTable;
 	}
 
 }
