@@ -39,6 +39,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.ByteBufferUtils;
@@ -164,49 +165,25 @@ public class CloverDataWriter extends Node {
 		}
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(metadata);
 		record.init();
 		while (record != null && runIt) {
-			try {
-				record = inPort.readRecord(record);
-				if (record != null) {
-					formatter.write(record);
-				}
-			}
-			catch (IOException ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
-			catch (Exception ex) {
-				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
-				return;
+			record = inPort.readRecord(record);
+			if (record != null) {
+				formatter.write(record);
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		formatter.close();
-		try{
-			if (saveMetadata){
-				saveMetadata();
-			}
-			out.close();
-		}catch (IOException ex) {
-			resultMsg=ex.getMessage();
-			resultCode=Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
+		if (saveMetadata){
+			saveMetadata();
 		}
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
+		out.close();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
