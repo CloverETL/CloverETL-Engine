@@ -30,12 +30,14 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
@@ -224,7 +226,7 @@ public class DataIntersection extends Node {
 	    outRecords[0]= out;
 	    
 	    if (!transformation.transform(inRecords, outRecords)) {
-	        resultMsg = transformation.getMessage();
+	        logger.warn(transformation.getMessage());
 	        return false;
 	    }
 	    port.writeRecord(out);
@@ -282,13 +284,8 @@ public class DataIntersection extends Node {
 //		return data;
 //	}
 	
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
-
+	@Override
+	public Result execute() throws Exception {
 		// get all ports involved
 		InputPort driverPort = getInputPort(DRIVER_ON_PORT);
 		InputPort slavePort = getInputPort(SLAVE_ON_PORT);
@@ -344,32 +341,13 @@ public class DataIntersection extends Node {
 	    	    slaveRecord=slavePort.readRecord(slaveRecord);
 	    	}
         } catch (TransformException ex) {
-            resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-            resultCode = Node.RESULT_ERROR;
-            closeAllOutputPorts();
-            return;
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
-		}
-		// signal end of records stream to transformation function
+            logger.error("Error occurred in nested transformation: " + ex.getMessage(),ex);
+            throw new JetelException("Error occurred in nested transformation: " + ex.getMessage(),ex);
+        }
 		transformation.finished();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
-	}
-
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+     }
 
 	/**
 	 *  Description of the Method

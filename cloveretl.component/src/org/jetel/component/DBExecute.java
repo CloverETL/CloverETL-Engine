@@ -28,9 +28,11 @@ import org.jetel.connection.DBConnection;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.w3c.dom.Document;
@@ -220,12 +222,9 @@ public class DBExecute extends Node {
 	public String getURL() {
 		return(this.url = null);
 	}
-	/**
-	 *  Main processing method for the DBInputTable object
-	 *
-	 * @since    September 27, 2002
-	 */
-	public void run() {
+	
+	@Override
+	public Result execute() throws Exception {
 		Statement sqlStatement=null;
 		// this does not work for some drivers
 		try {
@@ -233,9 +232,7 @@ public class DBExecute extends Node {
 		} catch (SQLException ex) {
 			if (oneTransaction) {
 				logger.fatal("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				return;
+				throw new JetelException("Can't disable AutoCommit mode for DB: " + dbConnection + " !");
 			}
 		}
 
@@ -271,26 +268,12 @@ public class DBExecute extends Node {
 			dbConnection.getConnection().commit();
 			if(sqlStatement!=null) { sqlStatement.close(); }
 
-		} catch (SQLException ex) {
-			performRollback();
-			logger.fatal(ex);
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			return;
 		} catch (Exception ex) {
 			performRollback();
-			ex.printStackTrace();
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
-		}
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+			logger.fatal(ex);
+			throw new JetelException(ex.getMessage(),ex);
+		}	
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 

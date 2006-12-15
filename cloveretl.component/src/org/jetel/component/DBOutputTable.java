@@ -37,11 +37,13 @@ import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -303,15 +305,8 @@ public class DBOutputTable extends Node {
 		}
 	}
 
-
-
-
-	/**
-	 *  Main processing method for the DBInputTable object
-	 *
-	 * @since    September 27, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
@@ -320,68 +315,53 @@ public class DBOutputTable extends Node {
 		String sql;
 		
 		inRecord.init();
-		try {
-			// first check that what we require is supported
-			if (useBatch && !dbConnection.getConnection().getMetaData().supportsBatchUpdates()){
-				logger.warn("DB indicates no support for batch updates -> switching it off !");
-				useBatch=false;
-			}
-			// it is probably wise to have COMMIT size multiplication of BATCH size
-			// except situation when commit size is MAX_INTEGER -> we never commit in this situation;
-			if (useBatch && recordsInCommit!=Integer.MAX_VALUE && (recordsInCommit % batchSize != 0)){
-				int multiply= recordsInCommit/batchSize;
-				recordsInCommit=(multiply+1) * batchSize;
-			}
-			
-			// if SQL/DML statement is given, then only prepare statement
-			if (sqlQuery!=null){
-				sql=sqlQuery;
-				// if dbFields and dbTableName defined, then
-				// get target DB fields metadata from it
-				if ((dbFields!=null)&&(dbTableName!=null)){
-					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
-				}else{
-					// we have to assume that Clover fields types correspond
-					// to taget DB table fields types
-					dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
-				}	
-			}else{
-				// do we have specified list of fields to populate ?
-				if (dbFields != null) {
-					sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
-					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
-				} else {
-					// populate all fields
-					sql = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
-					dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
-				}
-			}
-			preparedStatement = dbConnection.prepareStatement(sql);
-		} catch (SQLException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			broadcastEOF();
-			return;
+		// first check that what we require is supported
+		if (useBatch && !dbConnection.getConnection().getMetaData().supportsBatchUpdates()){
+			logger.warn("DB indicates no support for batch updates -> switching it off !");
+			useBatch=false;
 		}
+		// it is probably wise to have COMMIT size multiplication of BATCH size
+		// except situation when commit size is MAX_INTEGER -> we never commit in this situation;
+		if (useBatch && recordsInCommit!=Integer.MAX_VALUE && (recordsInCommit % batchSize != 0)){
+			int multiply= recordsInCommit/batchSize;
+			recordsInCommit=(multiply+1) * batchSize;
+		}
+		
+		// if SQL/DML statement is given, then only prepare statement
+		if (sqlQuery!=null){
+			sql=sqlQuery;
+			// if dbFields and dbTableName defined, then
+			// get target DB fields metadata from it
+			if ((dbFields!=null)&&(dbTableName!=null)){
+				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
+			}else{
+				// we have to assume that Clover fields types correspond
+				// to taget DB table fields types
+				dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+			}	
+		}else{
+			// do we have specified list of fields to populate ?
+			if (dbFields != null) {
+				sql = SQLUtil.assembleInsertSQLStatement(dbTableName, dbFields);
+				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName, dbFields);
+			} else {
+				// populate all fields
+				sql = SQLUtil.assembleInsertSQLStatement(inPort.getMetadata(), dbTableName);
+				dbFieldTypes = SQLUtil.getFieldTypes(dbConnection.getConnection().getMetaData(), dbTableName);
+			}
+		}
+		preparedStatement = dbConnection.prepareStatement(sql);
 		// this does not work for some drivers
 		try {
 			dbConnection.getConnection().setAutoCommit(false);
 		} catch (SQLException ex) {
 			logger.warn("Can't disable AutoCommit mode for DB: " + dbConnection + " > possible slower execution...");
 		}
-		
-		try{
-			// do we have cloverFields list defined ? (which fields from input record to consider)
-			if (cloverFields != null) {
-				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, cloverFields);
-			} else {
-				transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
-			}
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			broadcastEOF();
-			return;
+		// do we have cloverFields list defined ? (which fields from input record to consider)
+		if (cloverFields != null) {
+			transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord, cloverFields);
+		} else {
+			transMap = CopySQLData.jetel2sqlTransMap(dbFieldTypes, inRecord);
 		}
 		/*
 		 * Run main processing loop
@@ -392,42 +372,17 @@ public class DBOutputTable extends Node {
 			}else{
 				runInNormalMode(inPort,rejectedPort,inRecord,transMap);
 			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-		} catch (SQLException ex) {
-			ex.printStackTrace();
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
 		} catch (Exception ex) {
-			ex.printStackTrace();
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
+			logger.error(ex);
+			throw new JetelException(ex.getMessage(),ex);
 		} finally {
 			broadcastEOF();
 			if (preparedStatement != null) {
-				try{
-					preparedStatement.close();
-				} catch (SQLException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-				}
-			}
-			if (resultMsg == null) {
-				if (runIt) {
-					resultMsg = "OK";
-				} else {
-					resultMsg = "STOPPED";
-				}
-				resultCode = Node.RESULT_OK;
+				preparedStatement.close();
 			}
 		}
-		return;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-	
 
 	private void runInNormalMode(InputPort inPort,OutputPort rejectedPort,
 			DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
