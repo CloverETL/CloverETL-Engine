@@ -42,6 +42,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DuplicateKeyMap;
@@ -227,14 +228,8 @@ import org.w3c.dom.Element;
             }
         }
     
-    
-       
-    	/**
-    	 *  Main processing method for the SimpleCopy object
-    	 *
-    	 * @since    April 4, 2002
-    	 */
-    	public void run() {
+        @Override
+        public Result execute() throws Exception {
     		InputPort inPrimaryPort = getInputPort(PRIMARY_ON_PORT);
     		InputPort inForeignPort = getInputPort(FOREIGN_ON_PORT);
     		DataRecord primaryRecord;
@@ -243,84 +238,39 @@ import org.w3c.dom.Element;
     
     		foreignRecord=new DataRecord(inForeignPort.getMetadata());
     		foreignRecord.init();
-    		
-    		// first read all records from SLAVE port
     		while (foreignRecord!=null && runIt) {
-    			try {
-    				if ((foreignRecord=inForeignPort.readRecord(foreignRecord)) != null) {
-    				    storeRecord=foreignRecord.duplicate();
-    					hashMap.put(new HashKey(foreignKey, storeRecord),
-    							storeRecord);
-    				} 
-    				SynchronizeUtils.cloverYield();
-    
-    			} catch (IOException ex) {
-    				resultMsg = ex.getMessage();
-    				resultCode = Node.RESULT_ERROR;
-    				closeAllOutputPorts();
-    				return;
-    			} catch (Exception ex) {
-    				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-    				resultCode = Node.RESULT_FATAL_ERROR;
-    				return;
-    			}
+   				if ((foreignRecord=inForeignPort.readRecord(foreignRecord)) != null) {
+   				    storeRecord=foreignRecord.duplicate();
+   					hashMap.put(new HashKey(foreignKey, storeRecord), storeRecord);
+   				} 
+   				SynchronizeUtils.cloverYield();
     		}
-    		//XDEBUG START
-    //		if (logger.isDebugEnabled()) {
-    //			for (Iterator i = hashMap.values().iterator(); i.hasNext();) {
-    //				logger.debug("> " + i.next());
-    //			}
-    //			logger.debug("***KEYS***");
-    //			for (Iterator i = hashMap.keySet().iterator(); i.hasNext();) {
-    //				logger.debug("> " + i.next());
-    //			}
-    //		}
-    		//XDEBUG END
-    
-    		// now read all records from DRIVER port and try to look up corresponding
-    		// record from SLAVE records set.
+
     		primaryRecord = new DataRecord(inPrimaryPort.getMetadata());
     		primaryRecord.init();
     		HashKey primaryHashKey = new HashKey(primaryKey, primaryRecord);
     		int numFields=defaultRecord.getNumFields();
             int keyFields[]=primaryKey.getKeyFields();
-            
     		while (runIt && primaryRecord != null) {
-    			try {
-    				primaryRecord = inPrimaryPort.readRecord(primaryRecord);
-    				if (primaryRecord != null) {
-    					// let's find slave record
-    					foreignRecord = (DataRecord) hashMap.get(primaryHashKey);
-    					// do we have to fill default values ?
-    					if (foreignRecord == null) {
-                            for (int i=0; i < numFields; i++) {
-                                foreignRecord.getField(keyFields[i]).copyFrom(defaultRecord.getField(i));
-                            }
-    					}
-                        writeRecordBroadcast(primaryRecord);
-    				}
-    				SynchronizeUtils.cloverYield();
-    			} catch (IOException ex) {
-    				resultMsg = ex.getMessage();
-    				resultCode = Node.RESULT_ERROR;
-    				closeAllOutputPorts();
-    				return;
-    			} catch (Exception ex) {
-    				resultMsg = ex.getMessage();
-    				resultCode = Node.RESULT_FATAL_ERROR;
-    				return;
-    			}
+   				primaryRecord = inPrimaryPort.readRecord(primaryRecord);
+   				if (primaryRecord != null) {
+   					// let's find slave record
+   					foreignRecord = (DataRecord) hashMap.get(primaryHashKey);
+   					// do we have to fill default values ?
+   					if (foreignRecord == null) {
+                           for (int i=0; i < numFields; i++) {
+                               foreignRecord.getField(keyFields[i]).copyFrom(defaultRecord.getField(i));
+                           }
+   					}
+                    writeRecordBroadcast(primaryRecord);
+   				}
+   				SynchronizeUtils.cloverYield();
     		}
     		broadcastEOF();
-    		if (runIt) {
-    			resultMsg = "OK";
-    		} else {
-    			resultMsg = "STOPPED";
-    		}
-    		resultCode = Node.RESULT_OK;
-    	}
+    		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+       }
     
-    
+       
     	/**
     	 *  Description of the Method
     	 *

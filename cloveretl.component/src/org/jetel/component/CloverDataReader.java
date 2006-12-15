@@ -31,6 +31,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -123,42 +124,23 @@ public class CloverDataReader extends Node {
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
+	
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
         record.init();
 		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int recordCount = 0;
-        try {
-	        while ((record = parser.getNext(record))!=null){
-				    writeRecordBroadcast(record);
-					if(finalRecord != -1 && ++recordCount > diffRecord) {
-						break;
-					}
-					SynchronizeUtils.cloverYield();
-	        }
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
-		}
+        while ((record = parser.getNext(record))!=null && runIt){
+		    writeRecordBroadcast(record);
+			if(finalRecord != -1 && ++recordCount > diffRecord) {
+				break;
+			}
+			SynchronizeUtils.cloverYield();
+        }
 		parser.close();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {

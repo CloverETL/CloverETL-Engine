@@ -30,6 +30,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -92,14 +93,8 @@ public class Concatenate extends Node {
 
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
-		// the metadata is taken from output port definition
+	@Override
+	public Result execute() throws Exception {
 		Iterator iterator;
 		OutputPort outPort = getOutputPort(WRITE_TO_PORT);
 		DataRecord record = new DataRecord(outPort.getMetadata());
@@ -115,37 +110,17 @@ public class Concatenate extends Node {
 
 			inPort = (InputPort) iterator.next();
 
-			while (runIt) {
-				try {
-					inRecord = inPort.readRecord(record);
-					if (inRecord != null) {
-						outPort.writeRecord(inRecord);
-					} else {
-						break;
-					}
-					SynchronizeUtils.cloverYield();
-				} catch (IOException ex) {
-					resultMsg = ex.getMessage();
-					resultCode = Node.RESULT_ERROR;
-					closeAllOutputPorts();
-					return;
-				} catch (Exception ex) {
-					resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-					resultCode = Node.RESULT_FATAL_ERROR;
-					return;
-				}
+			inRecord = inPort.readRecord(record);
+			if (inRecord != null) {
+				outPort.writeRecord(inRecord);
+			} else {
+				break;
 			}
+			SynchronizeUtils.cloverYield();
 		}
-
 		setEOF(WRITE_TO_PORT);
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/**
 	 *  Description of the Method
