@@ -121,6 +121,7 @@ public class DBJoin extends Node {
 
     private static final String XML_SQL_QUERY_ATTRIBUTE = "sqlQuery";
     private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
+	private static final String XML_FREE_LOOKUP_TABLE_ATTRIBUTE = "freeLookupTable";
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
@@ -143,6 +144,7 @@ public class DBJoin extends Node {
 	private String metadataName;
 	private int maxCashed;
 	private boolean leftOuterJoin = false;
+	private boolean freeLookupTable = false;
 
 	private Properties transformationParameters=null;
 	
@@ -202,7 +204,9 @@ public class DBJoin extends Node {
 					}while (inRecords[1] != null);
 				}
 		}
-		lookupTable.free();
+		if (freeLookupTable) {
+			lookupTable.free();
+		}		
 		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
@@ -239,8 +243,10 @@ public class DBJoin extends Node {
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCashed);
-		lookupTable.init();
-        try {
+		if (!lookupTable.isInited()) {
+			lookupTable.init();
+		}		
+		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			lookupTable.setLookupKey(recordKey);
@@ -277,6 +283,7 @@ public class DBJoin extends Node {
 				dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
 			dbjoin.setMaxCashed(xattribs.getInteger(XML_MAX_CASHED_ATTRIBUTE,100));
+			dbjoin.setFreeLookupTable(xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE,false));
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -303,6 +310,10 @@ public class DBJoin extends Node {
 
 	private void setLeftOuterJoin(boolean leftOuterJoin) {
 		this.leftOuterJoin = leftOuterJoin;
+	}
+
+	private void setFreeLookupTable(boolean freeLookupTable) {
+		this.freeLookupTable = freeLookupTable;
 	}
 	
 }
