@@ -27,10 +27,12 @@ import org.jetel.data.Defaults;
 import org.jetel.data.SortDataRecordInternal;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 /**
@@ -124,75 +126,34 @@ public class Sort extends Node {
 		this(id,sortKeys,DEFAULT_ASCENDING_SORT_ORDER);
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		//InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		// --- store input records into internal buffer
-		while (inRecord!=null && runIt) {
-			try {
-				inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
-				if (inRecord!=null) {
-						if(!newSorter.put(inRecord)){
-						    System.err.println("Sorter "+getId()+" has no more capacity to sort additional records." +
-						    		"The output will be incomplete !");
-						    break; // no more capacity
-						}
+		while (inRecord != null && runIt) {
+			inRecord = inPort.readRecord(inRecord);// readRecord(READ_FROM_PORT,inRecord);
+			if (inRecord != null) {
+				if (!newSorter.put(inRecord)) {
+					System.err.println("Sorter " + getId() + " has no more capacity to sort additional records."
+									+ "The output will be incomplete !");
+					break; // no more capacity
 				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				//closeAllOutputPorts();
-				return;
 			}
 		}
-		// --- sort the records now
 		try {
-				newSorter.sort();
+			newSorter.sort();
 		} catch (Exception ex) {
-			resultMsg = "Error when sorting: " + ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
+			throw new JetelException( "Error when sorting: " + ex.getMessage(),ex);
 		}
-		// --- read sorted records
 		while (newSorter.get(recordBuffer) && runIt) {
-		    try {
-		        writeRecordBroadcastDirect(recordBuffer);
-		        recordBuffer.clear();
-		    } catch (IOException ex) {
-		        resultMsg = ex.getMessage();
-		        resultCode = Node.RESULT_ERROR;
-		        closeAllOutputPorts();
-		        return;
-		    } catch (Exception ex) {
-		        resultMsg = ex.getMessage();
-		        resultCode = Node.RESULT_FATAL_ERROR;
-		        //closeAllOutputPorts();
-		        return;
-		    }
+			writeRecordBroadcastDirect(recordBuffer);
+			recordBuffer.clear();
 		}
-		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/**
 	 *  Sets the sortOrderAscending attribute of the Sort object

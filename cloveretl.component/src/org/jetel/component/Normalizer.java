@@ -37,6 +37,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
@@ -213,46 +214,26 @@ public class Normalizer extends Node {
 		outRecord.init();
 		while (runIt) {
 			if (inPort.readRecord(inRecord) == null) { // no more input data
-				resultCode = Node.RESULT_OK;
-				resultMsg = "succeeded";
 				return;
 			}
 			for (int idx = 0; idx < norm.count(inRecord); idx++) {
 				if (!norm.transform(inRecord, outRecord, idx)) {
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = norm.getMessage();
-					return;					
+					logger.error(norm.getMessage());
+					throw new TransformException(norm.getMessage());
 				}
 				outPort.writeRecord(outRecord);
 				outRecord.reset();
 			}
 			SynchronizeUtils.cloverYield();
 		} // while
-		resultCode = Node.RESULT_ABORTED;
-		resultMsg = "stopped";
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
-	public void run() {
-		try {
-			processInput();
-		} catch (TransformException e) {
-			logger.error(getId() + ": normalize operation failed", e);
-			resultCode = Node.RESULT_FATAL_ERROR;
-			resultMsg = "failed";
-		} catch (IOException e) {
-			logger.error(getId() + ": thread failed", e);
-			resultCode = Node.RESULT_FATAL_ERROR;
-			resultMsg = "failed";
-		} catch (InterruptedException e) {
-			logger.error(getId() + ": thread forcibly aborted", e);
-			resultCode = Node.RESULT_ABORTED;
-			resultMsg = "interrupted";
-		}
+	@Override
+	public Result execute() throws Exception {
+		processInput();
 		norm.finished();
 		setEOF(OUT_PORT);
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/* (non-Javadoc)

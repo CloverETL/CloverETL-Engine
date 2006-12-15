@@ -29,6 +29,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -94,41 +95,19 @@ public class SimpleCopy extends Node {
 
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		boolean isData = true;
 		while (isData && runIt) {
-			try {
-				isData = inPort.readRecordDirect(recordBuffer);
-				if (isData) {
-					writeRecordBroadcastDirect(recordBuffer);
-				}
-				
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
+			isData = inPort.readRecordDirect(recordBuffer);
+			if (isData) {
+				writeRecordBroadcastDirect(recordBuffer);
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 

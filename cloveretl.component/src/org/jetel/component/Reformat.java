@@ -33,6 +33,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
@@ -165,12 +166,8 @@ public class Reformat extends Node {
         this.transformClass = transformClass;
 	}
 
-	/**
-	 *  Main processing method for the reformat object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord inRecord[] = {new DataRecord(inPort.getMetadata())};
 		int numOutputPorts=getOutPorts().size();
@@ -186,49 +183,18 @@ public class Reformat extends Node {
 		// MAIN PROCESSING LOOP
 		int outPort;
 		while (inRecord[0] != null && runIt) {
-			try {
-				inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
-				if (inRecord[0] != null) {
-					if (transformation.transform(inRecord, outRecord)) {
-					     for(outPort=0;outPort<numOutputPorts;outPort++){
-					         writeRecord(outPort, outRecord[outPort]);
-					     }
-					}// skip record if transformation returned false
-				}
-				SynchronizeUtils.cloverYield();
-            } catch (TransformException ex) {
-                resultMsg = "Error occurred in nested transformation: " + ex.getMessage();
-                resultCode = Node.RESULT_ERROR;
-                closeAllOutputPorts();
-                return;
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				//closeAllOutputPorts();
-				return;
+			inRecord[0] = readRecord(READ_FROM_PORT, inRecord[0]);
+			if (inRecord[0] != null) {
+				if (transformation.transform(inRecord, outRecord)) {
+					for (outPort = 0; outPort < numOutputPorts; outPort++) {
+						writeRecord(outPort, outRecord[outPort]);
+					}
+				}// skip record if transformation returned false
 			}
+			SynchronizeUtils.cloverYield();
 		}
-		// signal end of record stream to transformation function
-		try{
-		    transformation.finished();
-		}catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-			return;
-		}
-		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		transformation.finished();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 
