@@ -22,6 +22,7 @@
 package org.jetel.graph;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.CloverRuntimeException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -380,6 +382,20 @@ public abstract class Node extends GraphElement implements Runnable {
             return;
         } catch (InterruptedException ex) {
             runResult=Result.ABORTED;
+            return;
+        } catch (TransformException ex){
+            runResult=Result.ERROR;
+            resultException = ex;
+            Message msg = Message.createErrorMessage(this,
+                    new CloverRuntimeException(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
+            getCloverRuntime().sendMessage(msg);
+            return;
+        } catch (SQLException ex){
+            runResult=Result.ERROR;
+            resultException = ex;
+            Message msg = Message.createErrorMessage(this,
+                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+            getCloverRuntime().sendMessage(msg);
             return;
         } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
