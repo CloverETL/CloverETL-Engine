@@ -21,8 +21,6 @@
 
 package org.jetel.component;
 
-import java.io.IOException;
-
 import org.jetel.data.DataRecord;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
@@ -32,13 +30,65 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>LookupTableReaderWriter Component</h3> <!--  Reads/writes records from/to 
+ *  	lookup table. -->
+ *
+ * <table border="1">
+ *
+ *    <th>
+ *      Component:
+ *    </th>
+ *    <tr><td>
+ *        <h4><i>Name:</i> </h4></td><td>LookupTableReaderWriter</td>
+ *    </tr>
+ *    <tr><td><h4><i>Category:</i> </h4></td><td></td>
+ *    </tr>
+ *    <tr><td><h4><i>Description:</i> </h4></td>
+ *    Depending on ports connected (if there is any output port read mode is turned on)
+ *    records are read from lookup table or put to it. 
+ *      <td>
+ *      </td>
+ *    </tr>
+ *    <tr><td><h4><i>Inputs:</i> </h4></td>
+ *    <td>
+ *        [0] - input records<br>
+ *    </td></tr>
+ *    <tr><td> <h4><i>Outputs:</i> </h4>
+ *      </td>
+ *      <td>
+ *        [0] - records from lookup table
+ *      </td></tr>
+ *    <tr><td><h4><i>Comment:</i> </h4>
+ *      </td>
+ *      <td></td>
+ *    </tr>
+ *  </table>
+ *  <br>
+ *  <table border="1">
+ *    <th>XML attributes:</th>
+ *    <tr><td><b>type</b></td><td>"DBJOIN"</td></tr>
+ *    <tr><td><b>id</b></td><td>component identification</td></tr>
+ *    <tr><td><b>joinKey</b></td><td>field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
+ *    </td></tr>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format or as java code</td>
+ *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
+ *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML 
+ *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
+ *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
+ *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
+ *  <tr><td><b>maxCashed</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
+ *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
+ *  <tr><td><b>freeLookupTable</b><i>optional</i><td>true/false<I> default: FALSE</I> idicates if close lookup table after 
+ *  	finishing execute() method. All records, which are stored only in memory will be lost</td>
+ *    </table>
+ *    <h4>Example:</h4> <pre>
+ *    
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -49,8 +99,9 @@ import org.w3c.dom.Element;
 public class LookupTableReaderWriter extends Node {
 
 	private static final String XML_LOOKUP_TABLE_ATTRIBUTE = "lookupTable";
+	private static final String XML_FREE_LOOKUP_TABLE_ATTRIBUTE = "freeLookupTable";
 
-	public final static String COMPONENT_TYPE = "LOOKUP_TABLE";
+	public final static String COMPONENT_TYPE = "LOOKUP_TABLE_READER_WRITER";
 
 	private String lookupTableName;
 	
@@ -58,15 +109,17 @@ public class LookupTableReaderWriter extends Node {
 	
 	private boolean readFromTable = false;
 	private LookupTable lookupTable;
+	private boolean freeLookupTable;
 
 	/**
 	 * @param id
 	 * @param graph
 	 * @param lookupTableName
 	 */
-	public LookupTableReaderWriter(String id, String lookupTableName) {
+	public LookupTableReaderWriter(String id, String lookupTableName, boolean freeLookupTable) {
 		super(id);
 		this.lookupTableName = lookupTableName;
+		this.freeLookupTable = freeLookupTable;
 	}
 
 	/* (non-Javadoc)
@@ -111,6 +164,9 @@ public class LookupTableReaderWriter extends Node {
 			}
 		}
 		broadcastEOF();
+		if (freeLookupTable){
+			lookupTable.free();
+		}
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
@@ -118,7 +174,8 @@ public class LookupTableReaderWriter extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		try{
 			return new LookupTableReaderWriter(xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE));
+					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), 
+					xattribs.getBoolean(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, false));
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -127,6 +184,7 @@ public class LookupTableReaderWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_LOOKUP_TABLE_ATTRIBUTE,this.lookupTable.getId());
+		xmlElement.setAttribute(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, String.valueOf(freeLookupTable));
 	}
     
 	@Override
