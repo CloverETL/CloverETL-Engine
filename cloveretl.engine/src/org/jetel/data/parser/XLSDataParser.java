@@ -281,6 +281,7 @@ public class XLSDataParser implements Parser {
         currentRow = firstRow;
         lastRow = sheet.getLastRowNum();
         if (metadata != null) {
+        	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
         }
     }
