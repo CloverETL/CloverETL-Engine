@@ -30,10 +30,12 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -129,13 +131,8 @@ public class Trash extends Node {
 		debugFilename = filename;
 	}
 
-
-	/**
-	 *  Main processing method for the SimpleCopy object
-	 *
-	 * @since    April 4, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		int recCounter = 0;
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		boolean isData = true;
@@ -144,41 +141,35 @@ public class Trash extends Node {
 			dataRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
 			dataRecord.init();
 		}
-		while (isData && runIt) {
-			try {
+		String resultMsg = null;
+		try {
+			while (isData && runIt) {
 				isData = inPort.readRecordDirect(recordBuffer);
 				if (outStream != null && isData) {
 					dataRecord.deserialize(recordBuffer);
 					outStream.println("*** Record# " + recCounter++ + " ***");
 					outStream.print(dataRecord);
-                    if(debugFilename == null) outStream.flush(); //if we debug into stdout
+					if (debugFilename == null)
+						outStream.flush(); // if we debug into stdout
 				}
-			} catch (IOException ex) {
-				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			} catch (Exception ex) {
-				resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode = Node.RESULT_FATAL_ERROR;
-				return;
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception ex) {
+			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
+			throw new JetelException(resultMsg);
+		} finally {
+	        // close debug file
+			if (outStream != null && debugFilename != null) { // debug is
+																// routed into
+																// file
+				outStream.println("EOF with result " + resultMsg == null ? "OK"
+						: resultMsg);
+				outStream.close();
+			}
 		}
-        //close debug file
-        if(outStream != null && debugFilename != null) { //debug is routed into file
-            outStream.println("EOF with result " + resultMsg);
-            outStream.close();
-        }
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
-
 
 	/**
 	 *  Description of the Method

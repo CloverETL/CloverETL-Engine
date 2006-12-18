@@ -32,6 +32,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -131,39 +132,23 @@ public class XLSWriter extends Node {
 	public String getType() {
 		return COMPONENT_TYPE;
 	}
-
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
+	
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		while (record != null && runIt) {
-			try {
-				record = inPort.readRecord(record);
-				if (record != null) {
-					formatter.write(record);
-				}
-			}
-			catch (IOException ex) {
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}
-			catch (Exception ex) {
-				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
-				return;
+			record = inPort.readRecord(record);
+			if (record != null) {
+				formatter.write(record);
 			}
 			SynchronizeUtils.cloverYield();
 		}
 		formatter.close();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
+
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()

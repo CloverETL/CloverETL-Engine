@@ -38,6 +38,7 @@ import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -239,10 +240,8 @@ public class SystemExecute extends Node{
 		return batch.getCanonicalPath();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Runnable#run()
-	 */
-	@Override public void run() {
+	@Override
+	public Result execute() throws Exception {
 		//Creating and initializing record from input port
 		DataRecord in_record=null;
 		InputPort inPort = getInputPort(INPUT_PORT);
@@ -273,188 +272,164 @@ public class SystemExecute extends Node{
 		}
 
 		boolean ok = true;
+		StringBuffer msg = new StringBuffer("Executing command: \"");
+		Process	process;
+		if (cmdArray != null) {
+			msg.append(cmdArray[0]).append("\" with parameters:\n");
+			for (int idx = 1; idx < cmdArray.length; idx++) {
+				msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
+			}
+			logger.info(msg.toString());
+			process = Runtime.getRuntime().exec(cmdArray);
+		} else {
+			msg.append(executeCommand);
+			logger.info(msg.toString());
+			process = Runtime.getRuntime().exec(executeCommand);
+		}
+		//get process input and output streams
+		BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
+		BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
+		BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
+		// If there is input port read records and write them to input stream of the process
+		GetData getData=null; 
+		if (inPort!=null) {
+            formatter.init(getInputPort(INPUT_PORT).getMetadata());
+            formatter.setDataTarget(Channels.newChannel(process_in));
+            getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
+			getData.start();
+		}
+		//If there is output port read output from process and send it to output port
+		SendData sendData=null;
+		SendDataToFile sendDataToFile = null;
+		SendDataToFile sendErrToFile = null;
+		if (outPort!=null){
+            parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+            parser.setDataSource(process_out);
+            sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
+			//send all out_records to output ports
+			sendData.start();
+		//If there is no output port, but there is defined output file read output
+		// and error from process and send it to the file	
+		}else if (outputFile!=null){
+			sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
+			sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
+			sendDataToFile.start();
+			sendErrToFile.start();
+		}
+		//if output is not sent to file log process error stream
+		if (sendDataToFile==null ){
+			BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
+			String line;
+			StringBuffer errmes=new StringBuffer();
+			int i=0;
+			while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
+				if (i<=capturedErrorLines)
+					logger.warn(line);
+				if (i<=ERROR_LINES)
+					errmes.append(line+"\n");
+			}
+			if (ERROR_LINES<i) errmes.append(".......\n");
+			err.close();
+			process_err.close();
+			logger.error(errmes.toString());
+		}            
+		
+		// wait for executed process to finish
+		// wait for SendData and/or GetData threads to finish work
 		try{
-			StringBuffer msg = new StringBuffer("Executing command: \"");
-			Process	process;
-			if (cmdArray != null) {
-				msg.append(cmdArray[0]).append("\" with parameters:\n");
-				for (int idx = 1; idx < cmdArray.length; idx++) {
-					msg.append(idx).append(": ").append(cmdArray[idx]).append("\n");
-				}
-				logger.info(msg.toString());
-				process = Runtime.getRuntime().exec(cmdArray);
-			} else {
-				msg.append(executeCommand);
-				logger.info(msg.toString());
-				process = Runtime.getRuntime().exec(executeCommand);
+			exitValue=process.waitFor();
+			if (sendData!=null) sendData.join(KILL_PROCESS_WAIT_TIME);
+			if (getData!=null) getData.join(KILL_PROCESS_WAIT_TIME);
+			if (sendDataToFile!=null){
+				sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
+				sendErrToFile.join(KILL_PROCESS_WAIT_TIME);
 			}
-			//get process input and output streams
-			BufferedOutputStream process_in=new BufferedOutputStream(process.getOutputStream());
-			BufferedInputStream process_out=new BufferedInputStream(process.getInputStream());
-			BufferedInputStream process_err=new BufferedInputStream(process.getErrorStream());
-			// If there is input port read records and write them to input stream of the process
-			GetData getData=null; 
-			if (inPort!=null) {
-                formatter.init(getInputPort(INPUT_PORT).getMetadata());
-                formatter.setDataTarget(Channels.newChannel(process_in));
-                getData=new GetData(Thread.currentThread(),inPort, in_record, formatter);
-				getData.start();
-			}
-			//If there is output port read output from process and send it to output port
-			SendData sendData=null;
-			SendDataToFile sendDataToFile = null;
-			SendDataToFile sendErrToFile = null;
-			if (outPort!=null){
-                parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-                parser.setDataSource(process_out);
-                sendData=new SendData(Thread.currentThread(),outPort,out_record,parser);
-				//send all out_records to output ports
-				sendData.start();
-			//If there is no output port, but there is defined output file read output
-			// and error from process and send it to the file	
-			}else if (outputFile!=null){
-				sendDataToFile = new SendDataToFile(Thread.currentThread(),outputFile,process_out);
-				sendErrToFile = new SendDataToFile(Thread.currentThread(),outputFile, process_err);
-				sendDataToFile.start();
-				sendErrToFile.start();
-			}
-			//if output is not sent to file log process error stream
-			if (sendDataToFile==null ){
-				BufferedReader err=new BufferedReader(new InputStreamReader(process_err));
-				String line;
-				StringBuffer errmes=new StringBuffer();
-				int i=0;
-				while (((line=err.readLine())!=null)&&i++<Math.max(capturedErrorLines,ERROR_LINES)){
-					if (i<=capturedErrorLines)
-						logger.warn(line);
-					if (i<=ERROR_LINES)
-						errmes.append(line+"\n");
-				}
-				if (ERROR_LINES<i) errmes.append(".......\n");
-				err.close();
-				process_err.close();
-				resultMsg=errmes.toString();
-			}            
 			
-			// wait for executed process to finish
-			// wait for SendData and/or GetData threads to finish work
-			try{
-				exitValue=process.waitFor();
-				if (sendData!=null) sendData.join(KILL_PROCESS_WAIT_TIME);
-				if (getData!=null) getData.join(KILL_PROCESS_WAIT_TIME);
-				if (sendDataToFile!=null){
-					sendDataToFile.join(KILL_PROCESS_WAIT_TIME);
-					sendErrToFile.join(KILL_PROCESS_WAIT_TIME);
-				}
-				
-			}catch(InterruptedException ex){
-				logger.error("InterruptedException in "+this.getId(),ex);
-				process.destroy();
-				deleteBatch();
-				//interrupt threads if they run still
-				if (getData!=null) {
-					if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
-						resultCode = Node.RESULT_ERROR;
-						throw new RuntimeException("Can't kill "+getData.getName());
-					}
-				}
-				if (sendData!=null) {
-					if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
-						resultCode = Node.RESULT_ERROR;
-						throw new RuntimeException("Can't kill "+sendData.getName());
-					}
-				}
-				if (sendDataToFile!=null) {
-					if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
-						resultCode = Node.RESULT_ERROR;
-						throw new RuntimeException("Can't kill "+sendDataToFile.getName());
-					}
-					if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-						resultCode = Node.RESULT_ERROR;
-						throw new RuntimeException("Can't kill "+sendErrToFile.getName());
-					}
-				}
-			}
-			if (outputFile!=null) {
-				outputFile.close();
-			}
+		}catch(InterruptedException ex){
+			logger.error("InterruptedException in "+this.getId(),ex);
+			process.destroy();
 			deleteBatch();
-			//chek results of getting and sending data
-			if (getData!=null){
+			//interrupt threads if they run still
+			if (getData!=null) {
 				if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
-					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+getData.getName());
 				}
-				if (getData.getResultCode()==Node.RESULT_ERROR) {
-					ok = false;
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = (resultMsg == null ? "" : resultMsg) + getData.getResultMsg() + "\n" + getData.getResultException();
-				}
 			}
-			
-			if (sendData!=null){
+			if (sendData!=null) {
 				if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
-					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendData.getName());
 				}
-				if (sendData.getResultCode()==Node.RESULT_ERROR){
-					ok = false;
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
-				}
 			}
-
-			if (sendDataToFile!=null){
+			if (sendDataToFile!=null) {
 				if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
-					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 				}
-				if (sendDataToFile.getResultCode()==Node.RESULT_ERROR){
-					ok = false;
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
-				}
 				if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
-					resultCode = Node.RESULT_ERROR;
 					throw new RuntimeException("Can't kill "+sendErrToFile.getName());
 				}
-				if (sendErrToFile.getResultCode()==Node.RESULT_ERROR){
-					ok = false;
-					resultCode = Node.RESULT_ERROR;
-					resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
-				}
 			}
-
-		}catch(IOException ex){
-			ex.printStackTrace();
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			ok = false;;
-			deleteBatch();
-		}catch(Exception ex){
-		    ex.printStackTrace();
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			deleteBatch();
-			return;
 		}
+		if (outputFile!=null) {
+			outputFile.close();
+		}
+		deleteBatch();
+		//chek results of getting and sending data
+		String resultMsg = null;
+		if (getData!=null){
+			if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+getData.getName());
+			}
+			if (getData.getResultCode()==Node.Result.ERROR) {
+				ok = false;
+				resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
+			}
+		}
+		
+		if (sendData!=null){
+			if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+sendData.getName());
+			}
+			if (sendData.getResultCode()==Node.Result.ERROR){
+				ok = false;
+				resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
+			}
+		}
+
+		if (sendDataToFile!=null){
+			if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+sendDataToFile.getName());
+			}
+			if (sendDataToFile.getResultCode()==Node.Result.ERROR){
+				ok = false;
+				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
+			}
+			if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
+				throw new RuntimeException("Can't kill "+sendErrToFile.getName());
+			}
+			if (sendErrToFile.getResultCode()==Node.Result.ERROR){
+				ok = false;
+				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
+			}
+		}
+		broadcastEOF();
 		if (!runIt) {
 			resultMsg = resultMsg + "\n" + "STOPPED";
 			ok = false;;
-			resultCode = Node.RESULT_ERROR;
+			return Node.Result.ABORTED;
 		}
 		if (exitValue!=0){
 			if (outputFile!=null) {
 				logger.error("Process exit value not 0");
 			}
-			resultCode = Node.RESULT_ERROR;
 			resultMsg = "Process exit value not 0";
 			ok = false;;
+			throw new JetelException(resultMsg);
 		}
-		if (ok){
-			resultCode = Node.RESULT_OK;
+		if (ok) {
+			return Node.Result.OK;
+		}else{
+			throw new JetelException(resultMsg);
 		}
-		broadcastEOF();
 	}
 	
 	private void deleteBatch(){
@@ -587,7 +562,7 @@ public class SystemExecute extends Node{
 		DataRecord in_record;
 		Formatter formatter;
 		String resultMsg=null;
-		int resultCode;
+		Node.Result resultCode;
         volatile boolean runIt;
         Thread parentThread;
 		Throwable resultException;
@@ -615,7 +590,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-			resultCode = Node.RESULT_RUNNING;
+			resultCode = Node.Result.RUNNING;
 			try{
 				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
 					formatter.write(in_record);
@@ -624,31 +599,31 @@ public class SystemExecute extends Node{
 				formatter.close();
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				resultMsg = ex.getMessage();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
-				resultCode = Node.RESULT_ABORTED;
+				resultCode =  Node.Result.ERROR;
 				formatter.close();
 			}catch(Exception ex){
 				logger.error("Error in sysexec GetData",ex);
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 				formatter.close();
 			}
-			if (resultCode==Node.RESULT_RUNNING){
+			if (resultCode==Node.Result.RUNNING){
 	           if (runIt){
-	        	   resultCode=Node.RESULT_OK;
+	        	   resultCode=Node.Result.OK;
 	           }else{
-	        	   resultCode = Node.RESULT_ABORTED;
+	        	   resultCode = Node.Result.ABORTED;
 	           }
 			}
 		}
 
-		public int getResultCode() {
+		public Result getResultCode() {
 			return resultCode;
 		}
 
@@ -673,7 +648,7 @@ public class SystemExecute extends Node{
 		OutputPort outPort;
 		Parser parser;
 		String resultMsg=null;
-		int resultCode;
+		Result resultCode;
 		volatile boolean runIt;
 		Thread parentThread;
 		Throwable resultException;
@@ -700,7 +675,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-            resultCode=Node.RESULT_RUNNING;
+            resultCode=Node.Result.RUNNING;
 			try{
 				while (runIt && ((out_record = parser.getNext(out_record))!= null) ) {
 					outPort.writeRecord(out_record);
@@ -708,34 +683,34 @@ public class SystemExecute extends Node{
 				}
 			}catch(IOException ex){	
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				parentThread.interrupt();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
-				resultCode = Node.RESULT_ABORTED;
+				resultCode = Node.Result.ABORTED;
 			}catch(Exception ex){
 				logger.error("Error in sysexec SendData",ex);
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}finally{
 //				parser.close();
 				outPort.close();
 			}
-			if (resultCode == Node.RESULT_RUNNING)
+			if (resultCode == Node.Result.RUNNING)
 				if (runIt) {
-					resultCode = Node.RESULT_OK;
+					resultCode = Node.Result.OK;
 				} else {
-					resultCode = Node.RESULT_ABORTED;
+					resultCode = Node.Result.ABORTED;
 				}
 		}
 
         /**
 		 * @return Returns the resultCode.
 		 */
-        public int getResultCode() {
+        public Result getResultCode() {
             return resultCode;
         }
 
@@ -759,7 +734,7 @@ public class SystemExecute extends Node{
 	    BufferedInputStream process_out;
 		FileWriter outFile;
 		String resultMsg=null;
-		int resultCode;
+		Result resultCode;
 		volatile boolean runIt;
 		Thread parentThread;
 		Throwable resultException;
@@ -785,7 +760,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-            resultCode=Node.RESULT_RUNNING;
+            resultCode=Node.Result.RUNNING;
             BufferedReader out = new BufferedReader(new InputStreamReader(process_out));
             String line = null;
   			try{
@@ -796,12 +771,12 @@ public class SystemExecute extends Node{
  				}
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.RESULT_ERROR;
+				resultCode = Node.Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}
@@ -812,11 +787,11 @@ public class SystemExecute extends Node{
 					//do nothing, out closed
 				}
 			}
-			if (resultCode==Node.RESULT_RUNNING){
+			if (resultCode==Node.Result.RUNNING){
 		           if (runIt){
-		        	   resultCode=Node.RESULT_OK;
+		        	   resultCode=Node.Result.OK;
 		           }else{
-		        	   resultCode = Node.RESULT_ABORTED;
+		        	   resultCode = Node.Result.ABORTED;
 		           }
 				}
 		}
@@ -824,7 +799,7 @@ public class SystemExecute extends Node{
         /**
          * @return Returns the resultCode.
          */
-        public int getResultCode() {
+        public Result getResultCode() {
             return resultCode;
         }
 
