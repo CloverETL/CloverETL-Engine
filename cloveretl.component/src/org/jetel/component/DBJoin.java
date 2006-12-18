@@ -21,7 +21,7 @@
 
 package org.jetel.component;
 
-import java.io.IOException;
+import java.util.Enumeration;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -33,15 +33,14 @@ import org.jetel.data.RecordKey;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>DBJoin Component</h3> <!--  Joins records from input port and database
@@ -100,6 +99,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
  *  <tr><td><b>maxCashed</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
  *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
+ *  <tr><td><b>freeLookupTable</b><i>optional</i><td>true/false<I> default: FALSE</I> idicates if close lookup table after 
+ *  	finishing execute() method. All records, which are stored only in memory will be lost</td>
  *    </table>
  *    <h4>Example:</h4> <pre>
  *    &lt;Node id="dbjoin0" type="DBJOIN"&gt;
@@ -291,7 +292,40 @@ public class DBJoin extends Node {
 		return dbjoin;
 	}
 
-    /**
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.Node#toXML(org.w3c.dom.Element)
+	 */
+	public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+
+		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, connectionName);
+		xmlElement.setAttribute(XML_SQL_QUERY_ATTRIBUTE, query);
+		xmlElement.setAttribute(XML_FREE_LOOKUP_TABLE_ATTRIBUTE, String.valueOf(freeLookupTable));
+		if (metadataName != null) {
+			xmlElement.setAttribute(XML_DB_METADATA_ATTRIBUTE, metadataName);
+		}
+		if (transformClassName != null) {
+			xmlElement.setAttribute(XML_TRANSFORM_CLASS_ATTRIBUTE, transformClassName);
+		} 
+
+		if (transformSource!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		}
+		if (maxCashed >0 ) {
+			xmlElement.setAttribute(XML_MAX_CASHED_ATTRIBUTE, String.valueOf(maxCashed));
+		}
+		xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE, StringUtils.stringArraytoString(joinKey, ';'));
+
+		xmlElement.setAttribute(XML_LEFTOUTERJOIN_ATTRIBUTE, String.valueOf(leftOuterJoin));
+
+		Enumeration propertyAtts = transformationParameters.propertyNames();
+		while (propertyAtts.hasMoreElements()) {
+			String attName = (String)propertyAtts.nextElement();
+			xmlElement.setAttribute(attName,transformationParameters.getProperty(attName));
+		}
+	}
+
+	/**
      * @param transformationParameters The transformationParameters to set.
      */
     public void setTransformationParameters(Properties transformationParameters) {
