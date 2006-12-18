@@ -227,7 +227,7 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="LOOKUP_TABLE"/>
+		<parameter id="type" value="LOOKUP_TABLE_READER_WRITER"/>
 		<parameter id="className" value="org.jetel.component.LookupTableReaderWriter"/>
 	</extension>
 
