@@ -38,6 +38,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -168,56 +169,37 @@ public class XLSReader extends Node {
 		return COMPONENT_TYPE;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.Node#run()
-	 */
 	@Override
-	public void run() {
+	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		int errorCount = 0;
 		int diffRow = (startRow != -1) ? finalRow - startRow +1: finalRow ;
-		try{
-			while (((record) != null) && runIt) {
-				try {
-					record = parser.getNext(record);
-					if (record!=null){
-						writeRecordBroadcast(record);
-					}
-				}catch(BadDataFormatException bdfe){
-                    if(policyType == PolicyType.STRICT) {
-                        throw bdfe;
-                    } else {
-                        logger.info(bdfe.getMessage());
-                        if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-                            logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-                            break;
-                        }
+		while (((record) != null) && runIt) {
+			try {
+				record = parser.getNext(record);
+				if (record!=null){
+					writeRecordBroadcast(record);
+				}
+			}catch(BadDataFormatException bdfe){
+                if(policyType == PolicyType.STRICT) {
+                    throw bdfe;
+                } else {
+                    logger.info(bdfe.getMessage());
+                    if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+                        logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+                        break;
                     }
-				}
-				if(finalRow != -1 && parser.getRecordCount() > diffRow) {
-					break;
-				}
-				SynchronizeUtils.cloverYield();
+                }
 			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
+			if(finalRow != -1 && parser.getRecordCount() > diffRow) {
+				break;
+			}
+			SynchronizeUtils.cloverYield();
 		}
-//		parser.close();
+		parser.close();
 		broadcastEOF();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/*
