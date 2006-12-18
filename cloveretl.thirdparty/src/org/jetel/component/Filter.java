@@ -31,6 +31,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -108,12 +109,8 @@ public class Filter extends Node {
 		
 	}
 
-	/**
-	 *  Main processing method for the Filter object
-	 *
-	 * @since    July 23, 2002
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort=getInputPort(READ_FROM_PORT);
 		OutputPort outPort=getOutputPort(WRITE_TO_PORT);
 		OutputPort rejectedPort=getOutputPort(REJECTED_PORT);
@@ -122,35 +119,23 @@ public class Filter extends Node {
 		record.init();
 		boolean isData=true;
 		
-		while(isData && runIt){
-			try{
-				record=inPort.readRecord(record);
-				if (record==null){
-					isData = false;
-					break;
-				}
-				if (recordFilter.accepts(record)){
-					outPort.writeRecord(record);
-				}else if (rejectedPort!=null){
-					rejectedPort.writeRecord(record);
-				}
-
-			}catch(IOException ex){
-				resultMsg=ex.getMessage();
-				resultCode=Node.RESULT_ERROR;
-				closeAllOutputPorts();
-				return;
-			}catch(Exception ex){
-				resultMsg=ex.getClass().getName()+" : "+ ex.getMessage();
-				resultCode=Node.RESULT_FATAL_ERROR;
-				return;
+		while (isData && runIt) {
+			record = inPort.readRecord(record);
+			if (record == null) {
+				isData = false;
+				break;
 			}
+			if (recordFilter.accepts(record)) {
+				outPort.writeRecord(record);
+			} else if (rejectedPort != null) {
+				rejectedPort.writeRecord(record);
+			}
+
 			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-		if (runIt) resultMsg="OK"; else resultMsg="STOPPED";
-		resultCode=Node.RESULT_OK;
-	}	
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+	}
 
 
 	/**

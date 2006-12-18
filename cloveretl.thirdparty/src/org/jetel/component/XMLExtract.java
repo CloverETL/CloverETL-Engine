@@ -22,6 +22,7 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -789,49 +790,31 @@ public class XMLExtract extends Node {
         }
     }
     
-    // //////////////////////////////////////////////////////////
-    // Execution Section
-    //
-    /**
-     * Call back from the Clover Engine starting this node.
-     */
-    public void run() {
-        // Parse the XML file
-        if (parseXML()) {
-            // We have successfully sent out all the data, send out the EOF
-            // signal
-            broadcastEOF();
-            
-            // determine if we successfully sent out everything or we
-            // successfully stopped due to a stop signal
-            if (runIt)
-                resultMsg = "OK";
-            else
-                resultMsg = "STOPPED";
-            resultCode = Node.RESULT_OK;
-        } else {
-            // If it's false, the result message and codes have been set in the
-            // parseXML Method.
-            broadcastEOF();
-            return;
-        }
+    @Override
+    public Result execute() throws Exception {
+    	Result result;
+    	if (parseXML()) {
+    		result = runIt ? Node.Result.OK : Node.Result.ABORTED;
+    	}else{
+    		result = runIt ? Node.Result.ERROR : Node.Result.ABORTED;
+    	}
+    	broadcastEOF();
+		return result;
     }
     
-    /**
+     /**
      * Parses the inputSource. The SAXHandler defined in this class will handle
      * the rest of the events. Returns false if there was an exception
      * encountered during processing.
      */
-    private boolean parseXML() {
+    private boolean parseXML() throws JetelException{
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser parser;
         
         try {
             parser = factory.newSAXParser();
         } catch (Exception ex) {
-            resultMsg = ex.getMessage();
-            resultCode = Node.RESULT_FATAL_ERROR;
-            return false;
+        	throw new JetelException(ex.getMessage(), ex);
         }
         
         try {
@@ -841,14 +824,10 @@ public class XMLExtract extends Node {
                 return true; // we were stopped by a stop signal... probably
             }
             LOG.error("XML Extract: " + getId() + " Parse Exception", ex);
-            resultMsg = ex.getMessage();
-            resultCode = Node.RESULT_ERROR;
-            return false;
+            throw new JetelException("XML Extract: " + getId() + " Parse Exception", ex);
         } catch (Exception ex) {
             LOG.error("XML Extract: " + getId() + " Unexpected Exception", ex);
-            resultMsg = ex.getMessage();
-            resultCode = Node.RESULT_FATAL_ERROR;
-            return false;
+            throw new JetelException("XML Extract: " + getId() + " Unexpected Exception", ex);
         }
         return true;
     }
