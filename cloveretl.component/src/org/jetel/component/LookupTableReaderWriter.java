@@ -72,22 +72,17 @@ import org.w3c.dom.Element;
  *  <br>
  *  <table border="1">
  *    <th>XML attributes:</th>
- *    <tr><td><b>type</b></td><td>"DBJOIN"</td></tr>
+ *    <tr><td><b>type</b></td><td>"LOOKUP_TABLE_READER_WRITER"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
- *    <tr><td><b>joinKey</b></td><td>field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
- *    </td></tr>
- *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format or as java code</td>
- *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
- *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML 
- *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
- *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
- *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
- *  <tr><td><b>maxCashed</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
- *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
+ * <td><b>lookupTable</b></td>
+ * <td>name of lookup table for reading or writing records</td>
  *  <tr><td><b>freeLookupTable</b><i>optional</i><td>true/false<I> default: FALSE</I> idicates if close lookup table after 
  *  	finishing execute() method. All records, which are stored only in memory will be lost</td>
  *    </table>
  *    <h4>Example:</h4> <pre>
+ * &lt;Node id="READ" type="LOOKUP_TABLE_READER_WRITER"&gt;
+ * &lt;attr name="lookupTable"&gt;LookupTable1&lt;/attr&gt;
+ * &lt;/Node&gt;
  *    
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
@@ -111,11 +106,6 @@ public class LookupTableReaderWriter extends Node {
 	private LookupTable lookupTable;
 	private boolean freeLookupTable;
 
-	/**
-	 * @param id
-	 * @param graph
-	 * @param lookupTableName
-	 */
 	public LookupTableReaderWriter(String id, String lookupTableName, boolean freeLookupTable) {
 		super(id);
 		this.lookupTableName = lookupTableName;
@@ -133,9 +123,11 @@ public class LookupTableReaderWriter extends Node {
 
 	@Override
 	public void init() throws ComponentNotReadyException {
+		//set reading or writing mode
 		if (outPorts.size() > 0) {
 			readFromTable = true;
 		}		
+		//init lookup table
 		lookupTable = getGraph().getLookupTable(lookupTableName);
 		if (lookupTable == null) {
         	throw new ComponentNotReadyException("Lookup table \"" + lookupTableName + 
@@ -149,12 +141,13 @@ public class LookupTableReaderWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		if (readFromTable) {
+			//for each record from lookup table send to to the edge
 			for (DataRecord record : lookupTable) {
 				if (!runIt) break;
 				writeRecordBroadcast(record);
 				SynchronizeUtils.cloverYield();
 			}
-		} else {
+		} else {//putting records to lookup table
 			InputPort inPort = getInputPort(READ_FROM_PORT);
 			DataRecord inRecord = new DataRecord(inPort.getMetadata());
 			inRecord.init();
