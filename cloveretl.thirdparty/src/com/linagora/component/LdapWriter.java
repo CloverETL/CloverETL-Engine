@@ -38,6 +38,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -208,54 +209,30 @@ public class LdapWriter extends Node {
 	}
 	
 
-	
-	/**
-	 *  Main processing method 
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		
-		try {
-			while (null != inRecord && runIt) {
-				try {
-					inRecord = inPort.readRecord(inRecord);
-					if (null != inRecord) {
-						formatter.write(inRecord);
-					}
-				} catch (NamingException ne) {
-					if (rejectedPort!=null){
-							rejectedPort.writeRecord(inRecord);
-					}
+		while (null != inRecord && runIt) {
+			try {
+				inRecord = inPort.readRecord(inRecord);
+				if (null != inRecord) {
+					formatter.write(inRecord);
 				}
-				SynchronizeUtils.cloverYield();
-			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			resultMsg = ex.getClass().getName()+" : "+ ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			//closeAllOutputPorts();
-		} finally {
-			closeAllOutputPorts();
-			this.formatter.close();
-			broadcastEOF();
-			if (resultMsg == null) {
-				if (runIt) {
-					resultMsg = "OK";
-				} else {
-					resultMsg = "STOPPED";
+			} catch (NamingException ne) {
+				if (rejectedPort!=null){
+						rejectedPort.writeRecord(inRecord);
 				}
-				resultCode = Node.RESULT_OK;
 			}
+			SynchronizeUtils.cloverYield();
 		}
-		return;
+		closeAllOutputPorts();
+		this.formatter.close();
+		broadcastEOF();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/**

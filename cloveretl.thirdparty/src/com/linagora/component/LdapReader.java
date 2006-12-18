@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 
@@ -198,41 +199,21 @@ public class LdapReader extends Node {
 		 */
 	}
 	
-	/**
-	 * This is the main method. It is call at while data are available.
-	 * this method is a copy of run() mathod from DBInput table.
-	 */
-	public void run() {
+	@Override
+	public Result execute() throws Exception {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(this.getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
-
-		try {
-			// till it reaches end of data or it is stopped from outside
-			while ((record = parser.getNext(record)) != null && runIt) {
-				//broadcast the record to all connected Edges
-				this.writeRecordBroadcast(record);
-			}
-		} catch (IOException ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_ERROR;
-			closeAllOutputPorts();
-			return;
-		} catch (Exception ex) {
-			resultMsg = ex.getMessage();
-			resultCode = Node.RESULT_FATAL_ERROR;
-			return;
+		// till it reaches end of data or it is stopped from outside
+		while ((record = parser.getNext(record)) != null && runIt) {
+			//broadcast the record to all connected Edges
+			this.writeRecordBroadcast(record);
 		}
 		// we are done, close all connected output ports to indicate end of stream
 		broadcastEOF();
 		//close the parser
 		parser.close();
-		if (runIt) {
-			resultMsg = "OK";
-		} else {
-			resultMsg = "STOPPED";
-		}
-		resultCode = Node.RESULT_OK;
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
 	/**
