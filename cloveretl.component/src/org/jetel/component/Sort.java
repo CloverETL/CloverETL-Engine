@@ -19,7 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.jetel.data.DataRecord;
@@ -32,7 +31,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.w3c.dom.Element;
 /**
@@ -152,6 +150,7 @@ public class Sort extends Node {
 			writeRecordBroadcastDirect(recordBuffer);
 			recordBuffer.clear();
 		}
+		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
