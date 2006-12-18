@@ -236,8 +236,11 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
                 parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             }
             parser.init(metadata);
-            parser.setDataSource(new FileInputStream(xattribs.getString(XML_FILE_URL)));
-            
+            if (xattribs.exists(XML_FILE_URL)) {
+            	parser.setDataSource(new FileInputStream(xattribs.getString(XML_FILE_URL)));
+            }else{
+            	parser = null;
+            }
             lookupTable = new SimpleLookupTable(id, metadata, keys, parser, initialSize);
             
             return lookupTable;
