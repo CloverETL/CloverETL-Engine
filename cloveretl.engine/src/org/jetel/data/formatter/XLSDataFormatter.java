@@ -81,6 +81,22 @@ public class XLSDataFormatter implements Formatter {
 	 */
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException{
 		this.metadata = _metadata;
+	}
+
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+     */
+    public void setDataTarget(Object out) {
+        try{
+            if (((File)out).length() > 0) {//if xls file exist add to it new data
+                wb = new HSSFWorkbook(new FileInputStream((File)out));
+            }else{//create new xls file
+                wb = new HSSFWorkbook();
+            }
+            this.out = new FileOutputStream((File)out);
+        }catch(IOException ex){
+            throw new RuntimeException(ex);
+        }
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
 			sheet = wb.getSheet(sheetName);
@@ -95,7 +111,7 @@ public class XLSDataFormatter implements Formatter {
 				sheet = wb.getSheetAt(sheetNumber);
 				sheetName = wb.getSheetName(sheetNumber);
 			}catch(IndexOutOfBoundsException ex){
-				throw new ComponentNotReadyException("There is no sheet with number \"" +	sheetNumber +"\"");
+				throw new IllegalArgumentException("There is no sheet with number \"" +	sheetNumber +"\"");
 			}
 		}else {
 			sheet = wb.createSheet();
@@ -110,7 +126,7 @@ public class XLSDataFormatter implements Formatter {
 		try {
 			firstColumn = getCellNum(firstColumnIndex);
 		}catch(InvalidNameException ex){
-			throw new ComponentNotReadyException(ex);
+			throw new IllegalArgumentException(ex);
 		}
 		//save metadata  names
 		if (namesRow > -1 && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
@@ -149,22 +165,6 @@ public class XLSDataFormatter implements Formatter {
 		if (firstRow > recCounter) {
 			recCounter = firstRow;
 		}
-	}
-
-    /* (non-Javadoc)
-     * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
-     */
-    public void setDataTarget(Object out) {
-        try{
-            if (((File)out).length() > 0) {//if xls file exist add to it new data
-                wb = new HSSFWorkbook(new FileInputStream((File)out));
-            }else{//create new xls file
-                wb = new HSSFWorkbook();
-            }
-            this.out = new FileOutputStream((File)out);
-        }catch(IOException ex){
-            throw new RuntimeException(ex);
-        }
     }
     
 	/* (non-Javadoc)
@@ -197,6 +197,7 @@ public class XLSDataFormatter implements Formatter {
 			if (metaType == DataFieldMetadata.BYTE_FIELD || metaType == DataFieldMetadata.BYTE_FIELD_COMPRESSED
 					|| metaType == DataFieldMetadata.STRING_FIELD){
 				cell.setCellType(HSSFCell.CELL_TYPE_STRING);
+				cell.setEncoding(HSSFCell.ENCODING_UTF_16);
 				cell.setCellValue(value.toString());
 			}else{
 				cell.setCellType(HSSFCell.CELL_TYPE_NUMERIC);
