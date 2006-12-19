@@ -36,6 +36,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -43,9 +44,9 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -272,9 +273,6 @@ public class DBOutputTable extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		}
 		// get dbConnection from graph
         IConnection conn = getGraph().getConnection(dbConnectionName);
         if(conn == null) {
@@ -688,9 +686,24 @@ public class DBOutputTable extends Node {
 	 */
      @Override
      public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-         //TODO
+         super.checkConfig(status);
+         
+         checkInputPorts(status, 1, 1);
+         checkOutputPorts(status, 0, 1);
+
+         try {
+             init();
+             free();
+         } catch (ComponentNotReadyException e) {
+             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+             if(!StringUtils.isEmpty(e.getAttributeName())) {
+                 problem.setAttributeName(e.getAttributeName());
+             }
+             status.add(problem);
+         }
+         
          return status;
-     }
+    }
 
 	public String getType(){
 		return COMPONENT_TYPE;
