@@ -171,14 +171,19 @@ public class CloverDataWriter extends Node {
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(metadata);
 		record.init();
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (record != null) {
-				formatter.write(record);
+		try {
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (record != null) {
+					formatter.write(record);
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			formatter.close();
 		}
-		formatter.close();
 		if (saveMetadata){
 			saveMetadata();
 		}
@@ -186,15 +191,6 @@ public class CloverDataWriter extends Node {
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
-	@Override
-	public void free() {
-		try{
-			formatter.close();
-			out.close();
-		}catch(IOException e){
-			//do nothing: are closed
-		}
-	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */

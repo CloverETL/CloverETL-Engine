@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -40,6 +41,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -293,76 +295,68 @@ public class DataIntersection extends Node {
 		OutputPort outPortB = getOutputPort(WRITE_TO_PORT_B);
 		OutputPort outPortAB = getOutputPort(WRITE_TO_PORT_A_B);
 
-		//initialize input records driver & slave
+		// initialize input records driver & slave
 		DataRecord driverRecord = new DataRecord(driverPort.getMetadata());
 		driverRecord.init();
 		DataRecord slaveRecord = new DataRecord(slavePort.getMetadata());
 		slaveRecord.init();
-		
+
 		// initialize output record
 		DataRecord outRecord = new DataRecord(outPortAB.getMetadata());
 		outRecord.init();
 
-		try {
-			// first initial load of records
+		// first initial load of records
+		driverRecord = driverPort.readRecord(driverRecord);
+		slaveRecord = slavePort.readRecord(slaveRecord);
+		// main processing loop
+		while (runIt && driverRecord != null && slaveRecord != null) {
+			switch (recordKeys[DRIVER_ON_PORT].compare(
+					recordKeys[SLAVE_ON_PORT], driverRecord, slaveRecord)) {
+			case -1:
+				// driver lower
+				// no corresponding slave
+				flushDriverOnly(driverRecord, outPortA);
+				driverRecord = driverPort.readRecord(driverRecord);
+				break;
+			case 0:
+				// match - perform transformation
+				flushCombinations(driverRecord, slaveRecord, outRecord,
+						outPortAB);
+				// load in new driver & slave
+				driverRecord = driverPort.readRecord(driverRecord);
+				slaveRecord = slavePort.readRecord(slaveRecord);
+				break;
+			case 1:
+				// slave lover - no corresponding master
+				flushSlaveOnly(slaveRecord, outPortB);
+				slaveRecord = slavePort.readRecord(slaveRecord);
+				break;
+			}
+		}
+		// flush remaining driver records
+		while (driverRecord != null) {
+			flushDriverOnly(driverRecord, outPortA);
 			driverRecord = driverPort.readRecord(driverRecord);
+		}
+		// flush remaining slave records
+		while (slaveRecord != null) {
+			flushSlaveOnly(slaveRecord, outPortB);
 			slaveRecord = slavePort.readRecord(slaveRecord);
-			// main processing loop
-			while (runIt && driverRecord != null && slaveRecord!=null) {
-					switch (recordKeys[DRIVER_ON_PORT].compare(recordKeys[SLAVE_ON_PORT], driverRecord, slaveRecord)) {
-						case -1:
-							// driver lower
-							// no corresponding slave
-							flushDriverOnly(driverRecord,outPortA);
-							driverRecord = driverPort.readRecord(driverRecord);
-							break;
-						case 0:
-							// match - perform transformation
-						    flushCombinations(driverRecord,slaveRecord,outRecord,outPortAB);
-						    //	load in new driver & slave
-						    driverRecord = driverPort.readRecord(driverRecord);
-							slaveRecord = slavePort.readRecord(slaveRecord);
-							break;
-						case 1:
-							// slave lover - no corresponding master
-						    flushSlaveOnly(slaveRecord, outPortB);
-						    slaveRecord=slavePort.readRecord(slaveRecord);
-						    break;
-					}
-				}
-			//flush remaining driver records
-			while(driverRecord!=null){
-	    	    flushDriverOnly(driverRecord, outPortA);
-	    	    driverRecord=driverPort.readRecord(driverRecord);
-	    	}
-			// flush remaining slave records
-			while(slaveRecord!=null){
-	    	    flushSlaveOnly(slaveRecord, outPortB);
-	    	    slaveRecord=slavePort.readRecord(slaveRecord);
-	    	}
-        } catch (TransformException ex) {
-            logger.error("Error occurred in nested transformation: " + ex.getMessage(),ex);
-            throw new JetelException("Error occurred in nested transformation: " + ex.getMessage(),ex);
-        }
+		}
 		transformation.finished();
 		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
      }
 
 	/**
-	 *  Description of the Method
-	 *
-	 * @exception  ComponentNotReadyException  Description of the Exception
-	 * @since                                  April 4, 2002
+	 * Description of the Method
+	 * 
+	 * @exception ComponentNotReadyException
+	 *                Description of the Exception
+	 * @since April 4, 2002
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least two input ports and three output ports
-		if (inPorts.size() < 2) {
-			throw new ComponentNotReadyException("At least two input ports have to be defined!");
-		} else if (outPorts.size() < 3) {
-			throw new ComponentNotReadyException("At least three output port has to be defined!");
-		}
 		if (slaveOverrideKeys == null) {
 			slaveOverrideKeys = joinKeys;
 		}
@@ -484,7 +478,22 @@ public class DataIntersection extends Node {
 	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 2, 2);
+        checkOutputPorts(status, 3, 3);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 	

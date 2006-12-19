@@ -10,6 +10,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -19,6 +20,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.DataProducer;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -186,12 +188,6 @@ public class MysqlDataWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (getInPorts().size() > 1) {
-			throw new ComponentNotReadyException(getId() + ": too many input ports");
-		}
-		if (getOutPorts().size() > 0) {
-			throw new ComponentNotReadyException(getId() + ": too many output ports");
-		}
 
 		inPort = getInputPort(INPUT_PORT);
 		if (inPort == null) {
@@ -246,7 +242,22 @@ public class MysqlDataWriter extends Node {
 
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+		super.checkConfig(status);
+		 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 

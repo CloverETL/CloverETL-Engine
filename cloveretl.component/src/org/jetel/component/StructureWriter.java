@@ -29,11 +29,11 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.StructureFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
@@ -156,22 +156,27 @@ public class StructureWriter extends Node {
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		//write records
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (record != null) {
-				formatter.write(record);
+		try {
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (record != null) {
+					formatter.write(record);
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+			formatter.flush();
+			//write footer
+			if (footer != null ){
+				buffer.clear();
+				buffer.put(footer.getBytes(charset));
+				ByteBufferUtils.flush(buffer,writer);
+			}
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			//close output
+			writer.close();
 		}
-		formatter.flush();
-		//write footer
-		if (footer != null ){
-			buffer.clear();
-			buffer.put(footer.getBytes(charset));
-			ByteBufferUtils.flush(buffer,writer);
-		}
-		//close output
-		writer.close();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -180,7 +185,22 @@ public class StructureWriter extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+		super.checkConfig(status);
+		 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 	
@@ -190,10 +210,6 @@ public class StructureWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		}
 		// based on file mask, create/open output file
 		try {
 			writer = FileUtils.getWritableChannel(fileURL, appendData);
