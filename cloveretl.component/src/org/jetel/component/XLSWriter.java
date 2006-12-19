@@ -27,13 +27,14 @@ import java.io.IOException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -138,14 +139,19 @@ public class XLSWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (record != null) {
-				formatter.write(record);
+		try {
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (record != null) {
+					formatter.write(record);
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			formatter.close();
 		}
-		formatter.close();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -155,7 +161,22 @@ public class XLSWriter extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+		super.checkConfig(status);
+		 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 

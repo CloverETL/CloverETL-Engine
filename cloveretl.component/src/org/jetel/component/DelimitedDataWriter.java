@@ -19,8 +19,6 @@
 */
 
 package org.jetel.component;
-import java.io.IOException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -33,7 +31,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.StringUtils;
@@ -136,14 +133,19 @@ public class DelimitedDataWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		while (record != null && runIt) {
-			record = inPort.readRecord(record);
-			if (record != null) {
-                writer.write(record);
+		try {
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (record != null) {
+			        writer.write(record);
+				}
+				SynchronizeUtils.cloverYield();
 			}
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			writer.close();
 		}
-		SynchronizeUtils.cloverYield();
-		writer.close();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	/**
