@@ -13,16 +13,17 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.QuotingDecoderMysql;
+import org.jetel.util.StringUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.FileDataConsumer;
 import org.jetel.util.exec.PortDataConsumer;
@@ -214,16 +215,28 @@ public class MysqlDataReader extends Node {
 
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 0);
+        checkOutputPorts(status, 0, 1);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (getInPorts().size() > 0) {
-			throw new ComponentNotReadyException(getId() + ": too many input ports");
-		}
 		outPort = getOutputPort(OUTPUT_PORT);
 		if (outPort == null && outputFile == null) {
 			throw new ComponentNotReadyException(getId() + ": missing output");			
@@ -264,14 +277,20 @@ public class MysqlDataReader extends Node {
 	@Override
 	public Result execute() throws Exception {
 		ProcBox pbox = new ProcBox(proc, null, consumer, errConsumer);
-		int retval = pbox.join();
-		if (outPort != null) {
-			outPort.close();
-		} else {
-			try {
-				fileWriter.close();
-			} catch (IOException e) {
-				logger.warn("Unable to close output file " + outputFile, e);
+		int retval;
+		try {
+			retval = pbox.join();
+		} catch (InterruptedException e1) {
+			throw e1;
+		}finally{
+			if (outPort != null) {
+				outPort.close();
+			} else {
+				try {
+					fileWriter.close();
+				} catch (IOException e) {
+					logger.warn("Unable to close output file " + outputFile, e);
+				}
 			}
 		}
 		String resultMsg = errConsumer.getMsg();

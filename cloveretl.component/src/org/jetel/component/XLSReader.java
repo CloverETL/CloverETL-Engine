@@ -32,13 +32,13 @@ import org.jetel.data.Defaults;
 import org.jetel.data.parser.XLSDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -175,30 +175,35 @@ public class XLSReader extends Node {
 		record.init();
 		int errorCount = 0;
 		int diffRow = (startRow != -1) ? finalRow - startRow +1: finalRow ;
-		while (((record) != null) && runIt) {
-			try {
-				record = parser.getNext(record);
-				if (record!=null){
-					writeRecordBroadcast(record);
+		try {
+			while (((record) != null) && runIt) {
+				try {
+					record = parser.getNext(record);
+					if (record!=null){
+						writeRecordBroadcast(record);
+					}
+				}catch(BadDataFormatException bdfe){
+			        if(policyType == PolicyType.STRICT) {
+			            throw bdfe;
+			        } else {
+			            logger.info(bdfe.getMessage());
+			            if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+			                logger.error("DataParser (" + getName() + "): Max error count exceeded.");
+			                break;
+			            }
+			        }
 				}
-			}catch(BadDataFormatException bdfe){
-                if(policyType == PolicyType.STRICT) {
-                    throw bdfe;
-                } else {
-                    logger.info(bdfe.getMessage());
-                    if(maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-                        logger.error("DataParser (" + getName() + "): Max error count exceeded.");
-                        break;
-                    }
-                }
+				if(finalRow != -1 && parser.getRecordCount() > diffRow) {
+					break;
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			if(finalRow != -1 && parser.getRecordCount() > diffRow) {
-				break;
-			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			parser.close();
+			broadcastEOF();
 		}
-		parser.close();
-		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -209,7 +214,22 @@ public class XLSReader extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 0);
+        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 

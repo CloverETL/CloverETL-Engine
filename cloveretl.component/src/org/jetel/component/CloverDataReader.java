@@ -20,7 +20,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import org.jetel.data.DataRecord;
@@ -32,7 +31,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -133,22 +131,23 @@ public class CloverDataReader extends Node {
         record.init();
 		int diffRecord = (startRecord != -1) ? finalRecord - startRecord : finalRecord - 1;
 		int recordCount = 0;
-        while ((record = parser.getNext(record))!=null && runIt){
-		    writeRecordBroadcast(record);
-			if(finalRecord != -1 && ++recordCount > diffRecord) {
-				break;
+        try {
+			while ((record = parser.getNext(record))!=null && runIt){
+			    writeRecordBroadcast(record);
+				if(finalRecord != -1 && ++recordCount > diffRecord) {
+					break;
+				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
-        }
-		broadcastEOF();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			parser.close();
+			broadcastEOF();
+		}
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
-	@Override
-	public void free() {
-		super.free();
-		parser.close();
-	}
 	
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		CloverDataReader aDataReader = null;
