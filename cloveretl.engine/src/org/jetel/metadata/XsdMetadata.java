@@ -256,8 +256,10 @@ public class XsdMetadata {
 	}
 
 	/**
-	 * Converts metadata read from file to XSD written to file.
-	 * @param argv input_file, output_file. "-" for std input/output
+	 * Converts clover metadata read from XML file to XSD written to file.
+	 * 
+	 * usage: XsdMetadata [infile] [outfile]
+	 * @param argv {input_file, output_file}. "-" for std input/output
 	 */
 	public static void main(String argv[]) {
         try {
