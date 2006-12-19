@@ -36,7 +36,6 @@ import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -172,39 +171,44 @@ public class DataReader extends Node {
 		}
 		int errorCount = 0;
 
-		while (runIt) {
-			try {
-				if ((reader.getNext(record)) == null) {
-					break;
-				}
-				writeRecord(OUTPUT_PORT, record);
-			} catch (BadDataFormatException bdfe) {
-				if (policyType == PolicyType.STRICT) {
-					throw bdfe;
-				} else {
-					if (logging) {
-						// TODO implement log port framework
-						((IntegerDataField) logRecord.getField(0))
-								.setValue(bdfe.getRecordNumber());
-						((StringDataField) logRecord.getField(1)).setValue(bdfe
-								.getOffendingValue());
-						((StringDataField) logRecord.getField(2)).setValue(bdfe
-								.getMessage());
-						writeRecord(LOG_PORT, logRecord);
-					} else {
-						logger.info(bdfe.getMessage());
-					}
-					if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
-						logger.error("DataParser (" + getName()
-								+ "): Max error count exceeded.");
+		try {
+			while (runIt) {
+				try {
+					if ((reader.getNext(record)) == null) {
 						break;
 					}
+					writeRecord(OUTPUT_PORT, record);
+				} catch (BadDataFormatException bdfe) {
+					if (policyType == PolicyType.STRICT) {
+						throw bdfe;
+					} else {
+						if (logging) {
+							// TODO implement log port framework
+							((IntegerDataField) logRecord.getField(0))
+									.setValue(bdfe.getRecordNumber());
+							((StringDataField) logRecord.getField(1)).setValue(bdfe
+									.getOffendingValue());
+							((StringDataField) logRecord.getField(2)).setValue(bdfe
+									.getMessage());
+							writeRecord(LOG_PORT, logRecord);
+						} else {
+							logger.info(bdfe.getMessage());
+						}
+						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
+							logger.error("DataParser (" + getName()
+									+ "): Max error count exceeded.");
+							break;
+						}
+					}
 				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			reader.close();
+			broadcastEOF();
 		}
-		reader.close();
-		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 

@@ -33,13 +33,14 @@ import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -134,9 +135,6 @@ public class JmsReader extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (getOutPorts().size() < 1) {
-			throw new ComponentNotReadyException("At least one output port is required");
-		}
 		if (psorClass == null && psorCode == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
@@ -236,17 +234,22 @@ public class JmsReader extends Node {
 	public Result execute() throws Exception {
 		connection.connect();
 		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
-		for (Message msg = getMsg(); msg != null; msg = getMsg()) {
-			DataRecord rec = psor.extractRecord(msg);
-			if (rec == null) {
-				logger.debug("Unable to extract data from JMS message; message skipped");
-				continue;
+		try {
+			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
+				DataRecord rec = psor.extractRecord(msg);
+				if (rec == null) {
+					logger.debug("Unable to extract data from JMS message; message skipped");
+					continue;
+				}
+				writeRecordBroadcast(rec);
 			}
-			writeRecordBroadcast(rec);
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			psor.finished();
+	        closeConnection();
+	        broadcastEOF();
 		}
-		psor.finished();
-        closeConnection();
-        broadcastEOF();
 		Result r = runIt ? Node.Result.OK : Node.Result.ABORTED;
 		runIt = false;	// for interruptor
 		return r;
@@ -332,7 +335,23 @@ public class JmsReader extends Node {
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		return status;
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 0);
+        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
+        return status;
 	}
 
 	/**
