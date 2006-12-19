@@ -32,6 +32,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -40,6 +41,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -188,10 +190,6 @@ public class LdapWriter extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size() != 1) {
-			throw new ComponentNotReadyException("One and only on input port has to be defined!");
-		}
 
 		this.formatter = new LdapFormatter(this.ldapUrl, this.action, this.user, this.passwd);
 		
@@ -216,22 +214,26 @@ public class LdapWriter extends Node {
 
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
-		while (null != inRecord && runIt) {
-			try {
-				inRecord = inPort.readRecord(inRecord);
-				if (null != inRecord) {
-					formatter.write(inRecord);
+		try {
+			while (null != inRecord && runIt) {
+				try {
+					inRecord = inPort.readRecord(inRecord);
+					if (null != inRecord) {
+						formatter.write(inRecord);
+					}
+				} catch (NamingException ne) {
+					if (rejectedPort!=null){
+							rejectedPort.writeRecord(inRecord);
+					}
 				}
-			} catch (NamingException ne) {
-				if (rejectedPort!=null){
-						rejectedPort.writeRecord(inRecord);
-				}
+				SynchronizeUtils.cloverYield();
 			}
-			SynchronizeUtils.cloverYield();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			this.formatter.close();
+			broadcastEOF();
 		}
-		closeAllOutputPorts();
-		this.formatter.close();
-		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -327,7 +329,22 @@ public class LdapWriter extends Node {
 	
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+		super.checkConfig(status);
+		 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 	
