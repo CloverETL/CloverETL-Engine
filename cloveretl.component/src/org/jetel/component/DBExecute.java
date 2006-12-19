@@ -27,14 +27,15 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.DBConnection;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Text;
@@ -178,9 +179,6 @@ public class DBExecute extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		//if (inPorts.size() >0 || outPorts.size >0) {
-		//	throw new ComponentNotReadyException("This is independent component. No INPUT or OUTPUT connectins may exist !");
-		//}
 		// get dbConnection from graph
 	    if (dbConnection == null){
 	        IConnection conn = getGraph().getConnection(dbConnectionName);
@@ -401,9 +399,24 @@ public class DBExecute extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 0);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
-    }
+   }
 	
 	public String getType(){
 		return COMPONENT_TYPE;

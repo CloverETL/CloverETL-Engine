@@ -32,6 +32,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -202,8 +203,13 @@ public class DBJoin extends Node {
 				}
 		}
 		broadcastEOF();
-		lookupTable.free();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+	}
+	
+	@Override
+	public void free() {
+		super.free();
+		lookupTable.free();
 	}
 
 	/* (non-Javadoc)
@@ -211,7 +217,22 @@ public class DBJoin extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, 1);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 
@@ -220,12 +241,6 @@ public class DBJoin extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have one input port and one output
-		if (inPorts.size() != 1) {
-			throw new ComponentNotReadyException("Exactly one input port has to be defined!");
-		} else if (outPorts.size() != 1) {
-			throw new ComponentNotReadyException("Exactly one output port has to be defined!");
-		}
 		//Initializing lookup table
 		IConnection conn = getGraph().getConnection(connectionName);
         if(conn == null) {
