@@ -18,20 +18,20 @@
 *
 */
 package org.jetel.component;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Iterator;
 
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -110,13 +110,15 @@ public class Concatenate extends Node {
 
 			inPort = (InputPort) iterator.next();
 
-			inRecord = inPort.readRecord(record);
-			if (inRecord != null) {
-				outPort.writeRecord(inRecord);
-			} else {
-				break;
-			}
-			SynchronizeUtils.cloverYield();
+			while (runIt) {
+				inRecord = inPort.readRecord(record);
+				if (inRecord != null) {
+					outPort.writeRecord(inRecord);
+				} else {
+					break;
+				}
+				SynchronizeUtils.cloverYield();
+			}			
 		}
 		setEOF(WRITE_TO_PORT);
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
@@ -130,12 +132,6 @@ public class Concatenate extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
-		}
 	}
 
 
@@ -175,7 +171,22 @@ public class Concatenate extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 1, Integer.MAX_VALUE);
+        checkOutputPorts(status, 1, 1);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 	

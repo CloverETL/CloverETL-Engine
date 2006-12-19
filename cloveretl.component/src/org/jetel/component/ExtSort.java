@@ -31,6 +31,7 @@ import org.jetel.data.SortDataRecordInternal;
 import org.jetel.data.tape.DataRecordTape;
 import org.jetel.data.tape.TapeCarousel;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -213,50 +214,40 @@ public class ExtSort extends Node {
          * PHASE MERGE ------------
          */
         if (runIt) {
-            if (doMerge) {
-                // sort whatever remains in sorter
-                sorter.sort();
-                flushToTape();
-            }
-        }
-        /*
-         * SEND RECORDS FROM SORTER DIRECTLY --------
-         */
-        else {
-            sorter.sort();
-            sorter.rewind();
-            recordBuffer.clear();
-            // --- read sorted records
-            while (sorter.get(recordBuffer) && runIt) {
-                writeRecordBroadcastDirect(recordBuffer);
-                recordBuffer.clear();
-                SynchronizeUtils.cloverYield();
-            }
-            sorter.free();
-        }
-
+			if (doMerge) {
+				// sort whatever remains in sorter
+				sorter.sort();
+				flushToTape();
+			}
+			/*
+			 * SEND RECORDS FROM SORTER DIRECTLY --------
+			 */
+			else {
+				sorter.sort();
+				sorter.rewind();
+				recordBuffer.clear();
+				// --- read sorted records
+				while (sorter.get(recordBuffer) && runIt) {
+					writeRecordBroadcastDirect(recordBuffer);
+					recordBuffer.clear();
+					SynchronizeUtils.cloverYield();
+				}
+			}
+		}
 	    broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
     }
 
 
     /**
-     * Description of the Method
-     * 
-     * @exception ComponentNotReadyException
-     *                Description of the Exception
-     * @since April 4, 2002
-     */
+	 * Description of the Method
+	 * 
+	 * @exception ComponentNotReadyException
+	 *                Description of the Exception
+	 * @since April 4, 2002
+	 */
     public void init() throws ComponentNotReadyException {
 		super.init();
-        // test that we have at least one input port and one output
-        if (inPorts.size() < 1) {
-            throw new ComponentNotReadyException(
-                    "At least one input port has to be defined!");
-        } else if (outPorts.size() < 1) {
-            throw new ComponentNotReadyException(
-                    "At least one output port has to be defined!");
-        }
         recordBuffer = ByteBuffer
                 .allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
         if (recordBuffer == null) {
@@ -273,6 +264,11 @@ public class ExtSort extends Node {
                     .getMetadata(), sortKeysNames, sortOrderAscending, false);
         }
         
+    }
+    
+    @Override
+    public void free() {
+    	sorter.free();
     }
 
     /**
@@ -641,7 +637,22 @@ public class ExtSort extends Node {
      */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, Integer.MAX_VALUE);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 
