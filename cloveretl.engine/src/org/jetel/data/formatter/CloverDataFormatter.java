@@ -122,10 +122,10 @@ public class CloverDataFormatter implements Formatter {
      */
     public void setDataTarget(Object outputDataTarget) {
         //create output stream
-        if (out instanceof ZipOutputStream) {
-            this.out = (ZipOutputStream)out;
+        if (outputDataTarget instanceof ZipOutputStream) {
+            this.out = (ZipOutputStream)outputDataTarget;
         }else{
-            this.out = (FileOutputStream)out;
+            this.out = (FileOutputStream)outputDataTarget;
         }
         writer = Channels.newChannel(this.out);
     }
