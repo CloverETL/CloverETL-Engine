@@ -32,6 +32,7 @@ import org.jetel.data.FileRecordBuffer;
 import org.jetel.data.RecordKey;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -40,11 +41,11 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringAproxComparator;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -458,8 +459,9 @@ public class AproxMergeJoin extends Node {
 		OutputPort notMatchDriverPort = getOutputPort(NOT_MATCH_DRIVER_OUT);
 		OutputPort notMatchSlavePort = getOutputPort(NOT_MATCH_SLAVE_OUT);
 
-		//initialize input records driver & slave
-		DataRecord[] driverRecords = allocateRecords(driverPort.getMetadata(), 2);
+		// initialize input records driver & slave
+		DataRecord[] driverRecords = allocateRecords(driverPort.getMetadata(),
+				2);
 		DataRecord[] slaveRecords = allocateRecords(slavePort.getMetadata(), 2);
 
 		// initialize output record
@@ -470,83 +472,77 @@ public class AproxMergeJoin extends Node {
 		DataRecordMetadata outSuspiciousMetadata = suspiciousPort.getMetadata();
 		DataRecord outSuspiciousRecord = new DataRecord(outSuspiciousMetadata);
 		outSuspiciousRecord.init();
-		
+
 		// tmp record for switching contents
 		DataRecord tmpRec;
 		// create file buffer for slave records - system TEMP path
 		recordBuffer = new FileRecordBuffer(null);
 
-		//for the first time (as initialization), we expect that records are different
+		// for the first time (as initialization), we expect that records are
+		// different
 		isDriverDifferent = true;
-		try {
-			// first initial load of records
-			driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-			slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
-			while (runIt && driverRecords[CURRENT] != null) {
-				if (isDriverDifferent) {
-					switch (getCorrespondingRecord(driverRecords[CURRENT], slaveRecords, slavePort, notMatchSlavePort, recordKey)) {
-						case -1:
-							// driver lower
-							// no corresponding slave
-							notMatchDriverPort.writeRecord(driverRecords[CURRENT]);
-							driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
-							isDriverDifferent = true;
-							continue;
-						case 0:
-							// match
-							fillRecordBuffer(slavePort, slaveRecords, recordKey[SLAVE_ON_PORT]);
-							// switch temporary --> current
-							tmpRec = slaveRecords[CURRENT];
-							slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
-							slaveRecords[TEMPORARY] = tmpRec;
-							isDriverDifferent = false;
-							break;
-					}
+		// first initial load of records
+		driverRecords[CURRENT] = driverPort.readRecord(driverRecords[CURRENT]);
+		slaveRecords[CURRENT] = slavePort.readRecord(slaveRecords[CURRENT]);
+		while (runIt && driverRecords[CURRENT] != null) {
+			if (isDriverDifferent) {
+				switch (getCorrespondingRecord(driverRecords[CURRENT],
+						slaveRecords, slavePort, notMatchSlavePort, recordKey)) {
+				case -1:
+					// driver lower
+					// no corresponding slave
+					notMatchDriverPort.writeRecord(driverRecords[CURRENT]);
+					driverRecords[CURRENT] = driverPort
+							.readRecord(driverRecords[CURRENT]);
+					isDriverDifferent = true;
+					continue;
+				case 0:
+					// match
+					fillRecordBuffer(slavePort, slaveRecords,
+							recordKey[SLAVE_ON_PORT]);
+					// switch temporary --> current
+					tmpRec = slaveRecords[CURRENT];
+					slaveRecords[CURRENT] = slaveRecords[TEMPORARY];
+					slaveRecords[TEMPORARY] = tmpRec;
+					isDriverDifferent = false;
+					break;
 				}
-				flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY], 
-						outConformingRecord, outSuspiciousRecord, 
-						conformingPort,suspiciousPort);
-				// get next driver
-				
-				driverRecords[TEMPORARY] = driverPort.readRecord(driverRecords[TEMPORARY]);
-				if (driverRecords[TEMPORARY] != null) {
-					// different driver record ??
-					switch (recordKey[DRIVER_ON_PORT].compare(driverRecords[CURRENT], driverRecords[TEMPORARY])) {
-						case 0:
-							break;
-						case -1:
-							// detected change;
-							isDriverDifferent = true;
-							break;
-						case 1:
-							throw new JetelException("Driver record out of order!");
-					}
-				}
-				// switch temporary --> current
-				tmpRec = driverRecords[CURRENT];
-				driverRecords[CURRENT] = driverRecords[TEMPORARY];
-				driverRecords[TEMPORARY] = tmpRec;
-				SynchronizeUtils.cloverYield();
 			}
-			// if full outer join defined and there are some slave records left, flush them
-        } catch (TransformException ex) {
-        	logger.error("Error occurred in nested transformation: " + ex.getMessage(), ex);
-        	throw new JetelException("Error occurred in nested transformation: " + ex.getMessage(), ex);
+			flushCombinations(driverRecords[CURRENT], slaveRecords[TEMPORARY],
+					outConformingRecord, outSuspiciousRecord, conformingPort,
+					suspiciousPort);
+			// get next driver
+
+			driverRecords[TEMPORARY] = driverPort
+					.readRecord(driverRecords[TEMPORARY]);
+			if (driverRecords[TEMPORARY] != null) {
+				// different driver record ??
+				switch (recordKey[DRIVER_ON_PORT].compare(
+						driverRecords[CURRENT], driverRecords[TEMPORARY])) {
+				case 0:
+					break;
+				case -1:
+					// detected change;
+					isDriverDifferent = true;
+					break;
+				case 1:
+					throw new JetelException("Driver record out of order!");
+				}
+			}
+			// switch temporary --> current
+			tmpRec = driverRecords[CURRENT];
+			driverRecords[CURRENT] = driverRecords[TEMPORARY];
+			driverRecords[TEMPORARY] = tmpRec;
+			SynchronizeUtils.cloverYield();
 		}
 		// signal end of records stream to transformation function
 		transformation.finished();
-		broadcastEOF();		
+		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
+	
 	public void init() throws ComponentNotReadyException {
-		super.init();
-		// test that we have at two input ports and four output
-		if (inPorts.size() != 2) {
-			throw new ComponentNotReadyException("Two input ports have to be defined!");
-		} else if (outPorts.size() != 4) {
-			throw new ComponentNotReadyException("Four output ports have to be defined!");
-		}
         //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
 		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
@@ -761,7 +757,22 @@ public class AproxMergeJoin extends Node {
     
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 2, 2);
+        checkOutputPorts(status, 4, 4);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 	
