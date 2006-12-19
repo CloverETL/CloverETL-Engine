@@ -35,6 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -44,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -184,12 +186,36 @@ public class CloverDataWriter extends Node {
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
+	@Override
+	public void free() {
+		try{
+			formatter.close();
+			out.close();
+		}catch(IOException e){
+			//do nothing: are closed
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 0, 0);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 
@@ -199,10 +225,6 @@ public class CloverDataWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port
-		if (inPorts.size() != 1) {
-			throw new ComponentNotReadyException("One input port has to be defined!");
-		}
 		inPort = getInputPort(READ_FROM_PORT);
 		metadata = inPort.getMetadata();
 		try{//create output stream and rewrite existing data
