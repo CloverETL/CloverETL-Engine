@@ -22,6 +22,7 @@
 package org.jetel.data.parser;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -153,7 +154,11 @@ public class CloverDataParser implements Parser {
                         if(entry.getName().equals(
                                 "INDEX" + File.separator + fileName + ".idx")) {
                             indexFile.skip(index);
-                            idx = indexFile.readLong();//read index for reading records
+                            try {
+								idx = indexFile.readLong();//read index for reading records
+							} catch (EOFException e) {
+								throw new ComponentNotReadyException("Start record is greater than last record!!!");
+							}
                             break;
                         }
                     }
