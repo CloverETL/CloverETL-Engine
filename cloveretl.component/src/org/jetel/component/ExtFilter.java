@@ -29,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -42,6 +43,7 @@ import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.node.CLVFStartExpression;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -208,12 +210,6 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size()<1){
-			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		}else if (outPorts.size()<1){
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
-		}
 		TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),
 				new ByteArrayInputStream(filterExpression.getBytes()));
 		if (parser!=null){
@@ -278,7 +274,22 @@ public class ExtFilter extends org.jetel.graph.Node {
 	/**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, 2);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
     }
 
