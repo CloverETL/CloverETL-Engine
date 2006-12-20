@@ -291,7 +291,7 @@ public class JmsWriter extends Node {
 		try {
 			jmsReader = new JmsWriter(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jmswriter.DataRecord2JmsMsgProperties"),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.DataRecord2JmsMsgProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
 							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,

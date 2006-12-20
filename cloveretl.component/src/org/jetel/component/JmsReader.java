@@ -316,7 +316,7 @@ public class JmsReader extends Node {
 			jmsReader = new JmsReader(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
-					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jmsreader.JmsMsg2DataRecordProperties"),
+					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.JmsMsg2DataRecordProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
 					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
 					xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
