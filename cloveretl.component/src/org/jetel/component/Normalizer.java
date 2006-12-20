@@ -30,6 +30,7 @@ import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
@@ -37,10 +38,10 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -230,9 +231,14 @@ public class Normalizer extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		processInput();
-		norm.finished();
-		setEOF(OUT_PORT);
+		try {
+			processInput();
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			norm.finished();
+			setEOF(OUT_PORT);
+		}
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -248,9 +254,24 @@ public class Normalizer extends Node {
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-        //TODO
+		super.checkConfig(status);
+		 
+		checkInputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, 1);
+
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
         return status;
-    }
+   }
 
 	/**
 	 * Sets normalization parameters.
