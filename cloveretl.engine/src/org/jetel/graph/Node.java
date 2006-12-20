@@ -32,7 +32,6 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
-import org.jetel.exception.CloverRuntimeException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -40,6 +39,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.runtime.CloverRuntime;
+import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.w3c.dom.Element;
 
@@ -377,7 +377,7 @@ public abstract class Node extends GraphElement implements Runnable {
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
-                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverRuntime().sendMessage(msg);
             return;
         } catch (InterruptedException ex) {
@@ -387,21 +387,21 @@ public abstract class Node extends GraphElement implements Runnable {
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
-                    new CloverRuntimeException(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), "Error occurred in nested transformation: " + runResult.message(), ex));
             getCloverRuntime().sendMessage(msg);
             return;
         } catch (SQLException ex){
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
-                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverRuntime().sendMessage(msg);
             return;
         } catch (Exception ex) { // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
             Message msg = Message.createErrorMessage(this,
-                    new CloverRuntimeException(runResult.code(), runResult.message(), ex));
+                    new ErrorMsgBody(runResult.code(), runResult.message(), ex));
             getCloverRuntime().sendMessage(msg);
             return;
         }
