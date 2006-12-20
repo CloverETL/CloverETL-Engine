@@ -37,7 +37,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;

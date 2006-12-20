@@ -25,14 +25,15 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -230,12 +231,6 @@ public class Merge extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 2) {
-			throw new ComponentNotReadyException("At least two input ports have to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
-		}
 		// initialize key
 		comparisonKey = new RecordKey(mergeKeys, getInputPort(0).getMetadata());
 		try {
@@ -288,7 +283,22 @@ public class Merge extends Node {
 	 */
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-            //TODO
+            super.checkConfig(status);
+            
+            checkInputPorts(status, 2, Integer.MAX_VALUE);
+            checkOutputPorts(status, 1, 1);
+
+            try {
+                init();
+                free();
+            } catch (ComponentNotReadyException e) {
+                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+                if(!StringUtils.isEmpty(e.getAttributeName())) {
+                    problem.setAttributeName(e.getAttributeName());
+                }
+                status.add(problem);
+            }
+            
             return status;
         }
 	

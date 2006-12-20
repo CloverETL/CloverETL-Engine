@@ -157,10 +157,15 @@ public class LookupTableReaderWriter extends Node {
 			}
 		}
 		broadcastEOF();
+		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+	}
+	
+	@Override
+	public void free() {
+		super.free();
 		if (freeLookupTable){
 			lookupTable.free();
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 	
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
