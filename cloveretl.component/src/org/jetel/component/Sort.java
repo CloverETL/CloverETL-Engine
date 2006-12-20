@@ -25,6 +25,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SortDataRecordInternal;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -32,6 +33,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sort Component</h3>
@@ -154,6 +156,11 @@ public class Sort extends Node {
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
+	@Override
+	public void free() {
+		super.free();
+		newSorter.free();
+	}
 	/**
 	 *  Sets the sortOrderAscending attribute of the Sort object
 	 *
@@ -172,12 +179,6 @@ public class Sort extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one input port has to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException("At least one output port has to be defined!");
-		}
 		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
 		if (recordBuffer == null) {
 			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
@@ -261,9 +262,24 @@ public class Sort extends Node {
 	 */
         @Override
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-            //TODO
+    		super.checkConfig(status);
+   		 
+    		checkInputPorts(status, 1, 1);
+            checkOutputPorts(status, 1, Integer.MAX_VALUE);
+
+            try {
+                init();
+                free();
+            } catch (ComponentNotReadyException e) {
+                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+                if(!StringUtils.isEmpty(e.getAttributeName())) {
+                    problem.setAttributeName(e.getAttributeName());
+                }
+                status.add(problem);
+            }
+            
             return status;
-        }
+       }
 	
 	public String getType(){
 		return COMPONENT_TYPE;
