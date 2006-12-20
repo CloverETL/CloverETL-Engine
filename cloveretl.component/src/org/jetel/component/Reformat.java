@@ -193,6 +193,7 @@ public class Reformat extends Node {
 			SynchronizeUtils.cloverYield();
 		}
 		transformation.finished();
+		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
@@ -294,7 +295,7 @@ public class Reformat extends Node {
     		super.checkConfig(status);
    		 
     		checkInputPorts(status, 1, 1);
-            checkOutputPorts(status, 1, 1);
+            checkOutputPorts(status, 1, Integer.MAX_VALUE);
 
             try {
                 init();
