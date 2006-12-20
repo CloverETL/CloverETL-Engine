@@ -23,7 +23,6 @@
  */
 package org.jetel.graph.runtime;
 
-import org.jetel.exception.CloverRuntimeException;
 import org.jetel.graph.Node;
 
 /**
@@ -70,8 +69,8 @@ public class  Message<T> implements Comparable<Message>{
     }
     
     
-    public static Message createErrorMessage(Node node,CloverRuntimeException exception){
-        return new Message<CloverRuntimeException>(node,null,Type.ERROR,exception);
+    public static Message createErrorMessage(Node node,ErrorMsgBody exception){
+        return new Message<ErrorMsgBody>(node,null,Type.ERROR,exception);
     }
     
     
