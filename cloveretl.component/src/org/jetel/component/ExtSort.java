@@ -217,6 +217,13 @@ public class ExtSort extends Node {
 				// sort whatever remains in sorter
 				sorter.sort();
 				flushToTape();
+				// we don't need sorter any more - free all its resources
+				sorter.free();
+				// flush to disk whatever remains in tapes' buffers
+				// tapeCarousel.flush();
+				// merge partially sorted data from tapes
+				phaseMerge();
+
 			}
 			/*
 			 * SEND RECORDS FROM SORTER DIRECTLY --------
