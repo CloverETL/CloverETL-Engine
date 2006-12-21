@@ -193,15 +193,23 @@ public class DBJoin extends Node {
 					//find slave record in database
 					inRecords[1] = lookupTable.get(inRecord);
 					do{
-						if ((inRecords[1] != null || leftOuterJoin ) && 
-								transformation.transform(inRecords, outRecord)) {
-							writeRecord(WRITE_TO_PORT,outRecord[0]);
+						if (transformation != null) {//transform driver and slave
+							if ((inRecords[1] != null || leftOuterJoin)
+									&& transformation.transform(inRecords,
+											outRecord)) {
+								writeRecord(WRITE_TO_PORT, outRecord[0]);
+							}
+						}else if (inRecords[1] != null){//send to output only records from DB
+							writeRecord(WRITE_TO_PORT, inRecords[1]);
 						}
 						//get next record from database with the same key
 						inRecords[1] = lookupTable.getNext();					
 					}while (inRecords[1] != null);
 				}
 		}
+		if (transformation != null) {
+			transformation.finished();
+		}		
 		broadcastEOF();
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
@@ -258,9 +266,11 @@ public class DBJoin extends Node {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			lookupTable.setLookupKey(recordKey);
-			transformation = RecordTransformFactory.createTransform(
-					transformSource, transformClassName, this, inMetadata,
-					outMetadata, transformationParameters);
+			if (transformSource != null || transformClassName != null) {
+				transformation = RecordTransformFactory.createTransform(
+						transformSource, transformClassName, this, inMetadata,
+						outMetadata, transformationParameters);
+			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}
