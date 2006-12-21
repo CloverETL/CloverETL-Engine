@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Thu Dec 21 08:55:10 CET 2006" guiVersion="1.4" licenseType="Evaluation license" modified="Thu Dec 21 10:44:51 CET 2006" name="graphDBUnloadParametrized">
+<Global>
+<Metadata id="Metadata1">
+<Record name="employees" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
+<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
+<Field delimiter=";" name="end_date" nullable="true" type="date"/>
+<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" type="string"/>
+<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
+</Record>
+</Metadata>
+<Metadata fileURL="metadata/orders.fmt" id="Metadata0"/>
+<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="21" guiY="82" id="DATA_READER0" type="DATA_READER"/>
+<Node dbConnection="DBConnection0" maxCashed="1000" enabled="enabled" guiHeight="0" guiName="DBJoin" guiWidth="0" guiX="185" guiY="82" id="DBJOIN0" joinKey="EmployeeID" sqlQuery="select * from employee where employee_id = ?" type="DBJOIN"/>
+<Node dedupKey="employee_id" enabled="enabled" guiHeight="0" guiName="Dedup" guiWidth="0" guiX="497" guiY="82" id="DEDUP0" keep="first" type="DEDUP"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="82" id="SORT0" sortKey="employee_id" type="SORT"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/employees.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="645" guiY="82" id="XLS_WRITER0" namesRow="1" sheetName="Emploees with orders" type="XLS_WRITER"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (DBJoin)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="DBJOIN0:0"/>
+<Edge fromNode="DBJOIN0:0" guiBendpoints="" id="Edge1" inPort="0 (Sort)" metadata="Metadata1" outPort="0 (DBJoin)" toNode="SORT0:0"/>
+<Edge fromNode="DEDUP0:0" guiBendpoints="" id="Edge3" inPort="0 (XLS Data Writer)" metadata="Metadata1" outPort="0 (Dedup)" toNode="XLS_WRITER0:0"/>
+<Edge fromNode="SORT0:0" guiBendpoints="" id="Edge2" inPort="0 (Dedup)" metadata="Metadata1" outPort="0 (Sort)" toNode="DEDUP0:0"/>
+</Phase>
+<Phase number="1">
+<Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="21" guiY="211" id="DB_INPUT_TABLE0" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="344" guiY="211" id="SORT1" sortKey="employee_id" type="SORT"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/employees.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="645" guiY="211" id="XLS_WRITER1" namesRow="1" sheetName="Emploees" type="XLS_WRITER"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge4" inPort="0 (Sort)" metadata="Metadata1" outPort="0 (DB Input Table)" toNode="SORT1:0"/>
+<Edge fromNode="SORT1:0" guiBendpoints="" id="Edge5" inPort="0 (XLS Data Writer)" metadata="Metadata1" outPort="0 (Sort)" toNode="XLS_WRITER1:0"/>
+</Phase>
+</Graph>
