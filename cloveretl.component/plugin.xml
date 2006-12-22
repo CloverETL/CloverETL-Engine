@@ -232,4 +232,9 @@
 		<parameter id="className" value="org.jetel.component.LookupTableReaderWriter"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="DATA_GENERATOR"/>
+		<parameter id="className" value="org.jetel.component.DataGenerator"/>
+	</extension>
+
 </plugin>
