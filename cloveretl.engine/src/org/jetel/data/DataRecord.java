@@ -22,6 +22,7 @@
 package org.jetel.data;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -166,6 +167,37 @@ public class DataRecord implements Serializable, Comparable {
 				targetField.setToDefaultValue();
 			}
 		}
+	}
+	
+	/**
+	 *  Set fields by copying the fields from the record passed as argument.
+	 *  
+	 * @param record
+	 * @return boolean array with true values on positions, where value was set to data record
+	 */
+	public boolean[] copyFieldsByNames(DataRecord record){
+		boolean[] result = new boolean[this.metadata.getNumFields()];
+		Arrays.fill(result, false);
+		DataField sourceField;
+		DataField targetField;
+		int sourceLength = record.getMetadata().getNumFields();
+		int count = 0; 
+		for (int i=0;i<this.metadata.getNumFields();i++){
+			targetField = this.getField(i);
+			try {
+				sourceField = record.getField(targetField.getMetadata().getName());
+				result[i] = true;
+				if (sourceField.getType() == targetField.getType()) {
+					targetField.setValue(sourceField.getValue());
+				} else {
+					targetField.setToDefaultValue();
+				}
+				if (count++ > sourceLength) break;//all fields from source were used
+			} catch (ArrayIndexOutOfBoundsException e) {
+				//do nothing: such field there isn't in source record
+			}
+		}
+		return result;
 	}
 
 
