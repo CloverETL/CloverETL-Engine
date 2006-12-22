@@ -76,7 +76,9 @@ public class ComponentXMLAttributes {
 
     private static final String STR_MAX_INT="MAX_INT";
     private static final String STR_MIN_INT="MIN_INT";
-    private static final String STR_MAX_DOUBLE="MAX_DOUBLE";
+    private static final String STR_MAX_LONG="MAX_LONG";
+    private static final String STR_MIN_LONG="MIN_LONG";
+   private static final String STR_MAX_DOUBLE="MAX_DOUBLE";
     private static final String STR_MIN_DOUBLE="MIN_DOUBLE";
     
 	protected NamedNodeMap attributes;
@@ -282,6 +284,65 @@ public class ComponentXMLAttributes {
 
 
 	/**
+	 *  Returns the int value of specified XML attribute
+	 *
+	 * @param  key  name of the attribute
+	 * @return      The long value
+     * @throws AttributeNotFoundException   if attribute does not exist or if can not resolve
+     * reference to global parameter/property included in atribute's textual/string value
+	 */
+	public long getLong(String key) throws AttributeNotFoundException {
+        String value=nodeXML.getAttribute(key);
+        if (value.length()==0){
+            throw new AttributeNotFoundException(key);
+        }
+        value = refResolver.resolveRef(value);
+        if (value.equalsIgnoreCase(STR_MIN_LONG)){
+            return Long.MIN_VALUE;
+        }else if (value.equalsIgnoreCase(STR_MAX_LONG)){
+            return Long.MAX_VALUE;
+        }
+		return Long.parseLong(value);
+	}
+
+
+
+	/**
+	 *  Returns the int value of specified XML attribute
+	 *
+	 * @param  key           name of the attribute
+	 * @param  defaultValue  default value to be returned when attribute can't be found
+	 * @return               The long value
+	 */
+	public long getLong(String key, long defaultValue) {
+	    String value=nodeXML.getAttribute(key);
+	    if (value.length()==0){
+	        return defaultValue;
+	    }
+	    try{
+	        value = refResolver.resolveRef(value);
+	        if (value.equalsIgnoreCase(STR_MIN_LONG)){
+	            return Long.MIN_VALUE;
+	        }else if (value.equalsIgnoreCase(STR_MAX_LONG)){
+	            return Long.MAX_VALUE;
+	        }
+	        return Long.parseLong(value);
+	    } catch (NumberFormatException ex) {
+	        return defaultValue;
+	    }
+	}
+
+    /**
+     * Sets value of specified attribute
+     * 
+     * @param key   attribute name
+     * @param value value to be set
+     */
+    public void setLong(String key,long value) throws AttributeNotFoundException{
+        nodeXML.setAttribute(key,String.valueOf(value));
+    }
+
+    /**
 	 *  Returns the boolean value of specified XML attribute
 	 *
 	 * @param  key  name of the attribute
