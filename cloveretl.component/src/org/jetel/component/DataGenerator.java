@@ -238,7 +238,7 @@ public class DataGenerator extends Node {
 		Object value = null;
 		Sequence sequence = getGraph().getSequences().hasNext() ? getGraph().getSequence((String)getGraph().getSequences().next()) : null;
 		for (int i=0;i<recordsNumber && runIt;i++){
-			set = record.copyFieldsByNames(patternRecord);
+			set = record.copyFieldsByName(patternRecord);
 			for (int j = 0; j < set.length; j++) {
 				if (!set[j]){//j-th field have not been set yet 
 					if (randomField[j]) {
