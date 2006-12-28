@@ -170,35 +170,37 @@ public class DataRecord implements Serializable, Comparable {
 	}
 	
 	/**
-	 *  Set fields by copying the fields from the record passed as argument.
+	 *  Set fields by copying name-matching fields' values from the record passed as argument.<br>
+     *  If two fields match by name but not by type, target field is set to default value.
 	 *  
-	 * @param record
-	 * @return boolean array with true values on positions, where value was set to data record
+	 * @param sourceRecord from which copy data
+	 * @return boolean array with true values on positions, where values were copied from source record
 	 */
-	public boolean[] copyFieldsByNames(DataRecord record){
-		boolean[] result = new boolean[this.metadata.getNumFields()];
-		Arrays.fill(result, false);
-		DataField sourceField;
-		DataField targetField;
-		int sourceLength = record.getMetadata().getNumFields();
-		int count = 0; 
-		for (int i=0;i<this.metadata.getNumFields();i++){
-			targetField = this.getField(i);
-			try {
-				sourceField = record.getField(targetField.getMetadata().getName());
-				result[i] = true;
-				if (sourceField.getType() == targetField.getType()) {
-					targetField.setValue(sourceField.getValue());
-				} else {
-					targetField.setToDefaultValue();
-				}
-				if (count++ > sourceLength) break;//all fields from source were used
-			} catch (ArrayIndexOutOfBoundsException e) {
-				//do nothing: such field there isn't in source record
-			}
-		}
-		return result;
-	}
+	public boolean[] copyFieldsByName(DataRecord sourceRecord) {
+        boolean[] result = new boolean[fields.length];
+        Arrays.fill(result, false);
+        DataField sourceField;
+        DataField targetField;
+        int sourceLength = sourceRecord.getMetadata().getNumFields();
+        int count = 0;
+        for (int i = 0; i < fields.length; i++) {
+            targetField = fields[i];
+            int srcFieldPos = sourceRecord.getMetadata().getFieldPosition(
+                    targetField.getMetadata().getName());
+            if (srcFieldPos >= 0) {
+                sourceField = sourceRecord.getField(srcFieldPos);
+                result[i] = true;
+                if (sourceField.getType() == targetField.getType()) {
+                    targetField.setValue(sourceField.getValue());
+                } else {
+                    targetField.setToDefaultValue();
+                }
+                if (count++ > sourceLength)
+                    break;//all fields from source were used
+            }
+        }
+        return result;
+    }
 
 
 
