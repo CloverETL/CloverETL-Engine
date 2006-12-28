@@ -153,6 +153,8 @@ public class StructureFormatter implements Formatter {
 	 */
 	public int write(DataRecord record) throws IOException {
 		lastIndex = 0;
+        int sentBytes=0;
+        int mark;
 		//for each record field which is in mask change its name to value
 		for (int i=0;i<maskAnalize.length;i++){
 			fieldName = maskAnalize[i].name;
@@ -160,17 +162,21 @@ public class StructureFormatter implements Formatter {
 			if (dataBuffer.remaining() < index - lastIndex){
 				flush();
 			}
-			//put bytes from mask from last field name to actual one to buffer 
+			//put bytes from mask from last field name to actual one to buffer
+            mark=dataBuffer.position();
 			dataBuffer.put(maskBytes, lastIndex, index - lastIndex);
 			fieldBuffer.clear();
 			//change field value to bytes
 			record.getField(fieldName).toByteBuffer(fieldBuffer, encoder);
 			fieldBuffer.flip();
+            sentBytes+=dataBuffer.position()-mark;
 			if (dataBuffer.remaining() < fieldBuffer.limit()){
 				flush();
 			}
+            mark=dataBuffer.position();
 			//put field value to data buffer
 			dataBuffer.put(fieldBuffer);
+            sentBytes+=dataBuffer.position()-mark;
 			//set processed part of mask to the end of field name identifier
 			lastIndex = index + maskAnalize[i].length;
 		}
@@ -178,10 +184,11 @@ public class StructureFormatter implements Formatter {
 		if (dataBuffer.remaining() < maskBytes.length - lastIndex){
 			flush();
 		}
+        mark=dataBuffer.position();
 		dataBuffer.put(maskBytes, lastIndex, maskBytes.length - lastIndex);
+        sentBytes+=dataBuffer.position()-mark;
         
-        //TODO Agato, prosim vrat tady pocet zapsanych bytu do vystupniho streamu, diky
-        return -1;
+        return sentBytes;
 	}
 
 	/* (non-Javadoc)
