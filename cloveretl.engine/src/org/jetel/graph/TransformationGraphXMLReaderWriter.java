@@ -205,7 +205,7 @@ public class TransformationGraphXMLReaderWriter {
 	//	Map<String,Edge> edges = new HashMap<String,Edge>(ALLOCATE_MAP_SIZE);
 
 		// delete all Nodes & Edges possibly held by TransformationGraph
-		graph.clear();
+		graph.free();
 
 		try {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
