@@ -21,6 +21,7 @@
 package org.jetel.data.lookup;
 
 //import org.w3c.dom.Node;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -79,10 +80,10 @@ public class LookupTableFactory {
     }
     
     /**
-     *  Method for creating various types of LookupTable based on lookup type & XML parameter definition.
+     * @param lookupTableType
+     * @return class from the given lookup table type
      */
-    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, org.w3c.dom.Node nodeXML) {
-        Class tClass;
+    private final static Class getLookupTableClass(String lookupTableType) {
         String className = null;
         LookupTableDescription lookupTableDescription = (LookupTableDescription) lookupTableMap.get(lookupTableType);
         
@@ -91,7 +92,7 @@ public class LookupTableFactory {
                 //unknown lookup table type, we suppose lookupTableType as full class name classification
                 className = lookupTableType;
                 //find class of lookupTable
-                tClass = Class.forName(lookupTableType); 
+                return Class.forName(lookupTableType); 
             } else {
                 className = lookupTableDescription.getClassName();
                 //activate plugin if necessary
@@ -101,7 +102,7 @@ public class LookupTableFactory {
                 }
                 
                 //find class of lookupTable
-                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown lookup table: " + lookupTableType + " class: " + className);
@@ -110,6 +111,14 @@ public class LookupTableFactory {
             logger.error("Unknown lookup table type: " + lookupTableType);
             throw new RuntimeException("Unknown lookup table type: " + lookupTableType);
         }
+    }
+
+    /**
+     *  Method for creating various types of LookupTable based on lookup type & XML parameter definition.
+     */
+    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, org.w3c.dom.Node nodeXML) {
+        Class tClass = getLookupTableClass(lookupTableType);
+
         try {
             //create instance of lookup table
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
@@ -119,6 +128,23 @@ public class LookupTableFactory {
             throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
         }
     }
+    
+    /**
+     *  Method for creating various types of LookupTable based on lookup type, parameters and theirs types for lookup table constructor.
+     */
+    public final static LookupTable createLookupTable(TransformationGraph graph, String lookupTableType, Object[] constructorParameters, Class[] parametersType) {
+        Class tClass = getLookupTableClass(lookupTableType);
+
+        try {
+            //create instance of lookup table
+            Constructor constructor = tClass.getConstructor(parametersType);
+            return (LookupTable) constructor.newInstance(constructorParameters);
+        } catch(Exception ex) {
+            logger.error("Can't create object of : " + lookupTableType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + lookupTableType + " exception: " + ex);
+        }
+    }
+
 }
 
 

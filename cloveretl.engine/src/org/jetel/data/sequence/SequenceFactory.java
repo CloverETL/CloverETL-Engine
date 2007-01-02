@@ -21,6 +21,7 @@
 package org.jetel.data.sequence;
 
 //import org.w3c.dom.Node;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,10 +81,10 @@ public class SequenceFactory {
     }
     
     /**
-     *  Method for creating various types of Sequences based on sequence type & XML parameter definition.
+     * @param sequenceType
+     * @return class from the given sequence type
      */
-    public final static Sequence createSequence(TransformationGraph graph, String sequenceType, org.w3c.dom.Node nodeXML) {
-        Class tClass;
+    private final static Class getSequenceClass(String sequenceType) {
         String className = null;
         SequenceDescription sequenceDescription = (SequenceDescription) sequenceMap.get(sequenceType);
         
@@ -92,7 +93,7 @@ public class SequenceFactory {
                 //unknown sequence type, we suppose sequenceType as full class name classification
                 className = sequenceType;
                 //find class of sequence
-                tClass = Class.forName(sequenceType); 
+                return Class.forName(sequenceType); 
             } else {
                 className = sequenceDescription.getClassName();
                 //activate plugin if necessary
@@ -102,7 +103,7 @@ public class SequenceFactory {
                 }
                 
                 //find class of component
-                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown sequence: " + sequenceType + " class: " + className);
@@ -111,6 +112,14 @@ public class SequenceFactory {
             logger.error("Unknown sequence type: " + sequenceType);
             throw new RuntimeException("Unknown sequence type: " + sequenceType);
         }
+    }
+    
+    /**
+     *  Method for creating various types of Sequences based on sequence type & XML parameter definition.
+     */
+    public final static Sequence createSequence(TransformationGraph graph, String sequenceType, org.w3c.dom.Node nodeXML) {
+        Class tClass = getSequenceClass(sequenceType);
+
         try {
             //create instance of sequence
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
@@ -120,6 +129,23 @@ public class SequenceFactory {
             throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
         }
     }
+    
+    /**
+     *  Method for creating various types of Sequences based on sequence type, parameters and theirs types for sequence constructor.
+     */
+    public final static Sequence createSequence(TransformationGraph graph, String sequenceType, Object[] constructorParameters, Class[] parametersType) {
+        Class tClass = getSequenceClass(sequenceType);
+
+        try {
+            //create instance of sequence
+            Constructor constructor = tClass.getConstructor(parametersType);
+            return (Sequence) constructor.newInstance(constructorParameters);
+        } catch(Exception ex) {
+            logger.error("Can't create object of : " + sequenceType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + sequenceType + " exception: " + ex);
+        }
+    }
+
 }
 
 

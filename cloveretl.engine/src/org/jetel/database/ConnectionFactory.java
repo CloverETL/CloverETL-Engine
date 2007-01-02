@@ -21,6 +21,7 @@
 package org.jetel.database;
 
 //import org.w3c.dom.Node;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -80,10 +81,10 @@ public class ConnectionFactory {
     }
     
     /**
-     *  Method for creating various types of Connection based on connection type & XML parameter definition.
+     * @param connectionType
+     * @return class from the given connection type
      */
-    public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
-        Class tClass;
+    private final static Class getConnectionClass(String connectionType) {
         String className = null;
         ConnectionDescription connectionDescription = (ConnectionDescription) connectionMap.get(connectionType);
         
@@ -92,7 +93,7 @@ public class ConnectionFactory {
                 //unknown connection type, we suppose connectionType as full class name classification
                 className = connectionType;
                 //find class of connection
-                tClass = Class.forName(connectionType); 
+                return Class.forName(connectionType); 
             } else {
                 className = connectionDescription.getClassName();
                 //activate plugin if necessary
@@ -102,7 +103,7 @@ public class ConnectionFactory {
                 }
                 
                 //find class of connection
-                tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
         } catch(ClassNotFoundException ex) {
             logger.error("Unknown connection: " + connectionType + " class: " + className);
@@ -111,6 +112,14 @@ public class ConnectionFactory {
             logger.error("Unknown connection type: " + connectionType);
             throw new RuntimeException("Unknown connection type: " + connectionType);
         }
+    }
+
+    /**
+     *  Method for creating various types of Connection based on connection type & XML parameter definition.
+     */
+    public final static IConnection createConnection(TransformationGraph graph, String connectionType, Element nodeXML) {
+        Class tClass = getConnectionClass(connectionType);
+
         try {
             //create instance of connection
             Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
@@ -120,6 +129,23 @@ public class ConnectionFactory {
             throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + ex);
         }
     }
+    
+    /**
+     *  Method for creating various types of Connection based on connection type, parameters and theirs types for connection constructor.
+     */
+    public final static IConnection createConnection(TransformationGraph graph, String connectionType, Object[] constructorParameters, Class[] parametersType) {
+        Class tClass = getConnectionClass(connectionType);
+
+        try {
+            //create instance of connection
+            Constructor constructor = tClass.getConstructor(parametersType);
+            return (IConnection) constructor.newInstance(constructorParameters);
+        } catch(Exception ex) {
+            logger.error("Can't create object of : " + connectionType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + connectionType + " exception: " + ex);
+        }
+    }
+
 }
 
 
