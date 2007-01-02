@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of Multi-level Reader Component." guiVersion="1.5" licenseType="Evaluation license" modified="Wed Nov 22 12:11:27 CET 2006" name="graphSystemExecute" revision="1.1">
+<Global>
+<Metadata id="Metadata1">
+<Record name="rec" type="fixed" recordDelimiter="\n" recordSize="41">
+<Field name="00" size="5" shift="0" type="string"/>
+<Field name="01" size="5" shift="1" type="integer"/>
+<Field name="02" size="5" shift="1" type="byte"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="rec" type="fixed" recordDelimiter="\n" recordSize="41">
+<Field name="00" size="5" shift="1" type="string"/>
+<Field name="01" size="5" shift="1" type="integer"/>
+<Field name="02" size="5" shift="1" type="byte"/>
+</Record>
+</Metadata>
+
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
+</Global>
+<Phase number="0">
+
+<Node enabled="enabled" id="Input" type="MULTI_LEVEL_READER"
+fileURL="${WORKSPACE}/data/fixlen.dat"
+ />
+ 
+<Node enabled="enabled" id="Output1" type="FIXLEN_DATA_WRITER"
+fileURL="${WORKSPACE}/output/data.out1"
+/>
+
+<Node enabled="enabled" id="Output2" type="FIXLEN_DATA_WRITER"
+fileURL="${WORKSPACE}/output/data.out2"
+/>
+
+<Edge fromNode="Input:0" id="INEDGE1" metadata="Metadata1" toNode="Output1:0"/>
+<Edge fromNode="Input:1" id="INEDGE2" metadata="Metadata2" toNode="Output2:0"/>
+
+</Phase>
+</Graph>
