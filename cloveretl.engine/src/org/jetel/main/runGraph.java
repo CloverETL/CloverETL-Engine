@@ -28,6 +28,8 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Logger;
+import org.apache.log4j.net.SocketAppender;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -53,6 +55,7 @@ import org.jetel.util.crypto.Enigma;
  *  <tr><td nowrap>-plugins <i>filename</i></td><td>directory where to look for plugins/components</td></tr>
  *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
  *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
+ *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -73,6 +76,7 @@ public class runGraph {
     public final static String PLUGINS_SWITCH = "-plugins";
     public final static String PASSWORD_SWITCH = "-pass";
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
+    public final static String LOG_HOST_SWITCH = "-loghost";
 	
     
     /**
@@ -115,10 +119,6 @@ public class runGraph {
 
         graphReader.read(inStream);
         
-        if(!graph.init()) {
-            throw new GraphConfigurationException("Graph initialization failed.");
-        }
-        
         return graph;
     }
     
@@ -134,6 +134,7 @@ public class runGraph {
 		int trackingInterval=-1;
 		String pluginsRootDirectory = null;
         String password = null;
+        String logHost = null;
 		
 		System.out.println("***  CloverETL framework/transformation graph runner ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
 		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
@@ -179,16 +180,38 @@ public class runGraph {
             }else if (args[i].startsWith(PASSWORD_SWITCH)){
                 i++;
                 password = args[i]; 
+            }else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)){
+                loadFromSTDIN=true;
+            }else if (args[i].startsWith(LOG_HOST_SWITCH)){
+                i++;
+                logHost = args[i]; 
             }else if (args[i].startsWith("-")) {
 				System.err.println("Unknown option: "+args[i]);
 				System.exit(-1);
-			}else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)){
-			    loadFromSTDIN=true;
             }
 		}
 		
         //engine initialization - should be called only once
         runGraph.initEngine(pluginsRootDirectory, password);
+        
+        //setup log4j appenders
+        if(logHost != null) {
+            String[] hostAndPort = logHost.split(":");
+            if(hostAndPort[0].length() == 0 || hostAndPort.length > 2) {
+                System.err.println("Invalid log destination, i.e. -loghost localhost:4445");
+                System.exit(-1);
+            }
+            int port = 4445;
+            try {
+                if(hostAndPort.length == 2) {
+                    port = Integer.parseInt(hostAndPort[1]);
+                }
+            } catch(NumberFormatException e) {
+                System.err.println("Invalid log destination, i.e. -loghost localhost:4445");
+                System.exit(-1);
+            }
+            Logger.getRootLogger().addAppender(new SocketAppender(hostAndPort[0], port));
+        }
         
 		//prapere input stream with XML graph definition
         InputStream in = null;
@@ -214,6 +237,10 @@ public class runGraph {
         TransformationGraph graph = null;
         try {
             graph = runGraph.loadGraph(in, properties);
+
+            if(!graph.init()) {
+                throw new GraphConfigurationException("Graph initialization failed.");
+            }
 
             if (verbose) {
                 //this can be called only after graph.init()
@@ -284,6 +311,7 @@ public class runGraph {
         System.out.println("-plugins\t\tdirectory where to look for plugins/components");
         System.out.println("-pass\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("-stdin\t\tload graph definition from STDIN");
+        System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         
