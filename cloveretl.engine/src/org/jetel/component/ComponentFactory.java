@@ -21,6 +21,7 @@
 package org.jetel.component;
 
 //import org.w3c.dom.Node;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
@@ -28,11 +29,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import javax.naming.ConfigurationException;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.plugin.Extension;
@@ -82,18 +80,12 @@ public class ComponentFactory {
 		componentMap.put(component.getType(), component);
 	}
 	
-	/**
-	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
-	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
-	 *  This way new components can be added withou modifying ComponentFactory code.
-	 *  
-	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
-	 * @param  xmlNode        XML element containing appropriate Node parameters
-	 * @return                requested Component (Node) object or null if creation failed 
-	 * @since                 May 27, 2002
-	 */
-	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
-		Class tClass;
+    
+    /**
+     * @param componentType
+     * @return class from the given component type
+     */
+    private final static Class getComponentClass(String componentType) {
         String className = null;
         ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
         
@@ -102,7 +94,7 @@ public class ComponentFactory {
                 //unknown component type, we suppose componentType as full class name classification
                 className = componentType;
                 //find class of component
-                tClass = Class.forName(componentType); 
+                return Class.forName(componentType); 
             } else {
                 className = componentDescription.getClassName();
                 //activate plugin if necessary
@@ -112,27 +104,73 @@ public class ComponentFactory {
                 }
                 
                 //find class of component
-        		tClass = Class.forName(className, true, pluginDescriptor.getClassLoader());
+                return Class.forName(className, true, pluginDescriptor.getClassLoader());
             }
-		} catch(ClassNotFoundException ex) {
+        } catch(ClassNotFoundException ex) {
             logger.error("Unknown component: " + componentType + " class: " + className);
-			throw new RuntimeException("Unknown component: " + componentType + " class: " + className);
-		} catch(Exception ex) {
+            throw new RuntimeException("Unknown component: " + componentType + " class: " + className);
+        } catch(Exception ex) {
             logger.error("Unknown component type: " + componentType);
             throw new RuntimeException("Unknown component type: " + componentType);
-		}
-		try {
+        }
+
+    }
+    
+	/**
+	 *  Method for creating various types of Components based on component type & XML parameter definition.<br>
+	 *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+	 *  
+	 * @param  componentType  Type of the component (e.g. SimpleCopy, Gather, Join ...)
+	 * @param  xmlNode        XML element containing appropriate Node parameters
+	 * @return                requested Component (Node) object or null if creation failed 
+	 * @since                 May 27, 2002
+	 */
+	public final static Node createComponent(TransformationGraph graph, String componentType, org.w3c.dom.Node nodeXML) {
+		Class tClass = getComponentClass(componentType);
+        
+        try {
             //create instance of component
 			Method method = tClass.getMethod(NAME_OF_STATIC_LOAD_FROM_XML, PARAMETERS_FOR_METHOD);
 			return (org.jetel.graph.Node) method.invoke(null, new Object[] {graph, nodeXML});
         } catch(InvocationTargetException e) {
             logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
             throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
+        } catch(NoSuchMethodException e) {
+            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage());
 		} catch(Exception ex) {
             logger.error("Can't create object of : " + componentType + " exception: " + ex);
 			throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
 		}
 	}
+    
+    /**
+     *  Method for creating various types of Components based on component type, parameters and theirs types for component constructor.<br>
+     *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+     * @param graph
+     * @param componentType
+     * @param constructorParameters parameters passsed to component constructor
+     * @param parametersType types of all constructor parameters
+     * @return
+     */
+    public final static Node createComponent(TransformationGraph graph, String componentType, Object[] constructorParameters, Class[] parametersType) {
+        Class tClass = getComponentClass(componentType);
+        
+        try {
+            //create instance of component
+            Constructor constructor = tClass.getConstructor(parametersType);
+            return (org.jetel.graph.Node) constructor.newInstance(constructorParameters);
+        } catch(InvocationTargetException e) {
+            logger.error("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getTargetException().getMessage());
+        } catch(NoSuchMethodException e) {
+            logger.error("Can't create object of type " + componentType + " with reason: " + e.getMessage());
+            throw new RuntimeException("Can't create object of type " + componentType + " with reason: " + e.getMessage());
+        } catch(Exception ex) {
+            logger.error("Can't create object of : " + componentType + " exception: " + ex);
+            throw new RuntimeException("Can't create object of : " + componentType + " exception: " + ex);
+        }
+    }
 }
 
 
