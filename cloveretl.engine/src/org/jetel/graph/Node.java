@@ -41,6 +41,7 @@ import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.runtime.CloverRuntime;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
+import org.jetel.metadata.DataRecordMetadata;
 import org.w3c.dom.Element;
 
 
@@ -269,8 +270,8 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@return    Collection of output ports metadata
 	 */
-	public Collection getOutMetadata() {
-		List ret = new ArrayList(outPorts.size());
+	public Collection<DataRecordMetadata> getOutMetadata() {
+		List<DataRecordMetadata> ret = new ArrayList<DataRecordMetadata>(outPorts.size());
 		for(Iterator it = getOutPorts().iterator(); it.hasNext();) {
 		    ret.add(((OutputPort) (it.next())).getMetadata());
 		}
