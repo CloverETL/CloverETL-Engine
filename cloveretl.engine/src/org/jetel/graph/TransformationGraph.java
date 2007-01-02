@@ -24,7 +24,6 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -782,9 +781,17 @@ public final class TransformationGraph {
     
     /**
      * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
-     * 
+     * @deprecated use TransformationGraph.free() method instead.
      */
+    @Deprecated
     public void clear(){
+        free();
+    }
+
+    /**
+     * Clears/removes all registered objects (Edges,Nodes,Phases,etc.)
+     */
+    public void free() {
         freeResources();
         deleteEdges();
         deleteNodes();
@@ -794,7 +801,7 @@ public final class TransformationGraph {
         deleteLookupTables();
         deleteDataRecordMetadata();
     }
-
+    
     public Map<String, Node> getNodes() {
         return nodes;
     }
