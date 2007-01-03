@@ -94,9 +94,24 @@ public class StructureFormatter implements Formatter {
 		// create buffered output stream writer and buffers 
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		fieldBuffer = ByteBuffer.allocateDirect(Defaults.DataFormatter.FIELD_BUFFER_LENGTH);
-		
+		//if mask is not given create default mask
+		if (mask == null) {
+			StringBuilder maskBuilder = new StringBuilder();
+			maskBuilder.append("< ");
+			maskBuilder.append(metadata.getName());
+			maskBuilder.append(" ");
+			for (int i=0;i<metadata.getNumFields();i++){
+				maskBuilder.append(metadata.getField(i).getName());
+				maskBuilder.append("=$");
+				maskBuilder.append(metadata.getField(i).getName());
+				maskBuilder.append(" ");
+			}
+			maskBuilder.append("/>\n");
+			mask = maskBuilder.toString();
+		}
 		try {
-			maskBytes = mask.getBytes(charSet != null ? charSet : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+			maskBytes = mask.getBytes(charSet != null ? charSet
+					: Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		} catch (UnsupportedEncodingException e) {
 			throw new ComponentNotReadyException(e);
 		}
@@ -137,7 +152,7 @@ public class StructureFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	public void close() {
-        if (writer == null) {
+        if (writer == null || !writer.isOpen()) {
             return;
         }
 		try{
