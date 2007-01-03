@@ -98,7 +98,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
- *  <tr><td><b>maxCashed</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
+ *  <tr><td><b>maxCached</b><i>optional</i><td>number of sets of records with different key which will be stored in memory</td>
  *  <tr><td><b>leftOuterJoin</b><i>optional</i><td>true/false<I> default: FALSE</I> See description.</td>
  *    </table>
  *    <h4>Example:</h4> <pre>
@@ -125,7 +125,7 @@ public class DBJoin extends Node {
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
-	private static final String XML_MAX_CASHED_ATTRIBUTE = "maxCashed";
+	private static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 
 	public final static String COMPONENT_TYPE = "DBJOIN";
@@ -141,7 +141,7 @@ public class DBJoin extends Node {
 	private String connectionName;
 	private String query;
 	private String metadataName;
-	private int maxCashed;
+	private int maxCached;
 	private boolean leftOuterJoin = false;
 
 	private Properties transformationParameters=null;
@@ -260,7 +260,7 @@ public class DBJoin extends Node {
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
-        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCashed);
+        lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCached);
 		lookupTable.init();
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
@@ -300,7 +300,7 @@ public class DBJoin extends Node {
 			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)){
 				dbjoin.setLeftOuterJoin(xattribs.getBoolean(XML_LEFTOUTERJOIN_ATTRIBUTE));
 			}
-			dbjoin.setMaxCashed(xattribs.getInteger(XML_MAX_CASHED_ATTRIBUTE,100));
+			dbjoin.setMaxCached(xattribs.getInteger(XML_MAX_CACHED_ATTRIBUTE,100));
 		} catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -326,8 +326,8 @@ public class DBJoin extends Node {
 		if (transformSource!=null){
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
-		if (maxCashed >0 ) {
-			xmlElement.setAttribute(XML_MAX_CASHED_ATTRIBUTE, String.valueOf(maxCashed));
+		if (maxCached >0 ) {
+			xmlElement.setAttribute(XML_MAX_CACHED_ATTRIBUTE, String.valueOf(maxCached));
 		}
 		xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE, StringUtils.stringArraytoString(joinKey, ';'));
 
@@ -353,8 +353,8 @@ public class DBJoin extends Node {
 		this.metadataName = dbMetadata;
 	}
 
-	private void setMaxCashed(int maxCashed) {
-		this.maxCashed = maxCashed;
+	private void setMaxCached(int maxCached) {
+		this.maxCached = maxCached;
 	}
 
 	private void setLeftOuterJoin(boolean leftOuterJoin) {
