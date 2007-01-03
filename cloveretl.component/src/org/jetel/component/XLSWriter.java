@@ -155,6 +155,11 @@ public class XLSWriter extends Node {
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
+	@Override
+	public void free() {
+		super.free();
+		formatter.close();
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
@@ -166,16 +171,16 @@ public class XLSWriter extends Node {
 		checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 0, 0);
 
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
         
         return status;
     }
