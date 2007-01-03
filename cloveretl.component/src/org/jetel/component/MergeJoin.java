@@ -220,6 +220,15 @@ public class MergeJoin extends Node {
 		this.slaveDuplicates = slaveDuplicates;
 	}
 
+	public MergeJoin(String id, String[][] joiners, DataRecordTransform transform,
+			Join join, boolean slaveDuplicates) {
+		super(id);
+		this.joiners = joiners;
+		this.transformation = transform;
+		this.join = join;
+		this.slaveDuplicates = slaveDuplicates;
+	}
+
 	/**
 	 * Replace minimal record runs with the following ones. Change min indicator array
 	 * to reflect new set of runs.
@@ -374,11 +383,11 @@ public class MergeJoin extends Node {
 		for (int idx = 0; idx < inputCnt; idx++) {
 			inMetadata[idx] = getInputPort(idx).getMetadata();
 		}
-        try {
+		if (transformation != null){
+			transformation.init(transformationParameters, inMetadata, outMetadata);
+		}else{
             transformation = RecordTransformFactory.createTransform(
             		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
         }
 	}
 
