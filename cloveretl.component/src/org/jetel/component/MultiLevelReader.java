@@ -120,6 +120,7 @@ public class MultiLevelReader extends Node {
     private String charset;
     private String seltorCode;
     private String seltorClass;
+	private TypeSelector seltor;
     private Properties seltorProperties;
     
     private OutputPort output[];
@@ -144,6 +145,19 @@ public class MultiLevelReader extends Node {
 		this.seltorClass = seltorClass;
 		this.seltorProperties = seltorProperties;
 	}
+	
+	public MultiLevelReader(String id, String fileURL, String charset, String dataPolicy, int skipRows, int numRecords,
+			TypeSelector seltor, Properties seltorProperties) {
+		super(id);
+		this.fileURL = fileURL;
+		this.charset = charset;
+		this.policyType = PolicyType.valueOfIgnoreCase(dataPolicy);
+		this.skipRows = skipRows;
+		this.numRecords = numRecords;
+		this.seltor = seltor;
+		this.seltorProperties = seltorProperties;
+	}
+	
 
 	@Override
 	public Result execute() throws Exception {
@@ -229,8 +243,7 @@ public class MultiLevelReader extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		TypeSelector seltor;
-		if (seltorCode != null) {
+		if (seltor == null && seltorCode != null) {
 			seltor = createSelectorDynamic(seltorCode);
 		} else {
 			seltor = createSelector(seltorClass);

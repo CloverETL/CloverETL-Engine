@@ -20,18 +20,11 @@
 package org.jetel.component;
 
 import java.util.Enumeration;
-import java.util.Hashtable;
 import java.util.Properties;
 
-import javax.jms.Connection;
-import javax.jms.ConnectionFactory;
-import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageProducer;
-import javax.jms.Session;
-import javax.naming.Context;
-import javax.naming.InitialContext;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -47,7 +40,6 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.StringUtils;
@@ -127,12 +119,19 @@ public class JmsWriter extends Node {
 		this.psorProperties = psorProperties;
 	}
 
+	public JmsWriter(String id, String conId, DataRecord2JmsMsg psor, Properties psorProperties) {
+		super(id);
+		this.conId = conId;
+		this.psor = psor;
+		this.psorProperties = psorProperties;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (psorClass == null && psorCode == null) {
+		if (psor == null && psorClass == null && psorCode == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
 		IConnection c = getGraph().getConnection(conId);
@@ -142,8 +141,9 @@ public class JmsWriter extends Node {
 
 		connection = (JmsConnection)c;
 		inPort = getInputPort(0);
-		psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
-
+		if (psor == null) {
+			psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+		}
 		try {
 			connection.init();
 			producer = connection.createProducer();

@@ -130,6 +130,17 @@ public class JmsReader extends Node {
 		this.psorProperties = psorProperties;
 	}
 
+	public JmsReader(String id, String conId, String selector, JmsMsg2DataRecord psor,
+			int maxMsgCount, int timeout, Properties psorProperties) {
+		super(id);
+		this.conId = conId;
+		this.selector = selector;
+		this.psor = psor;
+		this.maxMsgCount = maxMsgCount;
+		this.timeout = timeout;
+		this.psorProperties = psorProperties;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
@@ -150,7 +161,10 @@ public class JmsReader extends Node {
 		} catch (Exception e) {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
-		psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+		if (psor == null) {
+			psor = psorCode != null ? createProcessorDynamic(psorCode)
+					: createProcessor(psorClass);
+		}		
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
 	}
 

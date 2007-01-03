@@ -156,9 +156,13 @@ public class Partition extends Node {
 	 *
 	 * @param  id         Description of the Parameter
 	 */
-	public Partition(String id) {
+	public Partition(String id, PartitionFunction fce) {
 		super(id);
-		partitionFce=null;
+		partitionFce=fce;
+	}
+	
+	public Partition(String id) {
+		this(id, null);
 	}
 
 
