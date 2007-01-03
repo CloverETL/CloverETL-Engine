@@ -233,6 +233,14 @@ public class LookupJoin extends Node {
 		this.transformSource = transform;
 	}
 
+	public LookupJoin(String id, String lookupTableName, String[] joinKey,
+			DataRecordTransform transform) {
+		super(id);
+		this.lookupTableName = lookupTableName;
+		this.joinKey = joinKey;
+		this.transformation = transform;
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -333,9 +341,13 @@ public class LookupJoin extends Node {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			lookupTable.setLookupKey(recordKey);
-			transformation = RecordTransformFactory.createTransform(
-					transformSource, transformClassName, this, inMetadata,
-					outMetadata, transformationParameters);
+			if (transformation != null){
+				transformation.init(transformationParameters, inMetadata, outMetadata);
+			}else{
+				transformation = RecordTransformFactory.createTransform(
+						transformSource, transformClassName, this, inMetadata,
+						outMetadata, transformationParameters);
+			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
 		}

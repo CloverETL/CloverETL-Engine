@@ -239,7 +239,17 @@ public class HashJoin extends Node {
 		this.slaveJoiners = slaveJoiners;
 	}
 
-//	/**
+	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, 
+			DataRecordTransform transform, Join join) {
+		super(id);
+		this.transformation =transform;
+		this.join = join;
+		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
+		this.driverJoiners = driverJoiners;
+		this.slaveJoiners = slaveJoiners;
+	}
+
+	//	/**
 //	*  Sets the leftOuterJoin attribute of the HashJoin object
 //	*
 //	* @param  outerJoin  The new leftOuterJoin value
@@ -341,11 +351,11 @@ public class HashJoin extends Node {
 		for (int idx = 0; idx < slaveCnt; idx++) {
 			inMetadata[1 + idx] = getInputPort(FIRST_SLAVE_PORT + idx).getMetadata();
 		}
-		try {
+		if (transformation != null){
+			transformation.init(transformationParameters, inMetadata, outMetadata);
+		}else{
 			transformation = RecordTransformFactory.createTransform(
 					transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
-		} catch(Exception e) {
-			throw new ComponentNotReadyException(this, e);
 		}
 	}
 

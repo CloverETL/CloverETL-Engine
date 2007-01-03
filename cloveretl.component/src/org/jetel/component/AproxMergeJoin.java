@@ -242,6 +242,16 @@ public class AproxMergeJoin extends Node {
 		this.transformClassNameForSuspicious = transformClassForSus;
 	}
 	
+	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
+			DataRecordTransform transform, DataRecordTransform transformForSusp) 
+				throws JetelException{
+		super(id);
+		this.joinParameters=joinParameters;
+		this.matchingKey[0]=matchingKey;
+		this.transformation = transform;
+		this.transformationForSuspicious = transformForSusp;
+	}
+
 	/**
 	 *  Sets specific key (string) for slave records<br>
 	 *  Can be used if slave record has different names
@@ -553,26 +563,29 @@ public class AproxMergeJoin extends Node {
 		if (!outMetadata[0].equals(inMetadata[0])){
 			throw new ComponentNotReadyException("Wrong metadata on output port no 2 (NOT_MATCH_DRIVER_OUT)");
 		}
-		if (!outMetadata[1].equals(inMetadata[1])){
-			throw new ComponentNotReadyException("Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
+		if (!outMetadata[1].equals(inMetadata[1])) {
+			throw new ComponentNotReadyException(
+					"Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
 		}
-		outMetadata = new DataRecordMetadata[] {getOutputPort(CONFORMING_OUT).getMetadata()};
-        try {
-            transformation = RecordTransformFactory.createTransform(
-            		transformSource, transformClassName, this, inMetadata, outMetadata, 
-            		transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
-        }
-        outMetadata = new DataRecordMetadata[] {getOutputPort(SUSPICIOUS_OUT).getMetadata()};
-        try {
-            transformationForSuspicious = RecordTransformFactory.createTransform(
-            		transformSourceForSuspicious, transformClassNameForSuspicious, 
-            		this, inMetadata, outMetadata, transformationParametersForSuspicious);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
-        }
-		//initializing join parameters
+		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
+				.getMetadata() };
+		if (transformation != null) {
+			transformation.init(transformationParameters, inMetadata, outMetadata);
+		} else {
+			transformation = RecordTransformFactory.createTransform(
+					transformSource, transformClassName, this, inMetadata,
+					outMetadata, transformationParameters);
+		}
+		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
+		if (transformationForSuspicious != null) {
+			transformationForSuspicious.init(transformationParametersForSuspicious, 
+					inMetadata,	outMetadata);
+		} else {
+			transformationForSuspicious = RecordTransformFactory.createTransform(
+					transformSourceForSuspicious, transformClassNameForSuspicious, 
+					this, inMetadata, outMetadata, transformationParametersForSuspicious);
+		}
+		// initializing join parameters
 		joinKeys = new String[joinParameters.length];
 		maxDifferenceLetters = new int[joinParameters.length];
 		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];

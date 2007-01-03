@@ -223,19 +223,26 @@ public class Reformat extends Node {
         }
 
 		//create instance of record transformation
-        if(transformation == null) {
-            try {
-                transformation = RecordTransformFactory.createTransform(transform, transformClass, this, inMetadata, outMetadata, transformationParameters);
-            } catch(Exception e) {
-                throw new ComponentNotReadyException(this, "Cannot create extern transformation.", e);
-            }
-        }
+        if (transformation != null) {
+			transformation.init(transformationParameters, inMetadata,
+					outMetadata);
+		} else {
+			try {
+				transformation = RecordTransformFactory.createTransform(
+						transform, transformClass, this, inMetadata,
+						outMetadata, transformationParameters);
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this,
+						"Cannot create extern transformation.", e);
+			}
+		}
 	}
 
 	
     /**
-     * @param transformationParameters The transformationParameters to set.
-     */
+	 * @param transformationParameters
+	 *            The transformationParameters to set.
+	 */
     public void setTransformationParameters(Properties transformationParameters) {
         this.transformationParameters = transformationParameters;
     }

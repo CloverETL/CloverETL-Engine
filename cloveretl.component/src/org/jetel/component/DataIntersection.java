@@ -176,6 +176,12 @@ public class DataIntersection extends Node {
 		this.transformSource = transform;
 	}
 
+	public DataIntersection(String id, String[] joinKeys, DataRecordTransform transform) {
+		super(id);
+		this.joinKeys = joinKeys;
+		this.transformation = transform;
+	}
+
 	/**
 	 *  Sets specific key (string) for slave records<br>
 	 *  Can be used if slave record has different names
@@ -376,11 +382,11 @@ public class DataIntersection extends Node {
         DataRecordMetadata[] outMetadata = new DataRecordMetadata[] { getOutputPort(
                 WRITE_TO_PORT_A_B).getMetadata() };
 		//create instance of record transformation
-        try {
-            transformation = RecordTransformFactory.createTransform(
+        if (transformation != null){
+        	transformation.init(transformationParameters, inMetadata, outMetadata);
+        }else{
+           transformation = RecordTransformFactory.createTransform(
             		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, e);
         }
 	}
 

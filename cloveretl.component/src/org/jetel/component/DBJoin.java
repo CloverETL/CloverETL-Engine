@@ -134,8 +134,8 @@ public class DBJoin extends Node {
 	private final static int READ_FROM_PORT = 0;
 	
 	private String transformClassName = null;
-	private RecordTransform transformation = null;
 	private String transformSource = null;
+	private RecordTransform transformation = null;
 	
 	private String[] joinKey;
 	private String connectionName;
@@ -170,6 +170,15 @@ public class DBJoin extends Node {
 		this.transformSource = transform;
 	}
 	
+	public DBJoin(String id,String connectionName,String query,String[] joinKey,
+			DataRecordTransform transform){
+		super(id);
+		this.connectionName = connectionName;
+		this.query = query;
+		this.joinKey = joinKey;
+		this.transformation = transform;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
 	 */
@@ -266,6 +275,9 @@ public class DBJoin extends Node {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
 			lookupTable.setLookupKey(recordKey);
+			if (transformation != null){
+				transformation.init(transformationParameters, inMetadata, outMetadata);
+			}
 			if (transformSource != null || transformClassName != null) {
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, this, inMetadata,
