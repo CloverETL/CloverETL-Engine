@@ -164,6 +164,11 @@ public class Reformat extends Node {
         this.transform = transform;
         this.transformClass = transformClass;
 	}
+    
+    public Reformat(String id, RecordTransform transformation) {
+        super(id);
+        this.transformation = transformation;
+    }
 
 	@Override
 	public Result execute() throws Exception {
@@ -218,10 +223,12 @@ public class Reformat extends Node {
         }
 
 		//create instance of record transformation
-        try {
-            transformation = RecordTransformFactory.createTransform(transform, transformClass, this, inMetadata, outMetadata, transformationParameters);
-        } catch(Exception e) {
-            throw new ComponentNotReadyException(this, "Cannot create extern transformation.", e);
+        if(transformation == null) {
+            try {
+                transformation = RecordTransformFactory.createTransform(transform, transformClass, this, inMetadata, outMetadata, transformationParameters);
+            } catch(Exception e) {
+                throw new ComponentNotReadyException(this, "Cannot create extern transformation.", e);
+            }
         }
 	}
 
