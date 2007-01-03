@@ -130,7 +130,7 @@ public class DataFormatter implements Formatter {
 	 * @since    March 28, 2002
 	 */
 	public void close() {
-		if (writer == null) {
+		if (writer == null || !writer.isOpen()) {
 			return;
 		}
 		try{

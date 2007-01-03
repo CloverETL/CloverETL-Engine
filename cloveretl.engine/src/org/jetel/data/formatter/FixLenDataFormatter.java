@@ -297,7 +297,7 @@ public class FixLenDataFormatter implements Formatter {
 	 *  Description of the Method
 	 */
 	public void close() {
-		if (writer == null) {
+		if (writer == null || !writer.isOpen()) {
 			return;
 		}
 		try {

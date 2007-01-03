@@ -227,7 +227,7 @@ public class DelimitedDataParser implements Parser {
 	 *
 	 */
 	private void releaseDataSource() {
-		if (reader == null) {
+		if (reader == null || !reader.isOpen()) {
 			return;
 		}
 		try {
