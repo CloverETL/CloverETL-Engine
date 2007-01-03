@@ -147,6 +147,13 @@ public class Denormalizer extends Node {
 		this.order = order;
 	}
 
+	public Denormalizer(String id, RecordDenormalize xform, String[] key, Order order) {
+		super(id);
+		this.denorm = xform;
+		this.key = key;
+		this.order = order;
+	}
+
 	/**
 	 * Creates denormalization instance using specified class.
 	 * @param denormClass
@@ -205,19 +212,22 @@ public class Denormalizer extends Node {
 		recordKey = new RecordKey(key, inMetadata);
 		recordKey.init();
 
-		if (xformClass != null) {
-			denorm = createDenormalizer(xformClass);
-		} else {
-			switch (guessTransformType(xform)) {
-			case TRANSFORM_JAVA_SOURCE:
-				denorm = createDenormalizerDynamic(xform);
-				break;
-			case TRANSFORM_CLOVER_TL:
-                denorm = new RecordDenormalizeTL(logger, xform);
-                break;
-			default:
-				throw new ComponentNotReadyException(
-						"Can't determine transformation code type at component ID :" + getId());
+		if (denorm == null) {
+			if (xformClass != null) {
+				denorm = createDenormalizer(xformClass);
+			} else {
+				switch (guessTransformType(xform)) {
+				case TRANSFORM_JAVA_SOURCE:
+					denorm = createDenormalizerDynamic(xform);
+					break;
+				case TRANSFORM_CLOVER_TL:
+					denorm = new RecordDenormalizeTL(logger, xform);
+					break;
+				default:
+					throw new ComponentNotReadyException(
+							"Can't determine transformation code type at component ID :"
+									+ getId());
+				}
 			}
 		}
 		if (!denorm.init(transformationParameters, inMetadata, outMetadata)) {

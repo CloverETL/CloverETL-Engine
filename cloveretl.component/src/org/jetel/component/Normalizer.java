@@ -126,6 +126,11 @@ public class Normalizer extends Node {
 		this.xform = xform;
 	}
 
+	public Normalizer(String id, RecordNormalize xform) {
+		super(id);
+		this.norm = xform;
+	}
+
 	/**
 	 * Creates normalization instance using specified class.
 	 * @param normClass
@@ -182,19 +187,22 @@ public class Normalizer extends Node {
 		inMetadata = inPort.getMetadata();
 		outMetadata = outPort.getMetadata();
 
-		if (xformClass != null) {
-			norm = createNormalizer(xformClass);
-		} else {
-			switch (guessTransformType(xform)) {
-			case TRANSFORM_JAVA_SOURCE:
-				norm = createNormalizerDynamic(xform);
-				break;
-			case TRANSFORM_CLOVER_TL:
-                norm = new RecordNormalizeTL(logger, xform);
-                break;
-			default:
-				throw new ComponentNotReadyException(
-						"Can't determine transformation code type at component ID :" + getId());
+		if (norm == null) {
+			if (xformClass != null) {
+				norm = createNormalizer(xformClass);
+			} else {
+				switch (guessTransformType(xform)) {
+				case TRANSFORM_JAVA_SOURCE:
+					norm = createNormalizerDynamic(xform);
+					break;
+				case TRANSFORM_CLOVER_TL:
+					norm = new RecordNormalizeTL(logger, xform);
+					break;
+				default:
+					throw new ComponentNotReadyException(
+							"Can't determine transformation code type at component ID :"
+									+ getId());
+				}
 			}
 		}
 		if (!norm.init(transformationParameters, inMetadata, outMetadata)) {
