@@ -83,11 +83,14 @@ import org.w3c.dom.Element;
  *  <tr><td><b>charset</b></td><td>character encoding of the input file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
- *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
+ *  <tr><td><b>numRecords</b></td>optional<td>max number of parsed records (defaults to 0 - unlimited)</td>
  *  <tr><td><b>selectorCode</b></td><td>Inline Java code defining type selector class</td>
  *  <tr><td><b>selectorClass</b></td><td>Name of selector class (defaults to CyclicTypeSelector)</td>
  *  </tr>
  *  </table>
+ * <h4>Example:</h4>
+ * <pre>&lt;Node enabled="enabled" id="Input" type="MULTI_LEVEL_READER" fileURL="${WORKSPACE}/data/fixlen.dat"
+ * selectorClass="org.jetel.data.parser.CiclicTypeSelector"/&gt;</pre>
  *
  * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
  * @since 15/12/06  
@@ -145,7 +148,7 @@ public class MultiLevelReader extends Node {
 		this.seltorClass = seltorClass;
 		this.seltorProperties = seltorProperties;
 	}
-	
+
 	public MultiLevelReader(String id, String fileURL, String charset, String dataPolicy, int skipRows, int numRecords,
 			TypeSelector seltor, Properties seltorProperties) {
 		super(id);

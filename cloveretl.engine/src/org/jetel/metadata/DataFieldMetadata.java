@@ -148,6 +148,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  _name       Name of the field
 	 * @param  _delimiter  String to be used as a delimiter for this field
 	 * @param  _type       Description of Parameter
+	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, char _type, String _delimiter, short shift) {
@@ -168,6 +169,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param  _name       Name of the field
 	 * @param  _delimiter  String to be used as a delimiter for this field
+	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, String _delimiter, short shift) {
@@ -188,6 +190,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param  _name  Name of the field
 	 * @param  size   Description of Parameter
+	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, short size, short shift) {
@@ -208,6 +211,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param  _name  Name of the field
 	 * @param  _type  Description of Parameter
 	 * @param  size   Description of Parameter
+	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
 	public DataFieldMetadata(String _name, char _type, short size, short shift) {
