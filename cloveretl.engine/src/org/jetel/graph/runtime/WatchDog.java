@@ -28,13 +28,9 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
-import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -377,8 +373,10 @@ public class WatchDog extends Thread implements CloverRuntime {
                logger.error("in node "+node.getId()+" : "+node.getResultMsg());
             }
         }
-		//end of phase, destroy it
-		phase.destroy();
+		
+        //end of phase, destroy it
+		phase.free();
+        
 		return result;
 	}
 

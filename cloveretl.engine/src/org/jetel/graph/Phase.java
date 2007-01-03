@@ -25,7 +25,6 @@ import java.util.List;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 
@@ -241,12 +240,33 @@ public class Phase implements Comparable {
 	 *  Removes all Nodes from Phase
 	 *
 	 * @since    April 2, 2002
+     * @deprecated please use free method instead
 	 */
+    @Deprecated
 	public void destroy() {
-		nodesInPhase.clear();
-        edgesInPhase.clear();
+        free();
 	}
 
+    /**
+     *  Removes all Nodes from Phase
+     *
+     * @since    April 2, 2002
+     */
+    public void free() {
+        
+        //free all nodes in this phase
+        for(Node node : nodesInPhase) {
+            node.free();
+        }
+        
+        //free all edges in this phase
+        for(Edge edge : edgesInPhase) {
+            edge.free();
+        }
+
+        nodesInPhase.clear();
+        edgesInPhase.clear();
+    }
 
 	/**
 	 * Returns reference to Nodes contained in this phase.
