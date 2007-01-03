@@ -53,7 +53,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records from input port [0] are formatted due to given mask and written to specified file.</td></tr>
+ * <td>All records from input port [0] are formatted due to given mask and written to specified file.
+ * Records can be preceded by some text (header) or be trailed by a text (footer)</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -72,20 +73,26 @@ import org.w3c.dom.Element;
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
  *  <tr><td><b>mask</b></td><td>template for formating records. Every occurrence 
- *  of $fieldName will be replaced by value of the fieldName</td>
+ *  of $fieldName will be replaced by value of the fieldName. The rest of text will
+ *  be unchanged. If not given there is used default mask:
+ *  &lt; recordName field1=$field1 field2=$field2 ... fieldn=$fieldn /&gt;
+ *  where field1 ,.., fieldn are record's fields from metadata</td>
  *  <tr><td><b>header</b></td><td>text to write before records</td>
  *  <tr><td><b>footer</b></td><td>text to write after records</td>
  *  </tr>
  *  </table>  
  *
  * <h4>Example:</h4>
- * <pre>;&lt;Node append="true" fileURL="${WORKSPACE}/output/structured_customers.txt"
+ * <pre>&lt;Node append="true" fileURL="${WORKSPACE}/output/structured_customers.txt"
  *  id="STRUCTURE_WRITER0" type="STRUCTURE_WRITER"&gt;
- * &lt;attr name="mask"&gt;&lt;Customer id=$customer_id&gt;
- * &lt;last name = $lname&gt;
+ * &lt;attr name="header"&gt;dir = ${WORKSPACE}&lt;/attr&gt;
+ * &lt;attr name="mask"&gt;
+ * &lt;Customer id=$customer_id&gt;
+ * 	&lt;last name = $lname&gt;
  *	&lt;first name = $fname&gt;
  * &lt;/Customer&gt;
  * &lt;/attr&gt;
+ * &lt;attr name="footer"&gt;end of file&lt;/attr&gt;
  * &lt;/Node&gt;
  * 
  * 
@@ -180,6 +187,11 @@ public class StructureWriter extends Node {
 		return runIt ? Node.Result.OK : Node.Result.ABORTED;
 	}
 
+	@Override
+	public void free() {
+		super.free();
+		formatter.close();
+	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -233,7 +245,7 @@ public class StructureWriter extends Node {
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-									xattribs.getString(XML_MASK_ATTRIBUTE));
+									xattribs.getString(XML_MASK_ATTRIBUTE,null));
 			if (xattribs.exists(XML_HEADER_ATTRIBUTE)){
 				aDataWriter.setHeader(xattribs.getString(XML_HEADER_ATTRIBUTE));
 			}
