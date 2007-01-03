@@ -239,7 +239,7 @@ public class DataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#close()
 	 */
 	public void close() {
-		if(reader != null) {
+		if(reader != null && reader.isOpen()) {
 			try {
 				reader.close();
 			} catch(IOException ex) {

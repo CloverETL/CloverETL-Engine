@@ -110,7 +110,7 @@ public class DBFDataParser implements Parser {
      * @see org.jetel.data.DataParser#close()
      */
     public void close() {
-        if(dbfFile == null) {
+        if(dbfFile == null || !dbfFile.isOpen()) {
             return;
         }
         try {

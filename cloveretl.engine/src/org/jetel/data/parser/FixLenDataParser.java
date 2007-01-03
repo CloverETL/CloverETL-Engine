@@ -138,7 +138,7 @@ public abstract class FixLenDataParser implements Parser {
 	 * Release data source.  
 	 */
 	private void releaseDataSource() {
-		if (inChannel == null) {
+		if (inChannel == null || !inChannel.isOpen()) {
 			return;
 		}
 		try {
