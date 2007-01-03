@@ -80,6 +80,7 @@ import org.xml.sax.helpers.DefaultHandler;
  *              type NMTOKEN #REQUIRED
  *              delimiter NMTOKEN #IMPLIED &quot;,&quot;
  *              size NMTOKEN #IMPLIED &quot;0&quot;
+ *              shift NMTOKEN #IMPLIED &quot;0&quot;
  *              format CDATA #IMPLIED 
  *              locale CDATA #IMPLIED
  *              nullable NMTOKEN (true | false) #IMPLIED &quot;true&quot;
