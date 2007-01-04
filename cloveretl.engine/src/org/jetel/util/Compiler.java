@@ -115,8 +115,6 @@ public class Compiler {
             System.setOut(out);
         }
 
-        logger.debug("Extern compile command: " + StringUtils.stringArraytoString(args.toArray(new String[args.size()]), ' '));
-        
         //compile
         int status;
         Runtime runtime = Runtime.getRuntime();
@@ -168,6 +166,8 @@ public class Compiler {
             args.add("-Xstdout");
             args.add(errFileName);
         }
+        
+        logger.debug("Compile arguments: " + StringUtils.stringArraytoString(args.toArray(new String[args.size()]), ' '));
     }
     
     private String getClassPath() {
