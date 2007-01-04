@@ -127,7 +127,7 @@ public class Normalizer extends Node {
 	}
 
 	public Normalizer(String id, RecordNormalize xform) {
-		super(id);
+		this(id, null, null);
 		this.norm = xform;
 	}
 

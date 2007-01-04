@@ -240,13 +240,9 @@ public class HashJoin extends Node {
 	}
 
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, 
-			DataRecordTransform transform, Join join) {
-		super(id);
-		this.transformation =transform;
-		this.join = join;
-		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
-		this.driverJoiners = driverJoiners;
-		this.slaveJoiners = slaveJoiners;
+			RecordTransform transform, Join join) {
+        this(id, driverJoiners, slaveJoiners, null, null, join);
+		this.transformation = transform;
 	}
 
 	//	/**

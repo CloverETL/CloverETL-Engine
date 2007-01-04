@@ -148,10 +148,8 @@ public class Denormalizer extends Node {
 	}
 
 	public Denormalizer(String id, RecordDenormalize xform, String[] key, Order order) {
-		super(id);
+		this(id, null, null, key, order);
 		this.denorm = xform;
-		this.key = key;
-		this.order = order;
 	}
 
 	/**

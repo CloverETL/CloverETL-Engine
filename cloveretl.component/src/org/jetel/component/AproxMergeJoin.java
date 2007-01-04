@@ -243,11 +243,9 @@ public class AproxMergeJoin extends Node {
 	}
 	
 	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
-			DataRecordTransform transform, DataRecordTransform transformForSusp) 
+			RecordTransform transform, RecordTransform transformForSusp) 
 				throws JetelException{
-		super(id);
-		this.joinParameters=joinParameters;
-		this.matchingKey[0]=matchingKey;
+		this(id, joinParameters, matchingKey, null, null, null, null);
 		this.transformation = transform;
 		this.transformationForSuspicious = transformForSusp;
 	}
