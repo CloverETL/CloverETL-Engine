@@ -227,14 +227,9 @@ public class Reformat extends Node {
 			transformation.init(transformationParameters, inMetadata,
 					outMetadata);
 		} else {
-			try {
-				transformation = RecordTransformFactory.createTransform(
-						transform, transformClass, this, inMetadata,
-						outMetadata, transformationParameters);
-			} catch (Exception e) {
-				throw new ComponentNotReadyException(this,
-						"Cannot create extern transformation.", e);
-			}
+		    transformation = RecordTransformFactory.createTransform(
+		            transform, transformClass, this, inMetadata,
+		            outMetadata, transformationParameters);
 		}
 	}
 

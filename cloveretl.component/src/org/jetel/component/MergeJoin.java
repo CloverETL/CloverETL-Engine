@@ -220,13 +220,10 @@ public class MergeJoin extends Node {
 		this.slaveDuplicates = slaveDuplicates;
 	}
 
-	public MergeJoin(String id, String[][] joiners, DataRecordTransform transform,
+	public MergeJoin(String id, String[][] joiners, RecordTransform transform,
 			Join join, boolean slaveDuplicates) {
-		super(id);
-		this.joiners = joiners;
+		this(id, joiners, null, null, join, slaveDuplicates);
 		this.transformation = transform;
-		this.join = join;
-		this.slaveDuplicates = slaveDuplicates;
 	}
 
 	/**

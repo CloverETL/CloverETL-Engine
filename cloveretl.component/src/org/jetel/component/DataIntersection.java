@@ -31,14 +31,12 @@ import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
@@ -177,8 +175,7 @@ public class DataIntersection extends Node {
 	}
 
 	public DataIntersection(String id, String[] joinKeys, DataRecordTransform transform) {
-		super(id);
-		this.joinKeys = joinKeys;
+		this(id, joinKeys, null, null);
 		this.transformation = transform;
 	}
 
@@ -385,7 +382,7 @@ public class DataIntersection extends Node {
         if (transformation != null){
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
-           transformation = RecordTransformFactory.createTransform(
+            transformation = RecordTransformFactory.createTransform(
             		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
         }
 	}

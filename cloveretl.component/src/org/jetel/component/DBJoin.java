@@ -171,11 +171,8 @@ public class DBJoin extends Node {
 	}
 	
 	public DBJoin(String id,String connectionName,String query,String[] joinKey,
-			DataRecordTransform transform){
-		super(id);
-		this.connectionName = connectionName;
-		this.query = query;
-		this.joinKey = joinKey;
+			RecordTransform transform){
+		this(id, connectionName, query, joinKey, null, null);
 		this.transformation = transform;
 	}
 

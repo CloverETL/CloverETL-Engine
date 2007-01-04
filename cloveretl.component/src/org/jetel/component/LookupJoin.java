@@ -234,10 +234,8 @@ public class LookupJoin extends Node {
 	}
 
 	public LookupJoin(String id, String lookupTableName, String[] joinKey,
-			DataRecordTransform transform) {
-		super(id);
-		this.lookupTableName = lookupTableName;
-		this.joinKey = joinKey;
+			RecordTransform transform) {
+		this(id, lookupTableName, joinKey, null, null);
 		this.transformation = transform;
 	}
 
