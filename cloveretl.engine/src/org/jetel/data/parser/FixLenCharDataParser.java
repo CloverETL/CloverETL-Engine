@@ -147,11 +147,16 @@ public class FixLenCharDataParser extends FixLenDataParser {
 				rawRec.position(recStart);	// to avoid exceptions while setting position&limit of the field 
 				rawRec.limit(Math.min(recStart + fieldEnd[fieldIdx], recEnd));
 				rawRec.position(recStart + fieldStart[fieldIdx]);
-				if (record.getField(fieldIdx).getType()
-						== org.jetel.metadata.DataFieldMetadata.STRING_FIELD) // string value expected
-				{
+				
+                // shall we remove quotes ??
+                switch(record.getField(fieldIdx).getType()){
+                case org.jetel.metadata.DataFieldMetadata.STRING_FIELD:
+                case org.jetel.metadata.DataFieldMetadata.NUMERIC_FIELD:
+                case org.jetel.metadata.DataFieldMetadata.DECIMAL_FIELD:
 					StringUtils.unquote(rawRec);
+                    break;
 				}
+                
 				if (skipLeadingBlanks) {
 					StringUtils.trimLeading(rawRec);
 				}
