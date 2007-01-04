@@ -184,7 +184,7 @@ public class DataRecord implements Serializable, Comparable {
         int sourceLength = sourceRecord.getMetadata().getNumFields();
         int count = 0;
         for (int i = 0; i < fields.length; i++) {
-            targetField = fields[i];
+            targetField = getField(i);
             int srcFieldPos = sourceRecord.getMetadata().getFieldPosition(
                     targetField.getMetadata().getName());
             if (srcFieldPos >= 0) {
