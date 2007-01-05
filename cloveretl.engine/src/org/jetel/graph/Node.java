@@ -250,7 +250,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return    Collection of OutPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection getOutPorts() {
+	public Collection<OutputPort> getOutPorts() {
 		return outPorts.values();
 	}
 
@@ -261,7 +261,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@return    Collection of InPorts
 	 *@since     April 18, 2002
 	 */
-	public Collection getInPorts() {
+	public Collection<InputPort> getInPorts() {
 		return inPorts.values();
 	}
 
@@ -331,10 +331,10 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	/**
 	 *  Gets the result code of finished Node.<br>
-	 *  Zero (0) indicates Success, any other number indicates error.
 	 *
-	 *@return    The ResultCode value
+	 *@return    The Result value
 	 *@since     July 29, 2002
+     *@see       org.jetel.graph.Node.Result
 	 */
 	public Result getResultCode() {
 		return runResult;
