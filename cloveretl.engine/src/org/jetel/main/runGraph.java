@@ -41,6 +41,31 @@ import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
 import org.jetel.util.crypto.Enigma;
 
+/*
+ *  - runGraph.main()
+ *      - runGraph.initEngine()
+ *      - runGraph.loadGraph()
+ *          - ..., Nodes.fromXML(), ...
+ *      - TransformationGraph.init()
+ *          - validate Connections (init(), free())
+ *          - validate Sequences (init(), free())
+ *          - analyze graph topology
+ *      - TransformationGraph.checkConfig()
+ *          - Phases.checkConfig()
+ *              - Nodes.checkConfig()
+ *      - TransfomrationGraph.run()
+ *          - create and start WatchDog thread
+ *              - WatchDog.runPhase()
+ *                  - Phase.init()
+ *                      - Edges.init()
+ *                      - Nodes.init()
+ *                  - start all node threads in phase (Nodes.execute())
+ *                  - watching them 
+ *                  - Phase.free()
+ *                      - Edges.free()
+ *                      - Nodes.free()             
+ */
+
 /**
  *  class for executing transformations described in XML layout file<br><br>
  *  The graph layout is read from specified XML file and the whole transformation is executed.<br>

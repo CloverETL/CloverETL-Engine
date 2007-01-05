@@ -146,7 +146,11 @@ public class ComponentFactory {
     
     /**
      *  Method for creating various types of Components based on component type, parameters and theirs types for component constructor.<br>
-     *  If component type is not registered, it tries to use componentType parameter directly as a class name.
+     *  If component type is not registered, it tries to use componentType parameter directly as a class name.<br>
+     *  i.e.<br>
+     *  <code>
+     *  Node reformatNode = ComponentFactory.createComponent(myGraph, "REFORMAT", new Object[] { "REF_UNIQUE_CNT", myRecordTransform}, new Class[] {String.class, RecordTransform.class});
+     *  </code>
      * @param graph
      * @param componentType
      * @param constructorParameters parameters passsed to component constructor
