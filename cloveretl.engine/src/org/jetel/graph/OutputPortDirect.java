@@ -31,7 +31,7 @@ import java.nio.ByteBuffer;
  * @since    August 13, 2002
  * @see     	OutputPort
  */
-public interface OutputPortDirect {
+public interface OutputPortDirect extends OutputPort {
 
 	// Operations
 	
