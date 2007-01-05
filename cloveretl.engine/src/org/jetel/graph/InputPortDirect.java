@@ -31,7 +31,7 @@ import java.io.IOException;
  * @since    August 13, 2002
  * @see        InputPort
  */
-public interface InputPortDirect {
+public interface InputPortDirect extends InputPort {
 
 	// Operations
 	/**
@@ -48,11 +48,6 @@ public interface InputPortDirect {
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
 	
-	/**
-	 * Method which tests whether data is awaiting/ready to be read
-	 * 
-	 * @return True if read operation won't block due to lack of data
-	 */
-	public boolean hasData();
+
 }
 
