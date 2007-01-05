@@ -68,18 +68,56 @@ import org.xml.sax.helpers.DefaultHandler;
  *  <tr><td><b>type</b></td><td>"XML_EXTRACT"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sourceUri</b></td><td>location of source XML data to process</td>
- *  <tr><td><b>useNestedNodes</b></td><td>true if nested unmapped XML elements will be used as data source</td>
+ *  <tr><td><b>useNestedNodes</b></td><td><b>true</b> if nested unmapped XML elements will be used as data source; <b>false</b> if will be ignored</td>
  *  <tr><td><b>mapping</b></td><td>&lt;mapping&gt;</td>
  *  </tr>
  *  </table>
  *
  * Provides the logic to parse a xml file and filter to different ports based on
  * a matching element. The element and all children will be turned into a
- * Datarecord.<br>
+ * Data record.<br>
+ * Mapping attribute contains mapping hierarchy in XML form. DTD of mapping:<br>
+ * <code>
+ * &lt;!ELEMENT Mappings (Mapping*)&gt;<br>
+ * 
+ * &lt;!ELEMENT Mapping (Mapping*)&gt;<br>
+ * &lt;!ATTLIST Mapping<br>
+ * &nbsp;element NMTOKEN #REQUIRED<br>      
+ * &nbsp;&nbsp;//name of binded XML element<br>  
+ * &nbsp;outPort NMTOKEN #REQUIRED<br>      
+ * &nbsp;&nbsp;//name of output port for this mapped XML element<br>
+ * &nbsp;parentKey NMTOKEN #IMPLIED<br>     
+ * &nbsp;&nbsp;//field name of parent record, which is copied into field of the current record<br>
+ * &nbsp;&nbsp;//passed in generatedKey atrribute<br> 
+ * &nbsp;generatedKey NMTOKEN #IMPLIED<br>  
+ * &nbsp;&nbsp;//see parentKey comment<br>
+ * &nbsp;sequenceField NMTOKEN #IMPLIED<br> 
+ * &nbsp;&nbsp;//field name, which will be filled by value from sequence<br>
+ * &nbsp;&nbsp;//(can be used to generate new key field for relative records)<br> 
+ * &nbsp;sequenceId NMTOKEN #IMPLIED<br>    
+ * &nbsp;&nbsp;//we can supply sequence id used to fill a field defined in a sequenceField attribute<br>
+ * &nbsp;&nbsp;//(if this attribute is omited, non-persistent PrimitiveSequence will be used)<br>
+ * &nbsp;xmlFields NMTOKEN #IMPLIED<br>     
+ * &nbsp;&nbsp;//comma separeted xml element names, which will be mapped on appropriate record fields<br>
+ * &nbsp;&nbsp;//defined in cloverFields attribute<br>
+ * &nbsp;cloverFields NMTOKEN #IMPLIED<br>  
+ * &nbsp;&nbsp;//see xmlFields comment<br>
+ * &gt;<br>
+ * </code>
+ * All nested XML elements will be recognized as record fields and mapped by name
+ * (except elements serviced by other nested Mapping elements), if you prefere other mapping
+ * xml fields and clover fields than 'by name', use xmlFields and cloveFields attributes
+ * to setup custom fields mapping. 'useNestedNodes' component attribute defines
+ * if also child of nested xml elements will be mapped on the current clover record.
+ * Record from nested Mapping element could be connected via key fields with parent record produced
+ * by parent Mapping element (see parentKey and generatedKey attribute notes).
+ * In case that fields are unsuitable for key composing, extractor could fill
+ * one or more fields with values comming from sequence (see sequenceField and sequenceId attribute). 
+ * 
  * For example: given an xml file:<br>
  * <code>
  * &lt;myXML&gt; <br>
- * &nbsp;&lt;phrase id="1111"&gt; <br>
+ * &nbsp;&lt;phrase&gt; <br>
  * &nbsp;&nbsp;&lt;text&gt;hello&lt;/text&gt; <br>
  * &nbsp;&nbsp;&lt;localization&gt; <br>
  * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;how allo yee dew ying&lt;/chinese&gt; <br>
@@ -98,7 +136,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * &nbsp;&lt;/locations&gt; <br>
  * &nbsp;&lt;someUselessElement&gt;...&lt;/someUselessElement&gt; <br>
  * &nbsp;&lt;someOtherUselessElement/&gt; <br>
- * &nbsp;&lt;phrase id="2222"&gt; <br>
+ * &nbsp;&lt;phrase&gt; <br>
  * &nbsp;&nbsp;&lt;text&gt;bye&lt;/text&gt; <br>
  * &nbsp;&nbsp;&lt;localization&gt; <br>
  * &nbsp;&nbsp;&nbsp;&lt;chinese&gt;she yee lai ta&lt;/chinese&gt; <br>
@@ -112,17 +150,19 @@ import org.xml.sax.helpers.DefaultHandler;
  * records. Then create the following mapping in the graph: <br>
  * <code>
  * &lt;node id="myId" type="com.lrn.etl.job.component.XMLExtract"&gt; <br>
- * &nbsp;&lt;Mapping element="phrase" outPort="0"&gt;<br>
- * &nbsp;&nbsp;&lt;Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br>
- * &nbsp;&lt;/Mapping&gt; <br>
- * &nbsp;&lt;Mapping element="location" outPort="2"/&gt;<br>
+ * &nbsp;&lt;attr name="mapping"&gt;<br>
+ * &nbsp;&nbsp;&lt;Mapping element="phrase" outPort="0" sequenceField="id"&gt;<br>
+ * &nbsp;&nbsp;&nbsp;&lt;Mapping element="localization" outPort="1" parentKey="id" generatedKey="parent_id"/&gt;<br>
+ * &nbsp;&nbsp;&lt;/Mapping&gt; <br>
+ * &nbsp;&nbsp;&lt;Mapping element="location" outPort="2"/&gt;<br>
+ * &nbsp;&lt;/attr&gt;<br>
  * &lt;/node&gt;<br>
  * </code> Port 0 will get the DataRecords:<br>
- * 1) id=1111, text=hello<br>
- * 2) id=2222, text=bye<br>
+ * 1) id=1, text=hello<br>
+ * 2) id=2, text=bye<br>
  * Port 1 will get:<br>
- * 1) parent_id=1111, chinese=how allo yee dew ying, german=wie gehts<br>
- * 2) parent_id=2222, chinese=she yee lai ta, german=aufwiedersehen<br>
+ * 1) parent_id=1, chinese=how allo yee dew ying, german=wie gehts<br>
+ * 2) parent_id=2, chinese=she yee lai ta, german=aufwiedersehen<br>
  * Port 2 will get:<br>
  * 1) name=Stormwind, description=Beautiful European architecture with a scenic
  * canal system.<br>
