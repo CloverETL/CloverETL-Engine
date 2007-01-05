@@ -326,7 +326,7 @@ public final class TransformationGraph {
 
 		freeResources();
 
-		if (watchDog.getStatus() == WatchDog.WATCH_DOG_STATUS_FINISHED_OK) {
+		if (watchDog.getStatus() == WatchDog.Status.FINISHED_OK) {
 			logger.info("Graph execution finished successfully");
 			return true;
 		} else {
