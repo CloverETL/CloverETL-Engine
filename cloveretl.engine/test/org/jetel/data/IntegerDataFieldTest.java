@@ -98,12 +98,12 @@ public void test_1_IntegerDataField() {
 		assertFalse(anIntegerDataField1.isNull());
 
 		try {
-			anIntegerDataField2.setValue(null);
+			anIntegerDataField2.setNull();
 			fail("anIntegerDataField2 is not nullable - BadDataFormatException should be thrown");
 		} catch(BadDataFormatException e){}
 
 		try {
-			anIntegerDataField1.setValue(null);
+			anIntegerDataField1.setNull();
 			assertTrue(anIntegerDataField1.isNull());
 			assertEquals("setValue(null) failed", null, anIntegerDataField1.getValue());
 		} catch(BadDataFormatException e){
@@ -120,10 +120,10 @@ public void test_1_IntegerDataField() {
 		anIntegerDataField1.setValue(17.45);
 		assertEquals("getValue() failed",anIntegerDataField1.getValue(), new Integer(17));
 
-		anIntegerDataField1.setValue(null);
+		anIntegerDataField1.setNull();
 		assertEquals(null, anIntegerDataField1.getValue());
 
-		anIntegerDataField1.setValue(null);
+		anIntegerDataField1.setNull();
 		assertEquals("", anIntegerDataField1.toString());
 	}
 
@@ -135,7 +135,7 @@ public void test_1_IntegerDataField() {
 		anIntegerDataField1.setValue(19.45);
 		assertEquals("toString() failed",anIntegerDataField1.toString(), "19");
 
-		anIntegerDataField1.setValue(null);
+		anIntegerDataField1.setNull();
 		assertEquals("", anIntegerDataField1.toString());
 	}
 
@@ -186,14 +186,14 @@ public void test_1_IntegerDataField() {
 		assertEquals(anIntegerDataField4,anIntegerDataField1);
 		
 		buffer.rewind();
-		anIntegerDataField1.setNull(true);
+		anIntegerDataField1.setValue(1);
 		anIntegerDataField1.serialize(buffer);
 		buffer.rewind();
 		anIntegerDataField4.deserialize(buffer);
 		assertEquals(anIntegerDataField4.isNull(),anIntegerDataField1.isNull());
 	
 		buffer.rewind();
-		anIntegerDataField1.setValue(null);
+		anIntegerDataField1.setNull(false);
 		anIntegerDataField1.serialize(buffer);
 		buffer.rewind();
 		anIntegerDataField4.deserialize(buffer);
@@ -201,7 +201,7 @@ public void test_1_IntegerDataField() {
 	
 	
 		buffer.rewind();
-		anIntegerDataField1.fromString("");
+		anIntegerDataField1.fromString("1");
 		anIntegerDataField1.serialize(buffer);
 		buffer.rewind();
 		anIntegerDataField4.deserialize(buffer);

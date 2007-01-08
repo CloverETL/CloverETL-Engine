@@ -23,10 +23,13 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.parser.FixLenCharDataParser;
+import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -37,12 +40,14 @@ import junit.framework.TestCase;
  *
  */
 public class FixLenDataParser2Test   extends TestCase {
-private FixLenDataParser2 aParser = null;
-private FixLenDataParser2 aParser2 = null;
-private FixLenDataParser2 aParser3 = null;
+private FixLenDataParser aParser = null;
+private FixLenDataParser aParser2 = null;
+private FixLenDataParser aParser3 = null;
 private DataRecord record;
 	
 protected void setUp() { 
+	
+	runGraph.initEngine(null, null);
 	FileInputStream in = null;
 	FileInputStream in2 = null;
 	FileInputStream in3 = null;
@@ -50,29 +55,35 @@ protected void setUp() {
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 	try {
-		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
-		in = new FileInputStream("data\\in\\good\\FL28_no_NL.txt");
-		in2 = new FileInputStream("data\\in\\bad\\FL28_no_NL_nulls.txt");
-		in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
+		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
+		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
+		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
+		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
 	
-	aParser = new FixLenDataParser2();
-	aParser2 = new FixLenDataParser2();
-	aParser3 = new FixLenDataParser2();
-	BadDataFormatExceptionHandler aHandler =  
-	   BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-	aParser.addBDFHandler(aHandler);
-	aParser.open(in2,metadata);
-	record = new DataRecord(metadata);
-	record.init();
+	aParser = new FixLenCharDataParser();
+	aParser2 = new FixLenCharDataParser();
+	aParser3 = new FixLenCharDataParser();
 
-	aParser2.addBDFHandler(aHandler);
-	aParser2.open(in,metadata);
+	try {
+		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser.init(metadata);
+		aParser.setDataSource(in2);
+		record = new DataRecord(metadata);
+		record.init();
 
-	aParser3.addBDFHandler(aHandler);
-	aParser3.open(in,metadata);
+		aParser2.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser2.init(metadata);
+		aParser2.setDataSource(in2);
+
+		aParser3.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser3.init(metadata);
+		aParser3.setDataSource(in2);
+	} catch (ComponentNotReadyException e) {
+		e.printStackTrace();
+	}
 }
 	
    protected void tearDown() {
