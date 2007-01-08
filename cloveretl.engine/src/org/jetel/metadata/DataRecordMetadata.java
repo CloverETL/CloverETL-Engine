@@ -503,7 +503,7 @@ public class DataRecordMetadata implements Serializable {
 		//if no fields then create default fields with sizes as in objects
 		if (fieldsNumber == 0) {
 			for (int i = 0; i < fieldWidths.length; i++) {
-				addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i], (short)0));
+				addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i]));
 			}
 		} else {
 			//fields exist
@@ -514,7 +514,7 @@ public class DataRecordMetadata implements Serializable {
 					aField.setSize(fieldWidths[i]);
 				} else {
 					// insert new fileds, if any
-					addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i], (short)0));
+					addField(new DataFieldMetadata("Field" + Integer.toString(i), fieldWidths[i]));
 				}
 			}
 			if (fieldsNumber > fieldWidths.length) {

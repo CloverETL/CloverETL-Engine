@@ -541,7 +541,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 							"Attribute \"size\" not defined for field #" + i);
 				}
 				field = new DataFieldMetadata(name, fieldType,
-						getFieldSize(size), shiftVal);
+						getFieldSize(size));
+                field.setShift(shiftVal);
 			} else if (recordMetadata.getRecType() == DataRecordMetadata.DELIMITED_RECORD) {
 				if (delimiter == null) {
 					throw new DOMException(DOMException.NOT_FOUND_ERR,
@@ -549,17 +550,21 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 									+ i);
 				}
 				field = new DataFieldMetadata(name, fieldType, StringUtils
-						.stringToSpecChar(delimiter), shiftVal);
+						.stringToSpecChar(delimiter));
+                field.setShift(shiftVal);
 			} else { //mixed dataRecord type
 				if (delimiter == null && size == null) {
 					throw new DOMException(DOMException.NOT_FOUND_ERR,
 							"Attribute \"delimiter\" either \"size\" not defined for field #"
 									+ i);
 				}
-				if(delimiter != null)
-					field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter), shiftVal);
-				else
-					field = new DataFieldMetadata(name, fieldType, getFieldSize(size), shiftVal);
+				if(delimiter != null) {
+                    field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter));
+                    field.setShift(shiftVal);
+                } else {
+					field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
+                    field.setShift(shiftVal);
+                }
 			}
 			
 			// set properties

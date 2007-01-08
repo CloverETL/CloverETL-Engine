@@ -24,7 +24,6 @@ import java.sql.ParameterMetaData;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,7 +132,7 @@ public class SQLUtil {
 
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
 			try {
-				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), DEFAULT_DELIMITER, (short)0);
+				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), DEFAULT_DELIMITER);
 
 			} catch (Exception ex) {
 				throw new RuntimeException(ex.getMessage() + " field name " + dbMetadata.getColumnName(i));
