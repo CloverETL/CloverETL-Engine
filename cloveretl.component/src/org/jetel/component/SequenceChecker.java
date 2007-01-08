@@ -21,7 +21,6 @@ package org.jetel.component;
 
 import java.text.Collator;
 import java.text.RuleBasedCollator;
-import java.util.Locale;
 import java.util.Map;
 
 import org.jetel.data.DataRecord;
@@ -36,6 +35,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
+import org.jetel.util.Utils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sequence Checker Component</h3>
@@ -210,24 +210,7 @@ public class SequenceChecker extends Node {
 		//recordComparator.setEqualNULLs(equalNULLs);
 		
         if (useI18N){
-            Locale locale = null;
-            if (localeStr==null){
-            	locale=Locale.getDefault();
-            } else {
-                String[] localeLC = localeStr.split(
-                        Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-                if (localeLC.length > 1) {
-                    locale = new Locale(localeLC[0], localeLC[1]);
-                } else {
-                    locale = new Locale(localeLC[0]);
-                }
-                // probably wrong locale string defined
-                if (locale == null) {
-                    throw new ComponentNotReadyException("Can't create Locale based on "
-                            + localeStr);
-                }
-            }
-            recordComparator=new RecordComparator(keyFields,(RuleBasedCollator)Collator.getInstance(locale));
+            recordComparator=new RecordComparator(keyFields,(RuleBasedCollator)Collator.getInstance(Utils.createLocale(localeStr)));
         }else{
         	recordComparator=new RecordComparator(keyFields);
         }
