@@ -25,32 +25,35 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.jetel.data.DataRecord;
+import junit.framework.TestCase;
+
 import org.jetel.data.formatter.FixLenDataFormatter;
-import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
-
-import junit.framework.TestCase;
 
 /**
  * @author maciorowski
  *
  */
 public class FixLenDataFormatterTest extends TestCase {
-private FixLenDataParser2 aParser = null;
-private FixLenDataParser2 aParser2 = null;
-private FixLenDataParser2 aParser3 = null;
-private FixLenDataParser2 testParser = null;
+private FixLenCharDataParser aParser = null;
+private FixLenCharDataParser aParser2 = null;
+private FixLenCharDataParser aParser3 = null;
+private FixLenCharDataParser testParser = null;
 private FixLenDataFormatter aFixLenDataFormatter= null;
 private DataRecord record;
 private String testFile1 = null;	
 private DataRecordMetadata metadata = null;
 	
 protected void setUp() { 
+	
+	runGraph.initEngine(null, null);
 	FileInputStream in = null;
 	FileInputStream in2 = null;
 	FileInputStream in3 = null;
@@ -58,16 +61,21 @@ protected void setUp() {
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 	try {
-		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
-		in = new FileInputStream("data\\in\\good\\FL28_no_NL.txt");
-		in2 = new FileInputStream("data\\in\\bad\\FL28_no_NL_nulls.txt");
-		in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
+//		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
+//		in = new FileInputStream("data\\in\\good\\FL28_no_NL.txt");
+//		in2 = new FileInputStream("data\\in\\bad\\FL28_no_NL_nulls.txt");
+//		in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
+		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
+		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
+		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
+		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
 
     // we are going to write our test data here
-	testFile1 = "data\\out\\test1.txt";	
+//	testFile1 = "data\\out\\test1.txt";	
+	testFile1 = "data/out/test1.txt";	
 	File aFile=new File(testFile1);
 	 if(!aFile.exists()) {
 		new File(aFile.getParent()).mkdir();
@@ -79,30 +87,41 @@ protected void setUp() {
 	 }
 	aFixLenDataFormatter = new FixLenDataFormatter();
 	try {
-		aFixLenDataFormatter.open(new FileOutputStream(testFile1),metadata);
+		aFixLenDataFormatter.init(metadata);
+	} catch (ComponentNotReadyException e) {
+		e.printStackTrace();
+	}
+	try {
+		aFixLenDataFormatter.setDataTarget(new FileOutputStream(testFile1));
 	} catch (FileNotFoundException e2) {
 		e2.printStackTrace();
 	}
 	
-	aParser = new FixLenDataParser2();
-	aParser2 = new FixLenDataParser2();
-	aParser3 = new FixLenDataParser2();
-	testParser = new FixLenDataParser2();
+	aParser = new FixLenCharDataParser();
+	aParser2 = new FixLenCharDataParser();
+	aParser3 = new FixLenCharDataParser();
+	testParser = new FixLenCharDataParser();
 	
-	BadDataFormatExceptionHandler aHandler =  
-	   BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-	aParser.addBDFHandler(aHandler);
-	aParser.open(in2,metadata);
-	record = new DataRecord(metadata);
-	record.init();
+	try {
+		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser.init(metadata);
+		aParser.setDataSource(in2);
+		record = new DataRecord(metadata);
+		record.init();
 
-	aParser2.addBDFHandler(aHandler);
-	aParser2.open(in,metadata);
+		aParser2.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser2.init(metadata);
+		aParser2.setDataSource(in);
 
-	aParser3.addBDFHandler(aHandler);
-	aParser3.open(in,metadata);
+		aParser3.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+		aParser3.init(metadata);
+		aParser3.setDataSource(in);
+	} catch (ComponentNotReadyException e) {
+		e.printStackTrace();
+	}
 
-	testParser.addBDFHandler(aHandler);
+
+	testParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 }
 	
    protected void tearDown() {
@@ -163,7 +182,8 @@ public void test_parsing_bad() {
    
 	try{
 		FileInputStream fis = new FileInputStream(testFile1);
-		testParser.open(fis,metadata);
+		testParser.init(metadata);
+		testParser.setDataSource(fis);
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -217,7 +237,8 @@ public void test_parsing_good() {
    
 	 try{
 		 FileInputStream fis = new FileInputStream(testFile1);
-		 testParser.open(fis,metadata);
+			testParser.init(metadata);
+			testParser.setDataSource(fis);
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -247,7 +268,7 @@ public void test_parsing_good() {
 		fail("Should not throw Exception");
 		ee.printStackTrace();
 	}
-   assertEquals(3,recCount);
+   assertEquals(4,recCount);
 }
 	
 /**
@@ -277,7 +298,8 @@ public void test_parsing_NL_good() {
    
 	 try{
 		 FileInputStream fis = new FileInputStream(testFile1);
-		 testParser.open(fis,metadata);
+			testParser.init(metadata);
+			testParser.setDataSource(fis);
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -307,7 +329,7 @@ public void test_parsing_NL_good() {
 		fail("Should not throw Exception");
 		ee.printStackTrace();
 	}
-   assertEquals(3,recCount);
+   assertEquals(4,recCount);
 }
 
 
