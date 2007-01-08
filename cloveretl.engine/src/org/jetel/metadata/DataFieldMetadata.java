@@ -466,7 +466,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @return true if default value is set
 	 */
 	public boolean isDefaultValue() {
-	    return defaultValueStr != null && defaultValueStr.length() > 0;    
+	    return !StringUtils.isEmpty(defaultValueStr) || defaultValue != null;    
     }
     
 	/**
