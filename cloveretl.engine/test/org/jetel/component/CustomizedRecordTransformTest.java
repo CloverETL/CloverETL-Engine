@@ -12,18 +12,18 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
+import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.sequence.PrimitiveSequence;
 
 public class CustomizedRecordTransformTest extends TestCase {
 	
@@ -38,7 +38,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 	protected void setUp() throws Exception {
 		transform = new CustomizedRecordTransform(LogFactory.getLog(this.getClass()));
 		
-	    Defaults.init();
+	    runGraph.initEngine(null, null);
 	    
         graph=new TransformationGraph();
         
@@ -110,7 +110,7 @@ public class CustomizedRecordTransformTest extends TestCase {
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
         
-        Sequence seq = new PrimitiveSequence("ID",graph,"name");
+        Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", new Object[]{"ID",graph,"name"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence("ID", seq);
 		
         graph.getGraphProperties().setProperty("WORKSPACE", "/home/avackova/workspace");
