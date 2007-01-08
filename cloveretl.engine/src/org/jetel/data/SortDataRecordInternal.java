@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.Utils;
 
 /**
  *  Class for simple in-memory sorting of data records.<br>
@@ -473,21 +474,7 @@ public class SortDataRecordInternal {
      * @param collatorLocale    String representation of locale - e.g. "uk" or "fr"
      */
     public void setCollatorLocale(String collatorLocale) {
-        Locale locale;
-        String[] localeLC = collatorLocale.split(
-                Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-        if (localeLC.length > 1) {
-            locale = new Locale(localeLC[0], localeLC[1]);
-        } else {
-            locale = new Locale(localeLC[0]);
-        }
-        // probably wrong locale string defined
-        if (locale == null) {
-            throw new RuntimeException("Can't create Locale based on "
-                    + collatorLocale);
-        }
-        
-        this.collatorLocale = locale;
+        this.collatorLocale = Utils.createLocale(collatorLocale);
     }
   
 }
