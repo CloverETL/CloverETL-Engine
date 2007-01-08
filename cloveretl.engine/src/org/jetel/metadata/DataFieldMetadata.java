@@ -151,7 +151,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, char _type, String _delimiter, short shift) {
+	public DataFieldMetadata(String _name, char _type, String _delimiter) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
@@ -172,7 +172,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, String _delimiter, short shift) {
+	public DataFieldMetadata(String _name, String _delimiter) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
@@ -193,7 +193,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, short size, short shift) {
+	public DataFieldMetadata(String _name, short size) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
@@ -214,7 +214,7 @@ public class DataFieldMetadata implements Serializable {
 	 * @param shift   Relative shift of the beginning of the field.
 	 * @since
 	 */
-	public DataFieldMetadata(String _name, char _type, short size, short shift) {
+	public DataFieldMetadata(String _name, char _type, short size) {
 		if (!StringUtils.isValidObjectName(_name)) {
 			throw new InvalidGraphObjectNameException(_name, "FIELD");
 		}
