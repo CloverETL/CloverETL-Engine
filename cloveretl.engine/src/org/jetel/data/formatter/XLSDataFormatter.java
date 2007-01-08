@@ -29,6 +29,7 @@ import java.util.Date;
 
 import javax.naming.InvalidNameException;
 
+import org.apache.poi.hssf.model.Workbook;
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -71,6 +72,7 @@ public class XLSDataFormatter implements Formatter {
 	private int sheetNumber = -1;
 	private String firstColumnIndex = "A";
 	private int firstColumn;
+	private boolean savedNames = false;
 	
 	public XLSDataFormatter(boolean append){
 		this.append = append;
@@ -128,25 +130,11 @@ public class XLSDataFormatter implements Formatter {
 		}catch(InvalidNameException ex){
 			throw new IllegalArgumentException(ex);
 		}
-		//save metadata  names
-		if (namesRow > -1 && (!append || recCounter == 0)){//saveNames=true, but if append=true save names only if there are no records on this sheet
-			recCounter = namesRow > -1 ? namesRow : 0;
-			HSSFCellStyle metaStyle = wb.createCellStyle();
-			HSSFFont font = wb.createFont();
-			font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);//save metadata names bold
-			metaStyle.setFont(font);
-			row = sheet.createRow(recCounter);
-			String name;
-			for (short i=0;i<metadata.getNumFields();i++){
-				cell = row.createCell((short)(firstColumn + i));
-				name = metadata.getField(i).getName();
-				if (sheet.getColumnWidth((short)(firstColumn + i)) < name.length() * 256 ) {
-					sheet.setColumnWidth((short)(firstColumn + i),(short)(256 * name.length()));
-				}
-				cell.setCellStyle(metaStyle);
-				cell.setCellValue(name);
+		if (namesRow == -1 || (append && recCounter > 0)){//do not save metadata
+			if (firstRow > recCounter) {
+				recCounter = firstRow;
 			}
-			recCounter++;
+			savedNames = true;
 		}
 		//creating cell formats from metadata formats
 		dataFormat = wb.createDataFormat();
@@ -162,9 +150,29 @@ public class XLSDataFormatter implements Formatter {
 				sheet.setColumnWidth((short)(firstColumn + i),(short)( metadata.getField(i).getSize() * 256));
 			}
 		}
-		if (firstRow > recCounter) {
+    }
+    
+    private void saveNames(){
+		recCounter = namesRow > -1 ? namesRow : 0;
+		HSSFCellStyle metaStyle = wb.createCellStyle();
+		HSSFFont font = wb.createFont();
+		font.setBoldweight(HSSFFont.BOLDWEIGHT_BOLD);//save metadata names bold
+		metaStyle.setFont(font);
+		row = sheet.createRow(recCounter);
+		String name;
+		for (short i=0;i<metadata.getNumFields();i++){
+			cell = row.createCell((short)(firstColumn + i));
+			name = metadata.getField(i).getName();
+			if (sheet.getColumnWidth((short)(firstColumn + i)) < name.length() * 256 ) {
+				sheet.setColumnWidth((short)(firstColumn + i),(short)(256 * name.length()));
+			}
+			cell.setCellStyle(metaStyle);
+			cell.setCellValue(name);
+		}
+		if (firstRow > ++recCounter) {
 			recCounter = firstRow;
 		}
+		savedNames = true;
     }
     
 	/* (non-Javadoc)
@@ -183,6 +191,10 @@ public class XLSDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public int write(DataRecord record) throws IOException {
+		if (!savedNames){
+			saveNames();
+			return 0;
+		}
 		row = sheet.createRow(recCounter);
 		char metaType;//metadata field type
 		Object value;//field value
