@@ -181,8 +181,9 @@ public void test_1_StringDataField() {
 		buffer.rewind();
 		try {
 			aStringDataField4.deserialize(buffer);
-			assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
-		} catch (NullDataFormatException e) {
+			fail("Field 4 is not nullable");
+//			assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
+		} catch (BadDataFormatException e) {
 		}
 	
 	}
