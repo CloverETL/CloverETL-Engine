@@ -22,7 +22,9 @@ package org.jetel.data;
 import java.nio.ByteBuffer;
 
 import org.jetel.data.NumericDataField;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -48,7 +50,7 @@ protected void setUp() {
 	aNumericDataField2 = new NumericDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
-	delimFieldMeta1.setDefaultValue("3333.33");
+	delimFieldMeta1.setDefaultValue(3333.33);
 	aNumericDataField3 = new NumericDataField(delimFieldMeta1,5.55);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
@@ -104,12 +106,12 @@ public void test_1_NumericDataField() {
 		assertFalse(aNumericDataField1.isNull());
 
 		try {
-			aNumericDataField2.setValue(null);
+			aNumericDataField2.setValue((Numeric)null);
 			fail("aNumericDataField2 is not nullable - BadDataFormatException should be thrown");
 		} catch(BadDataFormatException e){}
 
 		try {
-			aNumericDataField1.setValue(null);
+			aNumericDataField1.setValue((Numeric)null);
 			assertTrue(aNumericDataField1.isNull());
 			assertEquals("setValue(null) failed", null, aNumericDataField1.getValue());
 		} catch(BadDataFormatException e){
@@ -126,10 +128,10 @@ public void test_1_NumericDataField() {
 		aNumericDataField1.setValue(17.45);
 		assertEquals("getValue() failed",aNumericDataField1.getValue(), new Double(17.45));
 
-		aNumericDataField1.setValue(null);
+		aNumericDataField1.setValue((Numeric)null);
 		assertEquals(null, aNumericDataField1.getValue());
 
-		aNumericDataField1.setValue(null);
+		aNumericDataField1.setValue((Numeric)null);
 		assertEquals("", aNumericDataField1.toString());
 	}
 
@@ -192,22 +194,22 @@ public void test_1_NumericDataField() {
 		aNumericDataField1.setNull(true);
 		aNumericDataField1.serialize(buffer);
 		buffer.rewind();
-		aNumericDataField4.deserialize(buffer);
-		assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
+		try {
+			aNumericDataField4.deserialize(buffer);
+			assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
+		} catch (NullDataFormatException e) {
+		}
 	
-		buffer.rewind();
-		aNumericDataField1.setValue(null);
-		aNumericDataField1.serialize(buffer);
-		buffer.rewind();
-		aNumericDataField4.deserialize(buffer);
-		assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
 	
 		buffer.rewind();
 		aNumericDataField1.fromString("");
 		aNumericDataField1.serialize(buffer);
 		buffer.rewind();
-		aNumericDataField4.deserialize(buffer);
-		assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
+		try {
+			aNumericDataField4.deserialize(buffer);
+			assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
+		} catch (NullDataFormatException e) {
+		}
 		buffer = null;
 	}
 	
@@ -255,7 +257,10 @@ public void test_1_NumericDataField() {
 			fail("Field4 is not nullable and is being set to null!");
 		} catch (java.lang.RuntimeException re) {}
 	
-		aNumericDataField1.setToDefaultValue();
-		assertEquals("",aNumericDataField1.toString());
+		try {
+			aNumericDataField1.setToDefaultValue();
+			fail("Default value is not set");
+		} catch (NullDataFormatException e) {
+		}
 	}
 }
