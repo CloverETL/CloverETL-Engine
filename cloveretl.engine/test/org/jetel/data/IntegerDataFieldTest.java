@@ -252,10 +252,7 @@ public void test_1_IntegerDataField() {
 			fail("Field4 is not nullable and is being set to null!");
 		} catch (java.lang.RuntimeException re) {}
 		
-		try {
-			anIntegerDataField1.setToDefaultValue();
-			fail("Field1 does not have default value");
-		} catch (NullDataFormatException e) {
-		}
+		anIntegerDataField1.setToDefaultValue();
+		assertTrue(anIntegerDataField1.isNull());
 	}
 }

@@ -196,8 +196,9 @@ public void test_1_NumericDataField() {
 		buffer.rewind();
 		try {
 			aNumericDataField4.deserialize(buffer);
-			assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
-		} catch (NullDataFormatException e) {
+			fail("Field 4 is not nullable");
+//			assertEquals(aNumericDataField4.isNull(),aNumericDataField1.isNull());
+		} catch (BadDataFormatException e) {
 		}
 	
 	
@@ -207,8 +208,9 @@ public void test_1_NumericDataField() {
 		buffer.rewind();
 		try {
 			aNumericDataField4.deserialize(buffer);
-			assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
-		} catch (NullDataFormatException e) {
+			fail("Field 4 is not nullable");
+//			assertEquals(aNumericDataField4.getValue(),aNumericDataField1.getValue());
+		} catch (BadDataFormatException e) {
 		}
 		buffer = null;
 	}
@@ -257,10 +259,7 @@ public void test_1_NumericDataField() {
 			fail("Field4 is not nullable and is being set to null!");
 		} catch (java.lang.RuntimeException re) {}
 	
-		try {
-			aNumericDataField1.setToDefaultValue();
-			fail("Default value is not set");
-		} catch (NullDataFormatException e) {
-		}
+		aNumericDataField1.setToDefaultValue();
+		assertTrue(aNumericDataField1.isNull());
 	}
 }
