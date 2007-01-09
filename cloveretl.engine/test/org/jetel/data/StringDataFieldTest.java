@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.StringDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -41,6 +42,7 @@ public class StringDataFieldTest  extends TestCase {
 
 protected void setUp() { 
 	DataFieldMetadata fixedFieldMeta1 = new DataFieldMetadata("Field1",'S',(short)3);
+	fixedFieldMeta1.setDefaultValue("abc");
 	aStringDataField1 = new StringDataField(fixedFieldMeta1,"boo");
 
 	DataFieldMetadata fixedFieldMeta2 = new DataFieldMetadata("Field2",'S',(short)3);
@@ -93,16 +95,16 @@ public void test_1_StringDataField() {
 	 */
 	public void test_setValue() {
 		aStringDataField1.setValue("abcd");
-		assertEquals("setValue(Object value) failed", "abcd",aStringDataField1.getValue());
+		assertEquals("setValue(Object value) failed", "abcd",aStringDataField1.getValue().toString());
 		assertFalse(aStringDataField1.isNull());
 
 		try {
-			aStringDataField2.setValue(null);
+			aStringDataField2.setValue((String)null);
 			fail("aStringDataField2 is not nullable - BadDataFormatException should be thrown");
 		} catch(BadDataFormatException e){}
 
 		try {
-			aStringDataField1.setValue(null);
+			aStringDataField1.setValue((String)null);
 			assertTrue(aStringDataField1.isNull());
 		} catch(BadDataFormatException e){
 			fail("aStringDataField1 is nullable - BadDataFormatException should not be thrown");
@@ -115,9 +117,9 @@ public void test_1_StringDataField() {
 	 */
 	public void test_getValue() {
 		aStringDataField1.setValue("abcd");
-		assertEquals("getValue() failed",aStringDataField1.getValue(), "abcd");
+		assertEquals("getValue() failed",aStringDataField1.getValue().toString(), "abcd");
 
-		aStringDataField1.setValue(null);
+		aStringDataField1.setValue((String)null);
 		assertEquals(null, aStringDataField1.getValue());
 
 	}
@@ -129,7 +131,7 @@ public void test_1_StringDataField() {
 		aStringDataField1.setValue("04/10/2003");
 		assertEquals("toString() failed", "04/10/2003",aStringDataField1.toString());
 
-		aStringDataField1.setValue(null);
+		aStringDataField1.setValue((String)null);
 		assertEquals("", aStringDataField1.toString());
 	}
 
@@ -177,16 +179,12 @@ public void test_1_StringDataField() {
 		aStringDataField1.setNull(true);
 		aStringDataField1.serialize(buffer);
 		buffer.rewind();
-		aStringDataField4.deserialize(buffer);
-		assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
+		try {
+			aStringDataField4.deserialize(buffer);
+			assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
+		} catch (NullDataFormatException e) {
+		}
 	
-		buffer.rewind();
-		aStringDataField1.setValue(null);
-		aStringDataField1.serialize(buffer);
-		buffer.rewind();
-		aStringDataField4.deserialize(buffer);
-		assertEquals(aStringDataField4.isNull(),aStringDataField1.isNull());
-		buffer = null;
 	}
 	
 	/**
@@ -226,6 +224,6 @@ public void test_1_StringDataField() {
 		} catch (java.lang.RuntimeException re) {}
 
 		aStringDataField1.setToDefaultValue();
-		assertEquals("",aStringDataField1.toString());
+		assertEquals("abc",aStringDataField1.toString());
 	}
 }
