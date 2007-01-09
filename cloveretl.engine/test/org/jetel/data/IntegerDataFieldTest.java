@@ -23,6 +23,7 @@ import java.nio.ByteBuffer;
 
 import org.jetel.data.IntegerDataField;
 import org.jetel.exception.BadDataFormatException;
+import org.jetel.exception.NullDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
 import junit.framework.TestCase;
@@ -46,7 +47,7 @@ protected void setUp() {
 	anIntegerDataField2 = new IntegerDataField(fixedFieldMeta2);
 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'i',";");
-	delimFieldMeta1.setDefaultValue("333333");
+	delimFieldMeta1.setDefaultValue(333333);
 	anIntegerDataField3 = new IntegerDataField(delimFieldMeta1,5);
 	
 	DataFieldMetadata delimFieldMeta2 = new DataFieldMetadata("Field1",'i',",");
@@ -251,7 +252,10 @@ public void test_1_IntegerDataField() {
 			fail("Field4 is not nullable and is being set to null!");
 		} catch (java.lang.RuntimeException re) {}
 		
-		anIntegerDataField1.setToDefaultValue();
-		assertEquals("",anIntegerDataField1.toString());
+		try {
+			anIntegerDataField1.setToDefaultValue();
+			fail("Field1 does not have default value");
+		} catch (NullDataFormatException e) {
+		}
 	}
 }
