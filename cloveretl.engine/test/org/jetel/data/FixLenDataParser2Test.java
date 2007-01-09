@@ -19,8 +19,10 @@
 
 package org.jetel.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.InputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.parser.FixLenCharDataParser;
@@ -50,7 +52,7 @@ protected void setUp() {
 	runGraph.initEngine(null, null);
 	FileInputStream in = null;
 	FileInputStream in2 = null;
-	FileInputStream in3 = null;
+//	FileInputStream in3 = null;
 	DataRecordMetadata metadata = null;
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
@@ -58,7 +60,7 @@ protected void setUp() {
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
 		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
 		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
-		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
+//		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
@@ -70,7 +72,7 @@ protected void setUp() {
 	try {
 		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
 		aParser.init(metadata);
-		aParser.setDataSource(in2);
+//		aParser.setDataSource(in3);
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -106,7 +108,12 @@ public void test_parsing_bad() {
 // the content of the test file
 //  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99        //
 	int recCount = 0;
-   try{
+
+	InputStream in3 = new ByteArrayInputStream(new String("  N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99").getBytes());
+	
+	aParser.setDataSource(in3);
+	
+	try{
 	   record=aParser.getNext(record);
 	   fail("Should raise an BadDataFormatException");
    } catch (BadDataFormatException e){	
