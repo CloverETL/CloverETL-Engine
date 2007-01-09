@@ -109,7 +109,8 @@ public class runGraph {
      * @param pluginsRootDirectory directory path, where plugins specification is located 
      *        (can be null, then is used constant from Defaults.DEFAULT_PLUGINS_DIRECTORY)
      * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections passwordss can be encrypted
+     *        <br>i.e. connections password can be encrypted
+     *        <br>can be null
      */
     public static void initEngine(String pluginsRootDirectory, String password) {
         
