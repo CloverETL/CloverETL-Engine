@@ -27,7 +27,6 @@ import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
 import java.text.NumberFormat;
-import java.text.ParsePosition;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
@@ -158,7 +157,7 @@ public final class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = (long) (_value * TENPOWERS[scale]);
+        value = (long) convertToInnerForm(_value);
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
@@ -174,7 +173,7 @@ public final class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = ((long) _value) * TENPOWERS[scale];
+        value = convertToInnerForm(_value);
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
@@ -190,7 +189,7 @@ public final class IntegerDecimal implements Decimal {
             setNaN(true);
             return;
         }
-        value = _value * TENPOWERS[scale];
+        value = convertToInnerForm(_value);
         setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
@@ -245,7 +244,7 @@ public final class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Double.NaN;
         }
-        return ((double) value) / TENPOWERS[scale];
+        return convertToOuterForm((double) value);
     }
 
     /**
@@ -255,7 +254,7 @@ public final class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Integer.MIN_VALUE;
         }
-        return (int) (value / TENPOWERS[scale]);
+        return (int) convertToOuterForm(value);
     }
 
     /**
@@ -265,7 +264,7 @@ public final class IntegerDecimal implements Decimal {
         if(isNaN()) {
             return Long.MIN_VALUE;
         }
-        return value / TENPOWERS[scale];
+        return convertToOuterForm(value);
     }
 
     /**
@@ -346,11 +345,11 @@ public final class IntegerDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
         if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value += a.getInt() * TENPOWERS[scale];
+            value += convertToInnerForm(a.getInt());
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
-            value += a.getLong() * TENPOWERS[scale];
+            value += convertToInnerForm(a.getLong());
         } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-            value += a.getDouble() * TENPOWERS[scale];
+            value += convertToInnerForm(a.getDouble());
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
@@ -370,11 +369,11 @@ public final class IntegerDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
         if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value -= a.getInt() * TENPOWERS[scale];
+            value -= convertToInnerForm(a.getInt());
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
-            value -= a.getLong() * TENPOWERS[scale];
+            value -= convertToInnerForm(a.getLong());
         } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-            value -= a.getDouble() * TENPOWERS[scale];
+            value -= convertToInnerForm(a.getDouble());
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
@@ -402,7 +401,7 @@ public final class IntegerDecimal implements Decimal {
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value *= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
+                value *= convertToInnerForm(((double) ((IntegerDecimal) d).value));
             } else {
                 setValue(getBigDecimal().multiply(d.getBigDecimal()));
             }
@@ -426,7 +425,7 @@ public final class IntegerDecimal implements Decimal {
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
-                value /= ((double) ((IntegerDecimal) d).value) / TENPOWERS[scale];
+                value /= convertToOuterForm(((double) ((IntegerDecimal) d).value));
             } else {
                 setValue(getBigDecimal().divide(d.getBigDecimal(), scale, RoundingMode.HALF_UP));
             }
@@ -450,11 +449,11 @@ public final class IntegerDecimal implements Decimal {
         if(isNull()) return;
         if(a.isNull()) setNaN(true);
         if(a instanceof IntegerDataField || a instanceof CloverInteger) {
-            value %= a.getInt() * TENPOWERS[scale];
+            value %= convertToInnerForm(a.getInt());
         } else  if(a instanceof LongDataField || a instanceof CloverLong) {
-            value %= a.getLong() * TENPOWERS[scale];
+            value %= convertToInnerForm(a.getLong());
         } else if(a instanceof NumericDataField || a instanceof CloverDouble) {
-            value %= a.getDouble() * TENPOWERS[scale];
+            value %= convertToInnerForm(a.getDouble());
         } else if(a instanceof DecimalDataField || a instanceof Decimal) {
             Decimal d = (a instanceof Decimal) ? (Decimal) a : a.getDecimal();
             if(d instanceof IntegerDecimal && ((IntegerDecimal) d).scale == scale) {
@@ -595,15 +594,15 @@ public final class IntegerDecimal implements Decimal {
             }
             return getBigDecimal().compareTo(((Decimal) obj).getBigDecimal());
         } else if (obj instanceof Integer) {
-            return compareTo(((Integer) obj).intValue() * TENPOWERS[scale]);
+            return compareTo(convertToInnerForm(((Integer) obj).intValue()));
         } else if(obj instanceof Long) {
-            return compareTo(((Long) obj).longValue() * TENPOWERS[scale]);
+            return compareTo(convertToInnerForm(((Long) obj).longValue()));
         } else if (obj instanceof Double) { 
             return getBigDecimal().compareTo(BigDecimal.valueOf((Double) obj));
         } else if (obj instanceof IntegerDataField) {
-            return compareTo(((IntegerDataField) obj).getInt() * TENPOWERS[scale]);
+            return compareTo(convertToInnerForm(((IntegerDataField) obj).getInt()));
         } else if(obj instanceof LongDataField) {
-            return compareTo(((LongDataField) obj).getLong() * TENPOWERS[scale]);
+            return compareTo(convertToInnerForm(((LongDataField) obj).getLong()));
         } else if (obj instanceof NumericDataField) {
             return getBigDecimal().compareTo(BigDecimal.valueOf(((NumericDataField) obj).getDouble()));
         } else if (obj instanceof DecimalDataField) {
@@ -640,4 +639,37 @@ public final class IntegerDecimal implements Decimal {
         if(isNaN()) return Integer.MIN_VALUE;
         return (int)(value^value>>32);
     }
+    
+    private long convertToInnerForm(long l) {
+        if(scale >= 0) {
+            return l * TENPOWERS[scale];
+        } else {
+            return l / TENPOWERS[-scale];
+        }
+    }
+
+    private double convertToInnerForm(double d) {
+        if(scale >= 0) {
+            return (long) d * TENPOWERS[scale];
+        } else {
+            return (long) d / TENPOWERS[-scale];
+        }
+    }
+
+    private long convertToOuterForm(long l) {
+        if(scale >= 0) {
+            return l / TENPOWERS[scale];
+        } else {
+            return l * TENPOWERS[-scale];
+        }
+    }
+
+    private double convertToOuterForm(double d) {
+        if(scale >= 0) {
+            return d / TENPOWERS[scale];
+        } else {
+            return d * TENPOWERS[-scale];
+        }
+    }
+
 }
