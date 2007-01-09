@@ -23,7 +23,9 @@
  */
 package org.jetel.data.sequence;
 
-import org.jetel.data.sequence.SimpleSequence;
+
+import org.jetel.graph.TransformationGraph;
+import org.jetel.main.runGraph;
 
 import junit.framework.TestCase;
 
@@ -36,20 +38,25 @@ import junit.framework.TestCase;
  */
 public class SimpleSequenceTest extends TestCase {
     
-    SimpleSequence sequence;
+    Sequence sequence;
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        // TODO Auto-generated method stub
-        super.setUp();
-        sequence=new SimpleSequence("", "Test","c:\\tmp\\sequence4.dat",0,1,17);
+        runGraph.initEngine(null, null);
+        sequence = SequenceFactory.createSequence(null, "SIMPLE_SEQUENCE", 
+        		new Object[]{"",null,"Test","sequence4.dat",0,1,17}, 
+        		new Class[]{String.class,TransformationGraph.class,String.class,String.class,int.class,int.class,int.class});
+//        sequence=new SimpleSequence("", "Test","c:\\tmp\\sequence4.dat",0,1,17);
         sequence.init();
     }
 
     public void test_1(){
+    	System.out.println("Test 1:");
+        sequence.reset();
         assertEquals("different",sequence.currentValueInt(),0);
+        assertEquals("different",sequence.nextValueInt(),0);
         assertEquals("different",sequence.nextValueInt(),1);
         for (int i=0;i<30;i++){
             System.out.println(sequence.nextValueInt());
@@ -58,6 +65,7 @@ public class SimpleSequenceTest extends TestCase {
     
     public void test_2(){
        // sequence.init();
+    	System.out.println("Test 2:");
         for (int i=0;i<30;i++){
             System.out.println(sequence.nextValueInt());
         }
