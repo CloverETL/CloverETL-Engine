@@ -172,7 +172,8 @@ public class Compiler {
     
     private String getClassPath() {
         if(classPath == null) {
-            ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            //ClassLoader loader = Thread.currentThread().getContextClassLoader();
+            ClassLoader loader = getClass().getClassLoader();
             classPath = ClassLoaderUtils.getClasspath(loader);
         }
         return classPath;
