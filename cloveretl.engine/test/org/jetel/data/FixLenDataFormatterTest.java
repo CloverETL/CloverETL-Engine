@@ -19,11 +19,13 @@
 
 package org.jetel.data;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import junit.framework.TestCase;
 
@@ -55,7 +57,7 @@ protected void setUp() {
 	
 	runGraph.initEngine(null, null);
 	FileInputStream in = null;
-	FileInputStream in2 = null;
+//	FileInputStream in2 = null;
 	FileInputStream in3 = null;
 	metadata = null;
 	DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
@@ -67,7 +69,7 @@ protected void setUp() {
 //		in3 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
 		metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
 		in = new FileInputStream("data/in/good/FL28_no_NL.txt");
-		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
+//		in2 = new FileInputStream("data/in/bad/FL28_no_NL_nulls.txt");
 		in3 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
@@ -103,9 +105,6 @@ protected void setUp() {
 	testParser = new FixLenCharDataParser();
 	
 	try {
-		aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
-		aParser.init(metadata);
-		aParser.setDataSource(in2);
 		record = new DataRecord(metadata);
 		record.init();
 
@@ -152,9 +151,20 @@ protected void setUp() {
 	*/
 public void test_parsing_bad() {
 // the content of the test file
-//	N/AStone    101   01/11/93-15.5          112  11/03/02 -0.7Bone Broo    99        //
+//	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99        //
 	int recCount = 0;
-   try{
+
+	InputStream in2 = new ByteArrayInputStream(new String("	N/AStone    101   01/11/93-15.5          112   11/03/02 -0.7Bone Broo    99").getBytes());	
+	aParser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT));
+	try {
+		aParser.init(metadata);
+	} catch (ComponentNotReadyException e1) {
+		e1.printStackTrace();
+	}
+	aParser.setDataSource(in2);
+	
+	
+	try{
 	   record=aParser.getNext(record);
 	   aFixLenDataFormatter.write(record);
 	   fail("Should raise an BadDataFormatException");
@@ -189,7 +199,7 @@ public void test_parsing_bad() {
 
 		while((record=testParser.getNext(record))!=null){
 			if(recCount==0) {
-				assertEquals(record.getField(0).toString(),"-15.5");
+				assertEquals(record.getField(0).toString(),"15.5");
 				assertTrue(record.getField(1).isNull());
 				assertEquals(record.getField(2).toString(),"112");
 				assertEquals(record.getField(3).toString(),"11/03/02");
@@ -197,7 +207,7 @@ public void test_parsing_bad() {
 				assertEquals(record.getField(0).toString(),"-0.7");
 				assertEquals(record.getField(1).toString(),"Bone Broo");
 				assertEquals(record.getField(2).toString(),"99");
-				assertTrue(record.getField(3).isNull());
+				assertFalse(record.getField(3).isNull());
 			}
 			recCount++;
 		}
