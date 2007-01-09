@@ -107,7 +107,11 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @param _value data field for getting value
 	 */
 	public void setValue(DataField _value){
-		setValue(((DataField)_value).getValue());
+		if (_value != null) {
+			setValue(((DataField) _value).getValue());
+		}else{
+			setNull(true);
+		}
 	}
 
 
@@ -117,17 +121,27 @@ public abstract class DataField implements Serializable, Comparable {
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
 	public void setToDefaultValue() {
-        if(!metadata.isDefaultValue()) {
-            throw new NullDataFormatException(metadata.getName() + " has not dafault value defined!");
-        }
+//        if(!metadata.isDefaultValue()) {
+//            throw new NullDataFormatException(metadata.getName() + " has not dafault value defined!");
+//        }
 		try {
             Object val;
             if((val = metadata.getDefaultValue()) != null) {
                 setValue(val);
                 return;
             }
-			fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
-            metadata.setDefaultValue(getValueDuplicate());
+			if ((val = metadata.getDefaultValueStr()) != null) {
+				fromString(StringUtils.stringToSpecChar(metadata
+						.getDefaultValueStr()));
+				metadata.setDefaultValue(getValueDuplicate());
+				return;
+			}
+			if (metadata.isNullable()) {
+				setNull(true);
+			}else{
+				throw new NullDataFormatException(metadata.getName() + 
+						" has not dafault value defined and is not nullable!");
+			}
 		} catch (Exception ex) {
 			// here, the only reason to fail is bad DefaultValue
 			throw new BadDataFormatException(metadata.getName() + " has incorrect default value", metadata.getDefaultValueStr());
