@@ -579,8 +579,50 @@ public class MergeJoin extends Node {
             checkOutputPorts(status, 1, 1);
 
             try {
-                init();
-                free();
+            	
+        		inputCnt = inPorts.size();
+        		slaveCnt = inputCnt - 1;
+        		if (joiners.length < 1) {
+        			throw new ComponentNotReadyException("not enough join keys specified");
+        		} else if (joiners.length < inputCnt) {
+        			logger.warn("Join keys aren't specified for all slave inputs - deducing missing keys");
+        			String[][] replJoiners = new String[inputCnt][];
+        			for (int i = 0; i < joiners.length; i++) {
+        				replJoiners[i] = joiners[i];
+        			}
+        			// use driver key list for all missing slave key specifications
+        			for (int i = joiners.length; i < inputCnt; i++) {
+        				replJoiners[i] = joiners[0];
+        			}
+        			joiners = replJoiners;
+        		}
+        		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
+        		driverKey.init();
+        		slaveKeys = new RecordKey[slaveCnt];
+        		for (int idx = 0; idx < slaveCnt; idx++) {
+        			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+        			slaveKeys[idx].init();
+        		}
+        		reader = new InputReader[inputCnt];
+        		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
+        		if (slaveDuplicates) {
+        			for (int i = 0; i < slaveCnt; i++) {
+        				reader[i + 1] = new SlaveReaderDup(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+        			}
+        		} else {
+        			for (int i = 0; i < slaveCnt; i++) {
+        				reader[i + 1] = new SlaveReader(getInputPort(FIRST_SLAVE_PORT + i), slaveKeys[i]);
+        			}			
+        		}
+        		minReader = reader[0];
+        		minIndicator = new boolean[inputCnt];
+        		for (int i = 0; i < inputCnt; i++) {
+        			minIndicator[i] = true;
+        		}
+            	
+            	
+//                init();
+//                free();
             } catch (ComponentNotReadyException e) {
                 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {

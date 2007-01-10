@@ -774,8 +774,80 @@ public class AproxMergeJoin extends Node {
         checkOutputPorts(status, 4, 4);
 
         try {
-            init();
-            free();
+        	
+            //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
+    		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
+    		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
+    		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
+    		DataRecordMetadata[] outMetadata = new DataRecordMetadata[2];
+    		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata();
+    		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata();
+    		if (!outMetadata[0].equals(inMetadata[0])){
+    			throw new ComponentNotReadyException("Wrong metadata on output port no 2 (NOT_MATCH_DRIVER_OUT)");
+    		}
+    		if (!outMetadata[1].equals(inMetadata[1])) {
+    			throw new ComponentNotReadyException(
+    					"Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
+    		}
+    		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
+    				.getMetadata() };
+    		// initializing join parameters
+    		joinKeys = new String[joinParameters.length];
+    		maxDifferenceLetters = new int[joinParameters.length];
+    		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
+    		weights = new double[joinParameters.length];
+    		String[] tmp;
+    		for (int i=0;i<joinParameters.length;i++){
+    			tmp=joinParameters[i].split(" ");
+    			joinKeys[i]=tmp[0];
+    			maxDifferenceLetters[i]=Integer.parseInt(tmp[1]);
+    			weights[i]=Double.parseDouble(tmp[2]);
+    			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
+    				strength[i][j] = tmp[3+j].equals("true") ? true : false;
+    			}
+    		}
+    		double sumOfWeights=0;
+    		for (int i=0;i<weights.length;i++){
+    			sumOfWeights+=weights[i];
+    		}
+    		for (int i=0;i<weights.length;i++){
+    			weights[i]=weights[i]/sumOfWeights;
+    		}
+    		if (slaveOverrideKeys == null) {
+    			slaveOverrideKeys = joinKeys;
+    		}
+    		RecordKey[] recKey = new RecordKey[2];
+    		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
+    		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
+    		recKey[DRIVER_ON_PORT].init();
+    		recKey[SLAVE_ON_PORT].init();
+    		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
+    		fieldsToCompare[SLAVE_ON_PORT]=recKey[SLAVE_ON_PORT].getKeyFields();
+    		comparator = new StringAproxComparator[joinParameters.length];
+    		for (int i=0;i<comparator.length;i++){
+    			String locale=inMetadata[DRIVER_ON_PORT].getField(fieldsToCompare[DRIVER_ON_PORT][i]).getLocaleStr();
+    			try {
+    				comparator[i] = StringAproxComparator.createComparator(locale,strength[i]);
+    			}catch(JetelException ex){
+    				throw new ComponentNotReadyException(ex.getLocalizedMessage());
+    			}
+    		}
+    		if (slaveMatchingKey == null){
+    			slaveMatchingKey=matchingKey;
+    		}
+    		recordKey = new RecordKey[2];
+    		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
+    		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
+    		recordKey[DRIVER_ON_PORT].init();
+    		recordKey[SLAVE_ON_PORT].init();
+    		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
+    		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
+    		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+        	
+        	
+        	
+//            init();
+//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {

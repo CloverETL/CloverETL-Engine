@@ -313,8 +313,27 @@ public class JmsWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-            init();
-            free();
+        	
+    		if (psor == null && psorClass == null && psorCode == null) {
+    			throw new ComponentNotReadyException("Message processor not specified");
+    		}
+    		IConnection c = getGraph().getConnection(conId);
+    		if (c == null || !(c instanceof JmsConnection)) {
+    			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
+    		}
+
+    		connection = (JmsConnection)c;
+    		inPort = getInputPort(0);
+     		try {
+    			connection.init();
+    			producer = connection.createProducer();
+    		} catch (Exception e) {
+    			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
+    		}
+        	
+        	
+//            init();
+//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
