@@ -443,7 +443,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         try{
             watchDogStatus = watch(phase, leafNodes);
         }catch(InterruptedException ex){
-            watchDogStatus = Status.ERROR;
+            watchDogStatus = Status.ABORTED;
         }
         
         // following code is not needed any more
