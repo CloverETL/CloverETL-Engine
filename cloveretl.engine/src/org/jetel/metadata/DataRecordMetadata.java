@@ -587,6 +587,9 @@ public class DataRecordMetadata implements Serializable {
     		return false;
     	}
     	DataRecordMetadata metadata = (DataRecordMetadata)o;
+    	if (getNumFields() != metadata.getNumFields()){
+    		return false;
+    	}
     	for (int i=0;i<this.getNumFields();i++){
     		if (!this.getField(i).equals(metadata.getField(i))){
     			return false;
