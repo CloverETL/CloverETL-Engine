@@ -492,12 +492,12 @@ public class DecimalNumericTest extends TestCase {
 
 	public void test_s_ds(){
 		System.out.println("\nTests for serialization and deserilization:");
-		Decimal d=DecimalFactory.getDecimal();
-		Decimal i=DecimalFactory.getDecimal(6,3);
-		Decimal l=DecimalFactory.getDecimal(18,0);
 		aDouble=DecimalFactory.getDecimal(0.2,6,2);
 		anInt=DecimalFactory.getDecimal(123,6,3);
 		aLong=DecimalFactory.getDecimal((long)Integer.MAX_VALUE+10,20,2);
+        Decimal d=DecimalFactory.getDecimal(aDouble.getPrecision(), aDouble.getScale());
+        Decimal i=DecimalFactory.getDecimal(anInt.getPrecision(), anInt.getScale());
+        Decimal l=DecimalFactory.getDecimal(aLong.getPrecision(), aLong.getScale());
 		ByteBuffer bb=ByteBuffer.allocate(1000);
 		aDouble.serialize(bb);
 		anInt.serialize(bb);
