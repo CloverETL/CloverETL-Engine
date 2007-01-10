@@ -25,6 +25,7 @@ import java.io.Serializable;
 import java.util.Enumeration;
 import java.util.Properties;
 
+import org.jetel.data.DecimalDataField;
 import org.jetel.data.Defaults;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.StringUtils;
@@ -628,7 +629,28 @@ public class DataFieldMetadata implements Serializable {
 		if (!(o instanceof DataFieldMetadata)){
 			return false;
 		}
-		return this.fieldType==((DataFieldMetadata)o).fieldType;
+		if (this.fieldType==((DataFieldMetadata)o).fieldType){
+			if (isFixed() && ((DataFieldMetadata)o).isFixed()) {
+				//both fixed
+				return getSize() == ((DataFieldMetadata)o).getSize();
+			}else if (!isFixed() && !((DataFieldMetadata)o).isFixed()) {
+				//both delimited
+				if (this.fieldType==DECIMAL_FIELD){
+					return (getProperty(LENGTH_ATTR).equals(
+							((DataFieldMetadata)o).getProperty(LENGTH_ATTR)) && 
+							getProperty(SCALE_ATTR).equals(
+									((DataFieldMetadata)o).getProperty(SCALE_ATTR)));
+				}else{
+					//the same type and both delimited
+					return true;
+				}
+			}else{
+				//one fixed and the second delimited
+				return false;
+			}
+		}
+		//diffrent types
+		return false;
 	}
 	
 	public int hashCode(){
