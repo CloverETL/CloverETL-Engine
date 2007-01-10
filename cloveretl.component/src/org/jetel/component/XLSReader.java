@@ -324,7 +324,7 @@ public class XLSReader extends Node {
 	 * @param startRow The startRow to set.
 	 */
 	public void setStartRow(int startRecord) {
-		if(startRecord < 0 || (finalRow != -1 && startRecord > finalRow)) {
+		if(startRecord < 1 || (finalRow != -1 && startRecord > finalRow)) {
 			throw new InvalidParameterException("Invalid StartRecord parametr.");
 		}
 		this.startRow = startRecord;
