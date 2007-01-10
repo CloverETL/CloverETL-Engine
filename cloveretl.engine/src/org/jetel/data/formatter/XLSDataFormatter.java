@@ -180,8 +180,10 @@ public class XLSDataFormatter implements Formatter {
 	 */
 	public void close() {
 		try {
-			wb.write(out);//write workbook to file
-			out.close();	
+				if (out.getFD().valid()) {
+					wb.write(out);//write workbook to file
+					out.close();
+				}				
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
