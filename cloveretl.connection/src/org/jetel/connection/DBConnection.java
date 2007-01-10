@@ -126,6 +126,7 @@ public class DBConnection extends GraphElement implements IConnection {
 
     private static Log logger = LogFactory.getLog(DBConnection.class);
 
+    String configFileName;
 	Driver dbDriver;
 	Connection dbConnection;
 	Properties config;
@@ -180,28 +181,7 @@ public class DBConnection extends GraphElement implements IConnection {
         super(id);
 	    this.openedConnections=new HashMap();
 	    this.config = new Properties();
-
-		try {
-            InputStream stream = null;
-            if (!new File(configFilename).exists()) {
-                // config file not found on file system - try classpath
-                stream = getClass().getClassLoader().getResourceAsStream(configFilename);
-                if(stream == null) {
-                    throw new FileNotFoundException("Config file for db connection " + id + " not found (" + configFilename +")");
-                }
-                stream = new BufferedInputStream(stream);
-            } else {
-                stream = new BufferedInputStream(new FileInputStream(configFilename));
-            }
-            
-			this.config.load(stream);
-			stream.close();
-			this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
-			this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
-
-		} catch (Exception ex) {
-			throw new RuntimeException(ex);
-		}
+	    this.configFileName = configFilename;
 	}
 
 	public DBConnection(String id, Properties configProperties) {
@@ -212,6 +192,38 @@ public class DBConnection extends GraphElement implements IConnection {
 		this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
 	}
 	
+    /* (non-Javadoc)
+     * @see org.jetel.graph.GraphElement#init()
+     */
+    public void init() throws ComponentNotReadyException {
+        super.init();
+        if(!StringUtils.isEmpty(configFileName)) {
+            try {
+                InputStream stream = null;
+                if (!new File(configFileName).exists()) {
+                    // config file not found on file system - try classpath
+                    stream = getClass().getClassLoader().getResourceAsStream(configFileName);
+                    if(stream == null) {
+                        throw new FileNotFoundException("Config file for db connection " + getId() + " not found (" + configFileName + ")");
+                    }
+                    stream = new BufferedInputStream(stream);
+                } else {
+                    stream = new BufferedInputStream(new FileInputStream(configFileName));
+                }
+                
+                this.config.load(stream);
+                stream.close();
+                this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
+                this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
+
+            } catch (Exception ex) {
+                throw new ComponentNotReadyException(ex);
+            }
+        }
+        
+        connect();
+    }
+
 	/**
 	 * Method which connects to database and if successful, sets various
 	 * connection parameters. If as a property "transactionIsolation" is defined, then
@@ -601,18 +613,10 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
         //TODO
         return status;
     }
-
-    /* (non-Javadoc)
-     * @see org.jetel.graph.GraphElement#init()
-     */
-    public void init() throws ComponentNotReadyException {
-		super.init();
-       connect();
-    }
-
 
     /* (non-Javadoc)
      * @see org.jetel.database.IConnection#createMetadata(java.util.Properties)

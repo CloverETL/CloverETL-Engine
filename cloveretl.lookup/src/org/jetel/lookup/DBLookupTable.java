@@ -524,6 +524,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
      */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
         //TODO
         return status;
     }

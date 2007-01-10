@@ -176,10 +176,16 @@ public class Phase implements Comparable {
 	 * @return    Description of the Return Value
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        //check nodes configuration
         for(Node node : getNodes()) {
             node.checkConfig(status);
         }
-
+        
+        //check edges configuration
+//        for(Edge edge : getEdgesInPhase()) {
+//            edge.checkConfig(status);
+//        }
+        
         return status;
 	}
 

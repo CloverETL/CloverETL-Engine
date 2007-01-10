@@ -68,6 +68,7 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
         //TODO
         return status;
     }

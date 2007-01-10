@@ -264,6 +264,10 @@ public class runGraph {
         try {
             graph = runGraph.loadGraph(in, properties);
 
+            //check graph elements configuration
+            ConfigurationStatus status = graph.checkConfig(null);
+            status.log();
+
             if(!graph.init()) {
                 throw new GraphConfigurationException("Graph initialization failed.");
             }
@@ -291,10 +295,6 @@ public class runGraph {
             }
             System.exit(-1);
         }
-        
-        //check graph elements configuration
-        ConfigurationStatus status = graph.checkConfig(null);
-        status.log();
         
         // set tracking interval
 		if(trackingInterval!=-1){
