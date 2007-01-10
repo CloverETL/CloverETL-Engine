@@ -379,6 +379,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
         //TODO
         return status;
     }

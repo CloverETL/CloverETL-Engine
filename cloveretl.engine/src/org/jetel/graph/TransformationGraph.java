@@ -236,7 +236,7 @@ public final class TransformationGraph {
 	 * @return	Iterator with IConnections names
 	 * @see		getConnection
 	 */
-	public Iterator getConnections(){
+	public Iterator<String> getConnections(){
 	    return connections.keySet().iterator();
 	}
 	
@@ -247,7 +247,7 @@ public final class TransformationGraph {
 	 * @return	Iterator with sequence names
 	 * @see		getSequence
 	 */
-	public Iterator getSequences(){
+	public Iterator<String> getSequences(){
 	    return sequences.keySet().iterator();
 	}
 	
@@ -267,7 +267,7 @@ public final class TransformationGraph {
 	 * 
 	 * @return Iterator with LookupTables names
 	 */
-	public Iterator getLookupTables(){
+	public Iterator<String> getLookupTables(){
 	    return lookupTables.keySet().iterator();
 	}
 	
@@ -287,7 +287,7 @@ public final class TransformationGraph {
 	 * 
 	 * @return Iterator with Metadata names (IDs)
 	 */
-	public Iterator getDataRecordMetadata(){
+	public Iterator<String> getDataRecordMetadata(){
 	    return dataRecordMetadata.keySet().iterator();
 	}
 	
@@ -815,6 +815,27 @@ public final class TransformationGraph {
             status = new ConfigurationStatus();
         }
         
+        //check connections configuration
+        for(IConnection connection : connections.values()) {
+            connection.checkConfig(status);
+        }
+
+        //check lookup tables configuration
+        for(LookupTable lookupTable : lookupTables.values()) {
+            lookupTable.checkConfig(status);
+        }
+
+        //check sequences configuration
+        for(Sequence sequence : sequences.values()) {
+            sequence.checkConfig(status);
+        }
+        
+        //check edges configuration
+        for(Edge edge : getEdges().values()) {
+            edge.checkConfig(status);
+        }
+
+        //check phases configuration
         for(Phase phase : getPhases()) {
             phase.checkConfig(status);
         }

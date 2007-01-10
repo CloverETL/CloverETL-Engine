@@ -196,7 +196,9 @@ public class JmsConnection extends GraphElement implements IConnection {
 	 * @see org.jetel.graph.GraphElement#checkConfig(org.jetel.exception.ConfigurationStatus)
 	 */
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		return null;
+        super.checkConfig(status);
+        //TODO
+		return status;
 	}
 
 	public Session getSession() {
