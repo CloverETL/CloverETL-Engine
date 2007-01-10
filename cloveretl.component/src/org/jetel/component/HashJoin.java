@@ -271,14 +271,6 @@ public class HashJoin extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		if (inPorts.size() < 1) {
-			throw new ComponentNotReadyException(
-					"At least one input ports has to be defined!");
-		} else if (outPorts.size() < 1) {
-			throw new ComponentNotReadyException(
-					"At least one output port has to be defined!");
-		}
 
 		driverPort = getInputPort(DRIVER_ON_PORT);
 		outPort = getOutputPort(WRITE_TO_PORT);
@@ -693,8 +685,69 @@ public class HashJoin extends Node {
         checkOutputPorts(status, 1, 1);
 
         try {
-            init();
-            free();
+        	
+    		driverPort = getInputPort(DRIVER_ON_PORT);
+    		outPort = getOutputPort(WRITE_TO_PORT);
+
+    		slaveCnt = inPorts.size() - FIRST_SLAVE_PORT;
+    		if (driverJoiners.length < 1) {
+    			throw new ComponentNotReadyException("driver key list not specified");
+    		}
+    		if (driverJoiners.length < slaveCnt) {
+    			logger.warn("Driver keys aren't specified for all slave inputs - deducing missing keys");
+    			String[][] replJoiners = new String[slaveCnt][];
+    			for (int i = 0; i < driverJoiners.length; i++) {
+    				replJoiners[i] = driverJoiners[i];
+    			}
+    			// use first master key specification to deduce all missing driver key specifications
+    			for (int i = driverJoiners.length; i < slaveCnt; i++) {
+    				replJoiners[i] = driverJoiners[0];
+    			}
+    			driverJoiners = replJoiners;
+    		}
+    		if (slaveJoiners.length < slaveCnt) {
+    			logger.warn("Slave keys aren't specified for all slave inputs - deducing missing keys");
+    			String[][] replJoiners = new String[slaveCnt][];
+    			for (int i = 0; i < slaveJoiners.length; i++) {
+    				replJoiners[i] = slaveJoiners[i];
+    			}
+    			// use first master key specification to deduce all missing driver key specifications
+    			for (int i = slaveJoiners.length; i < slaveCnt; i++) {
+    				replJoiners[i] = driverJoiners[0];
+    			}
+    			slaveJoiners = replJoiners;
+    		}
+
+    		inRecords = new DataRecord[1 + slaveCnt];
+    		inRecords[0] = new DataRecord(driverPort.getMetadata());
+    		inRecords[0].init();
+    		outRecords = new DataRecord[1];
+    		outRecords[0] = new DataRecord(outPort.getMetadata());
+    		outRecords[0].init();
+
+    		driverKeys = new RecordKey[slaveCnt];
+    		slaveKeys = new RecordKey[slaveCnt];
+    		for (int idx = 0; idx < slaveCnt; idx++) {
+    			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
+    			driverKeys[idx].init();
+    			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
+    			slaveKeys[idx].init();
+    		}
+
+    		// allocate maps		
+    		try {
+    			hashMap = (HashMap<HashKey, MapItem>[])new HashMap[slaveCnt];
+    			for (int idx = 0; idx < slaveCnt; idx++) {
+    				hashMap[idx] = new HashMap<HashKey, MapItem>(hashTableInitialCapacity);
+    			}
+    		} catch (OutOfMemoryError ex) {
+    			logger.fatal(ex);
+    			throw new ComponentNotReadyException("Can't allocate HashMap of size: "	+ hashTableInitialCapacity);
+    		}
+        	
+        	
+//            init();
+//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {

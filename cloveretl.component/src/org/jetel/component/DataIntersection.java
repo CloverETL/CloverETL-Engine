@@ -486,16 +486,16 @@ public class DataIntersection extends Node {
         checkInputPorts(status, 2, 2);
         checkOutputPorts(status, 3, 3);
 
-        try {
-            init();
-            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+//        try {
+//            init();
+//            free();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
     }

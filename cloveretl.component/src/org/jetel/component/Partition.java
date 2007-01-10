@@ -329,6 +329,7 @@ public class Partition extends Node {
 		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE));
 		    if (xattribs.exists(XML_PARTITIONCLASS_ATTRIBUTE)) {//load class with partition function
 		        try {
+		        	//TODO move creating function to init method
 		        	partitionFce =  (PartitionFunction)Class.forName(xattribs.getString(XML_ID_ATTRIBUTE)).newInstance();
 		        }catch (InstantiationException ex){
 		            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
@@ -387,8 +388,22 @@ public class Partition extends Node {
             checkOutputPorts(status, 1, Integer.MAX_VALUE);
 
             try {
-                init();
-                free();
+            	
+        	    if (partitionKeyNames != null) {
+        			partitionKey = new RecordKey(partitionKeyNames,
+        					getInputPort(0).getMetadata());
+        		}
+        		if (partitionKey != null) {
+        			try {
+        				partitionKey.init();
+        			} catch (Exception e) {
+        				throw new ComponentNotReadyException(e.getMessage());
+        			}
+        		}
+            	
+            	
+//                init();
+//                free();
             } catch (ComponentNotReadyException e) {
                 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {

@@ -237,8 +237,31 @@ public class DBJoin extends Node {
         checkOutputPorts(status, 1, 1);
 
         try {
-            init();
-            free();
+        	
+    		IConnection conn = getGraph().getConnection(connectionName);
+            if(conn == null) {
+                throw new ComponentNotReadyException("Can't find DBConnection ID: " + connectionName);
+            }
+            if(!(conn instanceof DBConnection)) {
+                throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
+            }
+            dbMetadata = getGraph().getDataRecordMetadata(metadataName);
+    		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
+    		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
+            lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCached);
+    		lookupTable.init();
+    		try {
+    			recordKey = new RecordKey(joinKey, inMetadata[0]);
+    			recordKey.init();
+    			lookupTable.setLookupKey(recordKey);
+    		} catch (Exception e) {
+    			throw new ComponentNotReadyException(this, e);
+    		}
+        	
+    		lookupTable.free();
+        	
+//            init();
+//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {
