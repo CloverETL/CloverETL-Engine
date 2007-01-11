@@ -42,7 +42,9 @@ import org.jetel.util.TypedProperties;
  */
 public class DataFieldMetadata implements Serializable {
 	
-	public static int INTEGER_LENGTH = 9;
+	private static final long serialVersionUID = -880873886732472663L;
+  
+    public static int INTEGER_LENGTH = 9;
 	public static int LONG_LENGTH = 18;
 	public static int DOUBLE_SCALE = 323;
 	public static int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
