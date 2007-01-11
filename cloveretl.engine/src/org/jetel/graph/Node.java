@@ -32,6 +32,7 @@ import java.util.TreeMap;
 
 import org.jetel.data.DataRecord;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -58,26 +59,6 @@ import org.w3c.dom.Element;
  */
 public abstract class Node extends GraphElement implements Runnable {
 
-    public enum Result{
-        
-        RUNNING(0,"RUNNING"),
-        OK(1,"OK"),
-        ERROR(-1,"ERROR"),
-        ABORTED(-2,"ABORTED");
-        
-        private final int code;
-        private final String message;
-        
-        Result(int _code,String msg){
-            code=_code;
-            message=msg;
-        }
-        
-        public int code(){return code;}
-        public String message(){return message;}
-        
-    }
-    
     protected Thread nodeThread;
     protected EnabledEnum enabled;
     protected int passThroughInputPort;
@@ -131,6 +112,7 @@ public abstract class Node extends GraphElement implements Runnable {
 		inPorts = new TreeMap();
 		logPort = null;
         phase = null;
+        runResult=Result.N_A; // result is not known yet
 	}
 
     /**
@@ -143,6 +125,11 @@ public abstract class Node extends GraphElement implements Runnable {
         this(id,null);
     }
 
+    @Override public void init() throws ComponentNotReadyException{
+        super.init();
+        runResult=Result.READY;
+    }
+    
     
     
 	/**

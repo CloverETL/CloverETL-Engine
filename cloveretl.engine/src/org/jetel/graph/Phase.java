@@ -21,12 +21,14 @@ package org.jetel.graph;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
+import org.jetel.graph.runtime.NodeTrackingDetail;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -47,25 +49,20 @@ public class Phase implements Comparable {
 	 */
 	private List <Node> nodesInPhase;
 	private List <Edge> edgesInPhase;
+    private List <Node> leafNodes;
 
 	// specifies the order of this phase within graph
 	private int phaseNum;
 
 	private int phaseExecTime;
 	private int phaseMemUtilization;
-	private int result;
+	private Result result;
     private boolean isCheckPoint;
+    private Map<String,NodeTrackingDetail> tracking;
 
 	protected TransformationGraph graph;
 
 	static Log logger = LogFactory.getLog(Phase.class);
-
-	/**  Description of the Field */
-    public final static int RESULT_CREATED = -2;
-    public final static int RESULT_INITIALIZED = -1;
-	public final static int RESULT_RUNNING = 0;
-	public final static int RESULT_OK = 1;
-	public final static int RESULT_ERROR = 2;
 
 	// Operations
 
@@ -79,7 +76,7 @@ public class Phase implements Comparable {
 		this.phaseNum = phaseNum;
 		nodesInPhase = new LinkedList<Node> ();
 		edgesInPhase = new LinkedList<Edge> ();
-		result = RESULT_CREATED;
+        result=Result.N_A;
 	}
 
 
@@ -126,6 +123,9 @@ public class Phase implements Comparable {
 		Iterator edgeIterator = edgesInPhase.iterator();
 		phaseExecTime = phaseMemUtilization = 0;
 
+        // list of leaf nodes -will be filled later
+        leafNodes = new LinkedList<Node>();
+        
 		// if the output stream is specified, create logging possibility information
 		logger.info("[Clover] Initializing phase: "
 			+ phaseNum);
@@ -149,6 +149,10 @@ public class Phase implements Comparable {
 		while (nodeIterator.hasNext()) {
 			try {
 				node = (Node) nodeIterator.next();
+                // is it a leaf node ?
+                if (node.isLeaf() || node.isPhaseLeaf()) {
+                    leafNodes.add(node);
+                }
 				// if logger exists, print some out information
 				node.init();
 				logger.debug("\t" + node.getId() + " ...OK");
@@ -160,11 +164,12 @@ public class Phase implements Comparable {
 				return false;
 			}
 		}
+        
 		logger.info("[Clover] phase: "
 			+ phaseNum 
 			+ " initialized successfully.");
 		
-        result = RESULT_INITIALIZED;
+        result = Result.READY;
 		return true;
 		// initialized OK
 	}
@@ -364,12 +369,12 @@ public class Phase implements Comparable {
 	}
 
 
-    public int getResult() {
+    public Result getResult() {
         return result;
     }
 
 
-    public void setResult(int result) {
+    public void setResult(Result result) {
         this.result = result;
     }
 
@@ -391,6 +396,33 @@ public class Phase implements Comparable {
 
     public void setEdgesInPhase(List<Edge> edgesInPhase) {
         this.edgesInPhase = edgesInPhase;
+    }
+
+
+    /**
+     * @return the leafNodes
+     * @since 10.1.2007
+     */
+    public List<Node> getLeafNodes() {
+        return leafNodes;
+    }
+
+
+    /**
+     * @return the tracking
+     * @since 10.1.2007
+     */
+    public Map<String, NodeTrackingDetail> getTracking() {
+        return tracking;
+    }
+
+
+    /**
+     * @param tracking the tracking to set
+     * @since 10.1.2007
+     */
+    public void setTracking(Map<String, NodeTrackingDetail> tracking) {
+        this.tracking = tracking;
     }
 }
 /*

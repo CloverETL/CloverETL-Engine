@@ -308,7 +308,7 @@ public final class TransformationGraph {
 	 * @return    True if all nodes successfully started, otherwise False
 	 * @since     April 2, 2002
 	 */
-	public boolean run() {
+	public Result run() {
 		long timestamp = System.currentTimeMillis();
 		watchDog = new WatchDog(this, phasesArray, trackingInterval);
 
@@ -318,7 +318,7 @@ public final class TransformationGraph {
 			watchDog.join();
 		} catch (InterruptedException ex) {
 			logger.error(ex);
-			return false;
+			return Result.ABORTED;
 		}
 		logger.info("WatchDog thread finished - total execution time: " 
 				+ (System.currentTimeMillis() - timestamp) / 1000
@@ -326,13 +326,12 @@ public final class TransformationGraph {
 
 		freeResources();
 
-		if (watchDog.getStatus() == WatchDog.Status.FINISHED_OK) {
+		if (watchDog.getStatus() == Result.FINISHED_OK) {
 			logger.info("Graph execution finished successfully");
-			return true;
 		} else {
 			logger.error("!!! Graph execution finished with errors !!!");
-			return false;
 		}
+        return watchDog.getStatus();
 
 	}
 
@@ -844,6 +843,19 @@ public final class TransformationGraph {
     }
     
     public CloverRuntime getRuntime(){
+        return watchDog;
+    }
+
+    /**
+     * Returns reference to WatchDog - a thread
+     * which orchestrates all phases/nodes at runtime.<br>
+     * It also contains detailed information about errors which
+     * caused stop of transformation processing.
+     * 
+     * @return the watchDog
+     * @since 10.1.2007
+     */
+    public WatchDog getWatchDog() {
         return watchDog;
     }
 }
