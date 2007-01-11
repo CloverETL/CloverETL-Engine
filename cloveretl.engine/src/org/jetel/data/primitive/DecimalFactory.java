@@ -113,10 +113,7 @@ public class DecimalFactory {
 	}
 
 	public static Decimal getDecimal(int precision, int scale) {
-        if(precision < scale) {
-            throw new IllegalArgumentException("Precision can not be smaller than scale.");
-        }
-        if(precision <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION) {
+        if(precision <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION && Math.abs(scale) <= BOUNDS_FOR_DECIMAL_IMPLEMENTATION) {
             return new IntegerDecimal(precision, scale);
         }
 		return new HugeDecimal(null, precision, scale, true);

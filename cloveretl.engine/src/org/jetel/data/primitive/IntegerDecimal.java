@@ -650,9 +650,9 @@ public final class IntegerDecimal implements Decimal {
 
     private double convertToInnerForm(double d) {
         if(scale >= 0) {
-            return (long) d * TENPOWERS[scale];
+            return d * TENPOWERS[scale];
         } else {
-            return (long) d / TENPOWERS[-scale];
+            return d / TENPOWERS[-scale];
         }
     }
 
