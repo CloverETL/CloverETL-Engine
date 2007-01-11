@@ -33,6 +33,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
@@ -184,7 +185,7 @@ public class StructureWriter extends Node {
 			//close output
 			writer.close();
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	@Override

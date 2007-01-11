@@ -25,6 +25,7 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.exception.ComponentNotReadyException;
 
 /**
  *  Class easing creation of Clover metadata describing data originating in Database.<br>
@@ -206,8 +207,12 @@ public class AnalyzeDB {
 		// load in Database Driver & try to connect to database
 		connection=new DBConnection("", config.getProperty("dbDriver"), config.getProperty("dbURL"),"","");
 		connection.setProperty(config);
-		connection.connect();
-
+		try {
+            connection.init();
+        } catch (ComponentNotReadyException e) {
+            throw new IOException(e.getMessage());
+        }
+        
 		// do we want just to display driver properties ?
 		if (showDriverInfo){
 			printDriverProperty(config);

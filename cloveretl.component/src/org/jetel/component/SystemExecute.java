@@ -44,6 +44,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -379,7 +380,7 @@ public class SystemExecute extends Node{
 			if (!kill(getData,KILL_PROCESS_WAIT_TIME)){
 				throw new RuntimeException("Can't kill "+getData.getName());
 			}
-			if (getData.getResultCode()==Node.Result.ERROR) {
+			if (getData.getResultCode()==Result.ERROR) {
 				ok = false;
 				resultMsg = getData.getResultMsg() + "\n" + getData.getResultException();
 			}
@@ -389,7 +390,7 @@ public class SystemExecute extends Node{
 			if (!kill(sendData,KILL_PROCESS_WAIT_TIME)){
 				throw new RuntimeException("Can't kill "+sendData.getName());
 			}
-			if (sendData.getResultCode()==Node.Result.ERROR){
+			if (sendData.getResultCode()==Result.ERROR){
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendData.getResultMsg() + "\n" + sendData.getResultException();
 			}
@@ -399,14 +400,14 @@ public class SystemExecute extends Node{
 			if (!kill(sendDataToFile,KILL_PROCESS_WAIT_TIME)){
 				throw new RuntimeException("Can't kill "+sendDataToFile.getName());
 			}
-			if (sendDataToFile.getResultCode()==Node.Result.ERROR){
+			if (sendDataToFile.getResultCode()==Result.ERROR){
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendDataToFile.getResultMsg() + "\n" + sendDataToFile.getResultException();
 			}
 			if (!kill(sendErrToFile,KILL_PROCESS_WAIT_TIME)){
 				throw new RuntimeException("Can't kill "+sendErrToFile.getName());
 			}
-			if (sendErrToFile.getResultCode()==Node.Result.ERROR){
+			if (sendErrToFile.getResultCode()==Result.ERROR){
 				ok = false;
 				resultMsg = (resultMsg == null ? "" : resultMsg) + sendErrToFile.getResultMsg() + "\n" + sendErrToFile.getResultException();
 			}
@@ -415,7 +416,7 @@ public class SystemExecute extends Node{
 		if (!runIt) {
 			resultMsg = resultMsg + "\n" + "STOPPED";
 			ok = false;;
-			return Node.Result.ABORTED;
+			return Result.ABORTED;
 		}
 		if (exitValue!=0){
 			if (outputFile!=null) {
@@ -426,7 +427,7 @@ public class SystemExecute extends Node{
 			throw new JetelException(resultMsg);
 		}
 		if (ok) {
-			return Node.Result.OK;
+			return Result.FINISHED_OK;
 		}else{
 			throw new JetelException(resultMsg);
 		}
@@ -579,7 +580,7 @@ public class SystemExecute extends Node{
 		DataRecord in_record;
 		Formatter formatter;
 		String resultMsg=null;
-		Node.Result resultCode;
+		Result resultCode;
         volatile boolean runIt;
         Thread parentThread;
 		Throwable resultException;
@@ -607,7 +608,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-			resultCode = Node.Result.RUNNING;
+			resultCode = Result.RUNNING;
 			try{
 				while (runIt && (( in_record=inPort.readRecord(in_record))!= null )) {
 					formatter.write(in_record);
@@ -616,26 +617,26 @@ public class SystemExecute extends Node{
 				formatter.close();
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				resultMsg = ex.getMessage();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
-				resultCode =  Node.Result.ERROR;
+				resultCode =  Result.ERROR;
 				formatter.close();
 			}catch(Exception ex){
 				logger.error("Error in sysexec GetData",ex);
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 				formatter.close();
 			}
-			if (resultCode==Node.Result.RUNNING){
+			if (resultCode==Result.RUNNING){
 	           if (runIt){
-	        	   resultCode=Node.Result.OK;
+	        	   resultCode=Result.FINISHED_OK;
 	           }else{
-	        	   resultCode = Node.Result.ABORTED;
+	        	   resultCode = Result.ABORTED;
 	           }
 			}
 		}
@@ -692,7 +693,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-            resultCode=Node.Result.RUNNING;
+            resultCode=Result.RUNNING;
 			try{
 				while (runIt && ((out_record = parser.getNext(out_record))!= null) ) {
 					outPort.writeRecord(out_record);
@@ -700,27 +701,27 @@ public class SystemExecute extends Node{
 				}
 			}catch(IOException ex){	
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				parentThread.interrupt();
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch (InterruptedException ex){
-				resultCode = Node.Result.ABORTED;
+				resultCode = Result.ABORTED;
 			}catch(Exception ex){
 				logger.error("Error in sysexec SendData",ex);
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}finally{
 //				parser.close();
 				outPort.close();
 			}
-			if (resultCode == Node.Result.RUNNING)
+			if (resultCode == Result.RUNNING)
 				if (runIt) {
-					resultCode = Node.Result.OK;
+					resultCode = Result.FINISHED_OK;
 				} else {
-					resultCode = Node.Result.ABORTED;
+					resultCode = Result.ABORTED;
 				}
 		}
 
@@ -777,7 +778,7 @@ public class SystemExecute extends Node{
 		}
 		
 		public void run() {
-            resultCode=Node.Result.RUNNING;
+            resultCode=Result.RUNNING;
             BufferedReader out = new BufferedReader(new InputStreamReader(process_out));
             String line = null;
   			try{
@@ -788,12 +789,12 @@ public class SystemExecute extends Node{
  				}
 			}catch(IOException ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}catch(Exception ex){
 				resultMsg = ex.getMessage();
-				resultCode = Node.Result.ERROR;
+				resultCode = Result.ERROR;
 				resultException = ex;
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}
@@ -804,11 +805,11 @@ public class SystemExecute extends Node{
 					//do nothing, out closed
 				}
 			}
-			if (resultCode==Node.Result.RUNNING){
+			if (resultCode==Result.RUNNING){
 		           if (runIt){
-		        	   resultCode=Node.Result.OK;
+		        	   resultCode=Result.FINISHED_OK;
 		           }else{
-		        	   resultCode = Node.Result.ABORTED;
+		        	   resultCode = Result.ABORTED;
 		           }
 				}
 		}

@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
@@ -217,7 +218,7 @@ public class DBJoin extends Node {
 			transformation.finished();
 		}		
 		broadcastEOF();
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
 	@Override
@@ -245,6 +246,8 @@ public class DBJoin extends Node {
             if(!(conn instanceof DBConnection)) {
                 throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
             }
+            conn.init();
+            
             dbMetadata = getGraph().getDataRecordMetadata(metadataName);
     		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
     		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
@@ -286,6 +289,8 @@ public class DBJoin extends Node {
         if(!(conn instanceof DBConnection)) {
             throw new ComponentNotReadyException("Connection with ID: " + connectionName + " isn't instance of the DBConnection class.");
         }
+        conn.init();
+        
         dbMetadata = getGraph().getDataRecordMetadata(metadataName);
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};

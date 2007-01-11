@@ -23,9 +23,9 @@ import java.util.Locale;
 
 import org.jetel.data.Defaults;
 
-public final class Utils {
+public final class MiscUtils {
 
-    private Utils() { }
+    private MiscUtils() { }
 
     /**
      * Creates locale from clover internal format - <language_identifier>[.<country_identifier>]

@@ -168,8 +168,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * Initializes sequence object. It is called after the sequence class is instantiated.
      * All necessary internal initialization should be performed in this method.
      */
-    public void init() throws ComponentNotReadyException {
+    synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+
         buffer = ByteBuffer.allocateDirect(DATA_SIZE);
         try{
             File file = new File(filename);
@@ -215,7 +217,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
      * Closes the sequence (current instance). All internal resources should be freed in
      * this method.
      */
-    public void free() {
+    synchronized public void free() {
+        super.free();
+
         try {
             if (lock != null) {
                 lock.release();

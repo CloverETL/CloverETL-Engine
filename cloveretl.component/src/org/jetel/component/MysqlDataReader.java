@@ -19,6 +19,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -298,7 +299,7 @@ public class MysqlDataReader extends Node {
 			logger.error(getId() + ": subprocess finished with error code " + retval + "\n" + resultMsg);
 			throw new JetelException(resultMsg);
 		} else {
-			return runIt ? Node.Result.OK : Node.Result.ABORTED;
+            return runIt ? Result.FINISHED_OK : Result.ABORTED;
 		}
 	}
 	

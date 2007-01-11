@@ -21,7 +21,6 @@
 package org.jetel.component;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import org.apache.commons.logging.Log;
@@ -36,8 +35,8 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPortDirect;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPortDirect;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.Node.Result;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
@@ -200,7 +199,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 			SynchronizeUtils.cloverYield();
 		}
 		broadcastEOF();
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/**

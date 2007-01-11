@@ -35,6 +35,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
@@ -278,7 +279,7 @@ public class LookupJoin extends Node {
 			}
 		}
 		broadcastEOF();
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	@Override
@@ -307,7 +308,7 @@ public class LookupJoin extends Node {
     			throw new ComponentNotReadyException("Lookup table \""
     					+ lookupTableName + "\" not found.");
     		}
-    		if (!lookupTable.isInited()) {
+    		if (!lookupTable.isInitialized()) {
     			lookupTable.init();
     		}
     		lookupMetadata = lookupTable.getMetadata();
@@ -353,7 +354,7 @@ public class LookupJoin extends Node {
 			throw new ComponentNotReadyException("Lookup table \""
 					+ lookupTableName + "\" not found.");
 		}
-		if (!lookupTable.isInited()) {
+		if (!lookupTable.isInitialized()) {
 			lookupTable.init();
 		}
 		lookupMetadata = lookupTable.getMetadata();

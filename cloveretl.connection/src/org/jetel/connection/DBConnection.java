@@ -195,8 +195,10 @@ public class DBConnection extends GraphElement implements IConnection {
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#init()
      */
-    public void init() throws ComponentNotReadyException {
+    synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
         super.init();
+        
         if(!StringUtils.isEmpty(configFileName)) {
             try {
                 InputStream stream = null;
@@ -220,7 +222,6 @@ public class DBConnection extends GraphElement implements IConnection {
                 throw new ComponentNotReadyException(ex);
             }
         }
-        
         connect();
     }
 
@@ -237,7 +238,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	 * 
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
-	public void connect() {
+	private void connect() {
 	    String dbDriverName;
 	    if (dbDriver==null){
 	        dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
@@ -331,7 +332,9 @@ public class DBConnection extends GraphElement implements IConnection {
 	 *
 	 * @exception  SQLException  Description of the Exception
 	 */
-	public void free() {
+	synchronized public void free() {
+        super.free();
+
         if(threadSafeConnections) {
     	    for(Iterator i = openedConnections.values().iterator(); i.hasNext();) {
     	        try {
@@ -376,7 +379,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	        }
 		}else{
 		    try{
-	            if (dbConnection.isClosed()){
+	            if (dbConnection == null || dbConnection.isClosed()){
 	                connect();
 	            }
 	        }catch(SQLException ex){

@@ -32,10 +32,11 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
-import org.jetel.util.Utils;
+import org.jetel.util.MiscUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sequence Checker Component</h3>
@@ -150,12 +151,12 @@ public class SequenceChecker extends Node {
 
 				if (compareResult == 0) {
 					if (uniqueKeys) 
-						return Node.Result.ERROR;
+						return Result.ERROR;
 				} else if (compareResult > 0) {
 					if (!sortOrderAscending) 
-						return Node.Result.ERROR;
+						return Result.ERROR;
 				} else if (sortOrderAscending) {
-					return Node.Result.ERROR;
+					return Result.ERROR;
 				}
 			}
 			
@@ -166,7 +167,7 @@ public class SequenceChecker extends Node {
 			previous = previous ^ 1;
 		}
 		if (isOutPort) broadcastEOF();
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	@Override
@@ -210,7 +211,7 @@ public class SequenceChecker extends Node {
 		//recordComparator.setEqualNULLs(equalNULLs);
 		
         if (useI18N){
-            recordComparator=new RecordComparator(keyFields,(RuleBasedCollator)Collator.getInstance(Utils.createLocale(localeStr)));
+            recordComparator=new RecordComparator(keyFields,(RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(localeStr)));
         }else{
         	recordComparator=new RecordComparator(keyFields);
         }

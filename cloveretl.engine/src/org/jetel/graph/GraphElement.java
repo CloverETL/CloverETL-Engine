@@ -36,7 +36,7 @@ public abstract class GraphElement implements IGraphElement {
 
     private boolean checked;
 
-    private boolean inited;
+    private boolean initialized;
     
     /**
      * Constructor.
@@ -80,7 +80,7 @@ public abstract class GraphElement implements IGraphElement {
         this.graph = graph;
         this.name = name;
         this.checked = false;
-        this.inited = false;
+        this.initialized = false;
     }
     
     /* (non-Javadoc)
@@ -94,8 +94,8 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#init()
      */
-    public void init() throws ComponentNotReadyException {
-        inited = true;
+    synchronized public void init() throws ComponentNotReadyException {
+        initialized = true;
         if(!isChecked()) {
             logger.warn("Graph element " + this + " is not checked by checkConfig() method. Please call TransformationGraph.checkConfig() first.");
         }
@@ -104,7 +104,9 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#free()
      */
-    public abstract void free();
+    synchronized public void free() {
+        initialized = false;
+    }
     
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#getGraph()
@@ -151,8 +153,8 @@ public abstract class GraphElement implements IGraphElement {
     /* (non-Javadoc)
      * @see org.jetel.graph.IGraphElement#isInited()
      */
-    public boolean isInited() {
-        return inited;
+    public boolean isInitialized() {
+        return initialized;
     }
     
     @Override
