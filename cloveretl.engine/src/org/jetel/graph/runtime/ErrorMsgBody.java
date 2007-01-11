@@ -91,6 +91,8 @@ public class ErrorMsgBody {
         this.sourceException = exception;
     }
     
-      
+    @Override public String toString(){
+        return errorMessage+" : "+sourceException.toString();
+    }
 
 }
