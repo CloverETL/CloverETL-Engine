@@ -45,7 +45,9 @@ import org.jetel.util.TypedProperties;
  */
 public class DataRecordMetadata implements Serializable {
 
-	// Associations
+	private static final long serialVersionUID = 7032218607804024730L;
+
+    // Associations
 	/**
 	 * @since
 	 */
