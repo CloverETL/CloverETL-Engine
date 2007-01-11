@@ -217,10 +217,7 @@ public class runGraph {
 				System.exit(-1);
             }
 		}
-		
-        //engine initialization - should be called only once
-        runGraph.initEngine(pluginsRootDirectory, password);
-        
+
         //setup log4j appenders
         if(logHost != null) {
             String[] hostAndPort = logHost.split(":");
@@ -239,6 +236,9 @@ public class runGraph {
             }
             Logger.getRootLogger().addAppender(new SocketAppender(hostAndPort[0], port));
         }
+
+        //engine initialization - should be called only once
+        runGraph.initEngine(pluginsRootDirectory, password);
         
 		//prapere input stream with XML graph definition
         InputStream in = null;
@@ -267,6 +267,7 @@ public class runGraph {
 
             //check graph elements configuration
             ConfigurationStatus status = graph.checkConfig(null);
+            logger.info("Checking graph configuration...");
             status.log();
 
             if(!graph.init()) {
