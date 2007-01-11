@@ -32,6 +32,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
@@ -189,6 +190,7 @@ public class DBExecute extends Node {
                 throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
             }
             dbConnection = (DBConnection) conn;
+            dbConnection.init();
 	    }
         if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
@@ -271,7 +273,7 @@ public class DBExecute extends Node {
 			logger.fatal(ex);
 			throw new JetelException(ex.getMessage(),ex);
 		}	
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 

@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
@@ -246,7 +247,6 @@ public class JmsReader extends Node {
 		
 	@Override
 	public Result execute() throws Exception {
-		connection.connect();
 		(new Interruptor()).start();	// run thread taking care about interrupting blocking msg receive calls		
 		try {
 			for (Message msg = getMsg(); msg != null; msg = getMsg()) {
@@ -264,7 +264,7 @@ public class JmsReader extends Node {
 	        closeConnection();
 	        broadcastEOF();
 		}
-		Result r = runIt ? Node.Result.OK : Node.Result.ABORTED;
+		Result r = runIt ? Result.FINISHED_OK : Result.ABORTED;
 		runIt = false;	// for interruptor
 		return r;
 	}

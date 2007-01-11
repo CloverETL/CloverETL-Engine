@@ -26,6 +26,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.sequence.PrimitiveSequence;
@@ -834,9 +835,9 @@ public class XMLExtract extends Node {
     public Result execute() throws Exception {
     	Result result;
     	if (parseXML()) {
-    		result = runIt ? Node.Result.OK : Node.Result.ABORTED;
+    		result = runIt ? Result.FINISHED_OK : Result.ABORTED;
     	}else{
-    		result = runIt ? Node.Result.ERROR : Node.Result.ABORTED;
+    		result = runIt ? Result.ERROR : Result.ABORTED;
     	}
     	broadcastEOF();
 		return result;

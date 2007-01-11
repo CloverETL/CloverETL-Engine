@@ -40,6 +40,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -546,7 +547,7 @@ public class AproxMergeJoin extends Node {
 		// signal end of records stream to transformation function
 		transformation.finished();
 		broadcastEOF();
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
 	

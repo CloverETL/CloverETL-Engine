@@ -388,6 +388,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * @see org.jetel.graph.GraphElement#free()
      */
     public void free() {
+        super.free();
         //DO NOTHING
     }
 

@@ -21,6 +21,7 @@ package org.jetel.component;
 
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
+import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -28,6 +29,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
@@ -147,10 +149,11 @@ public class DBInputTable extends Node {
 		//set fetch size (if defined)
 		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
-        Object connection=getGraph().getConnection(dbConnectionName);
+        IConnection connection=getGraph().getConnection(dbConnectionName);
         if (connection==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
         }
+        connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
 		parser.setDataSource(connection);
 	}
@@ -175,7 +178,7 @@ public class DBInputTable extends Node {
 			parser.close();
 			broadcastEOF();
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 

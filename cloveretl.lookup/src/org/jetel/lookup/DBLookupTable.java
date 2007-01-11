@@ -401,7 +401,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@exception  JetelException  Description of the Exception
 	 *@since                      May 2, 2002
 	 */
-    public void init() throws ComponentNotReadyException {
+    synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
    	// if caching is required, crate map to store records
     	if (maxCached>0){
@@ -411,7 +412,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         }
         // first try to connect to db
         try {
-            //dbConnection.connect();
+            dbConnection.init();
             pStatement = dbConnection.prepareStatement(sqlQuery);
             /*ResultSet.TYPE_SCROLL_INSENSITIVE,ResultSet.CONCUR_READ_ONLY,
                     ResultSet.CLOSE_CURSORS_AT_COMMIT);*/
@@ -498,7 +499,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	/**
 	 *  Deallocates resources
 	 */
-    public void free() {
+    synchronized public void free() {
+        super.free();
+        
         try {
             if(pStatement != null) {
                 pStatement.close();

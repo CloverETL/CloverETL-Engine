@@ -792,7 +792,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
 	public void free() {
-	    //EMPTY
+        super.free();
 	}
     
 	/**

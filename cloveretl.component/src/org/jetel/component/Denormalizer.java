@@ -32,7 +32,6 @@ import org.jetel.component.denormalize.RecordDenormalizeTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
@@ -40,11 +39,11 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -310,7 +309,7 @@ public class Denormalizer extends Node {
 			denorm.finished();
 			setEOF(OUT_PORT);
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/* (non-Javadoc)

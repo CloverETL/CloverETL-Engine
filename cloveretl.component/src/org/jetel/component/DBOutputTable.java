@@ -43,6 +43,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
@@ -282,6 +283,7 @@ public class DBOutputTable extends Node {
             throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
         }
         dbConnection = (DBConnection) conn;
+        dbConnection.init();
 	}
 
 
@@ -379,7 +381,7 @@ public class DBOutputTable extends Node {
 				preparedStatement.close();
 			}
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	private void runInNormalMode(InputPort inPort,OutputPort rejectedPort,

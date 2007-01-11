@@ -38,8 +38,6 @@ import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -140,8 +138,10 @@ public class JmsConnection extends GraphElement implements IConnection {
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
-	public void init() throws ComponentNotReadyException {
+	synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
+		
 		try {
 			Context ctx = null;
 			if (iniCtxFtory != null) {
@@ -165,26 +165,22 @@ public class JmsConnection extends GraphElement implements IConnection {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.jetel.database.IConnection#connect()
-	 */
-	public void connect() {
-	}
-
-	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#free()
 	 */
-	public void free() {
-		try {
+	synchronized public void free() {
+        super.free();
+
+        try {
 			connection.close();
 		} catch (JMSException e1) {
 			// ignore it, the connection is probably already closed
 		}
 		// re-initialization
-		try {
-			init();
-		} catch (ComponentNotReadyException e) {
-			throw new RuntimeException("Unexpected exception", e);
-		}
+//		try {
+//			init();
+//		} catch (ComponentNotReadyException e) {
+//			throw new RuntimeException("Unexpected exception", e);
+//		}
 	}
 
 	public DataRecordMetadata createMetadata(Properties parameters)

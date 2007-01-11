@@ -21,7 +21,6 @@ package org.jetel.lookup;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -170,7 +169,8 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	 * @exception  IOException  Description of Exception
 	 * @since                   May 2, 2002
 	 */
-	public void init() throws ComponentNotReadyException {
+	synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
 	    DataRecord record=new DataRecord(metadata);
 	    record.init();
@@ -290,8 +290,10 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    }
 	}
 	
-	public void free() {
-	    if (lookupTable!=null){
+	synchronized public void free() {
+        super.free();
+
+        if (lookupTable!=null){
 	    	lookupTable.clear();
 	    	lookupTable=null;
 	    }

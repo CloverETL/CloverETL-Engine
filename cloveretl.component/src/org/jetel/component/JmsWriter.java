@@ -39,6 +39,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
@@ -200,7 +201,6 @@ public class JmsWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		connection.connect();
 		DataRecord currentRecord = new DataRecord(inPort.getMetadata());
 		currentRecord.init();
 		DataRecord nextRecord = new DataRecord(inPort.getMetadata());
@@ -233,7 +233,7 @@ public class JmsWriter extends Node {
 			psor.finished();
 	        closeConnection();
 		}
-		return runIt ? Node.Result.OK : Node.Result.ABORTED;
+        return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	/**

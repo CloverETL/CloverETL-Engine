@@ -77,7 +77,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.graph.GraphElement#init()
      */
     @Override
-    public void init() throws ComponentNotReadyException {
+    synchronized public void init() throws ComponentNotReadyException {
+        if(isInitialized()) return;
 		super.init();
     }
 
@@ -85,7 +86,8 @@ public class PrimitiveSequence extends GraphElement implements Sequence {
      * @see org.jetel.graph.GraphElement#free()
      */
     @Override
-    public void free() {
+    synchronized public void free() {
+        super.free();
         //no op
     }
 
