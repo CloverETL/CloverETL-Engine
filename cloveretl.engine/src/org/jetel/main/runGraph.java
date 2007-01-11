@@ -34,6 +34,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.plugin.Plugins;
@@ -302,9 +303,9 @@ public class runGraph {
 		}
 		
 		//	start all Nodes (each node is one thread)
-		boolean finishedOK = false;
+		Result result=Result.N_A;
 		try {
-			finishedOK = graph.run();
+            result = graph.run();
 		} catch (RuntimeException ex) {
 			System.err.println("Fatal error during graph run !");
 			System.err.println(ex.getCause().getMessage());
@@ -313,14 +314,14 @@ public class runGraph {
 			}
 			System.exit(-1);
 		}
-		if (finishedOK) {
+		if (result==Result.FINISHED_OK) {
 			// everything O.K.
 			System.out.println("Execution of graph successful !");
 			System.exit(0);
 		} else {
 			// something FAILED !!
 			System.err.println("Execution of graph failed !");
-			System.exit(-1);
+			System.exit(result.code());
 		}
 
 	}
