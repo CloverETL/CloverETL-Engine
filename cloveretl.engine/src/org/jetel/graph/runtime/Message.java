@@ -42,7 +42,7 @@ public class  Message<T> implements Comparable<Message>{
     protected long  senderThreadID;
     protected String recipientID;
     protected T body;
-    protected int priority=0;
+    protected int priority;
     
     /**
      * @param senderID
@@ -57,6 +57,7 @@ public class  Message<T> implements Comparable<Message>{
         this.senderID=senderID;
         this.senderThreadID=senderThreadID;
         this.recipientID=recipientID;
+        this.priority=0;
     }
 
     
@@ -160,6 +161,32 @@ public class  Message<T> implements Comparable<Message>{
             result= this.priority-to.priority;
         }
         return result;
+    }
+    
+    @Override public String toString(){
+        StringBuilder str=new StringBuilder(40);
+        str.append("Sender:").append(senderID).append("\n");
+        str.append("Recipient:").append(recipientID).append("\n");
+        str.append("Type:").append(type).append("\n");
+        return str.toString();
+    }
+
+
+    /**
+     * @return the priority
+     * @since 10.1.2007
+     */
+    public int getPriority() {
+        return priority;
+    }
+
+
+    /**
+     * @param priority the priority to set
+     * @since 10.1.2007
+     */
+    public void setPriority(int priority) {
+        this.priority = priority;
     }
     
 }
