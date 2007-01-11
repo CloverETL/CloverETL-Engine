@@ -26,6 +26,7 @@ package org.jetel.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,6 +52,11 @@ public class DuplicateKeyMap implements Map {
     protected Object savedKey;
     protected int savedIndex;
     protected ArrayList savedData;
+    protected static final Iterator emptyIterator = new Iterator() {
+        public boolean hasNext() { return false;}
+        public Object next() { return null;}
+        public void remove() {}
+    };
     
     /**
      * 
@@ -223,6 +229,27 @@ public class DuplicateKeyMap implements Map {
         }
     }
     
+    
+    /**
+     * Returns array of  all values stored under
+     * specified key.<br>
+     * If no-value is associated with specified key in the
+     * map, null is returned.
+     * 
+     * @param key   key which is searched for
+     * @param returnType type of the returned array
+     * @return      array of values stored under specified key or null if
+     * no values exist
+     * @since 7.1.2007
+     */
+    public Object[] getAll(Object key,Object[] returnType){
+        List data=(List)map.get(key);
+        if (data!=null){
+            return data.toArray(returnType);
+        }else{
+            return null;
+        }
+    }
     
     /* (non-Javadoc)
      * @see java.util.Map#remove(java.lang.Object)
