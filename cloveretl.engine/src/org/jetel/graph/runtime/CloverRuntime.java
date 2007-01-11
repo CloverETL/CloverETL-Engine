@@ -34,8 +34,8 @@ import org.jetel.graph.Node;
 public interface CloverRuntime {
 
     public void sendMessage(Message msg);
-    public Message receiveMessage(String recipientNodeID,long wait);
-    public boolean hasMessage();
+    public Message[] receiveMessage(String recipientNodeID,long wait);
+    public boolean hasMessage(String recipientNodeID);
     
     public long getUsedMemory(Node node);
     public long getCpuTime(Node node);
