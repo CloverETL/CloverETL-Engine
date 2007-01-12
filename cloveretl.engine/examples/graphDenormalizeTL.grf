@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source."
-name="Testing NORMALIZER">
+<Graph created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 12 15:21:39 CET 2007" name="Testing NORMALIZER" revision="1.1">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="Metadata1"/>
+<Metadata fileURL="metadata/orders2.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="DataPolicy">Strict</attr>
-</Node>
-<Node key="EmployeeID" order="ignore" enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" type="DENORMALIZER">
+<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" type="DENORMALIZER">
+<attr name="order">ignore</attr>
+<attr name="key">EmployeeID</attr>
 <attr name="denormalize">
 int order;
 string customer;
@@ -35,8 +33,11 @@ function getOutputRecord() {
 
 </attr>
 </Node>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<attr name="DataPolicy">Strict</attr>
+</Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="Metadata1" outPort="0 (INPUT1)" toNode="DENORMALIZE:0"/>
-<Edge fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="Metadata1" outPort="0 (JOIN)" toNode="WRITER:0"/>
+<Edge fromNode="DENORMALIZE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="Metadata0" outPort="0 (DENORMALIZE)" toNode="WRITER:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (DENORMALIZE)" metadata="Metadata0" outPort="0 (INPUT1)" toNode="DENORMALIZE:0"/>
 </Phase>
 </Graph>
