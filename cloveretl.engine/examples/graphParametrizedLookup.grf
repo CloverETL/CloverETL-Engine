@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph demonstrates usage of Node-level parameters" name="Testing Simple Lookup with parameters">
+<Graph created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 12 16:33:07 CET 2007" name="Testing Simple Lookup with parameters" revision="1.0">
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
 <Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
@@ -7,64 +7,63 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="dataPolicy">Strict</attr>
-</Node>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
-<attr name="transform">
-import java.io.FileInputStream;
-
-import org.jetel.component.DataRecordTransform;
-import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.data.parser.Parser;
-import org.jetel.lookup.SimpleLookupTable;
-import org.jetel.metadata.DataRecordMetadata;
-
-public class reformatTest extends DataRecordTransform{
-
-	LookupTable mylookup;
-
-	public boolean init(){
-		
-	Parser parser=new DelimitedDataParser();
-		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");
-		try{	
-		parser.open(new FileInputStream(parameters.getProperty("lookupFile")), lookupMetadata);
-	    String[] lookupKeyStr=new String[1];
-	    lookupKeyStr[0]=parameters.getProperty("keyField");
-		mylookup = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);
-		// create key 
-		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
-		key.init();
-		mylookup.init();
-		mylookup.setLookupKey(key);
-		}catch(Exception ex){
-			ex.printStackTrace();
-			return false;
-		}
-		return true;
-	}
-
-	public boolean transform(DataRecord[] source, DataRecord[] target){
-	        
-
-		DataRecord employee; 
-		employee=mylookup.get(source[0]);
-		
-		if (employee==null) return false; // skip this one
-		
-		target[0].getField(0).setValue(source[0].getField(0).getValue());
-  		target[0].getField(1).setValue(source[0].getField(1).getValue());
-		target[0].getField(2).setValue(source[0].getField(2).getValue());
-		target[0].getField(3).setValue(employee.getField(0).getValue());
-		target[0].getField(4).setValue(employee.getField(1).getValue());
-
-		return true;
-	}
-}
+<attr name="transform">&#13;
+import java.io.FileInputStream;&#13;
+&#13;
+import org.jetel.component.DataRecordTransform;&#13;
+import org.jetel.data.DataRecord;&#13;
+import org.jetel.data.RecordKey;&#13;
+import org.jetel.data.lookup.LookupTable;&#13;
+import org.jetel.data.parser.DelimitedDataParser;&#13;
+import org.jetel.data.parser.Parser;&#13;
+import org.jetel.lookup.SimpleLookupTable;&#13;
+import org.jetel.metadata.DataRecordMetadata;&#13;
+&#13;
+public class reformatTest extends DataRecordTransform{&#13;
+&#13;
+	LookupTable mylookup;&#13;
+&#13;
+	public boolean init(){&#13;
+		&#13;
+	Parser parser=new DelimitedDataParser();&#13;
+		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");&#13;
+		try{	&#13;
+		parser.init(lookupMetadata);&#13;
+		parser.setDataSource(new FileInputStream(parameters.getProperty("lookupFile")));&#13;
+	    String[] lookupKeyStr=new String[1];&#13;
+	    lookupKeyStr[0]=parameters.getProperty("keyField");&#13;
+		mylookup = new SimpleLookupTable("mylookup",lookupMetadata, lookupKeyStr ,parser);&#13;
+		// create key &#13;
+		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);&#13;
+		key.init();&#13;
+		mylookup.init();&#13;
+		mylookup.setLookupKey(key);&#13;
+		}catch(Exception ex){&#13;
+			ex.printStackTrace();&#13;
+			return false;&#13;
+		}&#13;
+		return true;&#13;
+	}&#13;
+&#13;
+	public boolean transform(DataRecord[] source, DataRecord[] target){&#13;
+	        &#13;
+&#13;
+		DataRecord employee; &#13;
+		employee=mylookup.get(source[0]);&#13;
+		&#13;
+		if (employee==null) return false; // skip this one&#13;
+		&#13;
+		target[0].getField(0).setValue(source[0].getField(0).getValue());&#13;
+  		target[0].getField(1).setValue(source[0].getField(1).getValue());&#13;
+		target[0].getField(2).setValue(source[0].getField(2).getValue());&#13;
+		target[0].getField(3).setValue(employee.getField(0).getValue());&#13;
+		target[0].getField(4).setValue(employee.getField(1).getValue());&#13;
+&#13;
+		return true;&#13;
+	}&#13;
+}&#13;
 </attr>
 <attr name="lookupFile">data/employees.dat</attr>
 <attr name="keyField">EmployeeID</attr>

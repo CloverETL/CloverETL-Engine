@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of MySQL Writer Component" guiVersion="1.5" licenseType="Evaluation license" modified="Wed Nov 22 12:11:27 CET 2006" name="graphSystemExecute" revision="1.1">
+<Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of MySQL Writer Component" guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 12 16:25:19 CET 2007" name="graphSystemExecute" revision="1.2">
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<Property id="GraphParameter1" name="ENGINE" value="/home/avackova/home/eclipse/cloverETL/cloverETL"/>
-<Property id="GraphParameter2" name="SYSTEM" value="linux"/>
+<Property id="GraphParameter1" name="ENGINE" value="c:/temp/smazat/cloverETL"/>
+<Property id="GraphParameter2" name="SYSTEM" value="windows"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
