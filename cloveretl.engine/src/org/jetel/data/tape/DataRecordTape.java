@@ -384,7 +384,7 @@ public class DataRecordTape {
 	    for (Iterator i=dataChunks.iterator();i.hasNext();){
 	        buffer.append("Chunk #").append(index++);
 	        buffer.append(((DataChunk)i.next()).toString());
-	        buffer.append("\\n");
+	        buffer.append("\n");
 	    }
 	    return buffer.toString();
 	}
