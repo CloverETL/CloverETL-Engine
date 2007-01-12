@@ -27,8 +27,8 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.MiscUtils;
 import org.jetel.util.StringUtils;
-import org.jetel.util.Utils;
 
 public class JExcelXLSDataFormatter implements XLSFormatter {
 	
@@ -135,7 +135,7 @@ public class JExcelXLSDataFormatter implements XLSFormatter {
 				if (metadata.getField(i).getLocaleStr() != null) {
 					format = ((SimpleDateFormat) java.text.DateFormat
 							.getDateInstance(java.text.DateFormat.DEFAULT,
-									Utils.createLocale(metadata.getField(i)
+									MiscUtils.createLocale(metadata.getField(i)
 											.getLocaleStr()))).toPattern();
 				}else{
 					format = new SimpleDateFormat().toPattern();
