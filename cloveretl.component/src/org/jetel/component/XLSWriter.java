@@ -22,10 +22,12 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.io.IOException;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSDataFormatter;
+import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -111,7 +113,9 @@ public class XLSWriter extends Node {
 	private final static int READ_FROM_PORT = 0;
 
 	private String fileURL;
-	private XLSDataFormatter formatter;
+	private XLSFormatter formatter;
+	
+	private boolean usePOI = true;
 
 	/**
 	 * Constructor
@@ -124,7 +128,11 @@ public class XLSWriter extends Node {
 	public XLSWriter(String id,String fileURL, boolean append){
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new XLSDataFormatter(append);
+		if (usePOI) {
+			formatter = new XLSDataFormatter(append);
+		}else{		
+			formatter = new JExcelXLSDataFormatter(append);
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -140,6 +148,7 @@ public class XLSWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
+		formatter.prepareSheet();
 		try {
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
@@ -193,15 +202,15 @@ public class XLSWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		File out = new File(fileURL);
-		try {
-			if (!out.exists()){
-				out.createNewFile();
-			}
+//		try {
+//			if (!out.exists()){
+//				out.createNewFile();
+//			}
 			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
             formatter.setDataTarget(out);
-		}catch(IOException ex){
-			throw new ComponentNotReadyException(ex);
-		}
+//		}catch(IOException ex){
+//			throw new ComponentNotReadyException(ex);
+//		}
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
