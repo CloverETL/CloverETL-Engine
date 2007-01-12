@@ -11,7 +11,7 @@ name="Testing NORMALIZER">
 </Node>
 <Node enabled="enabled" guiHeight="25" guiName="NORMALIZER" guiWidth="50" guiX="195" guiY="20" id="NORMALIZE" type="NORMALIZER">
 <attr name="normalize">
-import org.jetel.component.DataRecordNormalize;
+import org.jetel.component.normalize.DataRecordNormalize;
 import org.jetel.data.*;
 
 public class normalizeTest extends DataRecordNormalize {

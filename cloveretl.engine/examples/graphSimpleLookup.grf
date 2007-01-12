@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="1.4" licenseType="Evaluation license" modified="Tue Dec 12 11:08:45 CET 2006" name="Testing Hash Joiner">
+<Graph created="Tue Dec 12 09:10:59 CET 2006" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted&#10;" guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 12 16:39:08 CET 2007" name="Testing Hash Joiner" revision="1.1">
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
 <Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
@@ -10,59 +10,59 @@
 <Phase number="0">
 <Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
-<attr name="transform">
-import org.jetel.component.DataRecordTransform;
-import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
-import org.jetel.data.lookup.LookupTable;
-import org.jetel.exception.*;
-import org.jetel.graph.TransformationGraph;
-
-public class reformatTest extends DataRecordTransform{
-
-	LookupTable mylookup;
-
-	public boolean init(){
-
-		try {
-			mylookup = graph.getLookupTable("LookupTable0");
-			if (!mylookup.isInited()) {
-				mylookup.init();
-			}
-		} catch (ComponentNotReadyException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
-		// create key 
-	    String[] lookupKeyStr={"EmployeeID"};
-		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);
-		key.init();
-		mylookup.setLookupKey(key);
-		return true;
-	}
-
-	public boolean transform(DataRecord[] source, DataRecord[] target){
-	        
-
-		DataRecord employee; 
-		employee=mylookup.get(source[0]);
-		
-		if (employee==null) return false; // skip this one
-		
-		target[0].getField(0).setValue(source[0].getField(0).getValue());
-  		target[0].getField(1).setValue(source[0].getField(1).getValue());
-		target[0].getField(2).setValue(source[0].getField(2).getValue());
-		target[0].getField(3).setValue(employee.getField(0).getValue());
-		target[0].getField(4).setValue(employee.getField(1).getValue());
-
-		return true;
-	}
-	
-	public void finished(){
-		mylookup.free();
-	}
-}
+<attr name="transform">&#13;
+import org.jetel.component.DataRecordTransform;&#13;
+import org.jetel.data.DataRecord;&#13;
+import org.jetel.data.RecordKey;&#13;
+import org.jetel.data.lookup.LookupTable;&#13;
+import org.jetel.exception.*;&#13;
+import org.jetel.graph.TransformationGraph;&#13;
+&#13;
+public class reformatTest extends DataRecordTransform{&#13;
+&#13;
+	LookupTable mylookup;&#13;
+&#13;
+	public boolean init(){&#13;
+&#13;
+		try {&#13;
+			mylookup = graph.getLookupTable("LookupTable0");&#13;
+			if (!mylookup.isInitialized()) {&#13;
+				mylookup.init();&#13;
+			}&#13;
+		} catch (ComponentNotReadyException e) {&#13;
+			// TODO Auto-generated catch block&#13;
+			e.printStackTrace();&#13;
+		}&#13;
+	&#13;
+		// create key &#13;
+	    String[] lookupKeyStr={"EmployeeID"};&#13;
+		RecordKey key=new RecordKey(lookupKeyStr,sourceMetadata[0]);&#13;
+		key.init();&#13;
+		mylookup.setLookupKey(key);&#13;
+		return true;&#13;
+	}&#13;
+&#13;
+	public boolean transform(DataRecord[] source, DataRecord[] target){&#13;
+	        &#13;
+&#13;
+		DataRecord employee; &#13;
+		employee=mylookup.get(source[0]);&#13;
+		&#13;
+		if (employee==null) return false; // skip this one&#13;
+		&#13;
+		target[0].getField(0).setValue(source[0].getField(0).getValue());&#13;
+  		target[0].getField(1).setValue(source[0].getField(1).getValue());&#13;
+		target[0].getField(2).setValue(source[0].getField(2).getValue());&#13;
+		target[0].getField(3).setValue(employee.getField(0).getValue());&#13;
+		target[0].getField(4).setValue(employee.getField(1).getValue());&#13;
+&#13;
+		return true;&#13;
+	}&#13;
+	&#13;
+	public void finished(){&#13;
+		mylookup.free();&#13;
+	}&#13;
+}&#13;
 </attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
