@@ -117,7 +117,7 @@ public abstract class DataField implements Serializable, Comparable {
 
 	/**
 	 *  An operation that sets value of the data field to default value.
-	 *
+	 *  If default value is not preset, tries to set field value to null.
 	 * @exception  BadDataFormatException  Description of the Exception
 	 */
 	public void setToDefaultValue() {
@@ -130,9 +130,8 @@ public abstract class DataField implements Serializable, Comparable {
                 setValue(val);
                 return;
             }
-			if ((val = metadata.getDefaultValueStr()) != null) {
-				fromString(StringUtils.stringToSpecChar(metadata
-						.getDefaultValueStr()));
+			if (metadata.getDefaultValueStr() != null) {
+				fromString(StringUtils.stringToSpecChar(metadata.getDefaultValueStr()));
 				metadata.setDefaultValue(getValueDuplicate());
 				return;
 			}
