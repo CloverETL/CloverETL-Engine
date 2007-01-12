@@ -11,7 +11,7 @@ name="Testing NORMALIZER">
 </Node>
 <Node key="EmployeeID" order="ignore" enabled="enabled" guiHeight="25" guiName="Denormalize" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" type="DENORMALIZER">
 <attr name="denormalize">
-import org.jetel.component.DataRecordDenormalize;
+import org.jetel.component.denormalize.DataRecordDenormalize;
 import org.jetel.data.*;
 
 public class DenormalizeTest extends DataRecordDenormalize {
