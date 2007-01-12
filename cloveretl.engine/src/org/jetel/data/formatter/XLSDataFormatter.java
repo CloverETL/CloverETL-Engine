@@ -52,7 +52,7 @@ import org.jetel.metadata.DataRecordMetadata;
 *	www.javlinconsulting.cz
 *	@created October 10, 2006
  */
-public class XLSDataFormatter implements Formatter {
+public class XLSDataFormatter implements XLSFormatter {
 
 	private final static int CELL_NUMBER_IN_SHEET = 'Z'-'A'+1;//number of "AA" cell in excel sheet
 
@@ -99,6 +99,9 @@ public class XLSDataFormatter implements Formatter {
         }catch(IOException ex){
             throw new RuntimeException(ex);
         }
+    }
+    
+    public void prepareSheet(){
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
 			sheet = wb.getSheet(sheetName);
