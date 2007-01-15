@@ -189,19 +189,24 @@ public class PluginDescriptor {
             return null;
         }
         if(classLoader == null) {
-            URL[] urls = new URL[libraries.size()];
-            
-            for(int i = 0; i < libraries.size(); i++) {
-                File f = new File(manifest.getParentFile().getAbsolutePath() + System.getProperty("file.separator") + libraries.get(i));
-                try {
-                    urls[i] = f.toURL();
-                } catch (MalformedURLException e) {
-                    logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
-                }
-            }
-            classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this, urls);
+            classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this);
         }
         return classLoader;
+    }
+    
+    public URL[] getLibraryURLs() {
+        URL[] urls = new URL[libraries.size()];
+        
+        for(int i = 0; i < libraries.size(); i++) {
+            File f = new File(manifest.getParentFile().getAbsolutePath() + System.getProperty("file.separator") + libraries.get(i));
+            try {
+                urls[i] = f.toURL();
+            } catch (MalformedURLException e) {
+                logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
+            }
+        }
+        
+        return urls;
     }
     
     public void addExtension(String pointId, Properties parameters) {
