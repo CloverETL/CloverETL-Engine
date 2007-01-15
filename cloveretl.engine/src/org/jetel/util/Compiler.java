@@ -53,6 +53,7 @@ public class Compiler {
     private boolean forceRecompile;
     private String classPath;
     private ByteArrayOutputStream compileOutputStream;
+    private ClassLoader classLoader;
     
     public Compiler(String srcFileName, boolean captureOutput, String destDirName) {
         this.srcFileName = srcFileName;
@@ -79,7 +80,7 @@ public class Compiler {
     public Compiler(String srcFile, boolean captureOutput) {
         this(srcFile, captureOutput, System.getProperty("java.io.tmpdir", "."));
     }
-    
+
     public Compiler(String srcFile) {
         this(srcFile, false);
     }
@@ -172,9 +173,11 @@ public class Compiler {
     
     private String getClassPath() {
         if(classPath == null) {
-            //ClassLoader loader = Thread.currentThread().getContextClassLoader();
-            ClassLoader loader = getClass().getClassLoader();
-            classPath = ClassLoaderUtils.getClasspath(loader);
+            if(classLoader == null) {
+                //classLoader = Thread.currentThread().getContextClassLoader();
+                classLoader = getClass().getClassLoader();
+            }
+            classPath = ClassLoaderUtils.getClasspath(classLoader);
         }
         return classPath;
     }
@@ -210,5 +213,9 @@ public class Compiler {
 
     public String getErrFileName() {
         return errFileName;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 }

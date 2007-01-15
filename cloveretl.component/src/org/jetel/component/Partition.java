@@ -257,7 +257,7 @@ public class Partition extends Node {
 			function.setGraph(getGraph());
 			return function;
 		}else{//get partition function form java code
-			DynamicJavaCode dynCode = new DynamicJavaCode(psorCode);
+			DynamicJavaCode dynCode = new DynamicJavaCode(psorCode, this.getClass().getClassLoader());
 	        dynCode.setCaptureCompilerOutput(true);
 	        logger.info(" (compiling dynamic source) ");
 	        // use DynamicJavaCode to instantiate transformation class

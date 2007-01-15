@@ -53,10 +53,12 @@ public class DynamicJavaCode {
 	private String className;
 	private String fileName;
 	private String compilerOutput;
-	
+	private ClassLoader classLoader;
+    
 	private boolean captureCompilerOutput = true; 
 	
-	public DynamicJavaCode(String srcCode) {
+	public DynamicJavaCode(String srcCode, ClassLoader classLoader) {
+        this.classLoader = classLoader;
 		this.srcCode = srcCode;
         this.srcPath = SRC_PATH + (SRC_PATH.endsWith(FILE_SEPARATOR) ? "" : FILE_SEPARATOR);
 		Matcher matcher = PATTERN.matcher(srcCode);
@@ -68,6 +70,10 @@ public class DynamicJavaCode {
 			throw new RuntimeException("Can't extract class name from source code !");
 		}
 	}
+
+    public DynamicJavaCode(String srcCode) {
+        this(srcCode, null);
+    }
 
 	private void saveSrc() {
 		long checkSumFile;
@@ -93,6 +99,7 @@ public class DynamicJavaCode {
 	
 	private void compile() {
 		Compiler compiler = new Compiler(fileName, captureCompilerOutput);
+        compiler.setClassLoader(classLoader);
 		int result = compiler.compile();
 		if (result != 0) {
 		    compilerOutput = compiler.getCapturedOutput();
@@ -208,6 +215,10 @@ public class DynamicJavaCode {
      */
     public void setCaptureCompilerOutput(boolean captureCompilerOutput) {
         this.captureCompilerOutput = captureCompilerOutput;
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 }
 

@@ -384,7 +384,7 @@ public class DataIntersection extends Node {
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
             transformation = RecordTransformFactory.createTransform(
-            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters);
+            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
         }
 	}
 

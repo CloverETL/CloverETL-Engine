@@ -50,7 +50,7 @@ public class RecordTransformFactory {
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
     
-    public static RecordTransform createTransform(String transform, String transformClass, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Properties transformationParameters) throws ComponentNotReadyException {
+    public static RecordTransform createTransform(String transform, String transformClass, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
         RecordTransform transformation = null;
         Log logger = LogFactory.getLog(node.getClass());
         
@@ -67,7 +67,7 @@ public class RecordTransformFactory {
             switch (guessTransformType(transform)) {
             case TRANSFORM_JAVA_SOURCE:
                 // try compile transform parameter as java code
-                DynamicJavaCode dynaTransCode = new DynamicJavaCode(transform);
+                DynamicJavaCode dynaTransCode = new DynamicJavaCode(transform, classLoader);
                 transformation = RecordTransformFactory.loadClassDynamic(
                         logger, dynaTransCode);
                 break;
@@ -77,7 +77,7 @@ public class RecordTransformFactory {
             case TRANSFORM_JAVA_PREPROCESS:
                 transformation = RecordTransformFactory.loadClassDynamic(
                         logger, "Transform" + node.getId(), transform,
-                        inMetadata, outMetadata);
+                        inMetadata, outMetadata, classLoader);
                 break;
             default:
                 // logger.error("Can't determine transformation code type at
@@ -173,7 +173,7 @@ public class RecordTransformFactory {
      */
     public static RecordTransform loadClassDynamic(Log logger,
             String className, String transformCode,
-            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata)
+            DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, ClassLoader classLoader)
             throws ComponentNotReadyException {
         DynamicJavaCode dynamicTransformCode;
         // creating dynamicTransformCode from internal transformation format
@@ -182,7 +182,7 @@ public class RecordTransformFactory {
         codeParser.parse();
         codeParser.addTransformCodeStub("Transform" + className);
 
-        dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode());
+        dynamicTransformCode = new DynamicJavaCode(codeParser.getSourceCode(), classLoader);
         return loadClassDynamic(logger,dynamicTransformCode);
     }
     

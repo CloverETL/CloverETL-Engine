@@ -306,7 +306,7 @@ public class DBJoin extends Node {
 			if (transformSource != null || transformClassName != null) {
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, this, inMetadata,
-						outMetadata, transformationParameters);
+						outMetadata, transformationParameters, this.getClass().getClassLoader());
 			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);

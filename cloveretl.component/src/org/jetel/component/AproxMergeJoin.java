@@ -573,7 +573,7 @@ public class AproxMergeJoin extends Node {
 		} else {
 			transformation = RecordTransformFactory.createTransform(
 					transformSource, transformClassName, this, inMetadata,
-					outMetadata, transformationParameters);
+					outMetadata, transformationParameters, this.getClass().getClassLoader());
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious != null) {
@@ -582,7 +582,7 @@ public class AproxMergeJoin extends Node {
 		} else {
 			transformationForSuspicious = RecordTransformFactory.createTransform(
 					transformSourceForSuspicious, transformClassNameForSuspicious, 
-					this, inMetadata, outMetadata, transformationParametersForSuspicious);
+					this, inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
 		}
 		// initializing join parameters
 		joinKeys = new String[joinParameters.length];

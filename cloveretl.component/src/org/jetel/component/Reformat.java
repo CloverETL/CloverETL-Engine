@@ -228,7 +228,7 @@ public class Reformat extends Node {
 		} else {
 		    transformation = RecordTransformFactory.createTransform(
 		            transform, transformClass, this, inMetadata,
-		            outMetadata, transformationParameters);
+		            outMetadata, transformationParameters, this.getClass().getClassLoader());
 		}
 	}
 
