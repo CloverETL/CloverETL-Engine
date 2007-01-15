@@ -24,39 +24,29 @@ import jxl.write.biff.RowsExceededException;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Decimal;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.StringUtils;
 
-public class JExcelXLSDataFormatter implements XLSFormatter {
+public class JExcelXLSDataFormatter extends XLSFormatter {
 	
-	private DataRecordMetadata metadata;
 	private WritableWorkbook wb;
 	private String sheetName = null;
 	private WritableSheet sheet;
-	private boolean append;
-	private int sheetNumber = -1;
-	private int recCounter;
-	private int firstColumn;
-	private String firstColumnIndex = "A";
-	private int namesRow;
-	private int firstRow;
-	private boolean savedNames;
 	private WritableCellFormat[] cellStyle;
-	private boolean closed = true;
+	private boolean open = false;
 
 	public JExcelXLSDataFormatter(boolean append){
-		this.append = append;
+		super(append);
 	}
 
 	public void close() {
-		if (!closed) {
+		if (open) {
 			try {
 				wb.write();
 				wb.close();
-				closed = true;
+				open = false;
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -67,12 +57,6 @@ public class JExcelXLSDataFormatter implements XLSFormatter {
 		wb.write();
 	}
 
-	public void init(DataRecordMetadata _metadata)
-			throws ComponentNotReadyException {
-		this.metadata = _metadata;
-
-	}
-	
 	public void prepareSheet(){
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
@@ -143,7 +127,7 @@ public class JExcelXLSDataFormatter implements XLSFormatter {
 				cellStyle[i] = new WritableCellFormat(new DateFormat(format));
 			}
 		}
-		closed = false;
+		open = true;
 	}
 
 	public void setDataTarget(Object outputDataTarget) {
@@ -154,7 +138,7 @@ public class JExcelXLSDataFormatter implements XLSFormatter {
             }
             if (oldWb != null){
             	wb = Workbook.createWorkbook((File)outputDataTarget, oldWb);
-        		closed = false;
+        		open = true;
            }else{
             	wb = Workbook.createWorkbook((File)outputDataTarget);
             }
@@ -262,50 +246,6 @@ public class JExcelXLSDataFormatter implements XLSFormatter {
 		recCounter++;
         
         return 0;
-	}
-	
-	public void setSheetName(String sheetName) {
-		this.sheetName = sheetName;
-	}
-
-	public void setSheetNumber(int sheetNumber) {
-		this.sheetNumber = sheetNumber;
-	}
-	
-	public void setFirstRow(int firstRow){
-		this.firstRow = firstRow;
-	}
-
-	public void setFirstColumn(String firstColumn){
-		this.firstColumnIndex = firstColumn;
-	}
-
-	public int getFirstColumn() {
-		return firstColumn;
-	}
-
-	public void setNamesRow(int namesRow) {
-		this.namesRow = namesRow;
-	}
-
-	public boolean isAppend() {
-		return append;
-	}
-
-	public int getFirstRow() {
-		return firstRow;
-	}
-
-	public int getNamesRow() {
-		return namesRow;
-	}
-
-	public String getSheetName() {
-		return sheetName;
-	}
-
-	public int getSheetNumber() {
-		return sheetNumber;
 	}
 	
 
