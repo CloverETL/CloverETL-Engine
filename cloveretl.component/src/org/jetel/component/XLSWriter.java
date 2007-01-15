@@ -24,7 +24,6 @@ package org.jetel.component;
 import java.io.File;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
@@ -56,7 +55,8 @@ import org.w3c.dom.Element;
  * <td>Reads data from input port and writes them to given xls sheet in xls file. If 
  *  in one graph you want to write to the same file but to different sheets each XLSWriter
  *  has to have another phase<br>Because POI currently uses a lot of memory for
- *   large sheets, it is impossible to save large data (over ~1.8MB) to xls file</td></tr>
+ *   large sheets, it is impossible to save large data (over ~1.8MB) to xls file.
+ *   JExcel can handle with bigger files (up to ~5.7MB in flat file)</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>one input port defined/connected.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -202,15 +202,8 @@ public class XLSWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		File out = new File(fileURL);
-//		try {
-//			if (!out.exists()){
-//				out.createNewFile();
-//			}
-			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
-            formatter.setDataTarget(out);
-//		}catch(IOException ex){
-//			throw new ComponentNotReadyException(ex);
-//		}
+		formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
+		formatter.setDataTarget(out);
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
@@ -248,7 +241,7 @@ public class XLSWriter extends Node {
 		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatter.getFirstColumn()));
 		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()+1));
 		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()+1));
-		if (formatter.getSheetName() != null) {//TODO can't we obtain it from parser?
+		if (formatter.getSheetName() != null) {
 			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
 		}
 	}
