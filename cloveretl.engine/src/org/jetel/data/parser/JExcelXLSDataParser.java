@@ -2,6 +2,7 @@
 package org.jetel.data.parser;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -12,8 +13,11 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 
+import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.XLSDataFormatter;
+import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
@@ -74,8 +78,25 @@ public class JExcelXLSDataParser extends XLSParser {
 
 	@Override
 	public String[] getNames() {
-		// TODO Auto-generated method stub
-		return null;
+		ArrayList<String> names = new ArrayList<String>();
+		if (metadataRow > -1) {
+			Cell[] row = sheet.getRow(metadataRow);
+			//go through each not empty cell
+			for (int i=0;i<row.length;i++){
+				cell = row[i];
+				names.add(XLSFormatter.getCellCode(cell.getColumn()) + " - " +
+						cell.getContents());
+			}
+		}else{
+			Cell[] row = sheet.getRow(firstRow);
+			for (int i=0;i<row.length;i++){
+				cell = row[i];
+				names.add(XLSDataFormatter.getCellCode(cell.getColumn()) + " - " +
+						cell.getContents().substring(0, Math.min(
+								cell.getContents().length(), MAX_NAME_LENGTH)));
+			}
+		}
+		return names.toArray(new String[0]);
 	}
 
 	@Override
@@ -107,12 +128,16 @@ public class JExcelXLSDataParser extends XLSParser {
 	@Override
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		if (currentRow>=lastRow) return null;
-//		row = sheet.getRow(currentRow);
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
 			if (fieldNumber[i][CLOVER_NUMBER] == -1) continue; //in metdata there is not any field corresponding to this column
-			cell = sheet.getCell(fieldNumber[i][XLS_NUMBER], currentRow);
-// 			cell = row.getCell((short)fieldNumber[i][XLS_NUMBER]);
+			try {
+				cell = sheet.getCell(fieldNumber[i][XLS_NUMBER], currentRow);
+			} catch (ArrayIndexOutOfBoundsException e1) {
+				//more fields in metadata then in xls file
+				record.getField(fieldNumber[i][CLOVER_NUMBER]).setNull(true);
+				continue;
+			}
 			type = metadata.getField(fieldNumber[i][CLOVER_NUMBER]).getType();
 			try{
 				switch (type) {
