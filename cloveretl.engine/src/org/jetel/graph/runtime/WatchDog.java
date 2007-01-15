@@ -20,7 +20,6 @@
 package org.jetel.graph.runtime;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
-import java.lang.management.ThreadInfo;
 import java.lang.management.ThreadMXBean;
 import java.text.DateFormat;
 import java.util.Calendar;
@@ -33,9 +32,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
@@ -43,7 +40,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.Edge;
-import org.jetel.graph.EdgeBase;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -137,9 +133,11 @@ public class WatchDog extends Thread implements CloverRuntime {
 		setPriority(Thread.MIN_PRIORITY);
 		
         printTracking=new PrintTracking();
-        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
-        trackingThread.setPriority(Thread.MIN_PRIORITY);
-        trackingThread.start();
+
+        //disabled by Kokon
+//        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
+//        trackingThread.setPriority(Thread.MIN_PRIORITY);
+//        trackingThread.start();
         
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
 			if (!executePhase(phases[currentPhaseNum])) {
@@ -153,7 +151,8 @@ public class WatchDog extends Thread implements CloverRuntime {
 			javaRuntime.gc();
 		}
 
-        trackingThread.interrupt();
+        //disabled by Kokon
+//        trackingThread.interrupt();
 		watchDogStatus = Result.FINISHED_OK;
 		printPhasesSummary();
 	}
@@ -507,6 +506,9 @@ public class WatchDog extends Thread implements CloverRuntime {
         
         public void execute(){
             LockSupport.unpark(thisThread);
+            //added by Kokon
+            printProcessingStatus();
+            ////////////////
         }
         
         public void stop(){
