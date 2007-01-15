@@ -85,7 +85,7 @@
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
-			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
+			classpath="${dir.dist}/plugins/org.jetel.connection/lib/jms.jar;${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
 			<classpath>
 				<pathelement path="${commons-logging}"/>
 				<fileset refid="component-libs"/>			
