@@ -158,7 +158,7 @@ public class XLSReader extends Node {
 	private int metadataRow = 0;
 	private String[][] fieldMap;
 	
-	private boolean usePOI = true;
+	public final static boolean usePOI = true;
 
 	/**
 	 * @param id
