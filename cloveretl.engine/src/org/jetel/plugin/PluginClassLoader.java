@@ -22,6 +22,7 @@ package org.jetel.plugin;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -42,21 +43,26 @@ public class PluginClassLoader extends URLClassLoader {
 
     private PluginDescriptor[] importPlugins;
     
-    public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor, URL[] urls) {
-        super(urls, parent);
+    /**
+     * Constructor.
+     * @param parent
+     * @param pluginDescriptor
+     */
+    public PluginClassLoader(ClassLoader parent, PluginDescriptor pluginDescriptor) {
+        super(pluginDescriptor.getLibraryURLs(), parent);
         
         this.pluginDescriptor = pluginDescriptor;
         collectImports();
+        System.out.println(Arrays.toString(getURLs()));
     }
 
-    
     /**
-     * Collect all plugin descriptors, on which depeneds this plugin. 
+     * Collect all plugin descriptors, on which depends this plugin. 
      */
     private void collectImports() {
         PluginDescriptor pluginDescriptor;
         Collection prerequisites = getPluginDescriptor().getPrerequisites();
-        List importPlugins = new ArrayList();
+        List<PluginDescriptor> importPlugins = new ArrayList<PluginDescriptor>();
         
         for(Iterator it = prerequisites.iterator(); it.hasNext();) {
             PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
@@ -66,69 +72,54 @@ public class PluginClassLoader extends URLClassLoader {
             }
         }
         
-        this.importPlugins = (PluginDescriptor[]) importPlugins.toArray(new PluginDescriptor[importPlugins.size()]);
+        this.importPlugins = importPlugins.toArray(new PluginDescriptor[importPlugins.size()]);
     }
 
-
-    protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        Class ret;
+    @Override
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
-            ret = getParent().loadClass(name);
-        } catch (ClassNotFoundException cnfe) {
-            ret = loadClass(name, resolve, this, null);
+            return super.findClass(name);
+        } catch(ClassNotFoundException e) {
+            return findClassInPrerequisities(name, null);
         }
-        if (ret != null) {
-            return ret;
-        }
-        throw new ClassNotFoundException(name);
     }
     
-    public synchronized Class loadClass(String name, boolean resolve, PluginClassLoader requestor, Set seen) throws ClassNotFoundException {
+    synchronized public Class<?> findClass(String name, Set<String> seen) throws ClassNotFoundException {
         //firstly we will try if this class is not loaded yet
-        Class ret = null;
+        Class<?> ret = null;
         ret = findLoadedClass(name);
         if(ret != null) {
-            if (resolve) {
-                resolveClass(ret);
-            }
             return ret; // found already loaded class in this plug-in
         }
         
         //secondly we try use findClass() method from URLClassLoader
-        try {
-            ret = findClass(name);
-        } catch (ClassNotFoundException cnfe) {
-            // ignore
-        }
-        if(ret != null) {
-            if (resolve) {
-                resolveClass(ret);
-            }
-            return ret; // found class in this plug-in
-        }
-
-        if(seen == null) {
-            seen = new HashSet();
-        }
-        seen.add(getPluginDescriptor().getId());
-
-        //try all dependant plugins
-        for(int i = 0; i < importPlugins.length; i++) {
-            if(seen.contains(importPlugins[i].getId())) {
-                continue;
-            }
-            ret = ((PluginClassLoader) importPlugins[i].getClassLoader()).loadClass(name, resolve, requestor, seen);
-            if(ret != null) {
-                if (resolve) {
-                    resolveClass(ret);
-                }
-                break; // found class in imported plug-in
-            }
-        }
-
-        return ret;
+        return findClass(name);
     }
-    
+
+   private Class<?> findClassInPrerequisities(String name, Set<String> seen) throws ClassNotFoundException {
+       Class<?> ret = null;
+       
+       if(seen == null) {
+           seen = new HashSet<String>();
+       }
+       seen.add(getPluginDescriptor().getId());
+
+       //try all dependant plugins
+       for(int i = 0; i < importPlugins.length; i++) {
+           if(seen.contains(importPlugins[i].getId())) {
+               continue;
+           }
+           ret = ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
+           if(ret != null) {
+               break; // found class in imported plug-in
+           }
+       }
+       if(ret == null) {
+           throw new ClassNotFoundException(name);
+       }
+       return ret;
+   }
+       
     /**
      * @return returns the plug-in descriptor
      */
@@ -136,4 +127,23 @@ public class PluginClassLoader extends URLClassLoader {
         return pluginDescriptor;
     }
 
+    /**
+     * @return concatened lists of parent class loader, this class loader and all
+     * dependant class loaders URLs (getURLs())
+     */
+    public URL[] getAllURLs() {
+        List<URL> retURLs = new ArrayList<URL>();
+        ClassLoader parentClassLoader = getParent();
+        
+        if(parentClassLoader instanceof URLClassLoader) {
+           retURLs.addAll(Arrays.asList(((URLClassLoader) parentClassLoader).getURLs()));
+        }
+        retURLs.addAll(Arrays.asList(getURLs()));
+        
+        for(int i = 0; i < importPlugins.length; i++) {
+            retURLs.addAll(Arrays.asList(((PluginClassLoader) importPlugins[i].getClassLoader()).getURLs()));
+        }
+        
+        return retURLs.toArray(new URL[retURLs.size()]);
+    }
 }
