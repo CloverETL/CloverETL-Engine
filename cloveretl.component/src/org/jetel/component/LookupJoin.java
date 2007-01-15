@@ -371,7 +371,7 @@ public class LookupJoin extends Node {
 			}else{
 				transformation = RecordTransformFactory.createTransform(
 						transformSource, transformClassName, this, inMetadata,
-						outMetadata, transformationParameters);
+						outMetadata, transformationParameters, this.getClass().getClassLoader());
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);

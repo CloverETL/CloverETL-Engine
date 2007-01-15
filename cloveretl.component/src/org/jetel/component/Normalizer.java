@@ -157,7 +157,7 @@ public class Normalizer extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordNormalize createNormalizerDynamic(String normCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(normCode);
+		DynamicJavaCode dynCode = new DynamicJavaCode(normCode, this.getClass().getClassLoader());
         dynCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class

@@ -178,7 +178,7 @@ public class Denormalizer extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private RecordDenormalize createDenormalizerDynamic(String denormCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(denormCode);
+		DynamicJavaCode dynCode = new DynamicJavaCode(denormCode, this.getClass().getClassLoader());
         dynCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class

@@ -220,7 +220,7 @@ public class MultiLevelReader extends Node {
 	 * @throws ComponentNotReadyException
 	 */
 	private TypeSelector createSelectorDynamic(String seltorCode) throws ComponentNotReadyException {
-		DynamicJavaCode dynCode = new DynamicJavaCode(seltorCode);
+		DynamicJavaCode dynCode = new DynamicJavaCode(seltorCode, this.getClass().getClassLoader());
         dynCode.setCaptureCompilerOutput(true);
         logger.info(" (compiling dynamic source) ");
         // use DynamicJavaCode to instantiate transformation class
