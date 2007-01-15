@@ -84,7 +84,7 @@ import org.w3c.dom.Element;
  *  not given random ranges (or one of them) there are used minimum possible values 
  *  for given data field (eg. for LongDataField minimum is Long.MIN_VALUE and maximum 
  *  Long.MAX_VALUE). Random strings are generated from chars 'a' till 'z'. For numeric 
- *  fields random ranges are: min value (exclusive) and max value (inclusive), 
+ *  fields random ranges are: min value (inclusive) and max value (exclusive), 
  *  and for byte or string fields random ranges mean minimum and maximum length 
  *  of field (if it is not fixed), eg. field1=random(0,51) - for numeric field random 
  *  value from range (0,50], for string field - random string of length 0 till 51 
