@@ -95,6 +95,9 @@ import org.w3c.dom.Element;
  *  by $. Xls fields may be missing, then columns are read in order they are 
  *  in xls sheet and are given to proper metadata fields</td>
  *  </tr>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file. 
+ *  Don't set it, if XSLReader uses POI library (it recognizes encoding automatically).
+ *  When XLSReader uses JExcelAPI, default encoding is set to  ISO-8859-1 </td>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -135,6 +138,7 @@ public class XLSReader extends Node {
 	public final static String XML_SHEETNUMBER_ATTRIBUTE = "sheetNumber";
 	public final static String XML_METADATAROW_ATTRIBUTE = "metadataRow";
 	public final static String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
+	public final static String XML_CHARSET_ATTRIBUTE = "charset";
 	
 	private final static String ASSIGMENT_STRING = "=";
 	private final static int OUTPUT_PORT = 0;
@@ -167,6 +171,17 @@ public class XLSReader extends Node {
 			this.parser = new XLSDataParser();
 		}else{
 			this.parser = new JExcelXLSDataParser();
+		}
+	}
+
+	public XLSReader(String id, String fileURL, String[][] fieldMap, String charset) {
+		super(id);
+		this.fileURL = fileURL;
+		this.fieldMap = fieldMap;
+		if (usePOI) {
+			this.parser = new XLSDataParser();
+		}else{
+			this.parser = new JExcelXLSDataParser(charset);
 		}
 	}
 
@@ -256,8 +271,15 @@ public class XLSReader extends Node {
 					fieldMap[i] = fMap[i].split(ASSIGMENT_STRING);
 				}
 			}
-			aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
-						xattribs.getString(XML_FILE_ATTRIBUTE),fieldMap);
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)){
+				aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+						xattribs.getString(XML_FILE_ATTRIBUTE),fieldMap, 
+						xattribs.getString(XML_CHARSET_ATTRIBUTE));
+				
+			}else{
+				aXLSReader = new XLSReader(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+							xattribs.getString(XML_FILE_ATTRIBUTE),fieldMap);
+			}
 			aXLSReader.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));
 			aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE,1));
 			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
@@ -312,6 +334,10 @@ public class XLSReader extends Node {
 			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,this.sheetName);
 		}else{
 			xmlElement.setAttribute(XML_SHEETNUMBER_ATTRIBUTE,String.valueOf(parser.getSheetNumber()));
+		}
+		if (parser instanceof JExcelXLSDataParser && 
+				((JExcelXLSDataParser)parser).getCharset() != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, ((JExcelXLSDataParser)parser).getCharset());
 		}
 		
 	}
