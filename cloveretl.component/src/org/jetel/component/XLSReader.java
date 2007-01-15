@@ -29,7 +29,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.JExcelXLSDataParser;
 import org.jetel.data.parser.XLSDataParser;
+import org.jetel.data.parser.XLSParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -144,13 +146,15 @@ public class XLSReader extends Node {
 	private int finalRow = -1;
 	private int maxErrorCount = -1;
     
-	private XLSDataParser parser;
+	private XLSParser parser;
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
 	private int sheetNumber = -1;
 	private int metadataRow = 0;
 	private String[][] fieldMap;
+	
+	private boolean usePOI = false;
 
 	/**
 	 * @param id
@@ -159,7 +163,11 @@ public class XLSReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.fieldMap = fieldMap;
-		this.parser = new XLSDataParser();
+		if (usePOI) {
+			this.parser = new XLSDataParser();
+		}else{
+			this.parser = new JExcelXLSDataParser();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -326,7 +334,7 @@ public class XLSReader extends Node {
 	 */
 	public void setStartRow(int startRecord) {
 		if(startRecord < 1 || (finalRow != -1 && startRecord > finalRow)) {
-			throw new InvalidParameterException("Invalid StartRecord parametr.");
+			throw new InvalidParameterException("Invalid StartRecord parameter.");
 		}
 		this.startRow = startRecord;
 		parser.setFirstRow(startRecord-1);
