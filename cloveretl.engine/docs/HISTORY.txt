@@ -2,6 +2,31 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-1-0
+---------
+Changes/bug fixes:
++ Added new component "Data Generator" - generator of synthetic/random data
++ Added new component "Lookup Table Reader/Writer" - reader/writer of records from/to lookup table
++ Added new component "Lookup Join" - joins incoming data with selected lookup table
++ Added new component "JMS Reader" - receives JMS-messages
++ Added new component "JMS Writer" - sends JMS-messages
++ Added new component "Normalizer" - normalizes input records
++ Added new component "Denormalizer" - denormalizes input records
++ Added new component "Structure writer" - record mask formatter
++ Added new connection "JMS connection" - connection related with JSMReader and JMSWriter
++ developers can use new method for engine initialization - runGraph.initEngine()
++ new approach in DataField.setToDefaultValue() method;
+  in case the default value is not preset, engine tries to set the field value to null
++ DBConnection has new calling method order;
+  new DBConnection(), init(), getConnection()/getStatement(), free() (connect() method is now private)
++ Extended LookupTable interface by put() and remove() methods
++ all GraphElement(s) should implement checkConfig() method; this method is used for
+  checking engine element configuration; related changes of transformation graph startup
+  are described in runGraph class comments
++ components (Node descendants) should not override direct run() method, instead 
+  for this purpose was introduced new execute() method
++ WatchDog thread has new wide logging and inter-component communication facilities
+
 REL 2-0-2
 ---------
 Release in particular repairing bugs from 2.0.1 version.
