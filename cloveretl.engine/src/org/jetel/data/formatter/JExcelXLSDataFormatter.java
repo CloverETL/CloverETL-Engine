@@ -1,3 +1,22 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 
 package org.jetel.data.formatter;
 
@@ -29,6 +48,16 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.MiscUtils;
 import org.jetel.util.StringUtils;
 
+/**
+ * Writes records to xls sheet using JExcelAPI
+ *  
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Jan 16, 2007
+ *
+ */
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
 	private WritableWorkbook wb;
@@ -37,10 +66,19 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	private WritableCellFormat[] cellStyle;
 	private boolean open = false;
 
+	/**
+	 * Constructor
+	 * 
+	 * @param append indicates if append data to existing xls sheet or replace 
+	 * them by new data 
+	 */
 	public JExcelXLSDataFormatter(boolean append){
 		super(append);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#close()
+	 */
 	public void close() {
 		if (open) {
 			try {
@@ -53,10 +91,16 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}		
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#flush()
+	 */
 	public void flush() throws IOException {
 		wb.write();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.XLSFormatter#prepareSheet()
+	 */
 	public void prepareSheet(){
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
@@ -110,12 +154,13 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			}
 			sheet.setColumnView(firstColumn + i, view);
 			format = metadata.getField(i).getFormatStr();
-			if (format!=null){
+			if (format!=null){//apply format coherent to metadata format
 				cellStyle[i] = metadata.getField(i).getType() == DataFieldMetadata.DATE_FIELD
 						|| metadata.getField(i).getType() == DataFieldMetadata.DATETIME_FIELD 
 						? new WritableCellFormat(new DateFormat(format))
 						: new WritableCellFormat(new NumberFormat(format));
 			}else if (metadata.getField(i).getType() == DataFieldMetadata.DATE_FIELD || metadata.getField(i).getType() == DataFieldMetadata.DATETIME_FIELD){
+				//for date it has to be set an format (else data are sensless)
 				if (metadata.getField(i).getLocaleStr() != null) {
 					format = ((SimpleDateFormat) java.text.DateFormat
 							.getDateInstance(java.text.DateFormat.DEFAULT,
@@ -130,6 +175,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		open = true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
+	 */
 	public void setDataTarget(Object outputDataTarget) {
 		Workbook oldWb = null;
         try{
@@ -147,6 +195,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         }
 	}
 
+    /**
+     * Method for saving names of columns
+     */
     private void saveNames() throws IOException{
 		recCounter = namesRow > -1 ? namesRow : 0;
 		WritableFont font = new WritableFont(WritableFont.ARIAL, WritableFont.DEFAULT_POINT_SIZE, WritableFont.BOLD);
@@ -166,6 +217,9 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		savedNames = true;
     }
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
+	 */
 	public int write(DataRecord record) throws IOException {
 		if (!savedNames){
 			saveNames();
@@ -173,7 +227,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		}
 		char metaType;//metadata field type
 		Object value;//field value
-		Object valueXls = null;
+		Object valueXls = null;//value to set
 		short colNum;
 		for (short i=0;i<metadata.getNumFields();i++){
 			metaType = metadata.getField(i).getType();
@@ -236,6 +290,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			try {
 				sheet.addCell((WritableCell)valueXls);
 			}catch (RowsExceededException e) {
+				//write data to new sheet
 				savedNames = namesRow == -1;
 				setSheetNumber(-1);
 				prepareSheet();
