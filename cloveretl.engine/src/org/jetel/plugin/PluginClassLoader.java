@@ -109,15 +109,14 @@ public class PluginClassLoader extends URLClassLoader {
            if(seen.contains(importPlugins[i].getId())) {
                continue;
            }
-           ret = ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
-           if(ret != null) {
-               break; // found class in imported plug-in
+           try {
+               return ((PluginClassLoader) importPlugins[i].getClassLoader()).findClass(name, seen);
+           } catch(ClassNotFoundException e) {
+               //continue;
            }
        }
-       if(ret == null) {
-           throw new ClassNotFoundException(name);
-       }
-       return ret;
+       
+       throw new ClassNotFoundException(name);
    }
        
     /**

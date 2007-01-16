@@ -137,8 +137,7 @@ public class DynamicJavaCode {
 			throw new RuntimeException(ex);
 		}
 
-		URLClassLoader classLoader = new URLClassLoader(myURLs, Thread.currentThread().getContextClassLoader());
-		// URLClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        URLClassLoader classLoader = new URLClassLoader(myURLs, getClassLoader());
 		try {
 		    logger.debug("Loading Class: " + className + "...");
 			tClass = Class.forName(className, true, classLoader);
@@ -219,6 +218,14 @@ public class DynamicJavaCode {
 
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+
+    public ClassLoader getClassLoader() {
+        if(classLoader == null) {
+            //return Thread.currentThread().getContextClassLoader();
+            return getClass().getClassLoader();
+        }
+        return classLoader;
     }
 }
 
