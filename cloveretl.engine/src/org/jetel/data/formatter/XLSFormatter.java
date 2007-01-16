@@ -29,6 +29,7 @@ import org.jetel.metadata.DataRecordMetadata;
 
 /**
  * Formats records for xls file. Order of method calling:
+ * <ul>
  * <li>init(DataRecordMetadata)</li>
  * <li>setDataTarget(File) </li>
  * <li><i>setSheetName(String)</i> or <i>setSheetNumber(int)</i> - optional</li>
@@ -37,7 +38,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * <li><i>setNamesRow(int)</i> - optional</li>
  * <li>prepareSheet()</li>
  * <li>write(DataRecord)</li>
- * <li>close()</li>
+ * <li>close()</li></ul>
  * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
