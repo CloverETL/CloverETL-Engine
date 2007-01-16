@@ -486,7 +486,6 @@ public class DecimalNumericTest extends TestCase {
 
 	public void test_fromString(){
 		aDouble.fromString("123.45",null);
-		aDouble.setValue(123.45);
 		assertEquals(new Double(123),new Double(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,5);
 		aDouble.fromString(".12345",null);
