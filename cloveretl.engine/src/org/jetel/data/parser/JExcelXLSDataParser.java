@@ -1,4 +1,24 @@
 
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
+
 package org.jetel.data.parser;
 
 import java.io.InputStream;
@@ -13,7 +33,6 @@ import jxl.Sheet;
 import jxl.Workbook;
 import jxl.WorkbookSettings;
 
-import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.XLSDataFormatter;
@@ -24,6 +43,16 @@ import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.StringUtils;
 
+/**
+ * Parsing data from xls file using JExcelAPI.
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Jan 16, 2007
+ *
+ */
 public class JExcelXLSDataParser extends XLSParser {
 	
 	private Workbook wb;
@@ -31,10 +60,16 @@ public class JExcelXLSDataParser extends XLSParser {
 	private Cell cell;
 	private String charset = null;
 	
+	/**
+	 * Default constructor
+	 */
 	public JExcelXLSDataParser() {
 		charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	}
 	
+	/**
+	 * @param charset
+	 */
 	public JExcelXLSDataParser(String charset) {
 		this.charset = charset;
 	}
@@ -178,23 +213,6 @@ public class JExcelXLSDataParser extends XLSParser {
 					}
 				}
 			}
-//			catch (NullPointerException np){// empty cell
-//				try {
-//					record.getField(fieldNumber[i][CLOVER_NUMBER]).setNull(true);
-//				}catch (BadDataFormatException ex){
-//					BadDataFormatException bdfe = new BadDataFormatException(np.getMessage());
-//					bdfe.setRecordNumber(currentRow+1);
-//					bdfe.setFieldNumber(fieldNumber[i][CLOVER_NUMBER]);
-//					if(exceptionHandler != null ) {  //use handler only if configured
-//		                exceptionHandler.populateHandler(
-//		                		getErrorMessage(bdfe.getMessage(), currentRow+1, fieldNumber[i][CLOVER_NUMBER]), 
-//		                		record,	currentRow + 1, fieldNumber[i][CLOVER_NUMBER], "null", bdfe);
-//					} else {
-//						throw new RuntimeException(getErrorMessage(bdfe.getMessage(), 
-//								currentRow + 1, fieldNumber[i][CLOVER_NUMBER]));
-//					}
-//				}
-//			}
 		}
 		currentRow++;
 		recordCounter++;
