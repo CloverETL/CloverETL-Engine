@@ -25,10 +25,9 @@ import java.io.FileNotFoundException;
 import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.DelimitedDataParserNIO;
+import org.jetel.data.Defaults;
+import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -37,8 +36,8 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
  *
  */
 public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends TestCase {
-	private DelimitedDataParserNIO aParser = null;
-	private DelimitedDataParserNIO aParser2 = null;
+	private DelimitedDataParser aParser = null;
+	private DelimitedDataParser aParser2 = null;
 	private DataRecord record;
 	private FileInputStream in = null;
 	private FileInputStream in2 = null;
@@ -48,16 +47,18 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 		try {
-			metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\DL_null_def_rec.xml"));
-			in = new FileInputStream("data\\in\\good\\DL28_NL.txt");
-			in2 = new FileInputStream("data\\in\\bad\\DL_NL_nulls.txt");
+			metadata = xmlReader.read(new FileInputStream("config/test/rec_def/DL_null_def_rec.xml"));
+			in = new FileInputStream("data/in/good/DL28_NL.txt");
+			in2 = new FileInputStream("data/in/bad/DL_NL_nulls.txt");
 		} catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
+		
+		Defaults.init();
 	
-		aParser2 = new DelimitedDataParserNIO();
+		aParser2 = new DelimitedDataParser();
 
-		aParser = new DelimitedDataParserNIO();
+		aParser = new DelimitedDataParser();
 		record = new DataRecord(metadata);
 		record.init();
 	}
@@ -81,10 +82,14 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		AbstractParserExceptionHandler aHandler = null;
 
 		// test no handler ------------------------------------
-		aParser.open(in,metadata);
+		try {
+			aParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser.setDataSource(in);
 		try{
 			while((record=aParser.getNext(record))!=null){}
 		} catch (BadDataFormatException e){	
@@ -104,11 +109,15 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_strict_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test strict handler ------------------------------------
-		aParser.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-		aParser.addBDFHandler(aHandler);
+		try {
+			aParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser.setDataSource(in);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
+		aParser.setExceptionHandler(aHandler);
 		try{
 			while((record=aParser.getNext(record))!=null){}
 		} catch (BadDataFormatException e){	
@@ -128,11 +137,16 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_controlled_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test controlled handler ------------------------------------
-		aParser.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
-		aParser.addBDFHandler(aHandler);
+		try {
+			aParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser.setDataSource(in);
+
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aParser.setExceptionHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
 //	  -15.5  Brook   112  11/03/02
@@ -177,11 +191,16 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_lenient_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
-		aParser.addBDFHandler(aHandler);
+		try {
+			aParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser.setDataSource(in);
+
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
+		aParser.setExceptionHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
 //	  -15.5  Brook   112  11/03/02
@@ -224,10 +243,14 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		boolean failed = false;
 		// test no handler ------------------------------------
-		aParser2.open(in2,metadata);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				fail("Should throw Exception");
@@ -252,12 +275,16 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_strict_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 
 		// test strict handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-		aParser2.addBDFHandler(aHandler);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
 			while((record=aParser2.getNext(record))!=null){
@@ -280,12 +307,16 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_controlled_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 
 		// test controlled handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
-		aParser2.addBDFHandler(aHandler);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
 			while((record=aParser2.getNext(record))!=null){
@@ -298,7 +329,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		assertEquals(2,recCount);  //may need to be revised
+		assertEquals(3,recCount);  //may need to be revised
 		//depending how we implement nullable property
 		aParser2.close();
 
@@ -311,11 +342,15 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 	 */
 	
 	public void test_lenient_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
-		aParser2.addBDFHandler(aHandler);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		
 // the content of the test file
