@@ -788,13 +788,6 @@ public abstract class Node extends GraphElement implements Runnable {
         port.close();
     }
 
-	/* (non-Javadoc)
-	 * @see org.jetel.graph.GraphElement#free()
-	 */
-	public void free() {
-        super.free();
-	}
-    
 	/**
 	 *  Compares this Node to specified Object
 	 *
