@@ -239,6 +239,9 @@ public class DBConnection extends GraphElement implements IConnection {
 	 * @see java.sql.Connection#setTransactionIsolation(int)
 	 */
 	private void connect() {
+        if(!isInitialized()) {
+            throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
+        }
 	    String dbDriverName;
 	    if (dbDriver==null){
 	        dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
