@@ -173,11 +173,7 @@ public class Compiler {
     
     private String getClassPath() {
         if(classPath == null) {
-            if(classLoader == null) {
-                //classLoader = Thread.currentThread().getContextClassLoader();
-                classLoader = getClass().getClassLoader();
-            }
-            classPath = ClassLoaderUtils.getClasspath(classLoader);
+            classPath = ClassLoaderUtils.getClasspath(getClassLoader());
         }
         return classPath;
     }
@@ -217,5 +213,13 @@ public class Compiler {
 
     public void setClassLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
+    }
+
+    public ClassLoader getClassLoader() {
+        if(classLoader == null) {
+            //return Thread.currentThread().getContextClassLoader();
+            return getClass().getClassLoader();
+        }
+        return classLoader;
     }
 }
