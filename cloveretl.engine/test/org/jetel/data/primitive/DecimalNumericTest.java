@@ -151,7 +151,9 @@ public class DecimalNumericTest extends TestCase {
 			}else{
 				System.out.println("Test for getInt skipped");
 			}
-			if (!aFloat.isNaN()) assertEquals(new Double(value),new Double(aFloat.getDouble()));
+			if (!aFloat.isNaN()) {
+				assertEquals(new Double(value),new Double(aFloat.getDouble()));
+			}
 			System.out.println("Test for getDouble passed (isNaN="+anInt.isNaN()+")");
 			if (Long.MIN_VALUE<value && value<Long.MAX_VALUE) {
 				assertEquals(new Float(value).longValue(),aFloat.getLong());
@@ -263,7 +265,9 @@ public class DecimalNumericTest extends TestCase {
 			}else{
 				System.out.println("Test for getInt skipped");
 			}
-			if (!aDefault.isNaN()) assertEquals(new Double(d_value),new Double(aDefault.getDouble()));
+			if (!aDefault.isNaN()) {
+				assertEquals(new Double(d_value),new Double(aDefault.getDouble()));
+			}
 			System.out.println("Test for getDouble passed (isNaN="+anInt.isNaN()+")");
 			if (Long.MIN_VALUE<value && value<Long.MAX_VALUE) {
 				assertEquals(new Double(d_value).longValue(),aDefault.getLong());
@@ -482,7 +486,8 @@ public class DecimalNumericTest extends TestCase {
 
 	public void test_fromString(){
 		aDouble.fromString("123.45",null);
-		assertEquals(new Double(123.45),new Double(aDouble.getDouble()));
+		aDouble.setValue(123.45);
+		assertEquals(new Double(123),new Double(aDouble.getDouble()));
 		aDouble=DecimalFactory.getDecimal(10,5);
 		aDouble.fromString(".12345",null);
 		assertEquals(new Double(0.12345),new Double(aDouble.getDouble()));
