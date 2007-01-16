@@ -41,7 +41,7 @@ import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.StringUtils;
 
 /**
- * Parsing data from xls file.
+ * Parsing data from xls file using POI library.
  * 
 /**
 * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -106,17 +106,20 @@ public class XLSDataParser extends XLSParser {
 				switch (type) {
 				case DataFieldMetadata.DATE_FIELD:
 				case DataFieldMetadata.DATETIME_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getDateCellValue());
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+							cell.getDateCellValue());
 					break;
 				case DataFieldMetadata.BYTE_FIELD:
 				case DataFieldMetadata.STRING_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(getStringFromCell(cell));
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).fromString(
+							getStringFromCell(cell));
 					break;
 				case DataFieldMetadata.DECIMAL_FIELD:
 				case DataFieldMetadata.INTEGER_FIELD:
 				case DataFieldMetadata.LONG_FIELD:
 				case DataFieldMetadata.NUMERIC_FIELD:
-					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(cell.getNumericCellValue());
+					record.getField(fieldNumber[i][CLOVER_NUMBER]).setValue(
+							cell.getNumericCellValue());
 					break;
 				}
 			} catch (NumberFormatException bdne) {//exception when trying get date or number from not numeric cell
@@ -267,6 +270,9 @@ public class XLSDataParser extends XLSParser {
 		// TODO Auto-generated method stub
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.XLSParser#getNames()
+	 */
 	public String[] getNames(){
 		ArrayList<String> names = new ArrayList<String>();
 		if (metadataRow > -1) {
