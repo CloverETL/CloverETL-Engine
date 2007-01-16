@@ -38,12 +38,10 @@ import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.Decimal;
-import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataFieldMetadata;
-import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Writes records to xls sheet
+ * Writes records to xls sheet using POI library
  *  
 /**
 * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -60,6 +58,12 @@ public class XLSDataFormatter extends XLSFormatter {
 	private HSSFCellStyle[] cellStyle;
 	private HSSFDataFormat dataFormat;
 	
+	/**
+	 * Constructor
+	 * 
+	 * @param append indicates if append data to existing xls sheet or replace 
+	 * them by new data 
+	 */
 	public XLSDataFormatter(boolean append) {
 		super(append);
 	}
@@ -80,6 +84,9 @@ public class XLSDataFormatter extends XLSFormatter {
         }
     }
     
+    /* (non-Javadoc)
+     * @see org.jetel.data.formatter.XLSFormatter#prepareSheet()
+     */
     public void prepareSheet(){
 		//get or create sheet depending of its existence and append attribute
 		if (sheetName != null){
@@ -134,6 +141,9 @@ public class XLSDataFormatter extends XLSFormatter {
 		}
     }
     
+    /**
+     * Method for saving names of columns
+     */
     private void saveNames(){
 		recCounter = namesRow > -1 ? namesRow : 0;
 		HSSFCellStyle metaStyle = wb.createCellStyle();
@@ -142,6 +152,7 @@ public class XLSDataFormatter extends XLSFormatter {
 		metaStyle.setFont(font);
 		row = sheet.createRow(recCounter);
 		String name;
+		//iterate over metadata
 		for (short i=0;i<metadata.getNumFields();i++){
 			cell = row.createCell((short)(firstColumn + i));
 			name = metadata.getField(i).getName();

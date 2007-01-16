@@ -115,34 +115,62 @@ public abstract class XLSFormatter implements Formatter {
 		this.firstRow = firstRow;
 	}
 
+	/**
+	 * Sets the code of first column 
+	 * 
+	 * @param firstColumn: "A","B",..,"AA",...
+	 */
 	public void setFirstColumn(String firstColumn){
 		this.firstColumnIndex = firstColumn;
 	}
 
+	/**
+	 * @return code of first column ("A","B",..,"AA",...)
+	 */
 	public int getFirstColumn() {
 		return firstColumn;
 	}
 
+	/**
+	 * Sets the number of row, that metadata names will be save
+	 * 
+	 * @param namesRow
+	 */
 	public void setNamesRow(int namesRow) {
 		this.namesRow = namesRow;
 	}
 
+	/**
+	 * @return if data will be appent to currently set sheet or will be replaced by new data
+	 */
 	public boolean isAppend() {
 		return append;
 	}
 
+	/**
+	 * @return number of first data row
+	 */
 	public int getFirstRow() {
 		return firstRow;
 	}
 
+	/**
+	 * @return number of row with names of columns
+	 */
 	public int getNamesRow() {
 		return namesRow;
 	}
 
+	/**
+	 * @return sheet name, which was set by setSheetName method
+	 */
 	public String getSheetName() {
 		return sheetName;
 	}
 
+	/**
+	 * @return sheet number, which was set by setSheetNumber method
+	 */
 	public int getSheetNumber() {
 		return sheetNumber;
 	}
