@@ -61,7 +61,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Parses data from xls file and send the records to output ports.<br>Because 
  * POI currently uses a lot of memory for large sheets, it is impossible to read 
- * large data (over ~4.3MB in xls file - 2.1MB in flat file)</td></tr>
+ * large data (over ~4.3MB in xls file - 2.1MB in flat file). JExcel can handle 
+ * with bigger files (up to ~8.1MB in xls file - ~4.9MB in flat file)</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -231,6 +232,11 @@ public class XLSReader extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+	@Override
+	public void free() {
+		super.free();
+		parser.close();
+	}
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -412,6 +418,7 @@ public class XLSReader extends Node {
 		if (metadataRow != 0){
 			parser.setMetadataRow(metadataRow-1);
 		}
+		//set proper mapping type beetwen clover and xls fields
 		if (fieldMap != null){
 			String[] cloverFields = new String[fieldMap.length];
 			String[] xlsFields = new String[fieldMap.length];
