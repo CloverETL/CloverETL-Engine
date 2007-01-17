@@ -553,7 +553,11 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		if (isNull) return -1;
 	    
 		if (obj instanceof NumericDataField){
-			return compareTo(((NumericDataField) obj).value);
+			if (!((NumericDataField) obj).isNull()) {
+				return compareTo(((NumericDataField) obj).value);
+			}else {
+				return 1;
+			}
 		}else if (obj instanceof Double){
 			return compareTo(((Double)obj).doubleValue());
 		}else if (obj instanceof Integer){

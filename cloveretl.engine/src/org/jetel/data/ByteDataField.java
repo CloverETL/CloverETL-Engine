@@ -476,7 +476,11 @@ public class ByteDataField extends DataField implements Comparable{
 		if (isNull) return -1;
 		
 		if (obj instanceof ByteDataField){
-			byteObj = ((ByteDataField) obj).value;
+			if (!((ByteDataField) obj).isNull()) {
+				byteObj = ((ByteDataField) obj).value;
+			}else {
+				return 1; 			
+			}
 		}else if (obj instanceof byte[]){
 			byteObj= (byte[])obj;
 		}else {
