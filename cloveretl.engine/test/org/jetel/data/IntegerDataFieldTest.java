@@ -165,7 +165,14 @@ public void test_1_IntegerDataField() {
 		try {
 			anIntegerDataField1.fromString("123.234");
 			fail("Should raise an BadDataFormatException");
-		} catch (BadDataFormatException e){	}
+		} catch (BadDataFormatException e){
+		}
+
+		try {
+			anIntegerDataField1.fromString("r123");
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e){
+		}
 	}
 	
 	
