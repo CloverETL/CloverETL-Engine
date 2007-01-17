@@ -53,7 +53,6 @@ public class PluginClassLoader extends URLClassLoader {
         
         this.pluginDescriptor = pluginDescriptor;
         collectImports();
-        System.out.println(Arrays.toString(getURLs()));
     }
 
     /**
