@@ -1,3 +1,5 @@
 *******************************************************************************
                                  KNOWN BUGS
 *******************************************************************************
+
+- metadata defined by connection stub are not compatible with new checkConfig system
