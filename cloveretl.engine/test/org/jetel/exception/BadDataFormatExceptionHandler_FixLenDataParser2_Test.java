@@ -19,14 +19,15 @@
 
 package org.jetel.exception;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.FixLenDataParser2;
+import org.jetel.data.Defaults;
+import org.jetel.data.parser.FixLenCharDataParser;
+import org.jetel.data.parser.FixLenDataParser;
 import org.jetel.exception.BadDataFormatException;
-import org.jetel.exception.BadDataFormatExceptionHandler;
-import org.jetel.exception.BadDataFormatExceptionHandlerFactory;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -37,8 +38,8 @@ import junit.framework.TestCase;
  *
  */
 public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCase {
-	private FixLenDataParser2 aFixLenDataParser2 = null;
-	private FixLenDataParser2 aParser2 = null;
+	private FixLenDataParser aFixLenDataParser = null;
+	private FixLenDataParser aParser2 = null;
 	private DataRecord record;
 	private FileInputStream in = null;
 	private FileInputStream in2 = null;
@@ -48,24 +49,26 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
 			
 		try {
-			//metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_rec.xml"));
-			metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\FL28_null_def_rec.xml"));
-			in = new FileInputStream("data\\in\\good\\FL28_NL.txt");
-			in2 = new FileInputStream("data\\in\\bad\\FL28_NL_nulls.txt");
+			//metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_rec.xml"));
+			metadata = xmlReader.read(new FileInputStream("config/test/rec_def/FL28_null_def_rec.xml"));
+			in = new FileInputStream("data/in/good/FL28_NL.txt");
+			in2 = new FileInputStream("data/in/bad/FL28_NL_nulls.txt");
 		} catch(FileNotFoundException e){
 			e.printStackTrace();
 		}
+		
+		Defaults.init();
 	
-		aParser2 = new FixLenDataParser2();
+		aParser2 = new FixLenCharDataParser();
 
-		aFixLenDataParser2 = new FixLenDataParser2();
+		aFixLenDataParser = new FixLenCharDataParser();
 		record = new DataRecord(metadata);
 		record.init();
 	}
 	
 	protected void tearDown() {
-		aFixLenDataParser2.close();
-		aFixLenDataParser2 = null;
+		aFixLenDataParser.close();
+		aFixLenDataParser = null;
 
 		aParser2.close();
 		aParser2 = null;
@@ -82,20 +85,24 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 
 		// test no handler ------------------------------------
-		aFixLenDataParser2.open(in,metadata);
+		try {
+			aFixLenDataParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aFixLenDataParser.setDataSource(in);
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){}
+			while((record=aFixLenDataParser.getNext(record))!=null){}
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
 		} catch (Exception ee){
-			fail("Should not throw Exception");
 			ee.printStackTrace();
+			fail("Should not throw Exception");
 		}
-		aFixLenDataParser2.close();
+		aFixLenDataParser.close();
 
 	}
 	
@@ -105,13 +112,18 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_strict_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test strict handler ------------------------------------
-		aFixLenDataParser2.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-		aFixLenDataParser2.addBDFHandler(aHandler);
+				try {
+			aFixLenDataParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aFixLenDataParser.setDataSource(in);
+
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
+		aFixLenDataParser.setExceptionHandler(aHandler);
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){}
+			while((record=aFixLenDataParser.getNext(record))!=null){}
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
@@ -119,7 +131,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		aFixLenDataParser2.close();
+		aFixLenDataParser.close();
 		 
 	}
 	
@@ -129,18 +141,26 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_controlled_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test controlled handler ------------------------------------
-		aFixLenDataParser2.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
-		aFixLenDataParser2.addBDFHandler(aHandler);
+				try {
+			aFixLenDataParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aFixLenDataParser.setDataSource(new ByteArrayInputStream(new String("" +
+				"		1.0Stone    101   01/11/93" +
+				"-15.5Brook    112   11/03/02" +
+				"	-0.7Bone Broo99    01/01/03").getBytes()));
+
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aFixLenDataParser.setExceptionHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
-//	  -15.5  Brook   112  11/03/02
+//	  -15.5Brook   11211/03/02
 //	   -0.7Bone Broo    9901/01/03
 		int recCount = 0;
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){
+			while((record=aFixLenDataParser.getNext(record))!=null){
 				if(recCount==0) {
 					assertEquals(record.getField(0).toString(),"1.0");
 					assertEquals(record.getField(1).toString(),"Stone");
@@ -162,13 +182,13 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			assertEquals(3,recCount);		
 			
 		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
+			fail("Should not raise an BadDataFormatException");
 		} catch (Exception ee){
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		aFixLenDataParser2.close();
+		aFixLenDataParser.close();
 
 	}
 	
@@ -178,18 +198,26 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_lenient_goodFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aFixLenDataParser2.open(in,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
-		aFixLenDataParser2.addBDFHandler(aHandler);
+				try {
+			aFixLenDataParser.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aFixLenDataParser.setDataSource(new ByteArrayInputStream(new String(
+				"		1.0Stone    101   01/11/93" +
+				"-15.5Brook    112   11/03/02" +
+				"	-0.7Bone Broo    9901/01/03").getBytes()));
+
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
+		aFixLenDataParser.setExceptionHandler(aHandler);
 		
 //		1.0Stone    101   01/11/93
 //	  -15.5  Brook   112  11/03/02
 //	   -0.7Bone Broo    9901/01/03
  		int recCount = 0;
 		try{
-			while((record=aFixLenDataParser2.getNext(record))!=null){
+			while((record=aFixLenDataParser.getNext(record))!=null){
 				if(recCount==0) {
 					assertEquals(record.getField(0).toString(),"1.0");
 					assertEquals(record.getField(1).toString(),"Stone");
@@ -225,10 +253,14 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		boolean failed = false;
 		// test no handler ------------------------------------
-		aParser2.open(in2,metadata);
+		try{
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+	aParser2.setDataSource(in2);
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				fail("Should throw Exception");
@@ -253,12 +285,16 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_strict_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 
 		// test strict handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.STRICT);
-		aParser2.addBDFHandler(aHandler);
+		try{
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.STRICT);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
 			while((record=aParser2.getNext(record))!=null){
@@ -281,12 +317,16 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_controlled_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 
 		// test controlled handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.CONTROLLED);
-		aParser2.addBDFHandler(aHandler);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
 			while((record=aParser2.getNext(record))!=null){
@@ -299,7 +339,7 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 			fail("Should not throw Exception");
 			ee.printStackTrace();
 		}
-		assertEquals(2,recCount);  //may need to be revised
+		assertEquals(3,recCount);  //may need to be revised
 		//depending how we implement nullable property
 		aParser2.close();
 
@@ -312,11 +352,15 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 	 */
 	
 	public void test_lenient_badFile() {
-		BadDataFormatExceptionHandler aHandler = null;
+		IParserExceptionHandler aHandler = null;
 		// test lenient handler ------------------------------------
-		aParser2.open(in2,metadata);
-		aHandler = BadDataFormatExceptionHandlerFactory.getHandler(BadDataFormatExceptionHandler.LENIENT);
-		aParser2.addBDFHandler(aHandler);
+		try {
+			aParser2.init(metadata);
+		} catch (ComponentNotReadyException e1) {
+		}
+		aParser2.setDataSource(in2);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
+		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		
 // the content of the test file
