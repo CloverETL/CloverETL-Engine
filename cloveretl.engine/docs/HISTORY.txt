@@ -18,7 +18,8 @@ Changes/bug fixes:
 + new approach in DataField.setToDefaultValue() method;
   in case the default value is not preset, engine tries to set the field value to null
 + DBConnection has new calling method order;
-  new DBConnection(), init(), getConnection()/getStatement(), free() (connect() method is now private)
+  new DBConnection(), init(), getConnection()/getStatement(), free() 
+  (connect() method is now private - call init() method instead)
 + Extended LookupTable interface by put() and remove() methods
 + all GraphElement(s) should implement checkConfig() method; this method is used for
   checking engine element configuration; related changes of transformation graph startup
@@ -26,6 +27,8 @@ Changes/bug fixes:
 + components (Node descendants) should not override direct run() method, instead 
   for this purpose was introduced new execute() method
 + WatchDog thread has new wide logging and inter-component communication facilities
++ Added new data field type cbyte (compressed byte array)
++ All join components are ready to satisfy more slave input data streams
 
 REL 2-0-2
 ---------
