@@ -462,7 +462,11 @@ public class DateDataField extends DataField implements Comparable{
 		if (obj instanceof java.util.Date){
 			return value.compareTo((java.util.Date) obj);
 		}else if (obj instanceof DateDataField){
-			return value.compareTo(((DateDataField) obj).value);
+			if (!((DateDataField) obj).isNull()) {
+				return value.compareTo(((DateDataField) obj).value);
+			}else{
+				return 1;
+			}
 		}else if (obj instanceof java.sql.Date){
 		    long result=value.getTime()-((java.sql.Date)obj).getTime();
 		    if (result>0) return 1; else if (result<0) return -1; else return 0;
