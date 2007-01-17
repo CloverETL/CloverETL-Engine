@@ -57,7 +57,7 @@ protected void setUp() {
 
 	calendar = new GregorianCalendar(2002,6,10);
 	trialTime1 = null;
-	trialTime1 = calendar.getTime(); 
+//	trialTime1 = calendar.getTime(); 
 	DataFieldMetadata delimFieldMeta1 = new DataFieldMetadata("Field1",'D',";");
 	delimFieldMeta1.setFormatStr("MM/dd/yyyy");
 	delimFieldMeta1.setDefaultValueStr("03/31/2100");
@@ -231,6 +231,11 @@ public void test_1_DateDataField() {
 		trialTime2 = calendar2.getTime(); 
 		aDateDataField4.setValue(trialTime2);
 		assertFalse(aDateDataField1.equals(aDateDataField4));
+		
+		assertTrue(aDateDataField3.isNull());
+		aDateDataField3.setToDefaultValue();
+		assertFalse(aDateDataField3.isNull());
+		assertEquals(new GregorianCalendar(2100,02,31).getTime(), aDateDataField3.getValue());
 	}
 
 	/**
