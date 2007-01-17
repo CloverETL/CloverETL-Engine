@@ -149,8 +149,8 @@ public void test_1_NumericDataField() {
 	 *
 	 */
 	public void test_fromString() {
-		aNumericDataField1.fromString("123");
-		assertEquals(aNumericDataField1.getInt(),123);
+		aNumericDataField1.fromString("123.43");
+		assertEquals(aNumericDataField1.getDouble(),123.43);
 	
 		
 		aNumericDataField1.fromString(null);
@@ -167,7 +167,8 @@ public void test_1_NumericDataField() {
 		} catch (BadDataFormatException e){	}
 	
 		try {
-			aNumericDataField1.fromString("r123.43");
+			aNumericDataField1.fromString("r123");
+			System.out.println(aNumericDataField1.getDouble());
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	}
 	}
