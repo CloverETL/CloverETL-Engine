@@ -25,7 +25,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 import org.jetel.exception.ClassCompilationException;
-import org.jetel.util.Compile;
+import org.jetel.util.Compiler;
 
 import junit.framework.TestCase;
 
@@ -33,13 +33,13 @@ import junit.framework.TestCase;
  * @author Wes Maciorowski
  * @version 1.0
  * 
- * JUnit tests for org.jetel.util.Compile class.
+ * JUnit tests for org.jetel.util.Compiler class.
  */
 public class CompileTest   extends TestCase  {
-	String testJavaFile1 = "src\\org\\jetel\\userclasses\\test1.java";	
-	String testJavaClassFile1 = "org\\jetel\\userclasses\\test1.class";	
-	String testJavaFile2 = "src\\org\\jetel\\userclasses\\test2.java";	
-	String testJavaClassFile2 = "org\\jetel\\userclasses\\test2.class";	
+	String testJavaFile1 = "src/org/jetel/userclasses/test1.java";	
+	String testJavaClassFile1 = "org/jetel/userclasses/test1.class";	
+	String testJavaFile2 = "src/org/jetel/userclasses/test2.java";	
+	String testJavaClassFile2 = "org/jetel/userclasses/test2.class";	
 	String classDirectory = "bin";
 
 	protected void setUp() {
@@ -105,26 +105,21 @@ protected void tearDown() {
 }
 
 /**
- *  Test for @link org.jetel.util.Compile.compileClass(String className)
+ *  Test for @link org.jetel.util.Compiler.CompilerClass(String className)
  *
  */
 
-//public void testCompileClass() {
-//	try {
-//		Compile.compileClass(testJavaFile1,classDirectory);
-//	} catch (ClassCompilationException e) {
-//		fail("Compile.compileClass should not throw exceptions");
-//		e.printStackTrace();
-//	}
-//	assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
-//
-//	try {
-//		Compile.compileClass(testJavaFile2,classDirectory);
-//		fail("Compile.compileClass should throw exception");
-//	} catch (ClassCompilationException e) {
-//		e.printStackTrace();
-//	}
-//	assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
-//}
+public void testCompilerClass() {
+	Compiler compiler;
+
+	compiler = new Compiler(testJavaFile1,true,classDirectory);
+	compiler.compile();
+	assertTrue(new File(classDirectory+File.separator+testJavaClassFile1).exists());
+
+	compiler = new Compiler(testJavaFile2,true,classDirectory);
+	compiler.compile();
+	System.out.print(compiler.getCapturedOutput());
+	assertFalse(new File(classDirectory+File.separator+testJavaClassFile2).exists());
+}
 
 }
