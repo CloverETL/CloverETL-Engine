@@ -367,12 +367,12 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					}
 				}
 
-				if (field.getCodeStr() != null) {
-				    Element codeElement = doc.createElement(CODE_ELEMENT);
-				    fieldElement.appendChild(codeElement);
-				    Text codeText = doc.createTextNode(field.getCodeStr());
-				    codeElement.appendChild(codeText);
-				}
+//				if (field.getCodeStr() != null) {
+//				    Element codeElement = doc.createElement(CODE_ELEMENT);
+//				    fieldElement.appendChild(codeElement);
+//				    Text codeText = doc.createTextNode(field.getCodeStr());
+//				    codeElement.appendChild(codeText);
+//				}
 
 			}
 		}
