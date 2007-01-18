@@ -39,12 +39,13 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
+import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.sequence.PrimitiveSequence;
 
 
 import org.apache.commons.logging.Log;
@@ -63,7 +64,7 @@ public class TestInterpreter extends TestCase {
     TransformationGraph graph;
 	
 	protected void setUp() {
-	    Defaults.init();
+	    runGraph.initEngine(null, null);
 	    
         graph=new TransformationGraph();
         
@@ -119,7 +120,8 @@ public class TestInterpreter extends TestCase {
 		SetVal.setInt(record,4,-999);
 		record1.getField("Value").setNull(true);
         
-        Sequence seq = new PrimitiveSequence("test",graph,"test");
+        Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
+        		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence("test", seq);
 	}
 	
@@ -534,8 +536,8 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("dplusd1",new Double(0.1000),new Double(((Decimal)result[12]).getDouble()));
 		      assertEquals("dplusj",new Double(100.1),new Double(((Decimal)result[13]).getDouble()));
 		      assertEquals("dplusn",new Double(10.1),new Double(((Decimal)result[14]).getDouble()));
-		      assertEquals("spluss1","hello world",(((StringBuffer)result[17]).toString()));
-		      assertEquals("splusm1","hello0.0010",(((StringBuffer)result[18]).toString()));
+		      assertEquals("spluss1","hello world",(((StringBuilder)result[17]).toString()));
+		      assertEquals("splusm1","hello0.0010",(((StringBuilder)result[18]).toString()));
 		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
 
 		} catch (ParseException e) {
@@ -1230,7 +1232,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals(3,((CloverInteger)result[1]).getInt());
-		      assertEquals("April",((StringBuffer)result[2]).toString());
+		      assertEquals("April",((StringBuilder)result[2]).toString());
 		      assertEquals(true,((Boolean)result[4]).booleanValue());
 		      
 		} catch (ParseException e) {
@@ -1605,22 +1607,22 @@ public class TestInterpreter extends TestCase {
 		      parseTree.dump("");
 		      
 		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("subs","ello ",((StringBuffer)result[2]).toString());
-		      assertEquals("upper","ELLO ",((StringBuffer)result[3]).toString());
-		      assertEquals("lower","ello hi   ",((StringBuffer)result[4]).toString());
-		      assertEquals("t(=trim)","im  ello hi",((StringBuffer)result[5]).toString());
+		      assertEquals("subs","ello ",((StringBuilder)result[2]).toString());
+		      assertEquals("upper","ELLO ",((StringBuilder)result[3]).toString());
+		      assertEquals("lower","ello hi   ",((StringBuilder)result[4]).toString());
+		      assertEquals("t(=trim)","im  ello hi",((StringBuilder)result[5]).toString());
 		      assertEquals("l(=length)",5,((Decimal)result[6]).getInt());
-		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),((StringBuffer)result[7]).toString());
+		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),((StringBuilder)result[7]).toString());
 //		      assertEquals("datum",record.getField("Born").getValue(),(Date)result[8]);
-		      assertEquals("ddiff",-1,((CloverLong)result[10]).getLong());
+		      assertEquals("ddiff",-2,((CloverLong)result[10]).getLong());
 		      assertEquals("isn",false,((Boolean)result[12]).booleanValue());
 		      assertEquals("s1",new CloverDouble(6),(CloverDouble)result[13]);
-		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),((StringBuffer)result[14]).toString());
+		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),((StringBuilder)result[14]).toString());
 		      assertEquals("stn",0.25125,((Decimal)result[15]).getDouble());
-		      assertEquals("nts","22",((StringBuffer)result[16]).toString());
+		      assertEquals("nts","22",((StringBuilder)result[16]).toString());
 		      assertEquals("dtn",11.0,((Decimal)result[18]).getDouble());
 		      assertEquals("ii",21,((CloverInteger)result[19]).getInt());
-		      assertEquals("dts","02.12.24",((StringBuffer)result[21]).toString());
+		      assertEquals("dts","02.12.24",((StringBuilder)result[21]).toString());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
