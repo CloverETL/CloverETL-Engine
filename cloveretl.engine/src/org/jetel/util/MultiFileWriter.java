@@ -22,6 +22,7 @@ package org.jetel.util;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.util.Iterator;
@@ -55,7 +56,7 @@ public class MultiFileWriter {
     private Log logger = defaultLogger;
 
     private Formatter formatter;
-    private DataRecordMetadata metadata;
+    private URL contextURL;
     private String fileURL;
     private String charset;
     private int recordsPerFile;
@@ -73,8 +74,9 @@ public class MultiFileWriter {
      * @param formatter formatter is used for incoming records formatting
      * @param fileURL target file(s) definition
      */
-    public MultiFileWriter(Formatter formatter, String fileURL) {
+    public MultiFileWriter(Formatter formatter, URL contextURL, String fileURL) {
         this.formatter = formatter;
+        this.contextURL = contextURL;
         this.fileURL = fileURL;
     }
     
@@ -84,7 +86,6 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException 
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        this.metadata = metadata;
         fileNames = new MultiOutFile(fileURL);
         formatter.init(metadata);
         try {
@@ -109,7 +110,7 @@ public class MultiFileWriter {
         if(byteChannel != null) {
             writeFooter();
         }
-        byteChannel = FileUtils.getWritableChannel(fileNames.next(), appendData);
+        byteChannel = FileUtils.getWritableChannel(contextURL, fileNames.next(), appendData);
         //write header
         writeHeader();
         formatter.setDataTarget(byteChannel);

@@ -20,6 +20,7 @@
 package org.jetel.util;
 
 import java.io.IOException;
+import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
 import java.util.Iterator;
 
@@ -53,6 +54,7 @@ public class MultiFileReader {
     private Log logger = defaultLogger;
 
 	private Parser parser;
+    private URL contextURL;
     private String fileURL;
 	private Iterator<String> filenameItor;
     private int skip;
@@ -67,8 +69,9 @@ public class MultiFileReader {
 	 * @param parser Parser to be used to obtain records from input files.
 	 * @param fileURL Specification of input file(s)
 	 */
-	public MultiFileReader(Parser parser, String fileURL) {
+	public MultiFileReader(Parser parser, URL contextURL, String fileURL) {
 		this.parser = parser;
+        this.contextURL = contextURL;
 		this.fileURL = fileURL;
 	}
 
@@ -131,7 +134,7 @@ public class MultiFileReader {
 			filename = filenameItor.next();
 			logger.debug("Opening input file " + filename);
 			try {
-				stream = FileUtils.getReadableChannel(filename);
+				stream = FileUtils.getReadableChannel(contextURL, filename);
 				logger.debug("Reading input file " + filename);
 				parser.setDataSource(stream);
 				if(fileSkip > 0) parser.skip(fileSkip);

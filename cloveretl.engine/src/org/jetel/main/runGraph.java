@@ -247,13 +247,9 @@ public class runGraph {
             in = System.in;
         } else {
             System.out.println("Graph definition file: " + args[args.length - 1]);
-            URL fileURL = FileUtils.getFileURL(args[args.length - 1]);
-            if(fileURL == null) {
-                System.err.println("Error - graph definition file can't be read.");
-                System.exit(-1);
-            }
             try{
-                in=fileURL.openStream();
+                URL fileURL = FileUtils.getFileURL(null, args[args.length - 1]);
+                in = fileURL.openStream();
             } catch (IOException e) {
                 System.err.println("Error - graph definition file can't be read: " + e.getMessage());
                 System.exit(-1);
@@ -266,8 +262,8 @@ public class runGraph {
             graph = runGraph.loadGraph(in, properties);
 
             //check graph elements configuration
-            ConfigurationStatus status = graph.checkConfig(null);
             logger.info("Checking graph configuration...");
+            ConfigurationStatus status = graph.checkConfig(null);
             status.log();
 
             if(!graph.init()) {

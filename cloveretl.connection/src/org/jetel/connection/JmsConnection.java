@@ -19,11 +19,8 @@
 */
 package org.jetel.connection;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -45,6 +42,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -112,25 +110,28 @@ public class JmsConnection extends GraphElement implements IConnection {
 		this.destId = destId;
 	}
 	
-	private static Properties readConfig(String cfgFile) {
+	private static Properties readConfig(URL contextURL, String cfgFile) {
 		Properties config = new Properties();
 		try {
             InputStream stream = null;
-            if (!new File(cfgFile).exists()) {
-                // config file not found on file system - try classpath
-                stream = JmsConnection.class.getClassLoader().getResourceAsStream(cfgFile);
-                if(stream == null) {
-                    throw new FileNotFoundException("Config file for JMS connection not found (" + cfgFile +")");
-                }
-                stream = new BufferedInputStream(stream);
-            } else {
-                stream = new BufferedInputStream(new FileInputStream(cfgFile));
-            }
+            URL url = FileUtils.getFileURL(contextURL, cfgFile);
+            stream = url.openStream();
+            
+//            if (!new File(cfgFile).exists()) {
+//                // config file not found on file system - try classpath
+//                stream = JmsConnection.class.getClassLoader().getResourceAsStream(cfgFile);
+//                if(stream == null) {
+//                    throw new FileNotFoundException("Config file for JMS connection not found (" + cfgFile +")");
+//                }
+//                stream = new BufferedInputStream(stream);
+//            } else {
+//                stream = new BufferedInputStream(new FileInputStream(cfgFile));
+//            }
             
 			config.load(stream);
 			stream.close();
 		} catch (Exception ex) {
-			throw new RuntimeException(ex);
+			throw new RuntimeException("Config file for JMS connection not found (" + cfgFile +")", ex);
 		}
 		return config;
 	}
@@ -220,7 +221,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		JmsConnection con;
 		try {
 			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
-				Properties config = readConfig(xattribs.getString(XML_CONFIG_ATTRIBUTE));
+				Properties config = readConfig(graph.getProjectURL(), xattribs.getString(XML_CONFIG_ATTRIBUTE));
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
 						config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),

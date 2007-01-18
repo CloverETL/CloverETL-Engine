@@ -23,7 +23,6 @@
  */
 package org.jetel.component;
 
-import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -37,6 +36,7 @@ import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CodeParser;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.FileUtils;
 
 public class RecordTransformFactory {
 
@@ -100,7 +100,7 @@ public class RecordTransformFactory {
     
     public static RecordTransform loadClass(Log logger, String transformClass) throws ComponentNotReadyException {
         //TODO parsing url from transformClass parameter
-        return loadClass(logger, transformClass, null);
+        return loadClass(logger, transformClass, null, null);
     }
     
     /**
@@ -111,7 +111,7 @@ public class RecordTransformFactory {
      * @throws ComponentNotReadyException
      */
     public static RecordTransform loadClass(Log logger,
-            String transformClassName, String[] libraryPaths)
+            String transformClassName, URL contextURL, String[] libraryPaths)
             throws ComponentNotReadyException {
         RecordTransform transformation = null;
         // try to load in transformation class & instantiate
@@ -134,16 +134,9 @@ public class RecordTransformFactory {
             for (int i = 0; i < libraryPaths.length; i++) {
                 try {
                     // valid url
-                    myURLs[i] = new URL(libraryPaths[i]);
-                } catch (MalformedURLException ex1) {
-                    try {
-                        // probably missing protocol prefix, try to load it as a
-                        // file
-                        myURLs[i] = new File(libraryPaths[i]).toURI().toURL();
-                    } catch (MalformedURLException ex2) {
-                        throw new ComponentNotReadyException("Malformed URL: "
-                                + ex1.getMessage());
-                    }
+                    myURLs[i] = FileUtils.getFileURL(contextURL, libraryPaths[i]);
+                } catch (MalformedURLException e) {
+                    throw new ComponentNotReadyException("Malformed URL: " + e.getMessage());
                 }
             }
             try {

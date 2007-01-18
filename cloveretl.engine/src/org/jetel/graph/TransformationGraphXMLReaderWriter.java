@@ -632,7 +632,7 @@ public class TransformationGraphXMLReaderWriter {
 	            if (attributes.exists("fileURL")){
 	                String fileURL = attributes.getString("fileURL");
 	               try{
-                    graph.loadGraphPropertiesSafe(fileURL);
+	                   graph.loadGraphPropertiesSafe(fileURL);
                    }catch(IOException ex){
                        throw new XMLConfigurationException("Can't load property definition from "+fileURL,ex); 
                    }

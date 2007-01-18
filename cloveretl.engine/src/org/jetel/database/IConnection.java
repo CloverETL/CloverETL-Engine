@@ -30,23 +30,6 @@ public interface IConnection extends IGraphElement {
 //    public void connect();
 
     /**
-     * NOTE: copy from GraphElement
-     */
-    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
-
-    /**
-     * NOTE: copy from GraphElement
-     */
-    public abstract void init() throws ComponentNotReadyException;
-
-    /**
-     * Closes the sequence (current instance). All internal resources should be freed in
-     * this method.
-     * NOTE: copy from GraphElement
-     */
-    public abstract void free();
-
-    /**
      * Creates clover metadata from this connection. Used by DataRecordMetadataStub
      * for definition metadata from connection.
      * For example - in JDBC connection is expected parameter sqlQuery for definition metadata.

@@ -156,9 +156,4 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 */
 	public void free();
 	
-    /**
-     * NOTE: copy from GraphElement
-     */
-    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
-
 }

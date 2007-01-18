@@ -85,11 +85,6 @@ public interface Sequence extends IGraphElement {
     public boolean isPersistent();
     
     /**
-     * NOTE: copy from GraphElement
-     */
-    public abstract ConfigurationStatus checkConfig(ConfigurationStatus status);
-
-    /**
      * Initializes sequence object. It is called after the sequence class is instantiated.
      * All necessary internal initialization should be performed in this method.
      * NOTE: copy from GraphElement
