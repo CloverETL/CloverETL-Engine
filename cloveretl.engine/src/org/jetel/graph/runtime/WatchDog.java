@@ -36,6 +36,13 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
 
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
@@ -73,6 +80,7 @@ public class WatchDog extends Thread implements CloverRuntime {
     private DuplicateKeyMap outMsgMap;
     private Throwable causeException;
     private String causeNodeID;
+    private CloverJMX mbean;
     
     private PrintTracking printTracking;
 
@@ -133,6 +141,9 @@ public class WatchDog extends Thread implements CloverRuntime {
 		setPriority(Thread.MIN_PRIORITY);
 		
         printTracking=new PrintTracking();
+       
+        mbean=registerTrackingMBean();
+        mbean.setRunningGraphName(this.graph.getName());
 
         //disabled by Kokon
 //        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
@@ -156,6 +167,38 @@ public class WatchDog extends Thread implements CloverRuntime {
 		watchDogStatus = Result.FINISHED_OK;
 		printPhasesSummary();
 	}
+
+
+    /**
+     * 
+     * @since 17.1.2007
+     */
+    private CloverJMX registerTrackingMBean() {
+       mbean = new CloverJMX();
+        // register MBean
+        MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
+
+        // Construct the ObjectName for the MBean we will register
+        try {
+            ObjectName name = new ObjectName(
+                    "org.jetel.graph.runtime:type=CloverJMX");
+            // Register the  MBean
+            mbs.registerMBean(mbean, name);
+
+        } catch (MalformedObjectNameException ex) {
+            ex.printStackTrace();
+        } catch (InstanceAlreadyExistsException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (MBeanRegistrationException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (NotCompliantMBeanException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return mbean;
+    }
 
     public void runPhase(int phaseNo){
         watchDogStatus = Result.RUNNING;
@@ -216,7 +259,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 		long currentTimestamp;
 		long startTimestamp;
         long startTimeNano;
-        Map<String,NodeTrackingDetail> tracking=new LinkedHashMap<String,NodeTrackingDetail>(phase.getNodes().size());
+        Map<String,TrackingDetail> tracking=new LinkedHashMap<String,TrackingDetail>(phase.getNodes().size());
         List<Node> leafNodes;
         
         // let's create a copy of leaf nodes - we will watch them
@@ -232,6 +275,9 @@ public class WatchDog extends Thread implements CloverRuntime {
         startTimeNano=System.nanoTime();
         
         printTracking.setTrackingInfo(tracking, phase.getPhaseNum());
+        mbean.setRuningPhase(phase.getPhaseNum());
+        mbean.setTrackingMap(tracking);
+        mbean.updated();
 	
         // entering the loop awaiting completion of work by all leaf nodes
 		while (true) {
@@ -285,6 +331,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 					leafNodesIterator.remove();
 				}
 			}
+            
             //  -----------------------------------
 			//  from time to time perform some task
             //  -----------------------------------
@@ -301,7 +348,7 @@ public class WatchDog extends Thread implements CloverRuntime {
                 // gather tracking information
                 for (Node node : phase.getNodes()){
                     String nodeId=node.getId();
-                    NodeTrackingDetail trackingDetail=tracking.get(nodeId);
+                    NodeTrackingDetail trackingDetail=(NodeTrackingDetail)tracking.get(nodeId);
                     int inPortsNum=node.getInPorts().size();
                     int outPortsNum=node.getOutPorts().size();
                     if (trackingDetail==null){
@@ -342,6 +389,11 @@ public class WatchDog extends Thread implements CloverRuntime {
                     //printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
                     printTracking.execute(); // print tracking
                     lastTimestamp = currentTimestamp;
+                    
+                    // update mbean & signal that it was updated
+                    mbean.setRunningNodes(leafNodes.size());
+                    mbean.setRunTime(currentTimestamp-startTimestamp);
+                    mbean.updated();
                 }
             }
 			
@@ -351,8 +403,9 @@ public class WatchDog extends Thread implements CloverRuntime {
 	/**
 	 *  Gets the Status of the WatchDog
 	 *
-	 * @return	0 READY, -1 ERROR, 1 RUNNING, 2 FINISHED OK    
+	 * @return	Result of WatchDog run-time    
 	 * @since     July 30, 2002
+     * @see     org.jetel.graph.Result
 	 */
 	public Result getStatus() {
 		return watchDogStatus;
@@ -480,7 +533,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 	}
     
 	class PrintTracking implements Runnable{
-	    Map<String,NodeTrackingDetail> tracking;
+	    Map<String,TrackingDetail> tracking;
         int phaseNo;
         Log trackingLogger;
         volatile boolean run;
@@ -491,7 +544,7 @@ public class WatchDog extends Thread implements CloverRuntime {
             run=true;
         }
         
-        void setTrackingInfo(Map<String,NodeTrackingDetail> tracking, int phaseNo){
+        void setTrackingInfo(Map<String,TrackingDetail> tracking, int phaseNo){
             this.tracking=tracking;
             this.phaseNo=phaseNo;
         }
