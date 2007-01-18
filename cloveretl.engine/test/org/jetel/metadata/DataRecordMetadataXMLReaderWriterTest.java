@@ -53,18 +53,18 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
 		aDataFieldMetadata = new DataFieldMetadata("Field_0",DataFieldMetadata.INTEGER_FIELD,";");
-		aDataFieldMetadata.setCodeStr("return Math.abs(-5);");
+//		aDataFieldMetadata.setCodeStr("return Math.abs(-5);");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_1",DataFieldMetadata.STRING_FIELD,":");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_2",DataFieldMetadata.INTEGER_FIELD,",");
-		aDataFieldMetadata.setCodeStr("return 7;");
+//		aDataFieldMetadata.setCodeStr("return 7;");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 		aDataFieldMetadata = new DataFieldMetadata("Field_3",DataFieldMetadata.NUMERIC_FIELD,"\n");
-		aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
+//		aDataFieldMetadata.setCodeStr("return [record1].[field1]/[record2].[field2];");
 		aDelimitedDataRecordMetadata.addField(aDataFieldMetadata);
 
-		testFile1 = "data\\out\\test1.txt";	
+		testFile1 = "data/out/test1.txt";	
 		File aFile=new File(testFile1);
 		 if(!aFile.exists()) {
 			new File(aFile.getParent()).mkdirs();
@@ -111,35 +111,35 @@ public class DataRecordMetadataXMLReaderWriterTest extends TestCase {
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
-			assertEquals(null,aDataFieldMetadata.getCodeStr());
+//			assertEquals(null,aDataFieldMetadata.getCodeStr());
 			
 			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_0");
 			assertEquals(";",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
-			assertEquals("return Math.abs(-5);",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
+//			assertEquals("return Math.abs(-5);",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 
 			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_1");
 			assertEquals(":",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.STRING_FIELD,aDataFieldMetadata.getType());
-			assertEquals(null,aDataFieldMetadata.getCodeStr());
+//			assertEquals(null,aDataFieldMetadata.getCodeStr());
 
 			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_2");
 			assertEquals(",",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.INTEGER_FIELD,aDataFieldMetadata.getType());
-			assertEquals("return 7;",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
+//			assertEquals("return 7;",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 
 			aDataFieldMetadata = aDelimitedDataRecordMetadata.getField("Field_3");
 			assertEquals("\n",aDataFieldMetadata.getDelimiter());
 			assertEquals(null,aDataFieldMetadata.getDefaultValue());
 			assertEquals(null,aDataFieldMetadata.getFormatStr());
 			assertEquals(DataFieldMetadata.NUMERIC_FIELD,aDataFieldMetadata.getType());
-			assertEquals("return [record1].[field1]/[record2].[field2];",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
+//			assertEquals("return [record1].[field1]/[record2].[field2];",aDataFieldMetadata.getCodeStr().replace('\n',' ').replace('\t',' ').trim());
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
