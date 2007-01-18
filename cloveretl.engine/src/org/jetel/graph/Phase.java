@@ -29,6 +29,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.NodeTrackingDetail;
+import org.jetel.graph.runtime.TrackingDetail;
 
 /**
  * A class that represents processing Phase of Transformation Graph
@@ -58,7 +59,7 @@ public class Phase implements Comparable {
 	private int phaseMemUtilization;
 	private Result result;
     private boolean isCheckPoint;
-    private Map<String,NodeTrackingDetail> tracking;
+    private Map<String,TrackingDetail> tracking;
 
 	protected TransformationGraph graph;
 
@@ -412,7 +413,7 @@ public class Phase implements Comparable {
      * @return the tracking
      * @since 10.1.2007
      */
-    public Map<String, NodeTrackingDetail> getTracking() {
+    public Map<String, TrackingDetail> getTracking() {
         return tracking;
     }
 
@@ -421,7 +422,7 @@ public class Phase implements Comparable {
      * @param tracking the tracking to set
      * @since 10.1.2007
      */
-    public void setTracking(Map<String, NodeTrackingDetail> tracking) {
+    public void setTracking(Map<String, TrackingDetail> tracking) {
         this.tracking = tracking;
     }
 }
