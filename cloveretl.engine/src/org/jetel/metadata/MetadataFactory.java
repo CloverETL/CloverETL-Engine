@@ -21,11 +21,11 @@ package org.jetel.metadata;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.sql.SQLException;
 
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.FileUtils;
 import org.w3c.dom.DOMException;
 
 
@@ -49,22 +49,12 @@ public class MetadataFactory {
 	 * @see	org.jetel.metadata.DataRecordMetadata
 	 */
 	public static DataRecordMetadata fromFile(TransformationGraph graph, String fileURL) throws IOException {
-		URL url;
-		try{
-			url = new URL(fileURL); 
-		}catch(MalformedURLException e){
-			// try to patch the url
-			try {
-				url=new URL("file:"+fileURL);
-			}catch(MalformedURLException ex){
-				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
-			}
-		}
+		URL url = FileUtils.getFileURL(graph.getProjectURL(), fileURL);
+        
 		DataRecordMetadata recordMetadata;
 		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter(graph);
 		try{
-		recordMetadata=metadataXMLRW.read(
-				new BufferedInputStream(url.openStream()));
+		recordMetadata=metadataXMLRW.read(new BufferedInputStream(url.openStream()));
 			if (recordMetadata==null){
 				throw new RuntimeException("Can't parse metadata definition file: "+fileURL);
 			}

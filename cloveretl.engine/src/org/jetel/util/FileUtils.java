@@ -55,30 +55,26 @@ public class FileUtils {
 	 * @return          The full path to file with ENV references resolved
 	 * @since           May 24, 2002
 	 */
-	public static String getFullPath(String fileURL) {
-		return fileURL;
-	}
+//	public static String getFullPath(String fileURL) {
+//		return fileURL;
+//	}
     
     /**
      * Creates URL object based on specified fileURL string. Handles
      * situations when <code>fileURL</code> contains only path to file
      * <i>(without "file:" string)</i>. 
      * 
+     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
      * @param fileURL   string containing file URL
      * @return  URL object or NULL if object can't be created (due to Malformed URL)
+     * @throws MalformedURLException  
      */
-    public static URL getFileURL(String fileURL){
-        URL url;
-        try{
-            url = new URL(fileURL);
-        }catch(MalformedURLException ex){
-            try{
-                url = new URL("file:"+fileURL);
-            }catch(MalformedURLException ex1){
-                return null;
-            }
+    public static URL getFileURL(URL contextURL, String fileURL) throws MalformedURLException {
+        try {
+            return new URL(contextURL, fileURL);
+        } catch(MalformedURLException ex) {
+            return new URL(contextURL, "file:" + fileURL);
         }
-        return url;
     }
 
 
@@ -110,37 +106,28 @@ public class FileUtils {
 
 	/**
 	 * Reads file specified by URL. The content is returned as String
+     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
 	 * @param fileURL URL specifying the location of file from which to read
 	 * @return
 	 */
-	public static String getStringFromURL(String fileURL){
+	public static String getStringFromURL(URL contextURL, String fileURL){
         URL url;
-		try{
-			url = new URL(fileURL); 
-		}catch(MalformedURLException e){
-			// try to patch the url
-			try {
-				url=new URL("file:"+fileURL);
-			}catch(MalformedURLException ex){
-				throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
-			}
+		try {
+			url = FileUtils.getFileURL(contextURL, fileURL);
+		}catch(MalformedURLException ex){
+			throw new RuntimeException("Wrong URL of file specified: "+ex.getMessage());
 		}
 
 		StringBuffer sb = new StringBuffer(2048);
-        
-		try
-        {
+		try {
             char[] charBuf=new char[256];
             BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
             int readNum;
             
-            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1)
-            {
+            while ((readNum=in.read(charBuf,0,charBuf.length)) != -1) {
                 sb.append(charBuf,0,readNum);
             }
-        }
-        catch(IOException ex)
-        {
+        } catch(IOException ex) {
             throw new RuntimeException("Can't get string from file " + fileURL + " : " + ex.getMessage());
         }
         return sb.toString();
@@ -154,11 +141,12 @@ public class FileUtils {
      *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
      *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
      * </dl>
+     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
      * @param input URL of file to read
      * @return
      * @throws IOException
      */
-    public static ReadableByteChannel getReadableChannel(String input) throws IOException {
+    public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
         String strURL = input;
         String zipAnchor = null;
         URL url;
@@ -177,16 +165,7 @@ public class FileUtils {
         }
         
         //open channel
-        try {
-            url = new URL(strURL); 
-        } catch(MalformedURLException e) {
-            // try to patch the url
-            try {
-                url = new URL("file:" + strURL);
-            } catch(MalformedURLException ex) {
-                throw new IOException("Wrong URL of file specified: " + ex.getMessage());
-            }
-        }
+        url = FileUtils.getFileURL(contextURL, strURL); 
 
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
@@ -226,12 +205,13 @@ public class FileUtils {
      *  <dd>zip:&lt;url_to_zip_file&gt;#&lt;inzip_path_to_file&gt;</dd>
      *  <dd>gzip:&lt;url_to_gzip_file&gt;</dd>
      * </dl>
+     * @param contextURL context URL for converting relative to absolute path (see TransformationGraph.getProjectURL()) 
 	 * @param input
 	 * @param appendData
 	 * @return
 	 * @throws IOException
 	 */
-	public static WritableByteChannel getWritableChannel(String input, boolean appendData) throws IOException {
+	public static WritableByteChannel getWritableChannel(URL contextURL, String input, boolean appendData) throws IOException {
         String strURL = input;
         String zipAnchor = null;
         OutputStream os;
@@ -252,16 +232,7 @@ public class FileUtils {
 		if(!strURL.startsWith("ftp")) {
 			os = new FileOutputStream(strURL, appendData);
 		} else {
-			try {
-				url = new URL(strURL); 
-			} catch(MalformedURLException e) {
-				// try to patch the url
-				try {
-					url = new URL("file:" + strURL);
-				} catch(MalformedURLException ex) {
-					throw new IOException("Wrong URL of file specified: " + ex.getMessage());
-				}
-			}
+		    url = FileUtils.getFileURL(contextURL, strURL); 
 			os = url.openConnection().getOutputStream();
 		}
 		//resolve url format for zip files

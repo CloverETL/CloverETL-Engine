@@ -24,6 +24,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -62,6 +63,8 @@ import org.jetel.util.TypedProperties;
 
 public final class TransformationGraph {
 
+    public static final String PROPERTY_PROJECT_DIR = "PROJECT_DIR";
+    
 	private Map <Integer,Phase> phases;
 
 	private Map <String,Node> nodes;
@@ -96,7 +99,8 @@ public final class TransformationGraph {
 	
 	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 
-
+	private URL projectURL;
+    
     public TransformationGraph() {
         this(null);
     }
@@ -206,6 +210,29 @@ public final class TransformationGraph {
         } else {
             return debugDirectory;
         }
+    }
+    
+    /**
+     * Returns URL from PROJECT_DIR graph property value.
+     * It is used as context URL for conversion from relative to absolute path.
+     * @return 
+     */
+    private boolean firstCallprojectURL = true;
+    public URL getProjectURL() {
+        if(firstCallprojectURL) {
+            firstCallprojectURL = false;
+            String projectURLStr = getGraphProperties().getStringProperty(PROPERTY_PROJECT_DIR);
+            
+            if(projectURLStr != null) {
+                try {
+                    projectURL = FileUtils.getFileURL(null, projectURLStr);
+                } catch (MalformedURLException e) {
+                    logger.warn("Home project dir is not in valid URL format - " + projectURLStr);
+                }
+            }
+        }
+
+        return projectURL;
     }
     
 	/**
@@ -580,6 +607,7 @@ public final class TransformationGraph {
 	 */
 	public void addConnection(String name, IConnection connection) {
 		connections.put(name, connection);
+        connection.setGraph(this);
 	}
 
 	/**
@@ -591,6 +619,7 @@ public final class TransformationGraph {
 	 */
 	public void addSequence(String name, Sequence seq) {
 		sequences.put(name, seq);
+        seq.setGraph(this);
 	}
 
 	/**
@@ -601,6 +630,7 @@ public final class TransformationGraph {
 	 */
 	public void addLookupTable(String name, LookupTable lookupTable) {
 		lookupTables.put(name, lookupTable);
+        lookupTable.setGraph(this);
 	}
 
 	/**
@@ -715,10 +745,12 @@ public final class TransformationGraph {
 		if (graphProperties == null) {
 			graphProperties = new TypedProperties();
 		}
-        URL url = FileUtils.getFileURL(fileURL);
-        if(url == null) {
+        URL url;
+        try {
+            url = FileUtils.getFileURL(getProjectURL(), fileURL);
+        } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
-            throw new IOException("Wrong URL/filename of file specified: " + fileURL);
+            throw e;
         }
         InputStream inStream = new BufferedInputStream(url.openStream());
 		graphProperties.load(inStream);
@@ -734,10 +766,12 @@ public final class TransformationGraph {
         if (graphProperties == null) {
             graphProperties = new TypedProperties();
         }
-        URL url = FileUtils.getFileURL(fileURL);
-        if(url == null) {
+        URL url; 
+        try {
+            url = FileUtils.getFileURL(getProjectURL(), fileURL);
+        } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
-            throw new IOException("Wrong URL/filename of file specified: " + fileURL);
+            throw e;
         }
         InputStream inStream = new BufferedInputStream(url.openStream());
         graphProperties.loadSafe(inStream);

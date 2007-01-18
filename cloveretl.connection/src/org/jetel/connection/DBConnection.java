@@ -50,6 +50,7 @@ import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.jetel.util.crypto.Enigma;
@@ -202,16 +203,20 @@ public class DBConnection extends GraphElement implements IConnection {
         if(!StringUtils.isEmpty(configFileName)) {
             try {
                 InputStream stream = null;
-                if (!new File(configFileName).exists()) {
-                    // config file not found on file system - try classpath
-                    stream = getClass().getClassLoader().getResourceAsStream(configFileName);
-                    if(stream == null) {
-                        throw new FileNotFoundException("Config file for db connection " + getId() + " not found (" + configFileName + ")");
-                    }
-                    stream = new BufferedInputStream(stream);
-                } else {
-                    stream = new BufferedInputStream(new FileInputStream(configFileName));
-                }
+                URL url = FileUtils.getFileURL(getGraph().getProjectURL(), configFileName);
+                stream = url.openStream();
+
+//old code - last usage in 2.0                 
+//                if (!new File(configFileName).exists()) {
+//                    // config file not found on file system - try classpath
+//                    stream = getClass().getClassLoader().getResourceAsStream(configFileName);
+//                    if(stream == null) {
+//                        throw new FileNotFoundException("Config file for db connection " + getId() + " not found (" + configFileName + ")");
+//                    }
+//                    stream = new BufferedInputStream(stream);
+//                } else {
+//                    stream = new BufferedInputStream(new FileInputStream(configFileName));
+//                }
                 
                 this.config.load(stream);
                 stream.close();
@@ -258,15 +263,10 @@ public class DBConnection extends GraphElement implements IConnection {
 	                	// try to create URL directly, if failed probably the protocol is missing, so use File.toURL
 	                    for(int i=0;i<libraryPaths.length;i++){
 	                    	try {
-	                    		// valid url
-	                    		myURLs[i]=new URL(libraryPaths[i]);
+                                // valid url
+                                myURLs[i] = FileUtils.getFileURL(getGraph() == null ? null : getGraph().getProjectURL(), libraryPaths[i]);
 	                    	} catch (MalformedURLException ex1) {
-	                    		try {
-	                    			// probably missing protocol prefix, try to load it as a file
-	                    			myURLs[i] = new File(libraryPaths[i]).toURI().toURL();
-	                    		} catch (MalformedURLException ex2) {
-	                    			throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-	                    		}
+	                    	    throw new RuntimeException("Malformed URL: " + ex1.getMessage());
 	                    	}
 	                }
 	                

@@ -210,7 +210,7 @@ public class FixLenDataReader extends Node {
 		super.init();
         
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, fileURL);
+        reader = new MultiFileReader(parser, getGraph().getProjectURL(), fileURL);
         reader.setLogger(logger);
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);
