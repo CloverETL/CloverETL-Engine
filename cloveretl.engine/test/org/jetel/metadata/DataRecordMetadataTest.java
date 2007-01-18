@@ -52,17 +52,17 @@ public class DataRecordMetadataTest extends TestCase {
 	public void test_1_getField() {
 		DataFieldMetadata aDataFieldMetadata = null;
 
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.BYTE_FIELD,":"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,(short)23));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.BYTE_FIELD,":"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,(short)23));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 		assertEquals(5, aDelimitedDataRecordMetadata.getNumFields());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(1);
 		if (aDataFieldMetadata==null) System.out.println("NULL returned!");
 		assertEquals(DataFieldMetadata.BYTE_FIELD, aDataFieldMetadata.getType() );
 		assertEquals(":", aDataFieldMetadata.getDelimiter() );
-		assertEquals("Field 1", aDataFieldMetadata.getName());
+		assertEquals("Field1", aDataFieldMetadata.getName());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(3);
 		assertEquals((short)23, aDataFieldMetadata.getSize() );
 	}
@@ -74,16 +74,16 @@ public class DataRecordMetadataTest extends TestCase {
 	public void test_2_getField() {
 		DataFieldMetadata aDataFieldMetadata = null;
 
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.BYTE_FIELD,":"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,(short)23));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field 1");
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.BYTE_FIELD,":"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,(short)23));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field1");
 		assertEquals(DataFieldMetadata.BYTE_FIELD, aDataFieldMetadata.getType() );
 		assertEquals(":", aDataFieldMetadata.getDelimiter() );
-		assertEquals("Field 1", aDataFieldMetadata.getName());
-		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field 3");
+		assertEquals("Field1", aDataFieldMetadata.getName());
+		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField("Field3");
 		assertEquals((short)23, aDataFieldMetadata.getSize() );
 	}
 
@@ -92,16 +92,16 @@ public class DataRecordMetadataTest extends TestCase {
 	 *
 	 */
 	public void test_getFieldPosition() {
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
-		assertEquals(0, aDelimitedDataRecordMetadata.getFieldPosition("Field 0"));
-		assertEquals(1, aDelimitedDataRecordMetadata.getFieldPosition("Field 1"));
-		assertEquals(2, aDelimitedDataRecordMetadata.getFieldPosition("Field 2"));
-		assertEquals(3, aDelimitedDataRecordMetadata.getFieldPosition("Field 3"));
-		assertEquals(4, aDelimitedDataRecordMetadata.getFieldPosition("Field 4"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
+		assertEquals(0, aDelimitedDataRecordMetadata.getFieldPosition("Field0"));
+		assertEquals(1, aDelimitedDataRecordMetadata.getFieldPosition("Field1"));
+		assertEquals(2, aDelimitedDataRecordMetadata.getFieldPosition("Field2"));
+		assertEquals(3, aDelimitedDataRecordMetadata.getFieldPosition("Field3"));
+		assertEquals(4, aDelimitedDataRecordMetadata.getFieldPosition("Field4"));
 	}
 
 	/**
@@ -109,11 +109,11 @@ public class DataRecordMetadataTest extends TestCase {
 	 *
 	 */
 	public void test_addField() {
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 		assertEquals(5, aDelimitedDataRecordMetadata.getNumFields());
 	}
 
@@ -123,15 +123,15 @@ public class DataRecordMetadataTest extends TestCase {
 	 */
 	public void test_1_delField() {
 		DataFieldMetadata aDataFieldMetadata = null;
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 		aDelimitedDataRecordMetadata.delField((short)2);
 		assertEquals(4, aDelimitedDataRecordMetadata.getNumFields());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(2);
-		assertNotSame("Field 1", aDataFieldMetadata.getName());
+		assertNotSame("Field1", aDataFieldMetadata.getName());
 	}
 
 
@@ -141,14 +141,14 @@ public class DataRecordMetadataTest extends TestCase {
 	 */
 	public void test_2_delField() {
 		DataFieldMetadata aDataFieldMetadata = null;
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 1",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 2",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 3",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field 4",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.delField("Field 4");
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
+		aDelimitedDataRecordMetadata.delField("Field4");
 		assertEquals(4, aDelimitedDataRecordMetadata.getNumFields());
 		aDataFieldMetadata  = aDelimitedDataRecordMetadata.getField(3);
-		assertNotSame("Field 3", aDataFieldMetadata.getName());
+		assertEquals("Field3", aDataFieldMetadata.getName());
 	}
 }
