@@ -92,7 +92,7 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 *   [record name].[field name]
 	 */
-	private String codeStr;
+//	private String codeStr;
 
 	private TypedProperties fieldProperties;
 	
@@ -249,7 +249,7 @@ public class DataFieldMetadata implements Serializable {
 		ret.setType(getType());
 		ret.setNullable(isNullable());
 		ret.setDefaultValueStr(getDefaultValueStr());
-		ret.setCodeStr(getCodeStr());
+//		ret.setCodeStr(getCodeStr());
 		ret.setLocaleStr(getLocaleStr());
 
 		//copy record properties
@@ -497,9 +497,9 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @param  codeStr
 	 */
-	public void setCodeStr(String codeStr) {
-		this.codeStr = codeStr;
-	}
+//	public void setCodeStr(String codeStr) {
+//		this.codeStr = codeStr;
+//	}
 
 
 	/**
@@ -507,9 +507,9 @@ public class DataFieldMetadata implements Serializable {
 	 *
 	 * @return
 	 */
-	public String getCodeStr() {
-		return codeStr;
-	}
+//	public String getCodeStr() {
+//		return codeStr;
+//	}
 
 
 	/**
