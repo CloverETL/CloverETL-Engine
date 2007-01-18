@@ -84,15 +84,7 @@ public final class FifoTest extends TestCase {
 
 		fifo.add(new Integer(1));
 		fifo.add(new Integer(2));
-
-		try  {
-			fifo.add(new Integer(3));
-			fail("An exception should be thrown as the Fifo is full");
-		}
-		catch ( Exception e )
-		{
-			// expected behaviour
-		}
+		assertFalse(fifo.add(new Integer(3)));
 
 		result = (Integer)fifo.get();
 		assertEquals(new Integer(1), result);
@@ -133,15 +125,8 @@ public final class FifoTest extends TestCase {
 		fifo.add(new Integer(6));
 
 		// queue is now full
+		assertFalse(fifo.add(new Integer(7)));
 
-		try  {
-			fifo.add(new Integer(7));
-			fail("An exception should be thrown as the Fifo is full");
-		}
-		catch ( Exception e )
-		{
-			// expected behaviour
-		}
 
 		result = (Integer)fifo.get();
 		assertEquals(new Integer(3), result);
@@ -231,14 +216,7 @@ public final class FifoTest extends TestCase {
 		Queue fifo = new Queue(0);
 		Integer result = null;
 
-		try  {
-			fifo.add(new Integer(1));
-			fail("An exception should be thrown as the Fifo is full");
-		}
-		catch ( Exception e )
-		{
-			// expected behaviour
-		}
+		assertFalse(fifo.add(new Integer(1)));
 	}
 
 	/**
@@ -249,14 +227,7 @@ public final class FifoTest extends TestCase {
 		Integer result = null;
 
 		fifo.add(new Integer(1));
-		try  {
-			fifo.add(new Integer(2));
-			fail("An exception should be thrown as the Fifo is full");
-		}
-		catch ( Exception e )
-		{
-			// expected behaviour
-		}
+		assertFalse(fifo.add(new Integer(2)));
 	}
 
 }
