@@ -25,31 +25,29 @@ import junit.framework.TestCase;
 import org.jetel.data.DataRecord;
 import org.jetel.graph.DirectEdge;
 import org.jetel.graph.Edge;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
-public class DirectEdgeTest extends TestCase {
+public class EdgeTest extends TestCase {
 	private DataRecordMetadata aDelimitedDataRecordMetadata;
-	private DirectEdge edge;
+	private EdgeBase edge;
 	
-	public DirectEdgeTest(String name){
+	public EdgeTest(String name){
 	    super(name);
 	}
 	
 	protected void setUp() { 
+		
+		runGraph.initEngine(null, null);
+		
 		aDelimitedDataRecordMetadata = new DataRecordMetadata("record2",DataRecordMetadata.DELIMITED_RECORD);
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field0",DataFieldMetadata.INTEGER_FIELD,";"));
-		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.BYTE_FIELD,":"));
+		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field1",DataFieldMetadata.STRING_FIELD,":"));
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field2",DataFieldMetadata.INTEGER_FIELD,";"));
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field3",DataFieldMetadata.INTEGER_FIELD,(short)23));
 		aDelimitedDataRecordMetadata.addField(new DataFieldMetadata("Field4",DataFieldMetadata.INTEGER_FIELD,";"));
 
-		edge=new DirectEdge(new Edge("testEdge",aDelimitedDataRecordMetadata));
-		try{
-		    edge.init();
-		}catch(IOException ex){
-		    throw new RuntimeException(ex);
-		}
 	}
 
 	protected void tearDown() {
@@ -67,6 +65,14 @@ public class DirectEdgeTest extends TestCase {
 	    DataRecord record=new DataRecord(aDelimitedDataRecordMetadata);
 	    record.init();
 	    
+		edge=new DirectEdgeFastPropagate(new Edge("testEdge",aDelimitedDataRecordMetadata));
+		
+		try{
+		    edge.init();
+		}catch(IOException ex){
+		    throw new RuntimeException(ex);
+		}
+
 		assertTrue(edge.isOpen());
 		assertFalse(edge.hasData());
 	
@@ -89,7 +95,15 @@ public class DirectEdgeTest extends TestCase {
 	    ProducerThread thread1;
 	    ConsumerThread thread2;
 	    
-	    final DataRecord record1=new DataRecord(aDelimitedDataRecordMetadata);
+		edge=new DirectEdge(new Edge("testEdge",aDelimitedDataRecordMetadata));
+		
+		try{
+		    edge.init();
+		}catch(IOException ex){
+		    throw new RuntimeException(ex);
+		}
+
+		final DataRecord record1=new DataRecord(aDelimitedDataRecordMetadata);
 	    final DataRecord record2=new DataRecord(aDelimitedDataRecordMetadata);
 	    record2.init();
 	    record1.init();
@@ -97,8 +111,8 @@ public class DirectEdgeTest extends TestCase {
 	    assertTrue(edge.isOpen());
 		assertFalse(edge.hasData());
 		
-		thread1=new ProducerThread(record1,edge);
-		thread2=new ConsumerThread(record2,edge);
+		thread1=new ProducerThread(record1,(DirectEdge)edge);
+		thread2=new ConsumerThread(record2,(DirectEdge)edge);
 		
 		// ROUND 1 - MAX, MIN priority
 		thread1.setPriority(Thread.MAX_PRIORITY);
@@ -119,8 +133,8 @@ public class DirectEdgeTest extends TestCase {
 		edge.open();
 	    assertTrue(edge.isOpen());
 		assertFalse(edge.hasData());
-		thread1=new ProducerThread(record1,edge);
-		thread2=new ConsumerThread(record2,edge);
+		thread1=new ProducerThread(record1,(DirectEdge)edge);
+		thread2=new ConsumerThread(record2,(DirectEdge)edge);
 		thread1.setPriority(Thread.MIN_PRIORITY);
 		thread2.setPriority(Thread.MAX_PRIORITY);
 		
