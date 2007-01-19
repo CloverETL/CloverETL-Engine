@@ -159,8 +159,8 @@ import org.w3c.dom.Element;
  * @since       March 09, 2004
  * @revision    $Revision$
  * @created     09. March 2004
- */
-/**
+ *
+ *
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
