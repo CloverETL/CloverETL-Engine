@@ -3,9 +3,9 @@
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 
+import org.jetel.connection.DBConnection;
+import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
-import org.jetel.data.parser.SQLDataParser;
-import org.jetel.database.DBConnection;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
@@ -27,8 +27,10 @@ protected void setUp() {
 	DBConnection aDBConnection = null;
 				
 	try {
-		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));
-		aDBConnection = new DBConnection("", "config\\test\\msaccess.clover_test.txt");
+//		metadata = xmlReader.read(new FileInputStream("config\\test\\rec_def\\db_null_def_rec.xml"));
+//		aDBConnection = new DBConnection("", "config\\test\\msaccess.clover_test.txt");
+		metadata = xmlReader.read(new FileInputStream("../cloveretl.engine/config/test/rec_def/db_def_rec.xml"));
+		aDBConnection = new DBConnection("conn", "../cloveretl.engine/examples/koule_postgre.cfg");
 	} catch(FileNotFoundException e){
 		e.printStackTrace();
 	}
@@ -38,7 +40,8 @@ protected void setUp() {
 
 	aParser2 = new SQLDataParser("connection","SELECT * FROM bad");
 	try {
-		aParser2.open(aDBConnection,metadata);
+		aParser2.init(metadata);
+		aParser2.setDataSource(aDBConnection);
 		aParser2.initSQLDataMap(record);
 	} catch (ComponentNotReadyException e1) {
 		e1.printStackTrace();
