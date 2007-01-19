@@ -34,10 +34,7 @@ public class UtilTestSuite extends TestSuite {
 		TestSuite suite = new TestSuite("All org.jetel.util Tests");
 
 		suite.addTest(new TestSuite(org.jetel.util.StringUtilsTest.class));
-		suite.addTest(new TestSuite(org.jetel.util.ClassBuilderTest.class));
-		suite.addTest(new TestSuite(org.jetel.util.CodeParserTest.class));
 		suite.addTest(new TestSuite(org.jetel.util.CompileTest.class));
-		suite.addTest(new TestSuite(org.jetel.util.CreateJavaObjectTest.class));
 		return suite;
 
 	}
