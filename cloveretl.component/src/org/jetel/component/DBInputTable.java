@@ -101,7 +101,7 @@ import org.w3c.dom.Text;
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {
-	private static final String XML_DATAPOLICY_ATTRIBUTE = "DataPolicy";
+	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
 	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
 	private static final String XML_URL_ATTRIBUTE = "url";
