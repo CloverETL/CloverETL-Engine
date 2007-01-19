@@ -30,6 +30,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.denormalize.RecordDenormalize;
 import org.jetel.component.denormalize.RecordDenormalizeTL;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
@@ -75,7 +76,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>denormalizeClass</b></td><td>name of the class to be used for normalizing data.</td></tr>
  *  <tr><td><b>denormalize</b></td><td>contains definition of transformation in Java or TransformLang.</td></tr>
- *  <tr><td><b>key</b></td><td>comma-separated list of key fields used to identify input record groups.
+ *  <tr><td><b>key</b></td><td>list of key fields used to identify input record groups.
  *  Each group is < sequence of input records with identical key field values.</td></tr>
  *  </tr>
  *  <tr><td><b>order</b></td><td>Describe expected order of input records. "asc" for ascending, "desc" for descending,
@@ -352,7 +353,7 @@ public class Denormalizer extends Node {
 	}
 
 	private static String[] parseKeyList(String keyList) {
-		return keyList == null ? new String[]{} : keyList.split(",");
+		return keyList == null ? new String[]{} : keyList.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 	}
 	
 	/**
