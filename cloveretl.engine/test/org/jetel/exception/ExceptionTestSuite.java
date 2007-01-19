@@ -32,7 +32,6 @@ public static Test suite() {
 	TestSuite suite= new TestSuite("All org.jetel.exception Tests");
 	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_FixLenDataParser2_Test.class));
 	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test.class));
-	suite.addTest(new TestSuite(org.jetel.exception.BadDataFormatExceptionHandler_SQLDataParser_Test.class));
 		
 	return suite;
 }
