@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.jetel.exception.InvalidGraphObjectNameException;
+import org.jetel.util.BitArray;
 import org.jetel.util.StringUtils;
 import org.jetel.util.TypedProperties;
 
@@ -51,8 +52,9 @@ public class DataRecordMetadata implements Serializable {
 	/**
 	 * @since
 	 */
-	private List fields;
-
+	private List<DataFieldMetadata> fields;
+	private BitArray fieldNullSwitch;
+    
 	private Map fieldNames;
 	private Map fieldTypes;
 
@@ -61,6 +63,7 @@ public class DataRecordMetadata implements Serializable {
 	private String[] recordDelimiters;
 	private short recordSize;
 	private String localeStr;
+    private short numNullableFields;
 
 	private TypedProperties recordProperties;
 
@@ -99,11 +102,13 @@ public class DataRecordMetadata implements Serializable {
 			throw new InvalidGraphObjectNameException(_name,"RECORD");
 		}
 		this.name = _name;
-		this.fields = new ArrayList();
+		this.fields = new ArrayList<DataFieldMetadata>();
 		fieldNames = new HashMap();
 		fieldTypes = new HashMap();
 		recordProperties = null;
 		localeStr=null;
+        numNullableFields=0;
+        fieldNullSwitch=new BitArray();
 	}
 
 	/**
@@ -337,6 +342,16 @@ public class DataRecordMetadata implements Serializable {
 	private void structureChanged() {
 	    fieldNames.clear();
 	    fieldTypes.clear();
+        numNullableFields=0;
+        fieldNullSwitch.resize(fields.size());
+        int count=0;
+        for(DataFieldMetadata fieldMeta: fields){
+            if (fieldMeta.isNullable()){
+                numNullableFields++;
+                fieldNullSwitch.set(count);
+            }
+            count++;
+        }
 	}
 	
 	/**  Description of the Method */
@@ -606,6 +621,39 @@ public class DataRecordMetadata implements Serializable {
     		result = 37*result + this.getField(i).hashCode();
     	}
     	return result;
+    }
+
+
+    /**
+     * Determine whether DataRecord described by this metadata
+     * has at least one field which may contain a NULL value.<br>
+     * 
+     * @return true if at least nullable field is present otherwise false
+     * @since 18.1.2007
+     */
+    public boolean isNullable() {
+        return numNullableFields!=0;
+    }
+
+
+    /**
+     * Returns BitArray where bits are set for fields
+     * which may contain NULL.
+     * 
+     * @return the fieldNullSwitch
+     * @since 18.1.2007
+     */
+    public BitArray getFieldsNullSwitches() {
+        return fieldNullSwitch;
+    }
+
+
+    /**
+     * @return the countNullableFields
+     * @since 18.1.2007
+     */
+    public short getNumNullableFields() {
+        return numNullableFields;
     }
     
 }
