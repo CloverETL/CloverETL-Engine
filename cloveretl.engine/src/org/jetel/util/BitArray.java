@@ -19,6 +19,8 @@
 */
 package org.jetel.util;
 import java.lang.IndexOutOfBoundsException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 /**
  * Class for representing strings of bits.<br>
  * Uses arrays of bytes to group bits by 8 together.
@@ -31,8 +33,8 @@ import java.lang.IndexOutOfBoundsException;
 
 public class BitArray {
 
-	private final byte bits[];
-	private final int length;
+	private  byte bits[];
+	private  int length;
 
 
 	/**
@@ -45,14 +47,57 @@ public class BitArray {
 		if (length<1) throw new RuntimeException("Can't create ZERO length array !");
 		bits = new byte[(size-1) / 8 + 1];
 		// init array
-		for (int i = 0; i < bits.length; i++) {
-			bits[i]=0;
-		}
+        Arrays.fill(bits,(byte)0);
 	}
 
+    /**
+     * Creates BitArray with space for 16 bits.
+     * 
+     */
+    public BitArray(){
+        this(16);
+    }
+    
+    private BitArray(byte[] bits,int length){
+        this.bits=bits;
+        this.length=length;
+        
+    }
+    
+    
+    /**
+     * Wraps existing byte array into BitArray
+     * 
+     * @param bits
+     * @param length
+     * @return
+     * @since 23.1.2007
+     */
+    public static BitArray wrap(byte[] bits,int length){
+        return new BitArray(bits,length);
+    }
 
+    /**
+     * Resizes the BitArray to new size & initializes all
+     * bits to 0.
+     * 
+     * @param size
+     * @since 18.1.2007
+     */
+    public void resize(int size){
+        length = size;
+        if (length<1) throw new RuntimeException("Can't create ZERO length array !");
+        if (bits.length < ((size-1) / 8 + 1)){
+            bits = new byte[(size-1) / 8 + 1];
+        }
+        // init array
+        Arrays.fill(bits,(byte)0);
+       
+    }
+    
 	/**
-	 *  Sets the specified bit to 1/True
+	 *  Sets the specified bit to 1/True.
+     *  The index is ZERO based.
 	 *
 	 *@param  index  which bit to set
 	 */
@@ -60,12 +105,13 @@ public class BitArray {
 		if (index >= length) {
 			throw new IndexOutOfBoundsException();
 		}
-		bits[index / 8] |= (byte) (1 << (index % 8));
+		bits[index >> 3] |= (byte) (1 << (index % 8));
 	}
 
 
 	/**
-	 *  Re-sets the specified bit to 0/false
+	 *  Re-sets the specified bit to 0/false.
+     *  The index is ZERO based.
 	 *
 	 *@param  index  which bit to reset
 	 */
@@ -73,12 +119,21 @@ public class BitArray {
 		if (index >= length) {
 			throw new IndexOutOfBoundsException();
 		}
-		bits[index / 8] &= (~((byte) (1 << (index % 8))));
+		bits[index >> 3] &= (~((byte) (1 << (index % 8))));
 	}
 
+    
+    public final void resetAll(){
+        Arrays.fill(bits, (byte)0);
+    }
+    
+    public final void setAll(){
+        Arrays.fill(bits,(byte)0xFF);
+    }
 
 	/**
-	 *  Gets state of specified bit
+	 *  Gets state of specified bit.
+     *  The index is ZERO based.
 	 *
 	 *@param  index  which bit to check
 	 *@return        true/false according to bit state
@@ -88,7 +143,7 @@ public class BitArray {
 			throw new IndexOutOfBoundsException();
 		}
 		byte pattern = (byte) (1 << (index % 8));
-		return (bits[index / 8] & pattern) == pattern ? true : false;
+		return (bits[index >> 3] & pattern) == pattern ? true : false;
 	}
 
 
@@ -130,6 +185,16 @@ public class BitArray {
 		return str.toString();
 	}
 
+    public static final String toString(byte[] array) {
+        StringBuffer str = new StringBuffer(array.length * 8 *2  + 1);
+        str.append("|");
+        for (int i = 0; i < (array.length*8); i++) {
+            str.append(isSet(array,i) ? "1" : "0");
+            str.append("|");
+        }
+        return str.toString();
+    }
+    
 
 	/**
 	 *  Returns backing array of bytes<br>
@@ -140,28 +205,82 @@ public class BitArray {
 	public final byte[] getByteArray() {
 		return bits;
 	}
+	 
+    /**
+     *  Performs serialization of the internal value into ByteBuffer 
+     *
+     *@param  buffer  Description of Parameter
+     *@since          October 29, 2002
+     */
+    public void serialize(ByteBuffer buffer) {
+         buffer.put(bits);
+    }
 
-	   //this is for debugging only
-	   /*
-	   public static void main(String args[]){
-		   BitArray array=new BitArray(16);
-		   array.set(8);
-		   array.set(0);
-		   array.set(10);
-		   array.set(7);
-		   System.out.println(array.get(1));
-		   System.out.println(array.get(0));
-		   System.out.println(array.get(8));
-		   System.out.println(array.get(9));
-		   System.out.println(array.get(10));
-		   System.out.println(array);
-		   array.reset(10);
-		   array.set(1);
-		   array.reset(7);
-		   System.out.println(array.get(10));
-		   System.out.println(array);
-	   }
-	   */
+
+    /**
+     *  Performs deserialization of data
+     *
+     *@param  buffer  Description of Parameter
+     *@since          October 29, 2002
+     */
+    public void deserialize(ByteBuffer buffer) {
+        buffer.get(bits);
+    }
+
+    
+    /**
+     * How many bytes is needed to store specified number
+     * of bits.
+     * 
+     * @param bits
+     * @return
+     * @since 18.1.2007
+     */
+    public final static int bitsLength2Bytes(int bits){
+        return ((bits - 1)>> 3) + 1;
+    }
+    
+    /**
+     * Sets specified bit in array of bytes - counting
+     * from left.
+     * The bit parameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @since 18.1.2007
+     */
+    public final static void set(byte[] bytes,int bit){
+        bytes[bit >> 3] |= (byte) (1 << (bit % 8));
+    }
+    
+    /**
+     *  Gets status of specified bit in array of bytes - counting
+     * from left.
+     *  The bit parameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @return  true if set otherwise false
+     * @since 18.1.2007
+     */
+    public final static boolean isSet(byte[] bytes,int bit){
+        final byte pattern = (byte) (1 << (bit % 8));
+        return ((bytes[bit >> 3] & pattern) == pattern );
+    }
+    
+    
+    /**
+     * Resets specified bit in array of bytes - counting
+     * from left.
+     *  The bit parameter is ZERO based.
+     * 
+     * @param bytes
+     * @param bit
+     * @since 18.1.2007
+     */
+    public final static void reset(byte[] bytes, int bit){
+        bytes[bit >> 3] &= (~((byte) (1 << (bit % 8))));
+    }
 }
 /*
  *  End class BitArray
