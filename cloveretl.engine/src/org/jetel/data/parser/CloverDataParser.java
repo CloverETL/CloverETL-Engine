@@ -181,6 +181,7 @@ public class CloverDataParser implements Parser {
             int i=0;
             do {
                 ByteBufferUtils.reload(recordBuffer,recordFile);
+                recordBuffer.flip();
                 i++;
             }while (i*Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE < idx);
             recordBuffer.position((int)idx%Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -208,6 +209,7 @@ public class CloverDataParser implements Parser {
 		if (recordBuffer.remaining() < LEN_SIZE_SPECIFIER) {
 			try {
 				ByteBufferUtils.reload(recordBuffer,recordFile);
+				recordBuffer.flip();
 			} catch (IOException e) {
 				throw new JetelException(e.getLocalizedMessage());
 			}
