@@ -146,7 +146,7 @@ public class DirectEdge extends EdgeBase {
 	        }
 	        record.deserialize(readBuffer);
 	    }catch(BufferUnderflowException ex){
-	        throw new IOException(ex.getMessage());
+	        throw new IOException("BufferUnderflow when reading/deserializing record");
 	    }
         bufferedRecords.decrementAndGet();
         
@@ -183,7 +183,7 @@ public class DirectEdge extends EdgeBase {
 	        readBuffer.limit(readBufferLimit);
 	        record.flip();
 	    }catch(BufferUnderflowException ex){
-	        throw new IOException(ex.getMessage());
+            throw new IOException("BufferUnderflow when reading/deserializing record");
 	    }
         bufferedRecords.decrementAndGet();
 	    
@@ -331,7 +331,7 @@ public class DirectEdge extends EdgeBase {
             flushWriteBuffer();
             
 	    }catch(InterruptedException ex){
-	        throw new RuntimeException(ex.getClass().getName()+":"+ex.getMessage());
+	        throw new RuntimeException("Interrupted "+ex.getClass().getName()+":"+ex.getMessage());
 	    }
 	}
 
