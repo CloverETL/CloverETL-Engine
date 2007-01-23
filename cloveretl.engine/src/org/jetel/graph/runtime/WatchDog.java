@@ -290,9 +290,10 @@ public class WatchDog extends Thread implements CloverRuntime {
                     logger
                             .fatal("!!! Fatal Error !!! - graph execution is aborting");
                     logger.error("Node " + message.getSenderID()
-                            + " finished with error: " +
+                            + " finished with status: " +
                             ((ErrorMsgBody)message.getBody()).getErrorMessage()+
-                            "caused by:"+ causeException);
+                            " caused by: "+ causeException.getMessage());
+                    logger.debug("Node "+ message.getSenderID()+" error details:", causeException);
                     abort();
                     // printProcessingStatus(phase.getNodes().iterator(),
                     // phase.getPhaseNum());
