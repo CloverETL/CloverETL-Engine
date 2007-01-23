@@ -26,6 +26,7 @@ import java.util.Arrays;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.BitArray;
 
 /**
  *  A class that represents one data record with structure based on provided
@@ -42,11 +43,14 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DataRecord implements Serializable, Comparable {
 
+    private static ThreadLocal<byte[]> NULLs_BYTE_BUFFER = new ThreadLocal<byte[]>();
+    private static final boolean HANDLE_NULLABLE = false;
+    
 	/**
      * Currently not used
 	 * @since
 	 */
-	private transient String codeClassName;
+	// private transient String codeClassName;
 
 	/**
      * Array for holding data fields
@@ -243,9 +247,23 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-		for (int i = 0; i < fields.length; i++) {
-			fields[i].deserialize(buffer);
-		}
+        if (HANDLE_NULLABLE && metadata.isNullable()) {
+          BitArray bits=new BitArray(fields.length);
+          bits.deserialize(buffer);
+          for (int i=0;i<fields.length;i++){
+              if (bits.isSet(i)){
+                  fields[i].setNull(true);
+              }else{
+                  fields[i].deserialize(buffer);
+              }
+          }
+          
+        } else {
+
+            for (int i = 0; i < fields.length; i++) {
+                fields[i].deserialize(buffer);
+            }
+        }
 	}
 
 
@@ -315,7 +333,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @return    The codeClassName value
 	 */
 	public String getCodeClassName() {
-		return codeClassName;
+		return ""; //codeClassName;
 	}
 
 
@@ -401,10 +419,28 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		for (int i = 0; i < fields.length; i++) {
-			fields[i].serialize(buffer);
-		}
-	}
+        if (HANDLE_NULLABLE && metadata.isNullable()) {
+           BitArray bits=new BitArray(fields.length);
+           buffer.mark();
+           bits.serialize(buffer);
+           for(int i=0;i<fields.length;i++){
+               if (fields[i].isNull){
+                   bits.set(i);
+               }else{
+                   fields[i].serialize(buffer);
+               }
+           }
+           final int pos=buffer.position();
+           buffer.reset();
+           bits.serialize(buffer);
+           buffer.position(pos);
+           
+        } else {
+            for (int i = 0; i < fields.length; i++) {
+                fields[i].serialize(buffer);
+            }
+        }
+    }
 
 
 	/**
@@ -413,7 +449,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @param  codeClassName  The new codeClassName value
 	 */
 	public void setCodeClassName(String codeClassName) {
-		this.codeClassName = codeClassName;
+		// this.codeClassName = codeClassName;
 	}
 
 
@@ -526,8 +562,21 @@ public class DataRecord implements Serializable, Comparable {
 	 * @return    The size value
 	 */
 	public int getSizeSerialized() {
-		int size=0;
-		for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
+        System.err.println("getSize");
+        int size=0;
+        int inNull=0;
+        if (metadata.isNullable()){
+            for (int i = 0; i < fields.length;i++){
+                if (fields[i].isNull()){
+                    inNull++;
+                }else{
+                    size+=fields[i].getSizeSerialized(); 
+                }
+            }
+            size+=BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
+        }else{
+            for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
+        }
 		return size;
 	}
 	
