@@ -25,6 +25,7 @@ import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -104,18 +105,7 @@ public class CloverDataFormatter implements Formatter {
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
         buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-        if (saveIndex) {//create temporary index file
-            String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
-            idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
-            try{
-                idxWriter = Channels.newChannel(new DataOutputStream(
-                        new FileOutputStream(idxTmpFile)));
-            }catch(IOException ex){
-                throw new ComponentNotReadyException(ex);
-            }
-            idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-        }
-	}
+ 	}
 
     /* (non-Javadoc)
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
@@ -128,6 +118,17 @@ public class CloverDataFormatter implements Formatter {
             this.out = (FileOutputStream)outputDataTarget;
         }
         writer = Channels.newChannel(this.out);
+        if (saveIndex) {//create temporary index file
+            String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+            idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
+            try{
+                idxWriter = Channels.newChannel(new DataOutputStream(
+                        new FileOutputStream(idxTmpFile)));
+            }catch(FileNotFoundException ex){
+                throw new RuntimeException(ex);
+            }
+            idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+        }
     }
 
 	
@@ -144,9 +145,8 @@ public class CloverDataFormatter implements Formatter {
 					ByteBufferUtils.flush(idxBuffer,idxWriter);
 					idxWriter.close();
 					ByteBufferUtils.reload(idxBuffer,idxReader);
-				}else{
-					idxBuffer.flip();
 				}
+				idxBuffer.flip();
 				long startValue = 0;//first index
 				int position;
 				if (out instanceof ZipOutputStream) {
@@ -226,6 +226,7 @@ public class CloverDataFormatter implements Formatter {
 		while (buffer.remaining() >= LONG_SIZE_BYTES){
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//end of idxBuffer, reload it
 				ByteBufferUtils.reload(idxBuffer,idxReader);
+				idxBuffer.flip();
 			}
 			if (idxBuffer.remaining() < SHORT_SIZE_BYTES ){//there is no more sizes to working up
 				break;
