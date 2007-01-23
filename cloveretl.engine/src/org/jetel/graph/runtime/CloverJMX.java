@@ -95,9 +95,8 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         return "";
     }
 
-    public List getNodesList(){
-       return new LinkedList(trackingMap.keySet());
-        // return (String[])trackingMap.keySet().toArray(new String[trackingMap.size()]);
+    public String[] getNodesList(){
+         return trackingMap.keySet().toArray(new String[trackingMap.size()]);
     }
     
     public int getUpdateInterval() {
@@ -116,9 +115,6 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
     
     public synchronized void updated() { 
-      
-        System.out.println("MBEAN was updetd"); 
- 
         Notification n = 
             new AttributeChangeNotification(this, 
                         sequenceNumber++, 
@@ -128,6 +124,20 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
                         "int", 
                         -1/*oldSize*/, 
                         1/*this.cacheSize*/); 
+ 
+    sendNotification(n); 
+    } 
+    
+    public synchronized void phaseUpdated() { 
+        Notification n = 
+            new AttributeChangeNotification(this, 
+                        sequenceNumber++, 
+                        System.currentTimeMillis(), 
+                        "Phase updated", 
+                        "Phase", 
+                        "int", 
+                        -1/*oldSize*/, 
+                        runingPhase); 
  
     sendNotification(n); 
     } 
@@ -158,6 +168,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
      */
     public void setRuningPhase(int runingPhase) {
         this.runingPhase = runingPhase;
+        phaseUpdated();
     }
 
     /**

@@ -37,7 +37,7 @@ public interface CloverJMXMBean {
     public long getRunningGraphTime();
     
     public int getRunningNodesCount();
-    public List getNodesList();
+    public String[] getNodesList();
     
     public TrackingDetail getTrackingDetail(String nodeID);
     public String getTrackingDetailString(String nodeID);
