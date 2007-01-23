@@ -191,6 +191,16 @@ public class CloverDataWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 	
+	@Override
+	public synchronized void free() {
+		super.free();
+		formatter.close();
+		try {
+			out.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
