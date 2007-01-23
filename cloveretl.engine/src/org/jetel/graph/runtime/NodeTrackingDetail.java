@@ -48,6 +48,8 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     private long totalCPUTime;
     private long totalUserTime;
     private float usageCPU;
+    private float peakUsageCPU;
+    private float peakUsageUser;
     private float usageUser;
     private int avgWaitingTime;
     private int waitingRows[];
@@ -69,6 +71,7 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     public void clear(){
         timestamp=timespan=0;
         totalUserTime=totalCPUTime=0;
+        peakUsageCPU=peakUsageUser=0;
         /*Arrays.fill(totalRows,0);
         Arrays.fill(totalBytes,0);
         Arrays.fill(avgRows,0);
@@ -158,8 +161,10 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     public void updateRunTime(long cpuTime,long userTime,long systemTime){
         double time=cpuTime;
         usageCPU=(float)time/systemTime;
+        if (usageCPU>peakUsageCPU) peakUsageCPU=usageCPU;
         time=userTime;
         usageUser=(float)time/systemTime;
+        if (usageUser>peakUsageUser) peakUsageUser=usageUser;
         if (cpuTime<0) return;
         totalCPUTime=cpuTime;
         totalUserTime=userTime;
@@ -225,6 +230,22 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
      */
     public float getUsageUser() {
         return usageUser;
+    }
+
+    /**
+     * @return the peakUsageCPU
+     * @since 23.1.2007
+     */
+    public float getPeakUsageCPU() {
+        return peakUsageCPU;
+    }
+
+    /**
+     * @return the peakUsageUser
+     * @since 23.1.2007
+     */
+    public float getPeakUsageUser() {
+        return peakUsageUser;
     }
     
 }
