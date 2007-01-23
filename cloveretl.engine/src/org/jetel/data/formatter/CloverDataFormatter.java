@@ -76,6 +76,7 @@ public class CloverDataFormatter implements Formatter {
 	private File idxTmpFile;
 	private ReadableByteChannel idxReader;
 	private boolean append;
+	private boolean isOpen = false;
 	
 	private final static short LEN_SIZE_SPECIFIER = 4;
 	private final static int SHORT_SIZE_BYTES = 2;
@@ -129,6 +130,7 @@ public class CloverDataFormatter implements Formatter {
             }
             idxBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
         }
+        isOpen = true;
     }
 
 	
@@ -137,6 +139,7 @@ public class CloverDataFormatter implements Formatter {
 	 * @see org.jetel.data.formatter.Formatter#close()
 	 */
 	public void close() {
+		if (!isOpen) return;
 		try{
 			flush();
 			if (saveIndex) {
@@ -208,6 +211,7 @@ public class CloverDataFormatter implements Formatter {
 			}else{
 				out.close();
 			}
+			isOpen = false;
 		}catch(IOException ex){
 			ex.printStackTrace();
 		}
