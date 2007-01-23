@@ -54,11 +54,11 @@ public final class ByteBufferUtils {
 	 */
 	public static int flush(ByteBuffer buffer, WritableByteChannel writer)
 			throws IOException {
-		int write;
+		int write = 0;
 		if (buffer.position() != 0) {
 			buffer.flip();
+			write = writer.write(buffer);
 		}
-		write = writer.write(buffer);
 		buffer.clear();
 		return write;
 	}
