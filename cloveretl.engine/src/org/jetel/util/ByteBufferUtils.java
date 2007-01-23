@@ -55,9 +55,7 @@ public final class ByteBufferUtils {
 	public static int flush(ByteBuffer buffer, WritableByteChannel writer)
 			throws IOException {
 		int write = 0;
-//		if (buffer.position() != 0) {
-			buffer.flip();
-//		}
+		buffer.flip();
 		write = writer.write(buffer);
 		buffer.clear();
 		return write;
@@ -81,7 +79,6 @@ public final class ByteBufferUtils {
 			buffer.compact();
 		}
 		read = reader.read(buffer);
-//		buffer.flip();
 		return read;
 	}
 
