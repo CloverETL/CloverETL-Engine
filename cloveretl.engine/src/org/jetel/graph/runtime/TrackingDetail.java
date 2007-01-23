@@ -47,6 +47,8 @@ public interface TrackingDetail {
     public int getNumOutputPorts();
     public Result getResult();
     public float getUsageCPU();
+    public float getPeakUsageCPU();
     public float getUsageUser();
+    public float getPeakUsageUser();
     
 }
