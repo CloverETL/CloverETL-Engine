@@ -44,8 +44,8 @@ import org.jetel.data.Defaults;
 public final class ByteBufferUtils {
 	
 	/**
-	 * This method flushes the buffer to the Channel and prepares it for next
-	 *  reading
+	 * This method flushes the buffer (data from the begging of buffer to position) 
+	 * 	to the Channel and prepares it for next reading
 	 * 
 	 * @param buffer
 	 * @param writer
@@ -55,16 +55,20 @@ public final class ByteBufferUtils {
 	public static int flush(ByteBuffer buffer, WritableByteChannel writer)
 			throws IOException {
 		int write = 0;
-		if (buffer.position() != 0) {
+//		if (buffer.position() != 0) {
 			buffer.flip();
-			write = writer.write(buffer);
-		}
+//		}
+		write = writer.write(buffer);
 		buffer.clear();
 		return write;
 	}
 	
 	/**
-	 * This method reads new data to the buffer 
+	 * This method reads new data to the buffer. The bytes between the buffer's 
+	 * current position and its limit are copied to the beginning of the buffer 
+	 * and new bytes are read after them. Upon return the buffer's position will 
+	 * be equal to p + n, where p is number of compacted bytes an n - number of 
+	 * read bytes; its limit will be set to capacity. 
 	 * 
 	 * @param buffer
 	 * @param reader
@@ -77,7 +81,7 @@ public final class ByteBufferUtils {
 			buffer.compact();
 		}
 		read = reader.read(buffer);
-		buffer.flip();
+//		buffer.flip();
 		return read;
 	}
 
