@@ -1,63 +1,63 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.5" licenseType="Evaluation license" modified="Tue Oct 31 09:00:37 CET 2006" name="graphCLOVERData" revision="1.27">
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Jan 24 10:05:43 CET 2007" name="graphCLOVERData" revision="1.28">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" recordDelimiter="\n" type="fixed">
-<Field name="customer_id" nullable="true" size="4" type="integer"/>
-<Field name="account_num" nullable="true" size="11" type="long"/>
-<Field name="lname" nullable="true" size="10" type="string"/>
-<Field name="fname" nullable="true" size="10" type="string"/>
-<Field name="mi" nullable="true" size="4" type="string"/>
-<Field name="address1" nullable="true" size="30" type="string"/>
-<Field name="city" nullable="true" size="7" type="string"/>
-<Field name="state_province" nullable="true" size="6" type="string"/>
-<Field name="postal_code" nullable="true" size="5" type="string"/>
-<Field name="country" nullable="true" size="5" type="string"/>
-<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
-<Field name="phone1" nullable="true" size="12" type="string"/>
-<Field name="phone2" nullable="true" size="12" type="string"/>
-<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="15" type="date"/>
-<Field name="marital_status" nullable="true" size="1" type="string"/>
-<Field name="yearly_income" nullable="true" size="13" type="string"/>
-<Field name="gender" nullable="true" size="1" type="string"/>
-<Field name="total_children" nullable="true" size="1" type="integer"/>
-<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
-<Field name="education" nullable="true" size="15" type="string"/>
-<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
-<Field name="member_card" nullable="true" size="8" type="string"/>
-<Field name="occupation" nullable="true" size="20" type="string"/>
-<Field name="houseowner" nullable="true" size="1" type="string"/>
-<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+<Record name="customer" recordDelimiter="&#10;" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
-<Record name="customer1" type="fixed">
-<Field name="customer_id" nullable="true" size="4" type="integer"/>
-<Field name="account_num" nullable="true" size="11" type="long"/>
-<Field name="lname" nullable="true" size="10" type="string"/>
-<Field name="fname" nullable="true" size="10" type="string"/>
-<Field name="mi" nullable="true" size="4" type="string"/>
-<Field name="address1" nullable="true" size="30" type="string"/>
-<Field name="city" nullable="true" size="7" type="string"/>
-<Field name="state_province" nullable="true" size="6" type="string"/>
-<Field name="postal_code" nullable="true" size="5" type="string"/>
-<Field name="country" nullable="true" size="5" type="string"/>
-<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
-<Field name="phone1" nullable="true" size="12" type="string"/>
-<Field name="phone2" nullable="true" size="12" type="string"/>
-<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="15" type="date"/>
-<Field name="marital_status" nullable="true" size="1" type="string"/>
-<Field name="yearly_income" nullable="true" size="13" type="string"/>
-<Field name="gender" nullable="true" size="1" type="string"/>
-<Field name="total_children" nullable="true" size="1" type="integer"/>
-<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
-<Field name="education" nullable="true" size="15" type="string"/>
-<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
-<Field name="member_card" nullable="true" size="8" type="string"/>
-<Field name="occupation" nullable="true" size="20" type="string"/>
-<Field name="houseowner" nullable="true" size="1" type="string"/>
-<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
-<Field name="size" nullable="true" size="10" type="integer"/>
+<Record name="customer1" recordSize="222" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="size" nullable="true" shift="0" size="10" type="integer"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
@@ -65,22 +65,17 @@
 <Phase number="0">
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv.zip" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="558" guiY="118" id="CLOVER_WRITER0" saveIndex="true" saveMetadata="true" type="CLOVER_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="328" guiY="118" id="CONCATENATE0" type="CONCATENATE"/>
-<Node enableIncomplete="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.???" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="50" guiY="44" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
+<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.???" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="50" guiY="44" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
 <attr name="OneRecordPerLine">true</attr>
 </Node>
-<Node enableIncomplete="true" enabled="enabled" fileURL="zip:${WORKSPACE}/data/data.zip#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="48" guiY="168" id="FIXLEN_DATA_READER1" type="FIXLEN_DATA_READER"/>
+<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="zip:${WORKSPACE}/data/data.zip#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="48" guiY="168" id="FIXLEN_DATA_READER1" type="FIXLEN_DATA_READER"/>
 <Edge debugMode="false" fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge2" inPort="0 (CLOVER Data Writer)" metadata="Metadata0" outPort="0 (Concatenate)" toNode="CLOVER_WRITER0:0"/>
 <Edge debugMode="false" fromNode="FIXLEN_DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="1 (Concatenate)" metadata="Metadata0" outPort="0 (customer from file)" toNode="CONCATENATE0:1"/>
 <Edge debugMode="false" fromNode="FIXLEN_DATA_READER1:0" guiBendpoints="" id="Edge8" inPort="0 (Concatenate)" metadata="Metadata0" outPort="0 (Fixed Length Data Reader)" toNode="CONCATENATE0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv.zip" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="55" guiY="296" id="CLOVER_READER0" startRecord="10000" type="CLOVER_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/strucured_customers.txt" guiHeight="0" guiName="Structured Data Writer" guiWidth="0" guiX="559" guiY="296" id="STRUCTURE_WRITER0" type="STRUCTURE_WRITER">
-<attr name="mask">&lt;Customer id=$customer_id&gt;
-	&lt;last name = $lname&gt;
-	&lt;first name = $fname&gt;
-&lt;/Customer&gt;
-</attr>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv.zip" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="55" guiY="296" id="CLOVER_READER0" indexFileURL="Index file URL&#9;" startRecord="10" type="CLOVER_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/strucured_customers.txt" guiHeight="0" guiName="Structured Data Writer" guiWidth="0" guiX="559" guiY="296" id="STRUCTURE_WRITER0" mask="&lt;Customer id=$customer_id&gt;&#10;&#9;&lt;last name = $lname&gt;&#10;&#9;&lt;first name = $fname&gt;&#10;&lt;/Customer&gt;&#10;" type="STRUCTURE_WRITER">
 <attr name="header">dir = ${WORKSPACE}
 </attr>
 <attr name="footer">
