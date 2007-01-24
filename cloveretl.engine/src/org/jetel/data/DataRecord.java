@@ -183,6 +183,7 @@ public class DataRecord implements Serializable, Comparable {
 	public boolean[] copyFieldsByName(DataRecord sourceRecord) {
         boolean[] result = new boolean[fields.length];
         Arrays.fill(result, false);
+        if (sourceRecord == null) return result;
         DataField sourceField;
         DataField targetField;
         int sourceLength = sourceRecord.getMetadata().getNumFields();
