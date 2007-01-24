@@ -149,7 +149,7 @@ public class DataGenerator extends Node {
 	private final int MOVE = 3;
 
 	private String pattern;
-	private DataRecord patternRecord;
+	private DataRecord patternRecord = null;
 	private Parser parser;
 	private DataRecordMetadata metadata;
 	private DataRecord record;
@@ -300,8 +300,12 @@ public class DataGenerator extends Node {
         		sequenceIndex = StringUtils.findString(metadata.getField(i).getName(), 
         				sequenceFields);
         		if (sequenceIndex > -1){//field found among sequence fields
-            		cutMetadata.delField(metadata.getField(i).getName());
-            		if (sequenceIDs[sequenceIndex] == null){//not given sequence id
+					if (cutMetadata.getNumFields() > 1) {
+						cutMetadata.delField(metadata.getField(i).getName());
+					}else{
+						cutMetadata = null;
+					}
+					if (sequenceIDs[sequenceIndex] == null){//not given sequence id
             			//find any sequence in graph
             			specialValue[i][0]  = getGraph().getSequences().hasNext() ? (String)getGraph().getSequences().next() : null;
 						if (specialValue[i][0] == null) {
@@ -320,30 +324,34 @@ public class DataGenerator extends Node {
 		}else{
 			random = new Random();
 		}
-		//prepare approperiate data parser
-        switch (metadata.getRecType()) {
-		case DataRecordMetadata.DELIMITED_RECORD:
-			parser = new DelimitedDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
-			break;
-		case DataRecordMetadata.FIXEDLEN_RECORD:
-			parser = new FixLenCharDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
-			break;
-		default:
-			parser = new DataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
-			break;
-		}
-		parser.init(cutMetadata);
-		try {
-			parser.setDataSource(new ByteArrayInputStream(pattern.getBytes(
-					Defaults.DataParser.DEFAULT_CHARSET_DECODER)));
-		} catch (UnsupportedEncodingException e1) {
-		}
-		try {
-			patternRecord = parser.getNext();
-		} catch (JetelException e) {
-			throw new ComponentNotReadyException(this,e);
-		}
-		parser.close();
+		if (cutMetadata != null) {
+			//prepare approperiate data parser
+			switch (metadata.getRecType()) {
+			case DataRecordMetadata.DELIMITED_RECORD:
+				parser = new DelimitedDataParser(
+						Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				break;
+			case DataRecordMetadata.FIXEDLEN_RECORD:
+				parser = new FixLenCharDataParser(
+						Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				break;
+			default:
+				parser = new DataParser(
+						Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+				break;
+			}
+			parser.init(cutMetadata);
+			try {
+				parser.setDataSource(new ByteArrayInputStream(pattern.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER)));
+			} catch (UnsupportedEncodingException e1) {
+			}
+			try {
+				patternRecord = parser.getNext();
+			} catch (JetelException e) {
+				throw new ComponentNotReadyException(this, e);
+			}
+			parser.close();
+		}		
 	}
 	
 
@@ -495,7 +503,7 @@ public class DataGenerator extends Node {
 
 		try {
 			dataGenerator = new DataGenerator(xattribs.getString(XML_ID_ATTRIBUTE), 
-					xattribs.getString(XML_PATTERN_ATTRIBUTE), 
+					xattribs.getString(XML_PATTERN_ATTRIBUTE,""), 
 					xattribs.getInteger(XML_RECORDS_NUMBER_ATTRIBUTE));
 			if (xattribs.exists(XML_RANDOM_FIELDS_ATTRIBUTE)){
 				dataGenerator.setRandomFields(xattribs.getString(XML_RANDOM_FIELDS_ATTRIBUTE));
