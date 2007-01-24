@@ -1,41 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph demonstrates how to use MERGE_JOIN component for 3way join." name="Testing Hash Joiner">
+<Graph created="Tue Jan 16 09:47:22 CET 2007" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Jan 24 09:27:14 CET 2007" name="test" revision="1.60">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata1"/>
-<Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
-<Metadata fileURL="metadata/joinedOrders3way.fmt" id="OutMetadata"/>
+<Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/joinedOrders3way.fmt" id="Metadata1"/>
+<Metadata fileURL="metadata/ordersFix.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" id="INPUT1" type="DELIMITED_DATA_READER"
-fileURL="${WORKSPACE}/data/orders.dat"
-/>
-<Node enabled="enabled" id="INPUT2" type="DELIMITED_DATA_READER"
-fileURL="${WORKSPACE}/data/employees.dat"
-/>
-<Node enabled="enabled" id="INPUT3" type="DELIMITED_DATA_READER"
-fileURL="${WORKSPACE}/data/employees.dat"
-/>
-
-<Node enabled="enabled" id="SORT1" type="SORT"
-sortKey="EmployeeID" 
-/>
-<Node enabled="enabled" id="SORT2" type="SORT"
-sortKey="EmployeeID" 
-/>
-<Node enabled="enabled" id="SORT3" type="SORT"
-sortKey="ReportsTo" 
-/>
-
-<Edge fromNode="INPUT1:0" id="INEDGE1s" metadata="InMetadata1"  toNode="SORT1:0"/>
-<Edge fromNode="INPUT2:0" id="INEDGE2s" metadata="InMetadata2"  toNode="SORT2:0"/>
-<Edge fromNode="INPUT3:0" id="INEDGE3s" metadata="InMetadata2"  toNode="SORT3:0"/>
-
-<Node enabled="enabled" id="JOIN" type="MERGE_JOIN"
-joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo"
-joinType="leftOuter"
-slaveDuplicates="true"
-><attr name="transform">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="47" guiY="276" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="47" guiY="190" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="0" guiName="Delimited Data Writer" guiWidth="0" guiX="656" guiY="190" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="83" id="EXT_SORT0" sortKey="EmployeeID" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="190" id="EXT_SORT1" sortKey="EmployeeID" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="276" id="EXT_SORT2" sortKey="ReportsTo" type="EXT_SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="480" guiY="190" id="MERGE_JOIN1" joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo" type="MERGE_JOIN">
+<attr name="transform">
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
@@ -67,14 +46,13 @@ public class reformatJoinTest extends DataRecordTransform{
 
 </attr>
 </Node>
-
-<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
-
-<Edge fromNode="SORT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (INPUT1)" toNode="JOIN:0"/>
-<Edge fromNode="SORT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (JOIN)" metadata="InMetadata2" outPort="0 (INPUT2)" toNode="JOIN:1"/>
-<Edge fromNode="SORT3:0" guiBendpoints="" id="INEDGE3" inPort="2 (JOIN)" metadata="InMetadata2" outPort="0 (INPUT3)" toNode="JOIN:2"/>
-
-<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="WRITER:0"/>
-
+<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${WORKSPACE}/data/orders2.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="48" guiY="83" id="XLS_READER0" metadataRow="1" startRow="2" type="XLS_READER"/>
+<Edge fromNode="DATA_READER0:0" guiBendpoints="" id="Edge2" inPort="0 (Ext Sort)" metadata="Metadata0" outPort="0 (Universal Data Reader)" toNode="EXT_SORT2:0"/>
+<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (Ext Sort)" metadata="Metadata0" outPort="0 (Delimited Data Reader)" toNode="EXT_SORT1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT0:0" guiBendpoints="" id="Edge3" inPort="0 (Ext Merge Join)" metadata="Metadata2" outPort="0 (Ext Sort)" toNode="MERGE_JOIN1:0"/>
+<Edge debugMode="false" fromNode="EXT_SORT1:0" guiBendpoints="" id="Edge4" inPort="1 (Ext Merge Join)" metadata="Metadata0" outPort="0 (Ext Sort)" toNode="MERGE_JOIN1:1"/>
+<Edge debugMode="false" fromNode="EXT_SORT2:0" guiBendpoints="" id="Edge5" inPort="2 (Ext Merge Join)" metadata="Metadata0" outPort="0 (Ext Sort)" toNode="MERGE_JOIN1:2"/>
+<Edge debugMode="false" fromNode="MERGE_JOIN1:0" guiBendpoints="" id="Edge6" inPort="0 (Delimited Data Writer)" metadata="Metadata1" outPort="0 (Ext Merge Join)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (Ext Sort)" metadata="Metadata2" outPort="0 (XLS Data Reader)" toNode="EXT_SORT0:0"/>
 </Phase>
 </Graph>
