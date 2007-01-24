@@ -190,9 +190,11 @@ public class DBExecute extends Node {
                 throw new ComponentNotReadyException("Connection with ID: " + dbConnectionName + " isn't instance of the DBConnection class.");
             }
             dbConnection = (DBConnection) conn;
-            dbConnection.init();
 	    }
-        if (dbSQL==null){
+		if (!dbConnection.isInitialized()) {
+			dbConnection.init();
+		}        
+		if (dbSQL==null){
             String delimiter = sqlStatementDelimiter !=null ? sqlStatementDelimiter : DEFAULT_SQL_STATEMENT_DELIMITER;
             dbSQL=sqlQuery.split(delimiter);
         }
