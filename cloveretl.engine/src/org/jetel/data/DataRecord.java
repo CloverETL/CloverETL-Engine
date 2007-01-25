@@ -563,7 +563,6 @@ public class DataRecord implements Serializable, Comparable {
 	 * @return    The size value
 	 */
 	public int getSizeSerialized() {
-        System.err.println("getSize");
         int size=0;
         int inNull=0;
         if (metadata.isNullable()){
@@ -574,7 +573,7 @@ public class DataRecord implements Serializable, Comparable {
                     size+=fields[i].getSizeSerialized(); 
                 }
             }
-            size+=BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
+            size+=BitArray.bitsLength2Bytes(fields.length);
         }else{
             for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
         }
