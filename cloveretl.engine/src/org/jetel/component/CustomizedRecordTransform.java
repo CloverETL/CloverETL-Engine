@@ -1417,7 +1417,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
-							break;
 						}
 					}
 				}				
@@ -1431,11 +1430,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findString(outFieldsName[i][j],
 								inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, i, index, rule, transformMap)){
+							if (putMapping(i, j, k, index, rule, transformMap)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
-								break;
 							}
 						}
 					}					
@@ -1453,7 +1451,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 							count++;
 							outFieldsName[i][j] = null;
 							inFieldsName[i][index] = null;
-							break;
 						}
 					}
 				}				
@@ -1467,11 +1464,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 						index = StringUtils.findStringIgnoreCase(
 								outFieldsName[i][j], inFieldsName[k]);
 						if (index > -1) {//output field name found amoung input fields
-							if (putMapping(i, j, i, index, rule, transformMap)){
+							if (putMapping(i, j, k, index, rule, transformMap)){
 								count++;
 								outFieldsName[i][j] = null;
 								inFieldsName[k][index] = null;
-								break;
 							}
 						}
 					}					
