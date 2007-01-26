@@ -46,7 +46,7 @@ public class StringUtils {
 	 *      text representation (i.e.\n -> "\n" )
 	 * @since                 July 25, 2002
 	 */
-	public static String specCharToString(String controlString) {
+	public static String specCharToString(CharSequence controlString) {
 		StringBuffer copy = new StringBuffer();
 		char character;
 		for (int i = 0; i < controlString.length(); i++) {
@@ -83,8 +83,8 @@ public class StringUtils {
 	 * @return                String with control characters
 	 * @since                 July 25, 2002
 	 */
-	public static String stringToSpecChar(String controlString) {
-		if(controlString == null) {
+	public static String stringToSpecChar(CharSequence controlString) {
+		if(isEmpty(controlString)) {
 			return null;
 		}
 		StringBuffer copy = new StringBuffer();
@@ -429,7 +429,7 @@ public class StringUtils {
 		return stringArraytoString(strings,' ');
 	} 
   
-    public static boolean isEmpty(String s) {
+    public static boolean isEmpty(CharSequence s) {
         return s == null || s.length() == 0;
     }
 
