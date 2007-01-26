@@ -35,8 +35,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.StringUtils;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 /**
  *  <h3>Sequence Checker Component</h3>
@@ -142,6 +142,7 @@ public class SequenceChecker extends Node {
 		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
 		records[0].init();
 		records[1].init();
+		Result result = Result.FINISHED_OK;
 		
 		while ((records[current] = inPort.readRecord(records[current])) != null && runIt) {
 			if (isFirst) {
@@ -150,13 +151,18 @@ public class SequenceChecker extends Node {
 				compareResult = recordComparator.compare(records[current], records[previous]);
 
 				if (compareResult == 0) {
-					if (uniqueKeys) 
-						return Result.ERROR;
+					if (uniqueKeys) {
+						result = Result.ERROR;
+						break;
+					}
 				} else if (compareResult > 0) {
-					if (!sortOrderAscending) 
-						return Result.ERROR;
+					if (!sortOrderAscending) {
+						result = Result.ERROR;
+						break;
+					}
 				} else if (sortOrderAscending) {
-					return Result.ERROR;
+					result = Result.ERROR;
+					break;
 				}
 			}
 			
@@ -167,7 +173,7 @@ public class SequenceChecker extends Node {
 			previous = previous ^ 1;
 		}
 		if (isOutPort) broadcastEOF();
-        return runIt ? Result.FINISHED_OK : Result.ABORTED;
+        return runIt ? result : Result.ABORTED;
 	}
 
 	@Override
