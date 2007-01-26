@@ -142,7 +142,7 @@ public class SequenceChecker extends Node {
 		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
 		records[0].init();
 		records[1].init();
-		Result result = Result.FINISHED_OK;
+		boolean error = false; 
 		
 		while ((records[current] = inPort.readRecord(records[current])) != null && runIt) {
 			if (isFirst) {
@@ -152,16 +152,16 @@ public class SequenceChecker extends Node {
 
 				if (compareResult == 0) {
 					if (uniqueKeys) {
-						result = Result.ERROR;
+						error = true;
 						break;
 					}
 				} else if (compareResult > 0) {
 					if (!sortOrderAscending) {
-						result = Result.ERROR;
+						error = true;
 						break;
 					}
 				} else if (sortOrderAscending) {
-					result = Result.ERROR;
+					error = true;
 					break;
 				}
 			}
@@ -173,6 +173,7 @@ public class SequenceChecker extends Node {
 			previous = previous ^ 1;
 		}
 		if (isOutPort) broadcastEOF();
+		Result result = error ? Result.ERROR : Result.FINISHED_OK;
         return runIt ? result : Result.ABORTED;
 	}
 
