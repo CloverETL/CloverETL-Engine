@@ -390,7 +390,10 @@ public class DelimitedDataParser implements Parser {
                             try{
                                 fieldStringBuffer.put((char) character);
                             }catch(BufferOverflowException ex){
-                                throw new IOException("Field too long or can not find delimiter ["+String.valueOf(delimiters[fieldCounter])+"]");
+                                throw new IOException(
+										"Field too long or can not find delimiter ["
+												+ StringUtils.specCharToString(String
+																.valueOf(delimiters[fieldCounter]))						+ "]\n");
                             }
 						}
 						delimiterPosition = 0;
