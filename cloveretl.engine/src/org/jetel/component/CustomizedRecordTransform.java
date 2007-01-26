@@ -1617,9 +1617,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 				sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
 						: ruleString.substring(0, ruleString.indexOf(DOT));
 				try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
 								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
-										.getValue(getGraph().getSequence(sequenceID)));
+										.getValue(getGraph().getSequence(sequenceID)).toString());
 					} catch (BadDataFormatException e) {
 						errorMessage = "Can't set value from sequence " + sequenceID + 
 							" to field " + targetMetadata[order[i][REC_NO]].getName() + 
