@@ -301,42 +301,17 @@ public class LookupJoin extends Node {
         checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 1, 1);
 
-        try {
-        	
-    		lookupTable = getGraph().getLookupTable(lookupTableName);
-    		if (lookupTable == null) {
-    			throw new ComponentNotReadyException("Lookup table \""
-    					+ lookupTableName + "\" not found.");
-    		}
-    		if (!lookupTable.isInitialized()) {
-    			lookupTable.init();
-    		}
-    		lookupMetadata = lookupTable.getMetadata();
-    		DataRecordMetadata inMetadata[] = {
-    				getInputPort(READ_FROM_PORT).getMetadata(), lookupMetadata };
-    		DataRecordMetadata outMetadata[] = { getOutputPort(WRITE_TO_PORT)
-    				.getMetadata() };
-    		try {
-    			recordKey = new RecordKey(joinKey, inMetadata[0]);
-    			recordKey.init();
-    			lookupTable.setLookupKey(recordKey);
-    		} catch (Exception e) {
-    			throw new ComponentNotReadyException(this, e);
-    		}
-        	
-        	
-    		if (freeLookupTable) {
-    			lookupTable.free();
-    		}
-//            init();
-//            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+ 
+//        try {
+////            init();
+////            free();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
 	}
