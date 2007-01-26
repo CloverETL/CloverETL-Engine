@@ -43,6 +43,7 @@ import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.QuotingDecoder;
+import org.jetel.util.StringUtils;
 
 /**
  *  Parsing delimited text data. Supports delimiters with the length of up to 32
@@ -450,11 +451,13 @@ public class DelimitedDataParser implements Parser {
 			record.getField(fieldNum).fromString(strData);
 		} catch (BadDataFormatException bdfe) {
 			if(exceptionHandler != null ) {  //use handler only if configured
-                exceptionHandler.populateHandler(getErrorMessage(bdfe.getMessage(),data,recordCounter, fieldNum), record, -1, fieldNum, strData, bdfe);
+                exceptionHandler.populateHandler(getErrorMessage(bdfe
+						.getMessage(), data, recordCounter, fieldNum), record,
+						-1, fieldNum, "\"" + StringUtils.specCharToString(strData) + "\"", bdfe);
 			} else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
-                bdfe.setOffendingValue(strData);
+                bdfe.setOffendingValue("\"" + StringUtils.specCharToString(strData) + "\"");
                 throw bdfe;
 			}
 		} catch (Exception ex) {
