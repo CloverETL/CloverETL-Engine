@@ -18,7 +18,6 @@
 *
 */
 package org.jetel.util;
-import java.lang.IndexOutOfBoundsException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 /**
@@ -35,6 +34,7 @@ public class BitArray {
 
 	private  byte bits[];
 	private  int length;
+    private  int lengthBytes;
 
 
 	/**
@@ -45,7 +45,8 @@ public class BitArray {
 	public BitArray(int size) {
 		length = size;
 		if (length<1) throw new RuntimeException("Can't create ZERO length array !");
-		bits = new byte[(size-1) / 8 + 1];
+		bits = new byte[((size-1) >> 3) + 1];
+        lengthBytes=bits.length;
 		// init array
         Arrays.fill(bits,(byte)0);
 	}
@@ -61,6 +62,7 @@ public class BitArray {
     private BitArray(byte[] bits,int length){
         this.bits=bits;
         this.length=length;
+        this.lengthBytes=bitsLength2Bytes(length);
         
     }
     
@@ -78,20 +80,31 @@ public class BitArray {
     }
 
     /**
-     * Resizes the BitArray to new size & initializes all
-     * bits to 0.
+     * Utility method which makes sure we can
+     * accomodate specified number of bits and then
+     * resets all bits.
+     * 
+     * @param size
+     * @since 23.1.2007
+     */
+    public void resize(int size){
+       ensureSize(size);
+       resetAll();
+    }
+    
+    /**
+     * Ensures that the BitArray can accomodate specified
+     * number of bits
      * 
      * @param size
      * @since 18.1.2007
      */
-    public void resize(int size){
+    public void ensureSize(int size){
         length = size;
-        if (length<1) throw new RuntimeException("Can't create ZERO length array !");
-        if (bits.length < ((size-1) / 8 + 1)){
-            bits = new byte[(size-1) / 8 + 1];
+        lengthBytes = ((size-1) >> 3) + 1; 
+        if (bits.length < lengthBytes){
+            bits = new byte[lengthBytes];
         }
-        // init array
-        Arrays.fill(bits,(byte)0);
        
     }
     
@@ -102,9 +115,6 @@ public class BitArray {
 	 *@param  index  which bit to set
 	 */
 	public final void set(int index) {
-		if (index >= length) {
-			throw new IndexOutOfBoundsException();
-		}
 		bits[index >> 3] |= (byte) (1 << (index % 8));
 	}
 
@@ -116,19 +126,16 @@ public class BitArray {
 	 *@param  index  which bit to reset
 	 */
 	public final void reset(int index) {
-		if (index >= length) {
-			throw new IndexOutOfBoundsException();
-		}
 		bits[index >> 3] &= (~((byte) (1 << (index % 8))));
 	}
 
     
     public final void resetAll(){
-        Arrays.fill(bits, (byte)0);
+        Arrays.fill(bits,0,lengthBytes,(byte)0);
     }
     
     public final void setAll(){
-        Arrays.fill(bits,(byte)0xFF);
+        Arrays.fill(bits,0,lengthBytes,(byte)0xFF);
     }
 
 	/**
@@ -138,24 +145,20 @@ public class BitArray {
 	 *@param  index  which bit to check
 	 *@return        true/false according to bit state
 	 */
-	public final boolean get(int index) {
-		if (index >= length) {
-			throw new IndexOutOfBoundsException();
-		}
-		byte pattern = (byte) (1 << (index % 8));
-		return (bits[index >> 3] & pattern) == pattern ? true : false;
+	public final boolean isSet(int index) {
+		return (bits[index >> 3] & ((byte) (1 << (index % 8)))) != 0;
 	}
 
 
 	/**
 	 *  Gets state of specified bit<br>
-	 *  Synonym for get()
+	 *  Synonym for isSet()
 	 *
 	 *@param  index  which bit to check
 	 *@return        true/false according to bit state
 	 */
-	public final boolean isSet(int index) {
-		return get(index);
+	public final boolean get(int index) {
+		return isSet(index);
 	}
 
 
@@ -213,7 +216,7 @@ public class BitArray {
      *@since          October 29, 2002
      */
     public void serialize(ByteBuffer buffer) {
-         buffer.put(bits);
+         buffer.put(bits,0,lengthBytes);
     }
 
 
@@ -224,7 +227,7 @@ public class BitArray {
      *@since          October 29, 2002
      */
     public void deserialize(ByteBuffer buffer) {
-        buffer.get(bits);
+        buffer.get(bits,0,lengthBytes);
     }
 
     
@@ -253,6 +256,11 @@ public class BitArray {
         bytes[bit >> 3] |= (byte) (1 << (bit % 8));
     }
     
+    public final static void set(ByteBuffer bytes,int base,int bit){
+        final int position=bit >> 3 + bytes.position() + base ;
+        bytes.put(position, (byte)( bytes.get(position) | (1 << (bit % 8))));
+    }
+    
     /**
      *  Gets status of specified bit in array of bytes - counting
      * from left.
@@ -264,10 +272,14 @@ public class BitArray {
      * @since 18.1.2007
      */
     public final static boolean isSet(byte[] bytes,int bit){
-        final byte pattern = (byte) (1 << (bit % 8));
-        return ((bytes[bit >> 3] & pattern) == pattern );
+        return ((bytes[bit >> 3] & ((byte) (1 << (bit % 8)))) != 0 );
     }
     
+    public final static boolean isSet(ByteBuffer bytes,int base, int bit){
+        final int position=bit >> 3 + bytes.position() + base ;
+        return ((bytes.get(position) & ((byte) (1 << (bit % 8))))!= 0); 
+        
+    }
     
     /**
      * Resets specified bit in array of bytes - counting
@@ -281,6 +293,22 @@ public class BitArray {
     public final static void reset(byte[] bytes, int bit){
         bytes[bit >> 3] &= (~((byte) (1 << (bit % 8))));
     }
+  
+    public final static void reset(ByteBuffer bytes, int base, int bit){
+        final int position=bit >> 3 + bytes.position()+base;
+        bytes.put(position, (byte)( bytes.get(position) & (~((1 << (bit % 8))))));
+    }
+
+    /**
+     * How many bytes are used to store the number
+     * of bits this BitArray can represent
+     * 
+     * @return the lengthBytes
+     * @since 25.1.2007
+     */
+    public int getLengthBytes() {
+        return lengthBytes;
+    }   
 }
 /*
  *  End class BitArray
