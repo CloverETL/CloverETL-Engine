@@ -37,11 +37,12 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     private int runingPhase;
     private int runningNodes;
     private long runTimeMS;
+    private WatchDog watchDog;
     
     
     private Map<String,TrackingDetail> trackingMap;
     
-    public CloverJMX(){
+    public CloverJMX(WatchDog watchDog){
         StringBuilder str=new StringBuilder(30);
       //  str.append(org.jetel.util.JetelVersion.getMajorVersion()).append('.');
       //  str.append(org.jetel.util.JetelVersion.getMinorVersion()).append(" build# ");
@@ -49,6 +50,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
       //  str.append(org.jetel.util.JetelVersion.getBuildDatetime());
         
         cloverVersion=str.toString();
+        this.watchDog=watchDog;
     }
     
    
@@ -110,7 +112,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
 
     public void stopGraphExecution() {
-        // TODO Auto-generated method stub
+        watchDog.stopRun();
 
     }
     
