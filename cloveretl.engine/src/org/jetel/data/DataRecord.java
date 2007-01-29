@@ -585,16 +585,13 @@ public class DataRecord implements Serializable, Comparable {
 	 */
 	public int getSizeSerialized() {
         int size=0;
-        int inNull=0;
-        if (metadata.isNullable()){
+        if (HANDLE_NULLABLE && metadata.isNullable()){
             for (int i = 0; i < fields.length;i++){
-                if (fields[i].isNull()){
-                    inNull++;
-                }else{
+                if (!fields[i].isNull()){
                     size+=fields[i].getSizeSerialized(); 
                 }
             }
-            size+=BitArray.bitsLength2Bytes(fields.length);
+            size+=BitArray.bitsLength2Bytes(metadata.getNumNullableFields());
         }else{
             for (int i = 0; i < fields.length; size+=fields[i++].getSizeSerialized());
         }
