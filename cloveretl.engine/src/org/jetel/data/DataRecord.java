@@ -43,8 +43,13 @@ import org.jetel.util.BitArray;
  */
 public class DataRecord implements Serializable, Comparable {
 
-    private static ThreadLocal<byte[]> NULLs_BYTE_BUFFER = new ThreadLocal<byte[]>();
+    private static final long serialVersionUID = 2497808992091497225L;
+
+
+    // switch- shall we handle differently NULLable records (record
+    // which has at least one field NULLable ?)
     private static final boolean HANDLE_NULLABLE = false;
+    
     
 	/**
      * Currently not used
@@ -249,23 +254,33 @@ public class DataRecord implements Serializable, Comparable {
 	 */
 	public void deserialize(ByteBuffer buffer) {
         if (HANDLE_NULLABLE && metadata.isNullable()) {
-          BitArray bits=new BitArray(fields.length);
-          bits.deserialize(buffer);
-          for (int i=0;i<fields.length;i++){
-              if (bits.isSet(i)){
-                  fields[i].setNull(true);
-              }else{
-                  fields[i].deserialize(buffer);
-              }
-          }
-          
+            final int base = buffer.position();
+            BitArray nullSwitches = metadata.getFieldsNullSwitches();
+            final int numNullBytes = BitArray.bitsLength2Bytes(metadata
+                    .getNumNullableFields());
+            byte indicator = 0;
+            // skip to first field
+            buffer.position(buffer.position() + numNullBytes);
+            // are there any NULLs ? if not, use the simple version
+            int nullCounter = 0;
+            for (int i = 0; i < fields.length; i++) {
+                if (nullSwitches.isSet(i)) {
+                    if (BitArray.isSet(buffer, base, nullCounter)) {
+                        fields[i].setNull(true);
+                    } else {
+                        fields[i].deserialize(buffer);
+                    }
+                    nullCounter++;
+                } else {
+                    fields[i].deserialize(buffer);
+                }
+            }
         } else {
-
             for (int i = 0; i < fields.length; i++) {
                 fields[i].deserialize(buffer);
             }
         }
-	}
+    }
 
 
 	/**
@@ -421,21 +436,27 @@ public class DataRecord implements Serializable, Comparable {
 	 */
 	public void serialize(ByteBuffer buffer) {
         if (HANDLE_NULLABLE && metadata.isNullable()) {
-           BitArray bits=new BitArray(fields.length);
-           buffer.mark();
-           bits.serialize(buffer);
-           for(int i=0;i<fields.length;i++){
-               if (fields[i].isNull){
-                   bits.set(i);
-               }else{
-                   fields[i].serialize(buffer);
-               }
-           }
-           final int pos=buffer.position();
-           buffer.reset();
-           bits.serialize(buffer);
-           buffer.position(pos);
-           
+            final int base = buffer.position();
+            BitArray nullSwitches = metadata.getFieldsNullSwitches();
+            final int numNullBytes = BitArray.bitsLength2Bytes(metadata
+                    .getNumNullableFields());
+            // clear NULL indicators
+            for (int i = 0; i < numNullBytes; i++) {
+                buffer.put((byte) 0);
+            }
+            int nullCounter = 0;
+            for (int i = 0; i < fields.length; i++) {
+                if (nullSwitches.isSet(i)) {
+                    if (fields[i].isNull) {
+                        BitArray.set(buffer, base, nullCounter);
+                    } else {
+                        fields[i].serialize(buffer);
+                    }
+                    nullCounter++;
+                } else {
+                    fields[i].serialize(buffer);
+                }
+            }
         } else {
             for (int i = 0; i < fields.length; i++) {
                 fields[i].serialize(buffer);
@@ -603,7 +624,6 @@ public class DataRecord implements Serializable, Comparable {
         }
         return true;
     }
-    
 }
 /*
  *  end class DataRecord
