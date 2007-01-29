@@ -1566,6 +1566,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         DataField field=outputRecords[node.recordNo].getField(node.fieldNo);
         int arity=node.arity; // how many children we have defined
         Object value=null;
+        boolean success=false;
         try{
             // we try till success or no more options
             for (int i=0;i<arity;i++){
@@ -1578,19 +1579,12 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     }else{
                         field.setValue(value);
                     }
-                }catch(BadDataFormatException ex){
-                    if (i == arity)
+                    success=true;
+                    break; // success during assignment, finish looping
+               }catch(Exception ex){
+                    if (i == arity-1)
                         throw ex;
-                    else
-                        continue;
-                    
-                }catch(Exception ex){
-                    if (i == arity)
-                        throw ex;
-                    else
-                        continue;
-                }
-                break; // success during assignment, finish looping
+               }
             }
             
         }catch(BadDataFormatException ex){
@@ -1610,7 +1604,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     +") - assigning \"" + value + "\" ("+(value!=null ? value.getClass(): "unknown class" )+")");
             
         }
-        
+        if (!success){
+            logger.fatal("fatal error in mapping on line : "+node.getLineNumber()+" : "+
+                    node.getColumnNumber());
+        }
         return data;
     }
     
