@@ -1564,9 +1564,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFMapping node, Object data) {
         DataField field=outputRecords[node.recordNo].getField(node.fieldNo);
-        int arity=node.arity; // how many children we have defined
+        int arity=node.jjtGetNumChildren(); // how many children we have defined
         Object value=null;
-        boolean success=false;
         try{
             // we try till success or no more options
             for (int i=0;i<arity;i++){
@@ -1579,7 +1578,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     }else{
                         field.setValue(value);
                     }
-                    success=true;
                     break; // success during assignment, finish looping
                }catch(Exception ex){
                     if (i == arity-1)
@@ -1603,10 +1601,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     " when mapping \"" + node.fieldName + "\" ("+DataFieldMetadata.type2Str(field.getType())
                     +") - assigning \"" + value + "\" ("+(value!=null ? value.getClass(): "unknown class" )+")");
             
-        }
-        if (!success){
-            logger.fatal("fatal error in mapping on line : "+node.getLineNumber()+" : "+
-                    node.getColumnNumber());
         }
         return data;
     }
