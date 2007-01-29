@@ -336,31 +336,39 @@ public final class TransformationGraph {
 	 * @since     April 2, 2002
 	 */
 	public Result run() {
-		long timestamp = System.currentTimeMillis();
-		watchDog = new WatchDog(this, phasesArray, trackingInterval);
+        long timestamp = System.currentTimeMillis();
+        watchDog = new WatchDog(this, phasesArray, trackingInterval);
 
-		logger.info("Starting WatchDog thread ...");
-		watchDog.start();
-		try {
-			watchDog.join();
-		} catch (InterruptedException ex) {
-			logger.error(ex);
-			return Result.ABORTED;
-		}
-		logger.info("WatchDog thread finished - total execution time: " 
-				+ (System.currentTimeMillis() - timestamp) / 1000
-				+ " (sec)");
+        logger.info("Starting WatchDog thread ...");
+        watchDog.start();
+        try {
+            watchDog.join();
+        } catch (InterruptedException ex) {
+            logger.error(ex);
+            return Result.ABORTED;
+        }
+        logger.info("WatchDog thread finished - total execution time: "
+                + (System.currentTimeMillis() - timestamp) / 1000 + " (sec)");
 
-		freeResources();
+        freeResources();
 
-		if (watchDog.getStatus() == Result.FINISHED_OK) {
-			logger.info("Graph execution finished successfully");
-		} else {
-			logger.error("!!! Graph execution finished with errors !!!");
-		}
+        switch (watchDog.getStatus()) {
+        case FINISHED_OK:
+            logger.info("Graph execution finished successfully");
+            break;
+        case ABORTED:
+            logger.error("!!! Graph execution aborted !!!");
+            break;
+        case ERROR:
+            logger.error("!!! Graph execution finished with errors !!!");
+            break;
+        default:
+            logger.fatal("Unexpected result when executing graph !");
+        }
+        
         return watchDog.getStatus();
 
-	}
+    }
 
 
 
