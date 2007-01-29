@@ -280,8 +280,12 @@ public class runGraph {
 
             // check graph elements configuration
             logger.info("Checking graph configuration...");
-            ConfigurationStatus status = graph.checkConfig(null);
-            status.log();
+            try {
+                ConfigurationStatus status = graph.checkConfig(null);
+                status.log();
+            } catch(Exception e) {
+                logger.error("Checking graph failed! (" + e.getMessage() + ")");
+            }
 
             if (!graph.init()) {
                 throw new GraphConfigurationException(
