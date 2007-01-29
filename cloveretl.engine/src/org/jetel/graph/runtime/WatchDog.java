@@ -81,6 +81,7 @@ public class WatchDog extends Thread implements CloverRuntime {
     private Throwable causeException;
     private String causeNodeID;
     private CloverJMX mbean;
+    private volatile boolean runIt;
     
     private PrintTracking printTracking;
 
@@ -134,9 +135,10 @@ public class WatchDog extends Thread implements CloverRuntime {
 	/**  Main processing method for the WatchDog object */
 	public void run() {
 		watchDogStatus = Result.RUNNING;
+        runIt=true;
 		logger.info("Thread started.");
 		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
-			+ " max available memory for JVM " + javaRuntime.freeMemory() / 1024 + " KB");
+			+ " max available memory for JVM " + javaRuntime.maxMemory() / 1024 + " KB");
 		// renice - lower the priority
 		setPriority(Thread.MIN_PRIORITY);
 		
@@ -151,11 +153,16 @@ public class WatchDog extends Thread implements CloverRuntime {
 //        trackingThread.start();
         
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-			if (!executePhase(phases[currentPhaseNum])) {
-				watchDogStatus = Result.ERROR;
+			switch( executePhase(phases[currentPhaseNum]) ){
+            case ABORTED:
+                watchDogStatus = Result.ABORTED;
+                logger.error("!!! Phase execution aborted !!!");
+                return;
+            case ERROR:
+                watchDogStatus = Result.ERROR;
 				logger.error("!!! Phase finished with error - stopping graph run !!!");
 				return;
-			}
+            }
 			// force running of garbage collector
 			logger.info("Forcing garbage collection ...");
 			javaRuntime.runFinalization();
@@ -174,7 +181,7 @@ public class WatchDog extends Thread implements CloverRuntime {
      * @since 17.1.2007
      */
     private CloverJMX registerTrackingMBean() {
-       mbean = new CloverJMX();
+       mbean = new CloverJMX(this);
         // register MBean
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
@@ -221,7 +228,12 @@ public class WatchDog extends Thread implements CloverRuntime {
             }
         }
         if (currentPhaseNum>=0){
-            if (!executePhase(phases[currentPhaseNum])) {
+            switch( executePhase(phases[currentPhaseNum]) ) {
+            case ABORTED:
+                watchDogStatus = Result.ABORTED;
+                logger.error("!!! Phase execution aborted !!!");
+                return;
+            case ERROR:
                 watchDogStatus = Result.ERROR;
                 logger.error("!!! Phase finished with error - stopping graph run !!!");
                 return;
@@ -280,7 +292,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         mbean.updated();
 	
         // entering the loop awaiting completion of work by all leaf nodes
-		while (true) {
+		while (runIt) {
             // wait on error message queue
             message=inMsgQueue.poll(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
             if (message != null) {
@@ -397,6 +409,16 @@ public class WatchDog extends Thread implements CloverRuntime {
                     mbean.updated();
                 }
             }
+        if (!runIt){
+            // we were forced to stop execution, stop all Nodes
+            logger.error("User has interrupted graph execution !!!");
+            abort();
+            causeNodeID=null;
+            causeException=null;
+            return Result.ABORTED;
+        }else{
+            return Result.FINISHED_OK;
+        }
 			
 	}
 
@@ -433,6 +455,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 * @since    July 29, 2002
 	 */
 	public void abort() {
+        watchDogStatus=Result.ABORTED;
 		Iterator iterator = currentPhase.getNodes().iterator();
 		Node node;
 
@@ -471,13 +494,13 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 * @param  phase  Description of the Parameter
 	 * @return        Description of the Return Value
 	 */
-	private boolean executePhase(Phase phase) {
+	private Result executePhase(Phase phase) {
 		currentPhase = phase;
 		//phase.checkConfig();
 		// init phase
 		if (!phase.init()) {
 			// something went wrong !
-			return false;
+			return Result.ERROR;
 		}
 		logger.info("Starting up all nodes in phase [" + phase.getPhaseNum() + "]");
 		startUpNodes(phase);
@@ -504,7 +527,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         //end of phase, destroy it
 		phase.free();
         
-		return (watchDogStatus==Result.FINISHED_OK) ? true : false;
+		return watchDogStatus;
 	}
 
 	/*
@@ -709,6 +732,16 @@ public class WatchDog extends Thread implements CloverRuntime {
      */
     public String getCauseNodeID() {
         return causeNodeID;
+    }
+
+
+    /**
+     * Stop execution of graph
+     * 
+     * @since 29.1.2007
+     */
+    public void stopRun() {
+        this.runIt = false;
     }
     
     
