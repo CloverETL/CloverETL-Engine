@@ -224,7 +224,8 @@ public class DirectEdge extends EdgeBase {
             record.serialize(tmpDataRecord);
         } catch (BufferOverflowException ex) {
             throw new IOException(
-                    "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)");
+                    "Internal buffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)"+
+                    "\n [actual record size: "+record.getSizeSerialized()+" bytes]");
         }
         tmpDataRecord.flip();
         int length = tmpDataRecord.remaining();
@@ -269,7 +270,8 @@ public class DirectEdge extends EdgeBase {
             writeBuffer.put(record);
         } catch (BufferOverflowException ex) {
             throw new IOException(
-                    "WriteBuffer is not big enough to accomodate data record !");
+                    "WriteBuffer is not big enough to accomodate data record ! (See MAX_RECORD_SIZE parameter)"+
+                    "\n [actual record size: "+record.rewind().remaining()+" bytes]");
         }
 
         byteCounter += dataLength;
