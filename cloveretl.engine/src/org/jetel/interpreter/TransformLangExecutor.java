@@ -1503,6 +1503,43 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
         stack.storeVar(node.localVar, node.varSlot, value);
         
+        if (node.jjtGetNumChildren()>0){
+            node.jjtGetChild(0).jjtAccept(this, data);
+            Object initValue=stack.pop();
+            
+            try {
+                if (value instanceof Numeric) {
+                        ((Numeric) value).setValue((Numeric) initValue);
+                } else if (value instanceof StringBuilder) {
+                    StringBuilder var = (StringBuilder) value;
+                    var.setLength(0);
+                    StringUtils.strBuffAppend(var,(CharSequence) initValue);
+                } else if (value instanceof Boolean) {
+                    stack.storeVar(node.localVar,node.varSlot, (Boolean)initValue); // boolean is not updatable - we replace the reference
+                    // stack.put(varName,((Boolean)value).booleanValue() ?
+                    // Stack.TRUE_VAL : Stack.FALSE_VAL);
+                } else if (value instanceof Date) {
+                    ((Date) value).setTime(((Date) initValue).getTime());
+                } else {
+                    throw new TransformLangExecutorRuntimeException(node,
+                            "unknown variable \"" + node.name + "\"");
+                }
+            } catch (ClassCastException ex) {
+                throw new TransformLangExecutorRuntimeException(node,
+                        "invalid assignment of \"" + initValue + "\" to variable \""
+                                + node.name + "\" - incompatible data types");
+            } catch (NumberFormatException ex){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "invalid assignment of number \"" + initValue + "\" to variable \"" + node.name + "\" : "+ex.getMessage());    
+            } catch (TransformLangExecutorRuntimeException ex){
+                throw ex;
+            } catch (Exception ex){
+                throw new TransformLangExecutorRuntimeException(node,
+                        "invalid assignment of \"" + value + "\" to variable \"" + node.name + "\" : "+ex.getMessage());  
+            }
+            
+        }
+        
         return data;
     }
 
