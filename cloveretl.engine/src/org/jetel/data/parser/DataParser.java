@@ -38,6 +38,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  * Parsing plain text data.
@@ -54,6 +55,12 @@ import org.jetel.metadata.DataRecordMetadata;
  * @revision $Revision: 1.9 $
  */
 public class DataParser implements Parser {
+	
+	public enum BoolExt{
+		TRUE,
+		FALSE,
+		NOT_SET;
+	}
 
 	private IParserExceptionHandler exceptionHandler;
 
@@ -86,6 +93,8 @@ public class DataParser implements Parser {
 	private StringBuilder tempReadBuffer;
 	
 	private boolean treatMultipleDelimitersAsOne = false;
+	
+	private BoolExt trim = BoolExt.NOT_SET; 
 	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -300,9 +309,12 @@ public class DataParser implements Parser {
 								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
 							}
 						}
-						//fieldDelimiter update
-						fieldBuffer.append((char) character);
-
+						if (trim == BoolExt.FALSE
+								|| (trim == BoolExt.NOT_SET && !metadata
+										.getField(fieldCounter).isTrim())
+								|| !Character.isWhitespace(character)) {
+							fieldBuffer.append((char) character);
+						}						
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
@@ -328,22 +340,23 @@ public class DataParser implements Parser {
 
 						//skip leading blanks
 						if(skipBlanks) 
-							if(character == ' ') continue; 
+							if(Character.isWhitespace(character)) continue; 
 							else skipBlanks = false;
 
-						//keep track of trailing blanks
-						if(character != ' ') {
-							mark = i;
-						} 
-
-						fieldBuffer.append((char) character);
+						if (trim == BoolExt.FALSE
+								|| (trim == BoolExt.NOT_SET && !metadata
+										.getField(fieldCounter).isTrim())
+								|| !Character.isWhitespace(character)) {
+							fieldBuffer.append((char) character);
+						}						
 					}
-					if(fieldBuffer.length() > 0) fieldBuffer.setLength(fieldBuffer.length() - (fieldLengths[fieldCounter] - mark - 1));
+					if(fieldBuffer.length() > 0) {
+						fieldBuffer.setLength(fieldBuffer.length() - (fieldLengths[fieldCounter] - mark - 1));
+					}
 				} catch (Exception ex) {
 					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
 				}
 			}
-
 			// did we have EOF situation ?
 			if (character == -1) {
 				try {
@@ -473,7 +486,8 @@ public class DataParser implements Parser {
 			record.getField(fieldNum).fromString(data);
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
-                exceptionHandler.populateHandler(bdfe.getMessage(), record, recordCounter, fieldNum, data, bdfe);
+                exceptionHandler.populateHandler(bdfe.getMessage(), record,
+						recordCounter, fieldNum, data, bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
@@ -696,6 +710,26 @@ public class DataParser implements Parser {
         }
         return null;
     }
+
+	public String getTrim() {
+		return trim.toString();
+	}
+
+	public void setTrim(String trim) {
+		switch (trim.charAt(0)) {
+		case 't':
+		case 'T':
+			this.trim = BoolExt.TRUE;
+			break;
+		case 'f':
+		case 'F':
+			this.trim = BoolExt.FALSE;
+			break;
+		default:
+			this.trim = BoolExt.NOT_SET;
+			break;
+		}
+	}
 }
 /*
 Default hodnoty jsou nyni definovany na urovni metadat a prirazovany do polozek pres
