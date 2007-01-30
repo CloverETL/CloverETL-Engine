@@ -72,6 +72,11 @@ public class DataFieldMetadata implements Serializable {
 	private short shift = 0;
 
 	private char fieldType = ' ';
+	
+	/**
+	 * Indicates if when reading from file try to trim string value to obtain value
+	 */
+	private boolean trim = false;
 
 	/**
 	 *  Fields can assume null value by default.
@@ -161,9 +166,11 @@ public class DataFieldMetadata implements Serializable {
 		this.name = _name;
 		this.delimiter = _delimiter;
 		this.fieldType = _type;
-		this.shift = shift;
 		this.fieldProperties = null;
 		this.localeStr=null;
+		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
+			trim = true;
+		}
 	}
 
 
@@ -181,7 +188,6 @@ public class DataFieldMetadata implements Serializable {
 		}
 		this.name = _name;
 		this.delimiter = _delimiter;
-		this.shift = shift;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
 		this.localeStr=null;
@@ -202,7 +208,6 @@ public class DataFieldMetadata implements Serializable {
 		}
 		this.name = _name;
 		this.size = size;
-		this.shift = shift;
 		this.fieldType = STRING_FIELD;
 		this.fieldProperties = null;
 		this.localeStr=null;
@@ -223,10 +228,12 @@ public class DataFieldMetadata implements Serializable {
 		}
 		this.name = _name;
 		this.size = size;
-		this.shift = shift;
 		this.fieldType = _type;
 		this.fieldProperties = null;
 		this.localeStr=null;
+		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
+			trim = true;
+		}
 	}
 
 	private DataFieldMetadata() {
@@ -808,6 +815,16 @@ public class DataFieldMetadata implements Serializable {
 			}
 		}
 		return false;
+	}
+
+
+	public boolean isTrim() {
+		return trim;
+	}
+
+
+	public void setTrim(boolean trim) {
+		this.trim = trim;
 	}
 
 }
