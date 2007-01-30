@@ -405,6 +405,9 @@ void VarDeclaration():
     t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");
       }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
+    
+    ["=" ConditionalOrExpression()]
+    
  }catch (ParseException e){    parseExceptions.add(e);//following code causes parser to cough     
 //do {//      t = getNextToken();//    }//    while (t.kind != SEMICOLON);  }}
 
@@ -436,7 +439,7 @@ void Mapping() : // assignment of value to Clover field
   	)
   	<MAPPING> 
   	
-  	ConditionalOrExpression() (":" ConditionalOrExpression())* {jjtThis.setArity(jjtree.nodeArity());}
+  	ConditionalOrExpression() (":" ConditionalOrExpression())*
 }
 
 /* Other nonterminals and their productions */
