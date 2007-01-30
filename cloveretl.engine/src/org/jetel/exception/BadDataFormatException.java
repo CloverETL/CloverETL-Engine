@@ -20,6 +20,8 @@
 
 package org.jetel.exception;
 
+import org.jetel.util.StringUtils;
+
 /**
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
@@ -68,7 +70,7 @@ public class BadDataFormatException extends RuntimeException {
         ret.append(super.getMessage());
         if(offendingValue != null && offendingValue.length() > 0) {
             ret.append(" : ");
-            ret.append(offendingValue);
+            ret.append(StringUtils.quote(StringUtils.specCharToString(offendingValue)));
         }
         if(recordNumber >= 0) {
             ret.append(" in record # ");
