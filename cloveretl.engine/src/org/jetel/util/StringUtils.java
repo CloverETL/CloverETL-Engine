@@ -272,6 +272,10 @@ public class StringUtils {
 		return str;
 	}
 	
+	public static String quote(CharSequence str){
+		return "\"".concat(str.toString()).concat("\"");
+	}
+	
 	/**
 	 * Modifies buffer scope so that the leading whitespace is ignored.
 	 * @param buf
