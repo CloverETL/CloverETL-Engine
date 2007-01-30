@@ -74,6 +74,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
 	protected Result runResult;
     protected Throwable resultException;
+    protected String resultMessage;
 	
     protected Phase phase;
 
@@ -360,7 +361,12 @@ public abstract class Node extends GraphElement implements Runnable {
 	public void run() {
         runResult=Result.RUNNING; // set running result, so we know run() method was started
         try {
-            runResult = execute();
+            if((runResult = execute()) == Result.ERROR) {
+                Message msg = Message.createErrorMessage(this,
+                        new ErrorMsgBody(runResult.code(), 
+                                resultMessage != null ? resultMessage : runResult.message(), null));
+                getCloverRuntime().sendMessage(msg);
+            }
         } catch (IOException ex) {  // may be handled differently later
             runResult=Result.ERROR;
             resultException = ex;
