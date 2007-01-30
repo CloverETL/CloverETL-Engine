@@ -95,6 +95,7 @@ public class DelimitedDataReader extends Node {
     private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_TRIM_ATTRIBUTE = "trim";
 	
 	private final static int OUTPUT_PORT = 0;
 	private String fileURL;
@@ -198,6 +199,7 @@ public class DelimitedDataReader extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
+		xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, parser.getTrim());
 		
 	}
 
@@ -232,6 +234,9 @@ public class DelimitedDataReader extends Node {
             if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
                 aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
+			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
+				aDelimitedDataReaderNIO.parser.setTrim(xattribs.getString(XML_TRIM_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
