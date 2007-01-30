@@ -35,6 +35,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.DataParser.BoolExt;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
@@ -77,6 +78,7 @@ public class DelimitedDataParser implements Parser {
 	private char[][] delimiters;
 	private char[] fieldTypes;
 	private boolean isEof;
+	private BoolExt trim = BoolExt.NOT_SET;
 
 	// Attributes
 	// maximum length of delimiter
@@ -431,6 +433,11 @@ public class DelimitedDataParser implements Parser {
 			// are we skipping this row/field ?
 			if (record != null){
 			    fieldStringBuffer.flip();
+			    if (trim == BoolExt.TRUE || 
+			    		(trim == BoolExt.NOT_SET && metadata.getField(
+								fieldCounter).isTrim())) {
+			    	StringUtils.trim(fieldStringBuffer);
+			    }
 			    populateField(record, fieldCounter, fieldStringBuffer);
 			}
 			fieldCounter++;
@@ -554,7 +561,27 @@ public class DelimitedDataParser implements Parser {
 		}
 		return skipped;
 	}
-		
+	
+	public String getTrim() {
+		return trim.toString();
+	}
+
+	public void setTrim(String trim) {
+		switch (trim.charAt(0)) {
+		case 't':
+		case 'T':
+			this.trim = BoolExt.TRUE;
+			break;
+		case 'f':
+		case 'F':
+			this.trim = BoolExt.FALSE;
+			break;
+		default:
+			this.trim = BoolExt.NOT_SET;
+			break;
+		}
+	}
+	
 }	
 /*
  *  end class DelimitedDataParser
