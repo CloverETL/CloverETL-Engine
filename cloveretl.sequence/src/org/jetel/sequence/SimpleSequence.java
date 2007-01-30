@@ -77,7 +77,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
     int step;
     int start;
     int numCachedValues;
-    boolean isInitialized;
   
     int counter;
     FileChannel io;
@@ -109,7 +108,6 @@ public class SimpleSequence extends GraphElement implements Sequence {
         this.step=step;
         this.counter=0;
         this.numCachedValues=numCachedValues;
-        this.isInitialized = false;
     }
     
     public long currentValueLong(){
@@ -194,10 +192,9 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 sequenceValue = buffer.getLong();
             }
         } catch(IOException ex) {
-            isInitialized = false;
+            free();
             throw new ComponentNotReadyException(ex);
         }
-        isInitialized = true;
     }
     
     private final void flushValue(long value) {
@@ -261,10 +258,10 @@ public class SimpleSequence extends GraphElement implements Sequence {
 		return filename;
 	}
 
-    public boolean isInitialized() {
-        return isInitialized;
+    public void setFilename(String filename) {
+        this.filename = filename;
     }
-	
+
 	static public SimpleSequence fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
 
