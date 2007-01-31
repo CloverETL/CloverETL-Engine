@@ -19,6 +19,9 @@
 */
 
 package org.jetel.component;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
@@ -32,6 +35,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.StringUtils;
@@ -95,6 +99,10 @@ public class DataWriter extends Node {
     private boolean outputFieldNames;
 	private int bytesPerFile;
 	private int recordsPerFile;
+	private WritableByteChannel channelWriter;
+	private String delimiter;
+	private long recordFrom = -1;
+	private long recordCount = -1;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -121,19 +129,28 @@ public class DataWriter extends Node {
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
+		long iRec = 0;
+		long recordTo = recordCount < 0 ? Long.MAX_VALUE : (recordFrom < 0 ? recordCount+1 : recordFrom + recordCount);
 		record.init();
 		try {
 			while (record != null && runIt) {
+				iRec++;
 				record = inPort.readRecord(record);
+				if (recordFrom > iRec || recordTo <= iRec) continue;
 				if (record != null) {
-					writer.write(record);
+					if (channelWriter != null) {
+						formatter.write(record);
+					} else {
+						writer.write(record);
+					}
 				}
 				SynchronizeUtils.cloverYield();
 			}
+			if (channelWriter != null) formatter.flush();
 		} catch (Exception e) {
 			throw e;
 		}finally{		
-			writer.close();
+			if (writer != null) writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -148,16 +165,29 @@ public class DataWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 
-        // initialize multifile writer based on prepared formatter
-        writer = new MultiFileWriter(formatter, getGraph().getProjectURL(), fileURL);
-        writer.setLogger(logger);
-        writer.setBytesPerFile(bytesPerFile);
-        writer.setRecordsPerFile(recordsPerFile);
-        writer.setAppendData(appendData);
-        if(outputFieldNames) {
-            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-        }
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+		if (fileURL != null) {
+	        // initialize multifile writer based on prepared formatter
+	        writer = new MultiFileWriter(formatter, getGraph().getProjectURL(), fileURL);
+	        writer.setLogger(logger);
+	        writer.setBytesPerFile(bytesPerFile);
+	        writer.setRecordsPerFile(recordsPerFile);
+	        writer.setAppendData(appendData);
+	        if(outputFieldNames) {
+	            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+	        }
+	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+		} else {
+			channelWriter = Channels.newChannel(System.out);
+			formatter.setDataTarget(channelWriter);
+			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
+			if (delimiter != null) {
+				for(int i=0; i<metadata.getNumFields()-1; i++) {
+					metadata.getField(i).setDelimiter(delimiter);
+				}
+				//metadata.getField(metadata.getNumFields()-1).setDelimiter("\n");
+			}
+			formatter.init(metadata);
+		}
 	}
 	
 	/**
@@ -268,5 +298,17 @@ public class DataWriter extends Node {
     public void setOutputFieldNames(boolean outputFieldNames) {
         this.outputFieldNames = outputFieldNames;
     }
+    
+    public void setDataDelimiter(String delimiter) {
+    	this.delimiter = delimiter;
+    }
+    
+	public void setRecordFrom(long recordFrom) {
+		this.recordFrom = recordFrom;
+	}
+
+	public void setRecordCount(long recordCount) {
+		this.recordCount = recordCount;
+	}
 
 }

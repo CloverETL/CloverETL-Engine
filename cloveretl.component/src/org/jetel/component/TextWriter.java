@@ -28,7 +28,7 @@ import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.StructureFormatter;
+import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -105,28 +105,25 @@ import org.w3c.dom.Element;
  * @since Oct 30, 2006
  *
  */
-public class StructureWriter extends Node {
+public class TextWriter extends Node {
 
 	public static final String XML_APPEND_ATTRIBUTE = "append";
 	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_MASK_ATTRIBUTE = "mask";
 	public static final String XML_HEADER_ATTRIBUTE = "header";
-	public static final String XML_FOOTER_ATTRIBUTE = "footer";
 	public static final String XML_RECORD_FROM_ATTRIBUTE = "recordFrom";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 
 	private String fileURL;
 	private boolean appendData;
-	private StructureFormatter formatter;
-	private String header = null;
-	private String footer = null;
+	private TextTableFormatter formatter;
+	private boolean header = true;
 	private WritableByteChannel writer;
-	private ByteBuffer buffer;
 	private String charset;
 	private long recordFrom = -1;
 	private long recordCount = -1;
-
+	
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
@@ -139,15 +136,15 @@ public class StructureWriter extends Node {
 	 * @param appendData
 	 * @param mask
 	 */
-	public StructureWriter(String id, String fileURL, String charset, 
-			boolean appendData, String mask) {
+	public TextWriter(String id, String fileURL, String charset, 
+			boolean appendData, String[] fields) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
 		this.charset = charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		formatter = charset == null ? new StructureFormatter() : 
-			new StructureFormatter(charset);
-		formatter.setMask(mask);
+		formatter = charset == null ? new TextTableFormatter() : 
+			new TextTableFormatter(charset);
+		formatter.setMask(fields);
 	}
 
 	/* (non-Javadoc)
@@ -161,10 +158,6 @@ public class StructureWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		//write header
-		if (header != null ){
-			buffer.put(header.getBytes(charset));
-			ByteBufferUtils.flush(buffer,writer);
-		}
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		long iRec = 0;
@@ -181,13 +174,7 @@ public class StructureWriter extends Node {
 				}
 				SynchronizeUtils.cloverYield();
 			}
-			formatter.flush();
-			//write footer
-			if (footer != null ){
-				buffer.clear();
-				buffer.put(footer.getBytes(charset));
-				ByteBufferUtils.flush(buffer,writer);
-			}
+			formatter.eof();
 		} catch (Exception e) {
 			throw e;
 		}finally{
@@ -235,9 +222,9 @@ public class StructureWriter extends Node {
 		// based on file mask, create/open output file
 		try {
 			writer = fileURL == null ? Channels.newChannel(System.out) : FileUtils.getWritableChannel(getGraph().getProjectURL(), fileURL, appendData);
-			buffer = ByteBuffer.allocateDirect(StringUtils.getMaxLength(header,footer));
 			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
             formatter.setDataTarget(writer);
+            formatter.setHeader(header);
 		} catch (IOException ex) {
 			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
 		}
@@ -248,19 +235,18 @@ public class StructureWriter extends Node {
 	 */
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
-		StructureWriter aDataWriter = null;
+		TextWriter aDataWriter = null;
 		
 		try{
-			aDataWriter = new StructureWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			String fields = xattribs.getString(XML_MASK_ATTRIBUTE,null);
+			String[] aFields = fields == null ? null : fields.split(";");
+			aDataWriter = new TextWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
-									xattribs.getString(XML_MASK_ATTRIBUTE,null));
+									aFields);
 			if (xattribs.exists(XML_HEADER_ATTRIBUTE)){
-				aDataWriter.setHeader(xattribs.getString(XML_HEADER_ATTRIBUTE));
-			}
-			if (xattribs.exists(XML_FOOTER_ATTRIBUTE)){
-				aDataWriter.setFooter(xattribs.getString(XML_FOOTER_ATTRIBUTE));
+				aDataWriter.setHeader(Boolean.parseBoolean(xattribs.getString(XML_HEADER_ATTRIBUTE)));
 			}
 			if (xattribs.exists(XML_RECORD_FROM_ATTRIBUTE)){
 				aDataWriter.setRecordFrom(Long.parseLong(xattribs.getString(XML_RECORD_FROM_ATTRIBUTE)));
@@ -287,12 +273,7 @@ public class StructureWriter extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		if (header != null){
-			xmlElement.setAttribute(XML_HEADER_ATTRIBUTE,header);
-		}
-		if (footer != null){
-			xmlElement.setAttribute(XML_FOOTER_ATTRIBUTE,footer);
-		}
+		xmlElement.setAttribute(XML_HEADER_ATTRIBUTE,String.valueOf(header));
 		if (recordFrom != -1){
 			xmlElement.setAttribute(XML_RECORD_FROM_ATTRIBUTE, String.valueOf(recordFrom));
 		}
@@ -301,11 +282,7 @@ public class StructureWriter extends Node {
 		}
 	}
 	
-	public void setFooter(String footer) {
-		this.footer = footer;
-	}
-
-	public void setHeader(String header) {
+	public void setHeader(boolean header) {
 		this.header = header;
 	}
 
