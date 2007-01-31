@@ -354,34 +354,34 @@ public class JmsReader extends Node {
         checkInputPorts(status, 0, 0);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
 
-        try {
+//        try {
         	
-    		if (psorClass == null && psorCode == null) {
-    			throw new ComponentNotReadyException("Message processor not specified");
-    		}
-    		IConnection c = getGraph().getConnection(conId);
-    		if (c == null || !(c instanceof JmsConnection)) {
-    			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
-    		}
-
-    		connection = (JmsConnection)c;
-    		try {
-    			connection.init();
-    			consumer = connection.createConsumer(selector);
-    		} catch (Exception e) {
-    			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
-    		}
+//    		if (psorClass == null && psorCode == null) {
+//    			throw new ComponentNotReadyException("Message processor not specified");
+//    		}
+//    		IConnection c = getGraph().getConnection(conId);
+//    		if (c == null || !(c instanceof JmsConnection)) {
+//    			throw new ComponentNotReadyException("Specified connection '" + conId + "' doesn't seem to be a JMS connection");
+//    		}
+//
+//    		connection = (JmsConnection)c;
+//    		try {
+//    			connection.init();
+//    			consumer = connection.createConsumer(selector);
+//    		} catch (Exception e) {
+//    			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
+//    		}
         	
         	
 //            init();
 //            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
 	}
