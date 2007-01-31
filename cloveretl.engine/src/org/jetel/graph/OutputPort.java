@@ -64,7 +64,7 @@ public interface OutputPort {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public void close();
+	public void close() throws InterruptedException;
 
 	/**
 	 * An operation that opens the port indicating that data will be available

@@ -321,20 +321,17 @@ public class DirectEdge extends EdgeBase {
 
 	/**
 	 *  Description of the Method
+	 * @throws InterruptedException 
 	 *
 	 * @since    April 2, 2002
 	 */
-	public synchronized void close() {
-	    try{
-	        if (writeBuffer.remaining()<SIZEOF_INT){
-	            flushWriteBuffer();
-	        }
-            writeBuffer.putInt(EOF); // send EOF
+	public synchronized void close() throws InterruptedException {
+        if (writeBuffer.remaining()<SIZEOF_INT){
             flushWriteBuffer();
-            
-	    }catch(InterruptedException ex){
-	        throw new RuntimeException("Interrupted "+ex.getClass().getName()+":"+ex.getMessage());
-	    }
+        }
+        writeBuffer.putInt(EOF); // send EOF
+        
+        flushWriteBuffer();
 	}
 
 	public boolean hasData(){

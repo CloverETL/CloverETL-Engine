@@ -140,7 +140,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@param  portNum  The new EOF value
 	 *@since           April 18, 2002
 	 */
-	public void setEOF(int portNum) {
+	public void setEOF(int portNum) throws InterruptedException {
 		try {
 			((OutputPort) outPorts.get(new Integer(portNum))).close();
 		} catch (IndexOutOfBoundsException ex) {
@@ -758,7 +758,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@since    April 11, 2002
 	 */
-	public void closeAllOutputPorts() {
+	public void closeAllOutputPorts() throws InterruptedException {
 		Iterator iterator = getOutPorts().iterator();
 		OutputPort port;
 
@@ -774,7 +774,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *
 	 *@since    April 18, 2002
 	 */
-	public void broadcastEOF() {
+	public void broadcastEOF() throws InterruptedException{
 		closeAllOutputPorts();
 	}
 
@@ -785,7 +785,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@param  portNum  Which port to close
 	 *@since           April 11, 2002
 	 */
-	public void closeOutputPort(int portNum) {
+	public void closeOutputPort(int portNum) throws InterruptedException {
         OutputPort port = (OutputPort) outPorts.get(new Integer(portNum));
         if (port == null) {
             throw new RuntimeException(this.getId()+" - can't close output port \"" + portNum
