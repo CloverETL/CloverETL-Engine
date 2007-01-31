@@ -52,6 +52,7 @@ public class DataRecordMetadataStub {
 	}
     
     public DataRecordMetadata createMetadata() throws Exception {
+        connection.init();
         return connection.createMetadata(parameters);
     }
 }
