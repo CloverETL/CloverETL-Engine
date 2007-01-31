@@ -157,7 +157,7 @@ public abstract class EdgeBase {
 	 *
 	 *@since    April 2, 2002
 	 */
-	public abstract void close();
+	public abstract void close() throws InterruptedException;
 	
 	
 	public abstract boolean hasData();

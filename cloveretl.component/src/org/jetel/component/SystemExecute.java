@@ -715,7 +715,11 @@ public class SystemExecute extends Node{
 				waitKill(parentThread,KILL_PROCESS_WAIT_TIME);
 			}finally{
 //				parser.close();
-				outPort.close();
+				try {
+                    outPort.close();
+                } catch (InterruptedException e) {
+                    resultCode = Result.ABORTED;
+                }
 			}
 			if (resultCode == Result.RUNNING)
 				if (runIt) {
