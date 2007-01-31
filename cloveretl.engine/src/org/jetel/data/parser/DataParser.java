@@ -499,7 +499,7 @@ public class DataParser implements Parser {
 		} catch(BadDataFormatException bdfe) {
             if(exceptionHandler != null) {
                 exceptionHandler.populateHandler(bdfe.getMessage(), record,
-						recordCounter, fieldNum, data, bdfe);
+						recordCounter, fieldNum, data.toString(), bdfe);
             } else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
