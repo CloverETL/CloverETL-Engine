@@ -291,6 +291,17 @@ public class StringUtils {
 		return buf;
 	}
 	
+	public static StringBuilder trimLeading(StringBuilder str){
+		char[] chars = new char[str.length()];
+		str.getChars(0, chars.length, chars, 0);
+		int pos = 0;
+		while (pos < chars.length && Character.isWhitespace(chars[pos])) {
+			pos++;
+		}
+		str.delete(0, pos);
+		return str;
+	}
+	
 	/**
 	 * Modifies buffer scope so that the trailing whitespace is ignored.
 	 * @param buf
@@ -306,6 +317,17 @@ public class StringUtils {
 		return buf;
 	}
 	
+	public static StringBuilder trimTrailing(StringBuilder str){
+		char[] chars = new char[str.length()];
+		str.getChars(0, chars.length, chars, 0);
+		int pos = chars.length - 1;
+		while (pos > 0 && Character.isWhitespace(chars[pos])) {
+			pos--;
+		}
+		str.setLength(pos+1);
+		return str;
+	}
+
 	/**
 	 * Modifies buffer scope so that the leading and trailing whitespace is ignored.
 	 * @param buf
