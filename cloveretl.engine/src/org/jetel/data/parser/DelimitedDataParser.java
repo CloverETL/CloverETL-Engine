@@ -462,11 +462,11 @@ public class DelimitedDataParser implements Parser {
 			if(exceptionHandler != null ) {  //use handler only if configured
                 exceptionHandler.populateHandler(getErrorMessage(bdfe
 						.getMessage(), data, recordCounter, fieldNum), record,
-						-1, fieldNum, "\"" + StringUtils.specCharToString(strData) + "\"", bdfe);
+						-1, fieldNum, strData, bdfe);
 			} else {
                 bdfe.setRecordNumber(recordCounter);
                 bdfe.setFieldNumber(fieldNum);
-                bdfe.setOffendingValue("\"" + StringUtils.specCharToString(strData) + "\"");
+                bdfe.setOffendingValue(strData);
                 throw bdfe;
 			}
 		} catch (Exception ex) {
