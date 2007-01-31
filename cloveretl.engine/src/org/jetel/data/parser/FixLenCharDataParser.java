@@ -62,6 +62,8 @@ public class FixLenCharDataParser extends FixLenDataParser {
 	 */
 	private boolean skipTrailingBlanks = true;
 	
+	private Boolean trim = null;
+	
 	/**
 	 * Specifies whether incomplete records are allowed.
 	 */
@@ -135,10 +137,15 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		if (rawRec == null) {
 			return null;	// end of input
 		}
-
+		boolean skipLBlanks;
+		boolean skipTBlanks;
 		int recStart = rawRec.position();
 		int recEnd = rawRec.limit();
 		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
+			skipLBlanks = skipLeadingBlanks || trim
+					|| (trim == null && metadata.getField(fieldIdx).isTrim());
+			skipTBlanks = skipTrailingBlanks || trim
+					|| (trim == null && metadata.getField(fieldIdx).isTrim());
 			try {
 				if (recStart + fieldStart[fieldIdx] >= recEnd) {	// there are no data available for this field
 					record.getField(fieldIdx).setToDefaultValue();
@@ -157,10 +164,10 @@ public class FixLenCharDataParser extends FixLenDataParser {
                     break;
 				}
                 
-				if (skipLeadingBlanks) {
+				if (skipLBlanks) {
 					StringUtils.trimLeading(rawRec);
 				}
-				if (skipTrailingBlanks) {
+				if (skipTBlanks) {
 					StringUtils.trimTrailing(rawRec);
 				}
 				record.getField(fieldIdx).fromString(rawRec);
@@ -366,6 +373,14 @@ public class FixLenCharDataParser extends FixLenDataParser {
             _savedPos += delimStartEnd[1];
 		}
 		return skipped;
+	}
+
+	public Boolean getTrim() {
+		return trim;
+	}
+
+	public void setTrim(Boolean trim) {
+		this.trim = trim;
 	}
 		
 }
