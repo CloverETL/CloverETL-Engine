@@ -199,7 +199,9 @@ public class DelimitedDataReader extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, parser.getTrim());
+		if (parser.getTrim() != null) {
+			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getTrim()));
+		}		
 		
 	}
 
@@ -235,7 +237,7 @@ public class DelimitedDataReader extends Node {
                 aDelimitedDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aDelimitedDataReaderNIO.parser.setTrim(xattribs.getString(XML_TRIM_ATTRIBUTE));
+				aDelimitedDataReaderNIO.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
