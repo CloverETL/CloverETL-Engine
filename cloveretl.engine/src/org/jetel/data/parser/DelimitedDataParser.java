@@ -78,7 +78,7 @@ public class DelimitedDataParser implements Parser {
 	private char[][] delimiters;
 	private char[] fieldTypes;
 	private boolean isEof;
-	private BoolExt trim = BoolExt.NOT_SET;
+	private Boolean trim = null;
 
 	// Attributes
 	// maximum length of delimiter
@@ -433,9 +433,8 @@ public class DelimitedDataParser implements Parser {
 			// are we skipping this row/field ?
 			if (record != null){
 			    fieldStringBuffer.flip();
-			    if (trim == BoolExt.TRUE || 
-			    		(trim == BoolExt.NOT_SET && metadata.getField(
-								fieldCounter).isTrim())) {
+			    if (trim == Boolean.TRUE || 
+			    		(trim == null && metadata.getField(fieldCounter).isTrim())) {
 			    	StringUtils.trim(fieldStringBuffer);
 			    }
 			    populateField(record, fieldCounter, fieldStringBuffer);
@@ -562,24 +561,12 @@ public class DelimitedDataParser implements Parser {
 		return skipped;
 	}
 	
-	public String getTrim() {
-		return trim.toString();
+	public Boolean getTrim() {
+		return trim;
 	}
 
-	public void setTrim(String trim) {
-		switch (trim.charAt(0)) {
-		case 't':
-		case 'T':
-			this.trim = BoolExt.TRUE;
-			break;
-		case 'f':
-		case 'F':
-			this.trim = BoolExt.FALSE;
-			break;
-		default:
-			this.trim = BoolExt.NOT_SET;
-			break;
-		}
+	public void setTrim(Boolean trim) {
+		this.trim = trim;
 	}
 	
 }	
