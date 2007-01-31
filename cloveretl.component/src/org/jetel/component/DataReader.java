@@ -269,7 +269,9 @@ public class DataReader extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charSet);
 		}
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
-		xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, parser.getTrim());
+		if (parser.getTrim() != null) {
+			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String.valueOf(parser.getTrim()));
+		}		
 		
 	}
 
@@ -300,7 +302,7 @@ public class DataReader extends Node {
 				aDataReader.parser.setSkipLeadingBlanks(xattribs.getBoolean(XML_SKIPLEADINGBLANKS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
-				aDataReader.parser.setTrim(xattribs.getString(XML_TRIM_ATTRIBUTE));
+				aDataReader.parser.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SKIPFIRSTLINE_ATTRIBUTE)){
 				aDataReader.setSkipFirstLine(xattribs.getBoolean(XML_SKIPFIRSTLINE_ATTRIBUTE));
