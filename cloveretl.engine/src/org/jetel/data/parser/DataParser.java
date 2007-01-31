@@ -94,7 +94,7 @@ public class DataParser implements Parser {
 	
 	private boolean treatMultipleDelimitersAsOne = false;
 	
-	private BoolExt trim = BoolExt.NOT_SET; 
+	private Boolean trim = null; 
 	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
@@ -264,11 +264,14 @@ public class DataParser implements Parser {
 		int mark;
 		long size = 0;
 		boolean inQuote;
-		boolean skipBlanks = skipLeadingBlanks;
+		boolean skipBlanks;
 		
 		recordCounter++;
 		recordBuffer.clear();
 		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
+			skipBlanks = skipLeadingBlanks
+					|| trim == Boolean.TRUE
+					|| (trim == null && metadata.getField(fieldCounter).isTrim());
 			if (metadata.getField(fieldCounter).isDelimited()) { //delimited data field
 				// field
 				// read data till we reach field delimiter, record delimiter,
@@ -285,6 +288,11 @@ public class DataParser implements Parser {
 						//delimiter update
 						delimiterSearcher.update((char) character);
 						
+						//skip leading blanks
+						if (skipBlanks) 
+							if(Character.isWhitespace(character)) continue; 
+							else skipBlanks = false;
+
 						//quotedStrings
 						if (quotedStrings 
 								&& metadata.getField(fieldCounter).getType() == DataFieldMetadata.STRING_FIELD) {
@@ -309,16 +317,18 @@ public class DataParser implements Parser {
 								return parsingErrorFound("Unexpected record delimiter", record, fieldCounter);
 							}
 						}
-						if (trim == BoolExt.FALSE
-								|| (trim == BoolExt.NOT_SET && !metadata
-										.getField(fieldCounter).isTrim())
-								|| !Character.isWhitespace(character)) {
-							fieldBuffer.append((char) character);
-						}						
+						//fieldDelimiter update
+						fieldBuffer.append((char) character);
+
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
-								fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+									fieldBuffer.setLength(fieldBuffer.length()
+										- delimiterSearcher.getMatchLength());
+									if ((trim == Boolean.TRUE || (trim == null 
+											&& metadata.getField(fieldCounter).isTrim()))) {
+										StringUtils.trimTrailing(fieldBuffer);
+									}
 								if(treatMultipleDelimitersAsOne)
 									while(followFieldDelimiter(fieldCounter));
 								break;
@@ -329,8 +339,8 @@ public class DataParser implements Parser {
 					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
 				}
 			} else { //fixlen data field
-				fieldBuffer.setLength(0);
 				mark = 0;
+				fieldBuffer.setLength(0);
 				try {
 					for(int i = 0; i < fieldLengths[fieldCounter]; i++) {
 						//end of file
@@ -339,24 +349,26 @@ public class DataParser implements Parser {
 						}
 
 						//skip leading blanks
-						if(skipBlanks) 
+						if (skipBlanks) 
 							if(Character.isWhitespace(character)) continue; 
 							else skipBlanks = false;
 
-						if (trim == BoolExt.FALSE
-								|| (trim == BoolExt.NOT_SET && !metadata
-										.getField(fieldCounter).isTrim())
-								|| !Character.isWhitespace(character)) {
-							fieldBuffer.append((char) character);
-						}						
+						//keep track of trailing blanks
+						if(!Character.isWhitespace(character)) {
+							mark = i;
+						} 
+
+						fieldBuffer.append((char) character);
 					}
 					if(fieldBuffer.length() > 0) {
-						fieldBuffer.setLength(fieldBuffer.length() - (fieldLengths[fieldCounter] - mark - 1));
+						fieldBuffer.setLength(fieldBuffer.length() - 
+								(fieldLengths[fieldCounter] - mark - 1));
 					}
 				} catch (Exception ex) {
 					throw new RuntimeException(getErrorMessage(ex.getMessage(),	null, fieldCounter));
 				}
 			}
+
 			// did we have EOF situation ?
 			if (character == -1) {
 				try {
@@ -711,24 +723,12 @@ public class DataParser implements Parser {
         return null;
     }
 
-	public String getTrim() {
-		return trim.toString();
+	public Boolean getTrim() {
+		return trim;
 	}
 
-	public void setTrim(String trim) {
-		switch (trim.charAt(0)) {
-		case 't':
-		case 'T':
-			this.trim = BoolExt.TRUE;
-			break;
-		case 'f':
-		case 'F':
-			this.trim = BoolExt.FALSE;
-			break;
-		default:
-			this.trim = BoolExt.NOT_SET;
-			break;
-		}
+	public void setTrim(Boolean trim) {
+		this.trim = trim;
 	}
 }
 /*
