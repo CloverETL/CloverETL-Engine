@@ -77,6 +77,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dataPolicy</b></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>skipLeadingBlanks</b><br><i>optional</i></td><td>specifies whether leading blanks at each fixlen field should be skipped. Default value is TRUE.<br>
  *  <i>Note: if this option is ON (TRUE), then field composed of all blanks/spaces is transformed to NULL (zero length string).</i></td>
+ *  <tr><td><b>trim</b><br><i>optional</i></td><td>specifies whether to trim strings before setting them to data fields.
+ *  When not set, strings are trimmed depending on "trim" attribute of metadata.</td>
  *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b></td><td>specifies how many records/rows should be skipped from the source file; good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>

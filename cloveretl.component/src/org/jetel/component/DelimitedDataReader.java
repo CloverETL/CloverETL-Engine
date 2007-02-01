@@ -70,6 +70,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>skipFirstLine</b></td><td>specifies whether first record/line should be skipped. Default value is FALSE. If record delimiter is specified than skip one record else first line of flat file.</td>
  *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
  *  <tr><td><b>numRecords</b></td><td>max number of parsed records</td>
+ *  <tr><td><b>trim</b><br><i>optional</i></td><td>specifies whether to trim strings before setting them to data fields.
+ *  When not set, strings are trimmed depending on "trim" attribute of metadata.</td>
  *  </tr>
  *  </table>
  *
