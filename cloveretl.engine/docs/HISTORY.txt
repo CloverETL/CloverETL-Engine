@@ -30,6 +30,24 @@ Changes/bug fixes:
 + Added new data field type cbyte (compressed byte array)
 + All join components are ready to satisfy more slave input data streams
 
+REL 2-0-4
+---------
+Release in particular repairing bugs from 2.0.3 version.
+
+Changes/bug fixes:
++ fix in transform language for optional assigning 
++ Clover data writer was fixed for incoming empty record set
+
+REL 2-0-3
+---------
+Release in particular repairing bugs from 2.0.2 version.
+
+Changes/bug fixes:
++ all factories for pluginable graph elements (ComponentFactory, ConnectionFactory, ...)
+  now are able to create instances by passing constructor parameters
++ all components with record transformation class (Reformat, HashJoin, ...)
+  have a new contructor for direct supplying RecordTransform class
+
 REL 2-0-2
 ---------
 Release in particular repairing bugs from 2.0.1 version.
