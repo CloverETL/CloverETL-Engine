@@ -56,12 +56,6 @@ import org.jetel.util.StringUtils;
  */
 public class DataParser implements Parser {
 	
-	public enum BoolExt{
-		TRUE,
-		FALSE,
-		NOT_SET;
-	}
-
 	private IParserExceptionHandler exceptionHandler;
 
 	private DataRecordMetadata metadata;
