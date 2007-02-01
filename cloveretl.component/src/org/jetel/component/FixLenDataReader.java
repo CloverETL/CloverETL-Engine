@@ -83,6 +83,8 @@ import org.w3c.dom.Element;
  *  Default is true. It doesn't have any effect in byte mode.</td>
  *  <tr><td><b>skipTrailingBlanks</b></td><td>Values true/false. Sets on/off skipping of trailing blanks in fields.
  *  Default is true. It doesn't have any effect in byte mode.</td>
+ *  <tr><td><b>trim</b><br><i>optional</i></td><td>specifies whether to trim strings before setting them to data fields.
+ *  When not set, strings are trimmed depending on "trim" attribute of metadata.</td>
  *  <tr><td><b>enableIncomplete</b></td><td>Values true/false. Sets on/off support for incomplete records. 
  *  Default is true. It doesn't have any effect in byte mode.</td>
  *  <tr><td><b>skipEmpty</b></td><td>Values true/false. Specifies whether empty records are to be ignored. 
