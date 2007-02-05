@@ -43,6 +43,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -76,12 +77,12 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     
 	protected DataRecordMetadata metadata;
 	protected Parser dataParser;
-	protected Map lookupTable;
+	protected Map<HashKey, DataRecord> lookupTable;
 	protected RecordKey indexKey;
 	protected HashKey lookupKey;
 	protected int numFound;
 	protected DataRecord lookupData;
-	protected int tableInitialSize=0;
+	protected int tableInitialSize=DEFAULT_INITIAL_CAPACITY;
 	
 	/**
 	* Default capacity of HashMap when standard constructor is used.
@@ -111,13 +112,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	/**
 	 *Constructor for the SimpleLookupTable object.
 	 *
-	 * @param  parser     Reference to parser which should be used for parsing input data
+	 * @param  parser     Reference to not-initialized parser which should be used for parsing input data
 	 * @param  metadata   Metadata describing input data
 	 * @param  keys       Names of fields which comprise indexKey to lookup table
 	 * @param  mapObject  Object implementing Map interface. It will be used to hold indexKey->data pairs
 	 * @since             May 2, 2002
 	 */
-	public SimpleLookupTable(String id, DataRecordMetadata metadata, String[] keys, Parser parser, Map mapObject) {
+	public SimpleLookupTable(String id, DataRecordMetadata metadata, String[] keys, Parser parser, Map<HashKey, DataRecord> mapObject) {
         super(id);
 		this.dataParser = parser;
 		this.metadata = metadata;
@@ -158,7 +159,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	}
 	
 	protected DataRecord get(){
-	    DataRecord data=(DataRecord)lookupTable.get(lookupKey);
+	    DataRecord data = lookupTable.get(lookupKey);
 	    numFound= (data!=null ? 1 : 0);
 	    return data;
 	}
@@ -176,23 +177,20 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    record.init();
 		
 	    if (lookupTable==null){
-	        if (tableInitialSize>0){
-	            lookupTable = new HashMap(tableInitialSize);
-	        }else{
-	            lookupTable = new HashMap(DEFAULT_INITIAL_CAPACITY);
-	        }
+	        lookupTable = new HashMap<HashKey, DataRecord>(tableInitialSize);
 	    }
+        
 		/* populate the lookupTable (Map) with data
          * if provided dataParser is not null, otherwise it is assumed that the lookup
          * table will be populated later by calling put() method
          */
         
         if (dataParser != null) {
+            dataParser.init(metadata);
             try {
                 while (dataParser.getNext(record) != null) {
                     DataRecord storeRecord = record.duplicate();
-                    lookupTable.put(new HashKey(indexKey, storeRecord),
-                            storeRecord);
+                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
                 }
             } catch (JetelException e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
@@ -235,9 +233,8 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             } else {
                 parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
             }
-            parser.init(metadata);
             if (xattribs.exists(XML_FILE_URL)) {
-            	parser.setDataSource(new FileInputStream(xattribs.getString(XML_FILE_URL)));
+            	parser.setDataSource(FileUtils.getReadableChannel(graph.getProjectURL(), xattribs.getString(XML_FILE_URL)));
             }else{
             	parser = null;
             }
