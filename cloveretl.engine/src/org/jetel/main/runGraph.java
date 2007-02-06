@@ -82,6 +82,7 @@ import org.jetel.util.crypto.Enigma;
  *  <tr><td nowrap>-pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
  *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
  *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
+ *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -103,6 +104,7 @@ public class runGraph {
     public final static String PASSWORD_SWITCH = "-pass";
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
     public final static String LOG_HOST_SWITCH = "-loghost";
+    public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
 	
     
     /**
@@ -162,7 +164,8 @@ public class runGraph {
         String pluginsRootDirectory = null;
         String password = null;
         String logHost = null;
-
+        boolean onlyCheckConfig = false;
+        
         System.out
                 .println("***  CloverETL framework/transformation graph runner ver "
                         + RUN_GRAPH_VERSION
@@ -223,6 +226,8 @@ public class runGraph {
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
                 i++;
                 logHost = args[i];
+            } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
+                onlyCheckConfig = true;
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
@@ -254,7 +259,7 @@ public class runGraph {
         // engine initialization - should be called only once
         runGraph.initEngine(pluginsRootDirectory, password);
 
-        // prapere input stream with XML graph definition
+        // prepare input stream with XML graph definition
         InputStream in = null;
         if (loadFromSTDIN) {
             System.out.println("Graph definition loaded from STDIN");
@@ -285,6 +290,8 @@ public class runGraph {
                 status.log();
             } catch(Exception e) {
                 logger.error("Checking graph failed! (" + e.getMessage() + ")");
+            } finally {
+                if(onlyCheckConfig) System.exit(0);
             }
 
             if (!graph.init()) {
@@ -365,6 +372,7 @@ public class runGraph {
         System.out.println("-pass\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("-stdin\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
+        System.out.println("-checkconfig\t\tonly check graph configuration");
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         
