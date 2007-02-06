@@ -81,6 +81,16 @@ public class TransformException extends JetelException {
 		this.recNo = recNo;
 	}
 
-
+	@Override
+	public String getMessage() {
+		StringBuilder msg = new StringBuilder();
+		msg.append("Record number: ");
+		msg.append(recNo);
+		msg.append(", field number: ");
+		msg.append(fieldNo);
+		msg.append(". Message: ");
+		msg.append(super.getMessage());
+		return msg.toString();
+	}
     
 }
