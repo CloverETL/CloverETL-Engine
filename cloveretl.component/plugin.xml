@@ -247,4 +247,9 @@
 		<parameter id="className" value="org.jetel.component.SequenceChecker"/>
 	</extension>
 
+	<extension point-id="component">
+		<parameter id="type" value="TEXT_TABLE_WRITER"/>
+		<parameter id="className" value="org.jetel.component.TextTableWriter"/>
+	</extension>
+
 </plugin>
