@@ -20,17 +20,10 @@
 
 package org.jetel.component;
 
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.DecimalFormatSymbols;
-import java.text.Format;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
@@ -39,11 +32,9 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.jetel.data.DataField;
+import org.jetel.data.DataFieldFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
-import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
-import org.jetel.data.primitive.NumericFormat;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -53,7 +44,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
-import org.jetel.util.TypedProperties;
 import org.jetel.util.WcardPattern;
 
 /**
@@ -247,13 +237,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	/**
 	 * Map "rules" stores rules given by user in following form:
 	 * key: patternOut
-	 * value: ruleType:ruleString, where ruleType is one of: Rule.FIELD, Rule.CONSTANT,
-	 * 	Rule.SEQUENCE, Rule.PARAMETER, and ruleString can be patternIn, constant, sequence ID
-	 * 	(optionally with method) or parameter name 
+	 * value: proper descendant of Rule class
 	 */
-	protected Map<String, String> rules = new LinkedHashMap<String, String>();
+	protected Map<String, Rule> rules = new LinkedHashMap<String, Rule>();
 	protected Rule[][] transformMapArray;//rules from "rules" map translated for concrete metadata
-	protected int[][] order;//order for assigning output fields (importent if assigning sequence values)
+	protected int[][] order;//order for assigning output fields (important if assigning sequence values)
 	
 	protected static final int REC_NO = 0;
 	protected static final int FIELD_NO = 1;
@@ -269,10 +257,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	protected final static String FIELD_OPCODE_REGEX = "\\$\\{in\\.(.*)\\}";
 	protected final static Pattern FIELD_PATTERN = Pattern.compile(FIELD_OPCODE_REGEX);
 	
-	private	 int ruleType;
-	private String ruleString;
-	private String sequenceID;
-
+	private Object value;
 
 	/**
 	 * @param logger
@@ -288,7 +273,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param patternIn input field's pattern
 	 */
 	public void addFieldToFieldRule(String patternOut, String patternIn) {
-		rules.put(patternOut, String.valueOf(Rule.FIELD) + COLON + patternIn);
+		rules.put(patternOut, new FieldRule(patternIn));
 	}
 
 	/**
@@ -364,11 +349,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param patternOut output fields' pattern
 	 * @param value value to assign (can be string representation of any type)
 	 */
-	public void addConstantToFieldRule(String patternOut, String value){
-		if (value == null) {
-			value = "null";
-		}
-		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+	public void addConstantToFieldRule(String patternOut, String source){
+		rules.put(patternOut, new ConstantRule(source));
 	}
 	
 	/**
@@ -378,7 +360,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, int value){
-		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+		rules.put(patternOut, new ConstantRule(value));
 	}
 	
 	/**
@@ -388,7 +370,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, long value){
-		rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
+		rules.put(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -398,7 +380,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, double value){
-		rules.put(patternOut,String.valueOf(Rule.CONSTANT) + COLON + value);
+		rules.put(patternOut, new ConstantRule(value));
 	}
 
 	/**
@@ -408,12 +390,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Date value){
-		if (value == null) {
-			rules.put(patternOut, "null");
-		}else{
-			rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + 
-						SimpleDateFormat.getDateInstance().format(value));
-		}
+		rules.put(patternOut,  new ConstantRule(value));
 	}
 
 	/**
@@ -423,11 +400,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param value value to assign
 	 */
 	public void addConstantToFieldRule(String patternOut, Numeric value){
-		if (value == null) {
-			rules.put(patternOut, "null");
-		}else{
-			rules.put(patternOut, String.valueOf(Rule.CONSTANT) + COLON + value);
-		}
+		rules.put(patternOut,  new ConstantRule(value));
 	}
 
 	/**
@@ -435,10 +408,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @param recNo output record's number
 	 * @param fieldNo output record's field number
-	 * @param value value value to assign (can be string representation of any type)
+	 * @param source value value to assign (can be string representation of any type)
 	 */
-	public void addConstantToFieldRule(int recNo, int fieldNo, String value){
-		addConstantToFieldRule(String.valueOf(recNo) + DOT + fieldNo, value);
+	public void addConstantToFieldRule(int recNo, int fieldNo, String source){
+		addConstantToFieldRule(String.valueOf(recNo) + DOT + fieldNo, source);
 	}
 
 	/**
@@ -501,10 +474,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * 
 	 * @param recNo output record's number
 	 * @param fieldNo output record's field name
-	 * @param value value value to assign (can be string representation of any type)
+	 * @param source value value to assign (can be string representation of any type)
 	 */
-	public void addConstantToFieldRule(int recNo, String field, String value){
-		addConstantToFieldRule(String.valueOf(recNo) + DOT + field, value);
+	public void addConstantToFieldRule(int recNo, String field, String source){
+		addConstantToFieldRule(String.valueOf(recNo) + DOT + field, source);
 	}
 
 	/**
@@ -566,10 +539,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * Mathod for adding constant assigning to output fields from 0th output record rule
 	 * 
 	 * @param fieldNo output record's field number
-	 * @param value value value to assign (can be string representation of any type)
+	 * @param source value value to assign (can be string representation of any type)
 	 */
-	public void addConstantToFieldRule(int fieldNo, String value){
-		addConstantToFieldRule(0, fieldNo, value);
+	public void addConstantToFieldRule(int fieldNo, String source){
+		addConstantToFieldRule(0, fieldNo, source);
 	}
 
 	/**
@@ -634,7 +607,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		String sequenceString = sequence.startsWith("${") ? 
 				sequence.substring(sequence.indexOf(DOT)+1, sequence.length() -1) 
 				: sequence;
-		rules.put(patternOut, String.valueOf(Rule.SEQUENCE) + COLON + sequenceString);
+		rules.put(patternOut, new SequenceRule(sequenceString));
 	}
 	
 	/**
@@ -682,7 +655,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param sequence sequence for getting value
 	 */
 	public void addSequenceToFieldRule(String patternOut, Sequence sequence){
-		addSequenceToFieldRule(patternOut, sequence.getId());
+		rules.put(patternOut, new SequenceRule(sequence));
 	}
 	
 	/**
@@ -693,7 +666,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param sequence sequence for getting value
 	 */
 	public void addSequenceToFieldRule(int recNo, int fieldNo, Sequence sequence){
-		addSequenceToFieldRule(String.valueOf(recNo) + DOT + fieldNo, sequence.getId());
+		addSequenceToFieldRule(String.valueOf(recNo) + DOT + fieldNo, sequence);
 	}
 	
 	/**
@@ -704,7 +677,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param sequence sequence for getting value
 	 */
 	public void addSequenceToFieldRule(int recNo, String field, Sequence sequence){
-		addSequenceToFieldRule(String.valueOf(recNo) + DOT + field, sequence.getId());
+		addSequenceToFieldRule(String.valueOf(recNo) + DOT + field, sequence);
 	}
 	
 	/**
@@ -714,7 +687,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param sequence sequence for getting value
 	 */
 	public void addSequenceToFieldRule(int fieldNo, Sequence sequence){
-		addSequenceToFieldRule(0,fieldNo, sequence.getId());
+		addSequenceToFieldRule(0,fieldNo, sequence);
 	}
 
 	/**
@@ -727,7 +700,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (parameterName.indexOf(DOT) > -1 ) {
 			parameterName = parameterName.substring(parameterName.indexOf(DOT) + 1, parameterName.length() -1);
 		}
-		rules.put(patternOut, String.valueOf(Rule.PARAMETER) + COLON + parameterName);
+		rules.put(patternOut, new ParameterRule(parameterName));
 	}
 
 	/**
@@ -797,7 +770,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param patternOut output field pattern for deleting rule
 	 */
 	public void deleteRule(String patternOut){
-		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+		rules.put(patternOut, new DeleteRule());
 	}
 	
 	/**
@@ -808,7 +781,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outRecNo, int outFieldNo){
 		String patternOut = String.valueOf(outRecNo) + DOT + outFieldNo;
-		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+		rules.put(patternOut, new DeleteRule());
 	}
 	
 	/**
@@ -819,7 +792,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outRecNo, String outField){
 		String patternOut = String.valueOf(outRecNo) + DOT + outField;
-		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+		rules.put(patternOut, new DeleteRule());
 	}
 
 	/**
@@ -829,7 +802,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public void deleteRule(int outFieldNo){
 		String patternOut = String.valueOf(0) + DOT + outFieldNo;
-		rules.put(patternOut, String.valueOf(Rule.DELETE) + COLON + patternOut);
+		rules.put(patternOut, new DeleteRule());
 	}
 	
 	public void finished() {
@@ -873,16 +846,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 		//map storing transformation for concrete output fields
 		//key is in form: recNumber.fieldNumber 
 		Map<String, Rule> transformMap = new LinkedHashMap<String, Rule>();
-		Entry<String, String> rulesEntry;
+		Entry<String, Rule> rulesEntry;
 		Rule rule;
-		int type;
 		String field;
-		String ruleString;
+		String ruleString = null;
 		String[] outFields = new String[0];
 		String[] inFields;
 		//iteration over each user given rule
-		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();){
+		for (Iterator<Entry<String, Rule>> iterator = rules.entrySet().iterator();iterator.hasNext();){
 			rulesEntry = iterator.next();
+			rule = rulesEntry.getValue();
 			//find output fields pattern
 			field = resolveField(rulesEntry.getKey());
 			if (field == null){
@@ -900,19 +873,15 @@ public class CustomizedRecordTransform implements RecordTransform {
 				
 			}
 			inFields = new String[0];
-			//find type: Rule.FIELD, Rule.CONSTANT,	Rule.SEQUENCE, Rule.PARAMETER
-			type = Integer.parseInt(rulesEntry.getValue().substring(0, rulesEntry.getValue().indexOf(COLON)));
-			//find rule: patternIn, constant, sequence ID (optionally with method) or parameter name
-			ruleString = rulesEntry.getValue().substring(rulesEntry.getValue().indexOf(COLON)+1);
-			if (type == Rule.DELETE){
+			if (rulesEntry.getValue() instanceof DeleteRule){
 				for (int i = 0; i < outFields.length; i++) {
 					rule = transformMap.remove(outFields[i]);
 				}		
 				continue;
 			}
-			if (type == Rule.FIELD) {
+			if (rulesEntry.getValue() instanceof FieldRule) {
 				//find input fields from pattern
-				ruleString = resolveField(ruleString);
+				ruleString = resolveField(rule.getSource());
 				if (ruleString == null){
 					errorMessage = "Wrong pattern for output fields: " + ruleString;
 					logger.error(errorMessage);
@@ -927,9 +896,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 					
 				}
 			}
-			if (type == Rule.FIELD && inFields.length > 1){
+			if (rulesEntry.getValue() instanceof FieldRule && inFields.length > 1){
 				//find mapping by names
-				if (putMappingByNames(transformMap,outFields,inFields, rulesEntry.getKey() + "=" + rulesEntry.getValue().substring(2)) == 0) {
+				if (putMappingByNames(transformMap, outFields, inFields,
+						rule.getSource()) == 0) {
 					errorMessage = "Not found any field for mapping by names due to rule:\n" + 
 					field + " - output fields pattern\n" + 
 					ruleString + " - input fields pattern";
@@ -937,17 +907,23 @@ public class CustomizedRecordTransform implements RecordTransform {
 					throw new ComponentNotReadyException(errorMessage);
 				}
 			}else{//for each output field the same rule
-				//for each output field from pattern put rule to map
+				//for each output field from pattern, put rule to map
+				Rule rule1;
 				for (int i=0;i<outFields.length;i++){
 					field = outFields[i];
 					//check if there is just any rule for given output field
-					rule = transformMap.remove(getRecNo(field) + DOT + getFieldNo(field));
-					if (type == Rule.FIELD) {
-						ruleString = inFields[0];
-					}
-					rule = validateRule(getRecNo(field),getFieldNo(field),type,
-							ruleString, rulesEntry.getKey() + "=" + rulesEntry.getValue().substring(2));
-					transformMap.put(outFields[i], rule);
+					transformMap.remove(getRecNo(field) + DOT + getFieldNo(field));
+					rule1 = rule.duplicate();
+//					if (rule1 instanceof FieldRule){
+//						((FieldRule)rule1).setFieldParams(inFields[0]);
+//					}
+					rule1.setGraph(getGraph());
+					rule1.setProperties(parameters);
+					rule1.setLogger(logger);
+					//prepare rule for concrete data field
+					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
+							getFieldNo(field),fieldPolicy);
+					transformMap.put(field, rule1);
 				}
 			}
 		}
@@ -965,401 +941,6 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return true;
 	}
 	
-	/**
-	 * This method checks if given rule can be applied to given output field
-	 * 
-	 * @param recNo output record number
-	 * @param fieldNo output record's field number
-	 * @param ruleType type of rule (Rule.FIELD, Rule.CONSTANT,	Rule.SEQUENCE, Rule.PARAMETER)
-	 * @param ruleString
-	 * @return rule with correct parameters
-	 * @throws ComponentNotReadyException
-	 */
-	protected Rule validateRule(int recNo, int fieldNo, int ruleType,String ruleString,
-			String ruleSource) throws ComponentNotReadyException {
-		char fieldType = targetMetadata[recNo].getFieldType(fieldNo);
-		switch (ruleType) {
-		case Rule.PARAMETER:
-			String parameterValue;
-			if (ruleString.startsWith("${")){//get graph parameter
-				parameterValue = getGraph().getGraphProperties().getProperty(
-						ruleString.substring(2, ruleString.lastIndexOf('}')));
-			}else if (ruleString.startsWith(String.valueOf(PARAMETER_CHAR))){
-				//get parameter from node properties
-				parameterValue = parameters.getProperty((ruleString));
-			}else{
-				//try to find parameter with given name in node properties
-				parameterValue = parameters.getProperty(PARAMETER_CHAR + ruleString);
-				if (parameterValue == null ){
-					//try to find parameter with given name among graph parameters 
-					parameterValue = getGraph().getGraphProperties().getProperty(ruleString);
-				}
-				if (parameterValue == null){
-					errorMessage = "Not found parameter: " + ruleString;
-					if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || 
-							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
-						logger.error(errorMessage);
-						throw new ComponentNotReadyException(errorMessage);
-					}else{
-						logger.warn(errorMessage);
-					}
-				}
-			}
-			//check if parameter value can be set to given field
-			StringBuilder correctParameterValue = new StringBuilder(
-					parameterValue == null ? "null" : parameterValue); 
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD || 
-					fieldType != DataFieldMetadata.BYTE_FIELD_COMPRESSED ||
-					fieldType != DataFieldMetadata.STRING_FIELD ) &&
-					parameterValue != null) {
-				checkConstant(recNo, fieldNo, correctParameterValue);
-			}
-			//change parameter rule to constant rule with parameter value
-			return new Rule(Rule.CONSTANT,correctParameterValue.toString(), ruleSource);
-		case Rule.CONSTANT:
-			if (ruleString.equals("null") && !(targetMetadata[recNo].getField(fieldNo).isNullable() || 
-							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
-				errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
-				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-			}
-			//check if constant can be set to given field
-			StringBuilder correctConstant = new StringBuilder(ruleString);
-			if ((fieldType != DataFieldMetadata.BYTE_FIELD ||
-					fieldType != DataFieldMetadata.BYTE_FIELD_COMPRESSED ||
-					fieldType != DataFieldMetadata.STRING_FIELD ) &&
-					ruleString != null) {
-				if (checkConstant(recNo, fieldNo, correctConstant)) {
-					ruleString = correctConstant.toString();
-				}
-			}
-			break;
-		case Rule.SEQUENCE:
-			sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
-					: ruleString.substring(0, ruleString.indexOf(DOT));
-			Sequence sequence = getGraph().getSequence(sequenceID );
-			if (sequence == null){
-				logger.warn("There is no sequence \"" + sequenceID + "\" in graph");
-				if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || 
-							targetMetadata[recNo].getField(fieldNo).isDefaultValue())){
-					errorMessage = "Null value not allowed to record: " + targetMetadata[recNo].getName() 
-					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-				}
-			}
-			//check sequence method
-			String method = ruleString.indexOf(DOT) > -1 ? 
-					ruleString.substring(ruleString.indexOf(DOT) +1) : "nextValueInt()";
-			char methodType = DataFieldMetadata.UNKNOWN_FIELD;
-			if (method.toLowerCase().startsWith("currentvaluestring") || 
-					method.toLowerCase().startsWith("currentstring") || 
-					method.toLowerCase().startsWith("nextvaluestring") || 
-					method.toLowerCase().startsWith("nextstring")){
-				methodType = DataFieldMetadata.STRING_FIELD;
-			}
-			if (method.toLowerCase().startsWith("currentvalueint") || 
-					method.toLowerCase().startsWith("currentint") || 
-					method.toLowerCase().startsWith("nextvalueint") || 
-					method.toLowerCase().startsWith("nextint")){
-				methodType = DataFieldMetadata.INTEGER_FIELD;
-			}
-			if (method.toLowerCase().startsWith("currentvaluelong") || 
-					method.toLowerCase().startsWith("currentlong") || 
-					method.toLowerCase().startsWith("nextvaluelong") || 
-					method.toLowerCase().startsWith("nextlong")){
-				methodType = DataFieldMetadata.LONG_FIELD;
-			}
-			if (methodType == DataFieldMetadata.UNKNOWN_FIELD){
-				errorMessage = "Unknown sequence method: " + method;
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-			}
-			//check if value from sequence can be set to given field
-			if (!checkTypes(fieldType, null, methodType, null)){
-				if (fieldPolicy == PolicyType.STRICT) {
-					errorMessage = "Sequence method:" + ruleString + " does not " +
-							"match field type:\n"+ targetMetadata[recNo].getName() + 
-							DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
-							" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
-							getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-				}
-				if (fieldPolicy == PolicyType.CONTROLLED){
-					errorMessage = "Sequence method:" + ruleString + " does not " +
-					"match field type:\n"+ targetMetadata[recNo].getName() + 
-					DOT + targetMetadata[recNo].getField(fieldNo).getName() + 
-					" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
-					getDecimalParams(targetMetadata[recNo].getField(fieldNo));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-				}
-			}
-			break;
-		case Rule.FIELD:
-			//check input and output fields types
-			if (!checkTypes(recNo, fieldNo, getRecNo(ruleString), getFieldNo(ruleString))){
-				if (fieldPolicy == PolicyType.STRICT) {
-					errorMessage = "Output field type does not match input field " +
-							"type:\n" +targetMetadata[recNo].getName() + DOT + 
-							targetMetadata[recNo].getField(fieldNo).getName() + 
-							" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
-							getDecimalParams(targetMetadata[recNo].getField(fieldNo)) + "\n" +
-							sourceMetadata[getRecNo(ruleString)].getName() + DOT +
-							sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
-							" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
-							getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-				}
-				if (fieldPolicy == PolicyType.CONTROLLED){
-					errorMessage = "Output field type is not compatible with input field " +
-					"type:\n" +targetMetadata[recNo].getName() + DOT + 
-					targetMetadata[recNo].getField(fieldNo).getName() + 
-					" type - " + targetMetadata[recNo].getField(fieldNo).getTypeAsString() + 
-					getDecimalParams(targetMetadata[recNo].getField(fieldNo)) + "\n" +
-					sourceMetadata[getRecNo(ruleString)].getName() + DOT +
-					sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getName() +
-					" type - " + sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)).getTypeAsString() +
-					getDecimalParams(sourceMetadata[getRecNo(ruleString)].getField(getFieldNo(ruleString)));
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(errorMessage);
-				}
-			}
-		}
-		return new Rule(ruleType,ruleString, ruleSource);
-	}
-	
-	/**
-	 * This method checks if data field of type "inType" is subtype of data field
-	 *  of type "outType". If types are DECIMAL can be check decimal parameters 
-	 *  (LENGTH and SCALE)
-	 * 
-	 * @param outType type to be supertype
-	 * @param outTypeDecimalParams if outType=DataFieldMetadata.DECIMAL_FIELD
-	 * 	represents LENGTH and SCALE
-	 * @param inType type to be subtype
-	 * @param inTypeDEcimalParams if inType=DataFieldMetadata.DECIMAL_FIELD
-	 * 	represents LENGTH and SCALE
-	 * @return "true" if inType is subtype of outType, "false" in other cases
-	 */
-	private boolean checkTypes(char outType, int[] outTypeDecimalParams,
-			char inType, int[] inTypeDEcimalParams){
-		boolean checkTypes;
-		if (outType == inType){
-			//if DECIMAL type check LENGTH and SCALE 
-			if (outType == DataFieldMetadata.DECIMAL_FIELD ){
-				checkTypes = inTypeDEcimalParams[0] <= outTypeDecimalParams[0] && 
-				inTypeDEcimalParams[1] <= outTypeDecimalParams[1];
-			}else{
-				checkTypes = true;
-			}
-		}else {
-			checkTypes = false;
-		}
-		DataFieldMetadata outField = new DataFieldMetadata("out",outType,(short)1);
-		if (outTypeDecimalParams != null){
-			TypedProperties properties = new TypedProperties();
-			properties.put(DataFieldMetadata.LENGTH_ATTR, outTypeDecimalParams[0]);
-			properties.put(DataFieldMetadata.SCALE_ATTR, outTypeDecimalParams[1]);
-			outField.setFieldProperties(properties);
-		}
-		DataFieldMetadata inField = new DataFieldMetadata("out",inType,(short)1);
-		if (inTypeDEcimalParams != null){
-			TypedProperties properties = new TypedProperties();
-			properties.put(DataFieldMetadata.LENGTH_ATTR, inTypeDEcimalParams[0]);
-			properties.put(DataFieldMetadata.SCALE_ATTR, inTypeDEcimalParams[1]);
-			inField.setFieldProperties(properties);
-		}
-		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
-			return false;
-		}else if (fieldPolicy == PolicyType.CONTROLLED && !inField.isSubtype(outField)){
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * This method checks if input field is subtype of output type
-	 * 
-	 * @param outRecNo output record number
-	 * @param outFieldNo output record's field number
-	 * @param inRecNo input record number
-	 * @param inFieldNo input record's field number
-	 * @return "true" if input field is subtype of output field, "false" in other cases
-	 */
-	private boolean checkTypes(int outRecNo, int outFieldNo, int inRecNo, int inFieldNo){
-		DataFieldMetadata outField = targetMetadata[outRecNo].getField(outFieldNo);
-		DataFieldMetadata inField = sourceMetadata[inRecNo].getField(inFieldNo);
-		boolean checkTypes;
-		//check if both fields are of type DECIMAL, if yes inField must be subtype of outField
-		if (outField.getType() == inField.getType()){
-			if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD ){
-				checkTypes = inField.isSubtype(outField);
-			}else{
-				checkTypes = true;
-			}
-		}else {
-			checkTypes = false;
-		}
-		if (fieldPolicy == PolicyType.STRICT && !checkTypes){
-			return false;
-		}else if (fieldPolicy == PolicyType.CONTROLLED && !inField.isSubtype(outField)){
-			return false;
-		}
-		return true;
-	}
-	
-	/**
-	 * Check if constant can be set to given fields. In some cases the method can 
-	 * 	change constant string representation to proper form
-	 * 
-	 * @param recNo output record number
-	 * @param fieldNo output record's field number
-	 * @param constant string representation of constatnt to be checked
-	 * @return "true" if constant can be set to given field. In some cases string
-	 * 	representation of constant can be changed
-	 * @throws ComponentNotReadyException
-	 */
-	private boolean checkConstant(int recNo, int fieldNo, StringBuilder constant) throws ComponentNotReadyException{
-		char type = targetMetadata[recNo].getFieldType(fieldNo);
-		Object value;
-		Format format = null; 
-		//field format string
-        String formatString = targetMetadata[recNo].getField(fieldNo).getFormatStr();
-        Locale locale;
-        // handle field locale
-        if (targetMetadata[recNo].getField(fieldNo).getLocaleStr() != null) {
-            String[] localeLC = targetMetadata[recNo].getField(fieldNo).getLocaleStr()
-            			.split(Defaults.DEFAULT_LOCALE_STR_DELIMITER_REGEX);
-            if (localeLC.length > 1) {
-                locale = new Locale(localeLC[0], localeLC[1]);
-            } else {
-                locale = new Locale(localeLC[0]);
-            }
-        } else {
-            locale = null;
-        }
-		switch (type) {
-		case DataFieldMetadata.DATE_FIELD:
-		case DataFieldMetadata.DATETIME_FIELD:
-			//get date format from locale and format string
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    format = new SimpleDateFormat(formatString, locale);
-                } else {
-                    format = new SimpleDateFormat(formatString);
-                }
-                ((DateFormat)format).setLenient(false);
-            } else if (locale != null) {
-            	format = DateFormat.getDateInstance(DateFormat.DEFAULT, locale);
-            	((DateFormat)format).setLenient(false);
-            }else{
-            	format = DateFormat.getDateInstance();
-            	((DateFormat)format).setLenient(false);
-             }
-            try{//parse constant string representation
-            	value = ((SimpleDateFormat)format).parse(constant.toString());
-            }catch(ParseException e){
-            	try {//value could be formatted in method addConstantToFieldRule(String patternOut, Date value)
-                	value = (DateFormat.getDateInstance()).parse(constant.toString());
-                	constant.setLength(0);
-                	//format constatnt with proper format
-                	constant.append(((SimpleDateFormat)format).format((Date)value));
-            	}catch(ParseException e1){
-					errorMessage = e1.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() + 
-					". Expected pattern: " + ((SimpleDateFormat)format).toPattern();
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(e);
-            	}
-            }
-			break;
-		case DataFieldMetadata.DECIMAL_FIELD:
-			//get numeric format from locale and format string
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    format = new NumericFormat(formatString, new DecimalFormatSymbols(locale));
-                } else {
-                    format = new NumericFormat(formatString);
-                }
-            } else if (locale != null) {
-            	format = new NumericFormat(locale);
-            }else{
-            	format = new NumericFormat();
-            }
-            try{//parse constant string representation
-            	value = DecimalFactory.getDecimal(constant.toString(), (NumericFormat)format);
-            }catch(NullPointerException e){//Can't get BigDecimal from string, try get Number
-               	try {
-                	value = (DecimalFormat.getInstance()).parse(constant.toString());
-                	constant.setLength(0);
-                	//format constatnt with proper format
-                	constant.append(((NumericFormat)format).format(value));
-               	}catch(ParseException e1){
-					errorMessage = e1.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-					+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() +
-					". Expected pattern: " + ((NumericFormat)format).toPattern();
-					logger.error(errorMessage);
-					throw new ComponentNotReadyException(e);
-               	}
-            }
-			break;
-		case DataFieldMetadata.INTEGER_FIELD:
-		case DataFieldMetadata.LONG_FIELD:
-		case DataFieldMetadata.NUMERIC_FIELD:
-			//get decimal format from locale and format string
-            if ((formatString != null) && (formatString.length() != 0)) {
-                if (locale != null) {
-                    format = new DecimalFormat(formatString, new DecimalFormatSymbols(locale));
-                } else {
-                    format = new DecimalFormat(formatString);
-                }
-            } else if (locale != null) {
-            	format = DecimalFormat.getInstance(locale);
-            }else{
-            	format = DecimalFormat.getInstance();
-            }
-            try{//parse constant string representation
-            	value = ((DecimalFormat)format).parse(constant.toString());
-            }catch(ParseException e){
-				try{//value could be formatted in one of method addConstantToFieldRule
-					value = new Long(constant.toString());
-				}catch(NumberFormatException eL){
-					try{
-						value = new Double(constant.toString());
-					}catch(NumberFormatException eD){
-						errorMessage = eD.getLocalizedMessage() + " to record: " + targetMetadata[recNo].getName() 
-						+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName() +
-						". Expected pattern: " + ((DecimalFormat)format).toPattern();
-						logger.error(errorMessage);
-						throw new ComponentNotReadyException(e);
-					}
-				}
-				constant.setLength(0);
-               	constant.append(((DecimalFormat)format).format((Number)value));
-            }
-            if (type == DataFieldMetadata.LONG_FIELD || 
-            		type == DataFieldMetadata.INTEGER_FIELD && 
-            		!(value instanceof Long)){
-				errorMessage = constant + " is not Long type to record: " + targetMetadata[recNo].getName() 
-				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-           }
-            if (type == DataFieldMetadata.INTEGER_FIELD && 
-            		((Long)value > Integer.MAX_VALUE || (Long)value < Integer.MIN_VALUE )){
-				errorMessage = constant + " not in range to record: " + targetMetadata[recNo].getName() 
-				+ " , field: " + targetMetadata[recNo].getField(fieldNo).getName();
-				logger.error(errorMessage);
-				throw new ComponentNotReadyException(errorMessage);
-           }
-			break;
-		}
-		return true;
-	}
 	
 	/**
 	 * Method, which puts mapping rules to map. First it tries to find fields with
@@ -1393,7 +974,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return number of mappings put to transform map
 	 */
 	protected int putMappingByNames(Map<String, Rule> transformMap, 
-			String[] outFields, String[] inFields, String rule){
+			String[] outFields, String[] inFields, String rule) throws ComponentNotReadyException{
 		int count = 0;
 		String[][] outFieldsName = new String[targetMetadata.length][maxNumFields(targetMetadata)];
 		for (int i = 0; i < outFields.length; i++) {
@@ -1489,9 +1070,10 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @return true if mapping was put into map, false in other case
 	 */
 	protected boolean putMapping(int outRecNo,int outFieldNo,int inRecNo, int inFieldNo, 
-			String ruleString, Map<String, Rule> transformMap){
+			String ruleString, Map<String, Rule> transformMap) throws ComponentNotReadyException{
 		Rule rule;
-		if (!checkTypes(outRecNo, outFieldNo, inRecNo, inFieldNo)){
+		if (!Rule.checkTypes(targetMetadata[outRecNo].getField(outFieldNo),
+				sourceMetadata[inRecNo].getField(inFieldNo),fieldPolicy)){
 			if (fieldPolicy == PolicyType.STRICT){
 				logger.warn("Found fields with the same names but other types: ");
 				logger.warn(targetMetadata[outRecNo].getName() + DOT + 
@@ -1516,14 +1098,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			return false;
 		}else{//map fields
-			rule = transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
-			if (rule == null) {
-				rule = new Rule(Rule.FIELD, String.valueOf(inRecNo)
-						+ DOT + inFieldNo, ruleString);
-			} else {
-				rule.setType(Rule.FIELD);
-				rule.setValue(String.valueOf(inRecNo) + DOT + inFieldNo, ruleString);
-			}
+			transformMap.remove(String.valueOf(outRecNo) + DOT	+ outFieldNo);
+			rule = new FieldRule(ruleString);
+			rule.setLogger(logger);
+			((FieldRule)rule).setFieldParams(String.valueOf(inRecNo) + DOT	+ inFieldNo);
+			rule.init(sourceMetadata, targetMetadata, outRecNo, outFieldNo, fieldPolicy);
 			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
 			return true;
 		}
@@ -1536,7 +1115,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param metadata
 	 * @return list of fields matching given metadata
 	 */
-	protected ArrayList<String> findFields(String pattern,DataRecordMetadata[] metadata){
+	public static ArrayList<String> findFields(String pattern,
+			DataRecordMetadata[] metadata){
 		ArrayList<String> list = new ArrayList<String>();
 		String recordNoString = pattern.substring(0,pattern.indexOf(DOT));
 		String fieldNoString = pattern.substring(pattern.indexOf(DOT)+1);
@@ -1594,55 +1174,33 @@ public class CustomizedRecordTransform implements RecordTransform {
 			throws TransformException {
 		//array "order" stores coordinates of output fields in order they will be assigned
 		for (int i = 0; i < order.length; i++) {
-			ruleType = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getType();
-			ruleString = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue();
-			switch (ruleType) {
-			case Rule.FIELD:
-				try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue(sources));
-					} catch (BadDataFormatException e) {
-						errorMessage = "Can't set value from field " + 
-							sourceMetadata[getRecNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())].getName() + 
-							DOT + targetMetadata[getRecNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())].getField(getFieldNo(transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getValue())).getName() + 
-							" to field " + targetMetadata[order[i][REC_NO]].getName() + 
-							DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
-							"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
-						logger.error(errorMessage);
-						throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
+			value = transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
+					.getValue(sources);
+			try {
+				target[order[i][REC_NO]].getField(order[i][FIELD_NO]).setValue(value);
+			} catch (BadDataFormatException e) {
+				//we can try to change value to String and set to output field
+				if (fieldPolicy != PolicyType.STRICT) {
+					try{
+						target[order[i][REC_NO]].getField(order[i][FIELD_NO])
+								.fromString(value.toString());
+					}catch(BadDataFormatException e1){
+						errorMessage = "TransformException caused by source: " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
+						logger.error(errorMessage,e1);
+						throw new TransformException(errorMessage, e1,
+								order[i][REC_NO],order[i][FIELD_NO]);
+					}catch (NullPointerException e1) {
+						errorMessage = "Null value not allowed";
+						logger.error(errorMessage,e1);
+						throw new TransformException(errorMessage, e1,
+								order[i][REC_NO],order[i][FIELD_NO]);
 					}
-				break;
-			case Rule.SEQUENCE:
-				//ruleString can be only sequence ID or with method eg. sequenceID.getNextLongValue()
-				sequenceID = ruleString.indexOf(DOT) == -1 ? ruleString
-						: ruleString.substring(0, ruleString.indexOf(DOT));
-				try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(
-								transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]]
-										.getValue(getGraph().getSequence(sequenceID)).toString());
-					} catch (BadDataFormatException e) {
-						errorMessage = "Can't set value from sequence " + sequenceID + 
-							" to field " + targetMetadata[order[i][REC_NO]].getName() + 
-							DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
-							"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
-						logger.error(errorMessage);
-						throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
-					}
-				break;
-			case Rule.PARAMETER://in method init changed to constant
-				break;
-			default:// constant
-					try {
-						target[order[i][REC_NO]].getField(order[i][FIELD_NO]).fromString(ruleString);
-					} catch (BadDataFormatException e) {
-						errorMessage = "Can't set value " + ruleString + 
-						" to field " + targetMetadata[order[i][REC_NO]].getName() + 
-						DOT + targetMetadata[order[i][REC_NO]].getField(order[i][FIELD_NO]).getName() +
-						"\n Genarated by " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
-					logger.error(errorMessage);
-					throw new TransformException(errorMessage, e, order[i][REC_NO],order[i][FIELD_NO]);
-					}
-				break;
+				}else{
+					errorMessage = "TransformException caused by source: " + transformMapArray[order[i][REC_NO]][order[i][FIELD_NO]].getSource();
+					logger.error(errorMessage,e);
+					throw new TransformException(errorMessage, e,
+							order[i][REC_NO],order[i][FIELD_NO]);
+				}
 			}
 		}
 		return true;
@@ -1654,7 +1212,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param pattern
 	 * @return pattern in format record.field of null if it is not possible
 	 */
-	protected static String resolveField(String pattern){
+	public static String resolveField(String pattern){
 		String[] parts = pattern.split("\\.");
 		switch (parts.length) {
 		case 2:
@@ -1680,11 +1238,11 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public ArrayList<String> getRules() {
 		ArrayList<String> list = new ArrayList<String>();
-		Entry<String, String> entry;
-		for (Iterator<Entry<String, String>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
+		Entry<String, Rule> entry;
+		for (Iterator<Entry<String, Rule>> iterator = rules.entrySet().iterator();iterator.hasNext();) {
 			entry = iterator.next();
-			list.add(getRuleTypeAsString(Integer.valueOf(entry.getValue().substring(0, 1))) + 
-					":" + entry.getKey() + "=" + entry.getValue().substring(2));
+			list.add(entry.getValue().getType() + ":" + entry.getKey() + "=" + 
+					entry.getValue().getSource());
 		}
 		return list;
 	}
@@ -1696,41 +1254,16 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 */
 	public ArrayList<String> getResolvedRules() {
 		ArrayList<String> list = new ArrayList<String>();
-		StringBuilder ruleString = new StringBuilder();
-		int recordNumber;
-		int fieldNumber;
+		String value;
 		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
 			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
 				if (transformMapArray[recNo][fieldNo] != null) {
-					ruleString.setLength(0);
-					switch (transformMapArray[recNo][fieldNo].getType()) {
-					case Rule.FIELD:
-						recordNumber = getRecNo(transformMapArray[recNo][fieldNo].getValue());
-						fieldNumber = getFieldNo(transformMapArray[recNo][fieldNo].getValue());
-						ruleString.append(sourceMetadata[recordNumber].getName());
-						ruleString.append(DOT);
-						ruleString.append(sourceMetadata[recordNumber].getField(fieldNumber).getName());
-						break;
-					case Rule.PARAMETER:
-						if (transformMapArray[recNo][fieldNo].getValue().startsWith("$")) {
-							ruleString.append(transformMapArray[recNo][fieldNo].getValue());
-						}else{
-							ruleString.append("Parameter: ");
-							ruleString.append(transformMapArray[recNo][fieldNo].getValue());
-						}
-						break;
-					case Rule.SEQUENCE:
-						ruleString.append("${seq.");
-						ruleString.append(transformMapArray[recNo][fieldNo].getValue());
-						ruleString.append("}");
-						break;
-					default:
-						ruleString.append(transformMapArray[recNo][fieldNo].getValue());
-						break;
-					}
+					value = transformMapArray[recNo][fieldNo].getCanonicalSource() != null 
+					? transformMapArray[recNo][fieldNo].getCanonicalSource().toString() 
+							: "null";
 					list.add(targetMetadata[recNo].getName() + DOT + 
 							targetMetadata[recNo].getField(fieldNo).getName() + "="
-							+ ruleString);
+							+ value);
 				}				
 			}
 		}
@@ -1764,11 +1297,13 @@ public class CustomizedRecordTransform implements RecordTransform {
 		String[] inFields = findFields("*.*", sourceMetadata).toArray(new String[0]);
 		Rule rule;
 		int index;
+		String field;
 		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
 			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
 				rule = transformMapArray[recNo][fieldNo];
-				if (rule != null && rule.getType() == Rule.FIELD) {
-					index = StringUtils.findString(rule.getValue(), inFields);
+				if (rule != null && rule instanceof FieldRule) {
+					field = (String)rule.getCanonicalSource();
+					index = StringUtils.findString(field, inFields);
 					if (index != -1) {
 						inFields[index] = null;
 					}
@@ -1796,7 +1331,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 		if (rule == null) {
 			return null;
 		}
-		return getRuleTypeAsString(rule.getType()) + COLON + rule.getValue();
+		return (rule.getType()) + COLON + rule.getCanonicalSource();
 	}
 	
 	/**
@@ -1812,9 +1347,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 		for (int recNo = 0;recNo < transformMapArray.length; recNo++){
 			for (int fieldNo=0;fieldNo < transformMapArray[0].length; fieldNo++){
 				rule = transformMapArray[recNo][fieldNo];
-				if (rule != null && rule.getType() == Rule.FIELD) {
-					if (getRecNo(rule.getValue()) == inRecNo && 
-							getFieldNo(rule.getValue()) == inFieldNo){
+				if (rule != null && rule instanceof FieldRule) {
+					if (getRecNo((String)rule.getCanonicalSource()) == inRecNo && 
+							getFieldNo((String)rule.getCanonicalSource()) == inFieldNo){
 						list.add(new Integer[]{recNo, fieldNo});
 					}
 				}
@@ -1853,7 +1388,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField recNo.FieldNo
 	 * @return record number
 	 */
-	private Integer getRecNo(String recField){
+	public static Integer getRecNo(String recField){
 		return Integer.valueOf(recField.substring(0, recField.indexOf(DOT)));
 	}
 	
@@ -1863,7 +1398,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param recField
 	 * @return field number
 	 */
-	private Integer getFieldNo(String recField){
+	public static Integer getFieldNo(String recField){
 		return Integer.valueOf(recField.substring(recField.indexOf(DOT) + 1));
 	}
 	
@@ -1873,7 +1408,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 	 * @param field
 	 * @return string (LENGTH,SCALE)
 	 */
-	private String getDecimalParams(DataFieldMetadata field){
+	public static String getDecimalParams(DataFieldMetadata field){
 		if (field.getType() != DataFieldMetadata.DECIMAL_FIELD){
 			return "";
 		}
@@ -1885,125 +1420,621 @@ public class CustomizedRecordTransform implements RecordTransform {
 		params.append(')');
 		return params.toString();
 	}
-	
-	private String getRuleTypeAsString(int type){
-		switch (type) {
-		case Rule.CONSTANT:
-			return Rule.CONSTANT_RULE;
-		case Rule.FIELD:
-			return Rule.FIELD_RULE;
-		case Rule.PARAMETER:
-			return Rule.PARAMETER_RULE;
-		case Rule.SEQUENCE:
-			return Rule.SEQUENCE_RULE;
-		case Rule.DELETE:
-			return Rule.DELETE_RULE;
-		default:
-			return "UNKNOWN_RULE";
-		}
-	}
+}	
 
 	/**
 	 *Private class for storing transformation rules
 	 */
-	private class Rule {
+	 abstract class Rule {
 		
-		//Types of rule
-		final static int FIELD = 0;
-		final static int CONSTANT = 1;
-		final static int SEQUENCE = 2;
-		final static int PARAMETER = 3;
-		final static int DELETE = 9;
-		
-		final static String FIELD_RULE = "FIELD_RULE";
-		final static String CONSTANT_RULE = "CONSTANT_RULE";
-		final static String SEQUENCE_RULE = "SEQUENCE_RULE";
-		final static String PARAMETER_RULE = "PARAMETER_RULE";
-		final static String DELETE_RULE = "DELETE_RULE";
-		
-		int type;
-		String value;
+		Object value;
 		String source;
+		String errorMessage;
+		Log logger;
+		TransformationGraph graph;
+		Properties parameters;
 		
-		Rule(int type, String value, String source){
-			this.type = type;
-			this.value = value;
+		Rule(String source){
 			this.source = source;
+		}
+		
+		Rule(Object value){
+			this.value = value;
 		}
 		
 		String getSource() {
 			return source;
 		}
-
-		String getValue(){
-			return value;
+		
+		public void setLogger(Log logger) {
+			this.logger = logger;
 		}
 		
-		void setValue(String value, String source){
-			this.value = value;
-			this.source = source;
+		public void setGraph(TransformationGraph graph){
+			this.graph = graph; 
 		}
 		
-		int getType() {
-			return type;
+		public void setProperties(Properties parameters){
+			this.parameters = parameters;
 		}
-
-		void setType(int type) {
-			this.type = type;
-		}
+		
+		abstract Rule duplicate();
+		
+		abstract String getType();
+		
+		abstract Object getCanonicalSource();
 
 		/**
-		 * When rule type is FIELD it means that "value" is in form recNo.fieldNo,
-		 * 	where <i> recNo</i> and <i>fieldNo</i> are integers. This method gets 
-		 *  proper data field from proper record
+		 * Gets value for setting to data field
 		 * 
-		 * @param records
-		 * @return proper data field from proper record
+		 * @param sources source data record (used only in Field rule)
+		 * @return value to be set to data field
 		 */
-		DataField getValue(DataRecord[] records){
-			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
-			int recNo = dotIndex > -1 ? Integer.parseInt(value.substring(0, dotIndex)) : 0;
-			int fieldNo = dotIndex > -1 ? Integer.parseInt(value.substring(dotIndex + 1)) : Integer.parseInt(value); 
-			return records[recNo].getField(fieldNo);
-		}
+		abstract Object getValue(DataRecord[] sources);
 		
 		/**
-		 * When rule type is SEQUENCE it means that "value" stores sequence Id 
-		 * 	optionally with method name. If method name is lacking there is used
-		 * 	nextValueInt() method. This method gets proper value from sequence.
+		 * Prepares rule (source, value and check if value can be got) for 
+		 * getting values in transform method of CustomizedRecordTransform class
 		 * 
-		 * @param sequence
-		 * @return value from sequence
-		 * @throws TransformException 
+		 * @param sourceMetadata
+		 * @param targetMetadata
+		 * @param recNo output metadata number (from targetMetadata) 
+		 * @param fieldNo output field number
+		 * @param policy field policy 
+		 * @throws ComponentNotReadyException
 		 */
-		Object getValue(Sequence sequence){
-			if (sequence == null){
+		abstract void init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata[] targetMetadata, 
+				int recNo, int fieldNo, PolicyType policy)
+				throws ComponentNotReadyException;
+		/**
+		 * This method checks if input field is subtype of output type
+		 * 
+		 * @param outRecNo output record number
+		 * @param outFieldNo output record's field number
+		 * @param inRecNo input record number
+		 * @param inFieldNo input record's field number
+		 * @return "true" if input field is subtype of output field, "false" in other cases
+		 */
+		public static boolean checkTypes(DataFieldMetadata outField, DataFieldMetadata inField,
+				PolicyType policy){
+			boolean checkTypes;
+			//check if both fields are of type DECIMAL, if yes inField must be subtype of outField
+			if (outField.getType() == inField.getType()){
+				if (outField.getType() == DataFieldMetadata.DECIMAL_FIELD ){
+					checkTypes = inField.isSubtype(outField);
+				}else{
+					checkTypes = true;
+				}
+			}else {
+				checkTypes = false;
+			}
+			if (policy == PolicyType.STRICT && !checkTypes){
+				return false;
+			}else if (policy == PolicyType.CONTROLLED && !inField.isSubtype(outField)){
+				return false;
+			}
+			return true;
+		}
+	}
+	
+	/**
+	 * Descendent of Rule class for storing field's mapping rule
+	 */
+	class FieldRule extends Rule {
+		
+		String fieldParams;//"recNo.fieldNo" = "resolved source" - it have to be set by setFieldParams method 
+	
+		FieldRule(String source) {
+			super(source);
+		}
+		
+		@Override
+		void init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata[] targetMetadata, 
+				int recNo, int fieldNo, PolicyType policy) throws ComponentNotReadyException {
+			if (fieldParams == null){
+				//try find ONE field in source metadata matching source
+				fieldParams = CustomizedRecordTransform.resolveField(source);
+				ArrayList<String> tmp = 
+					CustomizedRecordTransform.findFields(fieldParams, sourceMetadata);
+				if (tmp.size() != 1){
+					throw new ComponentNotReadyException("Field parameters are " +
+							"not set and can't be resolved from source: " + source);
+				}
+				fieldParams = tmp.get(0);
+			}
+			//check input and output fields types
+			if (!checkTypes(targetMetadata[recNo].getField(fieldNo),
+				sourceMetadata[CustomizedRecordTransform.getRecNo(fieldParams)]
+						.getField(CustomizedRecordTransform
+								.getFieldNo(fieldParams)), policy)) {
+				if (policy == PolicyType.STRICT) {
+					errorMessage = "Output field type does not match input field "
+						+ "type:\n"
+						+ targetMetadata[recNo].getName()
+						+ CustomizedRecordTransform.DOT
+						+ targetMetadata[recNo].getField(fieldNo).getName()
+						+ " type - "
+						+ targetMetadata[recNo].getField(fieldNo)
+								.getTypeAsString()
+						+ CustomizedRecordTransform
+								.getDecimalParams(targetMetadata[recNo]
+										.getField(fieldNo))
+						+ "\n"
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getName()
+						+ CustomizedRecordTransform.DOT
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getField(
+								CustomizedRecordTransform
+										.getFieldNo(fieldParams)).getName()
+						+ " type - "
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getField(
+								CustomizedRecordTransform
+										.getFieldNo(fieldParams))
+								.getTypeAsString()
+						+ CustomizedRecordTransform
+								.getDecimalParams(sourceMetadata[CustomizedRecordTransform
+										.getRecNo(fieldParams)]
+										.getField(CustomizedRecordTransform
+												.getFieldNo(fieldParams)));
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+				if (policy == PolicyType.CONTROLLED){
+					errorMessage = "Output field type is not compatible with input field "
+						+ "type:\n"
+						+ targetMetadata[recNo].getName()
+						+ CustomizedRecordTransform.DOT
+						+ targetMetadata[recNo].getField(fieldNo).getName()
+						+ " type - "
+						+ targetMetadata[recNo].getField(fieldNo)
+								.getTypeAsString()
+						+ CustomizedRecordTransform
+								.getDecimalParams(targetMetadata[recNo]
+										.getField(fieldNo))
+						+ "\n"
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getName()
+						+ CustomizedRecordTransform.DOT
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getField(
+								CustomizedRecordTransform
+										.getFieldNo(fieldParams)).getName()
+						+ " type - "
+						+ sourceMetadata[CustomizedRecordTransform
+								.getRecNo(fieldParams)].getField(
+								CustomizedRecordTransform
+										.getFieldNo(fieldParams))
+								.getTypeAsString()
+						+ CustomizedRecordTransform
+								.getDecimalParams(sourceMetadata[CustomizedRecordTransform
+										.getRecNo(fieldParams)]
+										.getField(CustomizedRecordTransform
+												.getFieldNo(fieldParams)));
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+			}
+		}
+		
+		public void setFieldParams(String fieldParams) {
+			this.fieldParams = fieldParams;
+		}
+
+		@Override
+		Object getCanonicalSource() {
+			return fieldParams;
+		}
+
+		@Override
+		String getType() {
+			return "FIELD_RULE";
+		}
+
+		/* 
+		 * (non-Javadoc)
+		 * @see org.jetel.component.Rule#getValue(org.jetel.data.DataRecord[])
+		 * 
+		 */
+		Object getValue(DataRecord[] sources){
+			int dotIndex = fieldParams.indexOf(CustomizedRecordTransform.DOT);
+			int recNo = dotIndex > -1 ? Integer.parseInt(fieldParams.substring(0, dotIndex)) : 0;
+			int fieldNo = dotIndex > -1 ? Integer.parseInt(fieldParams.substring(dotIndex + 1)) : Integer.parseInt(fieldParams); 
+			return sources[recNo].getField(fieldNo).getValue();
+		}
+		
+		@Override
+		Rule duplicate() {
+			return new FieldRule(source);
+		}
+	}
+	
+
+	/**
+	 * Descendent of Rule class for storing sequence rule
+	 */
+	class SequenceRule extends Rule{
+		
+		String method;// sequence Id with one of squence method used for
+						// getting value from sequence eg.:
+						// seq1.nextValueString()
+		
+		SequenceRule(String source) {
+			super(source);
+		}
+		
+		SequenceRule(Object value){
+			super(value);
+			if (!(value instanceof Sequence)){
+				throw new IllegalArgumentException("Sequence rule doesn't accept " + value.getClass().getName() + " argument");
+			}
+			source = ((Sequence)value).getId();
+		}
+		
+		@Override
+		Rule duplicate() {
+			if (value != null) {
+				return new SequenceRule(value);
+			}else{
+				return new SequenceRule(source);
+			}
+		}
+		
+		@Override
+		String getType() {
+			return "SEQUENCE_RULE";
+		}
+
+		@Override
+		Object getCanonicalSource() {
+			return method;
+		}
+		
+		@Override
+		void init(DataRecordMetadata[] sourceMetadata,
+			DataRecordMetadata[] targetMetadata, int recNo, int fieldNo,
+			PolicyType policy) throws ComponentNotReadyException {
+		//prepare sequence and method
+		String sequenceID = source.indexOf(CustomizedRecordTransform.DOT) == -1 ? source
+				: source.substring(0, source.indexOf(CustomizedRecordTransform.DOT));
+		if (value == null) {
+			value = graph.getSequence(sequenceID);
+		}
+		if (value == null) {
+			logger.warn("There is no sequence \"" + sequenceID + "\" in graph");
+			if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo]
+					.getField(fieldNo).isDefaultValue())) {
+				errorMessage = "Null value not allowed to record: "
+						+ targetMetadata[recNo].getName() + " , field: "
+						+ targetMetadata[recNo].getField(fieldNo).getName();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			}else{
+				method = "null";
+				return;
+			}
+		}
+		// check sequence method
+		String method = source.indexOf(CustomizedRecordTransform.DOT) > -1 ? source
+				.substring(source.indexOf(CustomizedRecordTransform.DOT) + 1)
+				: null;
+		char methodType = DataFieldMetadata.UNKNOWN_FIELD;
+		if (method != null) {
+			this.method = method;
+			if (method.toLowerCase().startsWith("currentvaluestring")
+					|| method.toLowerCase().startsWith("currentstring")
+					|| method.toLowerCase().startsWith("nextvaluestring")
+					|| method.toLowerCase().startsWith("nextstring")) {
+				methodType = DataFieldMetadata.STRING_FIELD;
+			}
+			if (method.toLowerCase().startsWith("currentvalueint")
+					|| method.toLowerCase().startsWith("currentint")
+					|| method.toLowerCase().startsWith("nextvalueint")
+					|| method.toLowerCase().startsWith("nextint")) {
+				methodType = DataFieldMetadata.INTEGER_FIELD;
+			}
+			if (method.toLowerCase().startsWith("currentvaluelong")
+					|| method.toLowerCase().startsWith("currentlong")
+					|| method.toLowerCase().startsWith("nextvaluelong")
+					|| method.toLowerCase().startsWith("nextlong")) {
+				methodType = DataFieldMetadata.LONG_FIELD;
+			}
+		} else {//method is not given, prepare the best
+			switch (targetMetadata[recNo].getField(fieldNo).getType()) {
+			case DataFieldMetadata.BYTE_FIELD:
+			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+			case DataFieldMetadata.STRING_FIELD:
+				this.method = sequenceID + CustomizedRecordTransform.DOT
+						+ "nextValueString()";
+				methodType = DataFieldMetadata.STRING_FIELD;
+				break;
+			case DataFieldMetadata.DECIMAL_FIELD:
+			case DataFieldMetadata.LONG_FIELD:
+			case DataFieldMetadata.NUMERIC_FIELD:
+				this.method = sequenceID + CustomizedRecordTransform.DOT
+						+ "nextValueLong()";
+				methodType = DataFieldMetadata.LONG_FIELD;
+				break;
+			case DataFieldMetadata.INTEGER_FIELD:
+				this.method = sequenceID + CustomizedRecordTransform.DOT
+						+ "nextValueInt()";
+				methodType = DataFieldMetadata.INTEGER_FIELD;
+				break;
+			default:
+				errorMessage = "Can't set sequence to data field of type: "
+						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			}
+			DataFieldMetadata tmp;
+			if (methodType == DataFieldMetadata.UNKNOWN_FIELD) {
+				errorMessage = "Unknown sequence method: " + method;
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			} else {
+				tmp = new DataFieldMetadata("tmp", methodType, ";");
+			}
+			// check if value from sequence can be set to given field
+			if (!checkTypes(targetMetadata[recNo].getField(fieldNo), tmp, policy)) {
+				if (policy == PolicyType.STRICT) {
+					errorMessage = "Sequence method:"
+							+ this.method
+							+ " does not "
+							+ "match field type:\n"
+							+ targetMetadata[recNo].getName()
+							+ CustomizedRecordTransform.DOT
+							+ targetMetadata[recNo].getField(fieldNo).getName()
+							+ " type - "
+							+ targetMetadata[recNo].getField(fieldNo)
+									.getTypeAsString()
+							+ CustomizedRecordTransform
+									.getDecimalParams(targetMetadata[recNo]
+											.getField(fieldNo));
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+				if (policy == PolicyType.CONTROLLED) {
+					errorMessage = "Sequence method:"
+							+ this.method
+							+ " does not "
+							+ "match field type:\n"
+							+ targetMetadata[recNo].getName()
+							+ CustomizedRecordTransform.DOT
+							+ targetMetadata[recNo].getField(fieldNo).getName()
+							+ " type - "
+							+ targetMetadata[recNo].getField(fieldNo)
+									.getTypeAsString()
+							+ CustomizedRecordTransform
+									.getDecimalParams(targetMetadata[recNo]
+											.getField(fieldNo));
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+			}
+		}
+	}
+		
+		/* (non-Javadoc)
+		 * @see org.jetel.component.Rule#getValue(org.jetel.data.DataRecord[])
+		 */
+		Object getValue(DataRecord[] sources){
+			if (value == null) {
 				return null;
 			}
-			int dotIndex = value.indexOf(CustomizedRecordTransform.DOT);
-			String method = dotIndex > -1 ? value.substring(dotIndex +1) : "nextValueInt()";
+			int dotIndex = method.indexOf(CustomizedRecordTransform.DOT);
+			String method = this.method.substring(dotIndex +1);
 			if (method.toLowerCase().startsWith("currentvaluestring") || method.toLowerCase().startsWith("currentstring")){
-				return sequence.currentValueString();
+				return ((Sequence)value).currentValueString();
 			}
 			if (method.toLowerCase().startsWith("nextvaluestring") || method.toLowerCase().startsWith("nextstring")){
-				return sequence.nextValueString();
+				return ((Sequence)value).nextValueString();
 			}
 			if (method.toLowerCase().startsWith("currentvalueint") || method.toLowerCase().startsWith("currentint")){
-				return sequence.currentValueInt();
+				return ((Sequence)value).currentValueInt();
 			}
 			if (method.toLowerCase().startsWith("nextvalueint") || method.toLowerCase().startsWith("nextint")){
-				return sequence.nextValueInt();
+				return ((Sequence)value).nextValueInt();
 			}
 			if (method.toLowerCase().startsWith("currentvaluelong") || method.toLowerCase().startsWith("currentlong")){
-				return sequence.currentValueLong();
+				return ((Sequence)value).currentValueLong();
 			}
 			if (method.toLowerCase().startsWith("nextvaluelong") || method.toLowerCase().startsWith("nextlong")){
-				return sequence.nextValueLong();
+				return ((Sequence)value).nextValueLong();
 			}
 			//in method validateRule checked, that has to be one of method above
 			return null;
 		}
+
+				
+	}
+	
+	/**
+	 * Descendent of Rule class for storing constant rule
+	 */
+	class ConstantRule extends Rule{
+
+		/**
+		 * Constructor for setting constant as string
+		 * 
+		 * @param source
+		 */
+		ConstantRule(String source) {
+			super(source);
+		}
+		
+		/**
+		 * Constructor for setting constant as expected Object (due to data field type)
+		 * 
+		 * @param value
+		 */
+		ConstantRule(Object value) {
+			super(value);
+		}
+		
+		@Override
+		Rule duplicate() {
+			if (value != null) {
+				return new ConstantRule(value);
+			}else{
+				return new ConstantRule(source);
+			}
+		}
+		
+		@Override
+		String getType() {
+			return "CONSTANT_RULE";
+		}
+
+		@Override
+		Object getCanonicalSource() {
+			return source != null ? source : value;
+		}
+		
+		@Override
+		Object getValue(DataRecord[] sources) {
+			return value;
+		}
+
+		@Override
+		void init(DataRecordMetadata[] sourceMetadata,
+			DataRecordMetadata[] targetMetadata, int recNo, int fieldNo,
+			PolicyType policy) throws ComponentNotReadyException {
+			//used temporary data field for checking constant
+			DataField tmp = DataFieldFactory.createDataField(
+					targetMetadata[recNo].getField(fieldNo), true);
+			if (source != null) {
+				try {
+					tmp.fromString(source);
+					value = tmp.getValue();
+				}catch(BadDataFormatException e){
+					errorMessage = e.getLocalizedMessage();
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+			}else{
+				try{
+					tmp.setValue(value);
+					source = tmp.toString();
+				}catch(BadDataFormatException e){
+					errorMessage = e.getLocalizedMessage();
+					logger.error(errorMessage);
+					throw new ComponentNotReadyException(errorMessage);
+				}
+			}
+		}
+		
+	}
+	
+	/**
+	 * Descendent of Rule class for storing parameter rule
+	 */
+	class ParameterRule extends Rule{
+
+		ParameterRule( String source) {
+			super(source);
+		}
+		
+		@Override
+		Rule duplicate() {
+			return new ParameterRule(source);
+		}
+		
+		@Override
+		String getType() {
+			return "PARAMETER_RULE";
+		}
+
+		@Override
+		Object getCanonicalSource() {
+			return source;
+		}
+		
+		@Override
+		Object getValue(DataRecord[] sources) {
+			return value;
+		}
+		
+		@Override
+		void init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata[] targetMetadata, 
+				int recNo, int fieldNo, PolicyType policy) throws ComponentNotReadyException {
+			//get parameter value 
+			String paramValue;
+			if (source.startsWith("${")) {// get graph parameter
+				paramValue = graph.getGraphProperties().getProperty(
+					source.substring(2, source.lastIndexOf('}')));
+			} else if (source.startsWith(String.valueOf(CustomizedRecordTransform.PARAMETER_CHAR))) {
+				// get parameter from node properties
+				paramValue = parameters.getProperty((source));
+			} else {
+				// try to find parameter with given name in node properties
+				paramValue = parameters.getProperty(CustomizedRecordTransform.PARAMETER_CHAR 
+						+ source);
+				if (paramValue == null) {
+					// try to find parameter with given name among graph parameters
+					paramValue = graph.getGraphProperties().getProperty(source);
+				}
+				if (paramValue == null) {
+					errorMessage = "Not found parameter: " + source;
+					if (!(targetMetadata[recNo].getField(fieldNo).isNullable() || targetMetadata[recNo]
+							.getField(fieldNo).isDefaultValue())) {
+						logger.error(errorMessage);
+						throw new ComponentNotReadyException(errorMessage);
+					} else {
+						logger.warn(errorMessage);
+					}
+				}
+			}
+			//use temporary field to check if the value can be set to given data field
+			DataField tmp = DataFieldFactory.createDataField(
+					targetMetadata[recNo].getField(fieldNo), true);
+			try{
+				tmp.fromString(paramValue);
+				value = tmp.getValue();
+			}catch(BadDataFormatException e){
+				errorMessage = e.getLocalizedMessage();
+				logger.error(errorMessage);
+				throw new ComponentNotReadyException(errorMessage);
+			}
+		}
+
+	}
+	
+	/**
+	 * Degenerated descendent of Rule class for marking fields for deleting 
+	 * previous rule
+	 */
+	class DeleteRule extends Rule{
+		
+		DeleteRule(){
+			super(null);
+		}
+		
+		@Override
+		Rule duplicate() {
+			return new DeleteRule();
+		}
+		
+		@Override
+		String getType() {
+			return "DELETE_RULE";
+		}
+
+		@Override
+		Object getCanonicalSource() {
+			return null;
+		}
+		
+		@Override
+		Object getValue(DataRecord[] sources) {
+			return null;
+		}
+		
+		@Override
+		void init(DataRecordMetadata[] sourceMetadata, DataRecordMetadata[] targetMetadata, 
+				int recNo, int fieldNo, PolicyType policy) throws ComponentNotReadyException {
+			//do nothing
+		}
 		
 	}
 
-}
