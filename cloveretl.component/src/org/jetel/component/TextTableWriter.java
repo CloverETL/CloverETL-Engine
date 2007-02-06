@@ -22,7 +22,6 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
@@ -36,7 +35,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
@@ -44,19 +42,18 @@ import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
 /**
- *  <h3>StructureWriter Component</h3>
+ *  <h3>TextTableWriter Component</h3>
  *
- * <!-- All records from input port [0] are formatted due to given mask and written to specified file -->
+ * <!-- All records from input port [0] are formatted to table and written to specified file or on screen-->
  * 
  * <table border="1">
  *  <th>Component:</th>
  * <tr><td><h4><i>Name:</i></h4></td>
- * <td>StructureWriter</td></tr>
+ * <td>TextTableWriter</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>All records from input port [0] are formatted due to given mask and written to specified file.
- * Records can be preceded by some text (header) or be trailed by a text (footer)</td></tr>
+ * <td>All records from input port [0] are formatted to table and written to specified file or on screen.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -74,38 +71,23 @@ import org.w3c.dom.Element;
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
- *  <tr><td><b>mask</b></td><td>template for formating records. Every occurrence 
- *  of $fieldName will be replaced by value of the fieldName. The rest of text will
- *  be unchanged. If not given there is used default mask:
- *  &lt; recordName field1=$field1 field2=$field2 ... fieldn=$fieldn /&gt;
- *  where field1 ,.., fieldn are record's fields from metadata</td>
- *  <tr><td><b>header</b></td><td>text to write before records</td>
- *  <tr><td><b>footer</b></td><td>text to write after records</td>
  *  </tr>
  *  </table>  
  *
  * <h4>Example:</h4>
  * <pre>&lt;Node append="true" fileURL="${WORKSPACE}/output/structured_customers.txt"
- *  id="STRUCTURE_WRITER0" type="STRUCTURE_WRITER"&gt;
- * &lt;attr name="header"&gt;dir = ${WORKSPACE}&lt;/attr&gt;
- * &lt;attr name="mask"&gt;
- * &lt;Customer id=$customer_id&gt;
- * 	&lt;last name = $lname&gt;
- *	&lt;first name = $fname&gt;
- * &lt;/Customer&gt;
- * &lt;/attr&gt;
- * &lt;attr name="footer"&gt;end of file&lt;/attr&gt;
+ *  id="TEXT_TABLE_WRITER0" type="TEXT_TABLE_WRITER"&gt;
  * &lt;/Node&gt;
  * 
  * 
- * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * @author ausperger; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
  *
- * @since Oct 30, 2006
+ * @since Feb 6, 2007
  *
  */
-public class TextWriter extends Node {
+public class TextTableWriter extends Node {
 
 	public static final String XML_APPEND_ATTRIBUTE = "append";
 	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
@@ -124,7 +106,7 @@ public class TextWriter extends Node {
 	private long recordFrom = -1;
 	private long recordCount = -1;
 	
-	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
+	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
 	/**
@@ -136,7 +118,7 @@ public class TextWriter extends Node {
 	 * @param appendData
 	 * @param mask
 	 */
-	public TextWriter(String id, String fileURL, String charset, 
+	public TextTableWriter(String id, String fileURL, String charset, 
 			boolean appendData, String[] fields) {
 		super(id);
 		this.fileURL = fileURL;
@@ -235,12 +217,12 @@ public class TextWriter extends Node {
 	 */
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) {
 		ComponentXMLAttributes xattribs=new ComponentXMLAttributes(nodeXML, graph);
-		TextWriter aDataWriter = null;
+		TextTableWriter aDataWriter = null;
 		
 		try{
 			String fields = xattribs.getString(XML_MASK_ATTRIBUTE,null);
 			String[] aFields = fields == null ? null : fields.split(";");
-			aDataWriter = new TextWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
+			aDataWriter = new TextTableWriter(xattribs.getString(Node.XML_ID_ATTRIBUTE),
 									xattribs.getString(XML_FILEURL_ATTRIBUTE),
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),

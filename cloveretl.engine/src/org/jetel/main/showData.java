@@ -23,6 +23,7 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Map;
 import java.util.Properties;
@@ -37,10 +38,7 @@ import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
-import org.jetel.component.DataWriter;
-import org.jetel.component.ExtFilter;
-import org.jetel.component.StructureWriter;
-import org.jetel.component.TextWriter;
+import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -63,7 +61,6 @@ import org.jetel.util.crypto.Enigma;
  *  <tt><pre>
  *  Program parameters:
  *  <table>
- *  <tr><td nowrap>-v</td><td>be verbose - print even graph layout</td></tr>
  *  <tr><td nowrap>-P<i>properyName</i>=<i>propertyValue</i></td><td>add definition of property to global graph's property list</td></tr>
  *  <tr><td nowrap>--cfg <i>filename</i></td><td>load definitions of properties from specified file</td></tr>
  *  <tr><td nowrap>--tracking <i>seconds</i></td><td>how frequently output the processing status</td></tr>
@@ -71,7 +68,7 @@ import org.jetel.util.crypto.Enigma;
  *  <tr><td nowrap>--plugins <i>filename</i></td><td>directory where to look for plugins/components</td></tr>
  *  <tr><td nowrap>--pass <i>password</i></td><td>password for decrypting of hidden connections passwords</td></tr>
  *  <tr><td nowrap>--stdin</td><td>load graph layout from STDIN</td></tr>
- *  <tr><td nowrap>--mode</td><td>how show data over component {TEXT,HTML,DELIMITER_TEXT}</td></tr>
+ *  <tr><td nowrap>--mode</td><td>how show data over component {TEXT,HTML,TABLE}</td></tr>
  *  <tr><td nowrap>--delimiter</td><td>delimiter between two fields</td></tr>
  *  <tr><td nowrap>--file</td><td>file url for output. If no file defined, output is set to System.out</td></tr>
  *  <tr><td nowrap>--expFilter</td><td>filter expression for record filtering</td></tr>
@@ -84,21 +81,18 @@ import org.jetel.util.crypto.Enigma;
  *  </table>
  *
  *  <h4>Example:</h4>
- *  <pre>showComponentData ExampleGraph.grf DELIMITED_DATA_READER0:0</pre>
+ *  <pre>showData ExampleGraph.grf DELIMITED_DATA_READER0:0</pre>
  *  
- *  <pre>showComponentData --plugins ../cloveretl.engine/plugins --mode TEXT --delimiter "+" --expFilter "1==1" --recFrom 2 --recCount 2 --fields "Field1;Field0" ExampleGraph.grf DELIMITED_DATA_READER0:0</pre>
+ *  <pre>showData --plugins ../cloveretl.engine/plugins --mode TEXT --delimiter "+" --expFilter "1==1" --recFrom 2 --recCount 2 --fields "Field1;Field0" ExampleGraph.grf DELIMITED_DATA_READER0:0</pre>
  *  
  *  </pre></tt>
  * @author      jausperger
  * @since       2007/02/02
  * @revision    $Revision:  $
  */
-public class showComponentData {
-    private static Log logger = LogFactory.getLog(showComponentData.class);
+public class showData {
+    private static Log logger = LogFactory.getLog(showData.class);
 
-    //TODO change run graph version
-	private final static String RUN_GRAPH_VERSION = "2.0";
-	
     /**
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsRootDirectory directory path, where plugins specification is located 
@@ -148,7 +142,6 @@ public class showComponentData {
 	 * @param  args  Description of the Parameter
 	 */
 	public static void main(String args[]) {
-		boolean verbose = false;
         boolean loadFromSTDIN = false;
 		Properties properties = new Properties();
         int trackingInterval = -1;
@@ -163,19 +156,18 @@ public class showComponentData {
         String fields = null;
         String logHost = null;
 		
-		ExtFilter extFilter = null;
+		Node extFilter = null;
         
-		System.out.println("***  CloverETL graph component tester ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
+		/*System.out.println("***  CloverETL graph component tester ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
 		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
 		System.out.println();
-        
+        */
 		if (args.length < 1) {
 			printHelp();
 			System.exit(-1);
 		}
         
 		Options options = new Options();
-    	options.addOption(new Option("v", "verbose", false, "Verbose mode"));
     	options.addOption(new Option("g", "cfg", true, "Path to property file"));
     	options.addOption(new Option("P", "propertyDefinition", true, "Property defined by user"));
     	options.addOption(new Option("t", "tracking", false, "Tracking intrnal switch"));
@@ -202,7 +194,6 @@ public class showComponentData {
 			return;
 		}
 		
-		verbose = cmdLine.hasOption("v");
 		loadFromSTDIN = cmdLine.hasOption("n");
 		if (cmdLine.hasOption("h")) {
             String[] hostAndPort = logHost.split(":");
@@ -361,31 +352,22 @@ public class showComponentData {
                         "Graph initialization failed.");
             }
 
-            if (verbose) {
-                // this can be called only after graph.init()
-                graph.dumpGraphConfiguration();
-            }
+            // this can be called only after graph.init()
+            graph.dumpGraphConfiguration();
         } catch (XMLConfigurationException ex) {
             logger.error("Error in reading graph from XML !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
+            ex.printStackTrace(System.err);
             System.exit(-1);
         } catch (GraphConfigurationException ex) {
             logger.error("Error - graph's configuration invalid !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
+            ex.printStackTrace(System.err);
             System.exit(-1);
         } catch (RuntimeException ex) {
             logger.error("Error during graph initialization !", ex);
-            if (verbose) {
-                ex.printStackTrace(System.err);
-            }
+            ex.printStackTrace(System.err);
             System.exit(-1);
         }
         
-
         //check graph elements configuration
         ConfigurationStatus status = graph.checkConfig(null);
         status.log();
@@ -418,7 +400,12 @@ public class showComponentData {
 		if (filterExpression != null) {
 			edge1 = new Edge("EDGE1", dataRecordMetadata);
 		}
-		Node writer = getWriter(viewMode, dataRecordMetadata, fileUrl, delimiter, recordFrom, recordCount, fields);
+		Node writer = null;
+		try {
+			writer = getWriter(viewGraph, viewMode, dataRecordMetadata, fileUrl, delimiter, recordFrom, recordCount, fields);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
 		
 		// add Edges & Nodes & Phases to graph
 		try {
@@ -429,12 +416,17 @@ public class showComponentData {
 			
 			if (filterExpression != null) {
 				viewGraph.addEdge(edge1);
-				extFilter = new ExtFilter("ExtFilter0");
-				extFilter.setFilterExpression(filterExpression);
+				extFilter = ComponentFactory.createComponent(viewGraph, "EXT_FILTER", new Object[] {"ExtFilter0"}, new Class[] {String.class});//new ExtFilter("ExtFilter0");
+				Method method = ComponentFactory.getComponentClass("EXT_FILTER").getMethod("setFilterExpression", new Class[] {String.class});
+				method.invoke(extFilter, filterExpression);
 				_PHASE_1.addNode(extFilter);
 			}
 		} catch (GraphConfigurationException e) {
 			e.printStackTrace();
+			return;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
 		}
 
 		// assign ports (input & output)
@@ -464,9 +456,7 @@ public class showComponentData {
         } catch (RuntimeException ex) {
             System.err.println("Fatal error during graph run !");
             System.err.println(ex.getCause().getMessage());
-            if (verbose) {
-                ex.printStackTrace();
-            }
+            ex.printStackTrace();
             System.exit(-1);
         }
         switch (result) {
@@ -488,11 +478,23 @@ public class showComponentData {
 
 	}
     
-	private static Node getWriter(Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, String delimiter, long recordFrom, long recordCount, String fields) {
+	/**
+	 * @param mode
+	 * @param dataRecordMetadata
+	 * @param fileUrl
+	 * @param delimiter
+	 * @param recordFrom
+	 * @param recordCount
+	 * @param fields
+	 * @return
+	 * @throws Exception 
+	 */
+	private static Node getWriter(TransformationGraph graph, Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, String delimiter, long recordFrom, long recordCount, String fields) throws Exception {
 		if (mode == null) return null;
 		Node writer = null;
 		String[] aFiealds = fields == null ? null : fields.split(";");
 		
+		// html formating
 		if (mode.equals(Mode.HTML)) {
 			StringBuilder maskBuilder = new StringBuilder();
 			if (aFiealds == null) {
@@ -520,13 +522,16 @@ public class showComponentData {
 				System.exit(-1);
 			}
 			
-			StructureWriter structureWriter = new StructureWriter("STRUCTURE_WRITER0", fileUrl, null, false, maskBuilder.toString());
-			structureWriter.setRecordFrom(recordFrom);
-			structureWriter.setRecordCount(recordCount);
+			Node structureWriter = ComponentFactory.createComponent(graph, "STRUCTURE_WRITER", new Object[] {"STRUCTURE_WRITER0", fileUrl, null, false, maskBuilder.toString()}, new Class[] {String.class, String.class, String.class, boolean.class, String.class});
+			Class cStructureWriter = ComponentFactory.getComponentClass("STRUCTURE_WRITER");
+			Method method = cStructureWriter.getMethod("setRecordFrom", new Class[] {long.class});
+			method.invoke(structureWriter, recordFrom);
+			method = cStructureWriter.getMethod("setRecordCount", new Class[] {long.class});
+			method.invoke(structureWriter, recordCount);
 			StringBuilder sb = new StringBuilder();
 			
 			sb.append("<table name=\"" + dataRecordMetadata.getName() + "\" border=1>\n");
-			sb.append("<tr>");
+			sb.append("<thead>\n<tr>");
 			if (aFiealds == null ) {
 				for (int i=0;i<dataRecordMetadata.getNumFields();i++){
 					sb.append("<th>");
@@ -540,36 +545,50 @@ public class showComponentData {
 					sb.append("</th>");
 				}
 			}
-			sb.append("</tr>\n");
-			structureWriter.setHeader(sb.toString());
+			sb.append("</tr>\n</thead>\n<tbody>\n");
+			method = cStructureWriter.getMethod("setHeader", new Class[] {String.class});
+			method.invoke(structureWriter, sb.toString());
 			
 			sb = new StringBuilder();
-			sb.append("</table>\n");
-			structureWriter.setFooter(sb.toString());
+			sb.append("</tbody>\n</table>\n");
+			method = cStructureWriter.getMethod("setFooter", new Class[] {String.class});
+			method.invoke(structureWriter, sb.toString());
 			writer = structureWriter;
 			
+		// text formating - delimited or fix lenght
 		} else if (mode.equals(Mode.TEXT)) {
-			DataWriter dataWriter = new DataWriter("DATA_WRITER0", fileUrl, dataRecordMetadata.getLocaleStr(), false);
+			Node dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", fileUrl, dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, String.class, String.class, boolean.class});
 			//TODO agata dodelat selekci na fieldy
-			dataWriter.setRecordFrom(recordFrom);
-			dataWriter.setRecordCount(recordCount);
-			if (delimiter != null) dataWriter.setDataDelimiter(delimiter);
+			Class cDataWriter = ComponentFactory.getComponentClass("DATA_WRITER");
+			Method method = cDataWriter.getMethod("setRecordFrom", new Class[] {long.class});
+			method.invoke(dataWriter, recordFrom);
+			method = cDataWriter.getMethod("setRecordCount", new Class[] {long.class});
+			method.invoke(dataWriter, recordCount);
+			if (delimiter != null) {
+				method = cDataWriter.getMethod("setDataDelimiter", new Class[] {String.class});
+				method.invoke(dataWriter, delimiter);
+			}
 			writer = dataWriter;
 			
-		} else if (mode.equals(Mode.DELIMITER_TEXT)) {
-			TextWriter dataWriter = new TextWriter("TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds);
-			dataWriter.setRecordFrom(recordFrom);
-			dataWriter.setRecordCount(recordCount);
-			dataWriter.setHeader(true);
-			writer = dataWriter;
+		// table formating
+		} else if (mode.equals(Mode.TABLE)) {
+			//TextWriter dataWriter = new TextWriter("TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds);
+			Node textWriter = ComponentFactory.createComponent(graph, "TEXT_TABLE_WRITER", new Object[] {"TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds}, new Class[] {String.class, String.class, String.class, boolean.class, String[].class});
+			Class cDataWriter = ComponentFactory.getComponentClass("TEXT_TABLE_WRITER");
+			Method method = cDataWriter.getMethod("setRecordFrom", new Class[] {long.class});
+			method.invoke(textWriter, recordFrom);
+			method = cDataWriter.getMethod("setRecordCount", new Class[] {long.class});
+			method.invoke(textWriter, recordCount);
+			method = cDataWriter.getMethod("setHeader", new Class[] {boolean.class});
+			method.invoke(textWriter, true);
+			writer = textWriter;
 		}
 		return writer;
 	}
 	
 	private static void printHelp() {
-		System.out.println("Usage: runGraph [-(v|P)] [--(cfg|tracking|info|plugins|pass|loghost|mode|delimiter|file|expFilter|recFrom|recCount|fields|logLevel)] <graph definition file> <component id>");
+		System.out.println("Usage: showData [-P] [--(cfg|tracking|info|plugins|pass|loghost|mode|delimiter|file|expFilter|recFrom|recCount|fields|logLevel)] <graph definition file> <component id>");
 		System.out.println("Options:");
-		System.out.println("-v\t\t\tbe verbose - print even graph layout");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
 		System.out.println("--cfg <filename>\t\tload definitions of properties from specified file");
 		System.out.println("--tracking <seconds>\thow frequently output the graph processing status");
@@ -578,7 +597,7 @@ public class showComponentData {
         System.out.println("--pass\t\tpassword for decrypting of hidden connections passwords");
         System.out.println("--stdin\t\tload graph definition from STDIN");
         System.out.println("--loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
-        System.out.println("--mode\t\thow show data over component {TEXT,HTML,DELIMITER_TEXT}");
+        System.out.println("--mode\t\thow show data over component {TEXT,HTML,TABLE}");
         System.out.println("--delimiter\t\tdelimiter between two fields");
         System.out.println("--file\t\tfile url for output. If no file defined, output is set to System.out");
         System.out.println("--expFilter\t\tfilter expression for record filtering");
@@ -599,7 +618,7 @@ public class showComponentData {
 	    
 	    TEXT,
 	    HTML,
-	    DELIMITER_TEXT;
+	    TABLE;
 
 	    public static Mode valueModeOf(String value){
 	    	if (value.equalsIgnoreCase(TEXT.name())) {
@@ -608,8 +627,8 @@ public class showComponentData {
 	    	if (value.equalsIgnoreCase(HTML.name())) {
 	    		return HTML;
 	    	}
-	    	if (value.equalsIgnoreCase(DELIMITER_TEXT.name())) {
-	    		return DELIMITER_TEXT;
+	    	if (value.equalsIgnoreCase(TABLE.name())) {
+	    		return TABLE;
 	    	}
 	    	return null;
 	    }
