@@ -125,6 +125,10 @@ public class CustomizedRecordTransformTest extends TestCase {
 	
 	public void test_fieldToField() {
 		System.out.println("Field to field test:");
+		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
+		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
+		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
+		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 //		transform.setFieldPolicy(PolicyType.CONTROLLED);
 //		transform.setFieldPolicy(PolicyType.STRICT);
 		transform.addFieldToFieldRule("0.1", "0.1");
@@ -185,13 +189,9 @@ public class CustomizedRecordTransformTest extends TestCase {
 		try {
 			transform.transform(new DataRecord[]{record, record1}, new DataRecord[]{out,out1});
 		} catch (TransformException e) {
-			e.printStackTrace();
-			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
+			System.out.println(e.getMessage());
+//			System.out.println("Record number: " + e.getRecNo() + " , field number " + e.getFieldNo());
 		}
-		System.out.println(record.getMetadata().getName() + ":\n" + record.toString());
-		System.out.println(record1.getMetadata().getName() + ":\n" + record1.toString());
-		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
-		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 		assertEquals(out.getField(0).toString(), record1.getField(3).getValue().toString());
 //		assertEquals(out.getField(1).getValue(), record.getField(1).getValue());
 		assertEquals(out.getField(2).getValue().toString(), record.getField(2).getValue().toString());
@@ -271,13 +271,17 @@ public class CustomizedRecordTransformTest extends TestCase {
 
 	public void test_sequenceToField(){
 		System.out.println("Sequence to field test:");
+		System.out.println(record.toString());
+		System.out.println(record1.toString());
+		System.out.println(out.toString());
+		System.out.println(out1.toString());
 		transform.addSequenceToFieldRule("*.Age", graph.getSequence("ID"));
 		transform.addSequenceToFieldRule(4, "ID");
 		transform.addSequenceToFieldRule("${1.Na*}", "ID.currentValueString()");
 		transform.addSequenceToFieldRule(1, 2, "${seq.ID.nextValueString()}");
 		transform.addSequenceToFieldRule(0, "Name", "id");
 		transform.addRule("out.City", "${seq.ID.nextString}");
-		transform.addSequenceToFieldRule("out.Born", graph.getSequence("ID"));
+//		transform.addSequenceToFieldRule("out.Born", graph.getSequence("ID"));
 		transform.deleteRule("${o*.Value}");
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
@@ -324,10 +328,6 @@ public class CustomizedRecordTransformTest extends TestCase {
 		assertEquals(out1.getField(0).getValue().toString(), "2");
 		assertEquals(out1.getField(2).getValue().toString(), "3");
 		assertEquals(out.getField(2).getValue().toString(), "4");
-		System.out.println(record.toString());
-		System.out.println(record1.toString());
-		System.out.println(out.toString());
-		System.out.println(out1.toString());
 	}
 	
 	public void test_parameterToField(){
