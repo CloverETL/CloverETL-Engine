@@ -85,7 +85,7 @@ public class ComponentFactory {
      * @param componentType
      * @return class from the given component type
      */
-    private final static Class getComponentClass(String componentType) {
+    public final static Class getComponentClass(String componentType) {
         String className = null;
         ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
         
