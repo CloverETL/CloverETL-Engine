@@ -64,7 +64,7 @@ import org.jetel.util.WcardPattern;
  * <h4>Order of execution/methods call</h4>
  * <ol>
  * <li>setGraph()</li>
- * <li>setFieldPolicy(PolicyType)</li>
+ * <li>setFieldPolicy(PolicyType) - default value is STRICT</li>
  * <li>add...Rule(...)<br>
  * .<br></li>
  * <li>deleteRule(...)<br>
@@ -230,7 +230,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 
 	protected TransformationGraph graph;
 	
-	protected PolicyType fieldPolicy = PolicyType.LENIENT;
+	protected PolicyType fieldPolicy = PolicyType.STRICT;
 	protected Log logger;
 	protected String errorMessage;
 	
