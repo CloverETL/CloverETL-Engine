@@ -281,8 +281,15 @@ public class CustomizedRecordTransformTest extends TestCase {
 		transform.addSequenceToFieldRule(1, 2, "${seq.ID.nextValueString()}");
 		transform.addSequenceToFieldRule(0, "Name", "id");
 		transform.addRule("out.City", "${seq.ID.nextString}");
-//		transform.addSequenceToFieldRule("out.Born", graph.getSequence("ID"));
+		transform.addSequenceToFieldRule("out.Born", graph.getSequence("ID"));
 		transform.deleteRule("${o*.Value}");
+		try {
+			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
+				new DataRecordMetadata[]{metaOut,metaOut1});
+		} catch (ComponentNotReadyException e) {
+			e.printStackTrace();
+		}
+		transform.deleteRule(3);
 		try {
 			transform.init(null, new DataRecordMetadata[]{metadata, metadata1}, 
 				new DataRecordMetadata[]{metaOut,metaOut1});
