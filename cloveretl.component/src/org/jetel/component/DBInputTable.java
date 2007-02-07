@@ -19,14 +19,18 @@
 */
 package org.jetel.component;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.connection.SQLDataParser;
 import org.jetel.data.DataRecord;
 import org.jetel.database.IConnection;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
+import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
@@ -101,6 +105,9 @@ import org.w3c.dom.Text;
  * @see         org.jetel.database.AnalyzeDB
  */
 public class DBInputTable extends Node {
+
+    static Log logger = LogFactory.getLog(DBInputTable.class);
+	
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_DBCONNECTION_ATTRIBUTE = "dbConnection";
 	private static final String XML_SQLQUERY_ATTRIBUTE = "sqlQuery";
@@ -109,6 +116,7 @@ public class DBInputTable extends Node {
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
 	
 	private SQLDataParser parser;
+	private PolicyType policyType;
 
 	private String dbConnectionName;
 	private String sqlQuery;
@@ -168,9 +176,17 @@ public class DBInputTable extends Node {
 			parser.initSQLDataMap(record);
 
 			// till it reaches end of data or it is stopped from outside
-			while (((record = parser.getNext(record)) != null) && runIt) {
-				//broadcast the record to all connected Edges
-				writeRecordBroadcast(record);
+			try {
+				while (((record = parser.getNext(record)) != null) && runIt) {
+					//broadcast the record to all connected Edges
+					writeRecordBroadcast(record);
+				}
+			} catch (BadDataFormatException bdfe) {
+		        if(policyType == PolicyType.STRICT) {
+		            throw bdfe;
+		        } else {
+		            logger.info(bdfe.getMessage());
+		        }
 			}
 		} catch (Exception e) {
 			throw e;
@@ -251,13 +267,8 @@ public class DBInputTable extends Node {
                         xattribs.getString(XML_DBCONNECTION_ATTRIBUTE),
                         query);
                 
-                if (xattribs.exists(XML_DATAPOLICY_ATTRIBUTE)) 
-                {
-                    aDBInputTable.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
-                                                xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
-                }
-                
-                if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
+                 aDBInputTable.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE,null));
+                 if (xattribs.exists(XML_FETCHSIZE_ATTRIBUTE)){
                         aDBInputTable.setFetchSize(xattribs.getInteger(XML_FETCHSIZE_ATTRIBUTE));
                 }
                 
@@ -280,13 +291,6 @@ public class DBInputTable extends Node {
 		this.url = url;
 	}
 
-
-	/**
-	 * @param  handler
-	 */
-	private void setExceptionHandler(IParserExceptionHandler handler) {
-		parser.setExceptionHandler(handler);
-	}
 
 
 	/**  Description of the Method */
@@ -317,6 +321,20 @@ public class DBInputTable extends Node {
 
 	public void setFetchSize(int fetchSize){
 	    this.fetchSize=fetchSize;
+	}
+
+    public void setPolicyType(String strPolicyType) {
+        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    }
+    
+	/**
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
+	 *
+	 * @param  handler
+	 */
+	public void setPolicyType(PolicyType policyType) {
+        this.policyType = policyType;
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 	}
 	
  }
