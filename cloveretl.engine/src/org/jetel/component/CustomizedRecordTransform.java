@@ -921,8 +921,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 					rule1.setProperties(parameters);
 					rule1.setLogger(logger);
 					//prepare rule for concrete data field
-					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
-							getFieldNo(field),fieldPolicy);
+//					rule1.init(sourceMetadata, targetMetadata,getRecNo(field),
+//							getFieldNo(field),fieldPolicy);
 					transformMap.put(field, rule1);
 				}
 			}
@@ -936,6 +936,8 @@ public class CustomizedRecordTransform implements RecordTransform {
 			order[index][REC_NO] = getRecNo(field);
 			order[index][FIELD_NO] = getFieldNo(field);
 			transformMapArray[order[index][REC_NO] ][order[index][FIELD_NO]] = i.getValue();
+			transformMapArray[order[index][REC_NO]][order[index][FIELD_NO]].init
+				(sourceMetadata, targetMetadata, getRecNo(field), getFieldNo(field), fieldPolicy);
 			index++;
 		}
 		return true;
@@ -1102,7 +1104,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			rule = new FieldRule(ruleString);
 			rule.setLogger(logger);
 			((FieldRule)rule).setFieldParams(String.valueOf(inRecNo) + DOT	+ inFieldNo);
-			rule.init(sourceMetadata, targetMetadata, outRecNo, outFieldNo, fieldPolicy);
+//			rule.init(sourceMetadata, targetMetadata, outRecNo, outFieldNo, fieldPolicy);
 			transformMap.put(String.valueOf(outRecNo) + DOT + outFieldNo, rule);
 			return true;
 		}
@@ -1763,7 +1765,9 @@ public class CustomizedRecordTransform implements RecordTransform {
 				break;
 			default:
 				errorMessage = "Can't set sequence to data field of type: "
-						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString();
+						+ targetMetadata[recNo].getField(fieldNo).getTypeAsString() +
+						" (" + targetMetadata[recNo].getName() + CustomizedRecordTransform.DOT +
+						targetMetadata[recNo].getField(fieldNo).getName() + ")";
 				logger.error(errorMessage);
 				throw new ComponentNotReadyException(errorMessage);
 			}
