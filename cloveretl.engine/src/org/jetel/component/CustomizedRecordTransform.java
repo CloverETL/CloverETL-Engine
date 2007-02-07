@@ -1364,6 +1364,17 @@ public class CustomizedRecordTransform implements RecordTransform {
 		return fieldPolicy;
 	}
 
+	/**
+	 * Sets the field policy:
+	 * <ul>
+	 * <li>PolicyType.STRICT - mapped output and input fields have to be of the same types
+	 * <li>PolicyType.CONTROLLED - mapped input fields have to be subtypes of output fields<br>
+	 * <li>PolicyType.LENIENT - field's types are not checked during initialization</ul>
+	 * For PolicyType CONTROLLED and LENIENT method transform can work slower as 
+	 * for not identical types for is called method fromString, when method setValue has failed.
+	 * 
+	 * @param fieldPolicy
+	 */
 	public void setFieldPolicy(PolicyType fieldPolicy) {
 		this.fieldPolicy = fieldPolicy;
 	}
