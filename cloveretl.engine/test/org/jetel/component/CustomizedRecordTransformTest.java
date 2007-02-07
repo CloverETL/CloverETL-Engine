@@ -43,6 +43,7 @@ public class CustomizedRecordTransformTest extends TestCase {
         graph=new TransformationGraph();
         
         transform.setGraph(graph);
+		transform.setFieldPolicy(PolicyType.LENIENT);
         
 		metadata=new DataRecordMetadata("in",DataRecordMetadata.DELIMITED_RECORD);
 		
@@ -130,7 +131,6 @@ public class CustomizedRecordTransformTest extends TestCase {
 		System.out.println(out.getMetadata().getName() + ":\n" + out.toString());
 		System.out.println(out1.getMetadata().getName() + ":\n" + out1.toString());
 //		transform.setFieldPolicy(PolicyType.CONTROLLED);
-//		transform.setFieldPolicy(PolicyType.STRICT);
 		transform.addFieldToFieldRule("0.1", "0.1");
 		transform.addFieldToFieldRule("${1.?a*}", "${1.*e}");
 		transform.addFieldToFieldRule("${out.0.Name}", "${in.1.3}");
