@@ -292,10 +292,9 @@ public class StringUtils {
 	}
 	
 	public static StringBuilder trimLeading(StringBuilder str){
-		char[] chars = new char[str.length()];
-		str.getChars(0, chars.length, chars, 0);
 		int pos = 0;
-		while (pos < chars.length && Character.isWhitespace(chars[pos])) {
+		int length = str.length();
+		while (pos < length && Character.isWhitespace(str.charAt(pos))) {
 			pos++;
 		}
 		str.delete(0, pos);
@@ -318,10 +317,8 @@ public class StringUtils {
 	}
 	
 	public static StringBuilder trimTrailing(StringBuilder str){
-		char[] chars = new char[str.length()];
-		str.getChars(0, chars.length, chars, 0);
-		int pos = chars.length - 1;
-		while (pos > 0 && Character.isWhitespace(chars[pos])) {
+		int pos = str.length() - 1;
+		while (pos > 0 && Character.isWhitespace(str.charAt(pos))) {
 			pos--;
 		}
 		str.setLength(pos+1);
