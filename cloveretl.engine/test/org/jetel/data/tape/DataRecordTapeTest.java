@@ -25,6 +25,7 @@ import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.tape.DataRecordTape;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -54,6 +55,8 @@ protected void setUp() {
     testRecordA.getField(1).setValue("Second field");
     testRecordA.getField(2).setValue(new Integer(-1234567));
     testRecordB.copyFieldsByPosition(testRecordA);
+    
+    runGraph.initEngine(null, null);
 }
 
 
@@ -70,7 +73,7 @@ protected void tearDown() {
 public void test_1_DataTape() {
 	ByteBuffer buffer= ByteBuffer.allocateDirect(2048);
     
-    DataRecordTape tape=new DataRecordTape();
+    DataRecordTape tape=new DataRecordTape("tapeTest.tmp", true, false);
     // first chunk of data
     try{
         tape.open();
@@ -83,7 +86,7 @@ public void test_1_DataTape() {
         testRecordA.serialize(buffer);
         buffer.flip();
         try{
-        tape.put(buffer);
+        	tape.put(buffer);
         }catch(IOException ex){
             ex.printStackTrace();
         }
