@@ -27,6 +27,7 @@ import org.jetel.data.Defaults;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.StringUtils;
 
@@ -155,21 +156,22 @@ public class FixLenCharDataParser extends FixLenDataParser {
 				rawRec.limit(Math.min(recStart + fieldEnd[fieldIdx], recEnd));
 				rawRec.position(recStart + fieldStart[fieldIdx]);
 				
-                // shall we remove quotes ??
-                switch(record.getField(fieldIdx).getType()){
-                case org.jetel.metadata.DataFieldMetadata.STRING_FIELD:
-                case org.jetel.metadata.DataFieldMetadata.NUMERIC_FIELD:
-                case org.jetel.metadata.DataFieldMetadata.DECIMAL_FIELD:
-					StringUtils.unquote(rawRec);
-                    break;
-				}
-                
 				if (skipLBlanks) {
 					StringUtils.trimLeading(rawRec);
 				}
 				if (skipTBlanks) {
 					StringUtils.trimTrailing(rawRec);
 				}
+                // shall we remove quotes ??
+                switch(record.getField(fieldIdx).getType()){
+                case DataFieldMetadata.BYTE_FIELD:
+                case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+                     break;
+                default:
+   					StringUtils.unquote(rawRec);
+                	break;
+				}
+                
 				record.getField(fieldIdx).fromString(rawRec);
 			} catch (BadDataFormatException e) {
 					fillXHandler(record, rawRec != null ? rawRec : null, e);
