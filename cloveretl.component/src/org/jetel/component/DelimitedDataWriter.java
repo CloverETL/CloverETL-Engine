@@ -163,7 +163,7 @@ public class DelimitedDataWriter extends Node {
 		}
         
         // initialize multifile writer based on prepared formatter
-        writer = new MultiFileWriter(formatter, getGraph().getProjectURL(), fileURL);
+        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);

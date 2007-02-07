@@ -167,7 +167,7 @@ public class DataWriter extends Node {
 
 		if (fileURL != null) {
 	        // initialize multifile writer based on prepared formatter
-	        writer = new MultiFileWriter(formatter, getGraph().getProjectURL(), fileURL);
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 	        writer.setLogger(logger);
 	        writer.setBytesPerFile(bytesPerFile);
 	        writer.setRecordsPerFile(recordsPerFile);

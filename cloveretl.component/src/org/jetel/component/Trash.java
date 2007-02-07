@@ -192,7 +192,7 @@ public class Trash extends Node {
 		if (debugPrint) {
             if(debugFilename != null) {
           		try {
-    				outStream = new PrintWriter(Channels.newWriter(FileUtils.getWritableChannel(getGraph().getProjectURL(), debugFilename, false), Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER));
+    				outStream = new PrintWriter(Channels.newWriter(FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false), Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER));
     			} catch (IOException ex) {
     				throw new ComponentNotReadyException(ex.getMessage());
     			}

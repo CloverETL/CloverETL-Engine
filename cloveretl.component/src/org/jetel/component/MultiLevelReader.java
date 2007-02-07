@@ -256,7 +256,7 @@ public class MultiLevelReader extends Node {
         parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
 
         // initialize multifile reader based on prepared parser
-        reader = new MultiFileReader(parser, getGraph().getProjectURL(), fileURL);
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
         reader.setFileSkip(skipFirstLine ? 1 : 0);
         reader.setSkip(skipRows);

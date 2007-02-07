@@ -234,7 +234,7 @@ public class StructureWriter extends Node {
 		super.init();
 		// based on file mask, create/open output file
 		try {
-			writer = fileURL == null ? Channels.newChannel(System.out) : FileUtils.getWritableChannel(getGraph().getProjectURL(), fileURL, appendData);
+			writer = fileURL == null ? Channels.newChannel(System.out) : FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, appendData);
 			buffer = ByteBuffer.allocateDirect(StringUtils.getMaxLength(header,footer));
 			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
             formatter.setDataTarget(writer);
