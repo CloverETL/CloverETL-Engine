@@ -39,7 +39,6 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.net.SocketAppender;
 import org.jetel.component.ComponentFactory;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
@@ -48,12 +47,9 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.plugin.Plugins;
 import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
-import org.jetel.util.crypto.Enigma;
 
 /**
  *  class for reading and showing data over input components<br><br>
@@ -93,49 +89,6 @@ import org.jetel.util.crypto.Enigma;
 public class showData {
     private static Log logger = LogFactory.getLog(showData.class);
 
-    /**
-     * Clover.ETL engine initialization. Should be called only once.
-     * @param pluginsRootDirectory directory path, where plugins specification is located 
-     *        (can be null, then is used constant from Defaults.DEFAULT_PLUGINS_DIRECTORY)
-     * @param password password for encrypting some hidden part of graphs
-     *        <br>i.e. connections passwordss can be encrypted
-     */        int trackingInterval = -1;
-
-    public static void initEngine(String pluginsRootDirectory, String password) {
-        
-        //init password decryptor
-        if(password != null) {
-            Enigma.getInstance().init(password);
-        }
-        
-        //init framework constants
-        Defaults.init();
-
-        //init clover plugins system
-        Plugins.init(pluginsRootDirectory);
-    }
-    
-    
-    /**
-     * Instantiates transformation graph from a given input stream and presets a given properties.
-     * @param inStream
-     * @param properties
-     * @return
-     * @throws XMLConfigurationException
-     * @throws GraphConfigurationException
-     */
-    public static TransformationGraph loadGraph(InputStream inStream, Properties properties) throws XMLConfigurationException, GraphConfigurationException {
-        TransformationGraph graph = new TransformationGraph();
-        TransformationGraphXMLReaderWriter graphReader = new TransformationGraphXMLReaderWriter(graph);
-        if(properties != null) {
-            graph.loadGraphProperties(properties);
-        }
-
-        graphReader.read(inStream);
-        
-        return graph;
-    }
-    
 	/**
 	 *  Description of the Method
 	 *
