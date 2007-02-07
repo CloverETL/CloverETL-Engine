@@ -171,7 +171,11 @@ public class EdgeTest extends TestCase {
 	            }catch(Exception ex){
 	            }
 	        }
-	        edge.close();
+	        try {
+				edge.close();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 	    }
 	} 
 	
