@@ -240,7 +240,8 @@ public class StringUtils {
 	 * @return true if the string is quoted
 	 */
 	public static final boolean isQuoted(CharSequence str){
-	    return isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1);
+	    return isEmpty(str) ? false :
+	    	isQuoteChar(str.charAt(0)) && str.charAt(0)==str.charAt(str.length()-1);
 	}
 	
     
