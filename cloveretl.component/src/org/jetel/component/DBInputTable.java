@@ -28,7 +28,6 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
 import org.jetel.exception.PolicyType;
 import org.jetel.exception.XMLConfigurationException;
@@ -225,7 +224,9 @@ public class DBInputTable extends Node {
 		}
 		
 		xmlElement.setAttribute(XML_DBCONNECTION_ATTRIBUTE, this.dbConnectionName);
-		
+		if (policyType != null){
+			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
+		}
 	}
 
 	/**
