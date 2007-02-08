@@ -67,7 +67,7 @@ public class StringUtilsTest extends TestCase {
 
 		controlString2 = "\\\nn\\nn\\nn\\\\r";
 
-		resultString2 = "\\\\nn\\nn\\nn\\\\r";
+		resultString2 = "\\\\\\nn\\\\nn\\\\nn\\\\\\\\r";
 
 		// for test_formatString test1
 
