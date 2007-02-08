@@ -35,9 +35,9 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
- * Class for transparent writing into multifile. Underlying formatter is used for formatting
- * incoming data records and destination is a list of files defined in fileURL attribute 
- * by org.jetel.util.MultiOutFile.
+ * Class for transparent writing into multifile or multistream. Underlying formatter is used for formatting
+ * incoming data records and destination is a list of files defined in fileURL attribute
+ * by org.jetel.util.MultiOutFile or iterator of writable channels.
  * Usage: 
  * - first instantiate some suitable formatter, set all its parameters (don't call init method)
  * - optionally set appropriate logger
@@ -67,7 +67,11 @@ public class MultiFileWriter {
     private ByteBuffer header;
     private ByteBuffer footer;
     private Iterator<String> fileNames;
+    private Iterator<WritableByteChannel> channels;
     private WritableByteChannel byteChannel;
+    private int skip;
+	private int numRecords;
+	private int counter;
     
     /**
      * Constructor.
@@ -79,14 +83,19 @@ public class MultiFileWriter {
         this.contextURL = contextURL;
         this.fileURL = fileURL;
     }
-    
+
+    public MultiFileWriter(Formatter formatter, Iterator<WritableByteChannel> channels) {
+        this.formatter = formatter;
+        this.channels = channels;
+    }
+
     /**
      * Initializes underlying formatter with a given metadata.
      * @param metadata
      * @throws ComponentNotReadyException 
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-        fileNames = new MultiOutFile(fileURL);
+    	if (fileURL != null) fileNames = new MultiOutFile(fileURL);
         formatter.init(metadata);
         try {
             setNextOutput();
@@ -101,16 +110,23 @@ public class MultiFileWriter {
      * @throws FileNotFoundException
      */
     private void setNextOutput() throws IOException {
-        if (!fileNames.hasNext()) {
-            logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-                    + "Size of output file will exceed specified limit");
+    	if (fileNames != null) {
+            if (!fileNames.hasNext()) {
+                logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
+                        + "Size of output file will exceed specified limit");
+                return;
+            }    		
+    	}
+    	else if (!channels.hasNext()) {
+            logger.warn("Unable to open new output file. Size of output file will exceed specified limit");
             return;
-        }
+        }      	
+
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null) {
             writeFooter();
         }
-        byteChannel = FileUtils.getWritableChannel(contextURL, fileNames.next(), appendData);
+        byteChannel = fileNames != null ? FileUtils.getWritableChannel(contextURL, fileNames.next(), appendData) : channels.next();
         //write header
         writeHeader();
         formatter.setDataTarget(byteChannel);
@@ -136,7 +152,18 @@ public class MultiFileWriter {
      * @throws IOException
      */
     public void write(DataRecord record) throws IOException {
-        if ((recordsPerFile > 0 && records >= recordsPerFile)
+        //check for index of last returned record
+        if(numRecords > 0 && numRecords == counter) {
+            return;
+        }
+        
+        //shall i skip some records?
+        if(skip > 0) {
+            skip--;
+            return;
+        }
+    	
+    	if ((recordsPerFile > 0 && records >= recordsPerFile)
                 || (bytesPerFile > 0 && bytes >= bytesPerFile)) {
             setNextOutput();
             records = 0;
@@ -144,6 +171,7 @@ public class MultiFileWriter {
         }
         bytes += formatter.write(record);
         records++;
+        counter++;
     }
 
     /**
@@ -205,6 +233,22 @@ public class MultiFileWriter {
 
     public void setCharset(String charset) {
         this.charset = charset;
+    }
+
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of read reacords
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
     }
 
 }

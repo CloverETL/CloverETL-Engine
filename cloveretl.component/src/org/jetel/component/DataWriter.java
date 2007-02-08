@@ -21,6 +21,7 @@
 package org.jetel.component;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -35,7 +36,6 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.StringUtils;
@@ -76,6 +76,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td> 
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
  *  </table>  
  *
@@ -92,6 +94,8 @@ public class DataWriter extends Node {
     private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatter formatter;
@@ -99,16 +103,14 @@ public class DataWriter extends Node {
     private boolean outputFieldNames;
 	private int bytesPerFile;
 	private int recordsPerFile;
-	private WritableByteChannel channelWriter;
-	private String delimiter;
-	private long recordFrom = -1;
-	private long recordCount = -1;
+	private WritableByteChannel writableByteChannel;
+    private int skip;
+	private int numRecords;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
 	public final static String COMPONENT_TYPE = "DATA_WRITER";
 	private final static int READ_FROM_PORT = 0;
-
 
 	/**
 	 *Constructor for the DataWriter object
@@ -124,33 +126,31 @@ public class DataWriter extends Node {
 		this.appendData = appendData;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
+	
+	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset, boolean appendData) {
+		super(id);
+		this.writableByteChannel = writableByteChannel;
+		this.appendData = appendData;
+		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+	}
 
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
-		long iRec = 0;
-		long recordTo = recordCount < 0 ? Long.MAX_VALUE : (recordFrom < 0 ? recordCount+1 : recordFrom + recordCount);
 		record.init();
 		try {
 			while (record != null && runIt) {
-				iRec++;
 				record = inPort.readRecord(record);
-				if (recordFrom > iRec || recordTo <= iRec) continue;
 				if (record != null) {
-					if (channelWriter != null) {
-						formatter.write(record);
-					} else {
-						writer.write(record);
-					}
+					writer.write(record);
 				}
 				SynchronizeUtils.cloverYield();
 			}
-			if (channelWriter != null) formatter.flush();
 		} catch (Exception e) {
 			throw e;
 		}finally{		
-			if (writer != null) writer.close();
+			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -165,29 +165,25 @@ public class DataWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 
+		// initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        // initialize multifile writer based on prepared formatter
 	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-	        writer.setLogger(logger);
-	        writer.setBytesPerFile(bytesPerFile);
-	        writer.setRecordsPerFile(recordsPerFile);
-	        writer.setAppendData(appendData);
-	        if(outputFieldNames) {
-	            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-	        }
-	        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 		} else {
-			channelWriter = Channels.newChannel(System.out);
-			formatter.setDataTarget(channelWriter);
-			DataRecordMetadata metadata = getInputPort(READ_FROM_PORT).getMetadata();
-			if (delimiter != null) {
-				for(int i=0; i<metadata.getNumFields()-1; i++) {
-					metadata.getField(i).setDelimiter(delimiter);
-				}
-				//metadata.getField(metadata.getNumFields()-1).setDelimiter("\n");
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
 			}
-			formatter.init(metadata);
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
 		}
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+        if(outputFieldNames) {
+            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        }
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
 	/**
@@ -212,6 +208,12 @@ public class DataWriter extends Node {
         if (bytesPerFile > 0) {
             xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
         }
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
+		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 	}
 
@@ -242,6 +244,12 @@ public class DataWriter extends Node {
             if(xattribs.exists(XML_BYTES_PER_FILE)) {
                 aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
             }
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+			}
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
@@ -285,11 +293,9 @@ public class DataWriter extends Node {
         this.bytesPerFile = bytesPerFile;
     }
 
-
     public int getRecordsPerFile() {
         return recordsPerFile;
     }
-
 
     public void setRecordsPerFile(int recordsPerFile) {
         this.recordsPerFile = recordsPerFile;
@@ -299,16 +305,38 @@ public class DataWriter extends Node {
         this.outputFieldNames = outputFieldNames;
     }
     
-    public void setDataDelimiter(String delimiter) {
-    	this.delimiter = delimiter;
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
+	
+    private class WritableByteChannelIterator implements Iterator<WritableByteChannel> {
+    	WritableByteChannel writableByteChannel;
+    	
+    	public WritableByteChannelIterator(WritableByteChannel writableByteChannel) {
+    		this.writableByteChannel = writableByteChannel;
+    	}
+    	
+		public boolean hasNext() {
+			return true;
+		}
+
+		public WritableByteChannel next() {
+			return writableByteChannel;
+		}
+
+		public void remove() {}
     }
     
-	public void setRecordFrom(long recordFrom) {
-		this.recordFrom = recordFrom;
-	}
-
-	public void setRecordCount(long recordCount) {
-		this.recordCount = recordCount;
-	}
-
 }
