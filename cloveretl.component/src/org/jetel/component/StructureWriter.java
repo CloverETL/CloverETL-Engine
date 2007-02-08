@@ -81,6 +81,8 @@ import org.w3c.dom.Element;
  *  where field1 ,.., fieldn are record's fields from metadata</td>
  *  <tr><td><b>header</b></td><td>text to write before records</td>
  *  <tr><td><b>footer</b></td><td>text to write after records</td>
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
  *  </table>  
  *
@@ -113,7 +115,7 @@ public class StructureWriter extends Node {
 	public static final String XML_MASK_ATTRIBUTE = "mask";
 	public static final String XML_HEADER_ATTRIBUTE = "header";
 	public static final String XML_FOOTER_ATTRIBUTE = "footer";
-	public static final String XML_RECORD_FROM_ATTRIBUTE = "recordFrom";
+	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 
 	private String fileURL;
@@ -124,8 +126,8 @@ public class StructureWriter extends Node {
 	private WritableByteChannel writer;
 	private ByteBuffer buffer;
 	private String charset;
-	private long recordFrom = -1;
-	private long recordCount = -1;
+    private int skip;
+	private int numRecords;
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -167,15 +169,15 @@ public class StructureWriter extends Node {
 		}
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
-		long iRec = 0;
-		long recordTo = recordCount < 0 ? Long.MAX_VALUE : (recordFrom < 0 ? recordCount+1 : recordFrom + recordCount);
+		int iRec = 0;
+		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
 		//write records
 		try {
 			while (record != null && runIt) {
 				iRec++;
 				record = inPort.readRecord(record);
-				if (recordFrom > iRec || recordTo <= iRec) continue;
+				if (skip >= iRec || recordTo <= iRec) continue;
 				if (record != null) {
 					formatter.write(record);
 				}
@@ -262,11 +264,11 @@ public class StructureWriter extends Node {
 			if (xattribs.exists(XML_FOOTER_ATTRIBUTE)){
 				aDataWriter.setFooter(xattribs.getString(XML_FOOTER_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_RECORD_FROM_ATTRIBUTE)){
-				aDataWriter.setRecordFrom(Long.parseLong(xattribs.getString(XML_RECORD_FROM_ATTRIBUTE)));
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
 			}
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
-				aDataWriter.setRecordCount(Long.parseLong(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
@@ -293,11 +295,11 @@ public class StructureWriter extends Node {
 		if (footer != null){
 			xmlElement.setAttribute(XML_FOOTER_ATTRIBUTE,footer);
 		}
-		if (recordFrom != -1){
-			xmlElement.setAttribute(XML_RECORD_FROM_ATTRIBUTE, String.valueOf(recordFrom));
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
 		}
-		if (recordCount != -1){
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(recordCount));
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
 	}
 	
@@ -309,12 +311,20 @@ public class StructureWriter extends Node {
 		this.header = header;
 	}
 
-	public void setRecordFrom(long recordFrom) {
-		this.recordFrom = recordFrom;
-	}
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
 
-	public void setRecordCount(long recordCount) {
-		this.recordCount = recordCount;
-	}
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
 
 }

@@ -25,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.Map;
 import java.util.Properties;
 
@@ -73,7 +75,7 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>--fields</td><td>Show only defined fields. If no fields defined, show all fields</td></tr>
  *  <tr><td nowrap>--logLevel</td><td>Log level for logger {all, info, debug, ..}, default is error log level</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
- *  <tr><td nowrap><b>component id</b></td><td>over this component will be showed data</td></tr>
+ *  <tr><td nowrap><b>component id</b></td><td>data will be shown over this component</td></tr>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -104,8 +106,8 @@ public class showData {
         String delimiter = null;
         String fileUrl = null;
         String filterExpression = null;
-        long recordFrom = -1;
-        long recordCount = -1;
+        int recordFrom = -1;
+        int recordCount = -1;
         String fields = null;
         String logHost = null;
 		
@@ -223,10 +225,10 @@ public class showData {
 			filterExpression = cmdLine.getOptionValue("e");
 		}
 		if (cmdLine.hasOption("f")) {
-	    	recordFrom = Long.parseLong(cmdLine.getOptionValue("f"));
+	    	recordFrom = Integer.parseInt(cmdLine.getOptionValue("f"));
 		}
 		if (cmdLine.hasOption("c")) {
-	    	recordCount = Long.parseLong(cmdLine.getOptionValue("c"));
+	    	recordCount = Integer.parseInt(cmdLine.getOptionValue("c"));
 		}
 		if (cmdLine.hasOption("l")) {
         	fields = cmdLine.getOptionValue("l");
@@ -355,7 +357,7 @@ public class showData {
 		}
 		Node writer = null;
 		try {
-			writer = getWriter(viewGraph, viewMode, dataRecordMetadata, fileUrl, delimiter, recordFrom, recordCount, fields);
+			writer = getWriter(viewGraph, viewMode, dataRecordMetadata, fileUrl, recordFrom, recordCount, fields);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -380,6 +382,13 @@ public class showData {
 		} catch (Exception e) {
 			e.printStackTrace();
 			return;
+		}
+
+		if (viewMode.equals(Mode.TEXT) && delimiter != null) {
+			for(int i=0; i<edge0.getMetadata().getNumFields()-1; i++) {
+				edge0.getMetadata().getField(i).setDelimiter(delimiter);
+			}
+			//metadata.getField(metadata.getNumFields()-1).setDelimiter("\n");
 		}
 
 		// assign ports (input & output)
@@ -442,7 +451,7 @@ public class showData {
 	 * @return
 	 * @throws Exception 
 	 */
-	private static Node getWriter(TransformationGraph graph, Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, String delimiter, long recordFrom, long recordCount, String fields) throws Exception {
+	private static Node getWriter(TransformationGraph graph, Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, int recordFrom, int recordCount, String fields) throws Exception {
 		if (mode == null) return null;
 		Node writer = null;
 		String[] aFiealds = fields == null ? null : fields.split(";");
@@ -477,9 +486,9 @@ public class showData {
 			
 			Node structureWriter = ComponentFactory.createComponent(graph, "STRUCTURE_WRITER", new Object[] {"STRUCTURE_WRITER0", fileUrl, null, false, maskBuilder.toString()}, new Class[] {String.class, String.class, String.class, boolean.class, String.class});
 			Class cStructureWriter = ComponentFactory.getComponentClass("STRUCTURE_WRITER");
-			Method method = cStructureWriter.getMethod("setRecordFrom", new Class[] {long.class});
-			method.invoke(structureWriter, recordFrom);
-			method = cStructureWriter.getMethod("setRecordCount", new Class[] {long.class});
+			Method method = cStructureWriter.getMethod("setSkip", new Class[] {int.class});
+			method.invoke(structureWriter, recordFrom-1);
+			method = cStructureWriter.getMethod("setNumRecords", new Class[] {int.class});
 			method.invoke(structureWriter, recordCount);
 			StringBuilder sb = new StringBuilder();
 			
@@ -510,17 +519,18 @@ public class showData {
 			
 		// text formating - delimited or fix lenght
 		} else if (mode.equals(Mode.TEXT)) {
-			Node dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", fileUrl, dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, String.class, String.class, boolean.class});
+			Node dataWriter;
+			if (fileUrl == null) {
+				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", Channels.newChannel(System.out), dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, WritableByteChannel.class, String.class, boolean.class});
+			} else {
+				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", fileUrl, dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, String.class, String.class, boolean.class});
+			}
 			//TODO agata dodelat selekci na fieldy
 			Class cDataWriter = ComponentFactory.getComponentClass("DATA_WRITER");
-			Method method = cDataWriter.getMethod("setRecordFrom", new Class[] {long.class});
-			method.invoke(dataWriter, recordFrom);
-			method = cDataWriter.getMethod("setRecordCount", new Class[] {long.class});
+			Method method = cDataWriter.getMethod("setSkip", new Class[] {int.class});
+			method.invoke(dataWriter, (int)(recordFrom-1));
+			method = cDataWriter.getMethod("setNumRecords", new Class[] {int.class});
 			method.invoke(dataWriter, recordCount);
-			if (delimiter != null) {
-				method = cDataWriter.getMethod("setDataDelimiter", new Class[] {String.class});
-				method.invoke(dataWriter, delimiter);
-			}
 			writer = dataWriter;
 			
 		// table formating
@@ -528,9 +538,9 @@ public class showData {
 			//TextWriter dataWriter = new TextWriter("TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds);
 			Node textWriter = ComponentFactory.createComponent(graph, "TEXT_TABLE_WRITER", new Object[] {"TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds}, new Class[] {String.class, String.class, String.class, boolean.class, String[].class});
 			Class cDataWriter = ComponentFactory.getComponentClass("TEXT_TABLE_WRITER");
-			Method method = cDataWriter.getMethod("setRecordFrom", new Class[] {long.class});
-			method.invoke(textWriter, recordFrom);
-			method = cDataWriter.getMethod("setRecordCount", new Class[] {long.class});
+			Method method = cDataWriter.getMethod("setSkip", new Class[] {int.class});
+			method.invoke(textWriter, recordFrom-1);
+			method = cDataWriter.getMethod("setNumRecords", new Class[] {int.class});
 			method.invoke(textWriter, recordCount);
 			method = cDataWriter.getMethod("setHeader", new Class[] {boolean.class});
 			method.invoke(textWriter, true);
@@ -560,7 +570,7 @@ public class showData {
         System.out.println("--logLevel\t\tLog level for logger {all, info, debug, ..}, default is error log level");
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
-        System.out.println("Note: <component id> over this component will be showed data");
+        System.out.println("Note: <component id> data will be shown over this component");
 	}
 
 	private static void printInfo(){

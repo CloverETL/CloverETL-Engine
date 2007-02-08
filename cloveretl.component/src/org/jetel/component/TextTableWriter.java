@@ -71,6 +71,8 @@ import org.w3c.dom.Element;
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
  *  </table>  
  *
@@ -94,7 +96,7 @@ public class TextTableWriter extends Node {
 	public static final String XML_CHARSET_ATTRIBUTE = "charset";
 	public static final String XML_MASK_ATTRIBUTE = "mask";
 	public static final String XML_HEADER_ATTRIBUTE = "header";
-	public static final String XML_RECORD_FROM_ATTRIBUTE = "recordFrom";
+	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 
 	private String fileURL;
@@ -102,9 +104,8 @@ public class TextTableWriter extends Node {
 	private TextTableFormatter formatter;
 	private boolean header = true;
 	private WritableByteChannel writer;
-	private String charset;
-	private long recordFrom = -1;
-	private long recordCount = -1;
+    private int skip;
+	private int numRecords;
 	
 	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -123,9 +124,7 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		this.charset = charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		formatter = charset == null ? new TextTableFormatter() : 
-			new TextTableFormatter(charset);
+		formatter = charset == null ? new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatter(charset);
 		formatter.setMask(fields);
 	}
 
@@ -143,14 +142,14 @@ public class TextTableWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		long iRec = 0;
-		long recordTo = recordCount < 0 ? Long.MAX_VALUE : (recordFrom < 0 ? recordCount+1 : recordFrom + recordCount);
+		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
 		//write records
 		try {
 			while (record != null && runIt) {
 				iRec++;
 				record = inPort.readRecord(record);
-				if (recordFrom > iRec || recordTo <= iRec) continue;
+				if (skip >= iRec || recordTo <= iRec) continue;
 				if (record != null) {
 					formatter.write(record);
 				}
@@ -230,11 +229,11 @@ public class TextTableWriter extends Node {
 			if (xattribs.exists(XML_HEADER_ATTRIBUTE)){
 				aDataWriter.setHeader(Boolean.parseBoolean(xattribs.getString(XML_HEADER_ATTRIBUTE)));
 			}
-			if (xattribs.exists(XML_RECORD_FROM_ATTRIBUTE)){
-				aDataWriter.setRecordFrom(Long.parseLong(xattribs.getString(XML_RECORD_FROM_ATTRIBUTE)));
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
 			}
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
-				aDataWriter.setRecordCount(Long.parseLong(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
@@ -256,11 +255,11 @@ public class TextTableWriter extends Node {
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		xmlElement.setAttribute(XML_HEADER_ATTRIBUTE,String.valueOf(header));
-		if (recordFrom != -1){
-			xmlElement.setAttribute(XML_RECORD_FROM_ATTRIBUTE, String.valueOf(recordFrom));
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
 		}
-		if (recordCount != -1){
-			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(recordCount));
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
 	}
 	
@@ -268,12 +267,20 @@ public class TextTableWriter extends Node {
 		this.header = header;
 	}
 
-	public void setRecordFrom(long recordFrom) {
-		this.recordFrom = recordFrom;
-	}
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
 
-	public void setRecordCount(long recordCount) {
-		this.recordCount = recordCount;
-	}
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
 
 }
