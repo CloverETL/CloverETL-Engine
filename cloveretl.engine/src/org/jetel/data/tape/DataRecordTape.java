@@ -208,7 +208,8 @@ public class DataRecordTape {
 	        return;
 	    }
 	    try{
-	    tmpFileChannel.position(0);
+	    	flush(true);
+	    	tmpFileChannel.position(0);
 	    }catch(IOException ex){
 	        ex.printStackTrace();
 	    }
@@ -248,6 +249,7 @@ public class DataRecordTape {
 	    }else{
 	        try{
 	            // set file position to the end of file
+	        	flush(true);
 	            tmpFileChannel.position(tmpFileChannel.size());
 	            // add new data chunk
 	            DataChunk chunk=new DataChunk(tmpFileChannel,dataBuffer);
