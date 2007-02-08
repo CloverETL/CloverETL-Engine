@@ -118,6 +118,7 @@ public class FixLenDataReader extends Node {
     private static final String XML_SKIPFIRSTLINE_ATTRIBUTE = "skipFirstLine";
 	private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
     private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
+	private static final String XML_TRIM_ATTRIBUTE = "trim";
 	
 	static Log logger = LogFactory.getLog(FixLenDataReader.class);
 	
@@ -256,7 +257,12 @@ public class FixLenDataReader extends Node {
 		if (this.skipRows>0){
 		    xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
 		}
-		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());		
+		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
+		if (parser instanceof FixLenCharDataParser
+				&& ((FixLenCharDataParser) parser).getTrim() != null) {
+			xmlElement.setAttribute(XML_TRIM_ATTRIBUTE, String
+					.valueOf(((FixLenCharDataParser) parser).getTrim()));
+		}
 	}
 
 
@@ -305,6 +311,9 @@ public class FixLenDataReader extends Node {
                 aFixLenDataReaderNIO.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
 			aFixLenDataReaderNIO.setPolicyType(xattribs.getString(XML_DATAPOLICY_ATTRIBUTE, null));			
+			if (xattribs.exists(XML_TRIM_ATTRIBUTE)){
+				aFixLenDataReaderNIO.setTrim(xattribs.getBoolean(XML_TRIM_ATTRIBUTE));
+			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -386,5 +395,10 @@ public class FixLenDataReader extends Node {
         this.skipFirstLine = skip;
     }
 
+    public void setTrim(Boolean trim){
+    	if (parser instanceof FixLenCharDataParser){
+    		((FixLenCharDataParser)parser).setTrim(trim);
+    	}
+    }
 }
 
