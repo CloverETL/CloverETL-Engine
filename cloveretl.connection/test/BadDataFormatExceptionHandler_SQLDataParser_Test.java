@@ -221,15 +221,15 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 			 fail("Should throw Exception");
 		 }
 	 } catch (BadDataFormatException e){	
-		 fail("Should not raise an BadDataFormatException");
-		 e.printStackTrace();
-	 } catch (RuntimeException re) {
 		 failed = true;
+		System.out.println(e.getMessage());
+	 } catch (RuntimeException re) {
+		 fail("Should throw RuntimeException");
 	 } catch (Exception ee){
 		 ee.printStackTrace();
 	 }
 	 if(!failed)
-		 fail("Should raise an RuntimeException");
+		 fail("Should raise an BadDataFormatException");
  }
 	
 
@@ -276,8 +276,7 @@ public class BadDataFormatExceptionHandler_SQLDataParser_Test  extends TestCase 
 			 recCount++;
 		 }
 	 } catch (BadDataFormatException e){	
-		 fail("Should not raise an BadDataFormatException");
-		 e.printStackTrace();
+		 System.out.println(e.getMessage());
 	 } catch (Exception ee){
 		 fail("Should not throw Exception");
 		 ee.printStackTrace();
