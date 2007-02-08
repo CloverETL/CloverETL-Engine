@@ -39,7 +39,7 @@ public class StringUtils {
     
 	/**
 	 *  Converts control characters into textual representation<br>
-	 *  Note: This code handles only \n, \r ,\t ,\f, \b special chars
+	 *  Note: This code handles only \n, \r ,\t ,\f, \b, \\ special chars
 	 *
 	 * @param  controlString  string containing control characters
 	 * @return                string where control characters are replaced by their
@@ -67,6 +67,8 @@ public class StringUtils {
                 case '\f':
                     copy.append("\\f");
                     break;
+                case '\\':
+                	copy.append("\\\\");
 				default:
 					copy.append(character);
 			}
