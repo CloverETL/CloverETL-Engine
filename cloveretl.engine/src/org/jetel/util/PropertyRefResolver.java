@@ -183,6 +183,9 @@ public class PropertyRefResolver {
 //					logger.debug("Reference: "+reference);
 //				}
 				resolvedReference = properties.getProperty(reference);
+				if (resolvedReference == null){
+					resolvedReference = System.getenv(reference);
+				}
 				if (resolvedReference == null) {
 				    logger.warn("Can't resolve reference to graph property: " + reference);
                    // if (strict)
