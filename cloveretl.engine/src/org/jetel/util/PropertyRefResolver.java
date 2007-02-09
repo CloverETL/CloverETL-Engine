@@ -186,6 +186,10 @@ public class PropertyRefResolver {
 				if (resolvedReference == null){
 					resolvedReference = System.getenv(reference);
 				}
+				if (resolvedReference == null){
+					reference = reference.replace('_','.');
+					resolvedReference = System.getProperty(reference);
+				}
 				if (resolvedReference == null) {
 				    logger.warn("Can't resolve reference to graph property: " + reference);
                    // if (strict)
