@@ -719,7 +719,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         if (value == null) {
             stack.push(Stack.TRUE_VAL);
         } else {
-            stack.push(Stack.FALSE_VAL);
+            if (value instanceof CharSequence) {
+                stack.push( ((CharSequence)value).length()==0 ? Stack.TRUE_VAL : Stack.FALSE_VAL);
+            }else {
+                stack.push(Stack.FALSE_VAL);
+            }
         }
 
         return data;
@@ -733,7 +737,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             node.jjtGetChild(1).jjtAccept(this, data);
             // not necessary: stack.push(stack.pop());
         } else {
-            stack.push(value);
+            if ((value instanceof CharSequence) && (((CharSequence)value).length()==0)) {
+                node.jjtGetChild(1).jjtAccept(this, data);
+            }else {
+                stack.push(value);
+            }
         }
 
         return data;
@@ -1458,41 +1466,43 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      */
     public Object visit(CLVFVarDeclaration node, Object data) {
         // test for duplicite declaration - should have been done before
-        /*if (stack.symtab.containsKey(node.name)) {
-            throw new TransformLangExecutorRuntimeException(node,
-                    "variable already declared - \"" + node.name + "\"");
-        }*/
+        /*
+         * if (stack.symtab.containsKey(node.name)) { throw new
+         * TransformLangExecutorRuntimeException(node, "variable already
+         * declared - \"" + node.name + "\""); }
+         */
         Object value;
         // create global/local variable
         switch (node.type) {
         case INT_VAR:
-            value= new CloverInteger(0);
+            value = new CloverInteger(0);
             break;
         case LONG_VAR:
-            value= new CloverLong(0);
+            value = new CloverLong(0);
             break;
         case DOUBLE_VAR:
-            value= new CloverDouble(0);
+            value = new CloverDouble(0);
             break;
         case DECIMAL_VAR:
-            if (node.length>0){
-                if (node.precision>0){
-                    value = DecimalFactory.getDecimal(node.length,node.precision);
-                }else{
-                    value = DecimalFactory.getDecimal(node.length,0);
+            if (node.length > 0) {
+                if (node.precision > 0) {
+                    value = DecimalFactory.getDecimal(node.length,
+                            node.precision);
+                } else {
+                    value = DecimalFactory.getDecimal(node.length, 0);
                 }
-            }else{
-                value= DecimalFactory.getDecimal();
+            } else {
+                value = DecimalFactory.getDecimal();
             }
             break;
         case STRING_VAR:
-            value= new StringBuilder();
+            value = new StringBuilder();
             break;
         case DATE_VAR:
-            value=new Date();
+            value = new Date();
             break;
         case BOOLEAN_VAR:
-            value=  Stack.FALSE_VAL;
+            value = Stack.FALSE_VAL;
             break;
         default:
             throw new TransformLangExecutorRuntimeException(node,
@@ -1502,44 +1512,55 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         }
         stack.storeVar(node.localVar, node.varSlot, value);
-        
-        if (node.jjtGetNumChildren()>0){
+
+        if (node.jjtHasChildren()) {
             node.jjtGetChild(0).jjtAccept(this, data);
-            Object initValue=stack.pop();
-            
+            Object initValue = stack.pop();
             try {
-                if (value instanceof Numeric) {
-                        ((Numeric) value).setValue((Numeric) initValue);
-                } else if (value instanceof StringBuilder) {
-                    StringBuilder var = (StringBuilder) value;
-                    var.setLength(0);
-                    StringUtils.strBuffAppend(var,(CharSequence) initValue);
-                } else if (value instanceof Boolean) {
-                    stack.storeVar(node.localVar,node.varSlot, (Boolean)initValue); // boolean is not updatable - we replace the reference
-                    // stack.put(varName,((Boolean)value).booleanValue() ?
-                    // Stack.TRUE_VAL : Stack.FALSE_VAL);
-                } else if (value instanceof Date) {
+                switch (node.type) {
+                case INT_VAR:
+                case LONG_VAR:
+                case DOUBLE_VAR:
+                case DECIMAL_VAR:
+                    ((Numeric) value).setValue((Numeric) initValue);
+                    break;
+                case STRING_VAR:
+                    if (initValue != null)
+                        StringUtils.strBuffAppend((StringBuilder) value,
+                                (CharSequence) initValue);
+                    break;
+                case DATE_VAR:
                     ((Date) value).setTime(((Date) initValue).getTime());
-                } else {
-                    throw new TransformLangExecutorRuntimeException(node,
-                            "unknown variable \"" + node.name + "\"");
+                    break;
+                case BOOLEAN_VAR:
+                    stack.storeVar(node.localVar, node.varSlot,
+                            (Boolean) initValue);
+                    // boolean is not updatable - we replace the reference
+                    break;
+
                 }
+
             } catch (ClassCastException ex) {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of \"" + initValue + "\" to variable \""
-                                + node.name + "\" - incompatible data types");
-            } catch (NumberFormatException ex){
+                        "invalid assignment of \"" + initValue
+                                + "\" to variable \"" + node.name
+                                + "\" - incompatible data types");
+            } catch (NumberFormatException ex) {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of number \"" + initValue + "\" to variable \"" + node.name + "\" : "+ex.getMessage());    
-            } catch (TransformLangExecutorRuntimeException ex){
+                        "invalid assignment of number \"" + initValue
+                                + "\" to variable \"" + node.name + "\" : "
+                                + ex.getMessage());
+            } catch (TransformLangExecutorRuntimeException ex) {
                 throw ex;
-            } catch (Exception ex){
+            } catch (Exception ex) {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of \"" + value + "\" to variable \"" + node.name + "\" : "+ex.getMessage());  
+                        "invalid assignment of \"" + value
+                                + "\" to variable \"" + node.name + "\" : "
+                                + ex.getMessage());
             }
-            
+
         }
-        
+
         return data;
     }
 
@@ -1559,6 +1580,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFAssignment node, Object data) {
+        //TODO: proper handling of NULL value assignment
+        
         CLVFVariableLiteral childNode=(CLVFVariableLiteral) node.jjtGetChild(0);
 
         Object variable = stack.getVar(childNode.localVar,childNode.varSlot);
@@ -1570,7 +1593,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else if (variable instanceof StringBuilder) {
                 StringBuilder var = (StringBuilder) variable;
                 var.setLength(0);
-                StringUtils.strBuffAppend(var,(CharSequence) value);
+                if (value !=null) StringUtils.strBuffAppend(var,(CharSequence) value);
             } else if (variable instanceof Boolean) {
                 stack.storeVar(childNode.localVar,childNode.varSlot, (Boolean)value); // boolean is not updatable - we replace the reference
                 // stack.put(varName,((Boolean)value).booleanValue() ?
