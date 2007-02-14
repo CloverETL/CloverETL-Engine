@@ -45,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -212,8 +213,14 @@ public class CloverDataWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-            init();
-            free();
+        	if (!FileUtils.canWrite(
+        			getGraph() != null ? getGraph().getProjectURL() : null, fileURL)){
+        		ComponentNotReadyException ex = new ComponentNotReadyException(this,"Can't write to file: " + fileURL);
+        		ex.setAttributeName(XML_FILEURL_ATTRIBUTE);
+        		throw ex;
+        	}
+//            init();
+//            free();
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             if(!StringUtils.isEmpty(e.getAttributeName())) {

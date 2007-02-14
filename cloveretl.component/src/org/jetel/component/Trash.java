@@ -19,9 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.BufferedOutputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.nio.ByteBuffer;
@@ -257,8 +254,23 @@ public class Trash extends Node {
             checkOutputPorts(status, 0, 0);
 
             try {
-                init();
-                free();
+        		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+        		if (recordBuffer == null) {
+        			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
+        					Defaults.Record.MAX_RECORD_SIZE);
+        		}
+        		recordBuffer = null;
+        		if (debugPrint) {
+                    if(debugFilename != null && !FileUtils.canWrite(
+                    		getGraph() != null ? getGraph().getProjectURL() : null, 
+                    				debugFilename)) {
+                		ComponentNotReadyException ex = new ComponentNotReadyException(this,"Can't write to file: " + debugFilename);
+                		ex.setAttributeName(XML_DEBUGFILENAME_ATTRIBUTE);
+                		throw ex;
+                    }
+                 }
+//                init();
+//                free();
             } catch (ComponentNotReadyException e) {
                 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {
