@@ -28,13 +28,13 @@ import java.util.Iterator;
 /**
  * @author Jan Hadrava, Javlin Consulting (www.javlinconsulting.cz)
  * This implements list of filenames based on a specially formed mask. The mask
- * may contain a sequence of wildcard characters '#'. They will be replaced by sequential
+ * may contain a sequence of wildcard characters '$'. They will be replaced by sequential
  * number of the file. Count of wildcards specifies minimal length of the sequential number.
  * For a mask containing wildcards the list is infinite, for mask without wildcards it has only
  * one element - the mask itself. The mask must not be followed by any directory separators.
  */
 public class MultiOutFile implements Iterator<String> {
-	private static final char NUM_CHAR='#';
+	private static final char NUM_CHAR='$';
 	
 	private int digitCnt;
 	private int counter;
