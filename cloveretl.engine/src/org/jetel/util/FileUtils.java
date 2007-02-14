@@ -20,12 +20,14 @@
 package org.jetel.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -39,6 +41,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.Defaults;
+import org.jetel.exception.ComponentNotReadyException;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -249,6 +252,54 @@ public class FileUtils {
         }
 	}
     
+	/**
+	 * This method checks wheather is is possible to write to given file
+	 * 
+	 * @param contextURL
+	 * @param fileURL
+	 * @return true if can write, false otherwise
+	 * @throws ComponentNotReadyException
+	 */
+	public static boolean canWrite(URL contextURL, String fileURL)
+			throws ComponentNotReadyException {
+		String fileName;
+		if (fileURL.startsWith("zip:")){
+			fileName = fileURL.substring(fileURL.indexOf(':') + 1, 
+					fileURL.indexOf('#'));
+		}else if (fileURL.startsWith("gzip:")){
+			fileName = fileURL.substring(fileURL.indexOf(':') + 1);
+		}else{
+			fileName = fileURL;
+		}
+		MultiOutFile multiOut = new MultiOutFile(fileName);
+		URI uri;
+		File file;
+		boolean tmp;
+		//create file on given URL
+		try {
+			uri = getFileURL(contextURL, multiOut.next()).toURI();
+			file = new File(uri);
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(e + ": " + fileURL);
+		}
+		//check if can write to this file
+		if (file.exists()) {
+			tmp = file.canWrite();
+		} else {
+			try {
+				tmp = file.createNewFile();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e + ": " + uri);
+			}
+			if (tmp) {
+				file.delete();
+			}
+		}
+		if (!tmp) {
+			return false;
+		}
+		return true;
+	}
 }
 
 /*
