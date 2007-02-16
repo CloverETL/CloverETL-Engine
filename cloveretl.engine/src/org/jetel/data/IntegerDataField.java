@@ -464,12 +464,8 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 		if (obj==null) return 1;
 		if (isNull) return -1;
 	    
-		if (obj instanceof IntegerDataField){
-			if (!((IntegerDataField) obj).isNull()) {
-				return compareTo(((IntegerDataField) obj).value);
-			}else{
-				return 1;
-			}
+		if (obj instanceof Numeric){
+			return compareTo((Numeric) obj);
 		}else if (obj instanceof Integer){
 			return compareTo(((Integer)obj).intValue());
 		}else if (obj instanceof Long){
