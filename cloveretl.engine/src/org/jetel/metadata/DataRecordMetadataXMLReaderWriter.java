@@ -140,6 +140,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 	//private static boolean setSchemaSupport = true;
 	//private static boolean setSchemaFullSupport = false;
+	private static final String METADATA_ELEMENT = "Metadata";
+	private static final String ID = "id";
 	private static final String RECORD_ELEMENT = "Record";
 	private static final String FIELD_ELEMENT = "Field";
 	private static final String CODE_ELEMENT = "Code";
@@ -203,6 +205,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	 * @since May 6, 2002
 	 */
 	public DataRecordMetadata read(InputStream in) {
+		return read(in, null);
+	}
+	
+	public DataRecordMetadata read(InputStream in, String metadataId) {
 		Document document;
 
 		try {
@@ -238,7 +244,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 
 		try {
-			return parseRecordMetadata(document);
+			return parseRecordMetadata(document, metadataId);
 		} catch (DOMException ex) {
 			logger.fatal(ex.getMessage());
 			return null;
@@ -380,16 +386,32 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 
 	public DataRecordMetadata parseRecordMetadata(Document document)
 			throws DOMException {
-		org.w3c.dom.NodeList nodes;
-		nodes = document.getElementsByTagName(RECORD_ELEMENT);
-		if (nodes.getLength() == 0) {
-			throw new DOMException(DOMException.NOT_FOUND_ERR,
-					"No Record element has been found ! ");
-		}
-
-		return parseRecordMetadata(nodes.item(0));
+		return parseRecordMetadata(document, null);
 	}
 
+	public DataRecordMetadata parseRecordMetadata(Document document, String metadataId) throws DOMException {
+		org.w3c.dom.NodeList nodes;
+		if (metadataId != null) {
+			nodes = document.getElementsByTagName(METADATA_ELEMENT);
+			int lenght = nodes.getLength();
+			org.w3c.dom.Node node = null;
+			for (int i=0; i<lenght; i++) {
+				node = nodes.item(i);
+				if (node.getAttributes().getNamedItem(ID).getNodeValue().equals(metadataId)) {
+					return parseRecordMetadata(node.getChildNodes().item(1));
+				}
+			}
+			return null;
+		} else {
+			nodes = document.getElementsByTagName(RECORD_ELEMENT);
+			if (nodes.getLength() == 0) {
+				throw new DOMException(DOMException.NOT_FOUND_ERR,
+						"No Record element has been found ! ");
+			}
+			return parseRecordMetadata(nodes.item(0));
+		}
+	}
+	
 	public DataRecordMetadata parseRecordMetadata(org.w3c.dom.Node topNode)
 			throws DOMException {
 

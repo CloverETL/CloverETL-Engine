@@ -33,6 +33,12 @@ import java.util.HashMap;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.Option;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
+import org.jetel.data.Defaults;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -143,7 +149,7 @@ public class XsdMetadata {
 	private static Document createXsdDocument() throws ParserConfigurationException {
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
 		Element preamble = doc.createElement("xsd:schema");
-		preamble.setAttribute("xmlns:xs", XMLSCHEMA);
+		preamble.setAttribute("xmlns:xsd", XMLSCHEMA);
 		if (NAMESPACE != null) {
 			preamble.setAttribute("targetNamespace", NAMESPACE);
 			preamble.setAttribute("xmlns", NAMESPACE);
@@ -257,27 +263,55 @@ public class XsdMetadata {
 
 	/**
 	 * Converts clover metadata read from XML file to XSD written to file.
+	 * XML file can be metadata file or graph file. If XML file is graph, 
+	 * then you define metadata_id.
 	 * 
-	 * usage: XsdMetadata [infile] [outfile]
+	 * usage: XsdMetadata [--metadata_id id] [infile] [outfile]
 	 * @param argv {input_file, output_file}. "-" for std input/output
 	 */
 	public static void main(String argv[]) {
+		String metadataId = null;
+		
         try {
         	InputStream input;
-        	if (argv.length < 1 || argv[0].equals("-")) {
-        		input = System.in;
-        	} else {
-        		input = new FileInputStream(argv[0]);
-        	}
         	OutputStream output;
-        	if (argv.length < 2 || argv[1].equals("-")) {
-        		output = System.out;
-        	} else {
-        		output = new FileOutputStream(argv[1]);
-        	}
+       	
+    		Options options = new Options();
+        	options.addOption(new Option("m", "metadata_id", true, "Methadata id in graph file"));
+        	options.addOption(new Option("i", "in_file", true, "Input file"));
+        	options.addOption(new Option("o", "out_file", true, "Output file"));
         	
+        	PosixParser optParser = new PosixParser();
+        	CommandLine cmdLine;
+    		try {
+    			cmdLine = optParser.parse(options, argv);
+    		} catch (ParseException e) {
+    			e.printStackTrace();
+    			return;
+    		}
+    		
+    		if (cmdLine.hasOption("m")) {
+    			metadataId = cmdLine.getOptionValue("m");
+    		}
+    		if (cmdLine.hasOption("i")) {
+        		input = new FileInputStream(cmdLine.getOptionValue("i"));
+    		} else {
+    			input = System.in;
+    		}
+    		if (cmdLine.hasOption("o")) {
+        		output = new FileOutputStream(cmdLine.getOptionValue("o"));
+    		} else {
+    			output = System.out;
+    		}
+
+			Defaults.init();
+    		
             DataRecordMetadataXMLReaderWriter xmlReader = new DataRecordMetadataXMLReaderWriter();
-			DataRecordMetadata metadata = xmlReader.read(new BufferedInputStream(input));
+            DataRecordMetadata metadata;
+            if (metadataId == null)
+            	metadata = xmlReader.read(new BufferedInputStream(input));
+            else 
+            	metadata = xmlReader.read(new BufferedInputStream(input), metadataId);
 			(new XsdMetadata(metadata)).write(output);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
