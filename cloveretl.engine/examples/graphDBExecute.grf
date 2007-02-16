@@ -5,7 +5,7 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="DB Execute" guiWidth="0" guiX="26" guiY="25" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="dbSQL">drop table employee1;
+<attr name="sqlQuery">drop table employee1;
 drop table employee_TMP;
 
 create table employee1 (EMP_NO NUMERIC not null,FIRST_NAME  VARCHAR(15) not null,LAST_NAME VARCHAR(20) not null,PHONE_EXT VARCHAR(4),HIRE_DATE DATE not null,DEPT_NO CHAR(3) not null,JOB_CODE VARCHAR(5) not null,JOB_GRADE NUMERIC(4,2) not null,JOB_COUNTRY VARCHAR(15) not null,SALARY NUMERIC(15,2) not null,FULL_NAME VARCHAR(35));

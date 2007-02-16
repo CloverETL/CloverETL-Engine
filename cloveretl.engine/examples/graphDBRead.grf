@@ -89,7 +89,7 @@ ${out.0.full_name} = ${in.1.full_name};
 </Phase>
 <Phase number="1">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="75" guiName="drop customer_tmp" guiWidth="124" guiX="57" guiY="495" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="dbSQL">drop table customer_tmp;</attr>
+<attr name="sqlQuery">drop table customer_tmp;</attr>
 </Node>
 </Phase>
 </Graph>
