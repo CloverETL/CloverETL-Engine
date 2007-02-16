@@ -13,7 +13,7 @@
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="83" id="EXT_SORT0" sortKey="EmployeeID" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="190" id="EXT_SORT1" sortKey="EmployeeID" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="275" guiY="276" id="EXT_SORT2" sortKey="ReportsTo" type="EXT_SORT"/>
-<Node enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="480" guiY="190" id="MERGE_JOIN1" joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo" type="MERGE_JOIN">
+<Node enabled="enabled" guiHeight="0" guiName="Ext Merge Join" guiWidth="0" guiX="480" guiY="190" id="MERGE_JOIN1" joinKey="EmployeeID=EmployeeID#EmployeeID=ReportsTo" type="EXT_MERGE_JOIN">
 <attr name="transform">
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;

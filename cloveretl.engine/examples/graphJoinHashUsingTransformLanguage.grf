@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" name="Testing Hash Joiner">
+<Graph created="Fri Feb 16 10:01:53 CET 2007" description="This graph demonstrates functionality of HASH_JOIN components. HASH_JOIN component&#10;performs joining of master data with slave data based on specified key. First all slave&#10;data are read and hash-table is constructed from them. Then for every master record, attempt&#10;is made to find corresponding slave-record.&#10;HASH_JOIN performs better than SORT/MERGE_JOIN when you have relatively small slave data set&#10;and big master data set. It doesn't require master and slave data to be sorted" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Fri Feb 16 11:50:49 CET 2007" name="Testing Hash Joiner" revision="1.0">
 <Global>
 <Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
 <Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
@@ -15,7 +15,7 @@ function transform(){
 $OrderID := $OrderID;
 $CustomerID := $CustomerID;
 $EmployeeID := $EmployeeID;
-$EmployeeID2 := $1.EmployeeID;
+$EmployeeID2 := num2str($1.EmployeeID);
 $LastName := concat($1.LastName,":",$1.FirstName);
 }
 </attr>

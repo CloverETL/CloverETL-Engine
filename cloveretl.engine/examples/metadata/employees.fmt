@@ -16,5 +16,5 @@
 <Field delimiter=";" name="Extension" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="Photo" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="Memo" nullable="true" shift="0" type="string"/>
-<Field delimiter="\r\n" name="ReportsTo" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\n" name="ReportsTo" nullable="true" shift="0" type="integer"/>
 </Record>
