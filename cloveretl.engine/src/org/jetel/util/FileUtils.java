@@ -296,7 +296,7 @@ public class FileUtils {
 			}
 		}
 		if (!tmp) {
-			return false;
+			throw new ComponentNotReadyException("Can't write to: " + uri);
 		}
 		return true;
 	}
