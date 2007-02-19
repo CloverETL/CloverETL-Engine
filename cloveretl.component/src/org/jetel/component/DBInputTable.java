@@ -175,17 +175,19 @@ public class DBInputTable extends Node {
 			parser.initSQLDataMap(record);
 
 			// till it reaches end of data or it is stopped from outside
-			try {
-				while (((record = parser.getNext(record)) != null) && runIt) {
-					//broadcast the record to all connected Edges
-					writeRecordBroadcast(record);
+			while (record != null && runIt){
+				try{
+					record = parser.getNext();
+					if (record != null) {
+						writeRecordBroadcast(record);
+					}
+				}catch(BadDataFormatException bdfe){
+			        if(policyType == PolicyType.STRICT) {
+			            throw bdfe;
+			        } else {
+			            logger.info(bdfe.getMessage());
+			        }
 				}
-			} catch (BadDataFormatException bdfe) {
-		        if(policyType == PolicyType.STRICT) {
-		            throw bdfe;
-		        } else {
-		            logger.info(bdfe.getMessage());
-		        }
 			}
 		} catch (Exception e) {
 			throw e;
