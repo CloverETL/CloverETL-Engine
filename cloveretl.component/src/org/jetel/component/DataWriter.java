@@ -39,7 +39,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileWriter;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -267,25 +266,15 @@ public class DataWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-        	if (fileURL != null) {
-        		if (!FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
-        				: null, fileURL)){
-	        		ComponentNotReadyException ex = new ComponentNotReadyException(this,"Can't write to file: " + fileURL);
-	        		ex.setAttributeName(XML_FILEURL_ATTRIBUTE);
-	        		throw ex;
-        		}
-        	}
-//            init();
-//            free();
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
+        			: null, fileURL);
         } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
+            status.add(e,ConfigurationStatus.Severity.ERROR,this,
+            		ConfigurationStatus.Priority.NORMAL,XML_FILEURL_ATTRIBUTE);
         }
         
         return status;
+        
     }
 	
 	public String getType(){

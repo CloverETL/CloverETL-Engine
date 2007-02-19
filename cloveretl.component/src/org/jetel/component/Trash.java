@@ -27,7 +27,6 @@ import java.nio.channels.Channels;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
@@ -37,7 +36,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -253,33 +251,25 @@ public class Trash extends Node {
     		checkInputPorts(status, 1, 1);
             checkOutputPorts(status, 0, 0);
 
-            try {
-        		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-        		if (recordBuffer == null) {
-        			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-        					Defaults.Record.MAX_RECORD_SIZE);
-        		}
-        		recordBuffer = null;
-        		if (debugPrint) {
-                    if(debugFilename != null && !FileUtils.canWrite(
-                    		getGraph() != null ? getGraph().getProjectURL() : null, 
-                    				debugFilename)) {
-                		ComponentNotReadyException ex = new ComponentNotReadyException(this,"Can't write to file: " + debugFilename);
-                		ex.setAttributeName(XML_DEBUGFILENAME_ATTRIBUTE);
-                		throw ex;
-                    }
-                 }
-//                init();
-//                free();
-            } catch (ComponentNotReadyException e) {
-                ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-                if(!StringUtils.isEmpty(e.getAttributeName())) {
-                    problem.setAttributeName(e.getAttributeName());
-                }
-                status.add(problem);
-            }
+    		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
+    		if (recordBuffer == null) {
+                status.add("Can NOT allocate internal record buffer ! Required size:" + Defaults.Record.MAX_RECORD_SIZE, 
+                		ConfigurationStatus.Severity.ERROR, this, 
+                		ConfigurationStatus.Priority.NORMAL);
+    		}
+    		recordBuffer = null;
+
+    		if (debugPrint && debugFilename != null) {
+                try {
+                	FileUtils.canWrite(getGraph() != null ? 
+                			getGraph().getProjectURL() : null, debugFilename);
+                } catch (ComponentNotReadyException e) {
+	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
+	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);
+				}
+    		}
             
-            return status;
+    		return status;
         }
 	
 	public String getType(){
