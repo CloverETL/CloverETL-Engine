@@ -110,15 +110,13 @@ public class MultiFileWriter {
      * @throws FileNotFoundException
      */
     private void setNextOutput() throws IOException {
-    	if (fileNames != null) {
-            if (!fileNames.hasNext()) {
-                logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-                        + "Size of output file will exceed specified limit");
-                return;
-            }    		
+    	if (fileNames != null && !fileNames.hasNext()) {
+            logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
+                    + "Size of output file will exceed specified limit.");
+            return;
     	}
-    	else if (!channels.hasNext()) {
-            logger.warn("Unable to open new output file. Size of output file will exceed specified limit");
+    	if (channels != null && !channels.hasNext()) {
+            logger.warn("Unable to open new output stream. Size of last output stream will exceed specified limit.");
             return;
         }      	
 
