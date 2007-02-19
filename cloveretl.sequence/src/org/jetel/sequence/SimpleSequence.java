@@ -226,7 +226,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
             }
         } catch (IOException ex) {
             logger.error("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
-            throw new RuntimeException("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
+            //throw new RuntimeException("I/O error when accessing sequence " + getName() + " - " + ex.getMessage());
         }
     }
     

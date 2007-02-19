@@ -117,6 +117,9 @@
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
 		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.dist}"/>
+		<delete dir="${distribution.dir}"/>
+		<delete dir="${src.distribution.dir}"/>
+		<delete dir="${dir.doc}"/>
 	</target>
 
 	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->

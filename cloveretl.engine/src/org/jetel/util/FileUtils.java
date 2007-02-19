@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -272,13 +271,14 @@ public class FileUtils {
 			fileName = fileURL;
 		}
 		MultiOutFile multiOut = new MultiOutFile(fileName);
-		URI uri;
 		File file;
+        URL url;
 		boolean tmp;
 		//create file on given URL
 		try {
-			uri = getFileURL(contextURL, multiOut.next()).toURI();
-			file = new File(uri);
+			url = getFileURL(contextURL, multiOut.next());
+            if(!url.getProtocol().equalsIgnoreCase("file")) return true;
+			file = new File(url.getPath());
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(e + ": " + fileURL);
 		}
@@ -289,14 +289,14 @@ public class FileUtils {
 			try {
 				tmp = file.createNewFile();
 			} catch (IOException e) {
-				throw new ComponentNotReadyException(e + ": " + uri);
+				throw new ComponentNotReadyException(e + ": " + fileURL);
 			}
 			if (tmp) {
 				file.delete();
 			}
 		}
 		if (!tmp) {
-			throw new ComponentNotReadyException("Can't write to: " + uri);
+			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
 	}
