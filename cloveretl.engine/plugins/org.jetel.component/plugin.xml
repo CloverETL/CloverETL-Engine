@@ -94,6 +94,11 @@
 
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
+	    <parameter id="type" value="EXT_MERGE_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.MergeJoin"/>
 	    <parameter id="type" value="SORTED_JOIN"/>
 	</extension>
 
@@ -110,6 +115,11 @@
 	<extension point-id="component">
 	    <parameter id="className" value="org.jetel.component.HashJoin"/>
 	    <parameter id="type" value="HASH_JOIN"/>
+	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.HashJoin"/>
+	    <parameter id="type" value="EXT_HASH_JOIN"/>
 	</extension>
 
 	<extension point-id="component">
