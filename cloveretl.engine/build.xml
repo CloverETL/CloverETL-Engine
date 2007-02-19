@@ -196,6 +196,11 @@
 		<copy todir="${dir.dist}/docs">
 			<fileset dir="${dir.docs}"/>
 		</copy>
+
+		<!-- copy all run scripts -->
+		<copy todir="${dir.dist}">
+			<fileset file="${basedir}/run*"/>
+		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
