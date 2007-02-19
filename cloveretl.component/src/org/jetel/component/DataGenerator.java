@@ -138,10 +138,12 @@ public class DataGenerator extends Node {
 
 	/** XML attribute names */
 	private static final String XML_PATTERN_ATTRIBUTE = "pattern";
-	private static final String XML_RANDOM_FIELDS_ATTRIBUTE = "randomFields";
+	public static final String XML_RANDOM_FIELDS_ATTRIBUTE = "randomFields";
 	private static final String XML_RANDOM_SEED_ATTRIBUTE = "randomSeed";
-	private static final String XML_SEQUENCE_FIELDS_ATTRIBUTE = "sequenceFields";
+	public static final String XML_SEQUENCE_FIELDS_ATTRIBUTE = "sequenceFields";
 	private static final String XML_RECORDS_NUMBER_ATTRIBUTE = "recordsNumber"; 
+	
+	public final static String EQUAL_CHAR = "=";
 	
 	private final int MIN = 0;
 	private final int MAX = 1;
@@ -532,8 +534,9 @@ public class DataGenerator extends Node {
 		if (randomFields != null){
 			StringBuilder fields = new StringBuilder();
 			for (int i=0;i<randomFields.length;i++){
+				fields.append(EQUAL_CHAR);
 				fields.append(randomFields[i]);
-				fields.append("=random(");
+				fields.append("random(");
 				fields.append(randomRanges[i][MIN]);
 				fields.append(',');
 				fields.append(randomRanges[i][MAX]);
@@ -547,7 +550,7 @@ public class DataGenerator extends Node {
 			StringBuilder fields = new StringBuilder();
 			for (int i=0;i<sequenceFields.length;i++){
 				fields.append(sequenceFields[i]);
-				fields.append("=");
+				fields.append(EQUAL_CHAR);
 				if (sequenceIDs[i] != null) {
 					fields.append(sequenceIDs[i]);
 				}				
@@ -580,7 +583,7 @@ public class DataGenerator extends Node {
 		int commaIndex;
 		int rightParantesisIndex;
 		for (int i = 0; i < fields.length; i++) {
-			param = fields[i].split("=");
+			param = fields[i].split(EQUAL_CHAR);
 			this.randomFields[i] = param[0].trim();
 			if (param.length > 1){
 				leftParenthesisIndex = param[1].indexOf('('); 
