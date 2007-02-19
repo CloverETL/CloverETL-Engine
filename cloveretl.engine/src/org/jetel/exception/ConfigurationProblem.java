@@ -23,6 +23,7 @@ import org.apache.commons.logging.Log;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
+import org.jetel.util.StringUtils;
 
 /**
  * Instances of this class are collected in ConfigurationStatus, which is return value of
@@ -45,11 +46,24 @@ public class ConfigurationProblem {
     
     private String attributeName;
     
-    public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority) {
+    public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
         this.message = message;
         this.severity = severity;
         this.graphElement = graphElement;
         this.priority = priority;
+        this.attributeName = attributeName;
+    }
+    
+    public ConfigurationProblem(String message, Severity severity, GraphElement graphElement, Priority priority) {
+    	this(message, severity, graphElement, priority, null);
+    }
+
+    public ConfigurationProblem(ComponentNotReadyException e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+        this(e.getMessage(), severity, graphElement, priority, attributeName);
+        
+        if(!StringUtils.isEmpty(e.getAttributeName()) && StringUtils.isEmpty(attributeName)) {
+            setAttributeName(e.getAttributeName());
+        }
     }
 
     public void log(Log logger) {

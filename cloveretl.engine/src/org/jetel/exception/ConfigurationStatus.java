@@ -23,6 +23,7 @@ import java.util.LinkedList;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.graph.GraphElement;
 
 /**
  * This class is return value of all checkConfig() methods in the engine.
@@ -49,4 +50,18 @@ public class ConfigurationStatus extends LinkedList<ConfigurationProblem> {
             problem.log(logger);
         }
     }
+    
+    public void add(String message, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(message, severity, graphElement, priority, attributeName));
+    }
+
+    public void add(ComponentNotReadyException e, Severity severity, GraphElement graphElement, Priority priority, String attributeName) {
+    	add(new ConfigurationProblem(e, severity, graphElement, priority, attributeName));
+    }
+
+    public void add(String message, Severity severity, GraphElement graphElement, Priority priority) {
+    	this.add(message, severity, graphElement, priority, null);
+    }
+
+    
 }
