@@ -312,6 +312,11 @@ public class XsdMetadata {
             	metadata = xmlReader.read(new BufferedInputStream(input));
             else 
             	metadata = xmlReader.read(new BufferedInputStream(input), metadataId);
+            
+            if(metadata == null) {
+                System.err.println("Metadata doesn't exist." + (metadataId != null ? " (" + metadataId + ")" : ""));
+                return;
+            }
 			(new XsdMetadata(metadata)).write(output);
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
