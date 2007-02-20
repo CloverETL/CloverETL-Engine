@@ -1,0 +1,408 @@
+/**
+ * JavaCC file
+ */
+ 
+options
+{ 
+	JDK_VERSION = "1.5";
+	STATIC=false;
+	CACHE_TOKENS=true;
+	IGNORE_CASE=true;
+}
+
+PARSER_BEGIN(DML2Clover)
+package org.jetel.util.dml2clover;
+
+import java.util.*;
+import java.io.*;
+import org.jetel.metadata.*;
+import java.math.*;
+
+public class DML2Clover {
+
+	/**
+		 * The class parses sql script containing only create statements. Output is a DataRecordMetadata List.
+		 */
+	 
+	private List<DataRecordMetadata> list = new LinkedList<DataRecordMetadata>();
+	private String fieldDelimiter;
+	private String recordDelimiter;
+	
+	private static final Long booleanLenght = Long.valueOf(5); // false / true
+	private static final Long byteLenght = Long.valueOf(String.valueOf(Byte.MIN_VALUE).length());
+	private static final Long integerLenght = Long.valueOf(String.valueOf(Integer.MIN_VALUE).length());
+	private static final Long longLenght = Long.valueOf(String.valueOf(Long.MIN_VALUE).length());
+	private static final Long floatLenght = Long.valueOf(String.valueOf(7));
+	private static final Long doubleLenght = Long.valueOf(String.valueOf(15));
+	private static final Long dateLenght = Long.valueOf(10); // "10.10.2007"
+	private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
+	
+	public static void main(String args[]) throws ParseException, FileNotFoundException {
+		DML2Clover parser = new DML2Clover(new FileInputStream(new File("text.txt")));
+		parser.getDataRecordMetadataList(";", "\n");
+		parser.testPrint(parser.list);
+		System.out.println("Ok");
+	}
+
+	public List<DataRecordMetadata> getDataRecordMetadataList() throws ParseException {
+		return getDataRecordMetadataList(null, null);
+	}
+
+	public List<DataRecordMetadata> getDataRecordMetadataList(String fieldDelimiter, String recordDelimiter) throws ParseException {
+		this.fieldDelimiter = fieldDelimiter;
+		this.recordDelimiter = recordDelimiter;
+		while (!isEOF()) {
+			list.add(createTableStatement());
+		}
+		return list;
+	}
+	
+	private void testPrint(List<DataRecordMetadata> list) {
+		DataRecordMetadataXMLReaderWriter writer = new DataRecordMetadataXMLReaderWriter();
+   		for (DataRecordMetadata dataRecordMetadata : list) {
+			writer.write(dataRecordMetadata, System.out);
+			System.out.println();
+   		}		
+	}
+	
+}
+
+PARSER_END(DML2Clover)
+
+// The SQL lexical grammar
+
+SKIP:
+{
+	// blank space
+		" "
+	|	"\t"
+	|	"\n"
+	|	"\r"
+	|	"\n\r"
+}
+
+// HANDLING COMMENTS
+SPECIAL_TOKEN: 
+{
+	<"/*"> : WithinComment 
+}
+
+<WithinComment> SPECIAL_TOKEN:	{ <"*/"> : DEFAULT }
+<WithinComment> MORE: { <~[]> }
+
+SPECIAL_TOKEN: 
+{  
+	<"//"> : WithinLineComment 
+}
+
+<WithinLineComment> SPECIAL_TOKEN: { <"\n"> : DEFAULT }
+<WithinLineComment> MORE: { <~[]> }
+
+
+TOKEN:
+{
+	// keywords
+		< BOOLEAN: "boolean" >
+	|	< BLOB: "blob" >
+	|	< CHAR: "char" >
+	|	< CHARACTER: "character" >
+	|	< CLOB: "clob" >
+	|	< COMMIT: "commit" >
+	|	< CREATE: "create" >
+	|	< DATE:"date" >
+	|	< DATETIME:"datetime" >
+	|	< DEC:"dec" >
+	|	< DECIMAL:"decimal" >
+	|	< DEFAULT_: "default" >
+	|	< DELETE: "delete" >
+	|	< FLOAT:"float" >
+	|	< GLOBAL: "global" >
+	|	< INT: "int" >
+	|	< INTEGER: "integer" >
+	|	< KEY: "key" >
+	|	< LOCAL: "local" >
+	|	< NOT: "not" >
+	|	< NULL: "null" >
+	|	< NUMBER: "number" >
+	|	< NUMERIC: "numeric" >
+	|	< ON: "on" >
+	|	< PRESERVE:"preserve" >
+	|	< PRIMARY:"primary" >
+	|	< REFERENCES:"references" >
+	|	< ROWS: "rows" >
+	|	< SMALLINT: "smallint" >
+	|	< TABLE: "table" >
+	|	< TIMESTAMP: "timestamp" >
+	|	< TEMPORARY: "TEMPORARY" >
+	|	< UNIQUE: "unique" >
+	|	< VARCHAR: "varchar" >
+	|	< VARCHAR2: "varchar2" >
+
+	// literals
+	|	< STRING_LITERAL: "'" (~["'"])* ( "''" (~["'"])* )* "'" >
+	|	< INTEGER_LITERAL: 	(["0"-"9"])+ >
+	|	< FLOAT_LITERAL:	(["0"-"9"])+ "." (["0"-"9"])+ (<EXP>)?
+							|	"." (["0"-"9"])+ (<EXP>)?
+							|	(["0"-"9"])+ (<EXP>)?>
+	|	< #EXP: ["e","E"] (["+","-"])? (["0"-"9"])+ >
+
+	// identifiers
+	|	< IDENTIFIER: ( <LETTER> )+ ( "_" | "$" | "#" | <DIGIT> | <LETTER> )* >
+	|	< LETTER: ["A"-"Z", "a"-"z"] >
+	|	< DIGIT: ["0"-"9"] >
+
+	// separators and operators
+	|	< CLOSEPAREN: ")" >
+	|	< COMA: "," >
+	|	< DOT: "." >
+	|	< OPENPAREN: "(" >
+	|	< SEMICOLON: ";" >
+}
+
+/*******************************************************************
+ * The SQL syntatic grammar starts here
+ *******************************************************************/
+
+DataRecordMetadata createTableStatement() : {
+	DataRecordMetadata dataRecordMetadata;
+	List<DataFieldMetadata> list;
+}
+{
+	<CREATE> [tableScope()] <TABLE> [LOOKAHEAD(2)(<IDENTIFIER><DOT>)] {dataRecordMetadata = new DataRecordMetadata(identifier());}
+		// table element list
+		{
+			list = tableElementList(); 
+			for (DataFieldMetadata field : list) {
+				dataRecordMetadata.addField(field);
+			}
+		}
+		// | OF  <path-resolved user-defined type name> [ <subtable clause> ] [ <table element list> ]
+		// | <as subquery clause>
+	[ <ON> <COMMIT> (<PRESERVE> | <DELETE>)? <ROWS>]
+	<SEMICOLON>
+	{
+		if (fieldDelimiter != null && recordDelimiter != null) {
+			dataRecordMetadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+		} else if (fieldDelimiter == null && recordDelimiter == null) {
+			dataRecordMetadata.setRecType(DataRecordMetadata.FIXEDLEN_RECORD);
+		}
+	}
+	{ return dataRecordMetadata; }
+}
+
+List<DataFieldMetadata> tableElementList() :
+{
+	List<DataFieldMetadata> list = new LinkedList<DataFieldMetadata>();
+	DataFieldMetadata ret;
+}
+{
+	<OPENPAREN> 
+	ret = tableElement() 			
+	{ 
+		ret.setDelimiter(fieldDelimiter);
+		list.add(ret); 
+	}
+	(<COMA> ret = tableElement() 	
+	{
+		ret.setDelimiter(fieldDelimiter);
+		list.add(ret); 
+	})*
+	{ret.setDelimiter(recordDelimiter);}
+	<CLOSEPAREN> 
+	{ return list; }
+}
+
+void tableScope() :
+{}
+{
+	[<GLOBAL> | <LOCAL>]  <TEMPORARY>
+}
+
+
+boolean isEOF() :
+{
+	boolean isEof = false;
+}
+{
+	(<EOF> isEof = t())?
+	{return isEof;}
+}
+
+boolean t() :
+{
+}
+{
+	{return true;}
+}
+
+//+
+void columnConstraintDefinition() :
+{}
+{
+	(	<NOT> <NULL>
+	|	<UNIQUE>
+	|	<PRIMARY> <KEY>
+//	|	<CHECK> <OPENPAREN> <CLOSEPAREN>
+	|	<REFERENCES> tableName() <OPENPAREN> identifierList() <CLOSEPAREN>
+	)
+}
+
+//+
+DataFieldMetadata columnDefinition() :
+{
+	DataFieldMetadata dataFieldMetadata;
+	String name;
+	DataType type;
+	Object value = null;
+}
+{
+	name = columnName() 
+	type = dataType()
+	(<DEFAULT_> value = defaultValue())?
+	(columnConstraintDefinition())?
+	{ if (type.length == null) {
+		dataFieldMetadata = new DataFieldMetadata(name, type.type, null);
+	  } else {
+		//dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
+		dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
+	  }
+	  dataFieldMetadata.setDefaultValue(value);
+	  return dataFieldMetadata; 
+	}
+}
+
+DataFieldMetadata tableElement() :
+{
+	DataFieldMetadata ret = null;
+}
+{
+	(	ret = columnDefinition()
+	// | tableConstraintDefinition()
+	// | <like clause>
+	// | <self-referencing column specification>
+	// | <column options>
+	)
+	{ return ret; }
+}
+
+//+
+String columnName() :
+{
+	String ret;
+}
+{
+	(LOOKAHEAD(2) identifier() <DOT>)? ret = identifier()
+	{ return ret; }
+}
+
+//+TODO dodelat dalsi typu jako DATE, VARCHAR,...
+DataType dataType() :
+{
+	char type;
+	Long temp;
+	Long lenght = null;
+	Long scale = null;
+}
+{
+	(	<BOOLEAN> { type = DataFieldMetadata.INTEGER_FIELD;		lenght = integerLenght;}
+	|	<BLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<CHAR> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<CHARACTER> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<CLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<DATE> { type = DataFieldMetadata.DATE_FIELD; 			lenght = dateLenght;}
+	|	<DATETIME> { type = DataFieldMetadata.DATE_FIELD;	    lenght = dateTimeLenght;}
+	|	<DEC> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
+	|	<DECIMAL> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
+	|	<FLOAT> { type = DataFieldMetadata.NUMERIC_FIELD; 		lenght = floatLenght;}
+	|	<INT> { type = DataFieldMetadata.INTEGER_FIELD; 		lenght = integerLenght;}
+	|	<INTEGER> { type = DataFieldMetadata.INTEGER_FIELD; 	lenght = integerLenght;}
+	|	<SMALLINT> { type = DataFieldMetadata.INTEGER_FIELD; 	lenght = integerLenght;}
+	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght;}
+	|	<NUMERIC> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
+	|	<VARCHAR> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
+	|	<VARCHAR2> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
+	)
+	{ return new DataType(type, lenght, scale); }
+}
+
+//+
+Object defaultValue() : 
+{
+	Object ret;
+}
+{
+	(	ret = literal()
+	|	ret = nullLiteral() 
+	)
+	{ return ret; }
+}
+
+//+
+BigDecimal floatLiteral() :
+{}
+{
+	<FLOAT_LITERAL> { return new BigDecimal(token.image); }
+}
+
+//+
+String identifier() :
+{}
+{
+	<IDENTIFIER>
+	{ return token.image; }
+}
+
+//+
+void identifierList() :
+{
+}
+{
+	identifier()
+	(<COMA> identifier())*	
+}
+
+//+
+Object literal() :
+{
+	Object ret;
+}
+{
+	(	ret = integerLiteral()
+	|	ret = floatLiteral()
+	|	ret = stringLiteral()
+	)
+	{ return ret; }
+}
+
+//+
+Long integerLiteral() :
+{}
+{
+	<INTEGER_LITERAL> { return new Long(token.image); }
+}
+
+//+
+Object nullLiteral() : 
+{}
+{
+	<NULL> { return	null; }
+}
+	
+//+
+String stringLiteral() :
+{}
+{
+	<STRING_LITERAL> 
+	{ 
+		String value = token.image.intern();
+		return value.substring(1, value.length() - 1); 
+	}
+}
+
+//+
+void tableName() :
+{}
+{
+	<IDENTIFIER>
+}
+
