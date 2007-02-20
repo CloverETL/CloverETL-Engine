@@ -10,15 +10,15 @@ options
 	IGNORE_CASE=true;
 }
 
-PARSER_BEGIN(DML2Clover)
-package org.jetel.util.dml2clover;
+PARSER_BEGIN(DDL2Clover)
+package org.jetel.util.ddl2clover;
 
 import java.util.*;
 import java.io.*;
 import org.jetel.metadata.*;
 import java.math.*;
 
-public class DML2Clover {
+public class DDL2Clover {
 
 	/**
 		 * The class parses sql script containing only create statements. Output is a DataRecordMetadata List.
@@ -38,7 +38,7 @@ public class DML2Clover {
 	private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
 	
 	public static void main(String args[]) throws ParseException, FileNotFoundException {
-		DML2Clover parser = new DML2Clover(new FileInputStream(new File("text.txt")));
+		DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("text.txt")));
 		parser.getDataRecordMetadataList(";", "\n");
 		parser.testPrint(parser.list);
 		System.out.println("Ok");
@@ -67,7 +67,7 @@ public class DML2Clover {
 	
 }
 
-PARSER_END(DML2Clover)
+PARSER_END(DDL2Clover)
 
 // The SQL lexical grammar
 
