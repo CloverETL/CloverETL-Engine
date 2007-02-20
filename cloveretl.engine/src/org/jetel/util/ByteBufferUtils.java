@@ -157,7 +157,7 @@ public final class ByteBufferUtils {
      */
     public static final int decodeLength(ByteBuffer buffer){
         int length=0; 
-        int size=0;
+        int size;
         int offset = 0;
         
         size = buffer.get();
