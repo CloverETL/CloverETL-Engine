@@ -1,4 +1,4 @@
-package org.jetel.util.dml2clover;
+package org.jetel.util.ddl2clover;
 public final class DataType {
 
     /** Data type, based on java.sql.Types */
