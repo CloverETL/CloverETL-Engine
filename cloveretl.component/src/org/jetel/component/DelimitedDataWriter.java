@@ -21,7 +21,6 @@
 package org.jetel.component;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +38,7 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -75,6 +75,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>outputFieldNames</b><br><i>optional</i></td><td>print names of individual fields into output file - as a first row (values: true/false, default:false)</td> 
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
  *  </table>  
  *
@@ -331,24 +333,6 @@ public class DelimitedDataWriter extends Node {
      */
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
-    }
-
-    private class WritableByteChannelIterator implements Iterator<WritableByteChannel> {
-    	WritableByteChannel writableByteChannel;
-    	
-    	public WritableByteChannelIterator(WritableByteChannel writableByteChannel) {
-    		this.writableByteChannel = writableByteChannel;
-    	}
-    	
-		public boolean hasNext() {
-			return true;
-		}
-
-		public WritableByteChannel next() {
-			return writableByteChannel;
-		}
-
-		public void remove() {}
     }
 
 }

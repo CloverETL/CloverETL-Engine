@@ -21,7 +21,6 @@
 package org.jetel.component;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
-import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -39,6 +38,7 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -128,10 +128,9 @@ public class DataWriter extends Node {
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 	
-	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset, boolean appendData) {
+	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		this.appendData = appendData;
 		this.charset = charset;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
@@ -322,22 +321,4 @@ public class DataWriter extends Node {
         this.numRecords = numRecords;
     }
 	
-    private class WritableByteChannelIterator implements Iterator<WritableByteChannel> {
-    	WritableByteChannel writableByteChannel;
-    	
-    	public WritableByteChannelIterator(WritableByteChannel writableByteChannel) {
-    		this.writableByteChannel = writableByteChannel;
-    	}
-    	
-		public boolean hasNext() {
-			return true;
-		}
-
-		public WritableByteChannel next() {
-			return writableByteChannel;
-		}
-
-		public void remove() {}
-    }
-    
 }
