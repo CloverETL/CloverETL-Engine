@@ -18,13 +18,16 @@
 *
 */
 package org.jetel.component;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.Iterator;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -93,6 +96,8 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_RECORD_FILLER = "filler";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	
 	private static final boolean DEFAULT_APPEND=false;
 	
@@ -103,6 +108,10 @@ public class FixLenDataWriter extends Node {
 	private boolean outputFieldNames=false;
 	private int recordsPerFile;
 	private int bytesPerFile;
+    private int skip;
+	private int numRecords;
+	private String charset;
+	private WritableByteChannel writableByteChannel;
 
 	static Log logger = LogFactory.getLog(FixLenDataWriter.class);
 
@@ -123,6 +132,14 @@ public class FixLenDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+        this.charset = charset;
+		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+	}
+
+	public FixLenDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
+		super(id);
+		this.writableByteChannel = writableByteChannel;
+        this.charset = charset;
 		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -157,12 +174,24 @@ public class FixLenDataWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
         // initialize multifile writer based on prepared formatter
-        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
-        //TODO kokon - outputFiledNames
+        writer.setCharset(charset);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+        if(outputFieldNames) {
+            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
@@ -196,6 +225,12 @@ public class FixLenDataWriter extends Node {
 		}
 		if (bytesPerFile > 0) {
 			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
+		}
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
 		
 	}
@@ -236,6 +271,12 @@ public class FixLenDataWriter extends Node {
             if(xattribs.exists(XML_BYTES_PER_FILE)) {
                 aFixLenDataWriterNIO.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
             }
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aFixLenDataWriterNIO.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+				aFixLenDataWriterNIO.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+			}
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -305,5 +346,40 @@ public class FixLenDataWriter extends Node {
     public void setRecordsPerFile(int recordsPerFile) {
         this.recordsPerFile = recordsPerFile;
     }
+    
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
+
+    private class WritableByteChannelIterator implements Iterator<WritableByteChannel> {
+    	WritableByteChannel writableByteChannel;
+    	
+    	public WritableByteChannelIterator(WritableByteChannel writableByteChannel) {
+    		this.writableByteChannel = writableByteChannel;
+    	}
+    	
+		public boolean hasNext() {
+			return true;
+		}
+
+		public WritableByteChannel next() {
+			return writableByteChannel;
+		}
+
+		public void remove() {}
+    }
+
 }
 
