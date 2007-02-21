@@ -19,13 +19,16 @@
 */
 
 package org.jetel.component;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
+import java.util.Iterator;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -35,7 +38,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileWriter;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -89,6 +91,8 @@ public class DelimitedDataWriter extends Node {
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	
 	private static final boolean APPEND_DATA_AS_DEFAULT = false;
 	
@@ -100,7 +104,10 @@ public class DelimitedDataWriter extends Node {
 	private int recordsPerFile;
 	private int bytesPerFile;
 	private String charset;
-    
+    private int skip;
+	private int numRecords;
+	private WritableByteChannel writableByteChannel;
+
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
 	public final static String COMPONENT_TYPE = "DELIMITED_DATA_WRITER";
@@ -121,10 +128,23 @@ public class DelimitedDataWriter extends Node {
 		formatter = new DelimitedDataFormatter();
 	}
 
+	public DelimitedDataWriter(String id, WritableByteChannel writableByteChannel) {
+		super(id);
+		this.writableByteChannel = writableByteChannel;
+		formatter = new DelimitedDataFormatter();
+	}
+
 	public DelimitedDataWriter(String id, String fileURL, String charset, boolean appendData) {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+        this.charset = charset;
+		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+	}
+
+	public DelimitedDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
+		super(id);
+		this.writableByteChannel = writableByteChannel;
         this.charset = charset;
 		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
@@ -164,12 +184,21 @@ public class DelimitedDataWriter extends Node {
 		}
         
         // initialize multifile writer based on prepared formatter
-        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
         writer.setCharset(charset);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
         if(outputFieldNames) {
             writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
@@ -216,6 +245,12 @@ public class DelimitedDataWriter extends Node {
 		if (bytesPerFile > 0) {
 			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
 		}
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
+		}
 	}
 
 	
@@ -244,6 +279,12 @@ public class DelimitedDataWriter extends Node {
             if(xattribs.exists(XML_BYTES_PER_FILE)) {
                 aDelimitedDataWriterNIO.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
             }
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aDelimitedDataWriterNIO.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+				aDelimitedDataWriterNIO.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+			}
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -275,5 +316,40 @@ public class DelimitedDataWriter extends Node {
     public void setRecordsPerFile(int recordsPerFile) {
         this.recordsPerFile = recordsPerFile;
     }
+    
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
+
+    private class WritableByteChannelIterator implements Iterator<WritableByteChannel> {
+    	WritableByteChannel writableByteChannel;
+    	
+    	public WritableByteChannelIterator(WritableByteChannel writableByteChannel) {
+    		this.writableByteChannel = writableByteChannel;
+    	}
+    	
+		public boolean hasNext() {
+			return true;
+		}
+
+		public WritableByteChannel next() {
+			return writableByteChannel;
+		}
+
+		public void remove() {}
+    }
+
 }
 

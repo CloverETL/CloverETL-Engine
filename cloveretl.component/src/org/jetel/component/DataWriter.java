@@ -29,7 +29,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -94,8 +93,8 @@ public class DataWriter extends Node {
     private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
-	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
-	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private String fileURL;
 	private boolean appendData;
 	private DataFormatter formatter;
@@ -106,6 +105,7 @@ public class DataWriter extends Node {
 	private WritableByteChannel writableByteChannel;
     private int skip;
 	private int numRecords;
+	private String charset;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -124,6 +124,7 @@ public class DataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 	
@@ -131,6 +132,7 @@ public class DataWriter extends Node {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
 		this.appendData = appendData;
+		this.charset = charset;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -179,6 +181,7 @@ public class DataWriter extends Node {
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
         writer.setSkip(skip);
+        writer.setCharset(charset);
         writer.setNumRecords(numRecords);
         if(outputFieldNames) {
             writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
