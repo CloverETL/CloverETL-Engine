@@ -71,10 +71,10 @@ public abstract class XLSParser implements Parser {
 	protected IParserExceptionHandler exceptionHandler;
 	protected String sheetName = null;
 	protected int sheetNumber = 0;
-	protected int recordCounter;
+	protected int recordCounter = 1;
 	protected int firstRow = 0;
 	protected int currentRow;
-	protected int lastRow;
+	protected int lastRow = -1;
 	protected int metadataRow = -1;
 	protected String[] cloverFields = null;
 	protected String[] xlsFields = null;
@@ -193,8 +193,8 @@ public abstract class XLSParser implements Parser {
 	protected String getErrorMessage(String exceptionMessage, int recNo, int fieldNo) {
 		StringBuffer message = new StringBuffer();
 		message.append(exceptionMessage);
-		message.append(" when parsing record #");
-		message.append(recordCounter);
+		message.append(" when parsing record from row ");
+		message.append(currentRow);
 		message.append(" field ");
 		message.append(metadata.getField(fieldNo).getName());
 		return message.toString();
@@ -420,5 +420,13 @@ public abstract class XLSParser implements Parser {
 	 * (or setFirstRow if metadata row was not been set)  
 	 */
 	public abstract String[] getNames();
+
+	public int getLastRow() {
+		return lastRow;
+	}
+
+	public void setLastRow(int lastRow) {
+		this.lastRow = lastRow;
+	}
 
 }
