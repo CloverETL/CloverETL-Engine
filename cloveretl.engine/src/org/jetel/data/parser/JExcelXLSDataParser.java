@@ -22,6 +22,8 @@
 package org.jetel.data.parser;
 
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -222,12 +224,20 @@ public class JExcelXLSDataParser extends XLSParser {
 	@Override
 	public void setDataSource(Object inputDataSource)
 			throws ComponentNotReadyException {
-        recordCounter = 1;
+		if (wb != null) {
+			wb.close();
+		}
         WorkbookSettings settings = new WorkbookSettings();
 		settings.setEncoding(charset);
+		InputStream input;
+		if (inputDataSource instanceof InputStream) {
+			input = (InputStream)inputDataSource;
+		}else{
+			input = Channels.newInputStream((ReadableByteChannel)inputDataSource);
+		}
 		//creating workbook from input stream 
         try {
-            wb = Workbook.getWorkbook((InputStream)inputDataSource,settings);
+            wb = Workbook.getWorkbook(input,settings);
        }catch(Exception ex){
             throw new ComponentNotReadyException(ex);
         }
@@ -245,8 +255,10 @@ public class JExcelXLSDataParser extends XLSParser {
             throw new ComponentNotReadyException("There is no sheet with name \"" + sheetName +"\"");
         }
         currentRow = firstRow;
-        lastRow = sheet.getRows();
-        if (metadata != null) {
+		if (lastRow == -1) {
+			lastRow = sheet.getRows();
+		}        
+		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
         }

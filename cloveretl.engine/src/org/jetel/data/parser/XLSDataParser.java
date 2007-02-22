@@ -23,6 +23,8 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
@@ -168,10 +170,15 @@ public class XLSDataParser extends XLSParser {
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
      */
     public void setDataSource(Object in) throws ComponentNotReadyException {
-        recordCounter = 1;
-        //creating workbook from input stream 
+		InputStream input;
+		if (in instanceof InputStream) {
+			input = (InputStream)in;
+		}else{
+			input = Channels.newInputStream((ReadableByteChannel)in);
+		}
+      //creating workbook from input stream 
         try {
-            wb = new HSSFWorkbook((InputStream)in);
+            wb = new HSSFWorkbook(input);
         }catch(IOException ex){
             throw new ComponentNotReadyException(ex);
         }
@@ -190,8 +197,10 @@ public class XLSDataParser extends XLSParser {
         }
         format = wb.createDataFormat();
         currentRow = firstRow;
-        lastRow = sheet.getLastRowNum();
-        if (metadata != null) {
+		if (lastRow == -1) {
+			lastRow = sheet.getLastRowNum();
+		}        
+		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
         }
