@@ -21,8 +21,6 @@
 
 package org.jetel.component;
 
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.security.InvalidParameterException;
 
 import org.apache.commons.logging.Log;
@@ -43,6 +41,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.MultiFileReader;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -132,6 +131,7 @@ public class XLSReader extends Node {
 	/** XML attribute names */
 	public static final String XML_STARTROW_ATTRIBUTE = "startRow";
 	public static final String XML_FINALROW_ATTRIBUTE = "finalRow";
+	public static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	public static final String XML_MAXERRORCOUNT_ATTRIBUTE = "maxErrorCount";
 	public final static String XML_FILE_ATTRIBUTE = "fileURL";
 	public final static String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
@@ -149,9 +149,11 @@ public class XLSReader extends Node {
 	private String fileURL;
 	private int startRow = 0;
 	private int finalRow = -1;
+	private int numRecords = -1;
 	private int maxErrorCount = -1;
     
 	private XLSParser parser;
+	private MultiFileReader reader;
 	private PolicyType policyType = PolicyType.STRICT;
 	
 	private String sheetName;
@@ -159,7 +161,7 @@ public class XLSReader extends Node {
 	private int metadataRow = 0;
 	private String[][] fieldMap;
 	
-	public final static boolean usePOI = true;
+	public final static boolean usePOI = false;
 
 	/**
 	 * @param id
@@ -199,11 +201,10 @@ public class XLSReader extends Node {
 		DataRecord record = new DataRecord(getOutputPort(OUTPUT_PORT).getMetadata());
 		record.init();
 		int errorCount = 0;
-		int diffRow = (startRow != -1) ? finalRow - startRow +1: finalRow ;
 		try {
 			while (((record) != null) && runIt) {
 				try {
-					record = parser.getNext(record);
+					record = reader.getNext(record);
 					if (record!=null){
 						writeRecordBroadcast(record);
 					}
@@ -217,9 +218,6 @@ public class XLSReader extends Node {
 			                break;
 			            }
 			        }
-				}
-				if(finalRow != -1 && parser.getRecordCount() > diffRow) {
-					break;
 				}
 				SynchronizeUtils.cloverYield();
 			}
@@ -290,6 +288,9 @@ public class XLSReader extends Node {
 			aXLSReader.setStartRow(xattribs.getInteger(XML_STARTROW_ATTRIBUTE,1));
 			if (xattribs.exists(XML_FINALROW_ATTRIBUTE)){
 				aXLSReader.setFinalRow(xattribs.getInteger(XML_FINALROW_ATTRIBUTE));
+			}
+			if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+				aXLSReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
 				aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
@@ -388,6 +389,7 @@ public class XLSReader extends Node {
 			throw new InvalidParameterException("Invalid finalRow parameter.");
 		}
 		this.finalRow = finalRecord;
+		parser.setLastRow(finalRow);
 	}
 
 	/**
@@ -450,12 +452,21 @@ public class XLSReader extends Node {
 		}else{
 			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
 		}
-		try {
-			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-            parser.setDataSource(new FileInputStream(fileURL));
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
+//		try {
+//			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
+//            parser.setDataSource(new FileInputStream(fileURL));
+//		} catch (IOException ex) {
+//			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
+//		}
+            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        reader.setLogger(logger);
+	        reader.setNumRecords(numRecords);
+	        try {
+	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	        } catch(ComponentNotReadyException e) {
+	            e.setAttributeName(XML_FILE_ATTRIBUTE);
+	            throw e;
+	        }
 	}
 
 	private void setSheetName(String sheetName) {
@@ -468,6 +479,10 @@ public class XLSReader extends Node {
 
 	public void setSheetNumber(int sheetNumber) {
 		this.sheetNumber = sheetNumber;
+	}
+
+	public void setNumRecords(int numRecords) {
+		this.numRecords = numRecords;
 	}
 
 }
