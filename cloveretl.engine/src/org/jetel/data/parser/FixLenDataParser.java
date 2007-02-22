@@ -201,7 +201,7 @@ public abstract class FixLenDataParser implements Parser {
 		exception.setRecordNumber(recordIdx);
 		
 		if (exceptionHandler == null) { // no handler available
-			throw new RuntimeException(exception.getMessage());			
+			throw exception;			
 		}
 		// set handler
 		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
