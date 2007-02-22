@@ -1917,7 +1917,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			PolicyType policy) throws ComponentNotReadyException {
 			//used temporary data field for checking constant
 			DataField tmp = DataFieldFactory.createDataField(
-					targetMetadata[recNo].getField(fieldNo), true);
+					targetMetadata[recNo].getField(fieldNo), false);
 			if (source != null) {
 				try {
 					tmp.fromString(source);
@@ -2002,7 +2002,7 @@ public class CustomizedRecordTransform implements RecordTransform {
 			}
 			//use temporary field to check if the value can be set to given data field
 			DataField tmp = DataFieldFactory.createDataField(
-					targetMetadata[recNo].getField(fieldNo), true);
+					targetMetadata[recNo].getField(fieldNo), false);
 			try{
 				tmp.fromString(paramValue);
 				value = tmp.getValue();
