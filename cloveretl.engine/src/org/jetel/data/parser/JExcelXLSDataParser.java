@@ -44,6 +44,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.StringUtils;
+import org.jetel.util.WcardPattern;
 
 /**
  * Parsing data from xls file using JExcelAPI.
@@ -61,6 +62,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	private Sheet sheet;
 	private Cell cell;
 	private String charset = null;
+	private short sheetCounter;
 	
 	/**
 	 * Default constructor
@@ -241,27 +243,49 @@ public class JExcelXLSDataParser extends XLSParser {
        }catch(Exception ex){
             throw new ComponentNotReadyException(ex);
         }
-        //setting sheet for reading data
-        if (sheetName!=null){
-            sheet = wb.getSheet(sheetName);
-        }else{
-            try {
-                sheet = wb.getSheet(sheetNumber);
-            }catch(IndexOutOfBoundsException ex){
-                throw new ComponentNotReadyException("There is no sheet with number \"" +   sheetNumber +"\"");
-            }
+         currentRow = firstRow;
+         sheetCounter = -1;
+         if (sheetNumber != null){
+        	 sheetNumberIterator = new NumberIterator(sheetNumber);
+         }
+        if (!getNextSheet()) {
+        	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
         }
-        if (sheet == null) {
-            throw new ComponentNotReadyException("There is no sheet with name \"" + sheetName +"\"");
-        }
-        currentRow = firstRow;
-		if (lastRow == -1) {
-			lastRow = sheet.getRows();
-		}        
 		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
         }
+	}
+	
+	@Override
+	public boolean getNextSheet() {
+    	if (sheetNumberIterator != null){
+    		if (!sheetNumberIterator.hasNext()){
+    			return false;
+    		}
+    		try{
+    			sheet = wb.getSheet(sheetNumberIterator.next());
+    		}catch(IndexOutOfBoundsException e){
+    			return false;
+    		}
+    	}else{
+    		boolean found = false;
+    		while (!found){
+    			try {
+					sheet = wb.getSheet(++sheetCounter);
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
+				if (WcardPattern.checkName(sheetName, sheet.getName())) {
+					found = true;
+				}
+    		}
+    	}
+        currentRow = firstRow;
+		if (lastRow == -1 || lastRow > sheet.getRows()) {
+			lastRow = sheet.getRows();
+		}       
+		return true;
 	}
 
 	public String getCharset() {
