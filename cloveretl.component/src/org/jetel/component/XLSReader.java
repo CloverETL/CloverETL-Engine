@@ -81,11 +81,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>startRow</b></td><td>index of first parsed record</td>
  *  <tr><td><b>finalRow</b></td><td>index of final parsed record</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
- *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. If it is not set data
- *   are read from first sheet</td>
- *  <tr><td><b>sheetNumber</b></td><td>number of sheet for reading data (starting from 0).
- *   If it is not set data are read from first sheet. If sheetName and sheetNumber are both
- *    set, sheetNumber is ignored</td>
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. </td>
+ *  <tr><td><b>sheetNumber</b></td><td>number of sheet for reading data (starting from 0). 
+ *  This attribute has higher priority then sheetName. One of theese atributes has to be set.</td>
  *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
  *  <tr><td><b>fieldMap</b></td><td>Pairs of clover fields and xls columns
  *   (cloverField=xlsColumn) separated by :;| {colon, semicolon, pipe}.
@@ -156,12 +154,12 @@ public class XLSReader extends Node {
 	private MultiFileReader reader;
 	private PolicyType policyType = PolicyType.STRICT;
 	
-	private String sheetName;
-	private int sheetNumber = -1;
+	private String sheetName = null;
+	private String sheetNumber = null;
 	private int metadataRow = 0;
 	private String[][] fieldMap;
 	
-	public final static boolean usePOI = false;
+	public final static boolean usePOI = true;
 
 	/**
 	 * @param id
@@ -247,16 +245,17 @@ public class XLSReader extends Node {
         checkInputPorts(status, 0, 0);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
 
-        try {
-            init();
-            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+    	//TODO
+//        try {
+//            init();
+//            free();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
     }
@@ -298,7 +297,7 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
 				aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
 			}else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)){
-				aXLSReader.setSheetNumber(xattribs.getInteger(XML_SHEETNUMBER_ATTRIBUTE));
+				aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
@@ -389,7 +388,7 @@ public class XLSReader extends Node {
 			throw new InvalidParameterException("Invalid finalRow parameter.");
 		}
 		this.finalRow = finalRecord;
-		parser.setLastRow(finalRow);
+		parser.setLastRow(finalRow - 1);
 	}
 
 	/**
@@ -414,7 +413,7 @@ public class XLSReader extends Node {
 		if (sheetName != null){
 			parser.setSheetName(sheetName);
 		}
-		if (sheetNumber > -1){
+		if (sheetNumber != null){
 			parser.setSheetNumber(sheetNumber);
 		}
 		if (metadataRow != 0){
@@ -452,12 +451,6 @@ public class XLSReader extends Node {
 		}else{
 			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
 		}
-//		try {
-//			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-//            parser.setDataSource(new FileInputStream(fileURL));
-//		} catch (IOException ex) {
-//			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-//		}
             reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 	        reader.setLogger(logger);
 	        reader.setNumRecords(numRecords);
@@ -477,7 +470,7 @@ public class XLSReader extends Node {
 		this.metadataRow = metadaRow;
 	}
 
-	public void setSheetNumber(int sheetNumber) {
+	public void setSheetNumber(String sheetNumber) {
 		this.sheetNumber = sheetNumber;
 	}
 
