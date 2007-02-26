@@ -586,6 +586,21 @@ public class StringUtils {
     	return true;
     }
     
+    /**
+     * This method checks if given string can be integer to number
+     * 
+     * @param str string to check
+     * @return true if input represents number, false in another case
+     */
+    public static boolean isInteger(CharSequence str){
+     	for (int i=0;i<str.length();i++) {
+    		if (!Character.isDigit(str.charAt(i))) {
+    			return false;
+     		}
+    	}
+    	return true;
+    }
+    
 }
 
 
