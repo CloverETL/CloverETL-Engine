@@ -131,10 +131,13 @@ public final class ByteBufferUtils {
      * least space
      * 
      * @param buffer    ByteBuffer to which encode length
-     * @param length    
+     * @param length    value which should be encoded
+     * @return          number of bytes (in buffer) needed to encode the length
      * @since 21.11.2006
      */
-    public static final void encodeLength(ByteBuffer buffer,int length){
+    
+    public static final int encodeLength(ByteBuffer buffer,int length){
+        int position=buffer.position(); 
         if (length <= Byte.MAX_VALUE) {
             buffer.put((byte) length);
         } else {
@@ -145,6 +148,7 @@ public final class ByteBufferUtils {
             } while ((length >> 7) > 0);
             buffer.put((byte) length);
         }
+        return buffer.position()-position;
     }
     
     /**
