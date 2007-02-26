@@ -28,6 +28,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.poi.hssf.usermodel.HSSFCell;
 import org.apache.poi.hssf.usermodel.HSSFDataFormat;
@@ -41,6 +42,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.StringUtils;
+import org.jetel.util.WcardPattern;
 
 /**
  * Parsing data from xls file using POI library.
@@ -58,6 +60,7 @@ public class XLSDataParser extends XLSParser {
 	private HSSFRow row;
 	private HSSFCell cell;
 	private HSSFDataFormat format;
+	private short sheetCounter;
 	
 	/**
 	 * This method gets string representation of cell value 
@@ -182,30 +185,50 @@ public class XLSDataParser extends XLSParser {
         }catch(IOException ex){
             throw new ComponentNotReadyException(ex);
         }
-        //setting sheet for reading data
-        if (sheetName!=null){
-            sheet = wb.getSheet(sheetName);
-        }else{
-            try {
-                sheet = wb.getSheetAt(sheetNumber);
-            }catch(IndexOutOfBoundsException ex){
-                throw new ComponentNotReadyException("There is no sheet with number \"" +   sheetNumber +"\"");
-            }
-        }
-        if (sheet == null) {
-            throw new ComponentNotReadyException("There is no sheet with name \"" + sheetName +"\"");
-        }
         format = wb.createDataFormat();
-        currentRow = firstRow;
-		if (lastRow == -1) {
-			lastRow = sheet.getLastRowNum();
-		}        
+         sheetCounter = -1;
+         if (sheetNumber != null){
+        	 sheetNumberIterator = new NumberIterator(sheetNumber);
+         }
+        if (!getNextSheet()) {
+        	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
+        }
 		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
         }
     }
 
+    @Override
+    public boolean getNextSheet() {
+    	if (sheetNumberIterator != null){
+    		if (!sheetNumberIterator.hasNext()){
+    			return false;
+    		}
+    		try{
+    			sheet = wb.getSheetAt(sheetNumberIterator.next());
+    		}catch(IndexOutOfBoundsException e){
+    			return false;
+    		}
+    	}else{
+    		boolean found = false;
+    		while (!found){
+    			try {
+					sheet = wb.getSheetAt(++sheetCounter);
+				} catch (IndexOutOfBoundsException e) {
+					return false;
+				}
+				if (WcardPattern.checkName(sheetName, wb.getSheetName(sheetCounter))) {
+					found = true;
+				}
+    		}
+    	}
+        currentRow = firstRow;
+		if (lastRow == -1 || lastRow > sheet.getLastRowNum()) {
+			lastRow = sheet.getLastRowNum();
+		}       
+		return true;
+    }
 	
 	/**
 	 * If clover fields and xls colums are set there is made mapping between coresponding fields and cells
@@ -306,3 +329,4 @@ public class XLSDataParser extends XLSParser {
 	}
 
 }
+

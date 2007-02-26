@@ -21,7 +21,9 @@
 
 package org.jetel.data.parser;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import javax.naming.InvalidNameException;
 
@@ -34,6 +36,7 @@ import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  * Parses data from xls file. Order of method calling:
@@ -70,7 +73,8 @@ public abstract class XLSParser implements Parser {
 	protected DataRecordMetadata metadata = null;
 	protected IParserExceptionHandler exceptionHandler;
 	protected String sheetName = null;
-	protected int sheetNumber = 0;
+	protected String sheetNumber = null;
+	protected NumberIterator sheetNumberIterator = null;
 	protected int recordCounter = 1;
 	protected int firstRow = 0;
 	protected int currentRow;
@@ -115,14 +119,7 @@ public abstract class XLSParser implements Parser {
 
 		record.init();
 
-		record = parseNext(record);
-		if(exceptionHandler != null ) {  //use handler only if configured
-			while(exceptionHandler.isExceptionThrowed()) {
-                exceptionHandler.handleException();
-				record = parseNext(record);
-			}
-		}
-		return record;
+		return getNext(record);
 	}
 
 	/**
@@ -145,9 +142,22 @@ public abstract class XLSParser implements Parser {
 				record = parseNext(record);
 			}
 		}
+		if (record == null) {//record from current sheet
+			if (getNextSheet()) {
+				record = getNext();
+			}
+		}
 		return record;
 	}
 
+	/**
+	 * This method checks if there is next sheet with name conforming with 
+	 * sheetName or sheetNumber pattern
+	 * 
+	 * @return
+	 */
+	public abstract boolean getNextSheet();
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getPolicyType()
 	 */
@@ -326,7 +336,7 @@ public abstract class XLSParser implements Parser {
 	 * 
 	 * @return
 	 */
-	public int getSheetNumber() {
+	public String getSheetNumber() {
 		return sheetNumber;
 	}
 
@@ -375,7 +385,7 @@ public abstract class XLSParser implements Parser {
 	 * 
 	 * @param sheetNumber
 	 */
-	public void setSheetNumber(int sheetNumber) {
+	public void setSheetNumber(String sheetNumber) {
 		this.sheetNumber = sheetNumber;
 	}
 
@@ -429,4 +439,121 @@ public abstract class XLSParser implements Parser {
 		this.lastRow = lastRow;
 	}
 
+}
+/**
+ * Class for resolving integer number from given mask.<br>
+ * Mask can be in form: 
+ * <ul><li>*</li>
+ * <li>number</li>
+ * <li>minNuber-maxNumber</li>
+ * <li>*-maxNumber</li>
+ * <li>minNumber-*</li>
+ * or as their combination separated by comma, eg. 1,3,5-7,9-*
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Feb 23, 2007
+ *
+ */
+class NumberIterator implements Iterator<Integer>{
+	
+	private String pattern;
+	private String subPattern;
+	private int index = 0;
+	private int comaIndex;
+	private int next = 0;
+	private PositiveIntervalIterator intervalIterator = null;
+	
+	/**
+	 * Constructor from given mask
+	 * 
+	 * @param pattern
+	 */
+	public NumberIterator(String pattern){
+		this.pattern = pattern.trim();
+	}
+	
+	public boolean hasNext() {
+		if (pattern.equals("*")) {
+			subPattern = pattern;
+			return true;
+		}		
+		if (intervalIterator != null) {
+			return intervalIterator.hasNext();
+		}
+		if (index == pattern.length()) {
+			return false;
+		}
+		comaIndex = pattern.indexOf(',', index);
+		if (comaIndex == -1) {
+			subPattern = pattern.substring(index).trim();
+			index = pattern.length();
+		}else{
+			subPattern = pattern.substring(index,comaIndex).trim();
+			index = comaIndex + 1;
+		}
+		if (StringUtils.isInteger(subPattern)) {
+			intervalIterator = null;
+			return true;
+		}else {
+			intervalIterator = new PositiveIntervalIterator(subPattern);
+			return intervalIterator.hasNext();
+		}
+	}
+	
+	public Integer next() {
+		if (intervalIterator != null) {
+			return intervalIterator.next();
+		}else{
+			if (StringUtils.isInteger(subPattern)) {
+				return Integer.parseInt(subPattern);
+			}else{
+				return next++;
+			}
+		}
+	}
+	
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
+	
+	private class PositiveIntervalIterator implements Iterator<Integer>{
+		
+		private final static int FIRST_ELEMENT = 0;
+		
+		private String firstPattern;
+		private String lastPattern;
+		private int next = 0;
+		private int last = FIRST_ELEMENT - 1;
+		
+		PositiveIntervalIterator(String pattern) {
+			if (!Pattern.matches("[0-9]*-[0-9]*|[0-9]*-\\*|\\*-[0-9]*", pattern)){
+				throw new IllegalArgumentException("Wrong pattern");
+			}
+			firstPattern = pattern.substring(0,pattern.indexOf('-')).trim();
+			lastPattern = pattern.substring(pattern.indexOf('-') + 1).trim();
+			if (!firstPattern.equals("*")) {
+				next = Integer.parseInt(firstPattern);
+			}
+			if (!lastPattern.equals("*")){
+				last = Integer.parseInt(lastPattern);
+			}
+		}
+		
+		public boolean hasNext() {
+			return (last == FIRST_ELEMENT -1 || next <= last);
+		}
+
+		public Integer next() {
+			return hasNext() ? next++ : null;
+		}
+		
+		public void remove() {
+			throw new UnsupportedOperationException();
+		}
+		
+	}
+	
 }
