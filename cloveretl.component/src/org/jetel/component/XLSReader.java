@@ -255,7 +255,7 @@ public class XLSReader extends Node {
 
         try {//check sheetNumber parameter
 			if (sheetNumber != null) {
-				Iterator<Integer> number = new NumberIterator(sheetNumber);
+				Iterator<Integer> number = new NumberIterator(sheetNumber,0,Integer.MAX_VALUE);
 				number.hasNext();
 			}            
 	        try{//sheet number OK, check file name
