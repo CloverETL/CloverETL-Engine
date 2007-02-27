@@ -27,19 +27,37 @@ import java.util.List;
 
 public interface CloverJMXMBean {
   
+    /**
+     * @return String containing info about which version of CloverETL
+     * is running
+     * @since 26.2.2007
+     */
     public String getCloverVersion();
     
     public int getUpdateInterval();
     public void setUpdateInterval(int updateInterval);
     
+    /**
+     * @return  number of phase being executed
+     * @since 26.2.2007
+     */
     public int getRunningPhase();
+    
+    public int[] getPhaseList();
+    
     public String getRunningGraphName();
     public long getRunningGraphTime();
     
     public int getRunningNodesCount();
     public String[] getNodesList();
     
+
+    public PhaseTrackingDetail getPhaseTracking(int phase);
+    
     public TrackingDetail getTrackingDetail(String nodeID);
+    public TrackingDetail getTrackingDetail(int phase,String nodeID);
+    
+    
     public String getTrackingDetailString(String nodeID);
     
     public void stopGraphExecution();
