@@ -438,10 +438,10 @@ public class TextTableFormatter implements Formatter {
 		return false;
 	}
 	
-	public void showCounter(String header, String prefix) {
+	public void showCounter(String header, String prefix) throws UnsupportedEncodingException {
 		this.showCounter = true;
-		this.header = header.getBytes();
-		this.prefix = prefix.getBytes();
+		this.header = header.getBytes(encoder.charset().name());
+		this.prefix = prefix.getBytes(encoder.charset().name());
 		//int iMax = Integer.toString(Integer.MAX_VALUE).length();
 		int iHeader = header.length();
 		int iPrefix = prefix.length();

@@ -21,6 +21,7 @@
 
 package org.jetel.component;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
@@ -232,8 +233,12 @@ public class StructureWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        formatter.setHeader(header);
-        formatter.setFooter(footer);
+        try {
+			formatter.setHeader(header);
+	        formatter.setFooter(footer);
+		} catch (UnsupportedEncodingException e) {
+			logger.error(e);
+		}
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
