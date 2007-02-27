@@ -23,6 +23,7 @@
 package org.jetel.data.formatter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -281,12 +282,12 @@ public class DelimitedDataFormatter implements Formatter {
 			return 0;
 	}
 
-    public void setFooter(String footer) {
-    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    public void setFooter(String footer) throws UnsupportedEncodingException {
+    	this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
     }
 
-    public void setHeader(String header) {
-    	this.header = ByteBuffer.wrap(header.getBytes());
+    public void setHeader(String header) throws UnsupportedEncodingException {
+		this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
     }
 	
 }

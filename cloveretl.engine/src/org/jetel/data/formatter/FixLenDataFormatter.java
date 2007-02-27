@@ -371,12 +371,12 @@ public class FixLenDataFormatter implements Formatter {
 			return 0;
 	}
 
-    public void setFooter(String footer) {
-    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    public void setFooter(String footer) throws UnsupportedEncodingException {
+    	this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
     }
 
-    public void setHeader(String header) {
-    	this.header = ByteBuffer.wrap(header.getBytes());
+    public void setHeader(String header) throws UnsupportedEncodingException {
+    	this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
     }
 
 }
