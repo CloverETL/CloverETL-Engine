@@ -101,7 +101,7 @@ public class Normalizer extends Node {
 
 	private Properties transformationParameters;
 
-	static Log logger = LogFactory.getLog(HashJoin.class);
+	static Log logger = LogFactory.getLog(Normalizer.class);
 
 	private InputPort inPort;
 	private OutputPort outPort;
