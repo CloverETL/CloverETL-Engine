@@ -22,6 +22,7 @@
 package org.jetel.component;
 
 import java.security.InvalidParameterException;
+import java.util.Iterator;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -42,6 +43,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileReader;
+import org.jetel.util.NumberIterator;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -81,8 +83,14 @@ import org.w3c.dom.Element;
  *  <tr><td><b>startRow</b></td><td>index of first parsed record</td>
  *  <tr><td><b>finalRow</b></td><td>index of final parsed record</td>
  *  <tr><td><b>maxErrorCount</b></td><td>count of tolerated error records in input file</td>
- *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. </td>
- *  <tr><td><b>sheetNumber</b></td><td>number of sheet for reading data (starting from 0). 
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for reading data. Can be used with wild cards as '?' and '*'</td>
+ *  <tr><td><b>sheetNumber</b></td><td>number of sheet for reading data (starting from 0). Can be set as mask: 
+ * <ul><li>*</li>
+ * <li>number</li>
+ * <li>minNumber-maxNumber</li>
+ * <li>*-maxNumber</li>
+ * <li>minNumber-*</li></ul>
+ * or as their combination separated by comma, eg. 1,3,5-7,9-*<br>
  *  This attribute has higher priority then sheetName. One of theese atributes has to be set.</td>
  *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
  *  <tr><td><b>fieldMap</b></td><td>Pairs of clover fields and xls columns
@@ -110,10 +118,10 @@ import org.w3c.dom.Element;
  *  id="XLS_READER1" metadataRow="1" type="XLS_READER" /&gt;
  *  
  *  <pre>&lt;Node fieldMap="ORDER;CUSTOMERID=;EMPLOYEEID;ORDERDATE;SHIPCOUNTR" 
- *  fileURL="ORDERS.xls" id="XLS_READER1"type="XLS_READER" /&gt;
+ *  fileURL="*.xls" sheetNumber="*" id="XLS_READER1" type="XLS_READER" /&gt;
  *
  * <pre>&lt;Node dataPolicy="strict" fileURL="example.xls" id="XLS_READER0" metadataRow="1" 
- * startRow="2" type="XLS_READER"/&gt;
+ * startRow="2" sheetName="Sheet?" type="XLS_READER"/&gt;
  * 
 /**
 * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -231,7 +239,7 @@ public class XLSReader extends Node {
 	@Override
 	public void free() {
 		super.free();
-		parser.close();
+		reader.close();
 	}
 	/*
 	 * (non-Javadoc)
@@ -245,19 +253,26 @@ public class XLSReader extends Node {
         checkInputPorts(status, 0, 0);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
 
-    	//TODO
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
-        
-        return status;
+        try {//check sheetNumber parameter
+			if (sheetNumber != null) {
+				Iterator<Integer> number = new NumberIterator(sheetNumber);
+				number.hasNext();
+			}            
+	        try{//sheet number OK, check file name
+	            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	            reader.close();
+	        }catch(ComponentNotReadyException e){
+	            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+	            problem.setAttributeName(XML_FILE_ATTRIBUTE);
+	            status.add(problem);
+	        }
+        } catch (IllegalArgumentException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            problem.setAttributeName(XML_SHEETNUMBER_ATTRIBUTE);
+            status.add(problem);
+        }
+         return status;
     }
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
@@ -294,10 +309,10 @@ public class XLSReader extends Node {
 			if (xattribs.exists(XML_MAXERRORCOUNT_ATTRIBUTE)){
 				aXLSReader.setMaxErrorCount(xattribs.getInteger(XML_MAXERRORCOUNT_ATTRIBUTE));
 			}
-			if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
-				aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
-			}else if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)){
+			if (xattribs.exists(XML_SHEETNUMBER_ATTRIBUTE)){
 				aXLSReader.setSheetNumber(xattribs.getString(XML_SHEETNUMBER_ATTRIBUTE));
+			}else if (xattribs.exists(XML_SHEETNAME_ATTRIBUTE)){
+				aXLSReader.setSheetName(xattribs.getString(XML_SHEETNAME_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_METADATAROW_ATTRIBUTE)){
 				aXLSReader.setMetadataRow(xattribs.getInteger(XML_METADATAROW_ATTRIBUTE));
@@ -407,19 +422,7 @@ public class XLSReader extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-        if (outPorts.size() < 1) {
-            throw new ComponentNotReadyException(getId() + ": at least one output port can be defined!");
-        }
-		if (sheetName != null){
-			parser.setSheetName(sheetName);
-		}
-		if (sheetNumber != null){
-			parser.setSheetNumber(sheetNumber);
-		}
-		if (metadataRow != 0){
-			parser.setMetadataRow(metadataRow-1);
-		}
-		//set proper mapping type beetwen clover and xls fields
+ 		//set proper mapping type beetwen clover and xls fields
 		if (fieldMap != null){
 			String[] cloverFields = new String[fieldMap.length];
 			String[] xlsFields = new String[fieldMap.length];
@@ -451,27 +454,29 @@ public class XLSReader extends Node {
 		}else{
 			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
 		}
-            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
-	        reader.setLogger(logger);
-	        reader.setNumRecords(numRecords);
-	        try {
-	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
-	        } catch(ComponentNotReadyException e) {
-	            e.setAttributeName(XML_FILE_ATTRIBUTE);
-	            throw e;
-	        }
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+        reader.setLogger(logger);
+        reader.setNumRecords(numRecords);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 	private void setSheetName(String sheetName) {
 		this.sheetName = sheetName;
+		parser.setSheetName(sheetName);
 	}
 
 	private void setMetadataRow(int metadaRow) {
 		this.metadataRow = metadaRow;
+		try {
+			parser.setMetadataRow(metadataRow - 1);
+		} catch (ComponentNotReadyException e) {
+			throw new InvalidParameterException("Invalid metadaRow parameter.");
+		}
 	}
 
 	public void setSheetNumber(String sheetNumber) {
 		this.sheetNumber = sheetNumber;
+		parser.setSheetNumber(sheetNumber);
 	}
 
 	public void setNumRecords(int numRecords) {
