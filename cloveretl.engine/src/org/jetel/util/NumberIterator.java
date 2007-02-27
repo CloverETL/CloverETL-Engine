@@ -1,7 +1,7 @@
 package org.jetel.util;
 
 import java.util.Iterator;
-import java.util.regex.Pattern;
+import java.util.NoSuchElementException;
 
 
 /**
@@ -23,41 +23,46 @@ import java.util.regex.Pattern;
  */
 public class NumberIterator implements Iterator<Integer>{
 	
-	private final static int FIRST_ELEMENT = 0;
-
 	private String pattern;
 	private String subPattern;
 	private int index = 0;
 	private int comaIndex;
-	private int next = FIRST_ELEMENT;
-	private PositiveIntervalIterator intervalIterator = null;
+	private int last;
+	private int first;
+	private IntervalIterator intervalIterator = null;
+	private Integer next = null;
+	private Integer tmp;
 	
 	/**
 	 * Constructor from given mask
 	 * 
 	 * @param pattern
 	 */
-	public NumberIterator(String pattern){
+	public NumberIterator(String pattern, int first,int last){
+		this.first = first;
+		this.last = last;
 		this.pattern = pattern.trim();
 		if (pattern.equals("*")) {
 			subPattern = pattern;
 		}
+		next = getNext();
 	}
 	
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#hasNext()
-	 */
-	public boolean hasNext() {
+	public NumberIterator(String pattern){
+		this(pattern, IntervalIterator.FIRST_ELEMENT, IntervalIterator.LAST_ELEMENT);
+	}
+	
+	private Integer getNext(){
 		if (pattern.equals("*")) {
-			return true;
+			return next < last ? next++ : null;
 		}		
 		//check if in current interval there is more numbers
 		if (intervalIterator != null && intervalIterator.hasNext() ) {
-			return true;
+			return intervalIterator.next();
 		}
 		//get next part of pattern
 		if (index == pattern.length()) {//end of mask
-			return false;
+			return null;
 		}
 		comaIndex = pattern.indexOf(',', index);
 		if (comaIndex == -1) {
@@ -69,26 +74,34 @@ public class NumberIterator implements Iterator<Integer>{
 		}
 		if (StringUtils.isInteger(subPattern)) {
 			intervalIterator = null;
-			return true;
+			return Integer.parseInt(subPattern);
 		}else {
-			intervalIterator = new PositiveIntervalIterator(subPattern);
-			return intervalIterator.hasNext();
+			intervalIterator = new IntervalIterator(subPattern,first,last);
+			if (intervalIterator.hasNext()) {
+				return intervalIterator.next();
+			}else{
+				return getNext();
+			}
 		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see java.util.Iterator#hasNext()
+	 */
+	public boolean hasNext() {
+		return next != null;
 	}
 	
 	/* (non-Javadoc)
 	 * @see java.util.Iterator#next()
 	 */
 	public Integer next() {
-		if (intervalIterator != null) {//next from current interval
-			return intervalIterator.next();
-		}else{//subPattern is number or "*"
-			if (StringUtils.isInteger(subPattern)) {
-				return Integer.parseInt(subPattern);
-			}else{
-				return next++;
-			}
+		tmp = new Integer(next);
+		if (next == null) {
+			throw new NoSuchElementException();
 		}
+		next = getNext();
+		return tmp;
 	}
 	
 	public void remove() {
@@ -107,36 +120,51 @@ public class NumberIterator implements Iterator<Integer>{
 	 * @since Feb 23, 2007
 	 *
 	 */
-	private class PositiveIntervalIterator implements Iterator<Integer>{
+	private class IntervalIterator implements Iterator<Integer>{
 		
-		private final static int FIRST_ELEMENT = 0;
+		public final static int FIRST_ELEMENT = Integer.MIN_VALUE;
+		public final static int LAST_ELEMENT = Integer.MAX_VALUE;
+		
+		private final static char DASH = '-';
 		
 		private String firstPattern;
 		private String lastPattern;
-		private int next = FIRST_ELEMENT;
-		private int last = FIRST_ELEMENT - 1;
+		private int next;
+		private Integer last;
 		
 		/**
 		 * Constructor from given pattern
 		 * 
 		 * @param pattern
 		 */
-		PositiveIntervalIterator(String pattern) {
-			if (!Pattern.matches("[0-9]*-[0-9]*|[0-9]*-\\*|\\*-[0-9]*", pattern)){
-				throw new IllegalArgumentException("Not positive integer interval: " + pattern);
+		IntervalIterator(String pattern) {
+			this(pattern,FIRST_ELEMENT,LAST_ELEMENT);
+		}
+		
+		IntervalIterator(String pattern, int first, int last) {
+			next = first;
+			this.last = last;
+			int dashIndex= pattern.trim().indexOf(DASH);
+			if (dashIndex == -1) {
+				throw new IllegalArgumentException("Not integer interval: " + pattern);
+			}else if (dashIndex == 0) {
+				dashIndex = pattern.indexOf(DASH, 1);
+				if (dashIndex == -1) {
+					throw new IllegalArgumentException("Not integer interval: " + pattern);
+				}
 			}
-			firstPattern = pattern.substring(0,pattern.indexOf('-')).trim();
-			lastPattern = pattern.substring(pattern.indexOf('-') + 1).trim();
+			firstPattern = pattern.substring(0,dashIndex).trim();
+			lastPattern = pattern.substring(dashIndex + 1).trim();
 			if (!firstPattern.equals("*")) {
 				next = Integer.parseInt(firstPattern);
 			}
 			if (!lastPattern.equals("*")){
-				last = Integer.parseInt(lastPattern);
+				this.last = Integer.parseInt(lastPattern);
 			}
 		}
 		
 		public boolean hasNext() {
-			return (last == FIRST_ELEMENT -1 || next <= last);
+			return (next <= last);
 		}
 
 		public Integer next() {
