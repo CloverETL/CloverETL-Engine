@@ -47,7 +47,9 @@ public class StringUtils {
 	 * @since                 July 25, 2002
 	 */
 	public static String specCharToString(CharSequence controlString) {
-		StringBuffer copy = new StringBuffer();
+        if(controlString == null) return null;
+
+        StringBuffer copy = new StringBuffer();
 		char character;
 		for (int i = 0; i < controlString.length(); i++) {
 			character = controlString.charAt(i);
@@ -86,10 +88,9 @@ public class StringUtils {
 	 * @since                 July 25, 2002
 	 */
 	public static String stringToSpecChar(CharSequence controlString) {
-		if(isEmpty(controlString)) {
-			return null;
-		}
-		StringBuffer copy = new StringBuffer();
+		if(controlString == null) return null;
+
+        StringBuffer copy = new StringBuffer();
 		char character;
 		boolean isBackslash = false;
 		for (int i = 0; i < controlString.length(); i++) {
