@@ -116,7 +116,7 @@ public class Denormalizer extends Node {
 
 	private Properties transformationParameters;
 
-	static Log logger = LogFactory.getLog(HashJoin.class);
+	static Log logger = LogFactory.getLog(Denormalizer.class);
 
 	private InputPort inPort;
 	private OutputPort outPort;
