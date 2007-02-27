@@ -188,7 +188,7 @@ public class XLSDataParser extends XLSParser {
         format = wb.createDataFormat();
          sheetCounter = -1;
          if (sheetNumber != null){
-        	 sheetNumberIterator = new NumberIterator(sheetNumber);
+        	 sheetNumberIterator = new NumberIterator(sheetNumber,0,Integer.MAX_VALUE);
          }
         if (!getNextSheet()) {
         	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
