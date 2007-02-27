@@ -190,7 +190,7 @@ public class AhoCorasick {
 		 * @param transition transition char from parent
 		 */
 		public NodeTrie(NodeTrie parent, char transition) {
-			children = new NodeTrie[256];
+			children = new NodeTrie[65536];
 			patterns = new HashSet();
 			this.parent = parent;
 			this.transition = transition;
