@@ -29,7 +29,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -63,6 +62,8 @@ public class FixLenDataFormatter implements Formatter {
 	private String charSet = null;
     private boolean isRecordDelimiter;
     private byte[] recordDelimiter;
+	private ByteBuffer footer; 
+	private ByteBuffer header; 
 
     private int fieldCnt;
     private int[] fieldStart;
@@ -352,6 +353,32 @@ public class FixLenDataFormatter implements Formatter {
 		return(this.charSet);
 	}
 	
+	public int writeFooter() throws IOException {
+		if (footer != null) {
+			dataBuffer.put(footer);
+			footer.rewind();
+			return footer.remaining();
+		} else
+			return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (header != null) {
+			dataBuffer.put(header);
+			header.rewind();
+			return header.remaining();
+		} else 
+			return 0;
+	}
+
+    public void setFooter(String footer) {
+    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+    	this.header = ByteBuffer.wrap(header.getBytes());
+    }
+
 }
 /*
  *  end class FixLenDataFormatter

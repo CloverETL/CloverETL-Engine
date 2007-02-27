@@ -66,6 +66,20 @@ public interface Formatter {
 	 */
 	public int write(DataRecord record) throws IOException;
 
+	
+	/**
+	 *  Formats header based on provided metadata
+	 * @throws IOException
+	 */
+	public int writeHeader() throws IOException;
+
+	
+	/**
+	 *  Formats footer based on provided metadata
+	 * @throws IOException
+	 */
+	public int writeFooter() throws IOException;
+
 
 	/**
 	 *  Flush any unwritten data into output stream

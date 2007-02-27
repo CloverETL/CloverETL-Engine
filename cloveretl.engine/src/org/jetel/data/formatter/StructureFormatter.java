@@ -63,6 +63,8 @@ public class StructureFormatter implements Formatter {
 	private ByteBuffer dataBuffer;
 	private CharsetEncoder encoder;
 	private String charSet = null;
+	private ByteBuffer footer; 
+	private ByteBuffer header; 
 	
 
 	/**
@@ -240,6 +242,33 @@ public class StructureFormatter implements Formatter {
 			this.length = length;
 		}
 	}
+	
+	public int writeFooter() throws IOException {
+		if (footer != null) {
+			dataBuffer.put(footer);
+			footer.rewind();
+			return footer.remaining();
+		} else
+			return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (header != null) {
+			dataBuffer.put(header);
+			header.rewind();
+			return header.remaining();
+		} else 
+			return 0;
+	}
+
+    public void setFooter(String footer) {
+    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+    	this.header = ByteBuffer.wrap(header.getBytes());
+    }
+
 	
 }
 

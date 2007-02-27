@@ -22,6 +22,7 @@ package org.jetel.data.formatter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -221,10 +222,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public int write(DataRecord record) throws IOException {
-		if (!savedNames){
-			saveNames();
-			return 0;
-		}
 		char metaType;//metadata field type
 		Object value;//field value
 		Object valueXls = null;//value to set
@@ -302,6 +299,17 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         
         return 0;
 	}
-	
 
+	public int writeFooter() throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (!savedNames){
+			saveNames();
+		}
+		return 0;
+	}
+	
 }

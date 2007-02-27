@@ -82,6 +82,7 @@ public class XLSDataFormatter extends XLSFormatter {
         }catch(IOException ex){
             throw new RuntimeException(ex);
         }
+        prepareSheet();
     }
     
     /* (non-Javadoc)
@@ -186,10 +187,6 @@ public class XLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.Formatter#write(org.jetel.data.DataRecord)
 	 */
 	public int write(DataRecord record) throws IOException {
-		if (!savedNames){
-			saveNames();
-			return 0;
-		}
 		row = sheet.createRow(recCounter);
 		char metaType;//metadata field type
 		Object value;//field value
@@ -238,7 +235,18 @@ public class XLSDataFormatter extends XLSFormatter {
 	 */
 	public void flush() throws IOException {
 		// TODO Auto-generated method stub
+	}
 
+	public int writeFooter() throws IOException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (!savedNames){
+			saveNames();
+		}
+		return 0;
 	}
 
 }

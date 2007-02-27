@@ -87,6 +87,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>compressLevel</b><br><i>optional</i></td><td>Sets the compression level. The default
  *   setting is to compress using default ZIP compression level. 
  *  </tr>
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </table>
  *
  *  <h4>Example:</h4>
@@ -112,6 +114,8 @@ public class CloverDataWriter extends Node {
 	private static final String XML_SAVEINDEX_ATRRIBUTE = "saveIndex";
 	private static final String XML_SAVEMETADATA_ATTRIBUTE = "saveMetadata";
 	private static final String XML_COMPRESSLEVEL_ATTRIBUTE = "compressLevel";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 
 	public final static String COMPONENT_TYPE = "CLOVER_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -125,6 +129,8 @@ public class CloverDataWriter extends Node {
 	private InputPort inPort;
 	private int compressLevel;
 	String fileName;
+    private int skip;
+	private int numRecords = -1;
 	
     static Log logger = LogFactory.getLog(CloverDataWriter.class);
 
@@ -170,10 +176,14 @@ public class CloverDataWriter extends Node {
 	@Override
 	public Result execute() throws Exception {
 		DataRecord record = new DataRecord(metadata);
+		long iRec = 0;
+		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
 		try {
 			while (record != null && runIt) {
+				iRec++;
 				record = inPort.readRecord(record);
+				if (skip >= iRec || recordTo <= iRec) continue;
 				if (record != null) {
 					formatter.write(record);
 				}
@@ -284,6 +294,12 @@ public class CloverDataWriter extends Node {
 			aDataWriter.setAppend(xattribs.getBoolean(XML_APPEND_ATTRIBUTE,false));
 			aDataWriter.setSaveMetadata(xattribs.getBoolean(XML_SAVEMETADATA_ATTRIBUTE,false));
 			aDataWriter.setCompressLevel(xattribs.getInteger(XML_COMPRESSLEVEL_ATTRIBUTE,-1));
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -304,6 +320,12 @@ public class CloverDataWriter extends Node {
 		if (compressLevel > -1){
 			xmlElement.setAttribute(XML_COMPRESSLEVEL_ATTRIBUTE,String.valueOf(compressLevel));
 		}
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
+		}
 	}
 
 	public void setSaveMetadata(boolean saveMetadata) {
@@ -319,5 +341,20 @@ public class CloverDataWriter extends Node {
 		formatter.setAppend(append);
 	}
 
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
 
 }

@@ -22,6 +22,7 @@
 package org.jetel.data.formatter;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
@@ -54,9 +55,6 @@ public class TextTableFormatter implements Formatter {
 	
 	private DataRecordMetadata metadata;
 	private WritableByteChannel writer;
-	private int[] maskIndex;
-	private int lastIndex;
-	private String fieldName;
 	private ByteBuffer fieldBuffer; 
 	private ByteBuffer dataBuffer;
 	private CharsetEncoder encoder;
@@ -65,17 +63,27 @@ public class TextTableFormatter implements Formatter {
 	private List<DataRecord> dataRecords;
 	private CharBuffer blank;
 	private CharBuffer horizontal;
-	private boolean header = true;
+	private boolean setOutputFieldNames = true;
 	private int rowSize = 0;
 	private int leftBytes = 0;
 	private DataFieldParams[] maskAnalize;
 	private String[] mask;
+	private boolean writeHeader = false;
+	private boolean showCounter;
+	private int counter;
+	private byte[] header;
+	private byte[] prefix;
+	private String sCounter;
+	private int counterLenght;
+	private int prefixOffset; 
+	private int headerOffset; 
 
 	private static final int MAX_COUNT_ANALYZED_COUNT = 20;
 	private static final int PADDING_SPACE = 3;
 
 	private static final byte[] TABLE_CORNER = new byte[] {('+')};
-	private static final byte[] TABLE_HORIZONTAL = new byte[] {('-')};
+	private static final char TABLE_HORIZONTAL = '-';
+	private static final char TABLE_BLANK = ' ';
 	private static final byte[] TABLE_VERTICAL = new byte[] {('|')};
 	private static final byte[] NL = new byte[] {('\n')};
 	
@@ -121,16 +129,12 @@ public class TextTableFormatter implements Formatter {
 			}
 			maskAnalize = new DataFieldParams[mask.length];
 			for (int i=0;i<mask.length;i++){
+				if (map.get(mask[i]) == null)
+					throw new ComponentNotReadyException("Exception: Field '" + mask[i] + "' not found.");
 				maskAnalize[i] = new DataFieldParams(mask[i], map.get(mask[i]), 0);
 			}
 		}
 		dataRecords = new LinkedList<DataRecord>();
-		/*try {
-			maskBytes = mask.getBytes(charSet != null ? charSet
-					: Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		} catch (UnsupportedEncodingException e) {
-			throw new ComponentNotReadyException(e);
-		}*/
 	}
 
     /* (non-Javadoc)
@@ -164,6 +168,31 @@ public class TextTableFormatter implements Formatter {
         int mark;
         
         sentBytes += writeString(TABLE_VERTICAL);
+
+        if (showCounter) {
+            counter++;
+            sCounter = Integer.toString(counter);
+            
+			if (dataBuffer.remaining() < fieldBuffer.limit()){
+				directFlush();
+			}
+			//change field value to bytes
+			fieldBuffer.clear();
+			fieldBuffer.put(prefix);
+			fieldBuffer.put(sCounter.getBytes());
+			fieldBuffer.flip();
+            
+			blank.clear();
+			blank.limit(prefixOffset - fieldBuffer.limit());
+            mark=dataBuffer.position();
+
+			//put field value to data buffer
+			dataBuffer.put(fieldBuffer);
+			dataBuffer.put(encoder.encode(blank));
+            
+            sentBytes+=dataBuffer.position()-mark;
+            sentBytes += writeString(TABLE_VERTICAL);
+        }
         
 		//for each record field which is in mask change its name to value
 		for (int i=0;i<maskAnalize.length;i++){
@@ -176,7 +205,7 @@ public class TextTableFormatter implements Formatter {
 			fieldBuffer.flip();
             
 			blank.clear();
-			blank.limit(maskAnalize[i].length - (fieldBuffer.limit()));
+			blank.limit(maskAnalize[i].length - (new String(record.getField(maskAnalize[i].index).getValue().toString().getBytes(encoder.charset().displayName())).length())); // fieldBuffer.limit() is wrong - encoding
             mark=dataBuffer.position();
 
 			//put field value to data buffer
@@ -184,16 +213,23 @@ public class TextTableFormatter implements Formatter {
 			dataBuffer.put(encoder.encode(blank));
             
             sentBytes+=dataBuffer.position()-mark;
-
             sentBytes += writeString(TABLE_VERTICAL);
 		}
         sentBytes += writeString(NL);
         return sentBytes;
 	}
 
-	private int writeHeader() throws IOException {
+	public int writeHeader() throws IOException {
+		if (!setOutputFieldNames || !writeHeader) return 0; // writeHeader depends on MAX_COUNT_ANALYZED_COUNT
+		if (!isMaskAnalized()) {
+			analyzeRows(dataRecords, setOutputFieldNames);
+		}
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
+        if (showCounter) {
+        	sentBytes += writeString(horizontal, counterLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         for (int i=0; i<maskAnalize.length; i++) {
         	sentBytes += writeString(horizontal, maskAnalize[i].length);
             sentBytes += writeString(TABLE_CORNER);
@@ -203,6 +239,11 @@ public class TextTableFormatter implements Formatter {
 		DataFieldMetadata[] fMetadata = metadata.getFields();
 		String fName;
         sentBytes += writeString(TABLE_VERTICAL);
+        if (showCounter) {
+        	sentBytes += writeString(header);
+        	sentBytes += writeString(blank, headerOffset-header.length); // TODO ?
+            sentBytes += writeString(TABLE_VERTICAL);
+        }
         for (int i=0; i<maskAnalize.length; i++) {
         	fName = fMetadata[maskAnalize[i].index].getName();
         	sentBytes += writeString(fName.getBytes());
@@ -212,18 +253,35 @@ public class TextTableFormatter implements Formatter {
         sentBytes += writeString(NL);
         
         sentBytes += writeString(TABLE_CORNER);
+        if (showCounter) {
+        	sentBytes += writeString(horizontal, counterLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         for (int i=0; i<maskAnalize.length; i++) {
         	sentBytes += writeString(horizontal, maskAnalize[i].length);
             sentBytes += writeString(TABLE_CORNER);
         }
         sentBytes += writeString(NL);
 
-		return sentBytes;
+        return sentBytes;
 	}
 	
-	private int writeFooter() throws IOException {
+	public int writeFooter() throws IOException {
+		if (!setOutputFieldNames) return 0;
+		if (!writeHeader) {
+			writeHeader = true;
+			writeHeader();
+			writeHeader = false;
+		}
+		if (!isMaskAnalized()) {
+			flush();
+		}
         int sentBytes=0;
         sentBytes += writeString(TABLE_CORNER);
+        if (showCounter) {
+        	sentBytes += writeString(horizontal, counterLenght);
+            sentBytes += writeString(TABLE_CORNER);
+        }
         for (int i=0; i<maskAnalize.length; i++) {
         	sentBytes += writeString(horizontal, maskAnalize[i].length);
             sentBytes += writeString(TABLE_CORNER);
@@ -234,16 +292,15 @@ public class TextTableFormatter implements Formatter {
 	}
 	
 	private int writeString(byte[] buffer) throws IOException {
-        int sentBytes=0;
-        int mark;
+        //int sentBytes=0;
+        //int mark;
 		if (dataBuffer.remaining() < buffer.length){
 			directFlush();
 		}
-        mark=dataBuffer.position();
+        //mark=dataBuffer.position();
         dataBuffer.put(buffer);
-        sentBytes+=dataBuffer.position()-mark;
-		
-		return sentBytes;
+        //sentBytes+=dataBuffer.position()-mark;
+		return new String(buffer).getBytes(encoder.charset().displayName()).length; // encoding
 	}
 	
 	private int writeString(CharBuffer buffer, int lenght) throws IOException {
@@ -264,6 +321,7 @@ public class TextTableFormatter implements Formatter {
 	
 	/**
 	 * Writes record as 'write' function, but likewise can better format the rows.
+	 * For MAX_COUNT_ANALYZED_COUNT rows return 0. Then returns count of all written rows.
 	 * 
 	 * @param record
 	 * @throws IOException 
@@ -272,11 +330,12 @@ public class TextTableFormatter implements Formatter {
 		int size;
 		if (dataRecords != null) {
 			dataRecords.add(record.duplicate());
+			writeHeader = true;
 			if (dataRecords.size() < MAX_COUNT_ANALYZED_COUNT) {
 				return 0;
 			}
-			analyzeRows(dataRecords, header);
-			size = header ? writeHeader() : 0;
+			analyzeRows(dataRecords, setOutputFieldNames);
+			size = writeHeader();
 			for (DataRecord dataRecord : dataRecords) {
 				size += writeRecord(dataRecord);
 			}
@@ -292,11 +351,15 @@ public class TextTableFormatter implements Formatter {
 	}
 	
 	private void analyzeRows(List<DataRecord> dataRecords, boolean header) {
-		int lenght;
+		int lenght = 0;
 		int max = 0;
 		for (DataRecord dataRecord : dataRecords) {
 			for (int i=0; i<maskAnalize.length; i++) {
-				lenght = dataRecord.getField(maskAnalize[i].index).getValue().toString().length(); //getSizeSerialized()
+				try {
+					lenght = new String(dataRecord.getField(maskAnalize[i].index).getValue().toString().getBytes(encoder.charset().displayName())).length(); // encoding
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
 				maskAnalize[i].length = maskAnalize[i].length < lenght ? lenght : maskAnalize[i].length;
 			}
 		}
@@ -319,8 +382,8 @@ public class TextTableFormatter implements Formatter {
 		StringBuilder sb = new StringBuilder();
 		StringBuilder sb2 = new StringBuilder();
 		for (int i = 0; i < max; i++) {
-			sb.append(' ');
-			sb2.append('-');
+			sb.append(TABLE_BLANK);
+			sb2.append(TABLE_HORIZONTAL);
 		}
 		blank = CharBuffer.wrap(sb.toString());
 		horizontal = CharBuffer.wrap(sb2.toString());
@@ -331,20 +394,15 @@ public class TextTableFormatter implements Formatter {
 	 */
 	public void flush() throws IOException {
 		if (dataRecords != null) {
-			analyzeRows(dataRecords, header);
-			leftBytes = header ? writeHeader() : 0;
+			analyzeRows(dataRecords, setOutputFieldNames);
+			ByteBufferUtils.flush(dataBuffer,writer);
+			leftBytes = writeHeader();
 			for (DataRecord dataRecord : dataRecords) {
 				leftBytes += writeRecord(dataRecord);
 			}
 			dataRecords = null;
 		}
 		ByteBufferUtils.flush(dataBuffer,writer);
-	}
-	
-	public void eof() throws IOException {
-		flush();
-		leftBytes += writeFooter();
-		directFlush();
 	}
 	
 	private void directFlush() throws IOException {
@@ -367,8 +425,29 @@ public class TextTableFormatter implements Formatter {
 		return(this.charSet);
 	}
 
-	public void setHeader(boolean header) {
-		this.header = header;
+	public void setOutputFieldNames(boolean setOutputFieldNames) {
+		this.setOutputFieldNames = setOutputFieldNames;
+	}
+	
+	private boolean isMaskAnalized() {
+		for (DataFieldParams params: maskAnalize) {
+			if (params.length > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public void showCounter(String header, String prefix) {
+		this.showCounter = true;
+		this.header = header.getBytes();
+		this.prefix = prefix.getBytes();
+		//int iMax = Integer.toString(Integer.MAX_VALUE).length();
+		int iHeader = header.length();
+		int iPrefix = prefix.length();
+		counterLenght = iHeader > iPrefix + 5 ? iHeader : iPrefix + 5;
+		prefixOffset = counterLenght + this.prefix.length - prefix.length();
+		headerOffset = counterLenght + this.header.length - header.length();
 	}
 	
 	/**

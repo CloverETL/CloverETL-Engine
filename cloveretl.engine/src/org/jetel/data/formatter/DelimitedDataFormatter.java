@@ -58,6 +58,8 @@ public class DelimitedDataFormatter implements Formatter {
 	private int numFields;
 	private boolean isRecordDelimiter;
     private String recordDelimiter;
+	private ByteBuffer footer; 
+	private ByteBuffer header; 
     
 	private static String NEW_LINE_STR;
 
@@ -260,6 +262,32 @@ public class DelimitedDataFormatter implements Formatter {
 	public String getCharsetName() {
 		return(this.charSet);
 	}
+
+	public int writeFooter() throws IOException {
+		if (footer != null) {
+			dataBuffer.put(footer);
+			footer.rewind();
+			return footer.remaining();
+		} else
+			return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (header != null) {
+			dataBuffer.put(header);
+			header.rewind();
+			return header.remaining();
+		} else 
+			return 0;
+	}
+
+    public void setFooter(String footer) {
+    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+    	this.header = ByteBuffer.wrap(header.getBytes());
+    }
 	
 }
 /*

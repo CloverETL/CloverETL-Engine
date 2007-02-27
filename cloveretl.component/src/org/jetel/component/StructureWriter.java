@@ -21,26 +21,25 @@
 
 package org.jetel.component;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.StructureFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -81,6 +80,8 @@ import org.w3c.dom.Element;
  *  where field1 ,.., fieldn are record's fields from metadata</td>
  *  <tr><td><b>header</b></td><td>text to write before records</td>
  *  <tr><td><b>footer</b></td><td>text to write after records</td>
+ *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
+ *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
@@ -117,17 +118,22 @@ public class StructureWriter extends Node {
 	public static final String XML_FOOTER_ATTRIBUTE = "footer";
 	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
+	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 
 	private String fileURL;
 	private boolean appendData;
 	private StructureFormatter formatter;
 	private String header = null;
 	private String footer = null;
-	private WritableByteChannel writer;
-	private ByteBuffer buffer;
-	private String charset;
+	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
+	private WritableByteChannel writableByteChannel;
+	private int recordsPerFile;
+	private int bytesPerFile;
+
+	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
 	public final static String COMPONENT_TYPE = "STRUCTURE_WRITER";
 	private final static int READ_FROM_PORT = 0;
@@ -146,9 +152,7 @@ public class StructureWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		this.charset = charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		formatter = charset == null ? new StructureFormatter() : 
-			new StructureFormatter(charset);
+		formatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 		formatter.setMask(mask);
 	}
 
@@ -162,38 +166,20 @@ public class StructureWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		//write header
-		if (header != null ){
-			buffer.put(header.getBytes(charset));
-			ByteBufferUtils.flush(buffer,writer);
-		}
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
-		int iRec = 0;
-		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
-		//write records
 		try {
 			while (record != null && runIt) {
-				iRec++;
 				record = inPort.readRecord(record);
-				if (skip >= iRec || recordTo <= iRec) continue;
 				if (record != null) {
-					formatter.write(record);
+			        writer.write(record);
 				}
 				SynchronizeUtils.cloverYield();
-			}
-			formatter.flush();
-			//write footer
-			if (footer != null ){
-				buffer.clear();
-				buffer.put(footer.getBytes(charset));
-				ByteBufferUtils.flush(buffer,writer);
 			}
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			//close output
 			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -232,14 +218,23 @@ public class StructureWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		// based on file mask, create/open output file
-		try {
-			writer = fileURL == null ? Channels.newChannel(System.out) : FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, fileURL, appendData);
-			buffer = ByteBuffer.allocateDirect(StringUtils.getMaxLength(header,footer));
-			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
-            formatter.setDataTarget(writer);
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
 		}
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+        formatter.setHeader(header);
+        formatter.setFooter(footer);
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
 	/* (non-Javadoc)
@@ -267,6 +262,12 @@ public class StructureWriter extends Node {
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+            	aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
+            if(xattribs.exists(XML_BYTES_PER_FILE)) {
+            	aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -298,6 +299,12 @@ public class StructureWriter extends Node {
 		if (numRecords != 0){
 			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
+		if (recordsPerFile > 0) {
+			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
+		}
+		if (bytesPerFile > 0) {
+			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
+		}
 	}
 	
 	public void setFooter(String footer) {
@@ -322,6 +329,14 @@ public class StructureWriter extends Node {
      */
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
+    }
+
+    public void setBytesPerFile(int bytesPerFile) {
+        this.bytesPerFile = bytesPerFile;
+    }
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
     }
 
 }

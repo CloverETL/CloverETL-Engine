@@ -105,7 +105,6 @@ public class DelimitedDataWriter extends Node {
 	private boolean outputFieldNames=false;
 	private int recordsPerFile;
 	private int bytesPerFile;
-	private String charset;
     private int skip;
 	private int numRecords;
 	private WritableByteChannel writableByteChannel;
@@ -140,14 +139,12 @@ public class DelimitedDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-        this.charset = charset;
 		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public DelimitedDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-        this.charset = charset;
 		formatter = new DelimitedDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -198,14 +195,12 @@ public class DelimitedDataWriter extends Node {
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
-        writer.setCharset(charset);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         if(outputFieldNames) {
-            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
-        
 	}
 	
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
@@ -304,6 +299,7 @@ public class DelimitedDataWriter extends Node {
     public boolean isOutputFieldNames() {
         return outputFieldNames;
     }
+    
     /**
      * @param outputFieldNames The outputFieldNames to set.
      */
