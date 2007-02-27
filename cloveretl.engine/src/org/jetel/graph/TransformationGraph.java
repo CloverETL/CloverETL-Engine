@@ -329,6 +329,19 @@ public final class TransformationGraph {
         Arrays.sort(array);
 		return array; 
 	}
+    
+    /**
+     * Return phase with specified phase number.<br>
+     * <i>Note:Phases in graph can go out-of-sequence !</i>
+     * 
+     * @param phaseNum
+     * @return
+     * @since 26.2.2007
+     */
+    public Phase getPhase(int phaseNum) {
+        return phases.get(new Integer(phaseNum));
+    }
+    
 	/**
 	 * An operation that starts execution of graph
 	 *
