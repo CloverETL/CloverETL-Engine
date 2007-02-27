@@ -27,6 +27,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -71,8 +72,7 @@ public class StructureFormatter implements Formatter {
 	 * Constructor without parameters
 	 */
 	public StructureFormatter(){
-		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
-		encoder.reset();
+		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 	}
 	
 	/**
@@ -82,8 +82,6 @@ public class StructureFormatter implements Formatter {
 	 */
 	public StructureFormatter(String charEncoder){
 		charSet = charEncoder;
-		encoder = Charset.forName(charEncoder).newEncoder();
-		encoder.reset();
 	}
 
 	/* (non-Javadoc)
@@ -92,6 +90,8 @@ public class StructureFormatter implements Formatter {
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
+		encoder = Charset.forName(charSet).newEncoder();
+		encoder.reset();
 
 		// create buffered output stream writer and buffers 
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -261,12 +261,20 @@ public class StructureFormatter implements Formatter {
 			return 0;
 	}
 
-    public void setFooter(String footer) throws UnsupportedEncodingException {
-    	this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
+    public void setFooter(String footer) {
+    	try {
+			this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
     }
 
-    public void setHeader(String header) throws UnsupportedEncodingException {
-    	this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
+    public void setHeader(String header) {
+    	try {
+			this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
     }
 
 	

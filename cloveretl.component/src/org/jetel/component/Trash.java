@@ -20,12 +20,9 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
@@ -96,8 +93,6 @@ public class Trash extends Node {
 	private TextTableFormatter formatter;
 	private MultiFileWriter writer;
 	private WritableByteChannel writableByteChannel;
-
-	private static Log logger = LogFactory.getLog(Trash.class);
 
 	/**
 	 *Constructor for the Trash object
@@ -184,11 +179,7 @@ public class Trash extends Node {
     			}
             }
             if (writer != null) {
-            	try {
-					formatter.showCounter("Record", "### ");
-				} catch (UnsupportedEncodingException e) {
-					logger.error(e);
-				}
+            	formatter.showCounter("Record", "### ");
                 writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             }
 		}

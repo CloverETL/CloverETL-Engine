@@ -18,7 +18,6 @@
 *
 */
 package org.jetel.component;
-import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
@@ -189,11 +188,7 @@ public class FixLenDataWriter extends Node {
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         if(outputFieldNames) {
-        	try {
-				formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
-			} catch (UnsupportedEncodingException e) {
-				logger.error(e);
-			}
+        	formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}

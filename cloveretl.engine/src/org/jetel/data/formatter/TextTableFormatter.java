@@ -28,6 +28,7 @@ import java.nio.CharBuffer;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -91,8 +92,7 @@ public class TextTableFormatter implements Formatter {
 	 * Constructor without parameters
 	 */
 	public TextTableFormatter(){
-		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER).newEncoder();
-		encoder.reset();
+		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 	}
 	
 	/**
@@ -102,8 +102,6 @@ public class TextTableFormatter implements Formatter {
 	 */
 	public TextTableFormatter(String charEncoder){
 		charSet = charEncoder;
-		encoder = Charset.forName(charEncoder).newEncoder();
-		encoder.reset();
 	}
 
 	/* (non-Javadoc)
@@ -112,6 +110,8 @@ public class TextTableFormatter implements Formatter {
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
+		encoder = Charset.forName(charSet).newEncoder();
+		encoder.reset();
 
 		// create buffered output stream writer and buffers 
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
@@ -241,7 +241,7 @@ public class TextTableFormatter implements Formatter {
         sentBytes += writeString(TABLE_VERTICAL);
         if (showCounter) {
         	sentBytes += writeString(header);
-        	sentBytes += writeString(blank, headerOffset-header.length); // TODO ?
+        	sentBytes += writeString(blank, headerOffset-header.length);
             sentBytes += writeString(TABLE_VERTICAL);
         }
         for (int i=0; i<maskAnalize.length; i++) {
@@ -438,10 +438,14 @@ public class TextTableFormatter implements Formatter {
 		return false;
 	}
 	
-	public void showCounter(String header, String prefix) throws UnsupportedEncodingException {
+	public void showCounter(String header, String prefix) {
 		this.showCounter = true;
-		this.header = header.getBytes(encoder.charset().name());
-		this.prefix = prefix.getBytes(encoder.charset().name());
+		try {
+			this.header = header.getBytes(encoder.charset().name());
+			this.prefix = prefix.getBytes(encoder.charset().name());
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
 		//int iMax = Integer.toString(Integer.MAX_VALUE).length();
 		int iHeader = header.length();
 		int iPrefix = prefix.length();
