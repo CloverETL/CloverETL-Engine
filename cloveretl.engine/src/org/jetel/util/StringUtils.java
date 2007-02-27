@@ -588,13 +588,17 @@ public class StringUtils {
     }
     
     /**
-     * This method checks if given string can be integer to number
+     * This method checks if given string can be parse to integer number
      * 
      * @param str string to check
      * @return true if input represents number, false in another case
      */
     public static boolean isInteger(CharSequence str){
-     	for (int i=0;i<str.length();i++) {
+    	int start = 0;
+    	if (str.charAt(start) == '-') {
+    		start = 1;
+    	}
+     	for (int i=start;i<str.length();i++) {
     		if (!Character.isDigit(str.charAt(i))) {
     			return false;
      		}
