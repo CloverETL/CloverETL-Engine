@@ -179,8 +179,8 @@ public class Trash extends Node {
     			}
             }
             if (writer != null) {
-            	formatter.showCounter("Record", "### ");
                 writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+            	formatter.showCounter("Record", "# ");
             }
 		}
 	}
