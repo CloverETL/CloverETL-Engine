@@ -55,7 +55,9 @@ public class DataFormatter implements Formatter {
     private boolean isRecordDelimiter;
     private byte[] recordDelimiter;
 	private ByteBuffer dataBuffer;
-
+	private ByteBuffer footer; 
+	private ByteBuffer header; 
+	
 	// use space (' ') to fill/pad field
 	private final static char DEFAULT_FILLER_CHAR = ' ';
 
@@ -227,5 +229,30 @@ public class DataFormatter implements Formatter {
 		}
 	}
 
-	
+	public int writeFooter() throws IOException {
+		if (footer != null) {
+			dataBuffer.put(footer);
+			footer.rewind();
+			return footer.remaining();
+		} else
+			return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (header != null) {
+			dataBuffer.put(header);
+			header.rewind();
+			return header.remaining();
+		} else 
+			return 0;
+	}
+
+    public void setFooter(String footer) {
+    	this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+    	this.header = ByteBuffer.wrap(header.getBytes());
+    }
+
 }

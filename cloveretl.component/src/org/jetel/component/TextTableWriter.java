@@ -21,15 +21,15 @@
 
 package org.jetel.component;
 
-import java.io.IOException;
 import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -37,8 +37,9 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -71,6 +72,8 @@ import org.w3c.dom.Element;
  *  minimal length of the number. Name without wildcard specifies only one file.</td>
  *  <tr><td><b>charset</b></td><td>character encoding of the output file (if not specified, then ISO-8859-1 is used)</td>
  *  <tr><td><b>append</b></td><td>whether to append data at the end if output file exists or replace it (values: true/false)</td>
+ *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
+ *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  </tr>
@@ -91,24 +94,31 @@ import org.w3c.dom.Element;
  */
 public class TextTableWriter extends Node {
 
-	public static final String XML_APPEND_ATTRIBUTE = "append";
-	public static final String XML_FILEURL_ATTRIBUTE = "fileURL";
-	public static final String XML_CHARSET_ATTRIBUTE = "charset";
-	public static final String XML_MASK_ATTRIBUTE = "mask";
-	public static final String XML_HEADER_ATTRIBUTE = "header";
-	public static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
-	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_APPEND_ATTRIBUTE = "append";
+	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+	private static final String XML_MASK_ATTRIBUTE = "mask";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
+	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
+	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 
 	private String fileURL;
 	private boolean appendData;
 	private TextTableFormatter formatter;
-	private boolean header = true;
-	private WritableByteChannel writer;
+	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
+	private WritableByteChannel writableByteChannel;
+	private boolean outputFieldNames=true;
+	private int recordsPerFile;
+	private int bytesPerFile;
 	
 	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
+
+	private static Log logger = LogFactory.getLog(TextTableWriter.class);
 
 	/**
 	 * Constructor
@@ -117,12 +127,30 @@ public class TextTableWriter extends Node {
 	 * @param fileURL
 	 * @param charset
 	 * @param appendData
-	 * @param mask
+	 * @param fields
 	 */
 	public TextTableWriter(String id, String fileURL, String charset, 
 			boolean appendData, String[] fields) {
 		super(id);
 		this.fileURL = fileURL;
+		this.appendData = appendData;
+		formatter = charset == null ? new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatter(charset);
+		formatter.setMask(fields);
+	}
+	
+	/**
+	 * Constructor
+	 * 
+	 * @param id
+	 * @param writableByteChannel
+	 * @param charset
+	 * @param appendData
+	 * @param fields
+	 */
+	public TextTableWriter(String id, WritableByteChannel writableByteChannel, String charset, 
+			boolean appendData, String[] fields) {
+		super(id);
+		this.writableByteChannel = writableByteChannel;
 		this.appendData = appendData;
 		formatter = charset == null ? new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatter(charset);
 		formatter.setMask(fields);
@@ -138,28 +166,20 @@ public class TextTableWriter extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		//write header
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
-		long iRec = 0;
-		int recordTo = numRecords < 0 ? Integer.MAX_VALUE : (skip <= 0 ? numRecords+1 : skip+1 + numRecords);
 		record.init();
-		//write records
 		try {
 			while (record != null && runIt) {
-				iRec++;
 				record = inPort.readRecord(record);
-				if (skip >= iRec || recordTo <= iRec) continue;
 				if (record != null) {
-					formatter.write(record);
+			        writer.write(record);
 				}
 				SynchronizeUtils.cloverYield();
 			}
-			formatter.eof();
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			//close output
 			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -198,14 +218,22 @@ public class TextTableWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		// based on file mask, create/open output file
-		try {
-			writer = fileURL == null ? Channels.newChannel(System.out) : FileUtils.getWritableChannel(getGraph().getProjectURL(), fileURL, appendData);
-			formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
-            formatter.setDataTarget(writer);
-            formatter.setHeader(header);
-		} catch (IOException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
 		}
+        writer.setLogger(logger);
+        writer.setBytesPerFile(bytesPerFile);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(appendData);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+       	formatter.setOutputFieldNames(outputFieldNames);
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
 	/* (non-Javadoc)
@@ -223,15 +251,21 @@ public class TextTableWriter extends Node {
 									xattribs.getString(XML_CHARSET_ATTRIBUTE,null),
 									xattribs.getBoolean(XML_APPEND_ATTRIBUTE, false),
 									aFields);
-			if (xattribs.exists(XML_HEADER_ATTRIBUTE)){
-				aDataWriter.setHeader(Boolean.parseBoolean(xattribs.getString(XML_HEADER_ATTRIBUTE)));
-			}
 			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
 				aDataWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
 			}
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
+			if (xattribs.exists(XML_OUTPUT_FIELD_NAMES)){
+				aDataWriter.setOutputFieldNames(xattribs.getBoolean(XML_OUTPUT_FIELD_NAMES));
+			}
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+            	aDataWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
+            if(xattribs.exists(XML_BYTES_PER_FILE)) {
+            	aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -251,19 +285,23 @@ public class TextTableWriter extends Node {
 			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
-		xmlElement.setAttribute(XML_HEADER_ATTRIBUTE,String.valueOf(header));
 		if (skip != 0){
 			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
 		}
 		if (numRecords != 0){
 			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
+		if (outputFieldNames){
+		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
+		}
+		if (recordsPerFile > 0) {
+			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
+		}
+		if (bytesPerFile > 0) {
+			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
+		}
 	}
 	
-	public void setHeader(boolean header) {
-		this.header = header;
-	}
-
     /**
      * Sets number of skipped records in next call of getNext() method.
      * @param skip
@@ -278,6 +316,21 @@ public class TextTableWriter extends Node {
      */
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
+    }
+
+    /**
+     * @param outputFieldNames The outputFieldNames to set.
+     */
+    public void setOutputFieldNames(boolean outputFieldNames) {
+        this.outputFieldNames = outputFieldNames;
+    }
+
+    public void setBytesPerFile(int bytesPerFile) {
+        this.bytesPerFile = bytesPerFile;
+    }
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
     }
 
 }

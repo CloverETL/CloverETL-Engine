@@ -20,23 +20,24 @@
 package org.jetel.component;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.TextTableFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.graph.InputPortDirect;
+import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -88,10 +89,10 @@ public class Trash extends Node {
 	private final static int READ_FROM_PORT = 0;
 	private boolean debugPrint;
 	private String debugFilename;
-	private PrintWriter outStream;
 
-	private ByteBuffer recordBuffer;
-
+	private TextTableFormatter formatter;
+	private MultiFileWriter writer;
+	private WritableByteChannel writableByteChannel;
 
 	/**
 	 *Constructor for the Trash object
@@ -102,8 +103,6 @@ public class Trash extends Node {
 		super(id);
 		debugPrint = false;
 		debugFilename = null;
-		outStream = null;
-
 	}
 
 
@@ -132,39 +131,23 @@ public class Trash extends Node {
 
 	@Override
 	public Result execute() throws Exception {
-		int recCounter = 0;
-		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
-		boolean isData = true;
-		DataRecord dataRecord = null;
-		if (outStream != null) {
-			dataRecord = new DataRecord(getInputPort(READ_FROM_PORT).getMetadata());
-			dataRecord.init();
-		}
-		String resultMsg = null;
+		InputPort inPort = getInputPort(READ_FROM_PORT);
+		DataRecord record = new DataRecord(inPort.getMetadata());
+		record.init();
 		try {
-			while (isData && runIt) {
-				isData = inPort.readRecordDirect(recordBuffer);
-				if (outStream != null && isData) {
-					dataRecord.deserialize(recordBuffer);
-					outStream.println("*** Record# " + recCounter++ + " ***");
-					outStream.print(dataRecord);
+			while (record != null && runIt) {
+				record = inPort.readRecord(record);
+				if (writer != null && record != null) {
+			        writer.write(record);
 					if (debugFilename == null)
-						outStream.flush(); // if we debug into stdout
+						formatter.flush(); // if we debug into stdout
 				}
 				SynchronizeUtils.cloverYield();
 			}
-		} catch (Exception ex) {
-			resultMsg = ex.getClass().getName() + " : " + ex.getMessage();
-			throw new JetelException(resultMsg);
-		} finally {
-	        // close debug file
-			if (outStream != null && debugFilename != null) { // debug is
-																// routed into
-																// file
-				outStream.println("EOF with result " + resultMsg == null ? "OK"
-						: resultMsg);
-				outStream.close();
-			}
+		} catch (Exception e) {
+			throw e;
+		}finally{
+			if (writer != null) writer.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -178,21 +161,26 @@ public class Trash extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-		if (recordBuffer == null) {
-			throw new ComponentNotReadyException("Can NOT allocate internal record buffer ! Required size:" +
-					Defaults.Record.MAX_RECORD_SIZE);
-		}
 		if (debugPrint) {
             if(debugFilename != null) {
-          		try {
-    				outStream = new PrintWriter(Channels.newWriter(FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false), Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER));
-    			} catch (IOException ex) {
-    				throw new ComponentNotReadyException(ex.getMessage());
-    			}
+        		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+       	        try {
+					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
+							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false)
+					));
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             } else {
-                outStream = new PrintWriter(System.out);
+    			if (writableByteChannel == null) {
+    				formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+    		        writableByteChannel = Channels.newChannel(System.out);
+        	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+    			}
+            }
+            if (writer != null) {
+            	formatter.showCounter("Record", "### ");
+                writer.init(getInputPort(READ_FROM_PORT).getMetadata());
             }
 		}
 	}
@@ -250,14 +238,6 @@ public class Trash extends Node {
    		 
     		checkInputPorts(status, 1, 1);
             checkOutputPorts(status, 0, 0);
-
-    		recordBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-    		if (recordBuffer == null) {
-                status.add("Can NOT allocate internal record buffer ! Required size:" + Defaults.Record.MAX_RECORD_SIZE, 
-                		ConfigurationStatus.Severity.ERROR, this, 
-                		ConfigurationStatus.Priority.NORMAL);
-    		}
-    		recordBuffer = null;
 
     		if (debugPrint && debugFilename != null) {
                 try {

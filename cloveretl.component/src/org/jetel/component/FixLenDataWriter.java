@@ -112,7 +112,6 @@ public class FixLenDataWriter extends Node {
 	private int bytesPerFile;
     private int skip;
 	private int numRecords;
-	private String charset;
 	private WritableByteChannel writableByteChannel;
 
 	static Log logger = LogFactory.getLog(FixLenDataWriter.class);
@@ -134,14 +133,12 @@ public class FixLenDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-        this.charset = charset;
 		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public FixLenDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-        this.charset = charset;
 		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -188,11 +185,10 @@ public class FixLenDataWriter extends Node {
         writer.setBytesPerFile(bytesPerFile);
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
-        writer.setCharset(charset);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
         if(outputFieldNames) {
-            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}

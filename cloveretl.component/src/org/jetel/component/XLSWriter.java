@@ -21,8 +21,11 @@
 
 package org.jetel.component;
 
-import java.io.File;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
 import org.jetel.data.formatter.XLSDataFormatter;
@@ -36,8 +39,10 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.MultiFileWriter;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
+import org.jetel.util.WritableByteChannelIterator;
 import org.w3c.dom.Element;
 
 /**
@@ -73,6 +78,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>firstDataRow</b></td><td>index of row, where to write first data record</td>
  *  <tr><td><b>firstColumn</b></td><td>code of column from which data will be written</td>
  *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. If it is not set data
+ *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
+ *  <tr><td><b>recordCount</b></td><td>number of written records</td>
+ *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
  *   new sheet with default name is created</td>
  *  <tr><td><b>sheetNumber</b></td><td>number of sheet for writing data (starting from 0).
  *   If it is not set new sheet with default name is created. If sheetName and sheetNumber 
@@ -108,12 +116,22 @@ public class XLSWriter extends Node {
 	private static final String XML_FIRSTDATAROW_ATTRIBUTE = "firstDataRow";
 	private static final String XML_FIRSTCOLUMN_ATTRIBUTE = "firstColumn";
 	private static final String XML_NAMESROW_ATTRIBUTE = "namesRow";
+	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
+	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 
 	public final static String COMPONENT_TYPE = "XLS_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
+	private static Log logger = LogFactory.getLog(XLSWriter.class);
+
 	private String fileURL;
 	private XLSFormatter formatter;
+	private MultiFileWriter writer;
+    private int skip;
+	private int numRecords;
+	private WritableByteChannel writableByteChannel;
+	private int recordsPerFile;
 	
 	private boolean usePOI = true;
 
@@ -148,19 +166,18 @@ public class XLSWriter extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
-		formatter.prepareSheet();
 		try {
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
 				if (record != null) {
-					formatter.write(record);
+					writer.write(record);
 				}
 				SynchronizeUtils.cloverYield();
 			}
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			formatter.close();
+			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
@@ -201,9 +218,21 @@ public class XLSWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		File out = new File(fileURL);
-		formatter.init(getInputPort(READ_FROM_PORT).getMetadata());
-		formatter.setDataTarget(out);
+		if (fileURL != null) {
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+		} else {
+			if (writableByteChannel == null) {
+		        writableByteChannel = Channels.newChannel(System.out);
+			}
+	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+		}
+        writer.setLogger(logger);
+        writer.setRecordsPerFile(recordsPerFile);
+        writer.setAppendData(false);
+        writer.setSkip(skip);
+        writer.setNumRecords(numRecords);
+		//formatter.prepareSheet();
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
@@ -222,6 +251,15 @@ public class XLSWriter extends Node {
 			xlsWriter.setFirstColumn(xattribs.getString(XML_FIRSTCOLUMN_ATTRIBUTE,"A"));
 			xlsWriter.setFirstRow(xattribs.getInteger(XML_FIRSTDATAROW_ATTRIBUTE,1));
 			xlsWriter.setNamesRow(xattribs.getInteger(XML_NAMESROW_ATTRIBUTE,0));
+			if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+				xlsWriter.setSkip(Integer.parseInt(xattribs.getString(XML_RECORD_SKIP_ATTRIBUTE)));
+			}
+			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
+				xlsWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
+			}
+            if(xattribs.exists(XML_RECORDS_PER_FILE)) {
+            	xlsWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
+            }
 			return xlsWriter;
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -244,6 +282,15 @@ public class XLSWriter extends Node {
 		if (formatter.getSheetName() != null) {
 			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
 		}
+		if (skip != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
+		}
+		if (recordsPerFile > 0) {
+			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
+		}
 	}
 
 	private void setSheetName(String sheetName) {
@@ -265,4 +312,25 @@ public class XLSWriter extends Node {
 	private void setNamesRow(int namesRow){
 		formatter.setNamesRow(namesRow-1);
 	}
+	
+    /**
+     * Sets number of skipped records in next call of getNext() method.
+     * @param skip
+     */
+    public void setSkip(int skip) {
+        this.skip = skip;
+    }
+
+    /**
+     * Sets number of written records.
+     * @param numRecords
+     */
+    public void setNumRecords(int numRecords) {
+        this.numRecords = numRecords;
+    }
+
+    public void setRecordsPerFile(int recordsPerFile) {
+        this.recordsPerFile = recordsPerFile;
+    }
+
 }

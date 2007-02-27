@@ -105,7 +105,6 @@ public class DataWriter extends Node {
 	private WritableByteChannel writableByteChannel;
     private int skip;
 	private int numRecords;
-	private String charset;
 
 	static Log logger = LogFactory.getLog(DataWriter.class);
 
@@ -124,14 +123,12 @@ public class DataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		this.charset = charset;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 	
 	public DataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		this.charset = charset;
 		formatter = new DataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
@@ -180,10 +177,9 @@ public class DataWriter extends Node {
         writer.setRecordsPerFile(recordsPerFile);
         writer.setAppendData(appendData);
         writer.setSkip(skip);
-        writer.setCharset(charset);
         writer.setNumRecords(numRecords);
         if(outputFieldNames) {
-            writer.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}

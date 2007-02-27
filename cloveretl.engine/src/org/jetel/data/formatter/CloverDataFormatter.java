@@ -77,6 +77,8 @@ public class CloverDataFormatter implements Formatter {
 	private ReadableByteChannel idxReader;
 	private boolean append;
 	private boolean isOpen = false;
+	private ByteBuffer footer; 
+	private ByteBuffer header; 
 	
 	private final static short LEN_SIZE_SPECIFIER = 4;
 	private final static int SHORT_SIZE_BYTES = 2;
@@ -286,8 +288,30 @@ public class CloverDataFormatter implements Formatter {
 		this.append = append;
 	}
 
-	/**
-	 * @param index
-	 */
+	public int writeFooter() throws IOException {
+		if (footer != null) {
+			buffer.put(footer);
+			footer.rewind();
+			return footer.remaining();
+		} else
+			return 0;
+	}
+
+	public int writeHeader() throws IOException {
+		if (header != null) {
+			buffer.put(header);
+			header.rewind();
+			return header.remaining();
+		} else 
+			return 0;
+	}
+
+    public void setFooter(String footer) {
+		this.footer = ByteBuffer.wrap(footer.getBytes());
+    }
+
+    public void setHeader(String header) {
+    	this.header = ByteBuffer.wrap(header.getBytes());
+    }
 
 }
