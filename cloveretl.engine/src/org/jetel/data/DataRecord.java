@@ -46,18 +46,7 @@ public class DataRecord implements Serializable, Comparable {
     private static final long serialVersionUID = 2497808992091497225L;
 
 
-    // switch- shall we handle differently NULLable records (record
-    // which has at least one field NULLable ?)
-    private static final boolean HANDLE_NULLABLE = false;
-    
-    
-	/**
-     * Currently not used
-	 * @since
-	 */
-	// private transient String codeClassName;
-
-	/**
+    /**
      * Array for holding data fields
      * 
 	 * @since
@@ -253,7 +242,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since          April 23, 2002
 	 */
 	public void deserialize(ByteBuffer buffer) {
-        if (HANDLE_NULLABLE && metadata.isNullable()) {
+        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
             final int base = buffer.position();
             BitArray nullSwitches = metadata.getFieldsNullSwitches();
             final int numNullBytes = BitArray.bitsLength2Bytes(metadata
@@ -282,6 +271,12 @@ public class DataRecord implements Serializable, Comparable {
         }
     }
 
+    public void deserialize(ByteBuffer buffer,int[] whichFields) {
+        for(int i:whichFields){
+            fields[i].deserialize(buffer);
+        }
+    }
+    
 
 	/**
 	 *  Test two DataRecords for equality. Records must have the same metadata (be
@@ -341,15 +336,6 @@ public class DataRecord implements Serializable, Comparable {
         }else{
             throw new ClassCastException("Can't compare DataRecord with "+obj.getClass().getName());
         }
-	}
-
-	/**
-	 *  Gets the codeClassName attribute of the DataRecord object
-	 *
-	 * @return    The codeClassName value
-	 */
-	public String getCodeClassName() {
-		return ""; //codeClassName;
 	}
 
 
@@ -435,7 +421,7 @@ public class DataRecord implements Serializable, Comparable {
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-        if (HANDLE_NULLABLE && metadata.isNullable()) {
+        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()) {
             final int base = buffer.position();
             BitArray nullSwitches = metadata.getFieldsNullSwitches();
             final int numNullBytes = BitArray.bitsLength2Bytes(metadata
@@ -464,15 +450,19 @@ public class DataRecord implements Serializable, Comparable {
         }
     }
 
-
-	/**
-	 *  Sets the codeClassName attribute of the DataRecord object
-	 *
-	 * @param  codeClassName  The new codeClassName value
-	 */
-	public void setCodeClassName(String codeClassName) {
-		// this.codeClassName = codeClassName;
-	}
+    /**
+     * Serializes this record's content into ByteBuffer.<br>
+     * Asume only fields which indexes are in fields array
+     * 
+     * @param buffer
+     * @param whichFields
+     * @since 27.2.2007
+     */
+    public void serialize(ByteBuffer buffer,int[] whichFields) {
+        for(int i:whichFields){
+            fields[i].serialize(buffer);
+        }
+    }
 
 
 	/**
@@ -585,7 +575,7 @@ public class DataRecord implements Serializable, Comparable {
 	 */
 	public int getSizeSerialized() {
         int size=0;
-        if (HANDLE_NULLABLE && metadata.isNullable()){
+        if (Defaults.Record.USE_FIELDS_NULL_INDICATORS && metadata.isNullable()){
             for (int i = 0; i < fields.length;i++){
                 if (!fields[i].isNull()){
                     size+=fields[i].getSizeSerialized(); 
