@@ -62,6 +62,10 @@ public final class Defaults {
 		return properties.getProperty(key, def);
 	}
 
+    private static boolean getBooleanProperties(String key, boolean def) {
+        return new Boolean(properties.getProperty(key, Boolean.toString(def))).booleanValue();
+    }
+    
 	public static void init() {
 		initProperties();
 		
@@ -135,6 +139,7 @@ public final class Defaults {
 		public static void init() {
 			MAX_RECORD_SIZE = getIntProperties("Record.MAX_RECORD_SIZE", 8192);
 			DEFAULT_COMPRESSION_LEVEL = getIntProperties("Record.DEFAULT_COMPRESSION_LEVEL", Deflater.DEFAULT_COMPRESSION);
+            USE_FIELDS_NULL_INDICATORS = getBooleanProperties("Record.USE_FIELDS_NULL_INDICATORS",false);
 		}
 		
 		/**
@@ -148,6 +153,18 @@ public final class Defaults {
 		 * Should be set to a value from interval 0-9.
 		 */
 		public static int DEFAULT_COMPRESSION_LEVEL;// = Deflater.DEFAULT_COMPRESSION;
+        
+        /** 
+         *  Switch- shall we handle differently (during serialization) NULLable records (record
+         *  which has at least one field NULLable ?)<br>
+         *  If true then during serialization of record, first is saved
+         *  array of bits (one bit for each field which can be NULLable) and
+         *  bits are set depending of NULL status of the field being serialized.<br>
+         *  This may speed serialization of record contains many fields with
+         *  mostly NULL value assigned.
+         */
+        public static boolean USE_FIELDS_NULL_INDICATORS; // = false;
+        
 	}
 
 	/**
@@ -377,6 +394,7 @@ public final class Defaults {
          */
         public static int DIRECT_EDGE_FAST_PROPAGATE_NUM_INTERNAL_BUFFERS;
 	}
+
 
 }
 
