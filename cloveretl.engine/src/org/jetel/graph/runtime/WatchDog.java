@@ -73,7 +73,6 @@ public class WatchDog extends Thread implements CloverRuntime {
 	private Phase currentPhase;
 	private int currentPhaseNum;
 	private Runtime javaRuntime;
-	private int usedMemoryStampKB;
     private MemoryMXBean memMXB;
     private ThreadMXBean threadMXB;
     private BlockingQueue <Message> inMsgQueue;
@@ -109,7 +108,6 @@ public class WatchDog extends Thread implements CloverRuntime {
 		watchDogStatus = Result.READY;
 		javaRuntime = Runtime.getRuntime();
         memMXB=ManagementFactory.getMemoryMXBean();
-		usedMemoryStampKB = (int) memMXB.getHeapMemoryUsage().getUsed() /1024;
         threadMXB= ManagementFactory.getThreadMXBean();
         
         inMsgQueue=new PriorityBlockingQueue<Message>();
@@ -153,16 +151,15 @@ public class WatchDog extends Thread implements CloverRuntime {
 //        trackingThread.start();
         
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-			switch( executePhase(phases[currentPhaseNum]) ){
+			switch( (executePhase(phases[currentPhaseNum])) ){
             case ABORTED:
-                watchDogStatus = Result.ABORTED;
                 logger.error("!!! Phase execution aborted !!!");
                 return;
             case ERROR:
-                watchDogStatus = Result.ERROR;
 				logger.error("!!! Phase finished with error - stopping graph run !!!");
 				return;
             }
+            
 			// force running of garbage collector
 			logger.info("Forcing garbage collection ...");
 			javaRuntime.runFinalization();
@@ -171,7 +168,6 @@ public class WatchDog extends Thread implements CloverRuntime {
 
         //disabled by Kokon
 //        trackingThread.interrupt();
-		watchDogStatus = Result.FINISHED_OK;
 		printPhasesSummary();
 	}
 
@@ -263,7 +259,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 * @since             July 29, 2002
 	 */
 	public Result watch(Phase phase) throws InterruptedException {
-		int phaseMemUtilizationMaxKB;
+		long phaseMemUtilizationMax;
 		Iterator leafNodesIterator;
         Message message;
 		int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
@@ -280,7 +276,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         phase.setTracking(tracking);
             
 		//get current memory utilization
-		phaseMemUtilizationMaxKB=(int)memMXB.getHeapMemoryUsage().getUsed()/1024;
+		phaseMemUtilizationMax=memMXB.getHeapMemoryUsage().getUsed();
 		//let's take timestamp so we can measure processing
 		startTimestamp = lastTimestamp = System.currentTimeMillis();
         // also let's take nanotime to measure how much CPU we spend processing
@@ -321,10 +317,10 @@ public class WatchDog extends Thread implements CloverRuntime {
             
             // is there any node running ?
 			if (leafNodes.isEmpty()) {
-				phase.setPhaseMemUtilization(phaseMemUtilizationMaxKB);
-				phase.setPhaseExecTime((int) (System.currentTimeMillis() - startTimestamp));
+                PhaseTrackingDetail phaseTracking=new PhaseTrackingDetail((int) (System.currentTimeMillis() - startTimestamp)
+                                                    ,phaseMemUtilizationMax);
 				logger.info("Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
-						+ phase.getPhaseExecTime() / 1000);
+						+ phaseTracking.getExecTime() / 1000);
 				//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
                 printTracking.execute();// print tracking
 				return Result.FINISHED_OK;
@@ -352,9 +348,8 @@ public class WatchDog extends Thread implements CloverRuntime {
                 // reinitialize ticker
                 ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
                 // get memory usage mark
-                phaseMemUtilizationMaxKB = (int) Math.max(
-                        phaseMemUtilizationMaxKB, memMXB.getHeapMemoryUsage()
-                                .getUsed() / 1024);
+                phaseMemUtilizationMax = Math.max(
+                        phaseMemUtilizationMax, memMXB.getHeapMemoryUsage().getUsed() );
                 }
             
                 long elapsedNano=System.nanoTime()-startTimeNano;
@@ -439,9 +434,9 @@ public class WatchDog extends Thread implements CloverRuntime {
 	void printPhasesSummary() {
 		logger.info("-----------------------** Summary of Phases execution **---------------------");
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
-		for (int i = 0; i < phases.length; i++) {
-			Object nodeInfo[] = {new Integer(phases[i].getPhaseNum()), new Integer(0),
-					new Integer(phases[i].getPhaseExecTime()/1000), new Integer(phases[i].getPhaseMemUtilization())};
+		for (Phase phase : phases) {
+			Object nodeInfo[] = {new Integer(phase.getPhaseNum()), phase.getResult().message(),
+					new Integer(phase.getPhaseTracking().getExecTimeSec()), new Integer(phase.getPhaseTracking().getMemUtilizationKB())};
 			int nodeSizes[] = {-18, -24, 12, 18};
 			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 		}
@@ -526,7 +521,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 		
         //end of phase, destroy it
 		phase.free();
-        
+        phase.setResult(watchDogStatus);
 		return watchDogStatus;
 	}
 
@@ -615,11 +610,11 @@ public class WatchDog extends Thread implements CloverRuntime {
             trackingLogger.info("Time: "
                 + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
                     format(Calendar.getInstance().getTime()));
-            trackingLogger.info("Node                   Status     Port      #Records         #KB  Rec/s   KB/s");
+            trackingLogger.info("Node                   Status     Port      #Records         #KB  Rec/s    KB/s");
             trackingLogger.info("----------------------------------------------------------------------------------");
             for (TrackingDetail nodeDetail : tracking.values()){
                 Object nodeInfo[] = {nodeDetail.getNodeId(), nodeDetail.getResult().message()};
-                int nodeSizes[] = {-23, -10};
+                int nodeSizes[] = {-23, -15};
                 trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
                 //in ports
                 Object portInfo[];
@@ -628,13 +623,14 @@ public class WatchDog extends Thread implements CloverRuntime {
                 for(int i=0;i<nodeDetail.getNumInputPorts();i++){
                     if (i==0){
                         cpuPrinted=true;
-                        portInfo = new Object[] {"%CPU:",Float.toString(nodeDetail.getUsageCPU()),
+                        final float cpuUsage=nodeDetail.getUsageCPU();
+                        portInfo = new Object[] {" %cpu:",cpuUsage>=0.01f ? Float.toString(cpuUsage) : "..",
                                 "In:", Integer.toString(i), 
                                 Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
                                 Long.toString(nodeDetail.getTotalBytes(TrackingDetail.IN_PORT, i)>>10),
                                 Integer.toString(nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i)),
                                 Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.IN_PORT, i)>>10)};
-                        portSizes = new int[] {-5,-4,29, -5, 9,12,7,8};
+                        portSizes = new int[] {-6,-4,28, -5, 9,12,7,8};
                     }else{
                             portInfo = new Object[] {"In:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
@@ -648,13 +644,14 @@ public class WatchDog extends Thread implements CloverRuntime {
                 //out ports
                 for(int i=0;i<nodeDetail.getNumOutputPorts();i++){
                     if (i==0 && !cpuPrinted){
-                        portInfo = new Object[] {"%CPU:",Float.toString(nodeDetail.getUsageCPU()),
+                        final float cpuUsage=nodeDetail.getUsageCPU();
+                        portInfo = new Object[] {" %cpu:",cpuUsage>=0.01f ? Float.toString(cpuUsage) : "..",
                                 "Out:", Integer.toString(i), 
                                 Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
                                 Long.toString(nodeDetail.getTotalBytes(TrackingDetail.OUT_PORT, i)>>10),
                                 Integer.toString(nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i)),
                                 Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.OUT_PORT, i)>>10)};
-                        portSizes = new int[] {-5,-4,29, -5, 9,12,7,8};
+                        portSizes = new int[] {-6,-4,28, -5, 9,12,7,8};
                     }else{
                         portInfo = new Object[] {"Out:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
@@ -742,6 +739,15 @@ public class WatchDog extends Thread implements CloverRuntime {
      */
     public void stopRun() {
         this.runIt = false;
+    }
+
+
+    /**
+     * @return the graph
+     * @since 26.2.2007
+     */
+    public TransformationGraph getTransformationGraph() {
+        return graph;
     }
     
     

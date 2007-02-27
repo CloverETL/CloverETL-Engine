@@ -29,6 +29,8 @@ import java.util.Map;
 
 import javax.management.*; 
 
+import org.jetel.graph.Phase;
+
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
     private long sequenceNumber = 1;
@@ -66,6 +68,16 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         return runTimeMS;
     }
 
+    
+    public int[] getPhaseList() {
+        Phase[] phases=watchDog.getTransformationGraph().getPhases();
+        int[] phaseNums=new int[phases.length];
+        for (int i=0;i<phaseNums.length;i++) {
+            phaseNums[i]=phases[i].getPhaseNum();
+        }
+        return phaseNums;
+    }
+    
     public int getRunningPhase() {
         return runingPhase;
     }
@@ -78,6 +90,15 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         return trackingMap.get(nodeID);
         
     }
+    
+    public TrackingDetail getTrackingDetail(int phase,String nodeID) {
+        return watchDog.getTransformationGraph().getPhase(phase).getTracking().get(nodeID);
+    }
+    
+    public PhaseTrackingDetail getPhaseTracking(int phase) {
+        return watchDog.getTransformationGraph().getPhase(phase).getPhaseTracking();
+    }
+    
     
     public String getTrackingDetailString(String nodeID){
         TrackingDetail detail=trackingMap.get(nodeID);
