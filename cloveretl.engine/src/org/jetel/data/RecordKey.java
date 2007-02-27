@@ -21,7 +21,12 @@ package org.jetel.data;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -139,6 +144,26 @@ public class RecordKey {
 		return keyFields;
 	}
 
+    
+    /**
+     * Gets fields (indexes) which are not part of the key
+     * 
+     * @return
+     * @since 31.1.2007
+     */
+    public int[] getNonKeyFields(){
+        Set<Integer> allFields=new LinkedHashSet<Integer>();
+        for(int i=0;i<metadata.getNumFields();i++){
+            allFields.add(new Integer(i));
+        }
+        allFields.removeAll(Arrays.asList(keyFields));
+        int[] nonKey=new int[allFields.size()];
+        int counter=0;
+        for(Integer index : allFields){
+            nonKey[counter++]=index.intValue();
+        }
+        return nonKey;
+    }
 
 	/**
 	 * Gets number of fields defined by this key.
@@ -255,7 +280,7 @@ public class RecordKey {
 	
 
 	/**
-	 * This method serializes (saves) content of key fields (for specified record) into
+	 * This method serializes (saves) content of key fields only (for specified record) into
 	 * buffer.
 	 * 
 	 * @param buffer ByteBuffer into which serialize key fields
@@ -267,6 +292,21 @@ public class RecordKey {
 		}
 	}
 	
+    /**
+     *  This method deserializes (restores) content of key fields only (for specified record) from
+     * buffer.
+     * 
+     * @param buffer ByteBuffer from which deserialize key fields
+     * @param record data record whose key fields will be deserialized from ByteBuffer
+     * @since 29.1.2007
+     */
+    public void deserializeKeyFileds(ByteBuffer buffer,DataRecord record){
+        for (int i = 0; i < keyFields.length; i++) {
+            record.getField(keyFields[i]).deserialize(buffer);
+        }
+    }
+    
+    
 	/**
 	 * This method creates DataRecordMetadata object which represents fields composing this key. It can
 	 * be used for creating data record composed from key fields only.
