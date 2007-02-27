@@ -29,6 +29,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.NodeTrackingDetail;
+import org.jetel.graph.runtime.PhaseTrackingDetail;
 import org.jetel.graph.runtime.TrackingDetail;
 
 /**
@@ -55,8 +56,8 @@ public class Phase implements Comparable {
 	// specifies the order of this phase within graph
 	private int phaseNum;
 
-	private int phaseExecTime;
-	private int phaseMemUtilization;
+	private PhaseTrackingDetail phaseTracking;
+    
 	private Result result;
     private boolean isCheckPoint;
     private Map<String,TrackingDetail> tracking;
@@ -122,7 +123,6 @@ public class Phase implements Comparable {
 		Edge edge;
 		Iterator nodeIterator = nodesInPhase.iterator();
 		Iterator edgeIterator = edgesInPhase.iterator();
-		phaseExecTime = phaseMemUtilization = 0;
 
         // list of leaf nodes -will be filled later
         leafNodes = new LinkedList<Node>();
@@ -330,43 +330,24 @@ public class Phase implements Comparable {
         }
     }
     
-	/**
-	 *  Sets the phaseExecTime attribute of the Phase object
-	 *
-	 * @param  time  The new phaseExecTime value
-	 */
-	public void setPhaseExecTime(int time) {
-		phaseExecTime = time;
-	}
-
 
 	/**
-	 *  Sets the phaseMemUtilization attribute of the Phase object
-	 *
-	 * @param  mem  The new phaseMemUtilization value
-	 */
-	public void setPhaseMemUtilization(int mem) {
-		phaseMemUtilization = mem;
-	}
-
-
-	/**
-	 *  Gets the phaseExecTime attribute of the Phase object
+	 *  Gets the phase execution time in milliseconds
 	 *
 	 * @return    The phaseExecTime value
 	 */
-	public int getPhaseExecTime() {
-		return phaseExecTime;
+	@Deprecated public int getPhaseExecTime() {
+		return phaseTracking.getExecTime();
 	}
 
 
 	/**
-	 *  Gets the phaseMemUtilization attribute of the Phase object
+	 *  Gets the phase memory utilization in KB (kilobytes)
 	 *
 	 * @return    The phaseMemUtilization value
 	 */
-	public int getPhaseMemUtilization() {
-		return phaseMemUtilization;
+	@Deprecated public int getPhaseMemUtilization() {
+		return phaseTracking.getMemUtilizationKB();
 	}
 
 
@@ -424,6 +405,24 @@ public class Phase implements Comparable {
      */
     public void setTracking(Map<String, TrackingDetail> tracking) {
         this.tracking = tracking;
+    }
+
+
+    /**
+     * @return the phaseTracking
+     * @since 26.2.2007
+     */
+    public PhaseTrackingDetail getPhaseTracking() {
+        return phaseTracking;
+    }
+
+
+    /**
+     * @param phaseTracking the phaseTracking to set
+     * @since 26.2.2007
+     */
+    public void setPhaseTracking(PhaseTrackingDetail phaseTracking) {
+        this.phaseTracking = phaseTracking;
     }
 }
 /*
