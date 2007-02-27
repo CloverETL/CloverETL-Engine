@@ -196,12 +196,12 @@ public class DataReader extends Node {
 									.getMessage());
 							writeRecord(LOG_PORT, logRecord);
 						} else {
-							logger.info(bdfe.getMessage());
+							logger.warn(bdfe.getMessage());
 						}
 						if (maxErrorCount != -1 && ++errorCount > maxErrorCount) {
 							logger.error("DataParser (" + getName()
 									+ "): Max error count exceeded.");
-							break;
+							return Result.ERROR;
 						}
 					}
 				}
