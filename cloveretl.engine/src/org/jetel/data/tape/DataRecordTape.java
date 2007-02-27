@@ -33,6 +33,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.util.ByteBufferUtils;
 
 
 /**
@@ -79,7 +80,7 @@ public class DataRecordTape {
 	
 	private DataChunk currentDataChunk;
 	private int currentDataChunkIndex;
-	
+    
 	// size of BUFFER - used for push & shift operations
 	private final static int DEFAULT_BUFFER_SIZE = Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE; 
 
@@ -308,9 +309,40 @@ public class DataRecordTape {
 	    
 	}
 	
+	/**
+     * Returns number of chunks this tape contains.
+     * 
+	 * @return
+	 * @since 1.2.2007
+	 */
 	public int getNumChunks(){
 	    return dataChunks.size();
 	}
+    
+    
+    /**
+     * For specified chunk number returns its
+     * length (in bytes).
+     * 
+     * @param chunk
+     * @return
+     * @since 1.2.2007
+     */
+    public long getChunkLength(int chunk) {
+        return ((DataChunk)dataChunks.get(chunk)).getLength();
+    }
+    
+    /**
+     * For specified chunk number returns how
+     * many records it contains.
+     * 
+     * @param chunk
+     * @return
+     * @since 1.2.2007
+     */
+    public int getChunkRecNum(int chunk) {
+        return ((DataChunk)dataChunks.get(chunk)).getNumRecords();
+    }
 	
 	/**
 	 * Stores data in current/active chunk. Must not be mixed with calls to
@@ -326,6 +358,26 @@ public class DataRecordTape {
 	        throw new RuntimeException("No DataChunk has been created !");
 	    }
 	}
+    
+    
+    /**
+     * Bulk-copy of data (1 record) from one tape to the other (directly)
+     * 
+     * @param source DataRecordTape from which to copy data 
+     * @return new size of chunk or -1 in case of problem
+     */
+    public long put(DataRecordTape sourceTape) throws IOException{
+        try{
+            if (sourceTape.currentDataChunk!=null){
+                return currentDataChunk.put(sourceTape.currentDataChunk);
+            }else{
+                return -1;
+            }
+        }catch(NullPointerException ex){
+            throw new RuntimeException("No DataChunk has been created !");
+        }
+    }
+    
 	
 	/**
 	 * Stores data record in current/active chunk.
@@ -360,6 +412,22 @@ public class DataRecordTape {
 	    }
 	}
 	
+    /**
+     * Reads again previously read record.
+     * 
+     * @param data
+     * @return
+     * @throws IOException
+     * @since 27.2.2007
+     */
+    public boolean reget(ByteBuffer data) throws IOException{
+        if (currentDataChunk!=null){
+            return currentDataChunk.reget(data);
+        }else{
+            return false;
+        }
+    }
+    
 	/**
 	 * Reads data record from current chunk
 	 * 
@@ -374,6 +442,22 @@ public class DataRecordTape {
 	        return false;
 	    }
 	}
+    
+    /**
+     * Reads again previously read record.
+     * 
+     * @param data
+     * @return
+     * @throws IOException
+     * @since 27.2.2007
+     */
+    public boolean reget(DataRecord data) throws IOException{
+        if (currentDataChunk!=null){
+            return currentDataChunk.reget(data);
+        }else{
+            return false;
+        }
+    }
 
 	/* Returns String containing short summary of chunks stored on tape.
 	 * 
@@ -416,20 +500,19 @@ public class DataRecordTape {
 	 * @author david
 	 * @since  20.1.2005
 	 *
-	 * TODO To change the template for this generated type comment go to
-	 * Window - Preferences - Java - Code Style - Code Templates
 	 */
 	private static class DataChunk{
 	    //	size of integer variable used to keep record length
+        // this is the maximum size, can be between 1 & 4 bytes
 	    private final static int LEN_SIZE_SPECIFIER = 4;
 	    ByteBuffer dataBuffer;
 	    FileChannel tmpFileChannel;
 	    long offsetStart;
 	    long length;
-	    long position;
 	    int recordsRead;
 	    int nRecords;
 	    boolean canRead;
+        int recordSize;
 	    
 	    private DataChunk(FileChannel channel,ByteBuffer buffer){
 	        tmpFileChannel=channel;
@@ -460,7 +543,6 @@ public class DataRecordTape {
 	        dataBuffer.clear();
 	        tmpFileChannel.read(dataBuffer);
 	        dataBuffer.flip();
-	        position=0;
 	    }
 	    
 	    /**
@@ -472,48 +554,96 @@ public class DataRecordTape {
 		 *@return number of bytes in the chunk after saveing data
 		 */
 		long put(ByteBuffer recordBuffer) throws IOException {
-			int recordSize = recordBuffer.remaining();
-			
+			recordSize = recordBuffer.remaining();
+			final int lengthSize=ByteBufferUtils.lengthEncoded(recordSize);
 			// check that internal buffer has enough space
-			if ((recordSize + LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
+			if ((recordSize + lengthSize) > dataBuffer.remaining()){
 					flushBuffer();
 				}
 			
 			try {
-				dataBuffer.putInt(recordSize);
-				dataBuffer.put(recordBuffer);
+			    ByteBufferUtils.encodeLength(dataBuffer, recordSize);
+                dataBuffer.put(recordBuffer);
 			} catch (BufferOverflowException ex) {
-				throw new RuntimeException("Input Buffer is not big enough to accomodate data record !");
+				throw new IOException("Input Buffer is not big enough to accomodate data record !");
 			}
 			
-			length+=(recordSize+ LEN_SIZE_SPECIFIER);
+			length+=(recordSize+ lengthSize);
 			nRecords++;
 			return length;
 		}
 
+       
+        long put(DataChunk sourceChunk) throws IOException {
+            final ByteBuffer sourceDataBuffer=sourceChunk.dataBuffer;
+            if(!sourceChunk.canRead){
+                throw new IOException("Buffer has not been rewind !");
+            }
+            
+            if (sourceChunk.nRecords > 0 && sourceChunk.recordsRead>=sourceChunk.nRecords){
+                return -1;
+            }
+            //  check that internal buffer has enough data to read data size
+            if (LEN_SIZE_SPECIFIER > sourceDataBuffer.remaining()){
+                sourceChunk.reloadBuffer();
+                if(LEN_SIZE_SPECIFIER > sourceDataBuffer.remaining()) return -1;
+            }
+            recordSize = ByteBufferUtils.decodeLength(sourceDataBuffer);
+            
+            //  check that internal buffer has enough data to read data record
+            if (recordSize > sourceDataBuffer.remaining()){
+                sourceChunk.reloadBuffer();
+                if(recordSize > sourceDataBuffer.remaining()) return -1;
+            }
+            
+            int oldLimit = sourceDataBuffer.limit();
+            sourceDataBuffer.limit(sourceDataBuffer.position() + recordSize);
+        
+            //write it here         
+            final int lengthSize=ByteBufferUtils.lengthEncoded(recordSize);
+            // check that internal buffer has enough space
+            if ((recordSize + lengthSize) > dataBuffer.remaining()){
+                    flushBuffer();
+                }
+            
+            try {
+                ByteBufferUtils.encodeLength(dataBuffer, recordSize);
+                dataBuffer.put(sourceDataBuffer);
+            } catch (BufferOverflowException ex) {
+                throw new IOException("Input Buffer is not big enough to accomodate data record !");
+            }
+            
+            // end write 
+            sourceDataBuffer.limit(oldLimit);
+            length+=(recordSize+ lengthSize);
+            nRecords++;
+            return length;            
+        }
+        
+        
 		 /**
 		  * Stores one data record into buffer / file.
 		  * 
 		 * @param data	DataRecord to be stored
-		 *@return number of bytes in the chunk after saveing data
+		 *@return number of bytes in the chunk after saving data
 		 * @throws IOException
 		 */
 		long put(DataRecord data) throws IOException {
-				int recordSize = data.getSizeSerialized();
-				
+				recordSize = data.getSizeSerialized();
+                final int lengthSize=ByteBufferUtils.lengthEncoded(recordSize);
 				// check that internal buffer has enough space
-				if ((recordSize + LEN_SIZE_SPECIFIER) > dataBuffer.remaining()){
+				if ((recordSize + lengthSize) > dataBuffer.remaining()){
 						flushBuffer();
 					}
 				
 				try {
-					dataBuffer.putInt(recordSize);
+                    ByteBufferUtils.encodeLength(dataBuffer, recordSize);
 					data.serialize(dataBuffer);
 				} catch (BufferOverflowException ex) {
-					throw new RuntimeException("Input Buffer is not big enough to accomodate data record !");
+					throw new IOException("Input Buffer is not big enough to accomodate data record !");
 				}
 				
-				length+=(recordSize+ LEN_SIZE_SPECIFIER);
+				length+=(recordSize+ lengthSize);
 				nRecords++;
 				return length;
 			}
@@ -528,9 +658,8 @@ public class DataRecordTape {
 		 *@since                   September 17, 2002
 		 */
 		 boolean get(ByteBuffer recordBuffer) throws IOException {
-			int recordSize;
 			if(!canRead){
-				throw new RuntimeException("Buffer has not been rewind !");
+				throw new IOException("Buffer has not been rewind !");
 			}
 			
 			if (nRecords > 0 && recordsRead>=nRecords){
@@ -541,8 +670,7 @@ public class DataRecordTape {
 			    reloadBuffer();
 			    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
 			}
-			recordSize = dataBuffer.getInt();
-			position+=LEN_SIZE_SPECIFIER;
+			recordSize = ByteBufferUtils.decodeLength(dataBuffer);
 			
 			//	check that internal buffer has enough data to read data record
 			if (recordSize > dataBuffer.remaining()){
@@ -550,17 +678,72 @@ public class DataRecordTape {
 			    if(recordSize > dataBuffer.remaining()) return false;
 			}
 			int oldLimit = dataBuffer.limit();
+            dataBuffer.mark(); //could be used later in reget method
 			dataBuffer.limit(dataBuffer.position() + recordSize);
             recordBuffer.clear();
 			recordBuffer.put(dataBuffer);
 			recordBuffer.flip();
 			dataBuffer.limit(oldLimit);
 			
-			position+=recordSize;
 			recordsRead++;
 			return true;
 		}
 
+         /**
+          * Read again previously read record. Use caution when calling this
+          * method as it lifts most of the safety checks. Should be used
+          * only immediately after successful get(ByteBuffer) call
+          * 
+         * @param recordBuffer
+         * @return
+         * @throws IOException
+         * @since 27.2.2007
+         */
+        boolean reget(ByteBuffer recordBuffer) throws IOException {
+                dataBuffer.reset();
+                int oldLimit = dataBuffer.limit();
+                dataBuffer.limit(dataBuffer.position() + recordSize);
+                recordBuffer.clear();
+                recordBuffer.put(dataBuffer);
+                recordBuffer.flip();
+                dataBuffer.limit(oldLimit);
+                return true;
+            }
+         
+         
+         protected ByteBuffer bulkGetStart() throws IOException {
+                final int recordSize;
+                if(!canRead){
+                    throw new IOException("Buffer has not been rewind !");
+                }
+                
+                if (nRecords > 0 && recordsRead>=nRecords){
+                    return null;
+                }
+                //  check that internal buffer has enough data to read data size
+                if (LEN_SIZE_SPECIFIER > dataBuffer.remaining()){
+                    reloadBuffer();
+                    if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return null;
+                }
+                recordSize = ByteBufferUtils.decodeLength(dataBuffer);
+                
+                //  check that internal buffer has enough data to read data record
+                if (recordSize > dataBuffer.remaining()){
+                    reloadBuffer();
+                    if(recordSize > dataBuffer.remaining()) return null;
+                }
+                int oldLimit = dataBuffer.limit();
+                dataBuffer.limit(dataBuffer.position() + recordSize);
+                //write it here
+                
+                dataBuffer.limit(oldLimit);
+                recordsRead++;
+                return dataBuffer;
+            }
+
+       
+         
+         
 		 /**
 		  * Returns next record from the buffer - FIFO order.
 		 * @param data	DataRecord into which load the data
@@ -568,9 +751,8 @@ public class DataRecordTape {
 		 * @throws IOException
 		 */
 		boolean get(DataRecord data) throws IOException {
-				int recordSize;
 				if(!canRead){
-					throw new RuntimeException("Buffer has not been rewind !");
+					throw new IOException("Buffer has not been rewind !");
 				}
 				
 				if (nRecords > 0 && recordsRead>=nRecords){
@@ -581,21 +763,28 @@ public class DataRecordTape {
 				    reloadBuffer();
                     if(LEN_SIZE_SPECIFIER > dataBuffer.remaining()) return false;
 				}
-				recordSize = dataBuffer.getInt();
-				position+=LEN_SIZE_SPECIFIER;
+                recordSize = ByteBufferUtils.decodeLength(dataBuffer);
 				
 				//	check that internal buffer has enough data to read data record
 				if (recordSize > dataBuffer.remaining()){
 				    reloadBuffer();
                     if(recordSize > dataBuffer.remaining()) return false;
 				}
+                dataBuffer.mark();//could be used later for reget
 				data.deserialize(dataBuffer);
 				
-				position+=recordSize;
 				recordsRead++;
 				return true;
 			}
-		 
+		
+
+        boolean reget(DataRecord data) throws IOException {
+            dataBuffer.reset();
+            data.deserialize(dataBuffer);
+            return true;
+        }
+        
+        
 		/**
 		 *  Flushes in memory buffer into TMP file
 		 *
