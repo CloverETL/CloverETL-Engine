@@ -43,6 +43,7 @@ import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.NumberIterator;
 import org.jetel.util.StringUtils;
 import org.jetel.util.WcardPattern;
 
@@ -257,9 +258,12 @@ public class JExcelXLSDataParser extends XLSParser {
         }
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.XLSParser#getNextSheet()
+	 */
 	@Override
 	public boolean getNextSheet() {
-    	if (sheetNumberIterator != null){
+    	if (sheetNumberIterator != null){//get next sheet conforming sheetNumber attribute
     		if (!sheetNumberIterator.hasNext()){
     			return false;
     		}
@@ -268,7 +272,7 @@ public class JExcelXLSDataParser extends XLSParser {
     		}catch(IndexOutOfBoundsException e){
     			return false;
     		}
-    	}else{
+    	}else{//get next sheet conforming sheetName attribute
     		boolean found = false;
     		while (!found){
     			try {
@@ -282,9 +286,12 @@ public class JExcelXLSDataParser extends XLSParser {
     		}
     	}
         currentRow = firstRow;
-		if (lastRow == -1 || lastRow > sheet.getRows()) {
+        //set last row to read on set attribute or to last row in current sheet
+		if (lastRowAttribute == -1 || lastRowAttribute > sheet.getRows()) {
 			lastRow = sheet.getRows();
-		}       
+		}else{
+			lastRow = lastRowAttribute;
+		}
 		return true;
 	}
 
