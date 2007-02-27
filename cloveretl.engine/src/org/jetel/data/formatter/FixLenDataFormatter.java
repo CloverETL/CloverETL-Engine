@@ -27,6 +27,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.WritableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.SortedMap;
@@ -85,10 +86,7 @@ public class FixLenDataFormatter implements Formatter {
 	public FixLenDataFormatter() {
 		writer = null;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		encoder = Charset.forName(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER ).newEncoder();
-		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
-		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
-		encoder.reset();
+		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
 		metadata = null;
 		recordCounter = 0;
 	}
@@ -104,10 +102,6 @@ public class FixLenDataFormatter implements Formatter {
 		writer = null;
 		charSet = charEncoder;
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-		encoder = Charset.forName(charEncoder).newEncoder();
-		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
-		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
-		encoder.reset();
 		metadata = null;
 		recordCounter = 0;
 	}
@@ -176,6 +170,10 @@ public class FixLenDataFormatter implements Formatter {
 		// create array of field sizes & initialize them
 		this.metadata = metadata;
         
+		encoder = Charset.forName(charSet).newEncoder();
+		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
+		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
+		encoder.reset();
         isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
         if(isRecordDelimiter) {
             try {
@@ -371,12 +369,20 @@ public class FixLenDataFormatter implements Formatter {
 			return 0;
 	}
 
-    public void setFooter(String footer) throws UnsupportedEncodingException {
-    	this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
+    public void setFooter(String footer) {
+    	try {
+			this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
     }
 
-    public void setHeader(String header) throws UnsupportedEncodingException {
-    	this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
+    public void setHeader(String header) {
+    	try {
+			this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
+		} catch (UnsupportedEncodingException e) {
+			throw new UnsupportedCharsetException(encoder.charset().name());
+		}
     }
 
 }
