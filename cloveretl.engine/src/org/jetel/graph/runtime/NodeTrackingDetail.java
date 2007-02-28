@@ -35,6 +35,7 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     private static final long serialVersionUID = 9164050461393378702L;
     
     private String nodeId;
+    private String nodeName;
     private long timestamp;
     private int timespan;
     private Result result;
@@ -54,9 +55,12 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     private int avgWaitingTime;
     private int waitingRows[];
     private int avgWaitingRows[];
+    private int phase;
     
-    public NodeTrackingDetail(String id,int inputPorts,int outputPorts){
+    public NodeTrackingDetail(String id,String name,int phase,int inputPorts,int outputPorts){
         this.nodeId=id;
+        this.nodeName=name;
+        this.phase=phase;
         this.numInputPorts=inputPorts;
         this.numOutputPorts=outputPorts;
         final int ports=Math.max(inputPorts, outputPorts);
@@ -182,6 +186,14 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
         return nodeId;
     }
 
+    public String getNodeName() {
+        return nodeName;
+    }
+    
+    public int getPhase() {
+        return phase;
+    }
+    
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getTimestamp()
      */

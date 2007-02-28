@@ -361,7 +361,7 @@ public class WatchDog extends Thread implements CloverRuntime {
                     int inPortsNum=node.getInPorts().size();
                     int outPortsNum=node.getOutPorts().size();
                     if (trackingDetail==null){
-                        trackingDetail=new NodeTrackingDetail(nodeId,inPortsNum,outPortsNum);
+                        trackingDetail=new NodeTrackingDetail(nodeId,node.getName(),phase.getPhaseNum(),inPortsNum,outPortsNum);
                         tracking.put(nodeId, trackingDetail);
                     }
                     trackingDetail.timestamp();
