@@ -96,7 +96,7 @@ public class NumberIterator implements Iterator<Integer>{
 	 * @see java.util.Iterator#next()
 	 */
 	public Integer next() {
-		tmp = new Integer(next);
+		tmp = next;
 		if (next == null) {
 			throw new NoSuchElementException();
 		}

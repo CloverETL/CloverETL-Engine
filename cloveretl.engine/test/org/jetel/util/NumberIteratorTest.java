@@ -1,5 +1,7 @@
 package org.jetel.util;
 
+import java.util.NoSuchElementException;
+
 import junit.framework.TestCase;
 
 public class NumberIteratorTest extends TestCase {
@@ -22,6 +24,12 @@ public class NumberIteratorTest extends TestCase {
     public void test_2(){
     	for (int i=0;i<14;i++){
     		System.out.print(numbers.next() + ",");
+    	}
+    	try{
+    		numbers.next();
+    		fail("There is not next elemet!!!");
+    	}catch(NoSuchElementException e){
+    		
     	}
      }
 
