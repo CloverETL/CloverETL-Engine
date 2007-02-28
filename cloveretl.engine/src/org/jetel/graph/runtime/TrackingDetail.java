@@ -42,6 +42,8 @@ public interface TrackingDetail {
     public long getTotalUserTime();
     public int getTotalRows(int portType,int portNum);
     public String getNodeId();
+    public String getNodeName();
+    public int getPhase();
     public long getTimestamp();
     public int getNumInputPorts();
     public int getNumOutputPorts();
