@@ -21,4 +21,9 @@
 		<parameter id="className" value="org.jetel.lookup.DBLookupTable"/>
 	</extension>
 	
+	<extension point-id="lookup">
+		<parameter id="type" value="rangeLookup"/>
+		<parameter id="className" value="org.jetel.lookup.RangeLookupTable"/>
+	</extension>
+	
 </plugin>
