@@ -68,6 +68,7 @@ public class MultiFileWriter {
     private int skip;
 	private int numRecords;
 	private int counter;
+	private boolean firstRow = true;
     
     /**
      * Constructor.
@@ -159,6 +160,10 @@ public class MultiFileWriter {
             setNextOutput();
             records = 0;
             bytes = 0;
+        } else if (firstRow) {
+        	firstRow = false;
+            //write header
+            formatter.writeHeader();
         }
         bytes += formatter.write(record);
         records++;
