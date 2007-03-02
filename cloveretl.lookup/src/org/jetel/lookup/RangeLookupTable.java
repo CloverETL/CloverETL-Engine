@@ -43,7 +43,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected int[] keyFields = null;
 	protected Iterator<DataRecord> subTableIterator;
 	protected RuleBasedCollator collator = null;
-	protected boolean intervalOverlap = true;
 	
 	/**
 	 * Constructor for most general range lookup table 
@@ -52,30 +51,19 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @param metadata metadata defining this lookup table
 	 * @param parser parser for reading defining records
 	 * @param collator collator for comparing string fields
-	 * @param intervalOverlap indicates if intervals can overlap
 	 */
 	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			RuleBasedCollator collator, boolean intervalOverlap){
+			RuleBasedCollator collator){
 		super(id);
 		this.metadata = metadata;
 		this.dataParser = parser;
 		this.collator = collator;
-		this.intervalOverlap = intervalOverlap;
 	}
 
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			RuleBasedCollator collator){
-		this(id,metadata,parser,collator,true);
-	}
-
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, boolean intervalOverlap){
-		this(id,metadata,parser,null, intervalOverlap);
+	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser){
+		this(id,metadata,parser,null);
 	}
 	
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser){
-		this(id,metadata,parser,null,true);
-	}
-
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
@@ -129,15 +117,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			tmpRecord.getField(2*i+1).setValue(keyRecord.getField(keyFields[i]));
 			tmpRecord.getField(2*(i+1)).setValue(keyRecord.getField(keyFields[i]));
 		}
-		
-		if (!intervalOverlap) {
-			subTable = lookupTable.tailSet(tmpRecord);
-			numFound = subTable.size() > 0 ? 1 : 0;
-			subTableIterator = subTable.iterator();
-			return numFound > 0 ? subTableIterator.next() : null;
-		}		
-		//when intervals overlap we have to go throgh all records
-		subTableIterator = lookupTable.iterator();
+		//get all greater intervals
+		subTable = lookupTable.tailSet(tmpRecord);
+		subTableIterator = subTable.iterator();
+		numFound = 0;
 		return getNext();
 	}
 
@@ -149,35 +132,39 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#getNext()
 	 */
 	public DataRecord getNext() {
-		if (!intervalOverlap) return null;
-		
-		if (subTableIterator.hasNext()) {
+		//get next interval if exists
+		if (subTableIterator != null && subTableIterator.hasNext()) {
 			tmp = subTableIterator.next();
 		}else{
 			return null;
 		}
-		int comparison = comparator.compare(tmp, tmpRecord);
-		//if key has more than one field we have to try all:
-		//for record 10,68 (tmp = 10-10,68-68)
-		//records in tailSet:
-		//0-10,0-100  - OK
-		//0-10,100-200 - bad
-		//10-20,0-100 - OK
-		//10-20,100-200 - bad
-		if (comparison == 0) {
-			return tmp;
+		//check if requested value is still in first key interval:
+		//Must be: keyRecord.value >= currentInterval.start
+		if (tmpRecord.getField(1).compareTo(tmp.getField(1)) == -1) {
+			subTableIterator = null;
+			return null;
 		}
-		return getNext();
+		//first key interval OK, check rest
+		for (int i=3;i<tmp.getNumFields();i+=2){
+			if (!(tmpRecord.getField(i).compareTo(tmp.getField(i)) > -1 && 
+					tmpRecord.getField(i+1).compareTo(tmp.getField(i+1)) < 1)) {
+				return getNext();
+			}
+		}
+		numFound++;
+		return tmp;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#getNumFound()
 	 */
 	public int getNumFound() {
-		if (!intervalOverlap) {
-			return numFound;
-		}
-		throw new UnsupportedOperationException();
+		int tmp = 0;
+		while (getNext() != null) {}
+		tmp = numFound;
+		subTableIterator = subTable.iterator();
+		numFound = 0;
+		return tmp;
 	}
 
 	/* (non-Javadoc)
@@ -220,8 +207,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		
 		RecordComparator[] startComparator;//comparator for odd fields
 		RecordComparator[] endComparator;//comparator for even fields
-		int comparison;
-		boolean point;//indicates if comparing record is interval or "value", see RangeLookupTable.get(DataRecord) - tmpRecord
+		int startComparison;
+		int endComparison;
 
 		/**
 		 * Costructor
@@ -242,27 +229,28 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			this(metadata,null);
 		}
 		
+		/* (non-Javadoc)
+		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
+		 * 
+		 * Interval o2 is before interval o1 of its start is before start of o2, or it is
+		 * a subinterval of o2.
+		 * Intervals are equal if their start and end points are equal.
+		 * Interval o2 is after interval o1 if and only if its start and end are greater then 
+		 * start and end of interval o1 respectively
+		 */
 		public int compare(DataRecord o1, DataRecord o2) {
 			for (int i=0;i<startComparator.length;i++){
-				point = o1.getField(startComparator[i].getKeyFields()[0]).getValue().equals(
-							o1.getField(endComparator[i].getKeyFields()[0]).getValue()) ||
-						o2.getField(startComparator[i].getKeyFields()[0]).getValue().equals(
-							o2.getField(endComparator[i].getKeyFields()[0]).getValue());
-				comparison = startComparator[i].compare(o1, o2) + endComparator[i].compare(o1, o2);
-				if (!point) {//comparing to intervals
-					//if one is not subinterval of the second shuld not return 0
-					if (comparison < 0) {
+				startComparison = startComparator[i].compare(o1, o2);
+				endComparison = endComparator[i].compare(o1, o2);
+				if (startComparison + endComparison < 0) return -1;
+				if (startComparison + endComparison > 0) {
+					if (startComparison == 1 && endComparison == 0) {
 						return -1;
-					}
-					if (comparison > 0) {
+					}else{
 						return 1;
 					}
-				//when one of o1,o2 is "value" can be inside or on the edge	
-				}else if (comparison == -2){
-					return -1;
-				}else if (comparison == 2){
-					return 1;
 				}
+				if (endComparison != 0) return endComparison;
 			}
 			return 0;
 		}
