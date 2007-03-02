@@ -35,8 +35,8 @@ public class RangeLookupTest extends TestCase {
         		new Object[]{"RangeLookup",lookupMetadata,null}, 
         		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
         lookupNotOverlap = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null,false}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class,boolean.class});
+        		new Object[]{"RangeLookup",lookupMetadata,null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
         lookup.init();
         lookupNotOverlap.init();
     	record = new DataRecord(lookupMetadata);
