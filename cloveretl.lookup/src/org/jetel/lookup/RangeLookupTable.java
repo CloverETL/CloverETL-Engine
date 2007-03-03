@@ -138,14 +138,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}else{
 			return null;
 		}
-		//check if requested value is still in first key interval:
-		//Must be: keyRecord.value >= currentInterval.start
-		if (tmpRecord.getField(1).compareTo(tmp.getField(1)) == -1) {
-			subTableIterator = null;
-			return null;
-		}
-		//first key interval OK, check rest
-		for (int i=3;i<tmp.getNumFields();i+=2){
+		//if value is not in interval try next
+		for (int i=1;i<tmp.getNumFields();i+=2){
 			if (!(tmpRecord.getField(i).compareTo(tmp.getField(i)) > -1 && 
 					tmpRecord.getField(i+1).compareTo(tmp.getField(i+1)) < 1)) {
 				return getNext();
