@@ -568,26 +568,6 @@ public class StringUtils {
     }
 
     /**
-     * This method checks if given string can be parse to number
-     * 
-     * @param str string to check
-     * @return true if input represents number, false in another case
-     */
-    public static boolean isNumber(CharSequence str){
-    	boolean point = false;
-    	for (int i=0;i<str.length();i++) {
-    		if (!Character.isDigit(str.charAt(i))) {
-    			if (str.charAt(i) == '.' && !point){
-    				point = true;
-    			}else {
-    				return false;
-    			}
-    		}
-    	}
-    	return true;
-    }
-    
-    /**
      * This method checks if given string can be parse to integer number
      * 
      * @param str string to check
