@@ -2,6 +2,7 @@ package org.jetel.util;
 
 import java.util.NoSuchElementException;
 
+
 import junit.framework.TestCase;
 
 public class NumberIteratorTest extends TestCase {
@@ -31,6 +32,16 @@ public class NumberIteratorTest extends TestCase {
     	}catch(NoSuchElementException e){
     		
     	}
+     }
+    
+    public void test_3(){
+    	numbers = new NumberIterator("*",0,10);
+    	int i=0;
+    	while (numbers.hasNext()){
+    		System.out.print(numbers.next() + ",");
+    		i++;
+    	}
+    	assertEquals(i, 11);
      }
 
     @Override
