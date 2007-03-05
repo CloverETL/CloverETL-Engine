@@ -45,6 +45,7 @@ public class NumberIterator implements Iterator<Integer>{
 		if (pattern.equals("*")) {
 			subPattern = pattern;
 		}
+		next = first - 1;
 		next = getNext();
 	}
 	
@@ -54,7 +55,8 @@ public class NumberIterator implements Iterator<Integer>{
 	
 	private Integer getNext(){
 		if (pattern.equals("*")) {
-			return next < last ? next++ : null;
+			next++;
+			return next <= last ? next : null;
 		}		
 		//check if in current interval there is more numbers
 		if (intervalIterator != null && intervalIterator.hasNext() ) {
@@ -156,10 +158,18 @@ public class NumberIterator implements Iterator<Integer>{
 			firstPattern = pattern.substring(0,dashIndex).trim();
 			lastPattern = pattern.substring(dashIndex + 1).trim();
 			if (!firstPattern.equals("*")) {
-				next = Integer.parseInt(firstPattern);
+				try {
+					next = Integer.parseInt(firstPattern);
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Not integer interval: " + pattern);
+				}
 			}
 			if (!lastPattern.equals("*")){
-				this.last = Integer.parseInt(lastPattern);
+				try {
+					this.last = Integer.parseInt(lastPattern);
+				} catch (NumberFormatException e) {
+					throw new IllegalArgumentException("Not integer interval: " + pattern);
+				}
 			}
 		}
 		
