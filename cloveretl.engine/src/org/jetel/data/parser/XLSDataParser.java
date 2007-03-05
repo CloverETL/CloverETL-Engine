@@ -193,6 +193,8 @@ public class XLSDataParser extends XLSParser {
         if (!getNextSheet()) {
         	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
         }
+        logger.info("Reading data from sheet " + sheetCounter + " (" + 
+        		wb.getSheetName(sheetCounter) + ")." );
 		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
@@ -208,8 +210,9 @@ public class XLSDataParser extends XLSParser {
     		if (!sheetNumberIterator.hasNext()){
     			return false;
     		}
+    		sheetCounter = sheetNumberIterator.next().shortValue();
     		try{
-    			sheet = wb.getSheetAt(sheetNumberIterator.next());
+    			sheet = wb.getSheetAt(sheetCounter);
     		}catch(IndexOutOfBoundsException e){
     			return false;
     		}

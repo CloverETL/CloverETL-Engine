@@ -244,7 +244,9 @@ public class JExcelXLSDataParser extends XLSParser {
        }catch(Exception ex){
             throw new ComponentNotReadyException(ex);
         }
-         currentRow = firstRow;
+       logger.info("Reading data from sheet " + sheetCounter + " (" + 
+       		sheet.getName() + ")." );
+        currentRow = firstRow;
          sheetCounter = -1;
          if (sheetNumber != null){
         	 sheetNumberIterator = new NumberIterator(sheetNumber,0,Integer.MAX_VALUE);
@@ -267,8 +269,9 @@ public class JExcelXLSDataParser extends XLSParser {
     		if (!sheetNumberIterator.hasNext()){
     			return false;
     		}
+    		sheetCounter = sheetNumberIterator.next().shortValue();
     		try{
-    			sheet = wb.getSheet(sheetNumberIterator.next());
+    			sheet = wb.getSheet(sheetCounter);
     		}catch(IndexOutOfBoundsException e){
     			return false;
     		}
