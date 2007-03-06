@@ -176,6 +176,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
                                 System.currentTimeMillis(), 
                                 runningGraphName+Defaults.Component.KEY_FIELDS_DELIMITER+result); 
  
+        n.setUserData(result);
         sendNotification(n); 
     } 
 
