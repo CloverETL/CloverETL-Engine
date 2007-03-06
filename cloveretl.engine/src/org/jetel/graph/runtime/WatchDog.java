@@ -133,6 +133,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 	/**  Main processing method for the WatchDog object */
 	public void run() {
 		watchDogStatus = Result.RUNNING;
+        Result result=Result.N_A;
         runIt=true;
 		logger.info("Thread started.");
 		logger.info("Running on " + javaRuntime.availableProcessors() + " CPU(s)"
@@ -143,7 +144,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         printTracking=new PrintTracking();
        
         mbean=registerTrackingMBean();
-        mbean.setRunningGraphName(this.graph.getName());
+        mbean.graphStarted();
 
         //disabled by Kokon
 //        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
@@ -151,13 +152,13 @@ public class WatchDog extends Thread implements CloverRuntime {
 //        trackingThread.start();
         
 		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-			switch( (executePhase(phases[currentPhaseNum])) ){
+			switch( (result=executePhase(phases[currentPhaseNum])) ){
             case ABORTED:
                 logger.error("!!! Phase execution aborted !!!");
-                return;
+                break;
             case ERROR:
 				logger.error("!!! Phase finished with error - stopping graph run !!!");
-				return;
+				break;
             }
             
 			// force running of garbage collector
@@ -165,7 +166,8 @@ public class WatchDog extends Thread implements CloverRuntime {
 			javaRuntime.runFinalization();
 			javaRuntime.gc();
 		}
-
+        mbean.graphFinished(result);
+        
         //disabled by Kokon
 //        trackingThread.interrupt();
 		printPhasesSummary();
