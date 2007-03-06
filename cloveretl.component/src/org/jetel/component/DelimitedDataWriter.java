@@ -197,10 +197,10 @@ public class DelimitedDataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
         if(outputFieldNames) {
 			formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 	
 	public ConfigurationStatus checkConfig(ConfigurationStatus status) {

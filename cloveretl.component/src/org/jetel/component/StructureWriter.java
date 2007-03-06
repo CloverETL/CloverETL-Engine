@@ -232,9 +232,9 @@ public class StructureWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
         formatter.setHeader(header);
         formatter.setFooter(footer);
+        writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
 	/* (non-Javadoc)
