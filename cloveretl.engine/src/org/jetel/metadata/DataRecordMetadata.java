@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import org.jetel.data.Defaults;
 import org.jetel.exception.InvalidGraphObjectNameException;
 import org.jetel.util.BitArray;
 import org.jetel.util.StringUtils;
@@ -549,15 +550,21 @@ public class DataRecordMetadata implements Serializable {
 	}
 
 	public boolean isSpecifiedRecordDelimiter() {
-		return recordDelimiters != null;
+		return getRecordDelimiters() != null;
 	}
 
 	public String[] getRecordDelimiters() {
+        if(recordDelimiters == null) {
+            String rd = getRecordProperties().getProperty(DataRecordMetadataXMLReaderWriter.RECORD_DELIMITER_ATTR);
+            if(rd != null) {
+                setRecordDelimiter(StringUtils.stringToSpecChar(rd).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+            }
+        }
 		return recordDelimiters;
 	}
 
     public String getRecordDelimiter() {
-        return recordDelimiters == null ? "" : recordDelimiters[0];
+        return getRecordDelimiters() == null ? "" : recordDelimiters[0];
     }
     
     /**

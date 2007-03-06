@@ -148,7 +148,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String NAME_ATTR = "name"; 
     private static final String TYPE_ATTR = "type";
     private static final String RECORD_SIZE_ATTR = "recordSize";
-    private static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
+    public  static final String RECORD_DELIMITER_ATTR = "recordDelimiter";
 	private static final String DELIMITER_ATTR = "delimiter";
 	private static final String FORMAT_ATTR = "format";
 	private static final String DEFAULT_ATTR = "default";
@@ -297,7 +297,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
         metadataElement.setAttribute(TYPE_ATTR, rt);
 
         if(!StringUtils.isEmpty(record.getRecordDelimiter())) {
-            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, record.getRecordDelimiter());
+            metadataElement.setAttribute(RECORD_DELIMITER_ATTR, StringUtils.specCharToString(record.getRecordDelimiter()));
         }
 
         if (record.getRecordSize() != 0) {
@@ -445,7 +445,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				recordType = itemValue;
 			} else if (itemName.equalsIgnoreCase("locale")) {
 				recLocaleStr = itemValue;
-			} else if (itemName.equalsIgnoreCase("recordDelimiter")) {
+			} else if (itemName.equalsIgnoreCase(RECORD_DELIMITER_ATTR)) {
 				recordDelimiter = itemValue;
 			} else if (itemName.equalsIgnoreCase(RECORD_SIZE_ATTR)) {
 				sizeStr = itemValue;
