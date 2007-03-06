@@ -30,12 +30,16 @@ import javax.management.MBeanNotificationInfo;
 import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
+import org.jetel.data.Defaults;
 import org.jetel.graph.Phase;
+import org.jetel.graph.Result;
 
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
     public static final String UPDATE_NOTIFICATION_ID = "Tracking updated";
     public static final String PHASE_UPDATE_NOTIFICATION_ID = "Phase updated";
+    public static final String GRAPH_FINISHED_NOTIFICATION_ID = "Graph finished";
+    public static final String GRAPH_STARTED_NOTIFICATION_ID = "Graph started";
     
     private long sequenceNumber = 1;
     private String runningGraphName;
@@ -57,6 +61,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         
         cloverVersion=str.toString();
         this.watchDog=watchDog;
+        runningGraphName=watchDog.getTransformationGraph().getName();
     }
     
    
@@ -163,7 +168,28 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
  
         sendNotification(n); 
     } 
+    
+    public synchronized void graphFinished(Result result) { 
+        Notification n = new Notification(GRAPH_FINISHED_NOTIFICATION_ID, 
+                                this, 
+                                sequenceNumber++, 
+                                System.currentTimeMillis(), 
+                                runningGraphName+Defaults.Component.KEY_FIELDS_DELIMITER+result); 
  
+        sendNotification(n); 
+    } 
+
+    public synchronized void graphStarted() { 
+        Notification n = new Notification(GRAPH_STARTED_NOTIFICATION_ID, 
+                                this, 
+                                sequenceNumber++, 
+                                System.currentTimeMillis(), 
+                                runningGraphName); 
+ 
+        sendNotification(n); 
+    } 
+
+    
     @Override 
     public MBeanNotificationInfo[] getNotificationInfo() { 
         String[] types = new String[] { 
@@ -191,14 +217,6 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     public void setRuningPhase(int runingPhase) {
         this.runingPhase = runingPhase;
         phaseUpdated();
-    }
-
-    /**
-     * @param runningGraphName the runningGraphName to set
-     * @since 17.1.2007
-     */
-    public void setRunningGraphName(String runningGraphName) {
-        this.runningGraphName = runningGraphName;
     }
 
     /**
