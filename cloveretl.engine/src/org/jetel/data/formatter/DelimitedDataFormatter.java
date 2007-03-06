@@ -60,6 +60,8 @@ public class DelimitedDataFormatter implements Formatter {
 	private int numFields;
 	private boolean isRecordDelimiter;
     private String recordDelimiter;
+	private String sFooter; 
+	private String sHeader; 
 	private ByteBuffer footer; 
 	private ByteBuffer header; 
     
@@ -265,6 +267,13 @@ public class DelimitedDataFormatter implements Formatter {
 	}
 
 	public int writeFooter() throws IOException {
+		if (footer == null && sFooter != null) {
+	    	try {
+				footer = ByteBuffer.wrap(sFooter.getBytes(encoder.charset().name()));
+			} catch (UnsupportedEncodingException e) {
+				throw new UnsupportedCharsetException(encoder.charset().name());
+			}
+		}
 		if (footer != null) {
 			dataBuffer.put(footer);
 			footer.rewind();
@@ -274,6 +283,13 @@ public class DelimitedDataFormatter implements Formatter {
 	}
 
 	public int writeHeader() throws IOException {
+		if (header == null && sHeader != null) {
+	    	try {
+				header = ByteBuffer.wrap(sHeader.getBytes(encoder.charset().name()));
+			} catch (UnsupportedEncodingException e) {
+				throw new UnsupportedCharsetException(encoder.charset().name());
+			}
+		}
 		if (header != null) {
 			dataBuffer.put(header);
 			header.rewind();
@@ -283,19 +299,11 @@ public class DelimitedDataFormatter implements Formatter {
 	}
 
     public void setFooter(String footer) {
-    	try {
-			this.footer = ByteBuffer.wrap(footer.getBytes(encoder.charset().name()));
-		} catch (UnsupportedEncodingException e) {
-			throw new UnsupportedCharsetException(encoder.charset().name());
-		}
+    	sFooter = footer;
     }
 
     public void setHeader(String header) {
-		try {
-			this.header = ByteBuffer.wrap(header.getBytes(encoder.charset().name()));
-		} catch (UnsupportedEncodingException e) {
-			throw new UnsupportedCharsetException(encoder.charset().name());
-		}
+    	sHeader = header;
     }
 	
 }

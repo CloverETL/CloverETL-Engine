@@ -43,7 +43,7 @@ import org.w3c.dom.Element;
 /**
  *  <h3>Trash Component</h3>
  *
- * <!-- All records from input port:0 are discarded. This component is deemed for debugging !  -->
+ * <!-- All records from input port:0 are discarded or written to file. This component is deemed for debugging !  -->
  *
  * <table border="1">
  *  <th>Component:</th>
