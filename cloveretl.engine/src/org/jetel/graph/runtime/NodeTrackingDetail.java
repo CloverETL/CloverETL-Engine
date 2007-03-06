@@ -24,9 +24,7 @@
 package org.jetel.graph.runtime;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
-import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 
 public class NodeTrackingDetail implements TrackingDetail, Serializable {

@@ -52,6 +52,7 @@ public interface CloverJMXMBean {
     public String[] getNodesList();
     
 
+    public PhaseTrackingDetail getPhaseTracking();
     public PhaseTrackingDetail getPhaseTracking(int phase);
     
     public TrackingDetail getTrackingDetail(String nodeID);

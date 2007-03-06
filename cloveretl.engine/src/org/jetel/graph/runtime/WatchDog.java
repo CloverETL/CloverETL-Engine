@@ -317,8 +317,8 @@ public class WatchDog extends Thread implements CloverRuntime {
             
             // is there any node running ?
 			if (leafNodes.isEmpty()) {
-                PhaseTrackingDetail phaseTracking=new PhaseTrackingDetail((int) (System.currentTimeMillis() - startTimestamp)
-                                                    ,phaseMemUtilizationMax);
+                PhaseTrackingDetail phaseTracking = 
+                    new PhaseTrackingDetail(phase.getPhaseNum(), (int) (System.currentTimeMillis() - startTimestamp) ,phaseMemUtilizationMax);
 				phase.setPhaseTracking(phaseTracking);
                 logger.info("Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
 						+ phaseTracking.getExecTime() / 1000);

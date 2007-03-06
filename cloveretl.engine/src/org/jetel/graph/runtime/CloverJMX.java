@@ -23,16 +23,20 @@
  */
 package org.jetel.graph.runtime;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import javax.management.*; 
+import javax.management.AttributeChangeNotification;
+import javax.management.MBeanNotificationInfo;
+import javax.management.Notification;
+import javax.management.NotificationBroadcasterSupport;
 
 import org.jetel.graph.Phase;
 
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
+    public static final String UPDATE_NOTIFICATION_ID = "Tracking updated";
+    public static final String PHASE_UPDATE_NOTIFICATION_ID = "Phase updated";
+    
     private long sequenceNumber = 1;
     private String runningGraphName;
     private String cloverVersion;
@@ -95,10 +99,13 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         return watchDog.getTransformationGraph().getPhase(phase).getTracking().get(nodeID);
     }
     
+    public PhaseTrackingDetail getPhaseTracking() {
+        return watchDog.getTransformationGraph().getPhase(getRunningPhase()).getPhaseTracking();
+    }
+    
     public PhaseTrackingDetail getPhaseTracking(int phase) {
         return watchDog.getTransformationGraph().getPhase(phase).getPhaseTracking();
     }
-    
     
     public String getTrackingDetailString(String nodeID){
         TrackingDetail detail=trackingMap.get(nodeID);
@@ -138,31 +145,23 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
     
     public synchronized void updated() { 
-        Notification n = 
-            new AttributeChangeNotification(this, 
-                        sequenceNumber++, 
-                        System.currentTimeMillis(), 
-                        "Tracking updated", 
-                        "Tracking", 
-                        "int", 
-                        -1/*oldSize*/, 
-                        1/*this.cacheSize*/); 
+        Notification n = new Notification(UPDATE_NOTIFICATION_ID,
+                                this,
+                                sequenceNumber++, 
+                                System.currentTimeMillis(), 
+                                UPDATE_NOTIFICATION_ID); 
  
-    sendNotification(n); 
+        sendNotification(n);
     } 
     
     public synchronized void phaseUpdated() { 
-        Notification n = 
-            new AttributeChangeNotification(this, 
-                        sequenceNumber++, 
-                        System.currentTimeMillis(), 
-                        "Phase updated", 
-                        "Phase", 
-                        "int", 
-                        -1/*oldSize*/, 
-                        runingPhase); 
+        Notification n = new Notification(PHASE_UPDATE_NOTIFICATION_ID, 
+                                this, 
+                                sequenceNumber++, 
+                                System.currentTimeMillis(), 
+                                PHASE_UPDATE_NOTIFICATION_ID); 
  
-    sendNotification(n); 
+        sendNotification(n); 
     } 
  
     @Override 

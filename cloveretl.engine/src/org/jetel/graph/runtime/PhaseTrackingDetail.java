@@ -31,11 +31,16 @@ public class PhaseTrackingDetail implements Serializable {
     
     private int execTime;
     private long memUtilization;
-
+    private int phaseNumber;
     
-    public PhaseTrackingDetail(int execTime,long memUtilization) {
+    public PhaseTrackingDetail(int phaseNumber, int execTime,long memUtilization) {
+        this.phaseNumber = phaseNumber;
         this.execTime=execTime;
         this.memUtilization=memUtilization;
+    }
+
+    public int getPhaseNumber() {
+        return phaseNumber;
     }
 
     /**
@@ -80,4 +85,5 @@ public class PhaseTrackingDetail implements Serializable {
     public void setMemUtilization(long phaseMemUtilization) {
         this.memUtilization = phaseMemUtilization;
     }
+
 }
