@@ -21,6 +21,9 @@ package org.jetel.util;
 
 import java.nio.CharBuffer;
 
+import org.jetel.data.DataField;
+import org.jetel.metadata.DataFieldMetadata;
+
 import sun.text.Normalizer;
 
 /**
@@ -571,19 +574,28 @@ public class StringUtils {
      * This method checks if given string can be parse to integer number
      * 
      * @param str string to check
-     * @return true if input represents number, false in another case
+     * @return -1 if str is not integer<br>
+     * 	0 if str can be parsed to short<br>
+     * 	1 if str can be parsed to int<br>
+     * 	2 if str can be parsed to long<br>
+     * 	3 if str is integer but has more than 18 digits
      */
-    public static boolean isInteger(CharSequence str){
+    public static short isInteger(CharSequence str){
     	int start = 0;
-    	if (str.charAt(start) == '-') {
+    	if (str.charAt(0) == '-') {
     		start = 1;
     	}
-     	for (int i=start;i<str.length();i++) {
-    		if (!Character.isDigit(str.charAt(i))) {
-    			return false;
+    	int length = 0;
+      	for (int index =  start; index<str.length();index++) {
+    		if (!Character.isDigit(str.charAt(index))) {
+    			return -1;
      		}
+    		length++;
     	}
-    	return true;
+    	if (length <= 4) return 0;
+    	if (length <= DataFieldMetadata.INTEGER_LENGTH) return 1;
+    	if (length <= DataFieldMetadata.LONG_LENGTH) return 2;
+    	return 3;
     }
     
 }

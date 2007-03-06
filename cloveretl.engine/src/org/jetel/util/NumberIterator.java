@@ -74,7 +74,8 @@ public class NumberIterator implements Iterator<Integer>{
 			subPattern = pattern.substring(index,comaIndex).trim();
 			index = comaIndex + 1;
 		}
-		if (StringUtils.isInteger(subPattern)) {
+		if (StringUtils.isInteger(subPattern) == 0 || 
+				StringUtils.isInteger(subPattern) == 1) {
 			intervalIterator = null;
 			return Integer.parseInt(subPattern);
 		}else {
