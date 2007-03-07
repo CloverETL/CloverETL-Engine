@@ -191,17 +191,19 @@ public class DataGenerator extends Node {
  
         randomField = new boolean[metadata.getNumFields()];
 		Arrays.fill(randomField, false);
-		int randomIndex;
-        int sequenceIndex;
+		int randomIndex = -1;
+        int sequenceIndex = -1;
         DataField tmpField;
         char fieldType;
         //cut random and sequence fields from pattern record
         //prepare random multiplier and move for random fields (against Random class defaults)
         //prepare sequence ID
         for (int i=0;i<metadata.getNumFields();i++){
-        	randomIndex = StringUtils.findString(metadata.getField(i).getName(), 
-        			randomFields);
-        	if (randomIndex > -1){//field found among random fields
+			if (randomFields != null) {
+				randomIndex = StringUtils.findString(metadata.getField(i)
+						.getName(), randomFields);
+			}        	
+			if (randomIndex > -1){//field found among random fields
         		cutMetadata.delField(metadata.getField(i).getName());
         		randomField[i] = true;
         		fieldType = metadata.getField(i).getType();
@@ -299,9 +301,11 @@ public class DataGenerator extends Node {
 							metadata.getField(i).getName() + " : " + metadata.getField(i).getTypeAsString());
 				}
         	}else{//field not found among random fields
-        		sequenceIndex = StringUtils.findString(metadata.getField(i).getName(), 
+        		if (sequenceFields != null) {
+        			sequenceIndex = StringUtils.findString(metadata.getField(i).getName(), 
         				sequenceFields);
         		if (sequenceIndex > -1){//field found among sequence fields
+				}
 					if (cutMetadata.getNumFields() > 1) {
 						cutMetadata.delField(metadata.getField(i).getName());
 					}else{
@@ -349,8 +353,17 @@ public class DataGenerator extends Node {
 			}
 			try {
 				patternRecord = parser.getNext();
+				if (patternRecord == null) {
+					ComponentNotReadyException e = 
+						new ComponentNotReadyException(this, 
+								"Can't get record from pattern: " + StringUtils.quote(pattern));
+					e.setAttributeName(XML_PATTERN_ATTRIBUTE);
+					throw e;
+				}
 			} catch (JetelException e) {
-				throw new ComponentNotReadyException(this, e);
+				ComponentNotReadyException e1 = new ComponentNotReadyException(this, e);
+				e1.setAttributeName(XML_PATTERN_ATTRIBUTE);
+				throw e1;
 			}
 			parser.close();
 		}		
