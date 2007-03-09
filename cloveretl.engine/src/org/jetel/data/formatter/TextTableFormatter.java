@@ -195,6 +195,7 @@ public class TextTableFormatter implements Formatter {
         }
         
 		//for each record field which is in mask change its name to value
+        Object o;
 		for (int i=0;i<maskAnalize.length;i++){
 			if (dataBuffer.remaining() < fieldBuffer.limit()){
 				directFlush();
@@ -205,7 +206,12 @@ public class TextTableFormatter implements Formatter {
 			fieldBuffer.flip();
             
 			blank.clear();
-			blank.limit(maskAnalize[i].length - (new String(record.getField(maskAnalize[i].index).getValue().toString().getBytes(encoder.charset().displayName())).length())); // fieldBuffer.limit() is wrong - encoding
+			o = record.getField(maskAnalize[i].index).getValue();
+			if (o == null) {
+				blank.limit(maskAnalize[i].length);
+			} else {
+				blank.limit(maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length())); // fieldBuffer.limit() is wrong - encoding
+			}
             mark=dataBuffer.position();
 
 			//put field value to data buffer
@@ -353,10 +359,14 @@ public class TextTableFormatter implements Formatter {
 	private void analyzeRows(List<DataRecord> dataRecords, boolean header) {
 		int lenght = 0;
 		int max = 0;
+		Object o;
 		for (DataRecord dataRecord : dataRecords) {
 			for (int i=0; i<maskAnalize.length; i++) {
 				try {
-					lenght = new String(dataRecord.getField(maskAnalize[i].index).getValue().toString().getBytes(encoder.charset().displayName())).length(); // encoding
+					o = dataRecord.getField(maskAnalize[i].index).getValue();
+					if (o != null) {
+						lenght = new String(o.toString().getBytes(encoder.charset().displayName())).length(); // encoding
+					}
 				} catch (UnsupportedEncodingException e) {
 					e.printStackTrace();
 				}
