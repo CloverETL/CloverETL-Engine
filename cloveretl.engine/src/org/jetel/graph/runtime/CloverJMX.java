@@ -23,6 +23,7 @@
  */
 package org.jetel.graph.runtime;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.management.AttributeChangeNotification;
@@ -31,6 +32,7 @@ import javax.management.Notification;
 import javax.management.NotificationBroadcasterSupport;
 
 import org.jetel.data.Defaults;
+import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 
@@ -131,8 +133,18 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
 
     public String[] getNodesList(){
-         return trackingMap.keySet().toArray(new String[trackingMap.size()]);
+         return getNodesList(runingPhase);
     }
+    
+    public String[] getNodesList(int phase){
+        List <Node> nodes=watchDog.getTransformationGraph().getPhase(phase).getNodes();
+        String[] nodeIDs=new String[nodes.size()];
+        int i=0;
+        for(Node node: nodes) {
+            nodeIDs[i++]=node.getId();
+        }
+        return nodeIDs;
+   }
     
     public int getUpdateInterval() {
         // TODO Auto-generated method stub
