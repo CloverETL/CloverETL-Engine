@@ -50,6 +50,7 @@ public interface CloverJMXMBean {
     
     public int getRunningNodesCount();
     public String[] getNodesList();
+    public String[] getNodesList(int phase);
     
 
     public PhaseTrackingDetail getPhaseTracking();
