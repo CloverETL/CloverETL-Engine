@@ -106,7 +106,7 @@ public class DataRecordMetadata implements Serializable {
 		this.fields = new ArrayList<DataFieldMetadata>();
 		fieldNames = new HashMap();
 		fieldTypes = new HashMap();
-		recordProperties = null;
+		recordProperties = new TypedProperties();
 		localeStr=null;
         numNullableFields=0;
         fieldNullSwitch=new BitArray();
