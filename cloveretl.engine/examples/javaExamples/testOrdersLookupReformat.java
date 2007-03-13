@@ -26,17 +26,18 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.GetVal;
 import org.jetel.data.RecordKey;
 import org.jetel.data.SetVal;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.lookup.SimpleLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 
 public class testOrdersLookupReformat extends DataRecordTransform{
 		int counter=0;
-		SimpleLookupTable lookup;
+		LookupTable lookup;
 		RecordKey key;
 	
 	public boolean init(DataRecordMetadata sourceMetadata[], DataRecordMetadata targetMetadata[]){
@@ -49,7 +50,10 @@ public class testOrdersLookupReformat extends DataRecordTransform{
 			Parser parser=new DelimitedDataParser();
 			parser.init(lookupMetadata);
 			parser.setDataSource(new FileInputStream("employees.dat"));
-			lookup=new SimpleLookupTable("lookup",lookupMetadata,lookupKey,parser );
+			lookup = LookupTableFactory.createLookupTable(getGraph(), "simpleLookup", 
+					new Object[]{"lookup",lookupMetadata,lookupKey,parser}, 
+					new Class[]{String.class,DataRecordMetadata.class,String[].class,Parser.class});
+//			lookup=new SimpleLookupTable("lookup",lookupMetadata,lookupKey,parser );
 //			try {
 				lookup.init();
 //			} catch (JetelException e) {

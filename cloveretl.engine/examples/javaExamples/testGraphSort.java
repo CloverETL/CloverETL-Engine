@@ -20,16 +20,16 @@ package javaExamples;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import org.jetel.component.ComponentFactory;
 import org.jetel.component.DelimitedDataReader;
 import org.jetel.component.DelimitedDataWriter;
 import org.jetel.component.Sort;
-import org.jetel.data.Defaults;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.Edge;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.main.runGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -40,16 +40,20 @@ public class testGraphSort {
 
 	public static void main(String args[]){
 	
-	//initialization; must be present
-    Defaults.init();
-    ComponentFactory.init();
     
-	if (args.length!=4){
+	if (args.length < 4){
 		System.out.println("Example graph which sorts input data according to specified key.");
 		System.out.println("The key must be a name of field(or comma delimited fields) from input data.");
-		System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <key>");
+		System.out.println("Usage: testGraphSort <input data filename> <output sorted filename> <metadata filename> <key> [<plugin directory>]");
 		System.exit(1);
 	}
+	//initialization; must be present
+	if (args.length == 5) {
+		runGraph.initEngine(args[4], null);
+	}else{
+		runGraph.initEngine(null, null);
+	}
+
 	System.out.println("**************** Input parameters: ****************");
 	System.out.println("Input file: "+args[0]);
 	System.out.println("Output file: "+args[1]);
@@ -112,7 +116,7 @@ public class testGraphSort {
 	//graph.dumpGraphConfiguration();
 	
 	
-	if (!graph.run()){ // start all Nodes (each node is one thread)
+	if (!graph.run().equals(Result.FINISHED_OK)){ // start all Nodes (each node is one thread)
 		System.out.println("Failed starting all nodes!");
 		return;		
 	}

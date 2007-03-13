@@ -16,7 +16,6 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package javaExamples;
 
 import org.jetel.component.DataRecordTransform;
 import org.jetel.data.DataRecord;
@@ -39,11 +38,11 @@ public class reformatJoinTest extends DataRecordTransform{
 		target[0].getField(1).setValue(source[0].getField(1).getValue());
 		System.out.print("|");
 		System.out.print(source[0].getField(2).toString());
-		target[0].getField(2).setValue(source[0].getField(2).getValue());
+		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());
 		if (source[1]!=null){
 			System.out.print("|");
 			System.out.print(source[1].getField(0).toString());
-			target[0].getField(3).setValue(source[1].getField(0).getValue());
+			target[0].getField(3).setValue(source[1].getField(0).getValue().toString());
 			System.out.print("|");
 			System.out.print(source[1].getField(1).toString());
 			target[0].getField(4).setValue(source[1].getField(1).getValue());
