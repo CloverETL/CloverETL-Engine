@@ -125,7 +125,6 @@ public class XLSDataFormatter extends XLSFormatter {
 			if (firstRow > recCounter) {
 				recCounter = firstRow;
 			}
-			savedNames = true;
 		}
 		//creating cell formats from metadata formats
 		dataFormat = wb.createDataFormat();
@@ -146,7 +145,7 @@ public class XLSDataFormatter extends XLSFormatter {
     /**
      * Method for saving names of columns
      */
-    private void saveNames(){
+    protected void saveNames(){
 		recCounter = namesRow > -1 ? namesRow : 0;
 		HSSFCellStyle metaStyle = wb.createCellStyle();
 		HSSFFont font = wb.createFont();
@@ -167,7 +166,6 @@ public class XLSDataFormatter extends XLSFormatter {
 		if (firstRow > ++recCounter) {
 			recCounter = firstRow;
 		}
-		savedNames = true;
     }
     
 	/* (non-Javadoc)
@@ -243,11 +241,5 @@ public class XLSDataFormatter extends XLSFormatter {
 		return 0;
 	}
 
-	public int writeHeader() throws IOException {
-		if (!savedNames){
-			saveNames();
-		}
-		return 0;
-	}
 
 }
