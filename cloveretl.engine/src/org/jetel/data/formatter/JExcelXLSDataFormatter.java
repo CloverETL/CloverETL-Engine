@@ -138,7 +138,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			if (firstRow > recCounter) {
 				recCounter = firstRow;
 			}
-			savedNames = true;
 		}
 		//creating cell formats from metadata formats
 		cellStyle = new WritableCellFormat[metadata.getNumFields()];
@@ -200,7 +199,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
     /**
      * Method for saving names of columns
      */
-    private void saveNames() throws IOException{
+    protected void saveNames() throws IOException{
 		recCounter = namesRow > -1 ? namesRow : 0;
 		WritableFont font = new WritableFont(WritableFont.ARIAL, WritableFont.DEFAULT_POINT_SIZE, WritableFont.BOLD);
 		WritableCellFormat format = new WritableCellFormat(font);
@@ -216,7 +215,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		if (firstRow > ++recCounter) {
 			recCounter = firstRow;
 		}
-		savedNames = true;
     }
 	
 	/* (non-Javadoc)
@@ -289,7 +287,6 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 				sheet.addCell((WritableCell)valueXls);
 			}catch (RowsExceededException e) {
 				//write data to new sheet
-				savedNames = namesRow == -1;
 				setSheetNumber(-1);
 				prepareSheet();
 			} catch (Exception e) {
@@ -306,11 +303,4 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 		return 0;
 	}
 
-	public int writeHeader() throws IOException {
-		if (!savedNames){
-			saveNames();
-		}
-		return 0;
-	}
-	
 }

@@ -21,6 +21,7 @@
 package org.jetel.data.formatter;
 
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import javax.naming.InvalidNameException;
 
@@ -61,7 +62,6 @@ public abstract class XLSFormatter implements Formatter {
 	protected int sheetNumber = -1;
 	protected String firstColumnIndex = "A";
 	protected int firstColumn;
-	protected boolean savedNames = false;
 
 	/**
 	 * Constructor
@@ -216,4 +216,13 @@ public abstract class XLSFormatter implements Formatter {
 		cellCode.append((char)(Integer.parseInt(cellNumberXlsBase.substring(cellNumberXlsBase.length()-1,cellNumberXlsBase.length()),CELL_NUMBER_IN_SHEET)+'A'));
 		return cellCode.toString();
 	}
+	
+	public int writeHeader() throws IOException {
+		if (!(namesRow == -1 || (append && recCounter > 0))){
+			saveNames();
+		}
+		return 0;
+	}
+	
+	protected abstract void saveNames() throws IOException;
 }
