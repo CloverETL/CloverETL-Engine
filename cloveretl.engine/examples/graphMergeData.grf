@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph illustrates usage of MERGE component. It merges data based on specified key. " name="TestingMerge">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of MERGE component. It merges data based on specified key. " guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 09:13:44 CET 2007" name="TestingMerge" revision="1.1">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="20" guiY="194" id="INPUT3" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.sorted" guiHeight="25" guiName="INPUT2" guiWidth="50" guiX="20" guiY="107" id="INPUT2" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.sorted" guiHeight="25" guiName="INPUT3" guiWidth="50" guiX="20" guiY="194" id="INPUT3" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="MERGE" guiWidth="50" guiX="195" guiY="20" id="MERGE" mergeKey="ShipName;ShipVia" type="MERGE"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.merged" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (MERGE)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="MERGE:0"/>
-<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (MERGE)" metadata="InMetadata" outPort="0 (INPUT2)" toNode="MERGE:1"/>
-<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="2 (MERGE)" metadata="InMetadata" outPort="0 (INPUT3)" toNode="MERGE:2"/>
-<Edge fromNode="MERGE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (MERGE)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (MERGE)" metadata="Metadata0" outPort="0 (INPUT1)" toNode="MERGE:0"/>
+<Edge fromNode="INPUT2:0" guiBendpoints="" id="INEDGE2" inPort="1 (MERGE)" metadata="Metadata0" outPort="0 (INPUT2)" toNode="MERGE:1"/>
+<Edge fromNode="INPUT3:0" guiBendpoints="" id="INEDGE3" inPort="2 (MERGE)" metadata="Metadata0" outPort="0 (INPUT3)" toNode="MERGE:2"/>
+<Edge fromNode="MERGE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (MERGE)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

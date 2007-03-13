@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="Testing DB Load">
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates how to prpagate data to database." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 12 11:08:05 CET 2007" name="Testing DB Load" revision="1.2">
 <Global>
-<Metadata fileURL="metadata/employeeDB.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/delimited/employeeDB.fmt" id="Metadata0"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.list.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
 <Node dbConnection="DBConnection0" dbTable="employee_tmp" enabled="enabled" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="195" guiY="20" id="OUTPUT" type="DB_OUTPUT_TABLE"/>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (INPUT)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

@@ -1,47 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Dec 12 09:10:59 CET 2006" guiVersion="1.4" licenseType="Evaluation license" modified="Mon Dec 18 13:56:54 CET 2006" name="graphLookupReader">
+<Graph created="Tue Dec 12 09:10:59 CET 2006" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 09:11:07 CET 2007" name="graphLookupReader" revision="1.1">
 <Global>
-<Metadata id="Metadata1">
-<Record name="employee" type="delimited">
-<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="full_name" nullable="true" type="string"/>
-<Field delimiter=";" name="first_name" nullable="true" type="string"/>
-<Field delimiter=";" name="last_name" nullable="true" type="string"/>
-<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="position_title" nullable="true" type="string"/>
-<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
-<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
-<Field delimiter=";" name="end_date" nullable="true" type="date"/>
-<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
-<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="education_level" nullable="true" type="string"/>
-<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
-<Field delimiter=";" name="gender" nullable="true" type="string"/>
-<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
-</Record>
-</Metadata>
-<Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/employees.fmt" id="Metadata0"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable dbConnection="DBConnection0" id="LookupTable2" metadata="Metadata1" name="employee" type="dbLookup">
-<attr name="sqlQuery">select * from employee where employee_id = ?</attr>
-</LookupTable>
-<LookupTable charset="ISO-8859-1" dataType="delimited" fileURL="data/employees.dat" id="LookupTable0" key="EmployeeID" metadata="Metadata0" name="employees" type="simpleLookup"/>
 <LookupTable dataType="delimited" id="LookupTable1" key="EmployeeID" metadata="Metadata0" name="jmeno" type="simpleLookup"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees2.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="52" guiY="227" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="313" guiY="232" id="EmptyLookup" type="LOOKUP_TABLE_READER_WRITER">
-<attr name="lookupTable">LookupTable1</attr>
-</Node>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="52" guiY="227" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="311" guiY="227" id="EmptyLookup" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
 <Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (READ)" metadata="Metadata0" outPort="0 (Delimited Data Reader)" toNode="EmptyLookup:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="41" guiY="59" id="JOIN" type="LOOKUP_TABLE_READER_WRITER">
-<attr name="lookupTable">LookupTable1</attr>
-</Node>
+<Node enabled="enabled" guiHeight="25" guiName="READ" guiWidth="50" guiX="52" guiY="52" id="JOIN" lookupTable="LookupTable1" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/employees.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="311" guiY="52" id="WRITER" type="DELIMITED_DATA_WRITER"/>
 <Edge debugMode="true" fromNode="JOIN:0" guiBendpoints="" id="Edge0" inPort="0 (WRITER)" metadata="Metadata0" outPort="0 (READ)" toNode="WRITER:0"/>
 </Phase>

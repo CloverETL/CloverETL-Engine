@@ -1,61 +1,61 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 13:04:40 CEST 2006" guiVersion="1.4" licenseType="Evaluation license" modified="Tue Oct 24 13:18:57 CEST 2006" name="DBTest">
+<Graph created="Tue Oct 24 13:04:40 CEST 2006" description="This graph reads personal data from three sources and finds records with the same values on corresponding fields (lname – last_name, fname – first_name). Matching pairs are transformed into one output record and saved in intersection_customer_employee.txt file." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 12 11:17:17 CET 2007" name="DBTest" revision="1.2">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" recordDelimiter="\n" type="fixed">
-<Field name="customer_id" nullable="true" size="4" type="integer"/>
-<Field name="account_num" nullable="true" size="11" type="long"/>
-<Field name="lname" nullable="true" size="10" type="string"/>
-<Field name="fname" nullable="true" size="10" type="string"/>
-<Field name="mi" nullable="true" size="4" type="string"/>
-<Field name="address1" nullable="true" size="30" type="string"/>
-<Field name="city" nullable="true" size="7" type="string"/>
-<Field name="state_province" nullable="true" size="6" type="string"/>
-<Field name="postal_code" nullable="true" size="5" type="string"/>
-<Field name="country" nullable="true" size="5" type="string"/>
-<Field name="customer_region_id" nullable="true" size="4" type="integer"/>
-<Field name="phone1" nullable="true" size="12" type="string"/>
-<Field name="phone2" nullable="true" size="12" type="string"/>
-<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" size="15" type="date"/>
-<Field name="marital_status" nullable="true" size="1" type="string"/>
-<Field name="yearly_income" nullable="true" size="13" type="string"/>
-<Field name="gender" nullable="true" size="1" type="string"/>
-<Field name="total_children" nullable="true" size="1" type="integer"/>
-<Field name="num_children_at_home" nullable="true" size="1" type="integer"/>
-<Field name="education" nullable="true" size="15" type="string"/>
-<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" size="15" type="date"/>
-<Field name="member_card" nullable="true" size="8" type="string"/>
-<Field name="occupation" nullable="true" size="20" type="string"/>
-<Field name="houseowner" nullable="true" size="1" type="string"/>
-<Field name="num_cars_owned" nullable="true" size="1" type="integer"/>
+<Record name="customer" recordDelimiter="&#10;" recordSize="212" type="fixed">
+<Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
+<Field name="lname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="fname" nullable="true" shift="0" size="10" type="string"/>
+<Field name="mi" nullable="true" shift="0" size="4" type="string"/>
+<Field name="address1" nullable="true" shift="0" size="30" type="string"/>
+<Field name="city" nullable="true" shift="0" size="7" type="string"/>
+<Field name="state_province" nullable="true" shift="0" size="6" type="string"/>
+<Field name="postal_code" nullable="true" shift="0" size="5" type="string"/>
+<Field name="country" nullable="true" shift="0" size="5" type="string"/>
+<Field name="customer_region_id" nullable="true" shift="0" size="4" type="integer"/>
+<Field name="phone1" nullable="true" shift="0" size="12" type="string"/>
+<Field name="phone2" nullable="true" shift="0" size="12" type="string"/>
+<Field format="EEE MMM dd yyyy" name="birthdate" nullable="true" shift="0" size="15" type="date"/>
+<Field name="marital_status" nullable="true" shift="0" size="1" type="string"/>
+<Field name="yearly_income" nullable="true" shift="0" size="13" type="string"/>
+<Field name="gender" nullable="true" shift="0" size="1" type="string"/>
+<Field name="total_children" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="num_children_at_home" nullable="true" shift="0" size="1" type="integer"/>
+<Field name="education" nullable="true" shift="0" size="15" type="string"/>
+<Field format="EEE MMM dd yyyy" name="date_accnt_opened" nullable="true" shift="0" size="15" type="date"/>
+<Field name="member_card" nullable="true" shift="0" size="8" type="string"/>
+<Field name="occupation" nullable="true" shift="0" size="20" type="string"/>
+<Field name="houseowner" nullable="true" shift="0" size="1" type="string"/>
+<Field name="num_cars_owned" nullable="true" shift="0" size="1" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
-<Record name="employee" type="delimited">
-<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="full_name" nullable="true" type="string"/>
-<Field delimiter=";" name="first_name" nullable="true" type="string"/>
-<Field delimiter=";" name="last_name" nullable="true" type="string"/>
-<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="position_title" nullable="true" type="string"/>
-<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="birth_date" nullable="true" type="date"/>
-<Field delimiter=";" name="hire_date" nullable="true" type="date"/>
-<Field delimiter=";" name="end_date" nullable="true" type="date"/>
-<Field delimiter=";" name="salary" nullable="true" type="numeric"/>
-<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="education_level" nullable="true" type="string"/>
-<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
-<Field delimiter=";" name="gender" nullable="true" type="string"/>
-<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
+<Record name="employee" recordSize="-1" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="birth_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="hire_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="end_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="salary" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="management_role" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata2">
-<Record name="newMetadata" type="delimited">
-<Field delimiter=";" name="lname" nullable="true" type="string"/>
-<Field delimiter=";" name="fname" nullable="true" type="string"/>
-<Field delimiter=";" name="full_name" nullable="true" type="string"/>
+<Record name="newMetadata" recordSize="-1" type="delimited">
+<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="full_name" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
@@ -70,10 +70,14 @@ ${out.0.full_name} = ${in.1.full_name};
 </Node>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="74" guiName="customer from DB" guiWidth="145" guiX="57" guiY="87" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="82" guiName="DB Input Table" guiWidth="131" guiX="57" guiY="370" id="DB_INPUT_TABLE1" sqlQuery="select * from employee" type="DB_INPUT_TABLE"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/intersection_customer_employee.txt" guiHeight="61" guiName="Delimited Data Writer (New I/O)" guiWidth="83" guiX="758" guiY="273" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
 <Node enabled="enabled" guiHeight="64" guiName="Ext Sort" guiWidth="128" guiX="400" guiY="153" id="EXT_SORT0" sortKey="lname;fname" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="88" guiName="Ext Sort" guiWidth="125" guiX="400" guiY="370" id="EXT_SORT1" sortKey="last_name;first_name" type="EXT_SORT"/>
-<Node OneRecordPerLine="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER"/>
+<Node byteMode="false" enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="57" guiY="234" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
 <Node enabled="enabled" guiHeight="90" guiName="Simple Gather" guiWidth="177" guiX="233" guiY="153" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
 <Node enabled="enabled" guiHeight="74" guiName="Trash" guiWidth="106" guiX="758" guiY="153" id="TRASH0" type="TRASH"/>
 <Node debugFilename="${WORKSPACE}/output/trash.txt" debugPrint="true" enabled="enabled" guiHeight="77" guiName="Trash" guiWidth="109" guiX="758" guiY="385" id="TRASH1" type="TRASH"/>
@@ -89,7 +93,7 @@ ${out.0.full_name} = ${in.1.full_name};
 </Phase>
 <Phase number="1">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="75" guiName="drop customer_tmp" guiWidth="124" guiX="57" guiY="495" id="DB_EXECUTE0" type="DB_EXECUTE">
-<attr name="sqlQuery">drop table customer_tmp;</attr>
+<attr name="sqlQuery">drop table employee_tmp;</attr>
 </Node>
 </Phase>
 </Graph>

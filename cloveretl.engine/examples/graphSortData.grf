@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph illustrates usage of Sort component. It sorts data based on specified key. " name="TestingSort">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 11:22:13 CET 2007" name="TestingSort" revision="1.0">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="SORT" guiWidth="50" guiX="195" guiY="20" id="SORT" sortKey="ShipName;ShipVia" type="SORT"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (SORT)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="SORT:0"/>
-<Edge fromNode="SORT:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (SORT)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (SORT)" metadata="Metadata0" outPort="0 (INPUT1)" toNode="SORT:0"/>
+<Edge fromNode="SORT:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (SORT)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

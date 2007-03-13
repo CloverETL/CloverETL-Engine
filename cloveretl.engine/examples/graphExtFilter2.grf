@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph shows some more functionality of EXT_FILTER component&#10;Filters all employees younger than 41  years. The current age is &#10;calculated as today's date minus date of birth.&#10;&#10;Notice that instead of classical comparison operators ==,!=, ...etc... one&#10;can use their textual abbreviations .eq. .ne. .lt. .gt. ...etc..." name="Testing Filter">
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph shows some more functionality of EXT_FILTER component&#10;Filters all employees younger than 41  years. The current age is &#10;calculated as today's date minus date of birth.&#10;&#10;Notice that instead of classical comparison operators ==,!=, ...etc... one&#10;can use their textual abbreviations .eq. .ne. .lt. .gt. ...etc..." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 05 15:10:24 CET 2007" name="Testing Filter" revision="1.1">
 <Global>
-<Metadata fileURL="metadata/employees.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" filterExpression="datediff(today(),$BirthDate,year).lt.41" guiHeight="25" guiName="FILTEREMPL1" guiWidth="50" guiX="195" guiY="20" id="FILTEREMPL1" type="EXT_FILTER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
-<attr name="dataPolicy">Strict</attr>
-</Node>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/employees.filtered_1.dat" guiHeight="25" guiName="OUTPUT1" guiWidth="50" guiX="370" guiY="20" id="OUTPUT1" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="OUTEREDGE1" inPort="0 (OUTPUT1)" metadata="InMetadata" outPort="0 (FILTEREMPL1)" toNode="OUTPUT1:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (FILTEREMPL1)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="FILTEREMPL1:0"/>
+<Edge fromNode="FILTEREMPL1:0" guiBendpoints="" id="OUTEREDGE1" inPort="0 (OUTPUT1)" metadata="Metadata0" outPort="0 (FILTEREMPL1)" toNode="OUTPUT1:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (FILTEREMPL1)" metadata="Metadata0" outPort="0 (INPUT1)" toNode="FILTEREMPL1:0"/>
 </Phase>
 </Graph>
