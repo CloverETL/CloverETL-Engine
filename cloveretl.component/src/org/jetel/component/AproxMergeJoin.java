@@ -79,7 +79,6 @@ import org.w3c.dom.Element;
  *        [2] - driver records for which there is not matching slave  
  *        [3] - slave records for which there is not matching driver<br></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td></tr>
  * </table>
  *  <br>
  *  <table border="1">
@@ -93,7 +92,7 @@ import org.w3c.dom.Element;
  *  secondaryComparison primaryComparison<br>Conformity between two strings equals 
  *  zero if transformation of one string to another necessitates more then maxNumberOfLetterstoChange
  *  letters to change.<br>Wheight of each field diffrence is counted due to following 
- *  algorithm: weight given by user divided by sum of weights given by user.</td><br>
+ *  algorithm: weight given by user divided by sum of weights given by user.<br>
  *  Comparison strength:<br>
  *  identical - letters equals if they are identical<br>
  *  tertiary - comparison does not depend on upper or lower case<br>
