@@ -16,33 +16,42 @@
 *    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-package javaExamples;
 
 import org.jetel.component.DataRecordTransform;
-import org.jetel.data.DataRecord;
-import org.jetel.data.GetVal;
-import org.jetel.data.SetVal;
+import org.jetel.data.*;
 
 
 public class reformatOrders extends DataRecordTransform{
 
-	String message;
 	int counter=0;
 	int field=0;
 
-	public boolean transform(DataRecord _source[], DataRecord _target[]){
-		DataRecord source=_source[0];
-		DataRecord target=_target[0];
+	public boolean transform(DataRecord[] source, DataRecord[] target){
+		StringBuffer strBuf=new StringBuffer(80);
+		if (source[0]==null){
+		   System.err.println("NULL source[0]");
+		}
 		try{
-		SetVal.setInt(target,"OrderID",GetVal.getInt(source,"OrderID"));
-		SetVal.setString(target,"CustomerID",GetVal.getString(source,"CustomerID"));
-		SetVal.setValue(target,"OrderDate",GetVal.getDate(source,"OrderDate"));
-		SetVal.setString(target,"ShippedDate","02.02.1999");
-		SetVal.setInt(target,"ShipVia",GetVal.getInt(source,"ShipVia"));
-		SetVal.setString(target,"ShipCountry",GetVal.getString(source,"ShipCountry"));
+			// let's concatenate shipping address into one long string
+			strBuf.append(GetVal.getString(source[0],"ShipName")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipAddress")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCity")).append(';');
+			strBuf.append(GetVal.getString(source[0],"ShipCountry"));
+			// mapping among source & target fields
+			// some fields get assigned directly from source fields, some
+			// are assigned from internall variables
+			SetVal.setInt(target[0],"PRODUCTID",counter);
+			SetVal.setInt(target[0],"ORDERID",GetVal.getInt(source[0],"OrderID"));
+			SetVal.setString(target[0],"CUSTOMERID",GetVal.getString(source[0],"CustomerID"));
+			SetVal.setString(target[0],"CUSTOMER",strBuf.toString());
+			SetVal.setInt(target[0], "SHIPTIME", (int)( (GetVal.getDate(
+					source[0], "RequiredDate").getTime() - GetVal.getDate(
+					source[0], "ShippedDate").getTime())
+					/ 1000 / 60 / 60 / 24));
 		}catch(Exception ex){
-			message=ex.getMessage()+" ->occured with record :"+counter;
-			throw new RuntimeException(message);
+		  ex.printStackTrace();
+			errorMessage=ex.getMessage()+" ->occured with record :"+counter;
+			return false;
 		}
 		counter++;
 			return true;

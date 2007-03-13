@@ -17,13 +17,18 @@
 */
 
 package javaExamples;
-import java.io.*;
-import org.jetel.metadata.*;
-import org.jetel.component.ComponentFactory;
-import org.jetel.data.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.PrintStream;
+
+import org.jetel.data.DataRecord;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.main.runGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 
 public class testDataParsing {
 
@@ -33,16 +38,18 @@ public class testDataParsing {
 	PrintStream out=null;
 	DataRecord record;
 	
-    //initialization; must be present
-    Defaults.init();
-    ComponentFactory.init();
-    
-	System.out.println("Input file: "+args[0]);
-	System.out.println("Output file: "+args[1]);
+	System.out.println("Usage: testDataParsing <plugins directory>");
+
+	//initialization; must be present
+	if (args.length == 1) {
+		runGraph.initEngine(args[0], null);
+	}else{
+		runGraph.initEngine(null, null);
+	}
 	
 	try{
-		in=new FileInputStream(args[0]);
-		out=new PrintStream(new FileOutputStream(args[1]));
+		in=new FileInputStream("data/delimited/bonus.csv");
+		out=new PrintStream(new FileOutputStream("output/bonus.out"));
 	}
 	catch(FileNotFoundException e){
 		e.printStackTrace();
@@ -50,9 +57,9 @@ public class testDataParsing {
 	
 	DataRecordMetadata metadata=new DataRecordMetadata("TestInput",DataRecordMetadata.DELIMITED_RECORD);
 	
-	metadata.addField(new DataFieldMetadata("Name",DataFieldMetadata.STRING_FIELD, ";"));
-	metadata.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
-	metadata.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
+	metadata.addField(new DataFieldMetadata("Client_id",DataFieldMetadata.INTEGER_FIELD, ";"));
+	metadata.addField(new DataFieldMetadata("Revenue",DataFieldMetadata.NUMERIC_FIELD, ";"));
+	metadata.addField(new DataFieldMetadata("Contract_nr",DataFieldMetadata.INTEGER_FIELD, "\r\n"));
 	
 	DelimitedDataParser parser=new DelimitedDataParser();
 	try{
@@ -66,14 +73,12 @@ public class testDataParsing {
 	
 	try {
 		while((record=parser.getNext(record))!=null){
-			out.print("Name:"+record.getField(0).toString());
-			out.print(" Age:"+record.getField(1).toString());
-			out.println(" City:"+record.getField(2).toString());
-			//System.out.println("Name:"+record.getField(0).toString());
-			//System.out.println("Age:"+record.getField(1).toString());
-			//System.out.println("City:"+record.getField(2).toString());
-			//System.out.println();
+			out.print("Client:"+record.getField(0).toString());
+			out.print(" Revenue:"+record.getField(1).toString());
+			out.println(" Contract:"+record.getField(2).toString());
 		}
+		
+		System.out.println("Parsing succecsfull. See file ./output/bonus.out");
 	} catch (JetelException e1) {
 		// TODO Auto-generated catch block
 		e1.printStackTrace();

@@ -23,8 +23,10 @@ import java.io.FileNotFoundException;
 
 import org.jetel.component.ComponentFactory;
 import org.jetel.data.Defaults;
+import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.main.runGraph;
 import org.jetel.plugin.Plugins;
 
 public class testXMLGraph{
@@ -36,20 +38,17 @@ public class testXMLGraph{
 		}
 		
 		FileInputStream in;
-		String plugins;
-		if (args.length==1){
-			plugins = "../plugins";
-		}else{
-			plugins = args[1];
-		}
         
         //initialization; must be present
-        Defaults.init();
-        Plugins.init(plugins);
-        ComponentFactory.init();
+		//initialization; must be present
+		if (args.length == 2) {
+			runGraph.initEngine(args[1], null);
+		}else{
+			runGraph.initEngine(null, null);
+		}
 
 		System.out.println("Graph definition file: "+args[0]);
-		System.out.println("Plugins directory: "+plugins);
+		System.out.println("Plugins directory: "+ args[1] != null ? args[1] : Defaults.DEFAULT_PLUGINS_DIRECTORY);
 		
 		try{
 			in=new FileInputStream(args[0]);
@@ -76,7 +75,7 @@ public class testXMLGraph{
 		
 		graph.dumpGraphConfiguration();
 		
-		if (!graph.run()){ // start all Nodes (each node is one thread)
+		if (!graph.run().equals(Result.FINISHED_OK)){ // start all Nodes (each node is one thread)
 		System.out.println("Failed starting all nodes!");
 		return;		
 		}
