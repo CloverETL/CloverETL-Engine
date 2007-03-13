@@ -72,6 +72,7 @@ public class XLSDataFormatter extends XLSFormatter {
      * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
      */
     public void setDataTarget(Object out) {
+    	close();
         try{
             if (((File)out).length() > 0) {//if xls file exist add to it new data
                 wb = new HSSFWorkbook(new FileInputStream((File)out));
@@ -174,7 +175,7 @@ public class XLSDataFormatter extends XLSFormatter {
 	 */
 	public void close() {
 		try {
-				if (out.getFD().valid()) {
+				if (out!= null && out.getFD().valid()) {
 					wb.write(out);//write workbook to file
 					out.close();
 				}				
