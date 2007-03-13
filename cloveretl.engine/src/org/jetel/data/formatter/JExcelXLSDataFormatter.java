@@ -62,7 +62,6 @@ import org.jetel.util.StringUtils;
 public class JExcelXLSDataFormatter extends XLSFormatter {
 	
 	private WritableWorkbook wb;
-	private String sheetName = null;
 	private WritableSheet sheet;
 	private WritableCellFormat[] cellStyle;
 	private boolean open = false;
@@ -180,6 +179,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 	 * @see org.jetel.data.formatter.Formatter#setDataTarget(java.lang.Object)
 	 */
 	public void setDataTarget(Object outputDataTarget) {
+		close();
 		Workbook oldWb = null;
         try{
             if (((File)outputDataTarget).length() > 0) {//if xls file exist add to it new data
@@ -194,6 +194,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
         }catch(Exception ex){
             throw new RuntimeException(ex);
         }
+        prepareSheet();
 	}
 
     /**
