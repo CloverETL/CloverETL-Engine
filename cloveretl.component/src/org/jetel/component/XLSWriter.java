@@ -39,6 +39,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.MultiFileWriter;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -198,16 +199,16 @@ public class XLSWriter extends Node {
 		checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 0, 0);
 
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+        try {
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
+        			: null, fileURL);
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
         
         return status;
     }
@@ -231,7 +232,7 @@ public class XLSWriter extends Node {
         writer.setAppendData(true);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-		//formatter.prepareSheet();
+		writer.setUseChannel(false);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
 	}
 
