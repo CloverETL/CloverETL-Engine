@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph ilustrates usage of System Ececute Component" name="graphSystemExecute">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph ilustrates usage of System Ececute Component" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 11:38:05 CET 2007" name="graphSystemExecute" revision="1.2">
 <Global>
 <Metadata id="Metadata0">
-<Record name="strings" type="delimited">
-<Field delimiter="\n" locale="en.US" name="Field1" nullable="true" type="string"/>
+<Record name="strings" recordSize="-1" type="delimited">
+<Field delimiter="\n" locale="en.US" name="Field1" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/customers.dat" finalRecord="30" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="56" guiY="99" id="DATA_READER0" startRecord="0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers0.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="56" guiY="99" id="DATA_READER0" type="DATA_READER">
+<attr name="finalRecord">30</attr>
+<attr name="startRecord">0</attr>
+</Node>
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/command.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="459" guiY="99" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node append="false" enabled="enabled" guiHeight="0" guiName="System execute" guiWidth="0" guiX="254" guiY="99" id="SYS_EXECUTE0" interpreter="sh ${}" type="SYS_EXECUTE">
 <attr name="command">cat

@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 05 10:18:14 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 05 15:55:58 CET 2007" name="TestingSort" revision="1.7">
+<Graph created="Fri Jan 05 10:18:14 CET 2007" description="This graph illustrates usage of Sort component. It sorts data based on specified key. " guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 11:13:17 CET 2007" name="TestingSort" revision="1.9">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.sorted" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="536" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="Sequence Checker" guiWidth="50" guiX="363" guiY="20" id="SEQUENCE_CHECKER0" type="SEQUENCE_CHECKER">
 <attr name="locale">EN</attr>
@@ -14,12 +14,9 @@
 <attr name="sortKey">ShipName;ShipVia</attr>
 <attr name="sortOrder">A</attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="194" guiY="20" id="SORT0" sortKey="ShipName;ShipVia" sortOrder="Ascending" type="SORT">
-<attr name="locale">EN</attr>
-<attr name="useI18N">true</attr>
-</Node>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="0 (Sort)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="SORT0:0"/>
-<Edge fromNode="SEQUENCE_CHECKER0:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="InMetadata" outPort="0 (Sequence Checker)" toNode="OUTPUT:0"/>
-<Edge fromNode="SORT0:0" guiBendpoints="" id="INEDGE1" inPort="0 (Sequence Checker)" metadata="InMetadata" outPort="0 (Sort)" toNode="SEQUENCE_CHECKER0:0"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="194" guiY="20" id="SORT0" locale="EN" sortKey="ShipName;ShipVia" sortOrder="Ascending" type="SORT" useI18N="true"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="Edge0" inPort="0 (Sort)" metadata="Metadata0" outPort="0 (INPUT1)" toNode="SORT0:0"/>
+<Edge fromNode="SEQUENCE_CHECKER0:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (Sequence Checker)" toNode="OUTPUT:0"/>
+<Edge fromNode="SORT0:0" guiBendpoints="" id="INEDGE1" inPort="0 (Sequence Checker)" metadata="Metadata0" outPort="0 (Sort)" toNode="SEQUENCE_CHECKER0:0"/>
 </Phase>
 </Graph>

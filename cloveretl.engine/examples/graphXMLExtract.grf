@@ -1,72 +1,82 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph name="XXX">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="In this example data are read from employees.xml file. “Mapping” attribute describes dependencies between xml nodes and metadata fields. " guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 12 12:03:59 CET 2007" name="XXX" revision="1.1">
 <Global>
 <Metadata id="Metadata2">
-<Record name="BenefitsOthers" type="delimited">
-<Field delimiter=";" name="mobilephone" nullable="true" type="string"/>
-<Field delimiter=";" name="car" nullable="true" type="string"/>
-<Field delimiter=";" name="seqKey" nullable="true" type="integer"/>
-<Field delimiter=";" name="jobID" nullable="false" type="integer"/>
-<Field delimiter="\r\n" name="empID" nullable="false" type="integer"/>
+<Record name="BenefitsOthers" recordSize="-1" type="delimited">
+<Field delimiter=";" name="mobilephone" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="car" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="seqKey" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="jobID" nullable="false" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="empID" nullable="false" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
-<Record name="BenFinancial" type="delimited">
-<Field delimiter=";" name="monthly_bonus" nullable="true" type="integer"/>
-<Field delimiter=";" name="yearly_bonus" nullable="true" type="integer"/>
-<Field delimiter="\r\n" name="seqKey" nullable="true" type="integer"/>
+<Record name="BenFinancial" recordSize="-1" type="delimited">
+<Field delimiter=";" name="monthly_bonus" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="yearly_bonus" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="seqKey" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
-<Record name="Children" type="delimited">
-<Field delimiter=";" name="chname" nullable="true" type="string"/>
-<Field delimiter=";" name="age" nullable="true" type="integer"/>
-<Field delimiter="\r\n" name="parentID" nullable="false" type="integer"/>
+<Record name="Children" recordSize="-1" type="delimited">
+<Field delimiter=";" name="chname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="age" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="parentID" nullable="false" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata4">
-<Record name="customers" type="delimited">
-<Field delimiter=";" name="name" nullable="true" type="string"/>
-<Field delimiter="\r\n" name="joinedKey" nullable="true" type="string"/>
+<Record name="customers" recordSize="-1" type="delimited">
+<Field delimiter=";" name="name" nullable="true" shift="0" type="string"/>
+<Field delimiter="\r\n" name="joinedKey" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0">
-<Record name="Employees" type="delimited">
-<Field delimiter=";" name="empID" nullable="false" type="integer"/>
-<Field delimiter=";" name="jobID" nullable="false" type="integer"/>
-<Field delimiter=";" name="basic_salary" nullable="true" type="integer"/>
-<Field delimiter=";" name="firstname" nullable="true" type="string"/>
-<Field delimiter="\r\n" name="surname" nullable="true" type="string"/>
+<Record name="Employees" recordSize="-1" type="delimited">
+<Field delimiter=";" name="empID" nullable="false" shift="0" type="integer"/>
+<Field delimiter=";" name="jobID" nullable="false" shift="0" type="integer"/>
+<Field delimiter=";" name="basic_salary" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="firstname" nullable="true" shift="0" type="string"/>
+<Field delimiter="\r\n" name="surname" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata6">
-<Record name="joinedBenefits" type="delimited">
-<Field delimiter=";" name="car" nullable="true" type="string"/>
-<Field delimiter=";" name="mobilephone" nullable="true" type="string"/>
-<Field delimiter=";" name="financial_bonus" nullable="true" type="integer"/>
-<Field delimiter="\r\n" name="seqKey" nullable="true" type="integer"/>
+<Record name="joinedBenefits" recordSize="-1" type="delimited">
+<Field delimiter=";" name="car" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="mobilephone" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="financial_bonus" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="seqKey" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata5">
-<Record name="Projects" type="delimited">
-<Field delimiter=";" name="projName" nullable="true" type="string"/>
-<Field delimiter=";" name="inProjectID" nullable="true" type="string"/>
-<Field delimiter=";" name="projManager" nullable="true" type="string"/>
-<Field delimiter=";" name="Start" nullable="true" type="string"/>
-<Field delimiter=";" name="End" nullable="true" type="string"/>
-<Field delimiter=";" name="empID" nullable="false" type="integer"/>
-<Field delimiter="\r\n" name="jobID" nullable="false" type="integer"/>
+<Record name="Projects" recordSize="-1" type="delimited">
+<Field delimiter=";" name="projName" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="inProjectID" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="projManager" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="Start" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="End" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="empID" nullable="false" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="jobID" nullable="false" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Sequence cached="50" fileURL="seqkey.seq" id="Sequence0" name="seqKey" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node OneRecordPerLine="false" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="391" guiY="369" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputCHILD.txt" guiHeight="0" guiName="Children" guiWidth="0" guiX="391" guiY="106" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="391" guiY="191" id="DELIMITED_DATA_WRITER3" type="DELIMITED_DATA_WRITER"/>
-<Node OneRecordPerLine="true" append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="391" guiY="282" id="DELIMITED_DATA_WRITER4" type="DELIMITED_DATA_WRITER"/>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputEMPL.txt" guiHeight="0" guiName="Employees" guiWidth="0" guiX="391" guiY="27" id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">false</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputBENEF.txt" guiHeight="0" guiName="Join - Benefits" guiWidth="0" guiX="391" guiY="369" id="DELIMITED_DATA_WRITER1" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputCHILD.txt" guiHeight="0" guiName="Children" guiWidth="0" guiX="391" guiY="106" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputPROJ.txt" guiHeight="0" guiName="Projects" guiWidth="0" guiX="391" guiY="191" id="DELIMITED_DATA_WRITER3" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
+<Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/XMLoutputCUSTOM.txt" guiHeight="0" guiName="Customers" guiWidth="0" guiX="391" guiY="282" id="DELIMITED_DATA_WRITER4" type="DELIMITED_DATA_WRITER">
+<attr name="OneRecordPerLine">true</attr>
+</Node>
 <Node enabled="enabled" guiHeight="0" guiName="Merge Join" guiWidth="0" guiX="208" guiY="369" id="MERGE_JOIN0" joinKey="seqKey" slaveOverrideKey="seqKey" type="MERGE_JOIN">
 <attr name="transform">${out.0.car} = ${in.0.car};&#13;
 ${out.0.seqKey} = ${in.0.seqKey};&#13;
@@ -75,7 +85,7 @@ ${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});&
 &#13;
 </attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="56" guiY="135" id="XML_EXTRACT0" sourceUri="${WORKSPACE}/data/employees.xml" type="XML_EXTRACT">
+<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="56" guiY="135" id="XML_EXTRACT0" sourceUri="${WORKSPACE}/data/other/employees.xml" type="XML_EXTRACT">
 <attr name="mapping">&lt;Mappings&gt;&#13;
 	&lt;Mapping element="employee" outPort="0" xmlFields="salary" cloverFields="basic_salary"&gt;&#13;
 		&lt;Mapping element="child" outPort="1" parentKey="empID" generatedKey="parentID"/&gt;&#13;

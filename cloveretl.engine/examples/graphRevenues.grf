@@ -1,57 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." name="Revenues of one half-year">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This is practical ilustration of usage CloverETL.&#10;This graph tranforms data for branch bank. On inputs &#10;are clients, month interests and chargets and &#10;half-year bonus. On outputs we have aggregated &#10;revenues by clients, clients without revenues and &#10;clients from database, who are not in input file." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 11:08:54 CET 2007" name="Revenues of one half-year" revision="1.0">
 <Global>
 <Metadata id="Metadata2">
-<Record name="Aggr_revenues" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter="\r\n" locale="cs.CZ" name="Aggr_revenue" nullable="true" type="numeric"/>
+<Record name="Aggr_revenues" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Aggr_revenue" nullable="true" shift="0" type="numeric"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata5">
-<Record name="Bonus" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" type="numeric"/>
-<Field delimiter="\r\n" locale="cs.CZ" name="Contract_nr" nullable="true" type="integer"/>
+<Record name="Bonus" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata4">
-<Record name="Clients" type="delimited">
-<Field delimiter="\r\n" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
+<Record name="Clients" recordSize="-1" type="delimited">
+<Field delimiter="\r\n" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata6">
-<Record name="Db_revenues" type="delimited">
-<Field delimiter=";" name="client_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="year_month" nullable="true" type="string"/>
-<Field delimiter="\n" name="revenue" nullable="true" type="numeric"/>
+<Record name="Db_revenues" recordSize="-1" type="delimited">
+<Field delimiter=";" name="client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="year_month" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="revenue" nullable="true" shift="0" type="numeric"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata9">
-<Record name="Disprate" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" type="numeric"/>
-<Field delimiter="\r\n" locale="cs.CZ" name="Contract_nr" nullable="true" type="integer"/>
+<Record name="Disprate" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata10">
-<Record name="Matched" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter="\r\n" locale="cs.CZ" name="Revenue" nullable="true" type="numeric"/>
+<Record name="Matched" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
-<Record name="Matching" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" type="numeric"/>
-<Field delimiter=";" locale="cs.CZ" name="Contract_nr" nullable="true" type="integer"/>
-<Field delimiter="\r\n" locale="cs.CZ" name="Client_id_n" nullable="true" type="integer"/>
+<Record name="Matching" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Revenue" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" locale="cs.CZ" name="Contract_nr" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0">
-<Record name="Without_revenue_matching" type="delimited">
-<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" type="integer"/>
-<Field delimiter=";" locale="cs.CZ" name="Client_id_n" nullable="true" type="integer"/>
-<Field delimiter="\r\n" name="Aggr_revenue" nullable="true" type="numeric"/>
+<Record name="Without_revenue_matching" recordSize="-1" type="delimited">
+<Field delimiter=";" locale="cs.CZ" name="Client_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" locale="cs.CZ" name="Client_id_n" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\r\n" name="Aggr_revenue" nullable="true" shift="0" type="numeric"/>
 </Record>
 </Metadata>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
@@ -59,7 +59,7 @@
 </Global>
 <Phase number="0">
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="Clients" guiWidth="0" guiX="8" guiY="111" id="DB_INPUT_TABLE1" sqlQuery="select klient_id from p_zakaznik" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/bonus.csv" guiHeight="0" guiName="Bonus" guiWidth="0" guiX="8" guiY="28" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/not_found_clientst.xt" guiHeight="0" guiName="Not found clients" guiWidth="0" guiX="774" guiY="28" id="DELIMITED_DATA_WRITER2" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="28" id="EXT_SORT0" sortKey="Client_id" type="EXT_SORT"/>
 <Node enabled="enabled" guiHeight="0" guiName="Ext Sort" guiWidth="0" guiX="164" guiY="111" id="EXT_SORT1" sortKey="Client_id" type="EXT_SORT"/>

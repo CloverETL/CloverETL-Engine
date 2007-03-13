@@ -1,30 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This example illustrates usage of Reformat component with transformation&#10;code (class) inlined (saved with the graph itself). The source code&#10;is automatically compiled at runtime.&#10;For successfull compilation, tools.jar library must be part of CLASSPATH.&#10;" name="Testing Reformat">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This example illustrates usage of Reformat component with transformation&#10;written in compact form." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 12 11:45:20 CET 2007" name="Testing Reformat" revision="1.2">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
-<Metadata fileURL="metadata/ordersRef.fmt" id="OutMetadata"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/ordersInfo.fmt" id="Metadata1"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Property id="GraphParameter1" name="key" value="0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT" guiWidth="50" guiX="20" guiY="20" id="INPUT" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.dat.out" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 <Node enabled="enabled" guiHeight="25" guiName="REF" guiWidth="50" guiX="195" guiY="20" id="REF" type="REFORMAT">
 <attr name="transform">
-${out.0.CustomerID} = ${in.0.CustomerID};
-${out.0.OrderKey} = 0;
-${out.0.OrderID} = ${in.0.OrderID};
-${out.0.OrderDate} = ${in.0.OrderDate};
-		java.util.GregorianCalendar shippedDateC=new java.util.GregorianCalendar();
-		shippedDateC.setTime(${in.0.OrderDate});
-		shippedDateC.add(java.util.Calendar.DAY_OF_YEAR,7);
-${out.0.ShippedDate} = shippedDateC.getTime();
-${out.0.ShipVia} = ${in.0.ShipVia};
-${out.0.ShipTo} = ${in.0.ShipName}+${in.0.ShipAddress}+${in.0.ShipCity}+${in.0.ShipCountry};
-</attr>
-<attr name="key">0</attr>
+${out.0.ORDERID} = ${in.0.OrderID};
+${out.0.CUSTOMERID} = ${in.0.CustomerID};
+${out.0.CUSTOMER} = ${in.0.ShipName} + ${in.0.ShipAddress} + 
+	${in.0.ShipCity} + ${in.0.ShipCountry};
+${out.0.SHIPTIME} = (int)((${in.0.RequiredDate}.getTime() - ${in.0.ShippedDate}.getTime())/1000/60/60/24);</attr>
 </Node>
-<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (REF)" metadata="InMetadata" outPort="0 (INPUT)" toNode="REF:0"/>
-<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="OutMetadata" outPort="0 (REF)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT:0" guiBendpoints="" id="INEDGE" inPort="0 (REF)" metadata="Metadata0" outPort="0 (INPUT)" toNode="REF:0"/>
+<Edge fromNode="REF:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata1" outPort="0 (REF)" toNode="OUTPUT:0"/>
 </Phase>
 </Graph>

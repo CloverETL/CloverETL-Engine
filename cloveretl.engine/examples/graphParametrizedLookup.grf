@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Fri Feb 16 14:05:16 CET 2007" name="Testing Simple Lookup with parameters" revision="1.2">
+<Graph created="Fri Jan 12 15:46:21 CET 2007" description="This graph demonstrates usage of Node-level parameters" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 10:28:52 CET 2007" name="Testing Simple Lookup with parameters" revision="1.3">
 <Global>
-<Metadata fileURL="metadata/employees.fmt" id="InMetadata2"/>
-<Metadata fileURL="metadata/joinedOrders.fmt" id="OutMetadata"/>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata1"/>
+<Metadata fileURL="metadata/delimited/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/joinedOrders.fmt" id="Metadata1"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata2"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="25" guiName="JOIN" guiWidth="50" guiX="195" guiY="20" id="JOIN" type="REFORMAT">
 <attr name="transform">&#13;
 import java.io.FileInputStream;&#13;
@@ -28,7 +28,7 @@ public class reformatTest extends DataRecordTransform{&#13;
 	public boolean init(){&#13;
 		&#13;
 	Parser parser=new DelimitedDataParser();&#13;
-		DataRecordMetadata lookupMetadata = getDataRecordMetadata("InMetadata2");&#13;
+		DataRecordMetadata lookupMetadata = getDataRecordMetadata("Metadata0");&#13;
 		try{	&#13;
 		parser.init(lookupMetadata);&#13;
 		parser.setDataSource(new FileInputStream(parameters.getProperty("lookupFile")));&#13;
@@ -57,7 +57,7 @@ public class reformatTest extends DataRecordTransform{&#13;
 		&#13;
 		target[0].getField(0).setValue(source[0].getField(0).getValue());&#13;
   		target[0].getField(1).setValue(source[0].getField(1).getValue());&#13;
-		target[0].getField(2).setValue(source[0].getField(2).getValue());&#13;
+		target[0].getField(2).setValue(source[0].getField(2).getValue().toString());&#13;
 		target[0].getField(3).setValue(employee.getField(0).getValue().toString());&#13;
 		target[0].getField(4).setValue(employee.getField(1).getValue());&#13;
 &#13;
@@ -65,11 +65,11 @@ public class reformatTest extends DataRecordTransform{&#13;
 	}&#13;
 }&#13;
 </attr>
-<attr name="lookupFile">data/employees.dat</attr>
+<attr name="lookupFile">data/delimited/employees.dat</attr>
 <attr name="keyField">EmployeeID</attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/joined_data_hash.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="InMetadata1" outPort="0 (INPUT1)" toNode="JOIN:0"/>
-<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="OutMetadata" outPort="0 (JOIN)" toNode="WRITER:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (JOIN)" metadata="Metadata2" outPort="0 (INPUT1)" toNode="JOIN:0"/>
+<Edge fromNode="JOIN:0" guiBendpoints="" id="OUTEDGE" inPort="0 (WRITER)" metadata="Metadata1" outPort="0 (JOIN)" toNode="WRITER:0"/>
 </Phase>
 </Graph>

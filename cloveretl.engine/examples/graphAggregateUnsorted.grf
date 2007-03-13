@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph description="This graph illustrates usage of Aggregate component. " name="TestingSort">
+<Graph created="Mon Mar 05 11:32:38 CET 2007" description="This graph illustrates usage of Aggregate component. " guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 05 14:31:48 CET 2007" name="TestingSort" revision="1.0">
 <Global>
-<Metadata fileURL="metadata/orders.fmt" id="InMetadata"/>
-<Metadata fileURL="metadata/ordersAggregate.fmt" id="OutMetadata"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata1"/>
+<Metadata fileURL="metadata/delimited/ordersAggregate.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
 <Node aggregateFunctions="count(Freight); avg(Freight); min(CustomerID)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="195" guiY="20" id="AGGREGATE" sorted="false" type="AGGREGATE"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
-<Edge fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="OutMetadata" outPort="0 (AGGREGATE)" toNode="OUTPUT:0"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (AGGREGATE)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="AGGREGATE:0"/>
+<Edge fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (AGGREGATE)" toNode="OUTPUT:0"/>
+<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (AGGREGATE)" metadata="Metadata1" outPort="0 (INPUT1)" toNode="AGGREGATE:0"/>
 </Phase>
 </Graph>
