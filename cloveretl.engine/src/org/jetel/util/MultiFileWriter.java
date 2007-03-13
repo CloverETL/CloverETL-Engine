@@ -68,6 +68,7 @@ public class MultiFileWriter {
     private int skip;
 	private int numRecords;
 	private int counter;
+	private boolean useChannel = true;
     
     /**
      * Constructor.
@@ -123,10 +124,9 @@ public class MultiFileWriter {
         if (fileNames != null) {
             String fName = fileNames.next();
         	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData);
-        	// FIXME this is unreachable code
-        	try {
+        	if (useChannel) {
                 formatter.setDataTarget(byteChannel);
-        	} catch (Exception e) {
+        	} else {
                 formatter.setDataTarget(new File(fName));
         	}
         } else {
@@ -216,5 +216,13 @@ public class MultiFileWriter {
     public void setNumRecords(int numRecords) {
         this.numRecords = numRecords;
     }
+
+	public boolean isUseChannel() {
+		return useChannel;
+	}
+
+	public void setUseChannel(boolean useChannel) {
+		this.useChannel = useChannel;
+	}
 
 }
