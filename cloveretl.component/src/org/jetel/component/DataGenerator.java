@@ -304,24 +304,24 @@ public class DataGenerator extends Node {
         		if (sequenceFields != null) {
         			sequenceIndex = StringUtils.findString(metadata.getField(i).getName(), 
         				sequenceFields);
-        		if (sequenceIndex > -1){//field found among sequence fields
-				}
-					if (cutMetadata.getNumFields() > 1) {
-						cutMetadata.delField(metadata.getField(i).getName());
-					}else{
-						cutMetadata = null;
-					}
-					if (sequenceIDs[sequenceIndex] == null){//not given sequence id
-            			//find any sequence in graph
-            			specialValue[i][0]  = getGraph().getSequences().hasNext() ? (String)getGraph().getSequences().next() : null;
-						if (specialValue[i][0] == null) {
-							throw new ComponentNotReadyException(
-									"There are no sequences defined in graph!!!");
-						}            			
-            		}else{
-            			specialValue[i][0] = sequenceIDs[sequenceIndex];
-            		}
-         		}
+	        		if (sequenceIndex > -1){//field found among sequence fields
+						if (cutMetadata.getNumFields() > 1) {
+							cutMetadata.delField(metadata.getField(i).getName());
+						}else{
+							cutMetadata = null;
+						}
+						if (sequenceIDs[sequenceIndex] == null){//not given sequence id
+	            			//find any sequence in graph
+	            			specialValue[i][0]  = getGraph().getSequences().hasNext() ? (String)getGraph().getSequences().next() : null;
+							if (specialValue[i][0] == null) {
+								throw new ComponentNotReadyException(
+										"There are no sequences defined in graph!!!");
+							}            			
+	            		}else{
+	            			specialValue[i][0] = sequenceIDs[sequenceIndex];
+	            		}
+	         		}
+        		}
         	}
         }
         //set random seed
