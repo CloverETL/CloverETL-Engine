@@ -183,7 +183,9 @@ public class CloverDataFormatter implements Formatter {
 					}while (position == buffer.limit());
 					//clear up
 					idxTmpFile.delete();
-					idxTmpFile.getParentFile().delete();
+					if (idxTmpFile.getParentFile() != null) {
+						idxTmpFile.getParentFile().delete();
+					}					
 				}else{//out instanceof FileOutputStream
 					File idxInFile = new File(idxTmpFile.getCanonicalPath().substring(0,idxTmpFile.getCanonicalPath().lastIndexOf('.')));
 			    	//get last old index
