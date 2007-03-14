@@ -166,7 +166,7 @@ public class CloverDataParser implements Parser {
                     indexFile.close();
                 }else{//read index from binary file
                     if (indexFileURL == null){
-                        File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+2));
+                        File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+1));
                         indexFile = new DataInputStream(new FileInputStream(
                                 dir + fileName + ".idx"));
                     }else{
@@ -222,6 +222,7 @@ public class CloverDataParser implements Parser {
 		if (recordBuffer.remaining() < recordSize ){
 			try{
 				ByteBufferUtils.reload(recordBuffer,recordFile);
+				recordBuffer.flip();
 			}catch(IOException ex){
 				throw new JetelException(ex.getLocalizedMessage());
 			}
