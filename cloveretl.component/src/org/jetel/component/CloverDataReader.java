@@ -112,10 +112,16 @@ public class CloverDataReader extends Node {
 	private int startRecord = -1;
 	private int finalRecord = -1;
 
+	/**
+	 * @param id
+	 * @param fileURL
+	 * @param indexFileURL
+	 */
 	public CloverDataReader(String id, String fileURL, String indexFileURL) {
 		super(id);
 		this.fileURL = fileURL;
-		parser = new CloverDataParser(indexFileURL);
+		this.indexFileURL = indexFileURL;
+		parser = new CloverDataParser();
 	}
 
 	/* (non-Javadoc)
@@ -225,7 +231,11 @@ public class CloverDataReader extends Node {
 			}catch (JetelException ex) {}
 		}
 		parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-        parser.setDataSource(fileURL);
+		if (indexFileURL != null) {
+			parser.setDataSource(new String[]{fileURL,indexFileURL});
+		}else{
+			parser.setDataSource(fileURL);
+		}
 	}
 	
 	public void setStartRecord(int startRecord){
