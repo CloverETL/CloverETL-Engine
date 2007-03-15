@@ -50,7 +50,7 @@ import org.jetel.util.ByteBufferUtils;
  * DATA/fileName
  * INDEX/fileName.idx
  * METADATA/fileName.fmt
- * or to binary files with analogical directory structure
+ * or to binary files
  * 
  * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
@@ -62,8 +62,14 @@ import org.jetel.util.ByteBufferUtils;
  */
 public class CloverDataFormatter implements Formatter {
 	
+	public final static String DATA_DIRECTORY = "DATA" + File.separator;
+	public final static String INDEX_DIRECTORY = "INDEX" + File.separator;
+	public final static String METADATA_DIRECTORY = "METADATA" + File.separator;
+	public final static String INDEX_EXTENSION = ".idx";
+	public final static String METADATA_EXTENSION = ".fmt";
+
 	private WritableByteChannel writer;
-	private OutputStream out;
+	private OutputStream out;//FileOutputStream or ZipOutputStream
 	private ByteBuffer buffer;
 	private DataRecordMetadata metadata;
 	private WritableByteChannel idxWriter;
@@ -92,11 +98,6 @@ public class CloverDataFormatter implements Formatter {
 	public CloverDataFormatter(String fileName,boolean saveIndex) {
 		this.fileURL = fileName;
 		this.saveIndex = saveIndex;
-		if (fileURL.toLowerCase().endsWith(".zip")){
-			this.fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1,fileURL.lastIndexOf('.'));
-		}else{
-			this.fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
-		}
 	}
 
 	/* (non-Javadoc)
@@ -115,13 +116,23 @@ public class CloverDataFormatter implements Formatter {
         //create output stream
         if (outputDataTarget instanceof ZipOutputStream) {
             this.out = (ZipOutputStream)outputDataTarget;
+            //prepare data file name
+			if (fileURL.endsWith(".zip")) {
+				this.fileName = fileURL.substring(fileURL.lastIndexOf(
+						File.separatorChar) + 1, fileURL.lastIndexOf('.'));
+			}else{
+				this.fileName = fileURL.substring(fileURL.lastIndexOf(
+						File.separatorChar)+1);
+			}
         }else{
             this.out = (FileOutputStream)outputDataTarget;
+			this.fileName = fileURL.substring(fileURL.lastIndexOf(
+					File.separatorChar)+1);
         }
         writer = Channels.newChannel(this.out);
         if (saveIndex) {//create temporary index file
             String dataDir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
-            idxTmpFile = new File(dataDir + fileName  + ".idx.tmp");
+            idxTmpFile = new File(dataDir + fileName  + INDEX_EXTENSION + ".tmp");
             try{
                 idxWriter = Channels.newChannel(new DataOutputStream(
                         new FileOutputStream(idxTmpFile)));
@@ -155,14 +166,15 @@ public class CloverDataFormatter implements Formatter {
 				if (out instanceof ZipOutputStream) {
 					((ZipOutputStream)out).closeEntry();
 					//put entry INEX/fileName.idx
-					((ZipOutputStream)out).putNextEntry(new ZipEntry("INDEX" + File.separator + fileName + ".idx"));
+					((ZipOutputStream)out).putNextEntry(new ZipEntry(
+							INDEX_DIRECTORY + fileName + INDEX_EXTENSION));
 					File index = new File(fileURL + ".tmp");//if append=true exist old indexes
 					if (append && index.exists()){
 						//rewrite old indexes
 						ZipInputStream zipIndex = new ZipInputStream(
 								new FileInputStream(index));
 						while (!(zipIndex.getNextEntry()).getName().equalsIgnoreCase(
-								"INDEX" + File.separator + fileName + ".idx")) {}
+								INDEX_DIRECTORY + fileName + INDEX_EXTENSION)) {}
 						DataInputStream inIndex = new DataInputStream(zipIndex);
 						ReadableByteChannel idxChannel = Channels.newChannel(inIndex);
 				    	while (ByteBufferUtils.reload(buffer,idxChannel) == buffer.capacity()){
