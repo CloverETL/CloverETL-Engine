@@ -35,19 +35,21 @@ import java.util.zip.ZipInputStream;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
+import org.jetel.data.formatter.CloverDataFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ByteBufferUtils;
+import org.jetel.util.StringUtils;
 
 /**
  * Class for reading data saved in Clover internal format
  * It is predicted that zip file (with name dataFile.zip) has following structure:
  * DATA/dataFile
  * INDEX/dataFile.idx
- * If data are not in zip file indexes (if needed) have to be adequate location
+ * If data are not in zip file, indexes (if needed) have to be in the same location
  * 
  * @author avackova <agata.vackova@javlinconsulting.cz> ; 
  * (c) JavlinConsulting s.r.o.
@@ -70,13 +72,6 @@ public class CloverDataParser implements Parser {
 	
 	private final static int LONG_SIZE_BYTES = 8;
     private final static int LEN_SIZE_SPECIFIER = 4;
-
-	/**
-	 * @param fileurl
-	 */
-	public CloverDataParser(String indexFileURL) {
-		this.indexFileURL = indexFileURL;
-	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#getNext()
@@ -105,38 +100,52 @@ public class CloverDataParser implements Parser {
 
     /* (non-Javadoc)
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+     * 
+     * parameter: data fiele name or {data file name, index file name}
      */
     public void setDataSource(Object in) throws ComponentNotReadyException {
-        String fileName;
+    	String inData;
+        if (in instanceof String[]) {
+        	inData = ((String[])in)[0];
+        	indexFileURL = ((String[])in)[1];
+        }else{
+        	inData = (String)in;
+        	indexFileURL = null;
+        }
+    	String fileName;
+        if ((inData).endsWith(".zip")) {
+            fileName = (inData).substring((inData).lastIndexOf(File.separator)+1,(inData).lastIndexOf('.'));
+        }else{
+            fileName  = (inData).substring((inData).lastIndexOf(File.separator)+1);
+        }
         //set input stream
         try {
             switch (compressedData) {
             case 1:
-                this.in = new ZipInputStream(new FileInputStream((String)in));
+                this.in = new ZipInputStream(new FileInputStream(inData));
                 break;
             case 0:
-                this.in = new FileInputStream((String)in);
+                this.in = new FileInputStream(inData);
+                if (inData.endsWith(".zip")) {
+                	fileName+=".zip";
+                }
                 break;
             default:
-                if (((String)in).endsWith(".zip")){
-                    this.in = new ZipInputStream(new FileInputStream((String)in));
+                if ((inData).endsWith(".zip")){
+                    this.in = new ZipInputStream(new FileInputStream(inData));
                     compressedData = 1;
                 }else{
-                    this.in = new FileInputStream((String)in);
+                    this.in = new FileInputStream(inData);
                     compressedData = 0;
                 }
                 break;
-            }
-            if (((String)in).endsWith(".zip")) {
-                fileName = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1,((String)in).lastIndexOf('.'));
-            }else{
-                fileName  = ((String)in).substring(((String)in).lastIndexOf(File.separator)+1);
             }
             if (this.in instanceof ZipInputStream){
                 ZipEntry entry;
                 //find entry DATA/fileName
                 while((entry = ((ZipInputStream)this.in).getNextEntry()) != null) {
-                    if(entry.getName().equals("DATA" + File.separator + fileName)) {
+                    if(entry.getName().equals(
+                    		CloverDataFormatter.DATA_DIRECTORY + fileName)) {
                         break;
                     }
                 }
@@ -146,13 +155,14 @@ public class CloverDataParser implements Parser {
             if (index > 0) {//reading not all records --> find index in record file
                 DataInputStream indexFile;
                 if (this.in instanceof ZipInputStream){//read index from archive
-                    ZipInputStream tmpIn = new ZipInputStream(new FileInputStream((String)in));
+                    ZipInputStream tmpIn = new ZipInputStream(new FileInputStream(inData));
                     indexFile = new DataInputStream(tmpIn);
                     ZipEntry entry;
                     //find entry INDEX/fileName.idx
                     while((entry = tmpIn.getNextEntry()) != null) {
                         if(entry.getName().equals(
-                                "INDEX" + File.separator + fileName + ".idx")) {
+                                CloverDataFormatter.INDEX_DIRECTORY + fileName + 
+                                CloverDataFormatter.INDEX_EXTENSION)) {
                             indexFile.skip(index);
                             try {
 								idx = indexFile.readLong();//read index for reading records
@@ -166,9 +176,13 @@ public class CloverDataParser implements Parser {
                     indexFile.close();
                 }else{//read index from binary file
                     if (indexFileURL == null){
-                        File dir = new File(((String)in).substring(0,((String)in).lastIndexOf(File.separatorChar)+1));
+                    	String dirString = (inData).substring(0,
+                        		(inData).lastIndexOf(File.separatorChar)+1);
+                        File dir = new File(dirString);
                         indexFile = new DataInputStream(new FileInputStream(
-                                dir + fileName + ".idx"));
+                                dir + (StringUtils.isEmpty(dirString) ? "" : 
+                                	File.separator) + fileName + 
+                                	CloverDataFormatter.INDEX_EXTENSION));
                     }else{
                         indexFile = new DataInputStream(new FileInputStream(indexFileURL));
                     }
