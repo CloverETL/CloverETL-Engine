@@ -35,6 +35,7 @@ public interface TrackingDetail {
     
     public int getAvgBytes(int portType,int portNum);
     public int getAvgRows(int portType,int portNum);
+    public int getPeakRows(int portType,int portNum);
     public int getAvgWaitingRows(int portNum);
     public int getAvgWaitingTime();
     public long getTotalBytes(int portType,int portNum);

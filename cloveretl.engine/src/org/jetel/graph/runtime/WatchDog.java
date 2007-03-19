@@ -141,7 +141,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 		// renice - lower the priority
 		setPriority(Thread.MIN_PRIORITY);
 		
-        printTracking=new PrintTracking();
+        printTracking=new PrintTracking(true);
        
         mbean=registerTrackingMBean();
         mbean.graphStarted();
@@ -167,6 +167,12 @@ public class WatchDog extends Thread implements CloverRuntime {
 			javaRuntime.gc();
 		}
         mbean.graphFinished(result);
+        // wait to get JMX chance to propagate the message
+        try {
+            sleep(500);
+        }catch(InterruptedException ex) {
+            // do nothing
+        }
         
         //disabled by Kokon
 //        trackingThread.interrupt();
@@ -214,7 +220,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         setPriority(Thread.MIN_PRIORITY);
         currentPhaseNum=-1;
         
-        printTracking=new PrintTracking();
+        printTracking=new PrintTracking(true);
         Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
         trackingThread.setPriority(Thread.MIN_PRIORITY);
         trackingThread.start();
@@ -307,7 +313,7 @@ public class WatchDog extends Thread implements CloverRuntime {
                     abort();
                     // printProcessingStatus(phase.getNodes().iterator(),
                     // phase.getPhaseNum());
-                    printTracking.execute(); // print tracking
+                    printTracking.execute(true); // print tracking
                     return Result.ERROR;
                 } else {
                     synchronized (_MSG_LOCK) {
@@ -325,7 +331,7 @@ public class WatchDog extends Thread implements CloverRuntime {
                 logger.info("Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
 						+ phaseTracking.getExecTime() / 1000);
 				//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
-                printTracking.execute();// print tracking
+                printTracking.execute(true);// print tracking
 				return Result.FINISHED_OK;
 				// nothing else to do in this phase
 			}
@@ -398,7 +404,7 @@ public class WatchDog extends Thread implements CloverRuntime {
                 currentTimestamp = System.currentTimeMillis();
                 if (trackingInterval>=0 && (currentTimestamp - lastTimestamp) >= trackingInterval) {
                     //printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
-                    printTracking.execute(); // print tracking
+                    printTracking.execute(false); // print tracking
                     lastTimestamp = currentTimestamp;
                     
                     // update mbean & signal that it was updated
@@ -554,16 +560,20 @@ public class WatchDog extends Thread implements CloverRuntime {
 		this.trackingInterval = trackingInterval;
 	}
     
-	class PrintTracking implements Runnable{
-	    Map<String,TrackingDetail> tracking;
+	static class PrintTracking implements Runnable{
+	    private static int[] ARG_SIZES_WITH_CPU = {-6,-4,28, -5, 9,12,7,8};
+        private static int[] ARG_SIZES_WITHOUT_CPU = {38, -5, 9,12,7,8};
+        Map<String,TrackingDetail> tracking;
         int phaseNo;
         Log trackingLogger;
         volatile boolean run;
         Thread thisThread;
+        boolean displayTracking;
         
-        PrintTracking(){
+        PrintTracking(boolean displayTracking){
             trackingLogger= LogFactory.getLog(TRACKING_LOGGER_NAME);
             run=true;
+            this.displayTracking=displayTracking;
         }
         
         void setTrackingInfo(Map<String,TrackingDetail> tracking, int phaseNo){
@@ -575,14 +585,14 @@ public class WatchDog extends Thread implements CloverRuntime {
             thisThread=Thread.currentThread();
             while (run) {
                 LockSupport.park();
-                printProcessingStatus();
+                if (displayTracking) printProcessingStatus(false);
             }
         }
         
-        public void execute(){
+        public void execute(boolean finalTracking){
             LockSupport.unpark(thisThread);
             //added by Kokon
-            printProcessingStatus();
+            if (displayTracking) printProcessingStatus(finalTracking);
             ////////////////
         }
         
@@ -605,10 +615,13 @@ public class WatchDog extends Thread implements CloverRuntime {
          * @param  phaseNo   Description of the Parameter
          * @since            July 30, 2002
          */
-        private void printProcessingStatus() {
+        private void printProcessingStatus(boolean finalTracking) {
             if (tracking==null) return;
             //StringBuilder strBuf=new StringBuilder(120);
-            trackingLogger.info("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
+            if (finalTracking)
+                trackingLogger.info("----------------------** Final tracking Log for phase [" + phaseNo + "] **---------------------");
+            else 
+                trackingLogger.info("---------------------** Start of tracking Log for phase [" + phaseNo + "] **-------------------");
             // France is here just to get 24hour time format
             trackingLogger.info("Time: "
                 + DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.MEDIUM, Locale.FRANCE).
@@ -621,57 +634,48 @@ public class WatchDog extends Thread implements CloverRuntime {
                 trackingLogger.info(StringUtils.formatString(nodeInfo, nodeSizes));
                 //in ports
                 Object portInfo[];
-                int portSizes[];
                 boolean cpuPrinted=false;
                 for(int i=0;i<nodeDetail.getNumInputPorts();i++){
                     if (i==0){
                         cpuPrinted=true;
-                        final float cpuUsage=nodeDetail.getUsageCPU();
+                        final float cpuUsage= (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
                         portInfo = new Object[] {" %cpu:",cpuUsage>=0.01f ? Float.toString(cpuUsage) : "..",
                                 "In:", Integer.toString(i), 
                                 Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
                                 Long.toString(nodeDetail.getTotalBytes(TrackingDetail.IN_PORT, i)>>10),
-                                Integer.toString(nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i)),
+                                Integer.toString((nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i))),
                                 Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.IN_PORT, i)>>10)};
-                        portSizes = new int[] {-6,-4,28, -5, 9,12,7,8};
+                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                     }else{
                             portInfo = new Object[] {"In:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
                             Long.toString(nodeDetail.getTotalBytes(TrackingDetail.IN_PORT, i)>>10),
-                            Integer.toString(nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i)),
+                            Integer.toString(( nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i))),
                             Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.IN_PORT, i)>>10)};
-                            portSizes = new int[] {38, -5, 9,12,7,8};
+                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
-                    trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
+                    
                 }
                 //out ports
                 for(int i=0;i<nodeDetail.getNumOutputPorts();i++){
                     if (i==0 && !cpuPrinted){
-                        final float cpuUsage=nodeDetail.getUsageCPU();
-                        portInfo = new Object[] {" %cpu:",cpuUsage>=0.01f ? Float.toString(cpuUsage) : "..",
+                        final float cpuUsage= (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
+                        portInfo = new Object[] {" %cpu:",cpuUsage>0.01f ? Float.toString(cpuUsage) : "..",
                                 "Out:", Integer.toString(i), 
                                 Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
                                 Long.toString(nodeDetail.getTotalBytes(TrackingDetail.OUT_PORT, i)>>10),
-                                Integer.toString(nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i)),
+                                Integer.toString((nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i))),
                                 Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.OUT_PORT, i)>>10)};
-                        portSizes = new int[] {-6,-4,28, -5, 9,12,7,8};
+                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                     }else{
                         portInfo = new Object[] {"Out:", Integer.toString(i), 
                             Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
                             Long.toString(nodeDetail.getTotalBytes(TrackingDetail.OUT_PORT, i)>>10),
-                            Integer.toString(nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i)),
+                            Integer.toString((nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i))),
                             Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.OUT_PORT, i)>>10)};
-                        portSizes = new int[] {38, -5, 9,12,7,8,4};
+                        trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
-                    trackingLogger.info(StringUtils.formatString(portInfo, portSizes));
-                }
-                /*
-                strBuf.setLength(0);
-                strBuf.append("Run status - cpu time:").append(nodeDetail.getTotalCPUTime());
-                strBuf.append(" user time:").append(nodeDetail.getTotalUserTime());
-                strBuf.append(" %CPU:").append(nodeDetail.getUsageCPU());
-                strBuf.append(" %USER:").append(nodeDetail.getUsageUser());
-                trackingLogger.info(strBuf);*/
+                }               
             }
             trackingLogger.info("---------------------------------** End of Log **--------------------------------");
         }
