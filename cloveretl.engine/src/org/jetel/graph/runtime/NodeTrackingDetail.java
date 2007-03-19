@@ -24,6 +24,7 @@
 package org.jetel.graph.runtime;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import org.jetel.graph.Result;
 
@@ -43,6 +44,7 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     private int totalRows[][];
     private long totalBytes[][];
     private int avgRows[][];
+    private int peakRows[][];
     private int avgBytes[][];
     private long totalCPUTime;
     private long totalUserTime;
@@ -66,6 +68,7 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
         totalBytes=new long[2][ports];
         avgRows=new int[2][ports];
         avgBytes=new int[2][ports];
+        peakRows=new int[2][ports];
         waitingRows=new int[outputPorts];
         avgWaitingRows=new int[outputPorts];
     }
@@ -74,12 +77,12 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
         timestamp=timespan=0;
         totalUserTime=totalCPUTime=0;
         peakUsageCPU=peakUsageUser=0;
-        /*Arrays.fill(totalRows,0);
+        Arrays.fill(totalRows,0);
         Arrays.fill(totalBytes,0);
         Arrays.fill(avgRows,0);
         Arrays.fill(avgBytes, 0);
         Arrays.fill(waitingRows, 0);
-        Arrays.fill(avgWaitingRows, 0);*/
+        Arrays.fill(avgWaitingRows, 0);
     }
     
     @Override public boolean equals(Object obj){
@@ -105,6 +108,11 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     public int getAvgRows(int portType,int portNum) {
         return avgRows[portType][portNum];
     }
+    
+    public int getPeakRows(int portType,int portNum) {
+        return peakRows[portType][portNum];
+    }
+    
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getAvgWaitingRows(int)
      */
@@ -152,6 +160,7 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     
     public void updateRows(int portType,int portNum,int rows){
         avgRows[portType][portNum]=(int)((rows-totalRows[portType][portNum])*1000/timespan);
+        peakRows[portType][portNum]=Math.max(peakRows[portType][portNum], avgRows[portType][portNum]); 
         totalRows[portType][portNum]=rows;
     }
 
@@ -161,13 +170,12 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     }
     
     public void updateRunTime(long cpuTime,long userTime,long systemTime){
-        double time=cpuTime;
+        double time=cpuTime>0 ? cpuTime : 0;
         usageCPU=(float)time/systemTime;
-        if (usageCPU>peakUsageCPU) peakUsageCPU=usageCPU;
-        time=userTime;
+        peakUsageCPU=Math.max(peakUsageCPU, usageCPU);
+        time=userTime>0 ? userTime : 0;
         usageUser=(float)time/systemTime;
-        if (usageUser>peakUsageUser) peakUsageUser=usageUser;
-        if (cpuTime<0) return;
+        peakUsageUser=Math.max(peakUsageUser,usageUser);
         totalCPUTime=cpuTime;
         totalUserTime=userTime;
     }
