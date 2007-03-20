@@ -45,9 +45,9 @@
 		</ant>
 	</target>
 
-	<target name="dist.src"  description="Creates source distribution">
+	<target name="dist.src" description="Creates source distribution">
 		<property name="src.distribution.dir" value="${basedir}/dist.src"/>
-		<delete dir="${src.distribution.dir}" />
+		<delete dir="${src.distribution.dir}"/>
 		<mkdir dir="${src.distribution.dir}/cloverETL"/>
 		
 		<!-- call source target for all plugins -->
@@ -81,6 +81,11 @@
 			<fileset file="build.xml" />
 			<fileset file="build.properties" />
 		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/..">
+			<fileset file="readme.src.txt" />
+		</copy>
+		<move file="${src.distribution.dir.engine}/../readme.src.txt" tofile="${src.distribution.dir.engine}/../readme.txt"/>
 		
 		<!-- create zip package for source distribution -->
 		<zip destfile="${src.distribution.dir}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${src.distribution.dir}"/>
@@ -118,7 +123,6 @@
 		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.dist}"/>
 		<delete dir="${distribution.dir}"/>
-		<delete dir="${src.distribution.dir}"/>
 		<delete dir="${dir.doc}"/>
 	</target>
 
@@ -183,9 +187,9 @@
 	<!-- pack binary result of compile to jar file -->
 	<target name="package" depends="compile">
 		<!-- Create directory for dist. -->
-		<mkdir dir="${dir.dist}"/>
+		<mkdir dir="${dir.dist}/lib"/>
 		
-		<jar destfile="${dir.dist}/cloveretl.engine.jar" basedir="${dir.bin}">
+		<jar destfile="${dir.dist}/lib/cloveretl.engine.jar" basedir="${dir.bin}">
 			<include name="**/*"/>
 			<exclude name="test/**/*"/>
 		</jar>
@@ -201,9 +205,16 @@
 		</copy>
 
 		<!-- copy all run scripts -->
-		<copy todir="${dir.dist}">
-			<fileset file="${basedir}/run*"/>
+		<copy todir="${dir.dist}/bin">
+			<fileset file="${basedir}/scripts/*"/>
 		</copy>
+
+		<!-- copy readme.txt -->
+		<copy todir="${dir.dist}">
+			<fileset file="${basedir}/readme.bin.txt"/>
+		</copy>
+		<move file="${dir.dist}/readme.bin.txt" tofile="${dir.dist}/readme.txt"/>
+		
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
@@ -245,8 +256,7 @@
 
 	<target name="javadoc" depends="checkproperties,set_revision" description="Create Javadoc API documentation">
 		<echo message="Building code documentation..." />
-		<property name="dist.subdir" value="cloverETL"/>
-		<delete dir="${dir.doc}" />
+		<property name="dist.subdir" value="cloverETL/javadoc"/>
 		<mkdir dir="${dir.doc}/${dist.subdir}" />
 		<javadoc destdir="${dir.doc}/${dist.subdir}" packagenames="*"
 			author="true">
@@ -271,7 +281,7 @@
 		<!-- create zip package for javadoc -->
 		<zip destfile="${dir.doc}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
 
-		<delete dir="${dir.doc}/${dist.subdir}"/>
+		<delete dir="${dir.doc}/cloverETL"/>
 	</target>
 	
 </project>
