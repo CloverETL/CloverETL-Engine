@@ -187,7 +187,9 @@ public class RangeLookupTest extends TestCase {
 //    				(Integer)record.getField("value1").getValue()%100 == 0 ){
 //    			System.in.read();
 //    		}
-    		tmp = lookup.getNext();
+    		System.out.println("Num found: " + lookup.getNumFound());
+    		System.out.println("Num found: " + lookupNotOverlap.getNumFound());
+   		tmp = lookup.getNext();
     		tmp1 = lookupNotOverlap.getNext();
     		while (tmp != null) {
     			System.out.println("Next:\n" + tmp);
