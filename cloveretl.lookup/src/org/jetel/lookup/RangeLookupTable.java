@@ -153,11 +153,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#getNumFound()
 	 */
 	public int getNumFound() {
-		int tmp = 0;
+		int alreadyFound = numFound;
 		while (getNext() != null) {}
-		tmp = numFound;
+		int tmp = numFound;
 		subTableIterator = subTable.iterator();
-		numFound = 0;
+		for (int i=0;i<alreadyFound;i++){
+			getNext();
+		}
 		return tmp;
 	}
 
