@@ -125,9 +125,9 @@ public class PropertyRefResolver {
 		if (resolve){
 		    StringBuffer strBuf = new StringBuffer(value);
 		    resolveRef2(strBuf,strict);
-		    return strBuf.toString();
+		    return StringUtils.stringToSpecChar(strBuf);
 		}else{
-		    return value;
+		    return StringUtils.stringToSpecChar(value);
 		}
 	}
     
@@ -148,11 +148,16 @@ public class PropertyRefResolver {
 	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	public boolean resolveRef(StringBuffer value,boolean strict) {
+		boolean result = true;
 	    if (resolve){
-	      return resolveRef2(value,strict);
-	    }else{
-	        return true;
+	      result =  resolveRef2(value,strict);
 	    }
+	    String tmp = StringUtils.stringToSpecChar(value);
+	    if (!tmp.equals(value.toString())) {
+	    	value.setLength(0);
+	    	value.append(tmp);
+	    }
+	    return result;
 	}
 	
     public boolean resolveRef(StringBuffer value) {
@@ -210,7 +215,7 @@ public class PropertyRefResolver {
 //                        value.substring(regexEscapeMatcher.start()+2,regexEscapeMatcher.end()-1));
 //                regexEscapeMatcher.reset(value);
 //            }
-//            
+//          
 			return found;
 		} else {
 			return false;
