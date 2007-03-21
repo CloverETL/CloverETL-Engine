@@ -357,9 +357,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
      * Using this method on this implementation of LookupTable
      * can be time consuming as it requires sequential scan through
      * the whole result set returned from DB (on some DBMSs).
-     * Also, it resets the position in result set. So subsequent
-     * calls to getNext() will start reading the data found from
-     * the first record.
      */
     public int getNumFound() {
     	if (resultCache!=null){
