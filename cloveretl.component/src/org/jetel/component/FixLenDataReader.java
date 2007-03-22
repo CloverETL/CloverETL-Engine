@@ -65,7 +65,7 @@ import org.w3c.dom.Element;
  * It doesn't support record delimiters, incomplete records and skipping of leading/trailing blanks in fields.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>At least one input port or input file.</td></tr>
+ * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>At least one output port defined/connected.</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
