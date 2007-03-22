@@ -3,7 +3,7 @@
 # this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
 # usage 
-# run.bat <engine_arguments> <graph_name.grf>
+# run.sh <engine_arguments> <graph_name.grf>
 
 # Extract clover launch arguments.
 clover_exec_args=
