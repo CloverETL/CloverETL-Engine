@@ -186,6 +186,15 @@ public class BufferedEdge extends EdgeBase {
         }
 	}
 
+    @Override
+    public void free() {
+        try {
+            recordBuffer.close();
+        } catch (IOException e) {
+            //do nothing
+        }
+    }
+    
 	public boolean hasData(){
 		return (recordBuffer.hasData());
 	}

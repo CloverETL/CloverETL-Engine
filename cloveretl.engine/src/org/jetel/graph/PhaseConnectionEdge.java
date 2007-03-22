@@ -264,7 +264,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * clean up
 	 * @see java.lang.Object#finalize()
 	 */
-	public void finalize(){
+	public void free() {
 	    try{
 	        dataTape.close();
 	    }catch(IOException ex){

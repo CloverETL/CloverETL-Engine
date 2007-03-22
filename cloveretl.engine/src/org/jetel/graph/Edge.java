@@ -389,7 +389,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      */
     public void free() {
         super.free();
-        //DO NOTHING
+
+        edge.free();
     }
 
     public boolean isFastPropagate() {
