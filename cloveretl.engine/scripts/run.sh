@@ -1,9 +1,9 @@
 #! /bin/sh
 
-REM this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
+# this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
-REM usage 
-REM run.bat <engine_arguments> <graph_name.grf>
+# usage 
+# run.bat <engine_arguments> <graph_name.grf>
 
 # Extract clover launch arguments.
 clover_exec_args=
@@ -33,6 +33,7 @@ if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
 fi
 
+CLOVER_HOME=${CLOVER_HOME%/*}
 
 # set CLOVER_LIB location
 CLOVER_LIB="${CLOVER_HOME}/lib"
@@ -71,4 +72,4 @@ done;
 
 clover_exec_command="exec \"$JAVACMD\" $CLOVER_OPTS -classpath \"$LOCAL_CLASSPATH\" -Dclover.home=\"$CLOVER_HOME\" org.jetel.main.runGraph -plugins $CLOVER_HOME/plugins $clover_exec_args"
 echo $clover_exec_command
-eval $ant_exec_command
+eval $clover_exec_command
