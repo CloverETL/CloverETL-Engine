@@ -473,7 +473,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 		}
 		recordMetadata.setRecordProperties(recordProperties);
 		if(!StringUtils.isEmpty(recordDelimiter)) {
-			recordMetadata.setRecordDelimiter(StringUtils.stringToSpecChar(recordDelimiter).split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
+			recordMetadata.setRecordDelimiter(recordDelimiter.split(Defaults.DataFormatter.DELIMITER_DELIMITERS_REGEX));
 		}
 
 		short recSize = 0;
@@ -571,8 +571,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 							"Attribute \"delimiter\" not defined for field #"
 									+ i);
 				}
-				field = new DataFieldMetadata(name, fieldType, StringUtils
-						.stringToSpecChar(delimiter));
+				field = new DataFieldMetadata(name, fieldType, delimiter);
                 field.setShift(shiftVal);
 			} else { //mixed dataRecord type
 				if (delimiter == null && size == null) {
@@ -581,7 +580,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 									+ i);
 				}
 				if(delimiter != null) {
-                    field = new DataFieldMetadata(name, fieldType, StringUtils.stringToSpecChar(delimiter));
+                    field = new DataFieldMetadata(name, fieldType, delimiter);
                     field.setShift(shiftVal);
                 } else {
 					field = new DataFieldMetadata(name, fieldType, getFieldSize(size));
