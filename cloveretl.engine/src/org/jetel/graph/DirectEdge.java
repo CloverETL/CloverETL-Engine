@@ -334,6 +334,11 @@ public class DirectEdge extends EdgeBase {
         flushWriteBuffer();
 	}
 
+    @Override
+    public void free() {
+        //do nothing
+    }
+    
 	public boolean hasData(){
         if (!readBuffer.hasRemaining()){
             if (writerWait){

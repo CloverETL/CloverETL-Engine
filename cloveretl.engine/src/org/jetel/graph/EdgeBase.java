@@ -159,7 +159,8 @@ public abstract class EdgeBase {
 	 */
 	public abstract void close() throws InterruptedException;
 	
-	
+    public abstract void free();
+    
 	public abstract boolean hasData();
 }
 /*

@@ -273,7 +273,10 @@ public class Phase implements Comparable {
         
         //free all edges in this phase
         for(Edge edge : edgesInPhase) {
-            edge.free();
+            if(edge.getType() != Edge.EDGE_TYPE_PHASE_CONNECTION || 
+                    edge.getReader().getPhase() == this) { 
+                edge.free();
+            }
         }
 
         nodesInPhase.clear();

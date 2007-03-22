@@ -245,6 +245,11 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         recordBuffer.close();
     }
 
+    @Override
+    public void free() {
+        //do nothing
+    }
+    
     public boolean hasData(){
         return recordBuffer.hasData();
     }
