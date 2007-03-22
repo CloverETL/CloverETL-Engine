@@ -27,13 +27,13 @@ if [ -z "$CLOVER_HOME" -o ! -d "$CLOVER_HOME" ] ; then
 		fi
 	done
 
-	CLVOER_HOME=`dirname "$PRG"`/..
-
+	CLOVER_HOME=`dirname "$PRG"`/..
 	# make it fully qualified
 	CLOVER_HOME=`cd "$CLOVER_HOME" && pwd`
 fi
 
-CLOVER_HOME=${CLOVER_HOME%/*}
+echo $CLOVER_HOME
+
 
 # set CLOVER_LIB location
 CLOVER_LIB="${CLOVER_HOME}/lib"
@@ -65,8 +65,14 @@ fi
 
 TRANSFORM_PATH="."
 
+echo $CLOVER_LIB/*
+
 for i in $CLOVER_LIB/*.jar $CLOVER_LIB/*.zip; do
 	LOCAL_CLASSPATH="$LOCAL_CLASSPATH:$i"
+done;
+
+for i in `ls $CLOVER_LIB/*.jar`; do
+echo $i
 done;
 
 
