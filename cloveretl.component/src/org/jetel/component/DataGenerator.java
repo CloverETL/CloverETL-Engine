@@ -587,7 +587,7 @@ public class DataGenerator extends Node {
 	 * 
 	 * @param randomFields the randomFields to set in form fieldName=random(min,max)
 	 */
-	private void setRandomFields(String randomFields) {
+	public void setRandomFields(String randomFields) {
 		String[] fields = randomFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		this.randomFields = new String[fields.length];
 		this.randomRanges = new String[fields.length][2];//0 - number, 1 - min, 2 - max
@@ -624,7 +624,7 @@ public class DataGenerator extends Node {
 	/**
 	 * @param randomSeed the randomSeed to set
 	 */
-	private void setRandomSeed(long randomSeed) {
+	public void setRandomSeed(long randomSeed) {
 		this.randomSeed = randomSeed;
 	}
 
@@ -634,7 +634,7 @@ public class DataGenerator extends Node {
 	 * 
 	 * @param sequenceFields the sequenceFields to set in form fieldName=sequenceName or fieldName only
 	 */
-	private void setSequenceFields(String sequenceFields) {
+	public void setSequenceFields(String sequenceFields) {
 		String[] fields = sequenceFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
 		this.sequenceFields = new String[fields.length];
 		this.sequenceIDs = new String[fields.length];
