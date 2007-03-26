@@ -84,7 +84,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             dataParser.init(metadata);
             try {
                 while (dataParser.getNext(tmpRecord) != null) {
-                    lookupTable.add(tmpRecord);
+                    lookupTable.add(tmpRecord.duplicate());
                 }
             } catch (JetelException e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
@@ -238,15 +238,14 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			for (int i=0;i<startComparator.length;i++){
 				startComparison = startComparator[i].compare(o1, o2);
 				endComparison = endComparator[i].compare(o1, o2);
-				if (startComparison + endComparison < 0) return -1;
-				if (startComparison + endComparison > 0) {
+				if (endComparison == -1) return -1;
+				if (!(startComparison == 0 && endComparison == 0) ){
 					if (startComparison == 1 && endComparison == 0) {
 						return -1;
 					}else{
 						return 1;
 					}
 				}
-				if (endComparison != 0) return endComparison;
 			}
 			return 0;
 		}
