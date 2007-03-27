@@ -166,7 +166,7 @@ public class DataFieldMetadata implements Serializable {
 		this.name = _name;
 		this.delimiter = _delimiter;
 		this.fieldType = _type;
-		this.fieldProperties = null;
+		setFieldProperties(new TypedProperties());
 		this.localeStr=null;
 		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
 			trim = true;
@@ -189,7 +189,7 @@ public class DataFieldMetadata implements Serializable {
 		this.name = _name;
 		this.delimiter = _delimiter;
 		this.fieldType = STRING_FIELD;
-		this.fieldProperties = null;
+        setFieldProperties(new TypedProperties());
 		this.localeStr=null;
 	}
 
@@ -209,7 +209,7 @@ public class DataFieldMetadata implements Serializable {
 		this.name = _name;
 		this.size = size;
 		this.fieldType = STRING_FIELD;
-		this.fieldProperties = null;
+        setFieldProperties(new TypedProperties());
 		this.localeStr=null;
 	}
 
@@ -229,7 +229,7 @@ public class DataFieldMetadata implements Serializable {
 		this.name = _name;
 		this.size = size;
 		this.fieldType = _type;
-		this.fieldProperties = null;
+        setFieldProperties(new TypedProperties());
 		this.localeStr=null;
 		if (isNumeric() || fieldType == DATE_FIELD || fieldType == DATETIME_FIELD){
 			trim = true;
