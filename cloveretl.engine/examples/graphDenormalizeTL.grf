@@ -1,22 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="1.5" licenseType="Evaluation license" modified="Fri Jan 12 15:21:39 CET 2007" name="Testing NORMALIZER" revision="1.1">
+<Graph created="Fri Jan 12 08:41:50 CET 2007" description="This graph demonstrates functionality of DENORMALIZER component with denormalization specified by inline TransformLang source." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 05 15:07:57 CET 2007" name="Testing NORMALIZER" revision="1.4">
 <Global>
-<Metadata fileURL="metadata/orders2.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" type="DENORMALIZER">
-<attr name="order">ignore</attr>
-<attr name="key">EmployeeID</attr>
+<Node enabled="enabled" guiHeight="25" guiName="DENORMALIZE" guiWidth="50" guiX="195" guiY="20" id="DENORMALIZE" key="EmployeeID" order="ignore" type="DENORMALIZER">
 <attr name="denormalize">
 int order;
 string customer;
-string employee;
+int employee;
 
 function init() {
 	order = 0;
 	customer = "";
-	employee = "";
+	employee = 0;
 }
 
 function addInputRecord() {
@@ -29,11 +27,11 @@ function getOutputRecord() {
 	$OrderID := order;
 	$CustomerID := customer;
 	$EmployeeID := employee;
-}
+} 
 
 </attr>
 </Node>
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.sorted" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER">
 <attr name="DataPolicy">Strict</attr>
 </Node>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/denormalized.out" guiHeight="25" guiName="WRITER" guiWidth="50" guiX="370" guiY="20" id="WRITER" type="DELIMITED_DATA_WRITER"/>
