@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Jan 24 10:05:43 CET 2007" name="graphCLOVERData" revision="1.28">
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.6" licenseType="Evaluation license." modified="Thu Mar 15 13:54:33 CET 2007" name="graphCLOVERData" revision="1.45">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" recordDelimiter="&#10;" recordSize="212" type="fixed">
+<Record name="customer" recordDelimiter="\n" recordSize="212" type="fixed">
 <Field name="customer_id" nullable="true" shift="0" size="4" type="integer"/>
 <Field name="account_num" nullable="true" shift="0" size="11" type="long"/>
 <Field name="lname" nullable="true" shift="0" size="10" type="string"/>
@@ -63,18 +63,18 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv.zip" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="558" guiY="118" id="CLOVER_WRITER0" saveIndex="true" saveMetadata="true" type="CLOVER_WRITER"/>
+<Node compressData="false" enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv" guiHeight="0" guiName="CLOVER Data Writer" guiWidth="0" guiX="558" guiY="118" id="CLOVER_WRITER0" saveIndex="true" saveMetadata="true" type="CLOVER_WRITER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Concatenate" guiWidth="0" guiX="328" guiY="118" id="CONCATENATE0" type="CONCATENATE"/>
-<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="${WORKSPACE}/data/customers.???" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="50" guiY="44" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
+<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="${WORKSPACE}/data/fixlen/customers?.dat" guiHeight="66" guiName="customer from file" guiWidth="130" guiX="50" guiY="44" id="FIXLEN_DATA_READER0" type="FIXLEN_DATA_READER">
 <attr name="OneRecordPerLine">true</attr>
 </Node>
-<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="zip:${WORKSPACE}/data/data.zip#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="48" guiY="168" id="FIXLEN_DATA_READER1" type="FIXLEN_DATA_READER"/>
+<Node byteMode="false" enableIncomplete="true" enabled="enabled" fileURL="zip:${WORKSPACE}/data/fixlen/customers.zip#customers.dat;" guiHeight="0" guiName="Fixed Length Data Reader" guiWidth="0" guiX="48" guiY="168" id="FIXLEN_DATA_READER1" type="FIXLEN_DATA_READER"/>
 <Edge debugMode="false" fromNode="CONCATENATE0:0" guiBendpoints="" id="Edge2" inPort="0 (CLOVER Data Writer)" metadata="Metadata0" outPort="0 (Concatenate)" toNode="CLOVER_WRITER0:0"/>
 <Edge debugMode="false" fromNode="FIXLEN_DATA_READER0:0" guiBendpoints="" id="Edge0" inPort="1 (Concatenate)" metadata="Metadata0" outPort="0 (customer from file)" toNode="CONCATENATE0:1"/>
 <Edge debugMode="false" fromNode="FIXLEN_DATA_READER1:0" guiBendpoints="" id="Edge8" inPort="0 (Concatenate)" metadata="Metadata0" outPort="0 (Fixed Length Data Reader)" toNode="CONCATENATE0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv.zip" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="55" guiY="296" id="CLOVER_READER0" indexFileURL="Index file URL&#9;" startRecord="10" type="CLOVER_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/customers.clv" guiHeight="0" guiName="Clover Data Reader" guiWidth="0" guiX="55" guiY="296" id="CLOVER_READER0" indexFileURL="${WORKSPACE}/output/customers.clv.idx" startRecord="10" type="CLOVER_READER"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/strucured_customers.txt" guiHeight="0" guiName="Structured Data Writer" guiWidth="0" guiX="559" guiY="296" id="STRUCTURE_WRITER0" mask="&lt;Customer id=$customer_id&gt;&#10;&#9;&lt;last name = $lname&gt;&#10;&#9;&lt;first name = $fname&gt;&#10;&lt;/Customer&gt;&#10;" type="STRUCTURE_WRITER">
 <attr name="header">dir = ${WORKSPACE}
 </attr>
