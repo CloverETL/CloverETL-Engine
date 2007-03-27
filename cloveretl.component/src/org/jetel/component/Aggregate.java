@@ -52,7 +52,10 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Aggregate functions are applied on input data flow base on specified key.<br>
  *  The key is name (or combination of names) of field(s) from input record.
- *  Data flow can be sorted or not.</td></tr>
+ *  Data flow can be sorted or not. On this component you cannot set any transformation function
+ *  to map aggregation results on the output metadata. Output metadata has to correspond accurately
+ *  to the settings of aggregate component. Key of aggregation is mapped first and then follow
+ *  all aggregate function results.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
