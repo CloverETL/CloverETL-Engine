@@ -298,6 +298,111 @@ public class RangeLookupTest extends TestCase {
     	}
     }
     
+    public void test_3() throws ComponentNotReadyException{
+        lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
+        lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start1",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end1",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata,null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        lookup.init();
+    	record = new DataRecord(lookupMetadata);
+    	record.init();
+      	record.getField("name").setValue("10-20,100-200");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("15-20,100-200");
+    	record.getField("start").setValue(15);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("20-25,100-200");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(25);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,0-100");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,100-200");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,0-100");
+    	record.getField("start").setValue(30);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,100-200");
+    	record.getField("start").setValue(30);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("0-10,0-100");
+    	record.getField("start").setValue(0);
+      	record.getField("end").setValue(10);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+       	record.getField("name").setValue("0-10,100-200");
+    	record.getField("start").setValue(0);
+       	record.getField("start1").setValue(100);
+      	record.getField("end").setValue(10);
+      	record.getField("end1").setValue(200);
+      	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("10-20,0-100");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+
+       	DataRecord tmp;
+    	for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+			System.out.print(iter.next());
+			
+		}
+    	
+    	Integer[] keys = new Integer[2];
+    	
+    	for (int i=0;i<200;i++){
+    		keys[0] = random.nextInt(41);
+    		keys[1]  = random.nextInt(201);
+    		tmp = lookup.get(keys);
+    		System.out.println("Keys: " + keys[0] + "," + keys[1] + "\nFrom lookup table:\n" + 
+    				tmp);
+    		assertTrue(keys[0] >= (Integer)tmp.getField("start").getValue());
+    		assertTrue(keys[0] <= (Integer)tmp.getField("end").getValue());
+    		assertTrue(keys[1] >= (Integer)tmp.getField("start1").getValue());
+    		assertTrue(keys[1] <= (Integer)tmp.getField("end1").getValue());
+    		System.out.println("Num found: " + lookup.getNumFound());
+    		tmp = lookup.getNext();
+    		while (tmp != null) {
+    			System.out.println("Next:\n" + tmp);
+        		assertTrue(keys[0] >= (Integer)tmp.getField("start").getValue());
+        		assertTrue(keys[0] <= (Integer)tmp.getField("end").getValue());
+        		assertTrue(keys[1] >= (Integer)tmp.getField("start1").getValue());
+        		assertTrue(keys[1] <= (Integer)tmp.getField("end1").getValue());
+    			tmp = lookup.getNext();
+    		}
+    	}
+    }
+    
     private boolean checkOrder(DataRecord previous,DataRecord following){
      	int startComparison;
     	int endComparison;
