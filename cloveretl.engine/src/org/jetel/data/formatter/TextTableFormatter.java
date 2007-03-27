@@ -196,6 +196,7 @@ public class TextTableFormatter implements Formatter {
         
 		//for each record field which is in mask change its name to value
         Object o;
+        int lenght;
 		for (int i=0;i<maskAnalize.length;i++){
 			if (dataBuffer.remaining() < fieldBuffer.limit()){
 				directFlush();
@@ -206,11 +207,12 @@ public class TextTableFormatter implements Formatter {
 			fieldBuffer.flip();
             
 			blank.clear();
-			o = record.getField(maskAnalize[i].index).getValue();
+			o = record.getField(maskAnalize[i].index);
 			if (o == null) {
 				blank.limit(maskAnalize[i].length);
 			} else {
-				blank.limit(maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length())); // fieldBuffer.limit() is wrong - encoding
+				lenght = maskAnalize[i].length - (new String(o.toString().getBytes(encoder.charset().displayName())).length()); // fieldBuffer.limit() is wrong - encoding
+				blank.limit(lenght > 0 ? lenght : 0); // analyzed just n record -> some rows can be longer  
 			}
             mark=dataBuffer.position();
 
@@ -363,7 +365,7 @@ public class TextTableFormatter implements Formatter {
 		for (DataRecord dataRecord : dataRecords) {
 			for (int i=0; i<maskAnalize.length; i++) {
 				try {
-					o = dataRecord.getField(maskAnalize[i].index).getValue();
+					o = dataRecord.getField(maskAnalize[i].index);
 					if (o != null) {
 						lenght = new String(o.toString().getBytes(encoder.charset().displayName())).length(); // encoding
 					}
