@@ -39,7 +39,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected RecordKey lookupKey;
 	protected DataRecord tmpRecord;
 	private DataRecord tmp;
-	protected IntervalRecordComaprator comparator;
+	protected IntervalRecordComparator comparator;
 	protected int[] keyFields = null;
 	protected Iterator<DataRecord> subTableIterator;
 	protected RuleBasedCollator collator = null;
@@ -73,7 +73,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         if(isInitialized()) return;
 		super.init();
 		
-		comparator = new IntervalRecordComaprator(metadata,collator);
+		comparator = new IntervalRecordComparator(metadata,collator);
 		
 		lookupTable = new TreeSet<DataRecord>(comparator);
 
@@ -100,9 +100,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return null;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.Object[])
+	 */
 	public DataRecord get(Object[] keys) {
-		// TODO Auto-generated method stub
-		return null;
+		//prepare "interval" from keyRecord:set start end end for the value
+		for (int i=0;i<keys.length;i++){
+			tmpRecord.getField(2*i+1).setValue(keys[i]);
+			tmpRecord.getField(2*(i+1)).setValue(keys[i]);
+		}
+		return get();
 	}
 
 	/* (non-Javadoc)
@@ -117,6 +124,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			tmpRecord.getField(2*i+1).setValue(keyRecord.getField(keyFields[i]));
 			tmpRecord.getField(2*(i+1)).setValue(keyRecord.getField(keyFields[i]));
 		}
+		return get();
+	}
+	
+	/**
+	 * This method finds all greater records, then set in get(Object[]) or get(DataRecord)
+	 * method, in lookup table and stores them in subTable
+	 * 
+	 * @return
+	 */
+	private DataRecord get(){
 		//get all greater intervals
 		subTable = lookupTable.tailSet(tmpRecord);
 		subTableIterator = subTable.iterator();
@@ -124,6 +141,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return getNext();
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.LookupTable#getMetadata()
+	 */
 	public DataRecordMetadata getMetadata() {
 		return metadata;
 	}
@@ -171,17 +191,27 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return true;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.LookupTable#remove(java.lang.Object)
+	 */
 	public boolean remove(Object key) {
-		// TODO Auto-generated method stub
-		return false;
+        if (key instanceof DataRecord) {
+            return lookupTable.remove(key);
+        }else{
+            throw new IllegalArgumentException("Requires key parameter of type "+DataRecord.class.getName());
+        }
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.lookup.LookupTable#setLookupKey(java.lang.Object)
 	 */
 	public void setLookupKey(Object key) {
-        this.lookupKey=((RecordKey)key);
-        keyFields = lookupKey.getKeyFields();
+		if (key instanceof RecordKey){
+	        this.lookupKey=((RecordKey)key);
+	        keyFields = lookupKey.getKeyFields();
+	    }else{
+	        throw new RuntimeException("Incompatible Object type specified as lookup key: "+key.getClass().getName());
+	    }
 	}
 
 	/* (non-Javadoc)
@@ -199,10 +229,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see RecordComparator
 	 *
 	 */
-	private class IntervalRecordComaprator implements Comparator<DataRecord>{
+	private class IntervalRecordComparator implements Comparator<DataRecord>{
 		
-		RecordComparator[] startComparator;//comparator for odd fields
-		RecordComparator[] endComparator;//comparator for even fields
+		RecordComparator[] startComparator;//comparators for odd fields
+		RecordComparator[] endComparator;//comparators for even fields
 		int startComparison;
 		int endComparison;
 
@@ -212,7 +242,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		 * @param metadata metadata of records, which defines lookup table
 		 * @param collator collator for comparing string data fields
 		 */
-		public IntervalRecordComaprator(DataRecordMetadata metadata, RuleBasedCollator collator) {
+		public IntervalRecordComparator(DataRecordMetadata metadata, RuleBasedCollator collator) {
 			startComparator = new RecordComparator[(metadata.getNumFields()-1)/2];
 			endComparator = new RecordComparator[(metadata.getNumFields()-1)/2];
 			for (int i=0;i<startComparator.length;i++){
@@ -221,18 +251,27 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			}
 		}
 
-		public IntervalRecordComaprator(int[] keyFields) {
+		public IntervalRecordComparator(int[] keyFields) {
 			this(metadata,null);
 		}
 		
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 * 
-		 * Interval o2 is before interval o1 of its start is before start of o2, or it is
-		 * a subinterval of o2.
 		 * Intervals are equal if their start and end points are equal.
-		 * Interval o2 is after interval o1 if and only if its start and end are greater then 
-		 * start and end of interval o1 respectively
+		 * Interval o2 is after interval o1 if o1 is subinterval of o2 or start of o2 is
+		 * after start of o1 and end of o2 is after end of o1:
+		 * startComparison				endComparison			intervalComparison
+		 * o1.start.compareTo(o2.start)	o1.end.compareTo(o2.end)o1.compareTo(o2)
+		 * -1							-1						-1
+		 * -1				 			 0				 		 1(o2 is subinterval of o1) 	
+		 * -1							 1						 1(o2 is subinterval of o1)
+		 *  0							-1						-1(o1 is subinterval of o2)
+		 *  0							 0						 0(equal)
+		 *  0							 1						 1(o2 is subinterval of o1)
+		 *  1							-1						-1(o1 is subinterval of o2)
+		 *  1							 0						-1(o1 is subinterval of o2)
+		 *  1							 1						 1
 		 */
 		public int compare(DataRecord o1, DataRecord o2) {
 			for (int i=0;i<startComparator.length;i++){
