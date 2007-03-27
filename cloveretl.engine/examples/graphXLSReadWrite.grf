@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.4" licenseType="Evaluation license" modified="Tue Oct 24 12:47:05 CEST 2006" name="graphXLSRead">
+<Graph created="Tue Oct 24 10:36:22 CEST 2006" description="In this example data are read from ORDERS.xls file, partitioned to 3 parts and each of thees parts are saved in orders.partitioned.xls file in different sheets. " guiVersion="1.6" licenseType="Evaluation license." modified="Tue Mar 13 14:14:52 CET 2007" name="graphXLSRead" revision="1.20">
 <Global>
-<Metadata fileURL="metadata/ordersXLS.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="272" guiY="168" id="PARTITION0" partitionKey="SHIPVIA" ranges="1;2;3" type="PARTITION"/>
-<Node enabled="enabled" fieldMap="ORDERID=$a;CUSTOMERID=$b;EMPLOYEEID=$c;ORDERDATE=$d;REQUIREDDA=$d;SHIPPEDDAT=$f;SHIPVIA=$g;FREIGHT=$h;SHIPNAME=$i;SHIPADDRES=$j;SHIPCITY=$k;SHIPREGION=$l;SHIPPOSTAL=$n;SHIPCOUNTR=$m" fileURL="${WORKSPACE}/data/ORDERS.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="74" guiY="168" id="XLS_READER1" metadataRow="1" sheetNumber="0" type="XLS_READER"/>
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" firstColumn="f" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="65" id="XLS_WRITER0" namesRow="2" sheetName="via1" type="XLS_WRITER">
+<Node enabled="enabled" guiHeight="0" guiName="Partition" guiWidth="0" guiX="272" guiY="168" id="PARTITION0" partitionKey="ShipVia" ranges="1;2;3" type="PARTITION"/>
+<Node enabled="enabled" fieldMap="OrderID=$A;CustomerID=$B;EmployeeID=$C;OrderDate=$D;RequiredDate=$E;ShippedDate=$F;ShipVia=$G;Freight=$H;ShipName=$I;ShipAddress=$J;ShipCity=$K;ShipRegion=$L;ShipPostalCode=$M;ShipCountry=$N" fileURL="${WORKSPACE}/data/other/*.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="74" guiY="168" id="XLS_READER1" metadataRow="1" sheetNumber="*" type="XLS_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" firstColumn="f" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="65" id="XLS_WRITER0" namesRow="2" sheetName="via1" type="XLS_WRITER">
 <attr name="saveNames">true</attr>
+<attr name="recordsPerFile">100</attr>
 </Node>
 <Edge fromNode="PARTITION0:0" guiBendpoints="" id="Edge6" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="0 (Partition)" toNode="XLS_WRITER0:0"/>
 <Edge fromNode="PARTITION0:1" guiBendpoints="" id="Edge0" inPort="0 (XLS Data Writer)" metadata="Metadata0" outPort="1 (Partition)" toNode="XLS_WRITER1:0"/>
@@ -17,13 +18,15 @@
 <Edge fromNode="XLS_READER1:0" guiBendpoints="" id="Edge5" inPort="0 (Partition)" metadata="Metadata0" outPort="0 (XLS Data Reader)" toNode="PARTITION0:0"/>
 </Phase>
 <Phase number="1">
-<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" firstDataRow="10" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="168" id="XLS_WRITER1" sheetName="via2" type="XLS_WRITER">
+<Node enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" firstDataRow="10" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="168" id="XLS_WRITER1" sheetName="via2" type="XLS_WRITER">
 <attr name="saveNames">true</attr>
+<attr name="recordsPerFile">200</attr>
 </Node>
 </Phase>
 <Phase number="2">
-<Node append="true" enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="274" id="XLS_WRITER2" sheetName="via3" type="XLS_WRITER">
+<Node append="true" enabled="enabled" fileURL="${WORKSPACE}/output/orders.partitioned$.xls" guiHeight="0" guiName="XLS Data Writer" guiWidth="0" guiX="476" guiY="274" id="XLS_WRITER2" sheetName="via3" type="XLS_WRITER">
 <attr name="saveNames">true</attr>
+<attr name="recordsPerFile">300</attr>
 </Node>
 </Phase>
 </Graph>
