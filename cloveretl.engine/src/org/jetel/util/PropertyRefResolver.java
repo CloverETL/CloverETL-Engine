@@ -153,10 +153,9 @@ public class PropertyRefResolver {
 	      result =  resolveRef2(value,strict);
 	    }
 	    String tmp = StringUtils.stringToSpecChar(value);
-	    if (!tmp.equals(value.toString())) {
-	    	value.setLength(0);
-	    	value.append(tmp);
-	    }
+	    value.setLength(0);
+	    value.append(tmp);
+        
 	    return result;
 	}
 	
