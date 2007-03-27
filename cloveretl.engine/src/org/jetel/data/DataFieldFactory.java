@@ -48,7 +48,16 @@ public class DataFieldFactory {
 			case DataFieldMetadata.NUMERIC_FIELD:
 				return new NumericDataField(fieldMetadata,plain);
 			case DataFieldMetadata.DECIMAL_FIELD:
-				return new DecimalDataField(fieldMetadata, fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR), fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR), false);
+				int length;
+				int scale;
+				if (fieldMetadata.getFieldProperties() != null) {
+					length = fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.LENGTH_ATTR);
+					scale = fieldMetadata.getFieldProperties().getIntProperty(DataFieldMetadata.SCALE_ATTR);
+				}else{
+					length = Defaults.DataFieldMetadata.DECIMAL_LENGTH;
+					scale = Defaults.DataFieldMetadata.DECIMAL_SCALE;
+				}
+				return new DecimalDataField(fieldMetadata, length, scale, false);
 			case DataFieldMetadata.INTEGER_FIELD:
 				return new IntegerDataField(fieldMetadata,plain);
 			case DataFieldMetadata.BYTE_FIELD:
