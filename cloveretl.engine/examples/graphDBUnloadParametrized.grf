@@ -1,33 +1,33 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Thu Dec 21 08:55:10 CET 2006" guiVersion="1.5" licenseType="Evaluation license" modified="Thu Jan 11 11:28:46 CET 2007" name="graphDBUnloadParametrized" revision="1.6">
+<Graph created="Thu Dec 21 08:55:10 CET 2006" description="This graph illustrates how to read not all records from database. This example is similar to graphDBJoin.grf, but found records from database are not sent to transformation function, but directly to output port." guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Mon Mar 12 15:29:02 CET 2007" name="graphDBUnloadParametrized" revision="1.8">
 <Global>
 <Metadata id="Metadata1">
-<Record name="employees" recordDelimiter="" type="delimited">
-<Field delimiter=";" name="employee_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="full_name" nullable="true" type="string"/>
-<Field delimiter=";" name="first_name" nullable="true" type="string"/>
-<Field delimiter=";" name="last_name" nullable="true" type="string"/>
-<Field delimiter=";" name="position_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="position_title" nullable="true" type="string"/>
-<Field delimiter=";" name="store_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="department_id" nullable="true" type="integer"/>
-<Field delimiter=";" format="ddd dd MMM yyyy" name="birth_date" nullable="true" type="date"/>
-<Field delimiter=";" locale="pl.PL" name="hire_date" nullable="true" type="date"/>
-<Field delimiter=";" name="end_date" nullable="true" type="date"/>
-<Field delimiter=";" format="#000000.00" name="salary" nullable="true" type="numeric"/>
-<Field delimiter=";" name="supervisor_id" nullable="true" type="integer"/>
-<Field delimiter=";" name="education_level" nullable="true" type="string"/>
-<Field delimiter=";" name="marital_status" nullable="true" type="string"/>
-<Field delimiter=";" name="gender" nullable="true" type="string"/>
-<Field delimiter="\n" name="management_role" nullable="true" type="string"/>
+<Record name="employees" recordSize="-1" type="delimited">
+<Field delimiter=";" name="employee_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="full_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="last_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="position_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="position_title" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="store_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="department_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" format="ddd dd MMM yyyy" name="birth_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" locale="pl.PL" name="hire_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" name="end_date" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" format="#000000.00" name="salary" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" name="supervisor_id" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="education_level" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="marital_status" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="gender" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="management_role" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Metadata fileURL="metadata/orders.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/orders.fmt" id="Metadata0"/>
 <Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" fileURL="${WORKSPACE}/data/orders.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="21" guiY="82" id="DATA_READER0" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="0" guiName="Universal Data Reader" guiWidth="0" guiX="21" guiY="82" id="DATA_READER0" type="DATA_READER"/>
 <Node dbConnection="DBConnection0" enabled="enabled" guiHeight="0" guiName="DBJoin" guiWidth="0" guiX="185" guiY="82" id="DBJOIN0" joinKey="EmployeeID" sqlQuery="select * from employee where employee_id = ?" type="DBJOIN">
 <attr name="maxCashed">1000</attr>
 </Node>
