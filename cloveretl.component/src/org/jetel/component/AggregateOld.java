@@ -21,7 +21,7 @@ package org.jetel.component;
 
 import java.util.Iterator;
 
-import org.jetel.component.aggregate.AggregateFunction;
+import org.jetel.component.aggregate.AggregateFunctionOld;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -83,7 +83,7 @@ import org.w3c.dom.Element;
  * @since       June 27, 2005
  * @revision    $Revision$
  */
-public class Aggregate extends Node {
+public class AggregateOld extends Node {
 
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
     private static final String XML_CHARSET_ATTRIBUTE = "charset";
@@ -97,7 +97,7 @@ public class Aggregate extends Node {
 	private String[] aggregateKeys;
 	private String aggregateFunctionStr;
 	private RecordKey recordKey;
-	private AggregateFunction aggregateFunction;
+	private AggregateFunctionOld aggregateFunction;
 	private boolean equalNULLs;
 	private String charset;
 
@@ -108,7 +108,7 @@ public class Aggregate extends Node {
 	 * @param  dedupKeys  Description of the Parameter
 	 * @param  keepFirst  Description of the Parameter
 	 */
-	public Aggregate(String id, String[] aggregateKeys, String aggregateFunctions, boolean sorted) {
+	public AggregateOld(String id, String[] aggregateKeys, String aggregateFunctions, boolean sorted) {
 		super(id);
 		this.sorted = sorted;
 		this.aggregateKeys = aggregateKeys;
@@ -185,7 +185,7 @@ public class Aggregate extends Node {
 		// are considered equal
 		recordKey.setEqualNULLs(equalNULLs);
 
-		aggregateFunction = new AggregateFunction(aggregateFunctionStr, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(), recordKey, sorted, charset);
+		aggregateFunction = new AggregateFunctionOld(aggregateFunctionStr, getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(), recordKey, sorted, charset);
 		aggregateFunction.init();
 	}
 
@@ -227,8 +227,8 @@ public class Aggregate extends Node {
                 sorted = xattribs.getString("sorted").matches("^[Tt].*");                
             }
             //make instance of aggregate component
-		    Aggregate agg;
-			agg = new Aggregate(xattribs.getString("id"),
+		    AggregateOld agg;
+			agg = new AggregateOld(xattribs.getString("id"),
 					aggregateKey,
 					xattribs.getString("aggregateFunctions"),
                     sorted);
