@@ -205,7 +205,7 @@ public abstract class FixLenDataParser implements Parser {
 		}
 		// set handler
 		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
-				fieldIdx, offendingValue, exception);
+				fieldIdx, offendingValue.toString(), exception);
 	}
 		
 	public IParserExceptionHandler getExceptionHandler() {

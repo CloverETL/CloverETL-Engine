@@ -225,7 +225,7 @@ public class MultiLevelParser extends FixLenDataParser {
 		}
 		// set handler
 		exceptionHandler.populateHandler(exception.getMessage(), record, recordIdx - 1,
-				fieldIdx, offendingValue, exception);
+				fieldIdx, offendingValue.toString(), exception);
 	}
 		
 	/**
