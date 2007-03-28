@@ -46,7 +46,7 @@ import org.jetel.util.Base64;
  * @since       June 27, 2005
  * @revision    $Revision$
  */
-public class AggregateFunction implements Iterator {
+public class AggregateFunctionOld implements Iterator {
 
 	final static int AGGREGATE_GROUP_INITIAL_CAPACITY = 512;		
 
@@ -89,7 +89,7 @@ public class AggregateFunction implements Iterator {
 	/**
 	 *Constructor for the AggregateFunction object
 	 */
-	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset, int aggregateGroupInitialCapacity) {
+	public AggregateFunctionOld(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset, int aggregateGroupInitialCapacity) {
 		this.aggregateFunction = aggregateFunction;
 		this.recordKey = recordKey;
 		inMetadata = inRecordMetadata;
@@ -102,7 +102,7 @@ public class AggregateFunction implements Iterator {
 	/**
 	 *Constructor for the AggregateFunction object
 	 */
-	public AggregateFunction(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset) {
+	public AggregateFunctionOld(String aggregateFunction, DataRecordMetadata inRecordMetadata, DataRecordMetadata outRecordMetadata, RecordKey recordKey, boolean sorted, String charset) {
 		this(aggregateFunction, inRecordMetadata, outRecordMetadata, recordKey, sorted, charset, AGGREGATE_GROUP_INITIAL_CAPACITY);
 	}
 
