@@ -96,8 +96,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 }
 	
 	public DataRecord get(String keyString) {
-		// TODO Auto-generated method stub
-		return null;
+		tmpRecord.getField(1).fromString(keyString);
+		tmpRecord.getField(2).fromString(keyString);
+		return get();
 	}
 
 	/* (non-Javadoc)
