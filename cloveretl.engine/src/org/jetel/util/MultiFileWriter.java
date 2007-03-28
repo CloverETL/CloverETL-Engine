@@ -19,7 +19,6 @@
 */
 package org.jetel.util;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
@@ -127,7 +126,7 @@ public class MultiFileWriter {
         	if (useChannel) {
                 formatter.setDataTarget(byteChannel);
         	} else {
-                formatter.setDataTarget(new File(fName));
+                formatter.setDataTarget(FileUtils.getFileURL(contextURL, fName).getFile());
         	}
         } else {
         	byteChannel = channels.next();
