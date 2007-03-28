@@ -53,6 +53,7 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.TrackingDetail.PortType;
 import org.jetel.util.DuplicateKeyMap;
 import org.jetel.util.StringUtils;
 
@@ -383,14 +384,14 @@ public class WatchDog extends Thread implements CloverRuntime {
                     
                     int i=0;
                     for (InputPort port : node.getInPorts()){
-                        trackingDetail.updateRows(TrackingDetail.IN_PORT, i, port.getRecordCounter());
-                        trackingDetail.updateBytes(TrackingDetail.IN_PORT, i, port.getByteCounter());
+                        trackingDetail.updateRows(PortType.IN_PORT, i, port.getRecordCounter());
+                        trackingDetail.updateBytes(PortType.IN_PORT, i, port.getByteCounter());
                         i++;    
                     }
                     i=0;
                     for (OutputPort port : node.getOutPorts()){
-                        trackingDetail.updateRows(TrackingDetail.OUT_PORT, i, port.getRecordCounter());
-                        trackingDetail.updateBytes(TrackingDetail.OUT_PORT, i, port.getByteCounter());
+                        trackingDetail.updateRows(PortType.OUT_PORT, i, port.getRecordCounter());
+                        trackingDetail.updateBytes(PortType.OUT_PORT, i, port.getByteCounter());
                         
                        if (port instanceof Edge){
                             trackingDetail.updateWaitingRows(i, ((Edge)port).getBufferedRecords());
@@ -641,17 +642,17 @@ public class WatchDog extends Thread implements CloverRuntime {
                         final float cpuUsage= (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
                         portInfo = new Object[] {" %cpu:",cpuUsage>=0.01f ? Float.toString(cpuUsage) : "..",
                                 "In:", Integer.toString(i), 
-                                Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
-                                Long.toString(nodeDetail.getTotalBytes(TrackingDetail.IN_PORT, i)>>10),
-                                Integer.toString((nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i))),
-                                Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.IN_PORT, i)>>10)};
+                                Integer.toString(nodeDetail.getTotalRows(PortType.IN_PORT, i)),
+                                Long.toString(nodeDetail.getTotalBytes(PortType.IN_PORT, i)>>10),
+                                Integer.toString((nodeDetail.getAvgRows(PortType.IN_PORT, i))),
+                                Integer.toString(nodeDetail.getAvgBytes(PortType.IN_PORT, i)>>10)};
                         trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU)); 
                     }else{
                             portInfo = new Object[] {"In:", Integer.toString(i), 
-                            Integer.toString(nodeDetail.getTotalRows(TrackingDetail.IN_PORT, i)),
-                            Long.toString(nodeDetail.getTotalBytes(TrackingDetail.IN_PORT, i)>>10),
-                            Integer.toString(( nodeDetail.getAvgRows(TrackingDetail.IN_PORT, i))),
-                            Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.IN_PORT, i)>>10)};
+                            Integer.toString(nodeDetail.getTotalRows(PortType.IN_PORT, i)),
+                            Long.toString(nodeDetail.getTotalBytes(PortType.IN_PORT, i)>>10),
+                            Integer.toString(( nodeDetail.getAvgRows(PortType.IN_PORT, i))),
+                            Integer.toString(nodeDetail.getAvgBytes(PortType.IN_PORT, i)>>10)};
                         trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
                     
@@ -662,17 +663,17 @@ public class WatchDog extends Thread implements CloverRuntime {
                         final float cpuUsage= (finalTracking ? nodeDetail.getPeakUsageCPU()  : nodeDetail.getUsageCPU());
                         portInfo = new Object[] {" %cpu:",cpuUsage>0.01f ? Float.toString(cpuUsage) : "..",
                                 "Out:", Integer.toString(i), 
-                                Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
-                                Long.toString(nodeDetail.getTotalBytes(TrackingDetail.OUT_PORT, i)>>10),
-                                Integer.toString((nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i))),
-                                Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.OUT_PORT, i)>>10)};
+                                Integer.toString(nodeDetail.getTotalRows(PortType.OUT_PORT, i)),
+                                Long.toString(nodeDetail.getTotalBytes(PortType.OUT_PORT, i)>>10),
+                                Integer.toString((nodeDetail.getAvgRows(PortType.OUT_PORT, i))),
+                                Integer.toString(nodeDetail.getAvgBytes(PortType.OUT_PORT, i)>>10)};
                         trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITH_CPU));
                     }else{
                         portInfo = new Object[] {"Out:", Integer.toString(i), 
-                            Integer.toString(nodeDetail.getTotalRows(TrackingDetail.OUT_PORT, i)),
-                            Long.toString(nodeDetail.getTotalBytes(TrackingDetail.OUT_PORT, i)>>10),
-                            Integer.toString((nodeDetail.getAvgRows(TrackingDetail.OUT_PORT, i))),
-                            Integer.toString(nodeDetail.getAvgBytes(TrackingDetail.OUT_PORT, i)>>10)};
+                            Integer.toString(nodeDetail.getTotalRows(PortType.OUT_PORT, i)),
+                            Long.toString(nodeDetail.getTotalBytes(PortType.OUT_PORT, i)>>10),
+                            Integer.toString((nodeDetail.getAvgRows(PortType.OUT_PORT, i))),
+                            Integer.toString(nodeDetail.getAvgBytes(PortType.OUT_PORT, i)>>10)};
                         trackingLogger.info(StringUtils.formatString(portInfo, ARG_SIZES_WITHOUT_CPU));
                     }
                 }               
