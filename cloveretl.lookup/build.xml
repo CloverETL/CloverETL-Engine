@@ -9,9 +9,16 @@
 	<property name="dir.dist.default" value="${basedir}/dist"/>
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
+	<property name="engine.dir.lib" value="${basedir}/../cloveretl.engine/lib"/>
 	
 	<!--load external properties-->
 	<property file="../cloveretl.engine/build.properties"/>
+
+	<!-- =========================== LIBRARIES ============================= -->
+	<fileset id="engine-libs" dir="${engine.dir.lib}">
+		<include name="**/*.jar"/>
+		<include name="**/*.zip"/>
+	</fileset>
 
 	<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file"/>
@@ -76,6 +83,9 @@
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
 			classpath="${dir.dist}${engine.dist}:${dir.dist}${connection.dist}">
+			<classpath>
+				<fileset refid="engine-libs"/>			
+			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
 		</javac>

@@ -28,6 +28,7 @@
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="engine-libs" dir="${dir.lib}">
 		<include name="**/*.jar"/>
+		<include name="**/*.zip"/>
 	</fileset>
 
 		<!-- =========================== TARGETS ============================== -->
@@ -164,8 +165,8 @@
 		<javac debug="true" destdir="${dir.bin}" target="1.5" source="1.5">
 			<classpath>
 				<pathelement path="${tools}"/>
-				<pathelement path="${commons-logging}"/>
-				<pathelement path="${log4j}"/>
+				<!--pathelement path="${commons-logging}"/>
+				<pathelement path="${log4j}"/-->
 				<fileset refid="engine-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
