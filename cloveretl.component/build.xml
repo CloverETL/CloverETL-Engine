@@ -10,6 +10,7 @@
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
+	<property name="engine.dir.lib" value="${basedir}/../cloveretl.engine/lib"/>
 
 	<!--load external properties-->
 	<property file="../cloveretl.engine/build.properties"/>
@@ -17,6 +18,12 @@
 	<!-- =========================== LIBRARIES ============================= -->
 	<fileset id="component-libs" dir="${dir.lib}">
 		<include name="**/*.jar"/>
+		<include name="**/*.zip"/>
+	</fileset>
+
+	<fileset id="engine-libs" dir="${engine.dir.lib}">
+		<include name="**/*.jar"/>
+		<include name="**/*.zip"/>
 	</fileset>
 
 	<!-- =========================== TARGETS ============================== -->
@@ -85,10 +92,10 @@
 		<!-- Compile sources -->
 		<javac debug="true" destdir="${dir.bin}"
 			target="1.5" source="1.5" 
-			classpath="${dir.dist}/plugins/org.jetel.connection/lib/jms.jar;${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
+			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${lookup.dist}">
 			<classpath>
-				<pathelement path="${commons-logging}"/>
 				<fileset refid="component-libs"/>			
+				<fileset refid="engine-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>

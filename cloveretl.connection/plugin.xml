@@ -5,7 +5,6 @@
 
 	<runtime>
 		<library path="cloveretl.connection.jar"/>
-		<library path="lib/jms.jar"/>
    	</runtime> 
 
 	<extension point-id="connection">
