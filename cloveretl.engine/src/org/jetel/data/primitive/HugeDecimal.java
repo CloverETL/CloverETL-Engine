@@ -93,11 +93,11 @@ public final class HugeDecimal implements Decimal {
 			return;
 		}
 		value = BigDecimal.valueOf(_value);
+        setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
         }
-		setNaN(false);
 	}
 
 	/**
@@ -109,11 +109,11 @@ public final class HugeDecimal implements Decimal {
 			return;
 		}
 		value = BigDecimal.valueOf(_value);
+        setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
         }
-		setNaN(false);
 	}
 
 	/**
@@ -125,6 +125,7 @@ public final class HugeDecimal implements Decimal {
 			return;
 		}
 		value = BigDecimal.valueOf(_value);
+        setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
@@ -141,11 +142,11 @@ public final class HugeDecimal implements Decimal {
             return;
         }
         value = _value.getBigDecimal();
+        setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
         }
-        setNaN(false);
     }
 
     /**
@@ -157,11 +158,11 @@ public final class HugeDecimal implements Decimal {
             return;
         }
         value = _value;
+        setNaN(false);
         if(!satisfyPrecision()) {
             setNaN(true);
             throw new NumberFormatException("Number is out of available precision. (" + _value + ")");
         }
-        setNaN(false);
     }
     
     /* (non-Javadoc)
