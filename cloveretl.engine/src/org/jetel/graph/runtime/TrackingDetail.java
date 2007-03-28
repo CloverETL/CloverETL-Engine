@@ -23,25 +23,24 @@
  */
 package org.jetel.graph.runtime;
 
-import java.util.Arrays;
-
-import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 
 public interface TrackingDetail {
 
-    public static final int IN_PORT=0;
-    public static final int OUT_PORT=1;
+    public enum PortType {
+        IN_PORT,
+        OUT_PORT;
+    }
     
-    public int getAvgBytes(int portType,int portNum);
-    public int getAvgRows(int portType,int portNum);
-    public int getPeakRows(int portType,int portNum);
+    public int getAvgBytes(PortType portType,int portNum);
+    public int getAvgRows(PortType portType,int portNum);
+    public int getPeakRows(PortType portType,int portNum);
     public int getAvgWaitingRows(int portNum);
     public int getAvgWaitingTime();
-    public long getTotalBytes(int portType,int portNum);
+    public long getTotalBytes(PortType portType,int portNum);
     public long getTotalCPUTime();
     public long getTotalUserTime();
-    public int getTotalRows(int portType,int portNum);
+    public int getTotalRows(PortType portType,int portNum);
     public String getNodeId();
     public String getNodeName();
     public int getPhase();

@@ -99,18 +99,18 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getAvgBytes(int, int)
      */
-    public int getAvgBytes(int portType,int portNum) {
-        return avgBytes[portType][portNum];
+    public int getAvgBytes(PortType portType,int portNum) {
+        return avgBytes[portType.ordinal()][portNum];
     }
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getAvgRows(int, int)
      */
-    public int getAvgRows(int portType,int portNum) {
-        return avgRows[portType][portNum];
+    public int getAvgRows(PortType portType,int portNum) {
+        return avgRows[portType.ordinal()][portNum];
     }
     
-    public int getPeakRows(int portType,int portNum) {
-        return peakRows[portType][portNum];
+    public int getPeakRows(PortType portType,int portNum) {
+        return peakRows[portType.ordinal()][portNum];
     }
     
     /* (non-Javadoc)
@@ -128,8 +128,8 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getTotalBytes(int, int)
      */
-    public long getTotalBytes(int portType,int portNum) {
-        return totalBytes[portType][portNum];
+    public long getTotalBytes(PortType portType,int portNum) {
+        return totalBytes[portType.ordinal()][portNum];
     }
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getTotalCPUTime()
@@ -148,8 +148,8 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
     /* (non-Javadoc)
      * @see org.jetel.graph.runtime.GraphTrackingDetail#getTotalRows(int, int)
      */
-    public int getTotalRows(int portType,int portNum) {
-        return totalRows[portType][portNum];
+    public int getTotalRows(PortType portType,int portNum) {
+        return totalRows[portType.ordinal()][portNum];
     }
     
     public void timestamp(){
@@ -158,15 +158,15 @@ public class NodeTrackingDetail implements TrackingDetail, Serializable {
         timestamp=newtime;
     }
     
-    public void updateRows(int portType,int portNum,int rows){
-        avgRows[portType][portNum]=(int)((rows-totalRows[portType][portNum])*1000/timespan);
-        peakRows[portType][portNum]=Math.max(peakRows[portType][portNum], avgRows[portType][portNum]); 
-        totalRows[portType][portNum]=rows;
+    public void updateRows(PortType portType,int portNum,int rows){
+        avgRows[portType.ordinal()][portNum]=(int)((rows-totalRows[portType.ordinal()][portNum])*1000/timespan);
+        peakRows[portType.ordinal()][portNum]=Math.max(peakRows[portType.ordinal()][portNum], avgRows[portType.ordinal()][portNum]); 
+        totalRows[portType.ordinal()][portNum]=rows;
     }
 
-    public void updateBytes(int portType,int portNum,long bytes){
-        avgBytes[portType][portNum]=(int)((bytes-totalBytes[portType][portNum])*1000/timespan);
-        totalBytes[portType][portNum]=bytes;
+    public void updateBytes(PortType portType,int portNum,long bytes){
+        avgBytes[portType.ordinal()][portNum]=(int)((bytes-totalBytes[portType.ordinal()][portNum])*1000/timespan);
+        totalBytes[portType.ordinal()][portNum]=bytes;
     }
     
     public void updateRunTime(long cpuTime,long userTime,long systemTime){

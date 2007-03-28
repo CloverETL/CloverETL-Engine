@@ -35,6 +35,7 @@ import org.jetel.data.Defaults;
 import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
+import org.jetel.graph.runtime.TrackingDetail.PortType;
 
 public class CloverJMX extends NotificationBroadcasterSupport  implements CloverJMXMBean {
 
@@ -122,10 +123,10 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
             str.append(detail.getNumInputPorts()).append(';');
             str.append(detail.getNumOutputPorts()).append(';');
             for(int i=0;i<detail.getNumInputPorts();i++){
-                str.append(detail.getTotalRows(TrackingDetail.IN_PORT, i)).append(';');
+                str.append(detail.getTotalRows(PortType.IN_PORT, i)).append(';');
             }
             for(int i=0;i<detail.getNumOutputPorts();i++){
-                str.append(detail.getTotalRows(TrackingDetail.OUT_PORT, i)).append(';');
+                str.append(detail.getTotalRows(PortType.OUT_PORT, i)).append(';');
             }
             return str.toString();
         }
