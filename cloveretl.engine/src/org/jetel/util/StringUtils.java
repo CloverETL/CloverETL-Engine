@@ -414,6 +414,7 @@ public class StringUtils {
     * @return  true if parameter contains space characters only
     */
     public static boolean isBlank(CharSequence data){
+    	if (data == null) return true;
          for(int i=0;i<data.length();i++){
              if (!Character.isSpaceChar(data.charAt(i))){
                  return false;
