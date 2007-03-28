@@ -19,6 +19,8 @@
 */
 package org.jetel.exception;
 
+import java.util.Iterator;
+
 /**
  * Parser exception handler with type "strict". Handled exception is only re-throwed.
  * 
@@ -39,11 +41,15 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     
     @Override
     protected void handle() {
-        exception.setRecordNumber(recordNumber);
-        exception.setFieldNumber(fieldNumber);
-        exception.setOffendingValue(offendingValue);
+    	ParseException exception = null;
+    	for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
+    		exception = iter.next();
+    		exception.exception.setFieldNumber(exception.fieldNumber);
+    		exception.exception.setOffendingValue(exception.offendingValue);
+    		exception.exception.setRecordNumber(recordNumber);
+		}
 
-        throw exception;
+        throw exception.exception;
     }
 
     @Override

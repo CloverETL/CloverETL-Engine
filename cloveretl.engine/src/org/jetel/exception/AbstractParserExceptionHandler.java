@@ -19,6 +19,14 @@
 */
 package org.jetel.exception;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+
 import org.jetel.data.DataRecord;
 
 /**
@@ -29,19 +37,14 @@ import org.jetel.data.DataRecord;
  *
  */
 public abstract class AbstractParserExceptionHandler implements IParserExceptionHandler {
-    protected boolean exceptionThrowed;
 
-    protected String errorMessage;
-    
+	protected boolean exceptionThrowed;
+
     protected DataRecord record;
     
     protected int recordNumber;
     
-    protected int fieldNumber;
-    
-    protected CharSequence offendingValue;
-    
-    protected BadDataFormatException exception;
+    protected List<ParseException> errors = new ArrayList<ParseException>();
     
     public void handleException() {
         exceptionThrowed = false;
@@ -55,19 +58,28 @@ public abstract class AbstractParserExceptionHandler implements IParserException
             DataRecord record,
             int recordNumber,
             int fieldNumber,
-            CharSequence offendingValue,
+            String offendingValue,
             BadDataFormatException exception) {
         this.exceptionThrowed = true;
-        this.errorMessage = errorMessage;
         this.record = record;
         this.recordNumber = recordNumber;
-        this.fieldNumber = fieldNumber;
-        this.offendingValue = offendingValue;
-        this.exception = exception;
+        errors.add(new ParseException(fieldNumber,offendingValue,errorMessage,exception));
     }
     
     public String getErrorMessage() {
-        return errorMessage;
+        StringBuilder errorMess = new StringBuilder();
+        ParseException element;
+        for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
+        	element = iter.next();
+			errorMess.append("Field number: ");
+			errorMess.append(element.fieldNumber);
+			errorMess.append(", offending value: ");
+			errorMess.append(element.offendingValue);
+			errorMess.append(", message: ");
+			errorMess.append(element.errorMessage);
+			errorMess.append(".");
+		}
+        return errorMess.toString();
     }
 
     public DataRecord getRecord() {
@@ -78,16 +90,31 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         return recordNumber;
     }
 
-    public int getFieldNumber() {
+    public int[] getFieldNumber() {
+    	int[] fieldNumber = new int[errors.size()];
+    	int i=0;
+    	for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
+			fieldNumber[i++] = iter.next().fieldNumber;
+		}
         return fieldNumber;
     }
     
-    public CharSequence getOffendingValue() {
-        return offendingValue;
+    public String[] getOffendingValue() {
+    	String[] offendingValues = new String[errors.size()];
+    	int i=0;
+    	for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
+			offendingValues[i++] = iter.next().offendingValue;
+		}
+    	return offendingValues;
     }
     
-    public Exception getException() {
-        return exception;
+    public Exception[] getException() {
+    	Exception[] exceptions = new Exception[errors.size()];
+    	int i=0;
+    	for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
+			exceptions[i++] = iter.next().exception;
+		}
+    	return exceptions;
     }
 
     public boolean isExceptionThrowed() {
@@ -95,10 +122,34 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     }
     
     
-    public String getFieldName() {
-        return record.getMetadata().getField(fieldNumber).getName();
+    public String[] getFieldName() {
+    	int[] fieldNumber = getFieldNumber();
+    	String[] fieldName = new String[fieldNumber.length];
+    	for (int i = 0; i < fieldName.length; i++) {
+			fieldName[i] = record.getMetadata().getField(fieldNumber[i]).getName(); 
+		}
+        return fieldName;
     }
     
     public abstract PolicyType getType();
 
+}
+
+class ParseException extends Exception{
+	
+	int fieldNumber;
+	String offendingValue;
+	String errorMessage;
+	BadDataFormatException exception;
+
+	ParseException(int fieldNumber, String offendingValue, String errorMessage, BadDataFormatException exception) {
+		super();
+		this.fieldNumber = fieldNumber;
+		this.offendingValue = offendingValue;
+		this.errorMessage = errorMessage;
+		this.exception = exception;
+	}
+	
+	
+	
 }

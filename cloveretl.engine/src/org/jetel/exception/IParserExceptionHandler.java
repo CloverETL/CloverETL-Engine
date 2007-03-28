@@ -19,6 +19,8 @@
 */
 package org.jetel.exception;
 
+import java.util.Map;
+
 import org.jetel.data.DataRecord;
 
 /**
@@ -47,24 +49,24 @@ public interface IParserExceptionHandler {
             DataRecord record,
             int recordNumber,
             int fieldNumber,
-            CharSequence offendingValue,
+            String offendingValue,
             BadDataFormatException exception);
     
     public String getErrorMessage();
-
-    public DataRecord getRecord();
+    
+     public DataRecord getRecord();
     
     public int getRecordNumber();
 
-    public int getFieldNumber();
+    public int[] getFieldNumber();
     
-    public CharSequence getOffendingValue();
+    public String[] getOffendingValue();
     
-    public Exception getException();
+    public Exception[] getException();
 
     public boolean isExceptionThrowed();
     
-    public String getFieldName();
+    public String[] getFieldName();
     
     public abstract PolicyType getType();
 
