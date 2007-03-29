@@ -4,6 +4,8 @@ package org.jetel.data.lookup;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.NumberFormat;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
 
@@ -12,6 +14,9 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.parser.XLSDataParser;
+import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.main.runGraph;
@@ -34,7 +39,7 @@ public class RangeLookupTest extends TestCase {
         runGraph.initEngine(null, null);
     }
 
-    public void test_1() throws IOException,ComponentNotReadyException{
+    public void test_getDataRecord() throws IOException,ComponentNotReadyException{
         lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
         lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.INTEGER_FIELD,";"));
@@ -210,7 +215,7 @@ public class RangeLookupTest extends TestCase {
     	}
   }
     
-    public void test_2() throws IOException,ComponentNotReadyException,JetelException{
+    public void test_largeData() throws IOException,ComponentNotReadyException,JetelException{
         lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
         lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("s1",DataFieldMetadata.INTEGER_FIELD,";"));
@@ -227,7 +232,13 @@ public class RangeLookupTest extends TestCase {
         lookupMetadata.addField(new DataFieldMetadata("e6",DataFieldMetadata.NUMERIC_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("s7",DataFieldMetadata.INTEGER_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("e7",DataFieldMetadata.INTEGER_FIELD,";"));
-    	
+       	DataFieldMetadata fieldMetadata = new DataFieldMetadata("s8",DataFieldMetadata.DATE_FIELD,";"); 
+       	fieldMetadata.setFormatStr("dd.MM.yy");
+       	lookupMetadata.addField(fieldMetadata);
+       	fieldMetadata = new DataFieldMetadata("e8",DataFieldMetadata.DATE_FIELD,";"); 
+       	fieldMetadata.setFormatStr("dd.MM.yy"); 
+       	lookupMetadata.addField(fieldMetadata);
+       	
         XLSDataParser parser = new XLSDataParser();
         parser.setSheetNumber("0");
         parser.init(lookupMetadata);
@@ -263,9 +274,13 @@ public class RangeLookupTest extends TestCase {
        	metadata.addField(new DataFieldMetadata("value5",DataFieldMetadata.INTEGER_FIELD,";"));
        	metadata.addField(new DataFieldMetadata("value6",DataFieldMetadata.NUMERIC_FIELD,";"));
        	metadata.addField(new DataFieldMetadata("value7",DataFieldMetadata.INTEGER_FIELD,";"));
+       	fieldMetadata = new DataFieldMetadata("value8",DataFieldMetadata.DATE_FIELD,";"); 
+       	fieldMetadata.setFormatStr("dd.MM.yy");
+       	metadata.addField(fieldMetadata);
+       	
       	record = new DataRecord(metadata);
     	record.init();
-       	RecordKey key = new RecordKey(new int[]{1,2,3,4,5,6,7},metadata);
+       	RecordKey key = new RecordKey(new int[]{1,2,3,4,5,6,7,8},metadata);
        	lookup.setLookupKey(key);
        	
        	DelimitedDataParser dataParser = new DelimitedDataParser();
@@ -293,12 +308,14 @@ public class RangeLookupTest extends TestCase {
         		assertTrue((Double)record.getField("value6").getValue() <= (Double)tmp.getField("e6").getValue());
         		assertTrue((Integer)record.getField("value7").getValue() >= (Integer)tmp.getField("s7").getValue());
         		assertTrue((Integer)record.getField("value7").getValue() <= (Integer)tmp.getField("e7").getValue());
+        		assertTrue(((Date)record.getField("value8").getValue()).compareTo((Date)tmp.getField("s8").getValue())>=0);
+        		assertTrue(((Date)record.getField("value8").getValue()).compareTo((Date)tmp.getField("e8").getValue())<=0);
      			tmp = lookup.getNext();
     		}
     	}
     }
     
-    public void test_3() throws ComponentNotReadyException{
+    public void test_getKeys() throws ComponentNotReadyException{
         lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
         lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.INTEGER_FIELD,";"));
@@ -403,6 +420,89 @@ public class RangeLookupTest extends TestCase {
     	}
     }
     
+    public void test_getString()throws ComponentNotReadyException{
+        lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
+        lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.DECIMAL_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.DECIMAL_FIELD,";"));
+//        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.NUMERIC_FIELD,";"));
+//        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.NUMERIC_FIELD,";"));
+        lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata,null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        lookup.init();
+    	record = new DataRecord(lookupMetadata);
+    	record.init();
+      	record.getField("name").setValue("p1");
+    	record.getField("start").setValue(0);
+       	record.getField("end").setValue(20);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p2");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(20);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p3");
+    	record.getField("start").setValue(0);
+       	record.getField("end").setValue(10.5);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p4");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(11);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p5");
+    	record.getField("start").setValue(0);
+       	record.getField("end").setValue(5.123);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p6");
+    	record.getField("start").setValue(2.34);
+       	record.getField("end").setValue(5.351);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p7");
+    	record.getField("start").setValue(7);
+       	record.getField("end").setValue(12.444);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p8");
+    	record.getField("start").setValue(6.32);
+       	record.getField("end").setValue(14);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p9");
+    	record.getField("start").setValue(0.344);
+       	record.getField("end").setValue(2.345);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("p10");
+    	record.getField("start").setValue(4);
+       	record.getField("end").setValue(7);
+       	lookup.put(record, record.duplicate());
+
+       	DataRecord tmp;
+    	for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+			System.out.print(iter.next());
+			
+		}
+
+    	Decimal value = DecimalFactory.getDecimal();
+    	double value1;
+    	NumberFormat format = NumberFormat.getInstance();
+    	
+    	for (int i=0;i<200;i++){
+    		value1 = random.nextDouble() * 20;
+    		value.setValue(value1);
+    		tmp = lookup.get(format.format(value.getDouble()));
+    		System.out.println(i + " - Value: " + String.valueOf(value) + "\nFrom lookup table:\n" + 
+    				tmp);
+    		assertTrue(value.compareTo((Decimal)tmp.getField("start").getValue())>-1);
+    		assertTrue(value.compareTo((Decimal)tmp.getField("end").getValue())<1);
+     		System.out.println("Num found: " + lookup.getNumFound());
+    		tmp = lookup.getNext();
+    		while (tmp != null) {
+    			System.out.println("Next:\n" + tmp);
+        		assertTrue(value.compareTo((Decimal)tmp.getField("start").getValue())>-1);
+        		assertTrue(value.compareTo((Decimal)tmp.getField("end").getValue())<1);
+        		tmp = lookup.getNext();
+    		}
+    	}
+    }
+    
     private boolean checkOrder(DataRecord previous,DataRecord following){
      	int startComparison;
     	int endComparison;
@@ -410,7 +510,7 @@ public class RangeLookupTest extends TestCase {
     		startComparison = previous.getField(i).compareTo(following.getField(i));
     		endComparison = previous.getField(i+1).compareTo(following.getField(i+1));
     		if (endComparison == -1) return true;
-    		if (endComparison == 0 && (startComparison == 0 && startComparison == 1)) 
+    		if (endComparison == 0 && (startComparison == 0 || startComparison == 1)) 
     			return true;
     	}
     	return false;
