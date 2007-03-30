@@ -19,7 +19,7 @@
 */
 package org.jetel.exception;
 
-import java.util.Map;
+import java.util.List;
 
 import org.jetel.data.DataRecord;
 
@@ -54,20 +54,31 @@ public interface IParserExceptionHandler {
     
     public String getErrorMessage();
     
-     public DataRecord getRecord();
+    public List<ParseException> getErrors();
+    
+    public BadDataFormatException getException();
+    
+    public DataRecord getRecord();
     
     public int getRecordNumber();
 
-    public int[] getFieldNumber();
-    
-    public String[] getOffendingValue();
-    
-    public Exception[] getException();
-
     public boolean isExceptionThrowed();
-    
-    public String[] getFieldName();
     
     public abstract PolicyType getType();
 
+}
+
+class ParseException {
+	
+	int fieldNumber;
+	String offendingValue;
+	String errorMessage;
+
+	ParseException(int fieldNumber, String offendingValue, String errorMessage) {
+		super();
+		this.fieldNumber = fieldNumber;
+		this.offendingValue = offendingValue;
+		this.errorMessage = errorMessage;
+	}
+	
 }
