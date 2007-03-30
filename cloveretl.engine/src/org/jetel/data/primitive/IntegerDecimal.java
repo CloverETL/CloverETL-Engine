@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
-import java.text.NumberFormat;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
@@ -501,26 +500,17 @@ public final class IntegerDecimal implements Decimal {
 
     /**
      * @see org.jetel.data.Decimal#toString(java.text.NumberFormat)
+     * @todo
      */
-    public String toString(NumberFormat numberFormat) {
-        if(isNaN() || !satisfyPrecision()) {
+    public String toString(NumericFormat numericFormat) {
+        BigDecimal bd = getBigDecimalOutput();
+        if(bd == null)
             return "";
-        }
-        String s = Long.toString(value);
-        StringBuffer sb = new StringBuffer();
-        if(s.length() - scale > 0) {
-            sb.append(s.substring(0, s.length() - scale));
+        else if(numericFormat != null) {
+            return numericFormat.format(bd);
         } else {
-            sb.append('0');
+            return bd.toString();
         }
-        if(scale > 0) {
-            sb.append('.');
-        }
-        for(int i = 0; i > s.length() - scale; i--) {
-            sb.append('0');
-        }
-        sb.append(s.substring(Math.max(0, s.length() - scale), s.length()));
-        return sb.toString();
     }
 
     /**
@@ -534,8 +524,8 @@ public final class IntegerDecimal implements Decimal {
      * @throws CharacterCodingException 
      * @see org.jetel.data.Decimal#toCharBuffer(java.text.NumberFormat)
      */
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumberFormat numberFormat) throws CharacterCodingException {
-        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numberFormat))));
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException {
+        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
     }
 
     /**
@@ -551,24 +541,24 @@ public final class IntegerDecimal implements Decimal {
     /**
      * @see org.jetel.data.Decimal#fromString(java.lang.String, java.text.NumberFormat)
      */
-    public void fromString(CharSequence seq, NumberFormat numberFormat) {
+    public void fromString(CharSequence seq, NumericFormat numericFormat) {
         if(seq == null || seq.length() == 0) {
             setNaN(true);
             return;
         }
-        NumericFormat nf = new NumericFormat();
-        BigDecimal bd = nf.parse(seq);
-        setValue(bd);
-//        value = Long.parseLong(string);
-//        if(!satisfyPrecision()) throw new NumberFormatException(); 
-//        setNaN(false);
+
+        if(numericFormat != null) {
+            setValue(numericFormat.parse(seq));
+        } else {
+            setValue(new BigDecimal(seq.toString()));
+        }
     }
 
     /**
      * @see org.jetel.data.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
      */
-    public void fromCharBuffer(CharBuffer buffer, NumberFormat numberFormat) {
-        fromString(buffer.toString(), numberFormat);
+    public void fromCharBuffer(CharBuffer buffer, NumericFormat numericFormat) {
+        fromString(buffer.toString(), numericFormat);
     }
 
     public int compareTo(Numeric value) {
