@@ -68,7 +68,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         if (this.exception == null) {
         	this.exception = exception;
         }else{
-        	this.exception.addException(exception);
+        	this.exception.nextException(exception);
         }
     }
     
