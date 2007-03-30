@@ -41,15 +41,7 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     
     @Override
     protected void handle() {
-    	ParseException exception = null;
-    	for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
-    		exception = iter.next();
-    		exception.exception.setFieldNumber(exception.fieldNumber);
-    		exception.exception.setOffendingValue(exception.offendingValue);
-    		exception.exception.setRecordNumber(recordNumber);
-		}
-
-        throw exception.exception;
+         throw exception;
     }
 
     @Override
