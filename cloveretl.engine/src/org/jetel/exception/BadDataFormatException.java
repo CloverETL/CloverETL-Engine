@@ -20,9 +20,7 @@
 
 package org.jetel.exception;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 
 import org.jetel.util.StringUtils;
 
@@ -30,7 +28,7 @@ import org.jetel.util.StringUtils;
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class BadDataFormatException extends RuntimeException implements Iterable<BadDataFormatException> {
+public class BadDataFormatException extends RuntimeException implements Iterable<BadDataFormatException>,Iterator<BadDataFormatException> {
     
 	private CharSequence offendingValue;
     
@@ -38,37 +36,32 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     
     private int fieldNumber;
     
-    private List<BadDataFormatException> exceptions = new ArrayList<BadDataFormatException>();
+    private BadDataFormatException next = null;
     
 	public BadDataFormatException() {
 		super();
-		exceptions.add(this);
 	}
 
 	public BadDataFormatException(String message) {
 		super(message);
-		exceptions.add(this);
 	}
 
     public BadDataFormatException(String message, Throwable cause) {
         super(message, cause);
-		exceptions.add(this);
     }
     
 	public BadDataFormatException(String message, String offendingValue) {
 		super(message);
 		this.offendingValue = offendingValue;
-		exceptions.add(this);
 	}
     
     public BadDataFormatException(String message, String offendingValue, Throwable cause) {
         super(message, cause);
         this.offendingValue = offendingValue;
-		exceptions.add(this);
     }
 
-    public void addException(BadDataFormatException next){
-    	exceptions.add(next);
+    public void nextException(BadDataFormatException next){
+    	this.next = next;
     }
     
 	public void setOffendingValue(CharSequence offendingValue) {
@@ -117,7 +110,19 @@ public class BadDataFormatException extends RuntimeException implements Iterable
     }
 
 	public Iterator<BadDataFormatException> iterator() {
-		return exceptions.iterator();
+		return this;
+	}
+
+	public boolean hasNext() {
+		return next != null;
+	}
+
+	public BadDataFormatException next() {
+		return next;
+	}
+
+	public void remove() {
+		throw new UnsupportedOperationException();
 	}
     
 }
