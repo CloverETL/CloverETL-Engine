@@ -39,14 +39,15 @@ public class DecimalDataFieldTest extends TestCase {
 	}
 	
 	public void test_3(){
+		fieldMetadata.setLocaleStr("cs.CZ");
 		DataRecordMetadata recordMetadata = new DataRecordMetadata("recordMetadata");
 		recordMetadata.addField(fieldMetadata);
 		DataRecord record = new DataRecord(recordMetadata);
 		record.init();
-		String number = NumberFormat.getInstance().format(11.28);
+		String number = "11,28";//NumberFormat.getInstance().format(11.28);
 		record.getField(0).fromString(number);
-		assertEquals(11.28, ((Decimal)record.getField(0).getValue()).getDouble());
 		System.out.println(record);
+		assertEquals(11.28, ((Decimal)record.getField(0).getValue()).getDouble());
 	}
 	
 }
