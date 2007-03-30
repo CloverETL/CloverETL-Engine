@@ -27,7 +27,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.FieldPosition;
 import java.text.NumberFormat;
 import java.text.ParsePosition;
-import java.util.Arrays;
 import java.util.Locale;
 
 /**
@@ -98,8 +97,8 @@ public class NumericFormat extends NumberFormat {
 				if (!dSeparator){//there was not decimal separator before
 					result[counter++]='.';
 					dSeparator = true;
-				}else{//second decimal separator found, rest of string is ignored
-					break;
+				}else{//second decimal separator found
+					throw new NumberFormatException("For input string: \"" + source + "\"");
 				}
 			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
 				continue;
@@ -107,8 +106,8 @@ public class NumericFormat extends NumberFormat {
 				exponentForm = true;
 				exponentPart = getExponentPart(chars,counter+1);
 				break;
-			}else{//unknown char or grouping separator is after decimal separator, rest of string is ignored 
-				break;
+			}else{//unknown char or grouping separator is after decimal separator 
+				throw new NumberFormatException("For input string: \"" + source + "\"");
 			}
 		}
 		try {
@@ -170,8 +169,8 @@ public class NumericFormat extends NumberFormat {
 				if (!dSeparator){//there was not decimal separator before
 					result[counter++]='.';
 					dSeparator = true;
-				}else{//second decimal separator found, rest of string is ignored
-					break;
+				}else{//second decimal separator found
+					throw new NumberFormatException("For input string: \"" + source + "\"");
 				}
 			}else if (chars[j]==groupingSeparator && !dSeparator){//grouping separator is after decimal separator, rest of string is ignored
 				continue;
@@ -179,8 +178,8 @@ public class NumericFormat extends NumberFormat {
 				exponentForm = true;
 				exponentPart = getExponentPart(chars,counter+1);
 				break;
-			}else{//unknown char or grouping separator is after decimal separator, rest of string is ignored 
-				break;
+			}else{//unknown char or grouping separator is after decimal separator
+				throw new NumberFormatException("For input string: \"" + source + "\"");
 			}
 		}
 		try {
