@@ -31,6 +31,7 @@ import java.util.Locale;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.data.primitive.NumericFormat;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataFieldMetadata;
 
@@ -47,7 +48,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	private Decimal value;
 	private int precision;
 	private int scale;
-	private NumberFormat numberFormat;
+	private NumericFormat numericFormat;
 
     
     /**
@@ -95,13 +96,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
             formatString = _metadata.getFormatStr();
             if ((formatString != null) && (formatString.length() != 0)) {
                 if (locale != null) {
-                    numberFormat = new DecimalFormat(formatString,
+                    numericFormat = new NumericFormat(formatString,
                             new DecimalFormatSymbols(locale));
                 } else {
-                    numberFormat = new DecimalFormat(formatString);
+                    numericFormat = new NumericFormat(formatString);
                 }
             } else if (locale != null) {
-                numberFormat = DecimalFormat.getInstance(locale);
+                numericFormat = new NumericFormat(locale);
             }
         }
         //instantiate Decimal interface
@@ -131,10 +132,10 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @param value
 	 * @param numberFormat
 	 */
-	private DecimalDataField(DataFieldMetadata _metadata, Decimal value, NumberFormat numberFormat, int precision, int scale) {
+	private DecimalDataField(DataFieldMetadata _metadata, Decimal value, NumericFormat numericFormat, int precision, int scale) {
 	    super(_metadata);
 	    this.value = value.createCopy();
-	    this.numberFormat = numberFormat;
+	    this.numericFormat = numericFormat;
 	    this.precision = precision;
 	    this.scale = scale;
 	 }
@@ -144,7 +145,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate() {
-	    DecimalDataField newField = new DecimalDataField(metadata, value, numberFormat, precision, scale);
+	    DecimalDataField newField = new DecimalDataField(metadata, value, numericFormat, precision, scale);
 	    newField.setNull(isNull());
 	    return newField;
 	}
@@ -392,7 +393,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		if(isNull) {
 			return "";
 		}
-		return value.toString(numberFormat);
+		return value.toString(numericFormat);
 	}
 
 
@@ -409,7 +410,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 			return;
 		}
 		try {
-			value.fromString(valueStr, numberFormat);
+			value.fromString(valueStr, numericFormat);
 			setNull(value.isNaN());
 		} catch (Exception ex) {
 			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
@@ -425,7 +426,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 			return;
 		}
 		try {
-			value.fromString(seq, numberFormat);
+			value.fromString(seq, numericFormat);
 			setNull(value.isNaN());
 		} catch (Exception ex) {
 			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + seq, seq.toString());
@@ -441,7 +442,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since                                October 31, 2002
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer, CharsetDecoder decoder) throws CharacterCodingException {
-		value.fromString(decoder.decode(dataBuffer), numberFormat);
+		value.fromString(decoder.decode(dataBuffer), numericFormat);
 	}
 
 
@@ -454,7 +455,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		value.toByteBuffer(dataBuffer, encoder, numberFormat);
+		value.toByteBuffer(dataBuffer, encoder, numericFormat);
 	}
 
     @Override

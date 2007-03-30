@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
-import java.text.NumberFormat;
 
 import org.jetel.data.DecimalDataField;
 import org.jetel.data.IntegerDataField;
@@ -570,14 +569,15 @@ public final class HugeDecimal implements Decimal {
 	/**
 	 * @see org.jetel.data.primitive.Decimal#toString(java.text.NumberFormat)
 	 */
-	public String toString(NumberFormat numberFormat) {
-		if(isNaN()) {
-			return "";
-		}
+	public String toString(NumericFormat numericFormat) {
 		BigDecimal bd = getBigDecimalOutput();
 		if(bd == null)
 			return "";
-		else return bd.toString();
+		else if(numericFormat != null) {
+            return numericFormat.format(bd);
+        } else {
+            return bd.toString();
+        }
 	}
 
     /**
@@ -590,8 +590,8 @@ public final class HugeDecimal implements Decimal {
 	/**
 	 * @see org.jetel.data.primitive.Decimal#toCharBuffer(java.text.NumberFormat)
 	 */
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumberFormat numberFormat) throws CharacterCodingException {
-        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numberFormat))));
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException {
+        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
 	}
 
     /**
@@ -605,28 +605,18 @@ public final class HugeDecimal implements Decimal {
     }
     
 	/**
-	 * @see org.jetel.data.primitive.Decimal#fromString(java.lang.String, java.text.NumberFormat)
-	 * @deprecated
-	 */
-	public void fromString(String string, NumberFormat numberFormat) {
-		if(string == null || string.length() == 0) {
-			setNaN(true);
-            return;
-		}
-		value = new BigDecimal(string);
-		setNaN(false);
-	}
-
-	/**
 	 * @see org.jetel.data.primitive.Decimal#fromCharBuffer(java.nio.CharBuffer, java.text.NumberFormat)
 	 */
-	public void fromString(CharSequence source, NumberFormat numberFormat) {
+	public void fromString(CharSequence source, NumericFormat numericFormat) {
 		if(source == null || source.length() == 0) {
 			setNaN(true);
             return;
 		}
-		value = new BigDecimal(source.toString());
-		setNaN(false);		
+        if(numericFormat != null) {
+            setValue(numericFormat.parse(source));
+        } else {
+            setValue(new BigDecimal(source.toString()));
+        }
 	}
 
     public int compareTo(Numeric value) {

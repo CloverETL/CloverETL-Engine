@@ -21,10 +21,8 @@ package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
 import java.nio.ByteBuffer;
-import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetEncoder;
-import java.text.NumberFormat;
 
 
 /**
@@ -66,13 +64,13 @@ public interface Decimal extends Numeric {
 	
 	public int getSizeSerialized();
 	
-	public String toString(NumberFormat numberFormat);
+	public String toString(NumericFormat numericFormat);
 
-    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumberFormat numberFormat) throws CharacterCodingException;
+    public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException;
 
     public void toByteBuffer(ByteBuffer dataBuffer);
 	
-	public void fromString(CharSequence seq, NumberFormat numberFormat);
+	public void fromString(CharSequence seq, NumericFormat numericFormat);
 
 	public int compareTo(Object value); //nas numeric interface, java.lang.number a tento decimal
 }
