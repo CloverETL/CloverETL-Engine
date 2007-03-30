@@ -132,7 +132,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 			rawRec = getNextRecord();
 		} catch (BadDataFormatException e) {
 			fillXHandler(record, rawRec != null ? rawRec.toString() : null, e);
-			return record;
+//			return record;
 		}
 	
 		if (rawRec == null) {
@@ -175,7 +175,7 @@ public class FixLenCharDataParser extends FixLenDataParser {
 				record.getField(fieldIdx).fromString(rawRec);
 			} catch (BadDataFormatException e) {
 					fillXHandler(record, rawRec != null ? rawRec : null, e);
-					return record;
+//					return record;
 			}
 		}
 		return record;
