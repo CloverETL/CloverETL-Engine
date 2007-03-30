@@ -74,6 +74,7 @@ import org.jetel.util.JetelVersion;
  *  <tr><td nowrap>--recCount</td><td>how many records should be showed</td></tr>
  *  <tr><td nowrap>--fields</td><td>Show only defined fields. If no fields defined, show all fields</td></tr>
  *  <tr><td nowrap>--logLevel</td><td>Log level for logger {all, info, debug, ..}, default is error log level</td></tr>
+ *  <tr><td nowrap>--charset</td>Charset for writer component<td></td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  <tr><td nowrap><b>component id</b></td><td>data will be shown over this component</td></tr>
  *  </table>
@@ -110,6 +111,7 @@ public class showData {
         int recordCount = -1;
         String fields = null;
         String logHost = null;
+        String charset = null;
 		
 		Node extFilter = null;
         
@@ -139,6 +141,7 @@ public class showData {
     	options.addOption(new Option("c", "recCount", true, "Count of records"));
     	options.addOption(new Option("l", "fields", true, "Show only defined fields. If no fields defined, show all fields"));
     	options.addOption(new Option("x", "logLevel", true, "Log level for logger {all, info, debug, ..}, default is error log level"));
+    	options.addOption(new Option("r", "charset", true, "Charset for writer component"));
 
     	PosixParser optParser = new PosixParser();
     	CommandLine cmdLine;
@@ -234,6 +237,9 @@ public class showData {
         	fields = cmdLine.getOptionValue("l");
 		}
 		Logger.getRootLogger().setLevel(cmdLine.hasOption("x")?Level.toLevel(cmdLine.getOptionValue("x")):Level.ERROR);
+		if (cmdLine.hasOption("r")) {
+			charset = cmdLine.getOptionValue("r");
+		}
 		
         // setup log4j appenders
         if (logHost != null) {
@@ -357,7 +363,7 @@ public class showData {
 		}
 		Node writer = null;
 		try {
-			writer = getWriter(viewGraph, viewMode, dataRecordMetadata, fileUrl, recordFrom, recordCount, fields);
+			writer = getWriter(viewGraph, viewMode, dataRecordMetadata, fileUrl, recordFrom, recordCount, fields, charset);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -451,7 +457,7 @@ public class showData {
 	 * @return
 	 * @throws Exception 
 	 */
-	private static Node getWriter(TransformationGraph graph, Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, int recordFrom, int recordCount, String fields) throws Exception {
+	private static Node getWriter(TransformationGraph graph, Mode mode, DataRecordMetadata dataRecordMetadata, String fileUrl, int recordFrom, int recordCount, String fields, String charset) throws Exception {
 		if (mode == null) return null;
 		Node writer = null;
 		String[] aFiealds = fields == null ? null : fields.split(";");
@@ -484,7 +490,7 @@ public class showData {
 				System.exit(-1);
 			}
 			
-			Node structureWriter = ComponentFactory.createComponent(graph, "STRUCTURE_WRITER", new Object[] {"STRUCTURE_WRITER0", fileUrl, null, false, maskBuilder.toString()}, new Class[] {String.class, String.class, String.class, boolean.class, String.class});
+			Node structureWriter = ComponentFactory.createComponent(graph, "STRUCTURE_WRITER", new Object[] {"STRUCTURE_WRITER0", fileUrl, charset, false, maskBuilder.toString()}, new Class[] {String.class, String.class, String.class, boolean.class, String.class});
 			Class cStructureWriter = ComponentFactory.getComponentClass("STRUCTURE_WRITER");
 			Method method = cStructureWriter.getMethod("setSkip", new Class[] {int.class});
 			method.invoke(structureWriter, recordFrom-1);
@@ -521,9 +527,9 @@ public class showData {
 		} else if (mode.equals(Mode.TEXT)) {
 			Node dataWriter;
 			if (fileUrl == null) {
-				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", Channels.newChannel(System.out), dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, WritableByteChannel.class, String.class, boolean.class});
+				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", Channels.newChannel(System.out), charset}, new Class[] {String.class, WritableByteChannel.class, String.class});
 			} else {
-				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", fileUrl, dataRecordMetadata.getLocaleStr(), false}, new Class[] {String.class, String.class, String.class, boolean.class});
+				dataWriter = ComponentFactory.createComponent(graph, "DATA_WRITER", new Object[] {"DATA_WRITER0", fileUrl, charset, false}, new Class[] {String.class, String.class, String.class, boolean.class});
 			}
 			//TODO agata dodelat selekci na fieldy
 			Class cDataWriter = ComponentFactory.getComponentClass("DATA_WRITER");
@@ -536,13 +542,13 @@ public class showData {
 		// table formating
 		} else if (mode.equals(Mode.TABLE)) {
 			//TextWriter dataWriter = new TextWriter("TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds);
-			Node textWriter = ComponentFactory.createComponent(graph, "TEXT_TABLE_WRITER", new Object[] {"TEXT_TABLE_WRITER0", fileUrl, null, false, aFiealds}, new Class[] {String.class, String.class, String.class, boolean.class, String[].class});
+			Node textWriter = ComponentFactory.createComponent(graph, "TEXT_TABLE_WRITER", new Object[] {"TEXT_TABLE_WRITER0", fileUrl, charset, false, aFiealds}, new Class[] {String.class, String.class, String.class, boolean.class, String[].class});
 			Class cDataWriter = ComponentFactory.getComponentClass("TEXT_TABLE_WRITER");
 			Method method = cDataWriter.getMethod("setSkip", new Class[] {int.class});
 			method.invoke(textWriter, recordFrom-1);
 			method = cDataWriter.getMethod("setNumRecords", new Class[] {int.class});
 			method.invoke(textWriter, recordCount);
-			method = cDataWriter.getMethod("setHeader", new Class[] {boolean.class});
+			method = cDataWriter.getMethod("setOutputFieldNames", new Class[] {boolean.class});
 			method.invoke(textWriter, true);
 			writer = textWriter;
 		}
@@ -568,6 +574,7 @@ public class showData {
         System.out.println("--recCount\t\thow many records should be showed");
         System.out.println("--fields\t\tShow only defined fields. If no fields defined, show all fields");
         System.out.println("--logLevel\t\tLog level for logger {all, info, debug, ..}, default is error log level");
+        System.out.println("--charset\t\tCharset for writer component");
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         System.out.println("Note: <component id> data will be shown over this component");
