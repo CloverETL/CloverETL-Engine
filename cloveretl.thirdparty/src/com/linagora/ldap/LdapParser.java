@@ -302,7 +302,7 @@ public class LdapParser implements Parser {
 				if (exceptionHandler != null) { //use handler only if configured
 					exceptionHandler.populateHandler(getErrorMessage(bdfe
 							.getMessage(), recordCounter, i), record, recordCounter,
-							i, bdfe.getOffendingValue(), bdfe);
+							i, bdfe.getOffendingValue().toString(), bdfe);
 				} else {
 					throw new RuntimeException(getErrorMessage(bdfe.getMessage(),
 							recordCounter, i));
