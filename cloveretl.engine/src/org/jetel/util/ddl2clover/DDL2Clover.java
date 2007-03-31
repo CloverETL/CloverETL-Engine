@@ -18,6 +18,7 @@ public class DDL2Clover implements DDL2CloverConstants {
 
         private static final Long booleanLenght = Long.valueOf(5); // false / true
         private static final Long byteLenght = Long.valueOf(String.valueOf(Byte.MIN_VALUE).length());
+        private static final Long charLenght = Long.valueOf(1); //
         private static final Long integerLenght = Long.valueOf(String.valueOf(Integer.MIN_VALUE).length());
         private static final Long longLenght = Long.valueOf(String.valueOf(Long.MIN_VALUE).length());
         private static final Long floatLenght = Long.valueOf(String.valueOf(7));
@@ -195,18 +196,22 @@ public class DDL2Clover implements DDL2CloverConstants {
   }
 
 //+
-  final public void columnConstraintDefinition() throws ParseException {
+  final public ColumnConstraint columnConstraintDefinition() throws ParseException {
+        ColumnConstraint value = null;
     switch (jj_nt.kind) {
     case NOT:
       jj_consume_token(NOT);
       jj_consume_token(NULL);
+                              value = ColumnConstraint.NOT_NULL;
       break;
     case UNIQUE:
       jj_consume_token(UNIQUE);
+                          value = ColumnConstraint.UNIQUE;
       break;
     case PRIMARY:
       jj_consume_token(PRIMARY);
       jj_consume_token(KEY);
+                                 value = ColumnConstraint.PRIMARY_KEY;
       break;
     case REFERENCES:
       jj_consume_token(REFERENCES);
@@ -220,6 +225,8 @@ public class DDL2Clover implements DDL2CloverConstants {
       jj_consume_token(-1);
       throw new ParseException();
     }
+         {if (true) return value;}
+    throw new Error("Missing return statement in function");
   }
 
 //+
@@ -228,6 +235,7 @@ public class DDL2Clover implements DDL2CloverConstants {
         String name;
         DataType type;
         Object value = null;
+        ColumnConstraint columnConstraint = null;
     name = columnName();
     type = dataType();
     switch (jj_nt.kind) {
@@ -244,7 +252,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     case PRIMARY:
     case REFERENCES:
     case UNIQUE:
-      columnConstraintDefinition();
+      columnConstraint = columnConstraintDefinition();
       break;
     default:
       jj_la1[10] = jj_gen;
@@ -256,7 +264,15 @@ public class DDL2Clover implements DDL2CloverConstants {
                 //dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
                 dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
           }
-          dataFieldMetadata.setDefaultValue(value);
+          if (value != null) {
+                dataFieldMetadata.setDefaultValueStr(value.toString());
+          }
+          if (columnConstraint != null) {
+                if (ColumnConstraint.NOT_NULL == columnConstraint ||
+                    ColumnConstraint.UNIQUE == columnConstraint ||
+                    ColumnConstraint.PRIMARY_KEY == columnConstraint)
+                dataFieldMetadata.setNullable(false);
+          }
           {if (true) return dataFieldMetadata;}
     throw new Error("Missing return statement in function");
   }
@@ -285,7 +301,7 @@ public class DDL2Clover implements DDL2CloverConstants {
 //+TODO dodelat dalsi typu jako DATE, VARCHAR,...
   final public DataType dataType() throws ParseException {
         char type;
-        Long temp;
+        Long temp = null;
         Long lenght = null;
         Long scale = null;
     switch (jj_nt.kind) {
@@ -316,12 +332,12 @@ public class DDL2Clover implements DDL2CloverConstants {
         jj_consume_token(OPENPAREN);
         temp = integerLiteral();
         jj_consume_token(CLOSEPAREN);
-                                                                                                                                    lenght = temp;
         break;
       default:
         jj_la1[12] = jj_gen;
         ;
       }
+                                                                                                                                       lenght = temp != null ? temp : charLenght;
       break;
     case CHARACTER:
       jj_consume_token(CHARACTER);
@@ -331,12 +347,12 @@ public class DDL2Clover implements DDL2CloverConstants {
         jj_consume_token(OPENPAREN);
         temp = integerLiteral();
         jj_consume_token(CLOSEPAREN);
-                                                                                                                            lenght = temp;
         break;
       default:
         jj_la1[13] = jj_gen;
         ;
       }
+                                                                                                                               lenght = temp != null ? temp : charLenght;
       break;
     case CLOB:
       jj_consume_token(CLOB);
@@ -378,12 +394,12 @@ public class DDL2Clover implements DDL2CloverConstants {
           ;
         }
         jj_consume_token(CLOSEPAREN);
-                                                                                                                                                                        lenght = temp;
         break;
       default:
         jj_la1[16] = jj_gen;
         ;
       }
+                                                                                                                                                                           lenght = temp != null ? temp : doubleLenght;
       break;
     case DECIMAL:
       jj_consume_token(DECIMAL);
@@ -402,12 +418,12 @@ public class DDL2Clover implements DDL2CloverConstants {
           ;
         }
         jj_consume_token(CLOSEPAREN);
-                                                                                                                                                                lenght = temp;
         break;
       default:
         jj_la1[18] = jj_gen;
         ;
       }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
       break;
     case FLOAT:
       jj_consume_token(FLOAT);
@@ -429,9 +445,9 @@ public class DDL2Clover implements DDL2CloverConstants {
       jj_consume_token(TIMESTAMP);
                               type = DataFieldMetadata.DATE_FIELD;              lenght = dateTimeLenght;
       break;
-    case NUMERIC:
-      jj_consume_token(NUMERIC);
-                            type = DataFieldMetadata.DECIMAL_FIELD;
+    case NUMBER:
+      jj_consume_token(NUMBER);
+                           type = DataFieldMetadata.DECIMAL_FIELD;
       switch (jj_nt.kind) {
       case OPENPAREN:
         jj_consume_token(OPENPAREN);
@@ -446,12 +462,36 @@ public class DDL2Clover implements DDL2CloverConstants {
           ;
         }
         jj_consume_token(CLOSEPAREN);
-                                                                                                                                                                lenght = temp;
         break;
       default:
         jj_la1[20] = jj_gen;
         ;
       }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
+      break;
+    case NUMERIC:
+      jj_consume_token(NUMERIC);
+                            type = DataFieldMetadata.DECIMAL_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        switch (jj_nt.kind) {
+        case COMA:
+          jj_consume_token(COMA);
+          scale = integerLiteral();
+          break;
+        default:
+          jj_la1[21] = jj_gen;
+          ;
+        }
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[22] = jj_gen;
+        ;
+      }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
       break;
     case VARCHAR:
       jj_consume_token(VARCHAR);
@@ -470,7 +510,7 @@ public class DDL2Clover implements DDL2CloverConstants {
                                                                                                                            lenght = temp;
       break;
     default:
-      jj_la1[21] = jj_gen;
+      jj_la1[23] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -491,7 +531,7 @@ public class DDL2Clover implements DDL2CloverConstants {
       ret = nullLiteral();
       break;
     default:
-      jj_la1[22] = jj_gen;
+      jj_la1[24] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -523,7 +563,7 @@ public class DDL2Clover implements DDL2CloverConstants {
         ;
         break;
       default:
-        jj_la1[23] = jj_gen;
+        jj_la1[25] = jj_gen;
         break label_2;
       }
       jj_consume_token(COMA);
@@ -545,7 +585,7 @@ public class DDL2Clover implements DDL2CloverConstants {
       ret = stringLiteral();
       break;
     default:
-      jj_la1[24] = jj_gen;
+      jj_la1[26] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -594,11 +634,6 @@ public class DDL2Clover implements DDL2CloverConstants {
     finally { jj_save(1, xla); }
   }
 
-  final private boolean jj_3R_3() {
-    if (jj_scan_token(IDENTIFIER)) return true;
-    return false;
-  }
-
   final private boolean jj_3_2() {
     if (jj_3R_3()) return true;
     if (jj_scan_token(DOT)) return true;
@@ -611,6 +646,11 @@ public class DDL2Clover implements DDL2CloverConstants {
     return false;
   }
 
+  final private boolean jj_3R_3() {
+    if (jj_scan_token(IDENTIFIER)) return true;
+    return false;
+  }
+
   public DDL2CloverTokenManager token_source;
   SimpleCharStream jj_input_stream;
   public Token token, jj_nt;
@@ -619,7 +659,7 @@ public class DDL2Clover implements DDL2CloverConstants {
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[25];
+  final private int[] jj_la1 = new int[27];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
   static {
@@ -627,10 +667,10 @@ public class DDL2Clover implements DDL2CloverConstants {
       jj_la1_1();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x44000000,0x1000000,0x1000000,0x0,0x0,0x44000000,0x44000000,0x1,0x80000000,0x800000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1a79f000,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x44000000,0x1000000,0x1000000,0x0,0x0,0x44000000,0x44000000,0x1,0x80000000,0x800000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1a79f000,0x0,0x0,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x800,0x10,0x10,0x8,0x800000,0x0,0x0,0x0,0x1060,0x0,0x1060,0x2000000,0x2000000,0x2000000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x6504,0x38001,0x800000,0x38000,};
+      jj_la1_1 = new int[] {0x800,0x10,0x10,0x8,0x800000,0x0,0x0,0x0,0x1060,0x0,0x1060,0x2000000,0x2000000,0x2000000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x6506,0x38001,0x800000,0x38000,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
@@ -645,7 +685,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -658,7 +698,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -668,7 +708,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -678,7 +718,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -687,7 +727,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -696,7 +736,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 25; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -807,7 +847,7 @@ public class DDL2Clover implements DDL2CloverConstants {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 25; i++) {
+    for (int i = 0; i < 27; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
