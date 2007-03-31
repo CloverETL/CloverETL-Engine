@@ -30,6 +30,7 @@ public class DDL2Clover {
 	
 	private static final Long booleanLenght = Long.valueOf(5); // false / true
 	private static final Long byteLenght = Long.valueOf(String.valueOf(Byte.MIN_VALUE).length());
+	private static final Long charLenght = Long.valueOf(1); //
 	private static final Long integerLenght = Long.valueOf(String.valueOf(Integer.MIN_VALUE).length());
 	private static final Long longLenght = Long.valueOf(String.valueOf(Long.MIN_VALUE).length());
 	private static final Long floatLenght = Long.valueOf(String.valueOf(7));
@@ -236,15 +237,18 @@ boolean t() :
 }
 
 //+
-void columnConstraintDefinition() :
-{}
+ColumnConstraint columnConstraintDefinition() :
 {
-	(	<NOT> <NULL>
-	|	<UNIQUE>
-	|	<PRIMARY> <KEY>
+	ColumnConstraint value = null;
+}
+{
+	(	<NOT> <NULL> {value = ColumnConstraint.NOT_NULL; }
+	|	<UNIQUE> {value = ColumnConstraint.UNIQUE; }
+	|	<PRIMARY> <KEY> {value = ColumnConstraint.PRIMARY_KEY; }
 //	|	<CHECK> <OPENPAREN> <CLOSEPAREN>
 	|	<REFERENCES> tableName() <OPENPAREN> identifierList() <CLOSEPAREN>
 	)
+	{return value; }
 }
 
 //+
@@ -254,19 +258,28 @@ DataFieldMetadata columnDefinition() :
 	String name;
 	DataType type;
 	Object value = null;
+	ColumnConstraint columnConstraint = null;
 }
 {
 	name = columnName() 
 	type = dataType()
 	(<DEFAULT_> value = defaultValue())?
-	(columnConstraintDefinition())?
+	(columnConstraint = columnConstraintDefinition())?
 	{ if (type.length == null) {
 		dataFieldMetadata = new DataFieldMetadata(name, type.type, null);
 	  } else {
 		//dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
 		dataFieldMetadata = new DataFieldMetadata(name, type.type, type.length.shortValue());
 	  }
-	  dataFieldMetadata.setDefaultValue(value);
+	  if (value != null) {
+		dataFieldMetadata.setDefaultValueStr(value.toString());
+	  }
+	  if (columnConstraint != null) {
+	  	if (ColumnConstraint.NOT_NULL == columnConstraint ||
+	  	    ColumnConstraint.UNIQUE == columnConstraint ||
+	  	    ColumnConstraint.PRIMARY_KEY == columnConstraint)
+	  	dataFieldMetadata.setNullable(false);
+	  }
 	  return dataFieldMetadata; 
 	}
 }
@@ -299,26 +312,27 @@ String columnName() :
 DataType dataType() :
 {
 	char type;
-	Long temp;
+	Long temp = null;
 	Long lenght = null;
 	Long scale = null;
 }
 {
 	(	<BOOLEAN> { type = DataFieldMetadata.INTEGER_FIELD;		lenght = integerLenght;}
 	|	<BLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
-	|	<CHAR> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
-	|	<CHARACTER> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
+	|	<CHAR> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
+	|	<CHARACTER> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : charLenght; }
 	|	<CLOB> { type = DataFieldMetadata.BYTE_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; })?
 	|	<DATE> { type = DataFieldMetadata.DATE_FIELD; 			lenght = dateLenght;}
 	|	<DATETIME> { type = DataFieldMetadata.DATE_FIELD;	    lenght = dateTimeLenght;}
-	|	<DEC> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
-	|	<DECIMAL> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
+	|	<DEC> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<DECIMAL> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<FLOAT> { type = DataFieldMetadata.NUMERIC_FIELD; 		lenght = floatLenght;}
 	|	<INT> { type = DataFieldMetadata.INTEGER_FIELD; 		lenght = integerLenght;}
 	|	<INTEGER> { type = DataFieldMetadata.INTEGER_FIELD; 	lenght = integerLenght;}
 	|	<SMALLINT> { type = DataFieldMetadata.INTEGER_FIELD; 	lenght = integerLenght;}
 	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght;}
-	|	<NUMERIC> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> { lenght = temp; })?
+	|	<NUMBER> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
+	|	<NUMERIC> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<VARCHAR> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
 	|	<VARCHAR2> { type = DataFieldMetadata.STRING_FIELD; }	<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> { lenght = temp; }
 	)
