@@ -3,9 +3,6 @@
  */
 package org.jetel.component.aggregate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.CloverInteger;
@@ -36,20 +33,24 @@ public class Avg extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
 		nullableInput = inputField.isNullable();
-		return inputField.isNumeric();
+		if (!inputField.isNumeric()){
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
 		if (nullableInput && !outputField.isNullable()) {
-			return false;
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
-		return outputField.isNumeric();
+		if (!outputField.isNumeric()){
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -97,8 +98,20 @@ public class Avg extends AggregateFunction {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#getName()
+	 */
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		sum = null;
+		count = 0;
 	}
 }

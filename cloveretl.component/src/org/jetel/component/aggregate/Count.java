@@ -3,13 +3,8 @@
  */
 package org.jetel.component.aggregate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.CloverInteger;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -30,16 +25,18 @@ public class Count extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
-		return true;
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		return outputField.isNumeric();
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (!outputField.isNumeric()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -79,5 +76,13 @@ public class Count extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		count = 0;
 	}
 }

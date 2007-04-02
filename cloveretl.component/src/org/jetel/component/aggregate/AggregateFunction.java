@@ -12,12 +12,17 @@ import org.jetel.metadata.DataFieldMetadata;
  *
  */
 public abstract class AggregateFunction {
-	/** Name of the field in input which is used as a parameter for this aggregation function. */
-	protected String inputFieldName;
+	// exception messages for input and output field type checking
+	public static final String ERROR_NUMERIC = "must be numeric";
+	public static final String ERROR_LONG = "must be long";
+	public static final String ERROR_INT = "must be int";
+	public static final String ERROR_STRING = "must be string";
+	public static final String ERROR_NULLABLE = "must be nullable";
+	public static final String ERROR_NULLABLE_BECAUSE_INPUT = "must be nullable because input is nullable";
+	public static final String ERROR_OUTPUT_AS_INPUT = "must be the same type as input";
+	
 	/** Index of the field in input which is used as a parameter for this aggregation function. */
 	protected int inputFieldIndex;
-	/** Name of the field for output. */
-	protected String outputFieldName;
 	/** Index of the field for output. */
 	protected int outputFieldIndex;
 	
@@ -44,10 +49,17 @@ public abstract class AggregateFunction {
 	 */
 	public abstract void init();
 
+	/**
+	 * Re-initialize for use in another aggregation group. Used with sorted input,
+	 * where it's not neccessary to create new instances of aggregation functions.
+	 *
+	 */
+	public abstract void clear();
 
 	/**
 	 * Update results with a record.
 	 * @param record
+	 * @throws Exception error occured during update.
 	 */
 	public abstract void update(DataRecord record) throws Exception;
 
@@ -66,28 +78,20 @@ public abstract class AggregateFunction {
 	/**
 	 * Checks the compatibility of the type of an input field.
 	 * @param inputField
-	 * @return <tt>true</tt> if the input field has a type that is compatible with this aggregation
-	 * function.
+	 * @throws AggregateProcessorException if the input field type has incopatible type; the exception
+	 * message should contain a description of the incompatibility (e.g. "must be Numeric").
 	 */
-	public abstract boolean checkInputFieldType(DataFieldMetadata inputField);
+	public abstract void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException;
 	
 	/**
 	 * Checks the compatibility of the type of an output field.
 	 * @param outputField
-	 * @return <tt>true</tt> if the output field has a type that is compatible with this aggregation
-	 * function.
+	 * @throws AggregateProcessorException if the output field type has incopatible type; the exception
+	 * message should contain a description of the incompatibility (e.g. "must be Numeric").
 	 */
-	public abstract boolean checkOutputFieldType(DataFieldMetadata outputField);
+	public abstract void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException;
 
 	
-	public String getInputFieldName() {
-		return inputFieldName;
-	}
-
-	public void setInputFieldName(String inputFieldName) {
-		this.inputFieldName = inputFieldName;
-	}
-
 	public int getInputFieldIndex() {
 		return inputFieldIndex;
 	}
@@ -102,14 +106,6 @@ public abstract class AggregateFunction {
 
 	public void setOutputFieldIndex(int outputFieldIndex) {
 		this.outputFieldIndex = outputFieldIndex;
-	}
-
-	public String getOutputFieldName() {
-		return outputFieldName;
-	}
-
-	public void setOutputFieldName(String outputFieldName) {
-		this.outputFieldName = outputFieldName;
 	}
 
 	public DataFieldMetadata getInputFieldMetadata() {

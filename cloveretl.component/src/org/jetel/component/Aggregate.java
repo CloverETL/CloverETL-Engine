@@ -56,7 +56,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>mapping</b></td><td>aggregation function mappings separated by :;|  {colon, semicolon, pipe}. 
  *  Each mapping can be in the form of output_field=input_field or output_field=function(input_field).
  *  The first form copies fields from input to output without applying any aggregation function 
- *  (usually used to copy key values). The second form applies an aggregation function on all values
+ *  (the input field must be part of the key). The second form applies an aggregation function on all values
  *  of the input field (within an aggregation group implied by the aggregation key) and copies the result
  *  to the output field. Some function don't require an input field
  *  as a parameter (then the function mapping is in the form output_field=function(). Available functions 
@@ -77,6 +77,7 @@ import org.w3c.dom.Element;
 >>>>>>> .r2681
  */
 public class Aggregate extends Node {
+	/** Name of the component. */
 	public final static String COMPONENT_TYPE = "AGGREGATE";
 	
 	// required attributes
@@ -141,14 +142,15 @@ public class Aggregate extends Node {
 				if (!firstLoop) {
 					if (currentRecord == null
 							|| recordKey.compare(currentRecord, previousRecord) != 0) { // next group founded
-						writeRecordBroadcast(processor.getCurrentSortedAggregationOutput(outRecord));
+						processor.getCurrentSortedAggregationOutput(outRecord);
+						writeRecordBroadcast(outRecord);
 					}
 				} else {
 					firstLoop = false;
 				}
 				// switch previous and current record
 				if (currentRecord != null) {
-					processor.addRecord(currentRecord, outRecord);
+					processor.addRecord(currentRecord);
 
 					tempRecord = previousRecord;
 					previousRecord = currentRecord;
@@ -166,10 +168,10 @@ public class Aggregate extends Node {
 
 			// read all data from input port to aggregateRecord
 			while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {
-				processor.addRecord(currentRecord, outRecord);
+				processor.addRecord(currentRecord);
 			}
 			
-			for (Iterator<DataRecord> results = processor.getUnsortedAggregationOutput();
+			for (Iterator<DataRecord> results = processor.getUnsortedAggregationOutput(outRecord);
 				results.hasNext(); ) {
 				writeRecordBroadcast(results.next());
 			}

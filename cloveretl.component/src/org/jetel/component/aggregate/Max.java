@@ -5,7 +5,6 @@ package org.jetel.component.aggregate;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
@@ -29,20 +28,22 @@ public class Max extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
 		nullableInput = inputField.isNullable();
-		return true;
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		if (nullableInput && !outputField.isNullable()) {
-			return false;
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (inputFieldMetadata.getType() != outputField.getType()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_OUTPUT_AS_INPUT);
 		}
-		return inputFieldMetadata.getType() == outputField.getType();
+		if (nullableInput && !outputField.isNullable()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -93,5 +94,13 @@ public class Max extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		max = null;
 	}
 }

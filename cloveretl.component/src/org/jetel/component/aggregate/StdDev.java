@@ -1,8 +1,5 @@
 package org.jetel.component.aggregate;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.primitive.CloverDouble;
@@ -21,27 +18,35 @@ public class StdDev extends AggregateFunction {
 	private static final String NAME = "STDDEV";
 	
 	// Mean
-	private double mean;
+	private double mean = 0;
 	// Sum of squared values
-	private double sumSquared;
+	private double sumSquared = 0;
 	// Count of fields
-	private int count;
+	private int count = 0;
 
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
-		return inputField.isNumeric();
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+		if (!inputField.isNumeric()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+		}
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		return (outputField.isNumeric() && outputField.isNullable());
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (!outputField.isNullable()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+		}
+		if (!outputField.isNumeric()){
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -105,5 +110,15 @@ public class StdDev extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		mean = 0;
+		sumSquared = 0;
+		count = 0;
 	}
 }

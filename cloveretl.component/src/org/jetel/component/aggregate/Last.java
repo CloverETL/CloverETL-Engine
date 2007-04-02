@@ -8,10 +8,9 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- * Aggregate function thath finds the last element.
+ * Aggregate function thath finds the last element, which can be null.
  * 
- * Output field must be of the same type as the input field. If input field is nullable, then output field must
- * be nullable too.
+ * Output field must be of the same type as the input field. 
  * 
  * @author Jaroslav Urban
  *
@@ -29,20 +28,22 @@ public class Last extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
 		nullableInput = inputField.isNullable();
-		return true;
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		if (nullableInput && !outputField.isNullable()) {
-			return false;
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (inputFieldMetadata.getType() != outputField.getType()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_OUTPUT_AS_INPUT);
 		}
-		return inputFieldMetadata.getType() == outputField.getType();
+		if (nullableInput && !outputField.isNullable()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -65,10 +66,6 @@ public class Last extends AggregateFunction {
 	 */
 	@Override
 	public void storeResult(DataField outputField) {
-		if (data == null) {
-			outputField.setNull(true);
-			return;
-		}
 		outputField.copyFrom(data);
 	}
 
@@ -78,9 +75,6 @@ public class Last extends AggregateFunction {
 	@Override
 	public void update(DataRecord record) {
 		DataField input = record.getField(inputFieldIndex);
-		if (input.isNull()) {
-			return;
-		}
 		data = input.duplicate();
 	}
 	
@@ -90,5 +84,13 @@ public class Last extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		data = null;
 	}
 }
