@@ -39,10 +39,7 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Aggregate functions are applied on input data flow base on specified key.<br>
  *  The key is name (or combination of names) of field(s) from input record.
- *  Data flow can be sorted or not. On this component you cannot set any transformation function
- *  to map aggregation results on the output metadata. Output metadata has to correspond accurately
- *  to the settings of aggregate component. Key of aggregation is mapped first and then follow
- *  all aggregate function results.</td></tr>
+ *  Data flow can be sorted or not.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -55,8 +52,16 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"AGGREGATE"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>aggregateKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
- *  <tr><td><b>aggregateFunction</b></td><td>aggregate functions separated by :;|  {colon, semicolon, pipe} available functions are count, min, max, sum, avg, stdev, CRC32, MD5, FIRST, LAST</td>
+ *  <tr><td><b>aggregateKey</b></td><td>aggregation key, field names separated by :;|  {colon, semicolon, pipe}</td>
+ *  <tr><td><b>mapping</b></td><td>aggregation function mappings separated by :;|  {colon, semicolon, pipe}. 
+ *  Each mapping can be in the form of output_field=input_field or output_field=function(input_field).
+ *  The first form copies fields from input to output without applying any aggregation function 
+ *  (usually used to copy key values). The second form applies an aggregation function on all values
+ *  of the input field (within an aggregation group implied by the aggregation key) and copies the result
+ *  to the output field. Some function don't require an input field
+ *  as a parameter (then the function mapping is in the form output_field=function(). Available functions 
+ *  are count, min, max, sum, avg, stdev, CRC32, MD5, first, last, firstnonnull, lastnonnull. The 
+ *  function names are case insensitive</td>
  *  <tr><td><b>sorted</b></td><td>if input data flow is sorted (true)</td>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is FALSE.</td></tr>
  *  <tr><td><b>charset</b></td><td>character encoding of the input data stream for CRC32 and MD5 functions (if not specified, then value from defaultProperties DataFormatter.DEFAULT_CHARSET_ENCODER is used)</td>
