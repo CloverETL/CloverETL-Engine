@@ -6,8 +6,6 @@ package org.jetel.component.aggregate;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -17,7 +15,7 @@ import org.jetel.metadata.DataFieldMetadata;
 /**
  * Calculates CRC32 on an aggregation group.
  * 
- * Output field must be Long and nullable.
+ * Output field must be Long and nullable if input is nullable.
  * 
  * @author Jaroslav Urban
  *
@@ -30,21 +28,30 @@ public class CRC32 extends AggregateFunction {
 	ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	private CharsetEncoder encoder;
 
+	// Is input nullable?
+	private boolean nullableInput;
+
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
-		return true;
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+		nullableInput = inputField.isNullable();
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		return (outputField.getType() == DataFieldMetadata.LONG_FIELD) && outputField.isNullable();
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (nullableInput && !outputField.isNullable()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+		}
+		if (outputField.getType() != DataFieldMetadata.LONG_FIELD) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_LONG);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -103,5 +110,13 @@ public class CRC32 extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		crc32.reset();
 	}
 }

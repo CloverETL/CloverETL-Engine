@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
@@ -34,15 +35,26 @@ public class AggregateProcessor {
 	private List<FunctionMappingItem> functionMapping = new ArrayList<FunctionMappingItem>();
 	// field mapping, key is the output field, value is the input field
 	private Map<Integer, Integer> fieldMapping = new HashMap<Integer, Integer>();
+	// number of keys in the field mapping
+	private int fieldMappingSize;
+	
+	private boolean sortedGroupChanged = false;
 	
 	private AggregationGroup sortedGroup;
 	private Map<String, AggregationGroup> unsortedGroups;
 	private DataRecord previousRecord;
 	
+	// aggregation key
 	private RecordKey recordKey;
+	// fields of the aggregation key
+	private Set<String> keyFields;
+	// true if input is sorted
 	private boolean sorted;
+	// input metadata
 	private DataRecordMetadata inMetadata;
+	// output metadata
 	private DataRecordMetadata outMetadata;
+	// input charset (for CRC32 and MD5)
 	private String charset;
 	
 	/**
@@ -55,12 +67,19 @@ public class AggregateProcessor {
 	 * @param inMetadata metadata of the input.
 	 * @param outMetadata metadata of the output.
 	 * @param charset charset of the output.
-	 * @throws ProcessorInitializationException
+	 * @throws AggregateProcessorException
 	 */
 	public AggregateProcessor(String[] mapping, RecordKey recordKey, boolean sorted, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata, String charset) 
 	throws AggregateProcessorException {
 		this.recordKey = recordKey;
+		
+		keyFields = new HashSet<String>();
+		int[] keyFieldIndices = recordKey.getKeyFields();
+		for (int i : keyFieldIndices) {
+			keyFields.add(inMetadata.getField(i).getName());
+		}
+		
 		this.sorted = sorted;
 		if (!sorted) {
 			unsortedGroups = new HashMap<String, AggregationGroup>();
@@ -71,6 +90,7 @@ public class AggregateProcessor {
 		this.charset = charset;
 		initFunctions();
 		processMapping(mapping);
+		fieldMappingSize = fieldMapping.keySet().size();
 	}
 
 	/**
@@ -90,6 +110,8 @@ public class AggregateProcessor {
 		registerFunction(new StdDev());
 		registerFunction(new CRC32());
 		registerFunction(new MD5());
+		registerFunction(new FirstNonNull());
+		registerFunction(new LastNonNull());
 	}
 	
 	/**
@@ -126,55 +148,51 @@ public class AggregateProcessor {
 	 * Processes a record from the input.
 	 * 
 	 * @param inputRecord record from the input.
-	 * @param outputRecord record for storing the output.
+	 * @throws Exception 
 	 */
-	public void addRecord(DataRecord inputRecord, DataRecord outputRecord) throws Exception {
-		// apply the field mapping
-		Set<Integer> outputFields = fieldMapping.keySet();
-		for (Integer outputField : outputFields) {
-			outputRecord.getField(outputField).copyFrom(inputRecord.getField(fieldMapping.get(outputField)));
-		}
-		
-		
+	public void addRecord(DataRecord inputRecord) throws Exception {
 		if (sorted) {
-			if ((previousRecord == null)
-					|| !recordKey.equals(previousRecord, inputRecord)) {
-				// if first run or the aggregation group has changed
-
-				sortedGroup = new AggregationGroup();
+			if (previousRecord == null) {
+				// first run
+				sortedGroup = new AggregationGroup(inputRecord);
 			} 
+			if (sortedGroupChanged) {
+				// new aggregation group
+				sortedGroup.clear(inputRecord);
+			}
 
-			sortedGroup.update(inputRecord, outputRecord);
+			sortedGroup.update(inputRecord);
 			previousRecord = inputRecord;
 		} else {
 			String key = recordKey.getKeyString(inputRecord);
 			if (!unsortedGroups.containsKey(key)) {
-				unsortedGroups.put(key, new AggregationGroup());
+				unsortedGroups.put(key, new AggregationGroup(inputRecord));
 			}
-			unsortedGroups.get(key).update(inputRecord, outputRecord);
+			unsortedGroups.get(key).update(inputRecord);
 		}
+		
+		sortedGroupChanged = false;
 	}
 	
 	/**
-	 * Returns the current result of aggregation of sorted data. Should be called when 
+	 * Returns the current result of aggregation of sorted data. Should be called only when 
 	 * the aggregation group has changed.
 	 * 
-	 * @param outRecord record used in {@link #addRecord(DataRecord, DataRecord)} for storing the output.
-	 * @return current result of aggregation.
+	 * @param outRecord record for storing the output.
 	 */
-	public DataRecord getCurrentSortedAggregationOutput(DataRecord outRecord) {
-		DataRecord result = outRecord.duplicate();
-		sortedGroup.storeResult(result);
-		return result;
+	public void getCurrentSortedAggregationOutput(DataRecord outRecord) {
+		sortedGroup.storeResult(outRecord);
+		sortedGroupChanged = true;
 	}
 	
 	/**
 	 * Returns the result of aggregation of unsorted data.
 	 * 
+	 * @param outRecord record for storing the output. 
 	 * @return result of aggregation of unsorted data.
 	 */
-	public Iterator<DataRecord> getUnsortedAggregationOutput() {
-		return new UnsortedResultsIterator();
+	public Iterator<DataRecord> getUnsortedAggregationOutput(DataRecord outRecord) {
+		return new UnsortedResultsIterator(outRecord);
 	}
 	
 	/**
@@ -221,18 +239,29 @@ public class AggregateProcessor {
 				String inputField = parsedExpression[1].trim();
 				String outputField = parsedExpression[0].trim();
 
-				if (!usedOutputFields.contains(outputField)) {
-					usedOutputFields.add(outputField);
-				} else {
+				if (!isKeyField(inputField)) {
+					throw new AggregateProcessorException("Input field is not the key: " + inputField);
+				}
+				if (usedOutputFields.contains(outputField)) {
 					throw new AggregateProcessorException("Output field mapped multiple times: " + outputField);
 				}
-
+				
+				usedOutputFields.add(outputField);
 				addFieldMapping(inputField, outputField);
 			} else {
 				throw new AggregateProcessorException("Invalid aggregate function mapping: "
 						+ expression);
 			}
 		}
+	}
+	
+	/**
+	 * 
+	 * @param field field name
+	 * @return <tt>true</tt> if field is part of the record key.
+	 */
+	private boolean isKeyField(String field) {
+		return keyFields.contains(field);
 	}
 	
 	/**
@@ -287,7 +316,7 @@ public class AggregateProcessor {
 	 * @param function
 	 * @param inputField
 	 * @param outputField
-	 * @throws ProcessorInitializationException
+	 * @throws AggregateProcessorException
 	 */
 	private void checkFields(AggregateFunction function, String inputField, String outputField) 
 	throws AggregateProcessorException {
@@ -300,15 +329,24 @@ public class AggregateProcessor {
 			if (inputFieldMetadata == null) {
 				throw new AggregateProcessorException("Input field not found: " + inputField);
 			}
-			function.checkInputFieldType(inputFieldMetadata);
-			function.setInputFieldName(inputField);
+			try {
+				function.checkInputFieldType(inputFieldMetadata);
+			} catch (AggregateProcessorException e) {
+				throw new AggregateProcessorException("Input field " + inputField + " has " +
+						"invalid type: " + e.getMessage());
+			}
 			function.setInputFieldMetadata(inputFieldMetadata);
 		}
 		
 		if (outMetadata.getField(outputField) == null) {
 			throw new AggregateProcessorException("Output field not found: " + outputField);
 		}
-		function.checkOutputFieldType(outMetadata.getField(outputField));
+		try {
+			function.checkOutputFieldType(outMetadata.getField(outputField));
+		} catch (AggregateProcessorException e) {
+			throw new AggregateProcessorException("Output field " + outputField + " has " +
+					"invalid type: " + e.getMessage());
+		}
 	}
 	
 	/**
@@ -328,8 +366,9 @@ public class AggregateProcessor {
 		 * 
 		 * Allocates a new <tt>FunctionMappingItem</tt> object.
 		 *
-		 * @param outputField
 		 * @param function
+		 * @param inputField 
+		 * @param outputField
 		 */
 		public FunctionMappingItem(String function, String inputField, String outputField) {
 			this.inputField = inputField;
@@ -396,38 +435,114 @@ public class AggregateProcessor {
 				inMetadata.getFieldPosition(inputField));
 	}
 	
+	/**
+	 * One aggregation group with its aggregation functions and their intermediate results.
+	 * 
+	 * @author Jaroslav Urban
+	 *
+	 */
 	private class AggregationGroup {
+		private KeyFieldItem[] keyFields;
 		private AggregateFunction[] functions;
-		DataRecord outputRecord;
 		
-		public AggregationGroup() throws AggregateProcessorException {
+		public AggregationGroup(DataRecord firstInput) throws AggregateProcessorException {
+			storeKeyFields(firstInput);
 			int count = functionMapping.size();
 			functions = new AggregateFunction[count];
 			for (int i = 0; i < count; i++) {
 				FunctionMappingItem mapping = functionMapping.get(i);
 				AggregateFunction function = createFunctionInstance(mapping.getFunction());
-				function.setInputFieldName(mapping.getInputField());
 				function.setInputFieldIndex(mapping.getInputFieldIndex());
 				function.setInputFieldMetadata(inMetadata.getField(mapping.getInputFieldIndex()));
-				function.setOutputFieldName(mapping.getOutputField());
 				function.setOutputFieldIndex(mapping.getOutputFieldIndex());
 				
 				functions[i] = function;
 			}
 		}
 		
-		public void update(DataRecord inputRecord, DataRecord outputRecord) throws Exception {
-			this.outputRecord = outputRecord.duplicate();
-			
+		public void update(DataRecord inputRecord) throws Exception {
 			for (AggregateFunction function : functions) {
 				function.update(inputRecord);
 			}
 		}
 		
 		public void storeResult(DataRecord outRecord) {
-			outRecord.copyFrom(outputRecord);	// copies the applied field mappings
+			outRecord.setToNull();
+			applyFieldMapping(outRecord);
 			for (AggregateFunction function : functions) {
 				function.storeResult(outRecord.getField(function.getOutputFieldIndex()));
+			}
+		}
+		
+		public void clear(DataRecord firstInput) {
+			storeKeyFields(firstInput);
+			for (AggregateFunction function : functions) {
+				function.clear();
+			}
+		}
+		
+		/**
+		 * Stored the DataFields which are the key; but only those used in the field mapping.
+		 * @param input
+		 */
+		private void storeKeyFields(DataRecord input) {
+			keyFields = new KeyFieldItem[fieldMappingSize];
+			Set<Integer> outputFields = fieldMapping.keySet();
+			int i = 0;
+			for (Integer outputFieldIndex : outputFields) {
+				keyFields[i] = new KeyFieldItem(outputFieldIndex, 
+						input.getField(fieldMapping.get(outputFieldIndex)).duplicate());
+				i++;
+			}
+		}
+		
+		/**
+		 * Applies the field mapping, i.e. copies the values of keys.
+		 * 
+		 * @param outputRecord
+		 */
+		private void applyFieldMapping(DataRecord outputRecord) {
+			for (KeyFieldItem item : keyFields) {
+				outputRecord.getField(item.getIndex()).setValue(item.getField());
+			}
+		}
+
+		/**
+		 * Stores the values of keys which have to be copied to the result later.
+		 * 
+		 * @author Jaroslav Urban
+		 *
+		 */
+		private class KeyFieldItem {
+			// index of output field where the key will be stored
+			int index;
+			// key value from input
+			DataField field;
+			
+			/**
+			 * 
+			 * Allocates a new <tt>KeyFieldItem</tt> object.
+			 *
+			 * @param index index of output field where the key will be stored.
+			 * @param field key value
+			 */
+			public KeyFieldItem(int index, DataField field) {
+				this.index = index;
+				this.field = field;
+			}
+
+			/**
+			 * @return the field
+			 */
+			public DataField getField() {
+				return field;
+			}
+
+			/**
+			 * @return the index
+			 */
+			public int getIndex() {
+				return index;
 			}
 		}
 	}
@@ -440,8 +555,10 @@ public class AggregateProcessor {
 	 */
 	private class UnsortedResultsIterator implements Iterator<DataRecord> {
 		Iterator<String> keyIterator;
+		DataRecord outRecord;
 		
-		public UnsortedResultsIterator() {
+		public UnsortedResultsIterator(DataRecord outRecord) {
+			this.outRecord = outRecord;
 			keyIterator = unsortedGroups.keySet().iterator();
 		}
 		public boolean hasNext() {
@@ -449,8 +566,6 @@ public class AggregateProcessor {
 		}
 
 		public DataRecord next() {
-			DataRecord outRecord = new DataRecord(outMetadata);
-			outRecord.init();
 			unsortedGroups.get(keyIterator.next()).storeResult(outRecord);
 			return outRecord;
 		}

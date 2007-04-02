@@ -5,8 +5,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -17,7 +15,7 @@ import org.jetel.util.Base64;
 /**
  * Calculates MD5 on the aggregation group.
  * 
- * Output field type must be String and nullable.
+ * Output field type must be String and nullable if input is nullable.
  * 
  * @author Jaroslav Urban
  *
@@ -30,21 +28,30 @@ public class MD5 extends AggregateFunction {
 	ByteBuffer dataBuffer = ByteBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 	private CharsetEncoder encoder;
 
+	// Is input nullable?
+	private boolean nullableInput;
+
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkInputFieldType(DataFieldMetadata inputField) {
-		return true;
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+		nullableInput = inputField.isNullable();
+		return;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public boolean checkOutputFieldType(DataFieldMetadata outputField) {
-		return (outputField.getType() == DataFieldMetadata.STRING_FIELD) && outputField.isNullable();
+	public void  checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+		if (nullableInput && !outputField.isNullable()) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+		}
+		if (outputField.getType() != DataFieldMetadata.STRING_FIELD) {
+			throw new AggregateProcessorException(AggregateFunction.ERROR_STRING);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -54,6 +61,7 @@ public class MD5 extends AggregateFunction {
 	public void init() {
 		try {
 			md5 = MessageDigest.getInstance("MD5");
+			md5.reset();
 		} catch (NoSuchAlgorithmException e) {
 			throw new RuntimeException("MD5 algorithm is not available", e);
 		}
@@ -108,5 +116,14 @@ public class MD5 extends AggregateFunction {
 	@Override
 	public String getName() {
 		return NAME;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.component.aggregate.AggregateFunction#clear()
+	 */
+	@Override
+	public void clear() {
+		md5.reset();
+		loopCount = 0;
 	}
 }
