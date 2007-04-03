@@ -27,7 +27,7 @@ public class DDL2Clover implements DDL2CloverConstants {
         private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
 
         public static void main(String args[]) throws ParseException, FileNotFoundException {
-                DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("text.txt")));
+                DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("./src/org/jetel/util/ddl2clover/ddl_statements.txt")));
                 parser.getDataRecordMetadataList(";", "\n");
                 parser.testPrint(parser.list);
                 System.out.println("Ok");
@@ -142,10 +142,14 @@ public class DDL2Clover implements DDL2CloverConstants {
       }
       jj_consume_token(COMA);
       ret = tableElement();
-                ret.setDelimiter(fieldDelimiter);
-                list.add(ret);
+                if (ret != null) {
+                        ret.setDelimiter(fieldDelimiter);
+                        list.add(ret);
+                }
     }
-         ret.setDelimiter(recordDelimiter);
+                if (ret != null) {
+                        ret.setDelimiter(recordDelimiter);
+                }
     jj_consume_token(CLOSEPAREN);
           {if (true) return list;}
     throw new Error("Missing return statement in function");
@@ -204,6 +208,10 @@ public class DDL2Clover implements DDL2CloverConstants {
       jj_consume_token(NULL);
                               value = ColumnConstraint.NOT_NULL;
       break;
+    case NULL:
+      jj_consume_token(NULL);
+                        value = ColumnConstraint.NULL;
+      break;
     case UNIQUE:
       jj_consume_token(UNIQUE);
                           value = ColumnConstraint.UNIQUE;
@@ -229,6 +237,58 @@ public class DDL2Clover implements DDL2CloverConstants {
     throw new Error("Missing return statement in function");
   }
 
+  final public ColumnConstraint tableConstraintSubDefinition() throws ParseException {
+        ColumnConstraint value = null;
+    switch (jj_nt.kind) {
+    case UNIQUE:
+      jj_consume_token(UNIQUE);
+      jj_consume_token(OPENPAREN);
+                                      identifierList();
+      jj_consume_token(CLOSEPAREN);
+      break;
+    case PRIMARY:
+      jj_consume_token(PRIMARY);
+      jj_consume_token(KEY);
+      jj_consume_token(OPENPAREN);
+                                             identifierList();
+      jj_consume_token(CLOSEPAREN);
+      break;
+    case FOREIGN:
+      jj_consume_token(FOREIGN);
+      jj_consume_token(KEY);
+      jj_consume_token(OPENPAREN);
+                                             identifierList();
+      jj_consume_token(CLOSEPAREN);
+      break;
+    case REFERENCES:
+      jj_consume_token(REFERENCES);
+      tableName();
+      jj_consume_token(OPENPAREN);
+      identifierList();
+      jj_consume_token(CLOSEPAREN);
+      break;
+    default:
+      jj_la1[9] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
+         {if (true) return value;}
+    throw new Error("Missing return statement in function");
+  }
+
+  final public void tableConstraintDefinition() throws ParseException {
+    switch (jj_nt.kind) {
+    case CONSTRAINT:
+      jj_consume_token(CONSTRAINT);
+      identifier();
+      break;
+    default:
+      jj_la1[10] = jj_gen;
+      ;
+    }
+    tableConstraintSubDefinition();
+  }
+
 //+
   final public DataFieldMetadata columnDefinition() throws ParseException {
         DataFieldMetadata dataFieldMetadata;
@@ -244,19 +304,24 @@ public class DDL2Clover implements DDL2CloverConstants {
       value = defaultValue();
       break;
     default:
-      jj_la1[9] = jj_gen;
+      jj_la1[11] = jj_gen;
       ;
     }
-    switch (jj_nt.kind) {
-    case NOT:
-    case PRIMARY:
-    case REFERENCES:
-    case UNIQUE:
+    label_2:
+    while (true) {
+      switch (jj_nt.kind) {
+      case NOT:
+      case NULL:
+      case PRIMARY:
+      case REFERENCES:
+      case UNIQUE:
+        ;
+        break;
+      default:
+        jj_la1[12] = jj_gen;
+        break label_2;
+      }
       columnConstraint = columnConstraintDefinition();
-      break;
-    default:
-      jj_la1[10] = jj_gen;
-      ;
     }
           if (type.length == null) {
                 dataFieldMetadata = new DataFieldMetadata(name, type.type, null);
@@ -279,7 +344,22 @@ public class DDL2Clover implements DDL2CloverConstants {
 
   final public DataFieldMetadata tableElement() throws ParseException {
         DataFieldMetadata ret = null;
-    ret = columnDefinition();
+    switch (jj_nt.kind) {
+    case IDENTIFIER:
+      ret = columnDefinition();
+      break;
+    case CONSTRAINT:
+    case FOREIGN:
+    case PRIMARY:
+    case REFERENCES:
+    case UNIQUE:
+      tableConstraintDefinition();
+      break;
+    default:
+      jj_la1[13] = jj_gen;
+      jj_consume_token(-1);
+      throw new ParseException();
+    }
           {if (true) return ret;}
     throw new Error("Missing return statement in function");
   }
@@ -305,9 +385,28 @@ public class DDL2Clover implements DDL2CloverConstants {
         Long lenght = null;
         Long scale = null;
     switch (jj_nt.kind) {
-    case BOOLEAN:
-      jj_consume_token(BOOLEAN);
-                            type = DataFieldMetadata.INTEGER_FIELD;             lenght = integerLenght;
+    case BIGINT:
+      jj_consume_token(BIGINT);
+                           type = DataFieldMetadata.INTEGER_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[14] = jj_gen;
+        ;
+      }
+                                                                                                                               lenght = temp != null ? temp : longLenght;
+      break;
+    case BINARY:
+      jj_consume_token(BINARY);
+                           type = DataFieldMetadata.BYTE_FIELD;
+      jj_consume_token(OPENPAREN);
+      temp = integerLiteral();
+      jj_consume_token(CLOSEPAREN);
+                                                                                                                                    lenght = temp;
       break;
     case BLOB:
       jj_consume_token(BLOB);
@@ -320,9 +419,13 @@ public class DDL2Clover implements DDL2CloverConstants {
                                                                                                                                     lenght = temp;
         break;
       default:
-        jj_la1[11] = jj_gen;
+        jj_la1[15] = jj_gen;
         ;
       }
+      break;
+    case BOOLEAN:
+      jj_consume_token(BOOLEAN);
+                            type = DataFieldMetadata.INTEGER_FIELD;             lenght = integerLenght;
       break;
     case CHAR:
       jj_consume_token(CHAR);
@@ -334,7 +437,7 @@ public class DDL2Clover implements DDL2CloverConstants {
         jj_consume_token(CLOSEPAREN);
         break;
       default:
-        jj_la1[12] = jj_gen;
+        jj_la1[16] = jj_gen;
         ;
       }
                                                                                                                                        lenght = temp != null ? temp : charLenght;
@@ -349,7 +452,7 @@ public class DDL2Clover implements DDL2CloverConstants {
         jj_consume_token(CLOSEPAREN);
         break;
       default:
-        jj_la1[13] = jj_gen;
+        jj_la1[17] = jj_gen;
         ;
       }
                                                                                                                                lenght = temp != null ? temp : charLenght;
@@ -365,7 +468,7 @@ public class DDL2Clover implements DDL2CloverConstants {
                                                                                                                                     lenght = temp;
         break;
       default:
-        jj_la1[14] = jj_gen;
+        jj_la1[18] = jj_gen;
         ;
       }
       break;
@@ -390,74 +493,6 @@ public class DDL2Clover implements DDL2CloverConstants {
           scale = integerLiteral();
           break;
         default:
-          jj_la1[15] = jj_gen;
-          ;
-        }
-        jj_consume_token(CLOSEPAREN);
-        break;
-      default:
-        jj_la1[16] = jj_gen;
-        ;
-      }
-                                                                                                                                                                           lenght = temp != null ? temp : doubleLenght;
-      break;
-    case DECIMAL:
-      jj_consume_token(DECIMAL);
-                            type = DataFieldMetadata.DECIMAL_FIELD;
-      switch (jj_nt.kind) {
-      case OPENPAREN:
-        jj_consume_token(OPENPAREN);
-        temp = integerLiteral();
-        switch (jj_nt.kind) {
-        case COMA:
-          jj_consume_token(COMA);
-          scale = integerLiteral();
-          break;
-        default:
-          jj_la1[17] = jj_gen;
-          ;
-        }
-        jj_consume_token(CLOSEPAREN);
-        break;
-      default:
-        jj_la1[18] = jj_gen;
-        ;
-      }
-                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
-      break;
-    case FLOAT:
-      jj_consume_token(FLOAT);
-                          type = DataFieldMetadata.NUMERIC_FIELD;               lenght = floatLenght;
-      break;
-    case INT:
-      jj_consume_token(INT);
-                        type = DataFieldMetadata.INTEGER_FIELD;                 lenght = integerLenght;
-      break;
-    case INTEGER:
-      jj_consume_token(INTEGER);
-                            type = DataFieldMetadata.INTEGER_FIELD;     lenght = integerLenght;
-      break;
-    case SMALLINT:
-      jj_consume_token(SMALLINT);
-                             type = DataFieldMetadata.INTEGER_FIELD;    lenght = integerLenght;
-      break;
-    case TIMESTAMP:
-      jj_consume_token(TIMESTAMP);
-                              type = DataFieldMetadata.DATE_FIELD;              lenght = dateTimeLenght;
-      break;
-    case NUMBER:
-      jj_consume_token(NUMBER);
-                           type = DataFieldMetadata.DECIMAL_FIELD;
-      switch (jj_nt.kind) {
-      case OPENPAREN:
-        jj_consume_token(OPENPAREN);
-        temp = integerLiteral();
-        switch (jj_nt.kind) {
-        case COMA:
-          jj_consume_token(COMA);
-          scale = integerLiteral();
-          break;
-        default:
           jj_la1[19] = jj_gen;
           ;
         }
@@ -467,10 +502,10 @@ public class DDL2Clover implements DDL2CloverConstants {
         jj_la1[20] = jj_gen;
         ;
       }
-                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
+                                                                                                                                                                           lenght = temp != null ? temp : doubleLenght;
       break;
-    case NUMERIC:
-      jj_consume_token(NUMERIC);
+    case DECIMAL:
+      jj_consume_token(DECIMAL);
                             type = DataFieldMetadata.DECIMAL_FIELD;
       switch (jj_nt.kind) {
       case OPENPAREN:
@@ -493,13 +528,196 @@ public class DDL2Clover implements DDL2CloverConstants {
       }
                                                                                                                                                                    lenght = temp != null ? temp : doubleLenght;
       break;
-    case VARCHAR:
-      jj_consume_token(VARCHAR);
-                            type = DataFieldMetadata.STRING_FIELD;
+    case DOUBLE:
+      jj_consume_token(DOUBLE);
+                           type = DataFieldMetadata.DECIMAL_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        switch (jj_nt.kind) {
+        case COMA:
+          jj_consume_token(COMA);
+          scale = integerLiteral();
+          break;
+        default:
+          jj_la1[23] = jj_gen;
+          ;
+        }
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[24] = jj_gen;
+        ;
+      }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
+      break;
+    case FLOAT:
+      jj_consume_token(FLOAT);
+                          type = DataFieldMetadata.NUMERIC_FIELD;               lenght = floatLenght;
+      break;
+    case INT:
+      jj_consume_token(INT);
+                        type = DataFieldMetadata.INTEGER_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[25] = jj_gen;
+        ;
+      }
+                                                                                                                                       lenght = temp != null ? temp : integerLenght;
+      break;
+    case INTEGER:
+      jj_consume_token(INTEGER);
+                            type = DataFieldMetadata.INTEGER_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[26] = jj_gen;
+        ;
+      }
+                                                                                                                               lenght = temp != null ? temp : integerLenght;
+      break;
+    case REAL:
+      jj_consume_token(REAL);
+                         type = DataFieldMetadata.DECIMAL_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        switch (jj_nt.kind) {
+        case COMA:
+          jj_consume_token(COMA);
+          scale = integerLiteral();
+          break;
+        default:
+          jj_la1[27] = jj_gen;
+          ;
+        }
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[28] = jj_gen;
+        ;
+      }
+                                                                                                                                                                           lenght = temp != null ? temp : doubleLenght;
+      break;
+    case SMALLINT:
+      jj_consume_token(SMALLINT);
+                             type = DataFieldMetadata.INTEGER_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[29] = jj_gen;
+        ;
+      }
+                                                                                                                               lenght = temp != null ? temp : integerLenght;
+      break;
+    case TIME:
+      jj_consume_token(TIME);
+                         type = DataFieldMetadata.DATE_FIELD;                   lenght = dateTimeLenght;
+      break;
+    case TIMESTAMP:
+      jj_consume_token(TIMESTAMP);
+                              type = DataFieldMetadata.DATE_FIELD;              lenght = dateTimeLenght;
+      break;
+    case NUMBER:
+      jj_consume_token(NUMBER);
+                           type = DataFieldMetadata.DECIMAL_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        switch (jj_nt.kind) {
+        case COMA:
+          jj_consume_token(COMA);
+          scale = integerLiteral();
+          break;
+        default:
+          jj_la1[30] = jj_gen;
+          ;
+        }
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[31] = jj_gen;
+        ;
+      }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
+      break;
+    case NUMERIC:
+      jj_consume_token(NUMERIC);
+                            type = DataFieldMetadata.DECIMAL_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        switch (jj_nt.kind) {
+        case COMA:
+          jj_consume_token(COMA);
+          scale = integerLiteral();
+          break;
+        default:
+          jj_la1[32] = jj_gen;
+          ;
+        }
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[33] = jj_gen;
+        ;
+      }
+                                                                                                                                                                   lenght = temp != null ? temp : doubleLenght;
+      break;
+    case TINYINT:
+      jj_consume_token(TINYINT);
+                            type = DataFieldMetadata.INTEGER_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[34] = jj_gen;
+        ;
+      }
+                                                                                                                               lenght = temp != null ? temp : integerLenght;
+      break;
+    case VARBINARY:
+      jj_consume_token(VARBINARY);
+                              type = DataFieldMetadata.BYTE_FIELD;
       jj_consume_token(OPENPAREN);
       temp = integerLiteral();
       jj_consume_token(CLOSEPAREN);
-                                                                                                                           lenght = temp;
+                                                                                                                            lenght = temp;
+      break;
+    case VARCHAR:
+      jj_consume_token(VARCHAR);
+                            type = DataFieldMetadata.STRING_FIELD;
+      switch (jj_nt.kind) {
+      case OPENPAREN:
+        jj_consume_token(OPENPAREN);
+        temp = integerLiteral();
+        jj_consume_token(CLOSEPAREN);
+        break;
+      default:
+        jj_la1[35] = jj_gen;
+        ;
+      }
+                                                                                                                              lenght = temp;
       break;
     case VARCHAR2:
       jj_consume_token(VARCHAR2);
@@ -510,7 +728,7 @@ public class DDL2Clover implements DDL2CloverConstants {
                                                                                                                            lenght = temp;
       break;
     default:
-      jj_la1[23] = jj_gen;
+      jj_la1[36] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -531,7 +749,7 @@ public class DDL2Clover implements DDL2CloverConstants {
       ret = nullLiteral();
       break;
     default:
-      jj_la1[24] = jj_gen;
+      jj_la1[37] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -556,15 +774,15 @@ public class DDL2Clover implements DDL2CloverConstants {
 //+
   final public void identifierList() throws ParseException {
     identifier();
-    label_2:
+    label_3:
     while (true) {
       switch (jj_nt.kind) {
       case COMA:
         ;
         break;
       default:
-        jj_la1[25] = jj_gen;
-        break label_2;
+        jj_la1[38] = jj_gen;
+        break label_3;
       }
       jj_consume_token(COMA);
       identifier();
@@ -585,7 +803,7 @@ public class DDL2Clover implements DDL2CloverConstants {
       ret = stringLiteral();
       break;
     default:
-      jj_la1[26] = jj_gen;
+      jj_la1[39] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -635,7 +853,7 @@ public class DDL2Clover implements DDL2CloverConstants {
   }
 
   final private boolean jj_3_2() {
-    if (jj_3R_3()) return true;
+    if (jj_3R_4()) return true;
     if (jj_scan_token(DOT)) return true;
     return false;
   }
@@ -646,7 +864,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     return false;
   }
 
-  final private boolean jj_3R_3() {
+  final private boolean jj_3R_4() {
     if (jj_scan_token(IDENTIFIER)) return true;
     return false;
   }
@@ -659,18 +877,23 @@ public class DDL2Clover implements DDL2CloverConstants {
   public boolean lookingAhead = false;
   private boolean jj_semLA;
   private int jj_gen;
-  final private int[] jj_la1 = new int[27];
+  final private int[] jj_la1 = new int[40];
   static private int[] jj_la1_0;
   static private int[] jj_la1_1;
+  static private int[] jj_la1_2;
   static {
       jj_la1_0();
       jj_la1_1();
+      jj_la1_2();
    }
    private static void jj_la1_0() {
-      jj_la1_0 = new int[] {0x44000000,0x1000000,0x1000000,0x0,0x0,0x44000000,0x44000000,0x1,0x80000000,0x800000,0x80000000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1a79f000,0x0,0x0,0x0,};
+      jj_la1_0 = new int[] {0x80000000,0x8000000,0x8000000,0x0,0x0,0x80000000,0x80000000,0x1,0x0,0x40000000,0x100000,0x4000000,0x0,0x40100000,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x33c7f000,0x0,0x0,0x0,};
    }
    private static void jj_la1_1() {
-      jj_la1_1 = new int[] {0x800,0x10,0x10,0x8,0x800000,0x0,0x0,0x0,0x1060,0x0,0x1060,0x2000000,0x2000000,0x2000000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x800000,0x2000000,0x6506,0x38001,0x800000,0x38000,};
+      jj_la1_1 = new int[] {0x40008,0x200,0x200,0x100,0x0,0x8,0x8,0x0,0x100c30,0x100c00,0x0,0x0,0x100c30,0x10100c00,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0xeb50c3,0x7000020,0x0,0x7000000,};
+   }
+   private static void jj_la1_2() {
+      jj_la1_2 = new int[] {0x0,0x0,0x0,0x0,0x1,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x4,0x4,0x4,0x4,0x4,0x1,0x4,0x1,0x4,0x1,0x4,0x4,0x4,0x1,0x4,0x4,0x1,0x4,0x1,0x4,0x4,0x4,0x0,0x0,0x1,0x0,};
    }
   final private JJCalls[] jj_2_rtns = new JJCalls[2];
   private boolean jj_rescan = false;
@@ -685,7 +908,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -698,7 +921,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -708,7 +931,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -718,7 +941,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -727,7 +950,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -736,7 +959,7 @@ public class DDL2Clover implements DDL2CloverConstants {
     token = new Token();
     token.next = jj_nt = token_source.getNextToken();
     jj_gen = 0;
-    for (int i = 0; i < 27; i++) jj_la1[i] = -1;
+    for (int i = 0; i < 40; i++) jj_la1[i] = -1;
     for (int i = 0; i < jj_2_rtns.length; i++) jj_2_rtns[i] = new JJCalls();
   }
 
@@ -839,15 +1062,15 @@ public class DDL2Clover implements DDL2CloverConstants {
 
   public ParseException generateParseException() {
     jj_expentries.removeAllElements();
-    boolean[] la1tokens = new boolean[59];
-    for (int i = 0; i < 59; i++) {
+    boolean[] la1tokens = new boolean[68];
+    for (int i = 0; i < 68; i++) {
       la1tokens[i] = false;
     }
     if (jj_kind >= 0) {
       la1tokens[jj_kind] = true;
       jj_kind = -1;
     }
-    for (int i = 0; i < 27; i++) {
+    for (int i = 0; i < 40; i++) {
       if (jj_la1[i] == jj_gen) {
         for (int j = 0; j < 32; j++) {
           if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -856,10 +1079,13 @@ public class DDL2Clover implements DDL2CloverConstants {
           if ((jj_la1_1[i] & (1<<j)) != 0) {
             la1tokens[32+j] = true;
           }
+          if ((jj_la1_2[i] & (1<<j)) != 0) {
+            la1tokens[64+j] = true;
+          }
         }
       }
     }
-    for (int i = 0; i < 59; i++) {
+    for (int i = 0; i < 68; i++) {
       if (la1tokens[i]) {
         jj_expentry = new int[1];
         jj_expentry[0] = i;
