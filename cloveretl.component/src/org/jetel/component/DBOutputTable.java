@@ -337,7 +337,11 @@ public class DBOutputTable extends Node {
 			}else{
 				// we have to assume that Clover fields types correspond
 				// to taget DB table fields types
-				dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+				if (cloverFields != null) {
+					dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata(),cloverFields);
+				} else {
+					dbFieldTypes= SQLUtil.getFieldTypes(inPort.getMetadata());
+				}
 			}	
 		}else{
 			// do we have specified list of fields to populate ?
