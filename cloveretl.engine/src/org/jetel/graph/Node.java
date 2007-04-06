@@ -850,7 +850,7 @@ public abstract class Node extends GraphElement implements Runnable {
      * @param enabled whether node is enabled
      */
     public void setEnabled(String enabledStr) {
-        enabled = EnabledEnum.fromString(enabledStr);
+        enabled = EnabledEnum.fromString(enabledStr, EnabledEnum.ENABLED);
     }
 
 

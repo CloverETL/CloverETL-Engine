@@ -5,32 +5,45 @@
  */
 package org.jetel.enums;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
 
-public class EnabledEnum {
+/**
+ * This enum expresses state of component - enabled, disabled or pass through component state.
+ *  
+ * @author Martin Zatopek (martin.zatopek@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ *
+ * @created 5.4.2007
+ */
+public enum EnabledEnum {
+   
+    ENABLED("enabled"),
+    DISABLED("disabled"),
+    PASS_THROUGH("passThrough");
+    
     private String id;
-    private static List elements = new ArrayList();
     
     private EnabledEnum(String id) {
         this.id = id;
-        elements.add(this);
+    }
+    
+    public static EnabledEnum fromString(String id) {
+        return fromString(id, null);
+    }
+    
+    public static EnabledEnum fromString(String id, EnabledEnum defaultValue) {
+        if(id == null) return defaultValue;
+        
+        for(EnabledEnum item : values()) {
+            if(id.equalsIgnoreCase(item.id)) {
+                return item;
+            }
+        }
+        
+        return defaultValue;
     }
     
     public String toString() {
         return id;
     }
-
-    public static EnabledEnum fromString(String id) {
-        for(Iterator it = elements.iterator(); it.hasNext();) {
-            EnabledEnum ee = (EnabledEnum) it.next();
-            if(ee.toString().equalsIgnoreCase(id)) return ee; 
-        }
-        return ENABLED;
-    }
     
-    public static final EnabledEnum ENABLED = new EnabledEnum("enabled");
-    public static final EnabledEnum DISABLED = new EnabledEnum("disabled");
-    public static final EnabledEnum PASS_THROUGH = new EnabledEnum("passThrough");
 }
