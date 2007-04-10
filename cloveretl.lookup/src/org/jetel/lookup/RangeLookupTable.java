@@ -1,6 +1,8 @@
 package org.jetel.lookup;
 
+import java.security.InvalidParameterException;
 import java.text.RuleBasedCollator;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.SortedSet;
@@ -26,7 +28,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * high_slow,10,20,0,50<br>
  * high_fast,10,20,50,100<br>
  * has 4 intervals with 2 searching parameters: first from interval 0-10, and second from interval 0-100.<br>
- * Intervals can overlap, but then to get all resulting intervals it is necessery to go through all defined.
+ * Intervals can overlap. By default start point is included and end point is excluded.
+ * It is possible to change this settings during construction or by by proper set method.
  */
 public class RangeLookupTable extends GraphElement implements LookupTable {
 	
@@ -38,11 +41,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected int numFound;
 	protected RecordKey lookupKey;
 	protected DataRecord tmpRecord;
-	private DataRecord tmp;
 	protected IntervalRecordComparator comparator;
 	protected int[] keyFields = null;
 	protected Iterator<DataRecord> subTableIterator;
 	protected RuleBasedCollator collator = null;
+	protected boolean[] startInclude;
+	protected boolean[] endInclude;
+	
+	private DataRecord tmp;
+	private int startComparison;
+	private int endComparison;
 	
 	/**
 	 * Constructor for most general range lookup table 
@@ -51,19 +59,53 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @param metadata metadata defining this lookup table
 	 * @param parser parser for reading defining records
 	 * @param collator collator for comparing string fields
+	 * @param startInclude indicates whether start points belong to the intervals or not
+	 * @param endInclude indicates whether end points belong to the intervals or not
 	 */
 	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			RuleBasedCollator collator){
+			RuleBasedCollator collator, boolean[] startInclude, boolean[] endInclude){
 		super(id);
 		this.metadata = metadata;
 		this.dataParser = parser;
 		this.collator = collator;
+		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
+			throw new InvalidParameterException("startInclude parameter has wrong number " +
+					"of elements: " + startInclude.length + " (should be " + 
+					(metadata.getNumFields() - 1)/2 + ")");
+		}
+		this.startInclude = startInclude;
+		if (endInclude.length != (metadata.getNumFields() - 1)/2) {
+			throw new InvalidParameterException("endInclude parameter has wrong number " +
+					"of elements: " + endInclude.length + " (should be " + 
+					(metadata.getNumFields() - 1)/2 + ")");
+		}
+		this.endInclude = endInclude;
 	}
 
+	/**
+	 * Constructor with standard settings for start and end points
+	 * 
+	 * @param id
+	 * @param metadata
+	 * @param parser
+	 * @param collator
+	 */
+	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
+			RuleBasedCollator collator){
+		this(id,metadata,parser,collator,new boolean[(metadata.getNumFields() - 1)/2],
+				new boolean[(metadata.getNumFields() - 1)/2]);
+		Arrays.fill(startInclude, true);
+		Arrays.fill(endInclude, false);
+	}
+
+	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
+			boolean[] startInclude, boolean[] endInclude){
+		this(id,metadata,parser,null,startInclude,endInclude);
+	}
+	
 	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser){
 		this(id,metadata,parser,null);
 	}
-	
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
@@ -95,6 +137,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 }
 	
+	/* (non-Javadoc)
+	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
+	 */
 	public DataRecord get(String keyString) {
 		tmpRecord.getField(1).fromString(keyString);
 		tmpRecord.getField(2).fromString(keyString);
@@ -129,7 +174,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 	
 	/**
-	 * This method finds all greater records, then set in get(Object[]) or get(DataRecord)
+	 * This method finds all greater records, then set in get(Object[]) or get(DataRecord) or get(String)
 	 * method, in lookup table and stores them in subTable
 	 * 
 	 * @return
@@ -161,8 +206,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		//if value is not in interval try next
 		for (int i=1;i<tmp.getNumFields();i+=2){
-			if (!(tmpRecord.getField(i).compareTo(tmp.getField(i)) > -1 && 
-					tmpRecord.getField(i+1).compareTo(tmp.getField(i+1)) < 1)) {
+			startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
+			endComparison = tmpRecord.getField(i+1).compareTo(tmp.getField(i+1));
+			if ((startComparison == -1 || (startComparison == 0 && !startInclude[(i-1)/2])) ||
+				(endComparison == 1    || (endComparison == 0   && !endInclude[(i-1)/2])) ) {
 				return getNext();
 			}
 		}
@@ -220,6 +267,40 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 */
 	public Iterator<DataRecord> iterator() {
 		return lookupTable.iterator();
+	}
+	
+	public boolean[] getEndInclude() {
+		return endInclude;
+	}
+
+	public void setEndInclude(boolean[] endInclude) {
+		if (endInclude.length != (metadata.getNumFields() - 1)/2) {
+			throw new InvalidParameterException("endInclude parameter has wrong number " +
+					"of elements: " + endInclude.length + " (should be " + 
+					(metadata.getNumFields() - 1)/2 + ")");
+		}
+		this.endInclude = endInclude;
+	}
+	
+	public void setEndInclude(boolean endInclude){
+		setEndInclude(new boolean[]{endInclude});
+	}
+
+	public boolean[] getStartInclude() {
+		return startInclude;
+	}
+
+	public void setStartInclude(boolean[] startInclude) {
+		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
+			throw new InvalidParameterException("startInclude parameter has wrong number " +
+					"of elements: " + startInclude.length + " (should be " + 
+					(metadata.getNumFields() - 1)/2 + ")");
+		}
+		this.startInclude = startInclude;
+	}
+
+	public void setStartInclude(boolean startInclude){
+		setStartInclude(new boolean[]{startInclude});
 	}
 
 	
@@ -289,7 +370,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			}
 			return 0;
 		}
+
 	}
-	
+
+
 }
 
