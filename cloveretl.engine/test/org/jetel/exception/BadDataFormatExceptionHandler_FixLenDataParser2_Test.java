@@ -96,8 +96,8 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		try{
 			while((record=aFixLenDataParser.getNext(record))!=null){}
 		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
+			fail("Should not raise an BadDataFormatException");
 		} catch (Exception ee){
 			ee.printStackTrace();
 			fail("Should not throw Exception");
@@ -266,10 +266,10 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 				fail("Should throw Exception");
 			}
 		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
-			e.printStackTrace();
-		} catch (RuntimeException re) {
 			failed = true;
+		} catch (RuntimeException re) {
+			re.printStackTrace();
+			fail("Should not raise an RuntimeException");
 		} catch (Exception ee){
 			ee.printStackTrace();
 		}
@@ -329,12 +329,14 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
-			while((record=aParser2.getNext(record))!=null){
-				recCount++;
+			while((record != null)){
+				try {
+					record = aParser2.getNext(record);
+					recCount++;
+				} catch (BadDataFormatException e) {
+					System.out.println(e.getMessage());
+				}
 			}
-		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
-			e.printStackTrace();
 		} catch (Exception ee){
 			fail("Should not throw Exception");
 			ee.printStackTrace();
@@ -370,18 +372,16 @@ public class BadDataFormatExceptionHandler_FixLenDataParser2_Test extends TestCa
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				if(recCount==0) {
-					assertEquals("0.0",record.getField(0).toString());
-					assertEquals("",record.getField(2).toString());
-					assertEquals(null,record.getField(2).getValue());
-				} else if(recCount==1) {
+					assertEquals("-15.5",record.getField(0).toString());
 					assertEquals("",record.getField(1).toString());
 					assertEquals(null,record.getField(1).getValue());
-				} else if(recCount==2) {
+				} else if(recCount==1) {
 					assertEquals("",record.getField(3).toString());
+					assertEquals(null,record.getField(3).getValue());
 				}
 				recCount++;
 			}
-			assertEquals(3,recCount);
+			assertEquals(2,recCount);
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();

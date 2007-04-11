@@ -253,13 +253,13 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		aParser2.setDataSource(in2);
 		try{
 			while((record=aParser2.getNext(record))!=null){
-				fail("Should throw Exception");
+				fail("Should throw BadDataFormatException");
 			}
 		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
-			e.printStackTrace();
-		} catch (RuntimeException re) {
 			failed = true;
+		} catch (RuntimeException re) {
+			fail("Should not raise an RuntimeException");
+			re.printStackTrace();
 		} catch (Exception ee){
 			ee.printStackTrace();
 		}
@@ -319,12 +319,14 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		try{
-			while((record=aParser2.getNext(record))!=null){
-				recCount++;
+			while((record != null)){
+				try {
+					record = aParser2.getNext(record);
+					recCount++;
+				} catch (BadDataFormatException e) {
+					System.out.println(e.getMessage());
+				}
 			}
-		} catch (BadDataFormatException e){	
-			fail("Should not raise an BadDataFormatException");
-			e.printStackTrace();
 		} catch (Exception ee){
 			fail("Should not throw Exception");
 			ee.printStackTrace();
@@ -349,7 +351,7 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		} catch (ComponentNotReadyException e1) {
 		}
 		aParser2.setDataSource(in2);
-		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.CONTROLLED);
+		aHandler = ParserExceptionHandlerFactory.getHandler(PolicyType.LENIENT);
 		aParser2.setExceptionHandler(aHandler);
 		int recCount = 0;
 		
@@ -360,18 +362,16 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 		try{
 			while((record=aParser2.getNext(record))!=null){
 				if(recCount==0) {
-					assertEquals("0.0",record.getField(0).toString());
-					assertEquals("",record.getField(2).toString());
-					assertEquals(null,record.getField(2).getValue());
-				} else if(recCount==1) {
+					assertEquals("-15.5",record.getField(0).toString());
 					assertEquals("",record.getField(1).toString());
 					assertEquals(null,record.getField(1).getValue());
-				} else if(recCount==2) {
+				} else if(recCount==1) {
 					assertEquals("",record.getField(3).toString());
+					assertNull(record.getField(3).getValue());
 				}
 				recCount++;
 			}
-			assertEquals(3,recCount);
+			assertEquals(2,recCount);
 		} catch (BadDataFormatException e){	
 			fail("Should not raise an BadDataFormatException");
 			e.printStackTrace();
