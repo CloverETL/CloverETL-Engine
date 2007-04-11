@@ -132,7 +132,7 @@ public void test_parsing_bad() {
 				assertEquals(record.getField(0).toString(),"-0.7");
 				assertEquals(record.getField(1).toString(),"Bone Broo");
 				assertEquals(record.getField(2).toString(),"99");
-				assertTrue(record.getField(3).isNull());
+				assertEquals(record.getField(3).toString(),record.getField(3).getMetadata().getDefaultValueStr());
 			}
 			recCount++;
 		}
