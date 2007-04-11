@@ -69,7 +69,9 @@ public class CustomizedRecordTransformTest extends TestCase {
 		metaOut.addField(new DataFieldMetadata("Name",DataFieldMetadata.BYTE_FIELD, ";"));
 		metaOut.addField(new DataFieldMetadata("Age",DataFieldMetadata.NUMERIC_FIELD, "|"));
 		metaOut.addField(new DataFieldMetadata("City",DataFieldMetadata.STRING_FIELD, "\n"));
-		metaOut.addField(new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n"));
+		DataFieldMetadata dateMetadata = new DataFieldMetadata("Born",DataFieldMetadata.DATE_FIELD, "\n");
+		dateMetadata.setLocaleStr("en");
+		metaOut.addField(dateMetadata);
 		metaOut.addField(new DataFieldMetadata("Value",DataFieldMetadata.DECIMAL_FIELD, "\n"));
 		metaOut.getField("Value").setFieldProperties(new Properties());
 		metaOut.getField("Value").getFieldProperties().setProperty(DataFieldMetadata.LENGTH_ATTR, "4");
