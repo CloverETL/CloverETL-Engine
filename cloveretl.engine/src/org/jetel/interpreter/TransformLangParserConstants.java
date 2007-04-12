@@ -58,9 +58,9 @@ public interface TransformLangParserConstants {
   int DECIMAL_VAR = 63;
   int BOOLEAN_VAR = 64;
   int STRING_VAR = 65;
-  int DATE_FIELD_LITERAL = 112;
-  int IDENTIFIER = 113;
-  int ERROR = 114;
+  int DATE_FIELD_LITERAL = 131;
+  int IDENTIFIER = 132;
+  int ERROR = 133;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -168,9 +168,9 @@ public interface TransformLangParserConstants {
     "\"pi\"",
     "\"round\"",
     "\"trunc\"",
-    "\"print_err\"",
     "\"print_stack\"",
     "\"breakpoint\"",
+    "\"raise_error\"",
     "\"concat\"",
     "\"dateadd\"",
     "\"datediff\"",
@@ -179,6 +179,25 @@ public interface TransformLangParserConstants {
     "\"date2num\"",
     "\"str2num\"",
     "\"num2str\"",
+    "\"print_err\"",
+    "\"print_log\"",
+    "\"trace\"",
+    "\"debug\"",
+    "\"info\"",
+    "\"warn\"",
+    "\"error\"",
+    "\"fatal\"",
+    "\"sequence\"",
+    "\".next\"",
+    "\".current\"",
+    "\".reset\"",
+    "\"lookup\"",
+    "\".\"",
+    "\"lookup_next\"",
+    "\"lookup_found\"",
+    "\"lookup_admin\"",
+    "\"init\"",
+    "\"free\"",
     "<DATE_FIELD_LITERAL>",
     "<IDENTIFIER>",
     "<ERROR>",
