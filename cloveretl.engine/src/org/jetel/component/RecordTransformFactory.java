@@ -23,17 +23,24 @@
  */
 package org.jetel.component;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.CodeParser;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.FileUtils;
@@ -50,19 +57,39 @@ public class RecordTransformFactory {
     public static final Pattern PATTERN_PREPROCESS_1 = Pattern.compile("\\$\\{out\\."); 
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
     
-    public static RecordTransform createTransform(String transform, String transformClass, Node node, DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
+    public static RecordTransform createTransform(String transform, String transformClass, 
+    		ReadableByteChannel transformReader, String charset, Node node, 
+    		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
+    		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
         RecordTransform transformation = null;
         Log logger = LogFactory.getLog(node.getClass());
         
         //without these parameters we cannot create transformation
-        if(transform == null && transformClass == null) {
+        if(transform == null && transformClass == null && transformReader == null) {
             throw new ComponentNotReadyException("Record transformation is not defined.");
         }
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
             transformation = RecordTransformFactory.loadClass(logger, transformClass);
-        } else {
+        }else if (transform == null && transformReader != null){
+        	try {
+				ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+				CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+					Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+				int pos;
+				transform = new String(); 
+				do {
+					pos = ByteBufferUtils.reload(buffer, transformReader);
+					buffer.flip();
+					transform += decoder.decode(buffer).toString();
+					buffer.rewind();
+				} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(node, "Can't read extern code", e);
+			}
+        }
+        if (transformClass == null) {
             
             switch (guessTransformType(transform)) {
             case TRANSFORM_JAVA_SOURCE:
