@@ -40,6 +40,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -98,8 +99,9 @@ import org.w3c.dom.Element;
  *    <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
  *      to search for class to be used for transforming data specified in <tt>transformClass<tt> parameter.</td></tr>
  *    <tr><td><b>transformClass</b></td><td>name of the class to be used for transforming data</td></tr>
- *    <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td></tr>
- *    <tr><td><b>javaSource</b></td><td>java source code implementation of transformation included direct into node definition</td></tr>
+ *    <tr><td><b>transform</b></td><td>contains definition of transformationas java source, in internal clover format or in Transformation Language </td></tr>
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="INTERSEC" type="DATA_INTERSECT" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
@@ -134,6 +136,8 @@ public class DataIntersection extends Node {
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
     private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
 
 	private final static int WRITE_TO_PORT_A = 0;
@@ -144,6 +148,8 @@ public class DataIntersection extends Node {
 
 	private String transformClassName;
     private String transformSource = null;
+	private String transformURL = null;
+	private String charset = null;
 
 	private RecordTransform transformation = null;
 
@@ -168,15 +174,17 @@ public class DataIntersection extends Node {
 	 * @param  joinKeys        field names composing key
 	 * @param  transformClass  class (name) to be used for transforming data
 	 */
-	public DataIntersection(String id, String[] joinKeys, String transform,String transformClass) {
+	public DataIntersection(String id, String[] joinKeys, String transform,
+			String transformClass, String transformURL) {
 		super(id);
 		this.joinKeys = joinKeys;
 		this.transformClassName = transformClass;
 		this.transformSource = transform;
+		this.transformURL = transformURL;
 	}
 
 	public DataIntersection(String id, String[] joinKeys, DataRecordTransform transform) {
-		this(id, joinKeys, null, null);
+		this(id, joinKeys, null, null, null);
 		this.transformation = transform;
 	}
 
@@ -383,8 +391,13 @@ public class DataIntersection extends Node {
         if (transformation != null){
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
-            transformation = RecordTransformFactory.createTransform(
-            		transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
+            try {
+				transformation = RecordTransformFactory.createTransform(
+						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, "Can't read extern transform", e);
+			}
         }
 	}
 
@@ -427,6 +440,14 @@ public class DataIntersection extends Node {
 		if (transformSource!=null){
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
+		
+		if (transformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
         
 		// equal NULL attribute
         xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE, String.valueOf(equalNULLs));
@@ -458,7 +479,11 @@ public class DataIntersection extends Node {
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_JOINKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
+                    xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				intersection.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -508,6 +533,14 @@ public class DataIntersection extends Node {
     public void setEqualNULLs(boolean equal){
         this.equalNULLs=equal;
     }
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 
 }
 

@@ -42,6 +42,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 /**
@@ -93,9 +94,11 @@ import org.w3c.dom.Element;
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>joinKey</b></td><td>field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
  *    </td></tr>
- *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format or as java code</td>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation as java source, in internal clover format or in Transformation Language</td>
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML 
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
@@ -125,6 +128,8 @@ public class DBJoin extends Node {
 	private static final String XML_JOIN_KEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_DB_METADATA_ATTRIBUTE = "metadata";
 	private static final String XML_MAX_CACHED_ATTRIBUTE = "maxCached";
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
@@ -137,6 +142,8 @@ public class DBJoin extends Node {
 	private String transformClassName = null;
 	private String transformSource = null;
 	private RecordTransform transformation = null;
+	private String transformURL = null;
+	private String charset = null;
 	
 	private String[] joinKey;
 	private String connectionName;
@@ -162,18 +169,19 @@ public class DBJoin extends Node {
 	 * @param joinKey fields from input port which defines joing records with record from database
 	 */
 	public DBJoin(String id,String connectionName,String query,String[] joinKey,
-			String transform, String transformClass){
+			String transform, String transformClass, String transformURL){
 		super(id);
 		this.connectionName = connectionName;
 		this.query = query;
 		this.joinKey = joinKey;
 		this.transformClassName = transformClass;
 		this.transformSource = transform;
+		this.transformURL = transformURL;
 	}
 	
 	public DBJoin(String id,String connectionName,String query,String[] joinKey,
 			RecordTransform transform){
-		this(id, connectionName, query, joinKey, null, null);
+		this(id, connectionName, query, joinKey, null, null, null);
 		this.transformation = transform;
 	}
 
@@ -307,8 +315,8 @@ public class DBJoin extends Node {
 			}
 			if (transformSource != null || transformClassName != null) {
 				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, this, inMetadata,
-						outMetadata, transformationParameters, this.getClass().getClassLoader());
+						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
 			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
@@ -331,7 +339,11 @@ public class DBJoin extends Node {
                     xattribs.getString(XML_ID_ATTRIBUTE),
                     connectionName,query,joinKey,
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-                    xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null));
+                    xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				dbjoin.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
 			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){
 				dbjoin.setDbMetadata(xattribs.getString(XML_DB_METADATA_ATTRIBUTE));
@@ -364,6 +376,13 @@ public class DBJoin extends Node {
 
 		if (transformSource!=null){
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		}
+		if (transformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 		if (maxCached >0 ) {
 			xmlElement.setAttribute(XML_MAX_CACHED_ATTRIBUTE, String.valueOf(maxCached));
@@ -398,6 +417,14 @@ public class DBJoin extends Node {
 
 	private void setLeftOuterJoin(boolean leftOuterJoin) {
 		this.leftOuterJoin = leftOuterJoin;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 	
