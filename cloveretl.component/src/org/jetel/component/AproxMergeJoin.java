@@ -45,6 +45,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringAproxComparator;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -114,18 +115,17 @@ import org.w3c.dom.Element;
  *  	 of the class to be used for transforming joined data which has conformity
  *  	 smaller then conformity limit.If no class name is specified then it
  *  	 is expected that the transformation Java source code is embedded in XML</td></tr>
- *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library
- *  	 file (.jar,.zip,...) where to search for class to be used for transforming
- *  	 joined data specified in transformClassForSuspicious parameter.</td>
- *  <tr><td><b>libraryPathForSuspicious</b><br><i>optional</i></td><td>name
- *  	 of Java library file (.jar,.zip,...) where to search for class to be
- *  	 used for transforming joined data specified in transformClass parameter.<</td>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation for
- *  	 joined records which has conformity greater then conformity limit in
- *  	 internal clover format</td>
+ *  	 joined records which has conformity greater then conformity limit as java code, 
+ *  	 in internal clover format or in Transform Language</td>
  *  <tr><td><b>transformForSuspicious</b></td><td>contains definition of transformation
- *  	 for joined records which has conformi ty smaller then conformity limit
- *  	 in internal clover format</td>
+ *  	 for joined records which has conformity smaller then conformity limit
+ *  	 as java code, in internal clover format or in Transform Language</td>
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code for
+ *  	 joined records which has conformity greater then conformity limit</td></tr>
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code for
+ *  	 joined records which has conformity smaller then conformity limit</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>conformity</b><br></td><td>joined records are divided to two 
  *  	sets depending on their computed conformity is greater or smaller then
  *  	 this parameter</td></tr>
@@ -171,6 +171,9 @@ public class AproxMergeJoin extends Node {
 	private static final String XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE = "transformClassForSuspicious";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
 	private static final String XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE = "transformForSuspicious";
+	private static final String XML_TRANSFORM_URL_ATTRIBUTE = "transformURL";
+	private static final String XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE = "transformURLForSuspicious";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_CONFORMITY_ATTRIBUTE = "conformity";
 	
 	public final static String COMPONENT_TYPE = "APROX_MERGE_JOIN";
@@ -193,6 +196,9 @@ public class AproxMergeJoin extends Node {
 	private String transformSource = null;
 	private String transformClassNameForSuspicious;
 	private String transformSourceForSuspicious = null;
+	private String transformURL = null;
+	private String transformURLForsuspicious = null;
+	private String charset = null;
 
 	private RecordTransform transformation = null;
 	private RecordTransform transformationForSuspicious = null;
@@ -232,7 +238,7 @@ public class AproxMergeJoin extends Node {
 	
 	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
 			String transform, String transformClass, String transformForSusp, 
-			String transformClassForSus) throws JetelException{
+			String transformClassForSus, String transformURL, String transformURLforSus) throws JetelException{
 		super(id);
 		this.joinParameters=joinParameters;
 		this.matchingKey[0]=matchingKey;
@@ -240,12 +246,14 @@ public class AproxMergeJoin extends Node {
 		this.transformClassName = transformClass;
 		this.transformSourceForSuspicious = transformForSusp;
 		this.transformClassNameForSuspicious = transformClassForSus;
+		this.transformURL = transformURL;
+		this.transformURLForsuspicious = transformURLforSus;
 	}
 	
 	public AproxMergeJoin(String id,String[] joinParameters, String matchingKey,
 			RecordTransform transform, RecordTransform transformForSusp) 
 				throws JetelException{
-		this(id, joinParameters, matchingKey, null, null, null, null);
+		this(id, joinParameters, matchingKey, null, null, null, null, null, null);
 		this.transformation = transform;
 		this.transformationForSuspicious = transformForSusp;
 	}
@@ -570,18 +578,32 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			transformation = RecordTransformFactory.createTransform(
-					transformSource, transformClassName, this, inMetadata,
-					outMetadata, transformationParameters, this.getClass().getClassLoader());
+			try {
+				transformation = RecordTransformFactory.createTransform(
+						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset, this, inMetadata, outMetadata, transformationParameters, 
+						this.getClass().getClassLoader());
+			} catch (IOException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+				ex.setAttributeName(XML_TRANSFORM_URL_ATTRIBUTE);
+				throw ex;
+			}
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious != null) {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
-			transformationForSuspicious = RecordTransformFactory.createTransform(
-					transformSourceForSuspicious, transformClassNameForSuspicious, 
-					this, inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
+			try {
+				transformationForSuspicious = RecordTransformFactory.createTransform(
+						transformSourceForSuspicious, transformClassNameForSuspicious, 
+						transformURLForsuspicious != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset, this, inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
+			} catch (IOException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+				ex.setAttributeName(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE);
+				throw ex;
+			}
 		}
 		// initializing join parameters
 		joinKeys = new String[joinParameters.length];
@@ -690,7 +712,12 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE,null),
-                    xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null));
+                    xattribs.getString(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE,null),
+                    xattribs.getString(XML_TRANSFORM_URL_ATTRIBUTE, null),
+                    xattribs.getString(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null));
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            	join.setCharset(XML_CHARSET_ATTRIBUTE);
+            }
 			if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
 						split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -750,8 +777,28 @@ public class AproxMergeJoin extends Node {
 			xmlElement.setAttribute(XML_TRANSFORM_CLASS_ATTRIBUTE,transformClassName);
 		} 
 		
+		if (transformClassNameForSuspicious != null){
+			xmlElement.setAttribute(XML_TRANSFORM_CLASS_FOR_SUSPICIOUS_ATTRIBUTE, transformClassNameForSuspicious);
+		}
+		
 		if (transformSource!=null){
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		}
+		
+		if (transformSourceForSuspicious != null){
+			xmlElement.setAttribute(XML_TRANSFORM_FOR_SUSPICIOUS_ATTRIBUTE, transformSourceForSuspicious);
+		}
+		
+		if (transformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORM_URL_ATTRIBUTE, transformURL);
+		}
+		
+		if (transformURLForsuspicious != null ){
+			xmlElement.setAttribute(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, transformURLForsuspicious);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 		
 		xmlElement.setAttribute(XML_CONFORMITY_ATTRIBUTE,String.valueOf(conformityLimit));
@@ -792,38 +839,30 @@ public class AproxMergeJoin extends Node {
     		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
     				.getMetadata() };
     		// initializing join parameters
-    		joinKeys = new String[joinParameters.length];
-    		maxDifferenceLetters = new int[joinParameters.length];
     		boolean[][] strength=new boolean[joinParameters.length][StringAproxComparator.IDENTICAL];
-    		weights = new double[joinParameters.length];
     		String[] tmp;
     		for (int i=0;i<joinParameters.length;i++){
     			tmp=joinParameters[i].split(" ");
-    			joinKeys[i]=tmp[0];
-    			maxDifferenceLetters[i]=Integer.parseInt(tmp[1]);
-    			weights[i]=Double.parseDouble(tmp[2]);
     			for (int j=0;j<StringAproxComparator.IDENTICAL;j++){
     				strength[i][j] = tmp[3+j].equals("true") ? true : false;
     			}
     		}
-    		double sumOfWeights=0;
-    		for (int i=0;i<weights.length;i++){
-    			sumOfWeights+=weights[i];
-    		}
-    		for (int i=0;i<weights.length;i++){
-    			weights[i]=weights[i]/sumOfWeights;
-    		}
-    		if (slaveOverrideKeys == null) {
-    			slaveOverrideKeys = joinKeys;
-    		}
-    		RecordKey[] recKey = new RecordKey[2];
+     		RecordKey[] recKey = new RecordKey[2];
     		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
     		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
-    		recKey[DRIVER_ON_PORT].init();
-    		recKey[SLAVE_ON_PORT].init();
-    		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
-    		fieldsToCompare[SLAVE_ON_PORT]=recKey[SLAVE_ON_PORT].getKeyFields();
-    		comparator = new StringAproxComparator[joinParameters.length];
+    		try {
+				recKey[DRIVER_ON_PORT].init();
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_JOIN_KEY_ATTRIBUTE);
+			}
+	   		try {
+				recKey[SLAVE_ON_PORT].init();
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+			}
+     		comparator = new StringAproxComparator[joinParameters.length];
     		for (int i=0;i<comparator.length;i++){
     			String locale=inMetadata[DRIVER_ON_PORT].getField(fieldsToCompare[DRIVER_ON_PORT][i]).getLocaleStr();
     			try {
@@ -832,19 +871,21 @@ public class AproxMergeJoin extends Node {
     				throw new ComponentNotReadyException(ex.getLocalizedMessage());
     			}
     		}
-    		if (slaveMatchingKey == null){
-    			slaveMatchingKey=matchingKey;
-    		}
     		recordKey = new RecordKey[2];
     		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
     		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
-    		recordKey[DRIVER_ON_PORT].init();
-    		recordKey[SLAVE_ON_PORT].init();
-    		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
-    		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
-    		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);
-        	
-        	
+       		try {
+				recordKey[DRIVER_ON_PORT].init();
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_MATCHING_KEY_ATTRIBUTE);
+			}
+	   		try {
+				recordKey[SLAVE_ON_PORT].init();
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE);
+			}
         	
 //            init();
 //            free();
@@ -865,6 +906,14 @@ public class AproxMergeJoin extends Node {
 
 	private void setConformityLimit(double conformityLimit) {
 		this.conformityLimit = conformityLimit;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 		
 }

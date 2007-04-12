@@ -39,6 +39,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -114,14 +115,16 @@ import org.w3c.dom.Element;
  * </tr>
  * <tr>
  * <td><b>transform</b></td>
- * <td>contains definition of transformation in internal clover format or as
- * java code</td>
+ * <td>contains definition of transformation as java source, in internal clover format or in Transformation Language</td>
  * <tr>
  * <td><b>transformClass</b><br>
  * <i>optional</i></td>
  * <td>name of the class to be used for transforming joined data<br>
  * If no class name is specified then it is expected that the transformation
  * Java source code is embedded in XML
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code for
+ *  	 joined records which has conformity smaller then conformity limit</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  * <tr>
  * <td><b>lookupTable</b></td>
  * <td>name of lookup table where are slave records</td>
@@ -185,6 +188,8 @@ public class LookupJoin extends Node {
 	private static final String XML_TRANSFORM_CLASS_ATTRIBUTE = "transformClass";
 
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
 
@@ -197,6 +202,8 @@ public class LookupJoin extends Node {
 	private String transformClassName = null;
 
 	private RecordTransform transformation = null;
+	private String transformURL = null;
+	private String charset = null;
 
 	private String transformSource = null;
 
@@ -226,17 +233,18 @@ public class LookupJoin extends Node {
 	 * @param transformClass
 	 */
 	public LookupJoin(String id, String lookupTableName, String[] joinKey,
-			String transform, String transformClass) {
+			String transform, String transformClass, String transformURL) {
 		super(id);
 		this.lookupTableName = lookupTableName;
 		this.joinKey = joinKey;
 		this.transformClassName = transformClass;
 		this.transformSource = transform;
+		this.transformURL = transformURL;
 	}
 
 	public LookupJoin(String id, String lookupTableName, String[] joinKey,
 			RecordTransform transform) {
-		this(id, lookupTableName, joinKey, null, null);
+		this(id, lookupTableName, joinKey, null, null, null);
 		this.transformation = transform;
 	}
 
@@ -345,8 +353,8 @@ public class LookupJoin extends Node {
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}else{
 				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, this, inMetadata,
-						outMetadata, transformationParameters, this.getClass().getClassLoader());
+						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
@@ -367,7 +375,11 @@ public class LookupJoin extends Node {
 			join = new LookupJoin(xattribs.getString(XML_ID_ATTRIBUTE),
 					xattribs.getString(XML_LOOKUP_TABLE_ATTRIBUTE), joinKey,
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), xattribs
-							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null));
+							.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
+		                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				join.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 			join.setTransformationParameters(xattribs
 							.attributes2Properties(new String[] { XML_TRANSFORM_CLASS_ATTRIBUTE }));
 			if (xattribs.exists(XML_LEFTOUTERJOIN_ATTRIBUTE)) {
@@ -404,6 +416,13 @@ public class LookupJoin extends Node {
 		if (transformSource != null) {
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE, transformSource);
 		}
+		if (transformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
 		xmlElement.setAttribute(XML_JOIN_KEY_ATTRIBUTE, StringUtils
 				.stringArraytoString(joinKey, ';'));
 
@@ -426,12 +445,20 @@ public class LookupJoin extends Node {
 		this.transformationParameters = transformationParameters;
 	}
 
-	private void setLeftOuterJoin(boolean leftOuterJoin) {
+	public void setLeftOuterJoin(boolean leftOuterJoin) {
 		this.leftOuterJoin = leftOuterJoin;
 	}
 
-	private void setFreeLookupTable(boolean freeLookupTable) {
+	public void setFreeLookupTable(boolean freeLookupTable) {
 		this.freeLookupTable = freeLookupTable;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 }

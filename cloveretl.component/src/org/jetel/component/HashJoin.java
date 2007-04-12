@@ -46,6 +46,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -121,12 +122,13 @@ import org.w3c.dom.Element;
  *    is missing (ie there's nothin before '='), it will be taken from the first mapping. 
  *    Order of mappings corresponds to order of slave input ports. In case a mapping is empty or missing for some slave, the component
  *    will use first mapping instead of it.</td></tr>
- *  <tr><td><b>libraryPath</b><br><i>optional</i></td><td>name of Java library file (.jar,.zip,...) where
- *  to search for class to be used for transforming joined data specified in <tt>transformClass<tt> parameter.</td></tr>
- *  <tr><td><b>transform</b></td><td>contains definition of transformation in internal clover format </td>
+ *  <tr><td><b>transform</b></td><td>contains definition of transformation as java source, in internal clover format or in Transformation Language</td>
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML - <i>see example
  * below</i></td></tr>
+ *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code for
+ *  	 joined records which has conformity smaller then conformity limit</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
  *    <tr><td><b>hashTableSize</b><br><i>optional</i></td><td>how many records are expected (roughly) to be in hashtable.</td></tr>
  *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
@@ -176,6 +178,8 @@ public class HashJoin extends Node {
 	private static final String XML_JOINKEY_ATTRIBUTE = "joinKey";
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "transformClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "transform";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "transformURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE ="slaveDuplicates";
 	// legacy attributes
 	private static final String XML_LEFTOUTERJOIN_ATTRIBUTE = "leftOuterJoin";
@@ -194,6 +198,8 @@ public class HashJoin extends Node {
 
 	private RecordTransform transformation = null;
 	private String transformSource = null;
+	private String transformURL = null;
+	private String charset = null;
 
 	private Join join;
 	private boolean slaveDuplicates=false;
@@ -230,10 +236,11 @@ public class HashJoin extends Node {
 	 * @param slaveDuplicates enables/disables duplicate slaves
 	 */
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, String transform,
-			String transformClass, Join join) {
+			String transformClass, String transformURL, Join join) {
 		super(id);
 		this.transformSource =transform;
 		this.transformClassName = transformClass;
+		this.transformURL = transformURL;
 		this.join = join;
 		this.hashTableInitialCapacity = DEFAULT_HASH_TABLE_INITIAL_CAPACITY;
 		this.driverJoiners = driverJoiners;
@@ -242,7 +249,7 @@ public class HashJoin extends Node {
 
 	public HashJoin(String id, String[][] driverJoiners, String[][] slaveJoiners, 
 			RecordTransform transform, Join join) {
-        this(id, driverJoiners, slaveJoiners, null, null, join);
+        this(id, driverJoiners, slaveJoiners, null, null, null, join);
 		this.transformation = transform;
 	}
 
@@ -343,8 +350,13 @@ public class HashJoin extends Node {
 		if (transformation != null){
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		}else{
-			transformation = RecordTransformFactory.createTransform(
-					transformSource, transformClassName, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
+			try {
+				transformation = RecordTransformFactory.createTransform(
+						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
+						charset,this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(this, "Can't read extern transform", e);
+			}
 		}
 	}
 
@@ -520,6 +532,13 @@ public class HashJoin extends Node {
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
 		}
 
+		if (transformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, transformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
 		xmlElement.setAttribute(XML_JOINKEY_ATTRIBUTE, createJoinSpec(driverJoiners, slaveJoiners));
 
 
@@ -655,7 +674,11 @@ public class HashJoin extends Node {
 					joiners[0], joiners[1],
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+                    xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
 					joinType);
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				join.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {
 				join.setHashTableInitialCapacity(xattribs.getInteger(XML_HASHTABLESIZE_ATTRIBUTE));
@@ -832,6 +855,14 @@ public class HashJoin extends Node {
 				}					
 			} // while
 		}
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 }
