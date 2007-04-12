@@ -82,10 +82,11 @@ public class DBFAnalyzer {
 		dbfFile.close();
 	}
 
-	void analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
-	    
-	    buffer=ByteBuffer.allocate(DBF_HEADER_SIZE);
+	int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
+
+		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE);
 	    buffer.order(ByteOrder.LITTLE_ENDIAN);
+	    int read = DBF_HEADER_SIZE;
 		int count=dbfFile.read(buffer);
 		if (count!=32){
 			throw new DBFErrorException("Problem reading DBF header - too short !");
@@ -114,6 +115,7 @@ public class DBFAnalyzer {
         int filedInfoLength=dbfNumFields*DBF_FIELD_DEF_SIZE;
 		buffer=ByteBuffer.allocate(filedInfoLength);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
+        read += filedInfoLength;
         if (dbfFile.read(buffer)!=filedInfoLength){
             throw new DBFErrorException("Problem reading DBF fields directory - too short !");
         }
@@ -142,6 +144,8 @@ public class DBFAnalyzer {
 		}catch (Exception ex){
 			throw new DBFErrorException("Unsupported DBF codepage ID: "+dbfCodePage);
 		}
+		
+		return read;
 	}
 
 	/**

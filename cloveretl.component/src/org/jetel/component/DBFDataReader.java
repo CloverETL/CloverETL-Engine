@@ -20,11 +20,11 @@
 
 package org.jetel.component;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.database.dbf.DBFDataParser;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -36,6 +36,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.MultiFileReader;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -75,6 +76,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dataPolicy</b><br><i>optional</i></td><td>specifies how to handle misformatted or incorrect data.  'Strict' (default value) aborts processing, 'Controlled' logs the entire record while processing continues, and 'Lenient' attempts to set incorrect data to default values while processing continues.</td>
  *  <tr><td><b>charset</b><br><i>optional</i></td><td>Which character set to use for decoding field's data.  Default value is deduced from DBF table header. If it is
  *  specified as part of metadata at record level, then it is take from there.</td>
+ *  <tr><td><b>skipRows</b><br><i>optional</i></td><td>specifies how many records/rows should be skipped from the source file. Good for handling files where first rows is a header not a real data. Dafault is 0.</td>
+ *  <tr><td><b>numRecords</b><br><i>optional</i></td><td>max number of parsed records</td>
  *  </tr>
  *  </table>
  *
@@ -103,11 +106,19 @@ public class DBFDataReader extends Node {
 	private static final String XML_DATAPOLICY_ATTRIBUTE = "dataPolicy";
 	private static final String XML_FILEURL_ATTRIBUTE = "fileURL";
 	private static final String XML_CHARSET_ATTRIBUTE = "charset";
+    private static final String XML_RECORD_SKIP_ATTRIBUTE = "skipRows";
+    private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DBF_DATA_READER";
 
+	private static Log logger = LogFactory.getLog(DBFDataReader.class);
+
 	private final static int OUTPUT_PORT = 0;
+    private MultiFileReader reader;
+    private PolicyType policyType;
 	private String fileURL;
+    private int skipRows=0; // do not skip rows by default
+    private int numRecords = -1;
 	
 	private DBFDataParser parser;
 
@@ -146,22 +157,31 @@ public class DBFDataReader extends Node {
 
 		// till it reaches end of data or it is stopped from outside
 		try {
-			while (((record = parser.getNext(record)) != null) && runIt) {
-				//broadcast the record to all connected Edges
-				writeRecordBroadcast(record);
-				SynchronizeUtils.cloverYield(); // allow other threads to work
+			while (record != null && runIt) {
+			    try {
+			        if((record = reader.getNext(record)) != null) {
+			            //broadcast the record to all connected Edges
+			            writeRecordBroadcast(record);
+			        }
+			    } catch(BadDataFormatException bdfe) {
+			        if(policyType == PolicyType.STRICT) {
+			            throw bdfe;
+			        } else {
+			            logger.info(bdfe.getMessage());
+			        }
+			    }
+			    SynchronizeUtils.cloverYield();
 			}
 		} catch (Exception e) {
 			throw e;
 		}finally{
-			parser.close();
+			reader.close();
 			broadcastEOF();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
 	
-
 	/**
 	 *  Description of the Method
 	 *
@@ -170,14 +190,13 @@ public class DBFDataReader extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// try to open file & initialize data parser
-		try {
-			parser.init(getOutputPort(OUTPUT_PORT).getMetadata());
-            parser.setDataSource(new FileInputStream(fileURL));
-		} catch (FileNotFoundException ex) {
-			throw new ComponentNotReadyException(getId() + "IOError: " + ex.getMessage());
-		}
 
+        // initialize multifile reader based on prepared parser
+        reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+        reader.setLogger(logger);
+        reader.setSkip(skipRows);
+        reader.setNumRecords(numRecords);
+        reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
 
@@ -199,6 +218,12 @@ public class DBFDataReader extends Node {
 			xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
 		}
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, this.fileURL);
+		if (skipRows != 0){
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skipRows));
+		}
+		if (numRecords != 0){
+			xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE,String.valueOf(numRecords));
+		}
 	}
 
 
@@ -226,6 +251,12 @@ public class DBFDataReader extends Node {
 				dbfDataReader.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(
 					xattribs.getString(XML_DATAPOLICY_ATTRIBUTE)));
 			}
+            if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)){
+            	dbfDataReader.setSkipRows(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+            	dbfDataReader.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
+            }
 			
         } catch (Exception ex) {
             throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -273,5 +304,33 @@ public class DBFDataReader extends Node {
 	public String getType(){
 		return COMPONENT_TYPE;
 	}
+
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(int skipRows) {
+        this.skipRows = skipRows;
+    }
+    
+    public void setNumRecords(int numRecords) {
+        this.numRecords = Math.max(numRecords, 0);
+    }
+
+    
+    public void setPolicyType(String strPolicyType) {
+        setPolicyType(PolicyType.valueOfIgnoreCase(strPolicyType));
+    }
+
+	/**
+	 * Adds BadDataFormatExceptionHandler to behave according to DataPolicy.
+	 *
+	 * @param  handler
+	 */
+	public void setPolicyType(PolicyType policyType) {
+        this.policyType = policyType;
+        parser.setExceptionHandler(ParserExceptionHandlerFactory.getHandler(policyType));
+	}
+
+    
 }
 
