@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
@@ -58,7 +59,7 @@ public class DBFDataParser implements Parser {
 
     private DBFAnalyzer dbfAnalyzer;
 
-    private FileChannel dbfFile;
+    private ReadableByteChannel dbfFile;
 
     private DataRecordMetadata metadata;
 
@@ -239,13 +240,16 @@ public class DBFDataParser implements Parser {
             dbfFile = ((FileInputStream)inputDataSource).getChannel();
         }else if (inputDataSource instanceof FileChannel){
             dbfFile = (FileChannel)inputDataSource;
+		} else if (inputDataSource instanceof ReadableByteChannel) {
+			dbfFile = ((ReadableByteChannel) inputDataSource);
         }else{
             throw new RuntimeException("Invalid input data object passed - isn't an InputStream or FileChannel");
         }
         
         dbfAnalyzer = new DBFAnalyzer();
+        int read = 0;
         try {
-            dbfAnalyzer.analyze(dbfFile, metadata.getName());
+        	read = dbfAnalyzer.analyze(dbfFile, metadata.getName());
         } catch (Exception ex) {
             throw new ComponentNotReadyException(ex.getMessage());
         }
@@ -265,7 +269,8 @@ public class DBFDataParser implements Parser {
         decoder.reset();
         totalRecords = dbfAnalyzer.getNumRows();
         try {
-            dbfFile.position(dbfAnalyzer.getDBFDataOffset());
+            //dbfFile.position(dbfAnalyzer.getDBFDataOffset());
+            dbfFile.read(ByteBuffer.allocate(dbfAnalyzer.getDBFDataOffset()-read));
         } catch (IOException ex) {
             throw new ComponentNotReadyException(
                     "Error when setting initial reading position: "
@@ -391,7 +396,10 @@ public class DBFDataParser implements Parser {
     }
 
 	public int skip(int nRec) throws JetelException {
-		throw new UnsupportedOperationException("Not yet implemented");
+		for (int i = 0; i < nRec; i++) {
+			getNext();
+		}
+		return nRec;
 	}
 
 }
