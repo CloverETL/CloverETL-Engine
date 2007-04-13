@@ -27,7 +27,6 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.IGraphElement;
 
-import sun.tools.tree.CheckContext;
 
 
 /**
