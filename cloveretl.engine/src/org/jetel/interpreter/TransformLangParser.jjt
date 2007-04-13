@@ -328,7 +328,7 @@ CLVFStartExpression StartExpression() : {}
 
 void CompilationUnit() #void :
 {
-   String name;
+   // String name;
 }
 {
    (
@@ -398,7 +398,7 @@ void FunctionDeclaration() :
 */
 
 void VarDeclaration():
-{  Token t,l,p;  int varSlot;}{  try {    (<INT_VAR>{      jjtThis.setType(INT_VAR);    }    | <LONG_VAR>{      jjtThis.setType(LONG_VAR);    }    | <DOUBLE_VAR>{      jjtThis.setType(DOUBLE_VAR);    }    | <DECIMAL_VAR>{      jjtThis.setType(DECIMAL_VAR);    }    | <STRING_VAR>{      jjtThis.setType(STRING_VAR);    }    | <DATE_VAR>{      jjtThis.setType(DATE_VAR);    }    | <BOOLEAN_VAR>{      jjtThis.setType(BOOLEAN_VAR);    }    )
+{  Token t,l,p;}{  try {    (<INT_VAR>{      jjtThis.setType(INT_VAR);    }    | <LONG_VAR>{      jjtThis.setType(LONG_VAR);    }    | <DOUBLE_VAR>{      jjtThis.setType(DOUBLE_VAR);    }    | <DECIMAL_VAR>{      jjtThis.setType(DECIMAL_VAR);    }    | <STRING_VAR>{      jjtThis.setType(STRING_VAR);    }    | <DATE_VAR>{      jjtThis.setType(DATE_VAR);    }    | <BOOLEAN_VAR>{      jjtThis.setType(BOOLEAN_VAR);    }    )
 
     ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
       
@@ -818,7 +818,7 @@ void FunctionCallParameter() #void : {}
 /* !!!! INTERNAL FUNCTIONS && PROCEDURES START HERE !!!! */
 
 void BuildInFunction() #void :
-{ Token t;}
+{ }
 {
 	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #SubStrNode(3) // (string,from index,length)
 	|"uppercase" "(" AdditiveExpression() ")" #UppercaseNode(1)
@@ -990,43 +990,19 @@ void SequenceNode() :
 
 void LookupNode() :
 {
-	Token t;
+	Token t,k;
 }
 {
 	(
-		"lookup"  { jjtThis.setOperation(0); }
-		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","  // LOOKUP NAME/ID
-		AdditiveExpression() //KEYS GO HERE
-		("," AdditiveExpression())+
-		")"
-		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); }  // WHICH FIELD 
-	)
 	(
-		"lookup_next" { jjtThis.setOperation(1); }
-		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } "," 
+	"lookup" "("
+		t=<IDENTIFIER> { jjtThis.setOperation(0); jjtThis.setLookupName(t.image); }// LOOKUP NAME/ID
+		"," AdditiveExpression() //KEYS GO HERE
+		("," AdditiveExpression())*
 		")"
-		"." t=<IDENTIFIER> { jjtThis.setLookupFiled(t.image); } 
-	)
-	(
-		// how many records we have found
-		"lookup_found" { jjtThis.setOperation(2); }
-		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
-		")"
-	)
-	(
-		// do something with lookup
-		"lookup_admin" 
-		"("
-		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
-		(
-			"init" 	{jjtThis.setOperation(3);}
-			"free" 	{jjtThis.setOperation(4);}
-		)
-		")"
-	)
+		"." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); }  // WHICH FIELD 
+		) 		|("lookup_next"	"("		t=<IDENTIFIER> { jjtThis.setOperation(1); jjtThis.setLookupName(t.image); }
+		")" "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } 		) 	|(// how many records we have found		"lookup_found" "("		t=<IDENTIFIER> { jjtThis.setOperation(2); jjtThis.setLookupName(t.image); }		")"		) 	|(// do something with lookup		"lookup_admin" "("		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","		(			( "init" 	{jjtThis.setOperation(3);} )			|( "free" 	{jjtThis.setOperation(4);} )		)		")"		)	)
 }
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }

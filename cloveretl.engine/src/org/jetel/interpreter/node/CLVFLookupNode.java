@@ -38,7 +38,7 @@ public class CLVFLookupNode extends SimpleNode {
       this.lookupName=name;
   }
   
-  public void setLookupFiled(String name){
+  public void setLookupField(String name){
       this.fieldName=name;
       
   }
