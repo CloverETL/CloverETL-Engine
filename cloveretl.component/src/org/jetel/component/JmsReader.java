@@ -62,7 +62,7 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Receives JMS messages and transforms them to data records using user-specified transformation class
  * (so-called processor). The processor is supposed to implement interface <code>JmsMsg2DataRecord</code>.
- * The processor may be specified either by class name or by inline Java code.
+ * The processor may be specified either by class name or by Java code.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
@@ -80,9 +80,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>selector</b></td><td>JMS selector specifying messages to be processed</td>
  *  <tr><td><b>processorCode</b></td><td>Inline Java code defining processor class</td>
  *  <tr><td><b>processorClass</b></td><td>Name of processor class</td>
- *  <tr><td><b>processorURL</b></td><td>path to the file with transformation code for
- *  	 joined records which has conformity smaller then conformity limit</td></tr>
- *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
+ *  <tr><td><b>processorURL</b></td><td>path to the file with processor code</td></tr>
+ *  <tr><td><b>charset</b><br><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>maxMsgCount</b></td><td>Maximal number of messages to be processed.
  *  0 means there's no constraint on count of messages.</td>
  *  <tr><td><b>timeout</b></td><td>Maximal time to await a message. 0 means forever</td>
