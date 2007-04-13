@@ -19,6 +19,11 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -31,6 +36,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.DataRecord2JmsMsg;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -41,8 +47,10 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -77,6 +85,8 @@ import org.w3c.dom.Element;
 *  <tr><td><b>processorCode</b></td><td>Inline Java code defining processor class</td>
 *  <tr><td><b>processorClass</b></td><td>Name of processor class</td>
 *  </tr>
+ *  <tr><td><b>processorURL</b></td><td>path to the file with processor code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
 *  </table>
 *
 * @author Jan Hadrava (jan.hadrava@javlinconsulting.cz), Javlin Consulting (www.javlinconsulting.cz)
@@ -91,11 +101,15 @@ public class JmsWriter extends Node {
 	private static final String XML_CONNECTION_ATTRIBUTE = "connection";
 	private static final String XML_PSORCODE_ATTRIBUTE = "processorCode";
 	private static final String XML_PSORCLASS_ATTRIBUTE = "processorClass";
+	private static final String XML_PSORURL_ATTRIBUTE = "processorURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	// component attributes
 	private String conId;
 	private String psorClass;
 	private String psorCode;
+	private String psorURL = null;
+	private String charset = null;
 	private Properties psorProperties;
 
 	private InputPort inPort;
@@ -112,11 +126,12 @@ public class JmsWriter extends Node {
 	 * @param psorProperties Properties to be passed to data processor.
 	 */
 	public JmsWriter(String id, String conId, String psorClass, String psorCode,
-			Properties psorProperties) {
+			String psorURL, Properties psorProperties) {
 		super(id);
 		this.conId = conId;
 		this.psorClass = psorClass;
 		this.psorCode = psorCode;
+		this.psorURL = psorURL;
 		this.psorProperties = psorProperties;
 	}
 
@@ -132,7 +147,7 @@ public class JmsWriter extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (psor == null && psorClass == null && psorCode == null) {
+		if (psor == null && psorClass == null && psorCode == null && psorURL == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
 		IConnection c = getGraph().getConnection(conId);
@@ -143,7 +158,27 @@ public class JmsWriter extends Node {
 		connection = (JmsConnection)c;
 		inPort = getInputPort(0);
 		if (psor == null) {
-			psor = psorCode != null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
+			if (psorClass == null && psorCode == null) {
+				try {
+					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), psorURL);
+					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+					int pos;
+					psorCode = new String(); 
+					do {
+						pos = ByteBufferUtils.reload(buffer, xformReader);
+						buffer.flip();
+						psorCode += decoder.decode(buffer).toString();
+						buffer.rewind();
+					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+				} catch (IOException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+					ex.setAttributeName(XML_PSORURL_ATTRIBUTE);
+					throw ex;
+				}
+			}
+			psor = psorClass == null ? createProcessorDynamic(psorCode) : createProcessor(psorClass);
 		}
 		try {
 			connection.init();
@@ -270,6 +305,13 @@ public class JmsWriter extends Node {
 		if (psorClass != null) {
 			xmlElement.setAttribute(XML_PSORCLASS_ATTRIBUTE, psorClass);
 		}
+		if (psorURL != null) {
+			xmlElement.setAttribute(XML_PSORURL_ATTRIBUTE, psorURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
 		// set processor attributes
 		for (Enumeration<Object> names = psorProperties.keys(); names.hasMoreElements();) {
 			Object name = names.nextElement();
@@ -293,10 +335,14 @@ public class JmsWriter extends Node {
 					xattribs.getString(XML_CONNECTION_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.DataRecord2JmsMsgProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
+					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor
 							XML_ID_ATTRIBUTE, XML_CONNECTION_ATTRIBUTE,
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE
 					}));
+					if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+						jmsReader.setCharset(XML_CHARSET_ATTRIBUTE);
+					}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -343,6 +389,14 @@ public class JmsWriter extends Node {
 //        }
         
         return status;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 }
