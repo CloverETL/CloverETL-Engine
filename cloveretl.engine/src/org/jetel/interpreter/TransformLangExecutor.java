@@ -1899,47 +1899,48 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
     }
     
-    public Object visit(CLVFSequenceNode node,Object data){
-        Object seqVal=null;
-        if (node.sequence==null){
-            if (graph!=null){
-                node.sequence=graph.getSequence(node.sequenceName);
-            }else{
+    public Object visit(CLVFSequenceNode node, Object data) {
+        Object seqVal = null;
+        if (node.sequence == null) {
+            if (graph != null) {
+                node.sequence = graph.getSequence(node.sequenceName);
+            } else {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "Can't obtain Sequence \""+node.sequenceName+
-                        "\" from graph - graph is not assigned");
+                        "Can't obtain Sequence \"" + node.sequenceName
+                                + "\" from graph - graph is not assigned");
             }
-            if (node.sequence==null){
+            if (node.sequence == null) {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "Can't obtain Sequence \""+node.sequenceName+
-                        "\" from graph \""+graph.getName()+"\"");
+                        "Can't obtain Sequence \"" + node.sequenceName
+                                + "\" from graph \"" + graph.getName() + "\"");
             }
         }
-        switch(node.opType){
+        switch (node.opType) {
         case CLVFSequenceNode.OP_RESET:
             node.sequence.reset();
-            seqVal=Stack.NUM_ZERO;
+            seqVal = Stack.NUM_ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:
-            switch(node.retType){
+            switch (node.retType) {
             case LONG_VAR:
-                seqVal=new CloverLong(node.sequence.currentValueLong());
+                seqVal = new CloverLong(node.sequence.currentValueLong());
                 break;
             case STRING_VAR:
-                seqVal=node.sequence.currentValueString();
+                seqVal = node.sequence.currentValueString();
             default:
-                seqVal=new CloverInteger(node.sequence.currentValueInt());
+                seqVal = new CloverInteger(node.sequence.currentValueInt());
             }
-            default: // default is next value from sequence
-                switch(node.retType){
-                case LONG_VAR:
-                    seqVal=new CloverLong(node.sequence.nextValueLong());
-                    break;
-                case STRING_VAR:
-                    seqVal=node.sequence.nextValueString();
-                default:
-                    seqVal=new CloverInteger(node.sequence.nextValueInt());
-                }
+            break;
+        default: // default is next value from sequence
+            switch (node.retType) {
+            case LONG_VAR:
+                seqVal = new CloverLong(node.sequence.nextValueLong());
+                break;
+            case STRING_VAR:
+                seqVal = node.sequence.nextValueString();
+            default:
+                seqVal = new CloverInteger(node.sequence.nextValueInt());
+            }
         }
         stack.push(seqVal);
         return data;
