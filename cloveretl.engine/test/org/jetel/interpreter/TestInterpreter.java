@@ -32,6 +32,8 @@ import junit.framework.TestCase;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.Parser;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
@@ -43,6 +45,7 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
+import org.jetel.lookup.SimpleLookupTable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -123,6 +126,18 @@ public class TestInterpreter extends TestCase {
         Sequence seq = SequenceFactory.createSequence(graph, "PRIMITIVE_SEQUENCE", 
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence("test", seq);
+        
+        LookupTable lkp=new SimpleLookupTable("LKP", metadata, new String[] {"Name"}, null);
+        try {
+        lkp.init();
+        graph.addLookupTable("LKP",lkp);
+        }catch(Exception ex) {
+            throw new RuntimeException(ex);
+        }
+        lkp.put("one",record);
+        record.getField("Name").setValue("xxxx");
+        lkp.put("two", record);
+        
 	}
 	
 	protected void tearDown() {
@@ -1836,12 +1851,12 @@ public class TestInterpreter extends TestCase {
     }
 
     public void test_sequence(){
-        System.out.println("\nLogger test:");
+        System.out.println("\nSequence test:");
         String expStr = "print_err(sequence(test).next);\n"+
                         "print_err(sequence(test).next);\n"+
                         "int i; for(i=0;i<10;++i) print_err(sequence(test).next);\n"+
                         "i=sequence(test).current; print_err(i,true); i=sequence(test).reset; \n"+
-                        "for(i=0;i<10;++i) print_err(sequence(test).next);\n";
+                        "for(i=0;i<50;++i) { print_err(sequence(test).current); print_err(sequence(test).next); }\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1872,9 +1887,50 @@ public class TestInterpreter extends TestCase {
         }
     }
 
+    public void test_lookup(){
+        System.out.println("\nLookup test:");
+        String expStr = "string key='one';\n"+
+                        "string val=lookup(LKP,key).Name;\n"+
+                        "print_err(lookup(LKP,'  HELLO ').Age); \n"+
+                        "print_err(lookup_found(LKP));\n"+
+                        "print_err(lookup(LKP,'two').Name); \n"+
+                        "/*print_err(lookup(LKP,'two').Name);\n"+
+                        "print_err(lookup(LKP,'xxx').Name);\n*/";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+
+              
+              parseTree.dump("");
+              
+              
+        } catch (ParseException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+                throw new RuntimeException("Parse exception",e);
+        }
+    }
+    
     
     public void print_code(String text){
         String[] lines=text.split("\n");
+        System.out.println("\t:         1         2         3         4         5         ");
+        System.out.println("\t:12345678901234567890123456789012345678901234567890123456789");
         for(int i=0;i<lines.length;i++){
             System.out.println((i+1)+"\t:"+lines[i]);
         }
