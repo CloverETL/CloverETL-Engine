@@ -29,10 +29,12 @@ import java.util.Properties;
 
 import junit.framework.TestCase;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.Defaults;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.Parser;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
@@ -45,14 +47,9 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.node.CLVFStart;
 import org.jetel.interpreter.node.CLVFStartExpression;
-import org.jetel.lookup.SimpleLookupTable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
-
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 /**
  * @author dpavlis
  * @since  10.8.2004
@@ -127,7 +124,10 @@ public class TestInterpreter extends TestCase {
         		new Object[]{"test",graph,"test"}, new Class[]{String.class,TransformationGraph.class,String.class});
         graph.addSequence("test", seq);
         
-        LookupTable lkp=new SimpleLookupTable("LKP", metadata, new String[] {"Name"}, null);
+//        LookupTable lkp=new SimpleLookupTable("LKP", metadata, new String[] {"Name"}, null);
+        LookupTable lkp = LookupTableFactory.createLookupTable(graph, "simpleLookup", 
+        		new Object[]{"LKP" , metadata ,new String[] {"Name"} , null}, new Class[]{String.class, 
+        		DataRecordMetadata.class, String[].class, Parser.class});
         try {
         lkp.init();
         graph.addLookupTable("LKP",lkp);
