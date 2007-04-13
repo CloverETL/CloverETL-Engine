@@ -31,13 +31,8 @@ import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-import org.jetel.component.ComponentFactory;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
@@ -53,9 +48,11 @@ import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
 public class DBFAnalyzer {
 	
-	private static final int DBF_HEADER_SIZE=32;
+	private static final int DBF_HEADER_SIZE_BASIC=32;
 	private static final int DBF_FIELD_DEF_SIZE=32;
-    private static final byte DBF_HEADER_TERMINATOR=0x0D;
+	private static final int DBF_FIELD_DEF_SIZE_ENHANCE=48;
+    private static final byte DBF_FIELD_HEADER_TERMINATOR=0x0D;
+    private static final byte DBF_ENHANCE_RESERVED=4;
 	private static final String HEADER_CHARACTER_ENCODING="ISO-8859-1";
 	private final static String VERSION = "1.1";
 	private final static String LAST_UPDATED = "2006/10/03";  
@@ -84,9 +81,9 @@ public class DBFAnalyzer {
 
 	int analyze(ReadableByteChannel dbfFile,String dbfTableName)throws IOException,DBFErrorException{
 
-		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE);
+		buffer=ByteBuffer.allocate(DBF_HEADER_SIZE_BASIC);
 	    buffer.order(ByteOrder.LITTLE_ENDIAN);
-	    int read = DBF_HEADER_SIZE;
+	    int read = DBF_HEADER_SIZE_BASIC;
 		int count=dbfFile.read(buffer);
 		if (count!=32){
 			throw new DBFErrorException("Problem reading DBF header - too short !");
@@ -103,16 +100,14 @@ public class DBFAnalyzer {
 
 		buffer.position(8);
 		dbfDataOffset=buffer.getShort();
-        // handle differently FoxPro and dBaseIII 
-		dbfNumFields = (dbfType>0x03) ? (dbfDataOffset-296)/32 : (dbfDataOffset-33)/32;
        
 		buffer.position(29);
 		dbfCodePage=buffer.get();
        
 		buffer.position(10);
 		dbfRecSize=buffer.getShort();
-		
-        int filedInfoLength=dbfNumFields*DBF_FIELD_DEF_SIZE;
+
+        int filedInfoLength=dbfDataOffset-DBF_HEADER_SIZE_BASIC;//dbfNumFields*DBF_FIELD_DEF_SIZE+1;
 		buffer=ByteBuffer.allocate(filedInfoLength);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         read += filedInfoLength;
@@ -120,34 +115,83 @@ public class DBFAnalyzer {
             throw new DBFErrorException("Problem reading DBF fields directory - too short !");
         }
         buffer.flip();
-        
-        // read-in definition of individual fields
-        int offset=0;
-        dbfFields=new DBFFieldMetadata[dbfNumFields];
-        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
-        for(int i=0;i<dbfNumFields;i++){
-            dbfFields[i]=new DBFFieldMetadata();
-            buffer.limit(11+offset);
-            dbfFields[i].name=charset.decode(buffer).toString().trim();
-            buffer.limit(12+offset);
-            dbfFields[i].type=charset.decode(buffer).get();
-            buffer.limit(32+offset);
-            dbfFields[i].offset=buffer.getInt();
-            dbfFields[i].length=buffer.get();
-            dbfFields[i].decPlaces=buffer.get();
-            offset+=DBF_FIELD_DEF_SIZE;
+
+        // handle differently FoxPro and dBaseIII
+		//dbfNumFields = (dbfType>0x03) ? (dbfDataOffset-296)/32 : (dbfDataOffset-33)/32;
+        int subFieldEofMark = findSubRecordEofMark(buffer);
+        if (subFieldEofMark == -1) {
+        	throw new DBFErrorException("Problem reading DBF fields directory - wrong format !");
         }
+        boolean shortFieldDesc = subFieldEofMark%32 == 0;
         
+		if (shortFieldDesc) {
+			dbfNumFields = subFieldEofMark / DBF_FIELD_DEF_SIZE;
+	        buffer.position(0);
+	        
+	        // read-in definition of individual fields
+	        int offset=0;
+	        dbfFields=new DBFFieldMetadata[dbfNumFields];
+	        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
+	        for(int i=0;i<dbfNumFields;i++){
+	            dbfFields[i]=new DBFFieldMetadata();
+	            buffer.limit(11+offset);
+	            dbfFields[i].name=charset.decode(buffer).toString().trim();
+	            buffer.limit(12+offset);
+	            dbfFields[i].type=charset.decode(buffer).get();
+	            buffer.limit(32+offset);
+	            dbfFields[i].offset=buffer.getInt();
+	            dbfFields[i].length=buffer.get();
+	            dbfFields[i].decPlaces=buffer.get();
+	            offset+=DBF_FIELD_DEF_SIZE;
+	        }
+		} else {
+			if (subFieldEofMark <=DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED) {
+				buffer.position(DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED);
+				subFieldEofMark = findSubRecordEofMark(buffer);
+				dbfNumFields = (subFieldEofMark) / DBF_FIELD_DEF_SIZE_ENHANCE;
+			} else {
+				dbfNumFields = (subFieldEofMark-DBF_FIELD_DEF_SIZE-DBF_ENHANCE_RESERVED) / DBF_FIELD_DEF_SIZE_ENHANCE;
+			}
+	        buffer.position(DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED);
+			
+	        // read-in definition of individual fields
+	        int offset=DBF_FIELD_DEF_SIZE+DBF_ENHANCE_RESERVED;
+	        dbfFields=new DBFFieldMetadata[dbfNumFields];
+	        charset=Charset.forName(HEADER_CHARACTER_ENCODING);
+	        for(int i=0;i<dbfNumFields;i++){
+	            dbfFields[i]=new DBFFieldMetadata();
+	            buffer.limit(32+offset);
+	        	buffer.position(offset);
+	            dbfFields[i].name=charset.decode(buffer).toString().trim();
+	            buffer.limit(33+offset);
+	            dbfFields[i].type=charset.decode(buffer).get();
+	            buffer.limit(34+offset);
+	            dbfFields[i].length=buffer.get();
+	            buffer.limit(35+offset);
+	            dbfFields[i].decPlaces=buffer.get();
+	            //dbfFields[i].offset=buffer.getInt();
+	            offset+=DBF_FIELD_DEF_SIZE_ENHANCE;
+	        }
+		}
+		
 		// let's construct the valid character decoder based on info found in table header
 		try{
 			charset=Charset.forName(DBFTypes.dbfCodepage2Java(dbfCodePage));
 		}catch (Exception ex){
 			throw new DBFErrorException("Unsupported DBF codepage ID: "+dbfCodePage);
 		}
-		
 		return read;
 	}
 
+	private int findSubRecordEofMark(ByteBuffer buffer) {
+		int fEof;
+		int fMax = buffer.limit();
+		for (fEof = 0; fEof < fMax ;fEof++) {
+			if (buffer.get() == DBF_FIELD_HEADER_TERMINATOR) return fEof;
+		}
+		return -1;
+	}
+	
 	/**
 	 * Main method which allows analyzing dBase file/table. It extracts Clover-style
 	 * metadata from information specified in dBase table header.
