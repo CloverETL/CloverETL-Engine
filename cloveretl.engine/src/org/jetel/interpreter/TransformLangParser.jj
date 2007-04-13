@@ -393,7 +393,7 @@ CLVFStartExpression StartExpression() : {/*@bgen(jjtree) StartExpression */
 
 void CompilationUnit()       :
 {
-   String name;
+   // String name;
 }
 {
    (
@@ -502,7 +502,7 @@ void VarDeclaration():
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
-/*@egen*/  Token t,l,p;  int varSlot;}{/*@bgen(jjtree) VarDeclaration */
+/*@egen*/  Token t,l,p;}{/*@bgen(jjtree) VarDeclaration */
   try {
 /*@egen*/  try {    (<INT_VAR>{      jjtn000.setType(INT_VAR);    }    | <LONG_VAR>{      jjtn000.setType(LONG_VAR);    }    | <DOUBLE_VAR>{      jjtn000.setType(DOUBLE_VAR);    }    | <DECIMAL_VAR>{      jjtn000.setType(DECIMAL_VAR);    }    | <STRING_VAR>{      jjtn000.setType(STRING_VAR);    }    | <DATE_VAR>{      jjtn000.setType(DATE_VAR);    }    | <BOOLEAN_VAR>{      jjtn000.setType(BOOLEAN_VAR);    }    )
 
@@ -2155,7 +2155,7 @@ void FunctionCallParameter()       : {}
 /* !!!! INTERNAL FUNCTIONS && PROCEDURES START HERE !!!! */
 
 void BuildInFunction()       :
-{ Token t;}
+{ }
 {
 	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #SubStrNode( 3) */
                                                                                                {
@@ -2941,45 +2941,33 @@ void LookupNode() :
         jjtree.openNodeScope(jjtn000);
         jjtreeOpenNodeScope(jjtn000);
 /*@egen*/
-	Token t;
+	Token t,k;
 }
 {/*@bgen(jjtree) LookupNode */
         try {
 /*@egen*/
 	(
-		"lookup"  { jjtn000.setOperation(0); }
-		"("
-		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","  // LOOKUP NAME/ID
-		AdditiveExpression() //KEYS GO HERE
-		("," AdditiveExpression())+
-		")"
-		"." t=<IDENTIFIER> { jjtn000.setLookupFiled(t.image); }  // WHICH FIELD 
-	)
 	(
-		"lookup_next" { jjtn000.setOperation(1); }
-		"("
-		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } "," 
+	"lookup" "("
+		t=<IDENTIFIER> { jjtn000.setOperation(0); jjtn000.setLookupName(t.image); }// LOOKUP NAME/ID
+		"," AdditiveExpression() //KEYS GO HERE
+		("," AdditiveExpression())*
 		")"
-		"." t=<IDENTIFIER> { jjtn000.setLookupFiled(t.image); } 
-	)
-	(
-		// how many records we have found
-		"lookup_found" { jjtn000.setOperation(2); }
-		"("
-		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","
-		")"
-	)
-	(
-		// do something with lookup
-		"lookup_admin" 
-		"("
-		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","
-		(
-			"init" 	{jjtn000.setOperation(3);}
-			"free" 	{jjtn000.setOperation(4);}
-		)
-		")"
-	)/*@bgen(jjtree)*/
+		"." k=<IDENTIFIER>/*@bgen(jjtree)*/
+                                   {
+                                     jjtree.closeNodeScope(jjtn000, true);
+                                     jjtc000 = false;
+                                     jjtreeCloseNodeScope(jjtn000);
+                                   }
+/*@egen*/ { jjtn000.setLookupField(k.image); }  // WHICH FIELD 
+		) 		|("lookup_next"	"("		t=<IDENTIFIER> { jjtn000.setOperation(1); jjtn000.setLookupName(t.image); }
+		")" "." k=<IDENTIFIER>/*@bgen(jjtree)*/
+                                       {
+                                         jjtree.closeNodeScope(jjtn000, true);
+                                         jjtc000 = false;
+                                         jjtreeCloseNodeScope(jjtn000);
+                                       }
+/*@egen*/ { jjtn000.setLookupField(k.image); } 		) 	|(// how many records we have found		"lookup_found" "("		t=<IDENTIFIER> { jjtn000.setOperation(2); jjtn000.setLookupName(t.image); }		")"		) 	|(// do something with lookup		"lookup_admin" "("		t=<IDENTIFIER> { jjtn000.setLookupName(t.image); } ","		(			( "init" 	{jjtn000.setOperation(3);} )			|( "free" 	{jjtn000.setOperation(4);} )		)		")"		)	)/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);

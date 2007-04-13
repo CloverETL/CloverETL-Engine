@@ -1960,6 +1960,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         "Invalid field name \""+node.fieldName+"\" at LookupTable \""+node.lookupName+
                         "\" in graph \""+graph.getName()+"\"");
             }
+            node.lookup.setLookupKey(new Object[node.jjtGetNumChildren()]);
         }
         switch(node.opType){
         case CLVFLookupNode.OP_INIT:
