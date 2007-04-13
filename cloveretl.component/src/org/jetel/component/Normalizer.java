@@ -20,6 +20,10 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -29,6 +33,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.normalize.RecordNormalize;
 import org.jetel.component.normalize.RecordNormalizeTL;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
@@ -39,8 +44,10 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -71,6 +78,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>normalizeClass</b></td><td>name of the class to be used for normalizing data.</td></tr>
  *  <tr><td><b>normalize</b></td><td>contains definition of transformation in Java or TransformLang.</td></tr>
+ *  <tr><td><b>normalizeURL</b></td><td>path to the file with normalizing code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  </tr>
  *  </table>
  *
@@ -82,6 +91,8 @@ public class Normalizer extends Node {
 
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "normalizeClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "normalize";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "normalizeURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	
 	private static final int IN_PORT = 0;
 	private static final int OUT_PORT = 0;
@@ -95,10 +106,6 @@ public class Normalizer extends Node {
 	private static final int TRANSFORM_JAVA_SOURCE = 1;
 	private static final int TRANSFORM_CLOVER_TL = 2;
 	
-	private String transformClassName;
-
-	private String transformSource = null;
-
 	private Properties transformationParameters;
 
 	static Log logger = LogFactory.getLog(Normalizer.class);
@@ -112,6 +119,8 @@ public class Normalizer extends Node {
 	
 	private String xformClass;
 	private String xform;
+	private String xformURL = null;
+	private String charset = null;
 		
 	/**
 	 * Sole ctor.
@@ -119,14 +128,15 @@ public class Normalizer extends Node {
 	 * @param xform Normalization implementation source code (either Java or TransformLang).
 	 * @param xformClass Normalization class.
 	 */
-	public Normalizer(String id, String xform, String xformClass) {
+	public Normalizer(String id, String xform, String xformClass, String xformURL) {
 		super(id);
 		this.xformClass = xformClass;
 		this.xform = xform;
+		this.xformURL = xformURL;
 	}
 
 	public Normalizer(String id, RecordNormalize xform) {
-		this(id, null, null);
+		this(id, null, null, null);
 		this.norm = xform;
 	}
 
@@ -145,7 +155,7 @@ public class Normalizer extends Node {
         }catch (IllegalAccessException ex){
             throw new ComponentNotReadyException("Can't instantiate transformation class: "+ex.getMessage());
         }catch (ClassNotFoundException ex) {
-            throw new ComponentNotReadyException("Can't find specified transformation class: " + transformClassName);
+            throw new ComponentNotReadyException("Can't find specified transformation class: " + xformClass);
         }
 		return norm;
 	}
@@ -189,7 +199,27 @@ public class Normalizer extends Node {
 		if (norm == null) {
 			if (xformClass != null) {
 				norm = createNormalizer(xformClass);
-			} else {
+			}else if (xform == null) {
+				try {
+					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), xformURL);
+					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+					int pos;
+					xform = new String(); 
+					do {
+						pos = ByteBufferUtils.reload(buffer, xformReader);
+						buffer.flip();
+						xform += decoder.decode(buffer).toString();
+						buffer.rewind();
+					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+				} catch (IOException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+					ex.setAttributeName(XML_TRANSFORMURL_ATTRIBUTE);
+					throw ex;
+				}
+			}
+			if (xformClass == null) {
 				switch (guessTransformType(xform)) {
 				case TRANSFORM_JAVA_SOURCE:
 					norm = createNormalizerDynamic(xform);
@@ -303,7 +333,11 @@ public class Normalizer extends Node {
 			norm = new Normalizer(
 					xattribs.getString(XML_ID_ATTRIBUTE),					
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
-					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null));
+					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null));
+            if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+            	norm.setCharset(XML_CHARSET_ATTRIBUTE);
+            }
 
 			norm.setTransformationParameters(xattribs.attributes2Properties(
 					new String[] { XML_ID_ATTRIBUTE,
@@ -321,12 +355,19 @@ public class Normalizer extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 
-		if (transformClassName != null) {
-			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, transformClassName);
+		if (xformClass != null) {
+			xmlElement.setAttribute(XML_TRANSFORMCLASS_ATTRIBUTE, xformClass);
 		} 
 
-		if (transformSource!=null){
-			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,transformSource);
+		if (xform!=null){
+			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,xform);
+		}
+		if (xformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, xformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
 		}
 
 		Enumeration propertyAtts = transformationParameters.propertyNames();
@@ -361,5 +402,13 @@ public class Normalizer extends Node {
         
         return -1;
     }
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 
 }

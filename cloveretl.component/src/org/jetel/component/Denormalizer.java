@@ -21,6 +21,10 @@
 package org.jetel.component;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -43,8 +47,10 @@ import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -76,6 +82,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>denormalizeClass</b></td><td>name of the class to be used for normalizing data.</td></tr>
  *  <tr><td><b>denormalize</b></td><td>contains definition of transformation in Java or TransformLang.</td></tr>
+ *  <tr><td><b>denormalizeURL</b></td><td>path to the file with transformation code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>key</b></td><td>list of key fields used to identify input record groups.
  *  Each group is < sequence of input records with identical key field values.</td></tr>
  *  </tr>
@@ -99,6 +107,8 @@ public class Denormalizer extends Node {
 
 	private static final String XML_TRANSFORMCLASS_ATTRIBUTE = "denormalizeClass";
 	private static final String XML_TRANSFORM_ATTRIBUTE = "denormalize";
+	private static final String XML_TRANSFORMURL_ATTRIBUTE = "denormalizeURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_KEY_ATTRIBUTE = "key";
 	private static final String XML_ORDER_ATTRIBUTE = "order";
 	
@@ -127,6 +137,8 @@ public class Denormalizer extends Node {
 	
 	private String xformClass;
 	private String xform;
+	private String xformURL = null;
+	private String charset = null;
 	private Order order;
 	private String[] key;
 	RecordKey recordKey;
@@ -139,16 +151,18 @@ public class Denormalizer extends Node {
 	 * @param key
 	 * @param order
 	 */
-	public Denormalizer(String id, String xform, String xformClass, String[] key, Order order) {
+	public Denormalizer(String id, String xform, String xformClass, String xformURL, 
+			String[] key, Order order) {
 		super(id);
 		this.xformClass = xformClass;
 		this.xform = xform;
+		this.xformURL = xformURL;
 		this.key = key;
 		this.order = order;
 	}
 
 	public Denormalizer(String id, RecordDenormalize xform, String[] key, Order order) {
-		this(id, null, null, key, order);
+		this(id, null, null, null, key, order);
 		this.denorm = xform;
 	}
 
@@ -213,7 +227,27 @@ public class Denormalizer extends Node {
 		if (denorm == null) {
 			if (xformClass != null) {
 				denorm = createDenormalizer(xformClass);
-			} else {
+			}else if (xform == null && xformURL != null){
+				try {
+					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), xformURL);
+					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+					int pos;
+					xform = new String(); 
+					do {
+						pos = ByteBufferUtils.reload(buffer, xformReader);
+						buffer.flip();
+						xform += decoder.decode(buffer).toString();
+						buffer.rewind();
+					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+				} catch (IOException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+					ex.setAttributeName(XML_TRANSFORMURL_ATTRIBUTE);
+					throw ex;
+				}
+			}
+			if (xformClass == null) {
 				switch (guessTransformType(xform)) {
 				case TRANSFORM_JAVA_SOURCE:
 					denorm = createDenormalizerDynamic(xform);
@@ -387,9 +421,13 @@ public class Denormalizer extends Node {
 					xattribs.getString(XML_ID_ATTRIBUTE),					
 					xattribs.getString(XML_TRANSFORM_ATTRIBUTE, null), 
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
+					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null),
 					parseKeyList(xattribs.getString(XML_KEY_ATTRIBUTE, null)),
 					order
 					);
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				denorm.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 
 			denorm.setTransformationParameters(xattribs.attributes2Properties(
 					new String[] { XML_ID_ATTRIBUTE,
@@ -417,6 +455,13 @@ public class Denormalizer extends Node {
 			xmlElement.setAttribute(XML_TRANSFORM_ATTRIBUTE,xform);
 		}
 
+		if (xformURL != null) {
+			xmlElement.setAttribute(XML_TRANSFORMURL_ATTRIBUTE, xformURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
 		String orderString = "";
 		if (order == Order.ASC) {
 			orderString = "asc";
@@ -473,5 +518,13 @@ public class Denormalizer extends Node {
         
         return -1;
     }
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
 
 }

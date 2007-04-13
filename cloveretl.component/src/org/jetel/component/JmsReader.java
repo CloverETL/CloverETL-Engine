@@ -19,6 +19,11 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -31,17 +36,18 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.component.jms.JmsMsg2DataRecord;
 import org.jetel.connection.JmsConnection;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
-import org.jetel.util.StringUtils;
+import org.jetel.util.FileUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -74,6 +80,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>selector</b></td><td>JMS selector specifying messages to be processed</td>
  *  <tr><td><b>processorCode</b></td><td>Inline Java code defining processor class</td>
  *  <tr><td><b>processorClass</b></td><td>Name of processor class</td>
+ *  <tr><td><b>processorURL</b></td><td>path to the file with transformation code for
+ *  	 joined records which has conformity smaller then conformity limit</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>maxMsgCount</b></td><td>Maximal number of messages to be processed.
  *  0 means there's no constraint on count of messages.</td>
  *  <tr><td><b>timeout</b></td><td>Maximal time to await a message. 0 means forever</td>
@@ -93,6 +102,8 @@ public class JmsReader extends Node {
 	private static final String XML_SELECTOR_ATTRIBUTE = "selector";
 	private static final String XML_PSORCODE_ATTRIBUTE = "processorCode";
 	private static final String XML_PSORCLASS_ATTRIBUTE = "processorClass";
+	private static final String XML_PSORURL_ATTRIBUTE = "processorURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	private static final String XML_MAXMSGCNT_ATTRIBUTE = "maxMsgCount";
 	private static final String XML_TIMEOUT_ATTRIBUTE = "timeout";
 
@@ -101,6 +112,8 @@ public class JmsReader extends Node {
 	private String selector;
 	private String psorClass;
 	private String psorCode;
+	private String psorURL = null;
+	private String charset = null;
 	private int maxMsgCount;
 	private int timeout;
 	private Properties psorProperties;
@@ -119,13 +132,14 @@ public class JmsReader extends Node {
 	 * @param timeout Timeout
 	 * @param psorProperties Properties to be passed to msg processor.
 	 */
-	public JmsReader(String id, String conId, String selector, String psorClass, String psorCode,
-			int maxMsgCount, int timeout, Properties psorProperties) {
+	public JmsReader(String id, String conId, String selector, String psorClass, 
+			String psorCode, String psorURL, int maxMsgCount, int timeout, Properties psorProperties) {
 		super(id);
 		this.conId = conId;
 		this.selector = selector;
 		this.psorClass = psorClass;
 		this.psorCode = psorCode;
+		this.psorURL = psorURL;
 		this.maxMsgCount = maxMsgCount;
 		this.timeout = timeout;
 		this.psorProperties = psorProperties;
@@ -147,7 +161,7 @@ public class JmsReader extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		if (psorClass == null && psorCode == null) {
+		if (psorClass == null && psorCode == null && psorURL == null) {
 			throw new ComponentNotReadyException("Message processor not specified");
 		}
 		IConnection c = getGraph().getConnection(conId);
@@ -163,7 +177,27 @@ public class JmsReader extends Node {
 			throw new ComponentNotReadyException("Unable to initialize JMS consumer: " + e.getMessage());
 		}
 		if (psor == null) {
-			psor = psorCode != null ? createProcessorDynamic(psorCode)
+			if (psorClass == null && psorCode == null) {
+				try {
+					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), psorURL);
+					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+					int pos;
+					psorCode = new String(); 
+					do {
+						pos = ByteBufferUtils.reload(buffer, xformReader);
+						buffer.flip();
+						psorCode += decoder.decode(buffer).toString();
+						buffer.rewind();
+					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+				} catch (IOException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+					ex.setAttributeName(XML_PSORURL_ATTRIBUTE);
+					throw ex;
+				}
+			}
+			psor = psorClass == null ? createProcessorDynamic(psorCode)
 					: createProcessor(psorClass);
 		}		
 		psor.init(getOutputPort(0).getMetadata(), psorProperties);
@@ -306,6 +340,13 @@ public class JmsReader extends Node {
 		if (psorClass != null) {
 			xmlElement.setAttribute(XML_PSORCLASS_ATTRIBUTE, psorClass);
 		}
+		if (psorURL != null) {
+			xmlElement.setAttribute(XML_PSORURL_ATTRIBUTE, psorURL);
+		}
+		
+		if (charset != null){
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+		}
 		xmlElement.setAttribute(XML_MAXMSGCNT_ATTRIBUTE, Integer.toString(maxMsgCount));
 		xmlElement.setAttribute(XML_TIMEOUT_ATTRIBUTE, Integer.toString(timeout));
 		// set processor attributes
@@ -332,6 +373,7 @@ public class JmsReader extends Node {
 					xattribs.getString(XML_SELECTOR_ATTRIBUTE, null),
 					xattribs.getString(XML_PSORCLASS_ATTRIBUTE, "org.jetel.component.jms.JmsMsg2DataRecordProperties"),
 					xattribs.getString(XML_PSORCODE_ATTRIBUTE, null),
+					xattribs.getString(XML_PSORURL_ATTRIBUTE, null),
 					xattribs.getInteger(XML_MAXMSGCNT_ATTRIBUTE, 0),
 					xattribs.getInteger(XML_TIMEOUT_ATTRIBUTE, 0),
 					xattribs.attributes2Properties(new String[]{	// all unknown attributes will be passed to the processor 
@@ -339,6 +381,9 @@ public class JmsReader extends Node {
 							XML_PSORCLASS_ATTRIBUTE, XML_PSORCODE_ATTRIBUTE,
 							XML_MAXMSGCNT_ATTRIBUTE, XML_TIMEOUT_ATTRIBUTE
 					}));
+			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+				jmsReader.setCharset(XML_CHARSET_ATTRIBUTE);
+			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -408,6 +453,14 @@ public class JmsReader extends Node {
 			}
 			closeConnection();
 		}
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 }

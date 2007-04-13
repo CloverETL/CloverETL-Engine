@@ -19,6 +19,11 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetDecoder;
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.regex.Pattern;
@@ -43,8 +48,10 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.DynamicJavaCode;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -95,6 +102,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>partitionClass</b><br><i>optional</i></td><td>name of the class to be
  *   used for partioning data
  *  <tr><td><b>partitionSource</b><br><i>optional</i></td><td>partition function for partition dataset. Can be java code or in CloverETL transform language
+ *  <tr><td><b>partitonURL</b></td><td>path to the file with parttion code</td></tr>
+ *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>partitionKey</b><br><i>optional</i></td><td>key which specifies which fields (one or more) will be used for calculating hash valu
  * used for determinig output port. If ranges attribute is not defined, then partition method partition by hash will be used.</td>
  * <tr><td><b>ranges</b><br><i>optional</i></td><td>definition of intervals against which
@@ -135,6 +144,7 @@ public class Partition extends Node {
 	private String[] partitionRanges = null;
 	private String partitionClass = null;
 	private String partitionSource = null;
+	private String charset = null;
 
 	private RecordKey partitionKey;
 	private HashKey hashKey;
@@ -147,6 +157,8 @@ public class Partition extends Node {
 	private static final String XML_RANGES_ATTRIBUTE = "ranges";
 	private static final String XML_PARTITIONCLASS_ATTRIBUTE = "partitionClass";
 	private static final String XML_PARTIONSOURCE_ATTRIBUTE = "partitionSource";
+	private static final String XML_PARTITIONURL_ATTRIBUTE = "partitionURL";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset";
 
 	static Log logger = LogFactory.getLog(Partition.class);
 	public static final Pattern PATTERN_TL_CODE = Pattern.compile("function\\s+" + PartitionTL.GETOUTPUTPORT_FUNCTION_NAME); 
@@ -187,6 +199,27 @@ public class Partition extends Node {
 	    this.partitionSource=source;
 	}
 
+    public void setPartitionFunction(ReadableByteChannel partitionReader) throws ComponentNotReadyException{
+		try {
+			ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+			CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
+				Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
+			int pos;
+			partitionSource = new String(); 
+			do {
+				pos = ByteBufferUtils.reload(buffer, partitionReader);
+				buffer.flip();
+				partitionSource += decoder.decode(buffer).toString();
+				buffer.rewind();
+			} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		} catch (IOException e) {
+			ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
+			ex.setAttributeName(XML_PARTIONSOURCE_ATTRIBUTE);
+			throw ex;
+		}
+}
+
+	
 	@Override
 	public Result execute() throws Exception {
 		InputPort inPort;
@@ -341,6 +374,11 @@ public class Partition extends Node {
 		        }
 		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){//set source for parttion function to load dynamic in init() method
 		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
+		    }else if (xattribs.equals(XML_PARTITIONURL_ATTRIBUTE)){
+		    	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
+		    		partition.setCharset(XML_CHARSET_ATTRIBUTE);
+		    	}
+		    	partition.setPartitionFunction(FileUtils.getReadableChannel(partition.getGraph().getProjectURL(), XML_PARTITIONURL_ATTRIBUTE));
 		    }else{//set proper standard partition function
 			    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
 			    	partitionFce = new RangePartition(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
@@ -368,7 +406,7 @@ public class Partition extends Node {
 		}
 	}
 
-	    /**
+		/**
 	     * @param functionParameters The functionParameters to set.
 	     */
 	    public void setFunctionParameters(Properties parameters) {
@@ -418,6 +456,14 @@ public class Partition extends Node {
 	
 	public String getType(){
 		return COMPONENT_TYPE;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
 	}
 
 
