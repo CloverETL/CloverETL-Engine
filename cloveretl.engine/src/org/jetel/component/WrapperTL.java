@@ -349,6 +349,13 @@ public class WrapperTL {
 		return executePreparedFunction(new DataRecord[]{inRecord}, null, data);
 	}
 
+	public Object executePreparedFunction(int functionNumber, Object[] data){
+		return executePreparedFunction(functionNumber, null, null, data);
+	}
+
+	public Object executePreparedFunction(Object[] data){
+		return executePreparedFunction(null, null, data);
+	}
 	/**
 	 * This method exexutes function set before as default (see above)
 	 * 
