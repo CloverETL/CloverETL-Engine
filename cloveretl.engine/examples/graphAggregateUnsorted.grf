@@ -6,7 +6,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node aggregateFunctions="count(Freight); avg(Freight); min(CustomerID)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="195" guiY="20" id="AGGREGATE" sorted="false" type="AGGREGATE"/>
+<Node aggregateFunctions="count(); avg(Freight); min(CustomerID)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="195" guiY="20" id="AGGREGATE" sorted="false" type="AGGREGATE"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="370" guiY="20" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
 <Edge fromNode="AGGREGATE:0" guiBendpoints="" id="OUTEDGE" inPort="0 (OUTPUT)" metadata="Metadata0" outPort="0 (AGGREGATE)" toNode="OUTPUT:0"/>

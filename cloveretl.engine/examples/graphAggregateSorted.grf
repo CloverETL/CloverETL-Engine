@@ -6,7 +6,7 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node aggregateFunctions="count(Freight); avg(Freight)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="498" guiY="24" id="AGGREGATE" sorted="true" type="AGGREGATE"/>
+<Node aggregateFunctions="count(); avg(Freight)" aggregateKey="ShipName;ShipCity" enabled="enabled" guiHeight="25" guiName="AGGREGATE" guiWidth="50" guiX="498" guiY="24" id="AGGREGATE" sorted="true" type="AGGREGATE"/>
 <Node dedupKey="ShipName;ShipCity;OrderID;CustomerID;EmployeeID;OrderDate;RequiredDate;ShippedDate;ShipVia;Freight;ShipAddress;ShipRegion;ShipPostalCode;ShipCountry" enabled="enabled" guiHeight="65" guiName="Dedup" guiWidth="89" guiX="330" guiY="24" id="DEDUP0" keep="first" type="DEDUP"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/orders.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="24" id="INPUT1" type="DELIMITED_DATA_READER"/>
 <Node append="false" enabled="enabled" fileURL="${WORKSPACE}/output/orders.aggregated" guiHeight="25" guiName="OUTPUT" guiWidth="50" guiX="650" guiY="24" id="OUTPUT" type="DELIMITED_DATA_WRITER"/>
