@@ -62,6 +62,7 @@ public class AggregateProcessor {
 	 * Allocates a new <tt>AggregateProcessor</tt> object.
 	 *
 	 * @param mapping aggregate function mapping.
+	 * @param oldMapping set to <tt>true</tt> is the old format of the function mapping is used.
 	 * @param recordKey aggregation key.
 	 * @param sorted set to <tt>true</tt> if the input is sorted.
 	 * @param inMetadata metadata of the input.
@@ -69,7 +70,7 @@ public class AggregateProcessor {
 	 * @param charset charset of the output.
 	 * @throws AggregateProcessorException
 	 */
-	public AggregateProcessor(String[] mapping, RecordKey recordKey, boolean sorted, 
+	public AggregateProcessor(String[] mapping, boolean oldMapping, RecordKey recordKey, boolean sorted, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata, String charset) 
 	throws AggregateProcessorException {
 		this.recordKey = recordKey;
@@ -89,7 +90,12 @@ public class AggregateProcessor {
 		this.outMetadata = outMetadata;
 		this.charset = charset;
 		initFunctions();
-		processMapping(mapping);
+		if (oldMapping) {
+			processMapping(convertOldMapping(mapping));
+		} else {
+			processMapping(mapping);
+		}
+		
 		fieldMappingSize = fieldMapping.keySet().size();
 	}
 
@@ -195,6 +201,34 @@ public class AggregateProcessor {
 		return new UnsortedResultsIterator(outRecord);
 	}
 	
+	/**
+	 * Converts the function mapping from the old format to the new one.
+	 * 
+	 * @param oldMapping function mapping in the old format.
+	 * @return function mapping in the new format.
+	 */
+	private String[] convertOldMapping(String[] oldMapping) {
+		String[] result = new String[oldMapping.length + recordKey.getKeyFields().length];
+
+		// process key mappings
+		int[] keyFields = recordKey.getKeyFields();
+		for (int i = 0; i < keyFields.length; i++) {
+			String keyField = inMetadata.getField(keyFields[i]).getName();
+			String outField = outMetadata.getField(i).getName();
+			result[i] = outField + "=" + keyField;
+		}
+
+		// process function mappings
+		
+		// output fields with indices lesser than this contain key values
+		int tmpIndex = recordKey.getKeyFields().length;
+		for (int i = tmpIndex; i < result.length; i++) {
+			String outField = outMetadata.getField(i).getName();
+			result[i] = outField + "=" + oldMapping[i - tmpIndex];  
+		}
+
+		return result;
+	}
 	/**
 	 * Processes the aggregation function mapping.
 	 * 
@@ -344,7 +378,8 @@ public class AggregateProcessor {
 		try {
 			function.checkOutputFieldType(outMetadata.getField(outputField));
 		} catch (AggregateProcessorException e) {
-			throw new AggregateProcessorException("Output field " + outputField + " has " +
+			throw new AggregateProcessorException("Function " + function.getName() 
+					+ ": output field " + outputField + " has " +
 					"invalid type: " + e.getMessage());
 		}
 	}

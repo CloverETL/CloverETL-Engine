@@ -83,6 +83,7 @@ public class Aggregate extends Node {
 	// required attributes
 	private static final String XML_AGGREGATE_KEY_ATTRIBUTE = "aggregateKey";
 	private static final String XML_MAPPING_ATTRIBUTE = "mapping";
+	private static final String XML_OLD_MAPPING_ATTRIBUTE = "aggregateFunctions";
 	private static final String XML_SORTED_ATTRIBUTE = "sorted";
 	// optional attributes
     private static final String XML_EQUAL_NULL_ATTRIBUTE = "equalNULL";
@@ -95,6 +96,7 @@ public class Aggregate extends Node {
 	private String[] aggregateKeys;
 	private String[] mapping;
 	private boolean sorted;
+	private boolean oldMapping; // true if old mapping format is used
 	
 	private boolean equalNULLs;
 	private String charset;
@@ -110,13 +112,15 @@ public class Aggregate extends Node {
 	 * @param aggregateKeys aggregation keys.
 	 * @param mapping aggregation function mapping.
 	 * @param sorted specifies if the input is sorted.
+	 * @param oldMapping set to <tt>true</tt> if the function mapping is in the old format.
 	 */
-	public Aggregate(String id, String[] aggregateKeys, String[] mapping, boolean sorted) {
+	public Aggregate(String id, String[] aggregateKeys, String[] mapping, boolean sorted, boolean oldMapping) {
 		super(id);
 		
 		this.aggregateKeys = aggregateKeys;
 		this.mapping = mapping;
 		this.sorted = sorted;
+		this.oldMapping = oldMapping;
 	}
 
 	/* (non-Javadoc)
@@ -194,7 +198,7 @@ public class Aggregate extends Node {
 		recordKey.setEqualNULLs(equalNULLs);
 		
 		try {
-			processor = new AggregateProcessor(mapping, recordKey, sorted, 
+			processor = new AggregateProcessor(mapping, oldMapping, recordKey, sorted, 
 					getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(),
 					charset);
 		} catch (AggregateProcessorException e) {
@@ -206,13 +210,14 @@ public class Aggregate extends Node {
 	 * 
 	 * @param graph
 	 * @param xmlElement
-	 * @return
+	 * @return component loaded from XML.
 	 * @throws XMLConfigurationException
 	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		String[] aggregateKey = null;
 		String[] mapping = null;
+		boolean oldMapping = false;
         boolean sorted = true;
 		try {
             //read aggregate key attribute
@@ -226,6 +231,17 @@ public class Aggregate extends Node {
             	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE).split(
             			Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             }
+
+            //read old mapping attribute
+            if (xattribs.exists(XML_OLD_MAPPING_ATTRIBUTE)) {
+            	if (mapping != null) {
+            		throw new XMLConfigurationException("New and old aggregation function mappings " +
+            				"used simultaneously");
+            	}
+            	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE).split(
+            			Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            	oldMapping = true;
+            }
             
             //read sorted attribute
             if(xattribs.exists(XML_SORTED_ATTRIBUTE)) {
@@ -235,7 +251,8 @@ public class Aggregate extends Node {
 		    Aggregate aggregate = new Aggregate(xattribs.getString("id"), 
 		    		aggregateKey,
 					mapping,
-                    sorted);
+                    sorted,
+                    oldMapping);
 			
 			// read optional attributes
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
