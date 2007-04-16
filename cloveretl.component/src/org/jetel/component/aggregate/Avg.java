@@ -94,8 +94,8 @@ public class Avg extends AggregateFunction {
 			sum = input.duplicateNumeric();
 		} else {
 			sum.add(input);
-			count++;
 		}
+		count++;
 	}
 
 	/* (non-Javadoc)
