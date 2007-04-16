@@ -77,7 +77,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
     int step;
     int start;
     int numCachedValues;
-  
+    boolean alreadyIncremented = false;
+    
     int counter;
     FileChannel io;
     FileLock lock;
@@ -110,15 +111,15 @@ public class SimpleSequence extends GraphElement implements Sequence {
         this.numCachedValues=numCachedValues;
     }
     
-    public long currentValueLong(){
+    synchronized public long currentValueLong(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't get currentValue for not initialized sequence.");
         }
 
-        return sequenceValue;
+        return alreadyIncremented ? sequenceValue - step : sequenceValue;
     }
     
-    public long nextValueLong(){
+    synchronized public long nextValueLong(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't call nextValue for not initialized sequence.");
         }
@@ -130,7 +131,8 @@ public class SimpleSequence extends GraphElement implements Sequence {
         long tmpVal=sequenceValue;
         sequenceValue+=step;
         counter--;
-    
+        alreadyIncremented = true;
+        
         return tmpVal;
     }
     
@@ -150,11 +152,12 @@ public class SimpleSequence extends GraphElement implements Sequence {
         return Long.toString(nextValueLong());
     }
     
-    public void reset(){
+    synchronized public void reset(){
         if(!isInitialized()) {
             throw new RuntimeException("Can't reset not initialized sequence.");
         }
         sequenceValue=start;
+        alreadyIncremented = false;
         flushValue(sequenceValue);
     }
 
@@ -190,6 +193,7 @@ public class SimpleSequence extends GraphElement implements Sequence {
                 io.read(buffer);
                 buffer.flip();
                 sequenceValue = buffer.getLong();
+                alreadyIncremented = false;
             }
         } catch(IOException ex) {
             free();
