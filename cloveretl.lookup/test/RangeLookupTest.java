@@ -1,6 +1,9 @@
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.text.Collator;
+import java.text.RuleBasedCollator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Random;
@@ -9,6 +12,7 @@ import junit.framework.TestCase;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.DelimitedDataParser;
@@ -29,13 +33,13 @@ public class RangeLookupTest extends TestCase {
     DataRecordMetadata lookupMetadata, metadata;
     DataRecord record;
     Random random = new Random();
-    String enginePath = "..\\cloveretl.engine";
+    String enginePath = ".." + File.separatorChar + "cloveretl.engine";
     
     /* (non-Javadoc)
      * @see junit.framework.TestCase#setUp()
      */
     protected void setUp() throws Exception {
-        runGraph.initEngine(enginePath + "\\plugins", null);
+        runGraph.initEngine(enginePath + "" + File.separatorChar + "plugins", null);
     }
 
     public void test_getDataRecord() throws IOException,ComponentNotReadyException{
@@ -235,7 +239,7 @@ public class RangeLookupTest extends TestCase {
         XLSDataParser parser = new XLSDataParser();
         parser.setSheetNumber("0");
         parser.init(lookupMetadata);
-        parser.setDataSource(new FileInputStream(enginePath + "\\data\\rangeLookup.dat.xls"));
+        parser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "rangeLookup.dat.xls"));
         
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
         		new Object[]{"RangeLookup",lookupMetadata,parser}, 
@@ -278,7 +282,7 @@ public class RangeLookupTest extends TestCase {
        	
        	DelimitedDataParser dataParser = new DelimitedDataParser();
        	dataParser.init(metadata);
-       	dataParser.setDataSource(new FileInputStream(enginePath + "\\data\\data.dat"));
+       	dataParser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "data.dat"));
 
     	for (int i=0;i<500;i++){
     		record = dataParser.getNext();
@@ -564,6 +568,77 @@ public class RangeLookupTest extends TestCase {
     	assertEquals(2, lookup.getNumFound());
     }
     
+    public void test_Strings() throws ComponentNotReadyException{
+        lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
+        lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.STRING_FIELD,";"));
+        RuleBasedCollator collator = (RuleBasedCollator)RuleBasedCollator.getInstance();
+        lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata, null, collator}, 
+        		new Class[]{String.class,DataRecordMetadata.class, Parser.class, RuleBasedCollator.class});
+        lookup.init();
+     	record = new DataRecord(lookupMetadata);
+    	record.init();
+    	record.getField("name").setValue("p1");
+    	record.getField("start").setValue("aaaaa");
+    	record.getField("end").setValue("baaaa");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p2");
+    	record.getField("start").setValue("baaaa");
+    	record.getField("end").setValue("Baaaa");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p3");
+    	record.getField("start").setValue("Baaaa");
+    	record.getField("end").setValue("KZZZZ");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p4");
+    	record.getField("start").setValue("laaaa");
+    	record.getField("end").setValue("XZZZZ");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p5");
+    	record.getField("start").setValue("yaaaa");
+    	record.getField("end").setValue("ZZZZZZ");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p6");
+    	record.getField("start").setValue("faaaa");
+    	record.getField("end").setValue("kguef");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p7");
+    	record.getField("start").setValue("waaaa");
+    	record.getField("end").setValue("ZZZZa");
+    	lookup.put(record, record);
+    	record.getField("name").setValue("p8");
+    	record.getField("start").setValue("ecykr");
+    	record.getField("end").setValue("htedyu");
+    	lookup.put(record, record);
+
+       	DataRecord tmp;
+    	for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+			System.out.print(iter.next());
+			
+		}
+    	
+    	String value;
+
+     	for (int i=0;i<200;i++){
+     		value = randomString(5, 5);
+     		tmp = lookup.get(value);
+    		System.out.println(i + " - Value: " + value + "\nFrom lookup table:\n" + tmp);
+    		assertTrue(((StringDataField)tmp.getField("start")).compareTo(value, collator) <=0);
+    		assertTrue(((StringDataField)tmp.getField("end")).compareTo(value, collator) > 0);
+     		System.out.println("Num found: " + lookup.getNumFound());
+    		tmp = lookup.getNext();
+    		while (tmp != null) {
+    			System.out.println("Next:\n" + tmp);
+        		assertTrue(((StringDataField)tmp.getField("start")).compareTo(value, collator) <=0);
+        		assertTrue(((StringDataField)tmp.getField("end")).compareTo(value, collator) > 0);
+       		tmp = lookup.getNext();
+    		}
+    	}
+
+    }
+    
     private boolean checkOrder(DataRecord previous,DataRecord following){
      	int startComparison;
     	int endComparison;
@@ -576,4 +651,19 @@ public class RangeLookupTest extends TestCase {
     	}
     	return false;
     }
+    
+	private String randomString(int minLenght,int maxLenght) {
+		StringBuilder result;
+		if (maxLenght != minLenght ) {
+			result = new StringBuilder(random.nextInt(maxLenght - minLenght + 1)
+					+ minLenght);
+		}else{//minLenght == maxLenght
+			result = new StringBuilder(minLenght);
+		}
+		for (int i = 0; i < result.capacity(); i++) {
+			result.append((char)(random.nextInt('z' - 'a' + 1) + 'a'));
+		}
+		return result.toString();
+	}
+
 }
