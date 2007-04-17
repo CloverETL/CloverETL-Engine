@@ -1948,20 +1948,24 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFLookupNode node,Object data){
         DataRecord record=null;
-        if (node.lookup==null){
-            node.lookup=graph.getLookupTable(node.lookupName);
-            if (node.lookup==null){
+        if (node.lookup == null) {
+            node.lookup = graph.getLookupTable(node.lookupName);
+            if (node.lookup == null) {
                 throw new TransformLangExecutorRuntimeException(node,
-                        "Can't obtain LookupTable \""+node.lookupName+
-                        "\" from graph \""+graph.getName()+"\"");
+                        "Can't obtain LookupTable \"" + node.lookupName
+                                + "\" from graph \"" + graph.getName() + "\"");
             }
-            node.fieldNum=node.lookup.getMetadata().getFieldPosition(node.fieldName);
-            if (node.fieldNum<0){
-                throw new TransformLangExecutorRuntimeException(node,
-                        "Invalid field name \""+node.fieldName+"\" at LookupTable \""+node.lookupName+
-                        "\" in graph \""+graph.getName()+"\"");
+            if (node.opType == CLVFLookupNode.OP_GET) {
+                node.fieldNum = node.lookup.getMetadata().getFieldPosition(
+                        node.fieldName);
+                if (node.fieldNum < 0) {
+                    throw new TransformLangExecutorRuntimeException(node,
+                            "Invalid field name \"" + node.fieldName
+                                    + "\" at LookupTable \"" + node.lookupName
+                                    + "\" in graph \"" + graph.getName() + "\"");
+                }
+                node.lookup.setLookupKey(new Object[node.jjtGetNumChildren()]);
             }
-            node.lookup.setLookupKey(new Object[node.jjtGetNumChildren()]);
         }
         switch(node.opType){
         case CLVFLookupNode.OP_INIT:
