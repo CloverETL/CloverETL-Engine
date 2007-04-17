@@ -1,6 +1,7 @@
 package org.jetel.lookup;
 
 import java.security.InvalidParameterException;
+import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -9,14 +10,26 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
+import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.GraphElement;
+import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
+import org.jetel.util.MiscUtils;
+import org.w3c.dom.Element;
 
 /**
  * Range lookup table contains records, which defines intervals. It means that they must
@@ -34,7 +47,18 @@ import org.jetel.metadata.DataRecordMetadata;
 public class RangeLookupTable extends GraphElement implements LookupTable {
 	
 	
-	protected DataRecordMetadata metadata;//defines lookup table
+    private static final String XML_LOOKUP_TYPE_RANGE_LOOKUP = "rangeLookup";
+    private static final String XML_METADATA_ID ="metadata";
+    private static final String XML_LOOKUP_DATA_TYPE = "dataType";
+    private static final String XML_FILE_URL = "fileURL";
+    private static final String XML_DATA_TYPE_DELIMITED ="delimited";
+    private static final String XML_CHARSET = "charset";
+    private static final String XML_USE_I18N = "useI18N";
+    private static final String XML_LOCALE = "locale";
+    private static final String XML_START_INCLUDE = "startInclude";
+    private static final String XML_END_INCLUDE = "endInclude";
+
+    protected DataRecordMetadata metadata;//defines lookup table
 	protected Parser dataParser;
 	protected TreeSet<DataRecord> lookupTable;//set of intervals
 	protected SortedSet<DataRecord> subTable;
@@ -206,10 +230,22 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		//if value is not in interval try next
 		for (int i=1;i<tmp.getNumFields();i+=2){
-			startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
-			endComparison = tmpRecord.getField(i+1).compareTo(tmp.getField(i+1));
-			if ((startComparison == -1 || (startComparison == 0 && !startInclude[(i-1)/2])) ||
-				(endComparison == 1    || (endComparison == 0   && !endInclude[(i-1)/2])) ) {
+			if (collator != null){
+				if (tmpRecord.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+					startComparison = ((StringDataField)tmpRecord.getField(i)).compareTo(
+							tmp.getField(i), collator);
+					endComparison = ((StringDataField)tmpRecord.getField(i + 1)).compareTo(
+							tmp.getField(i + 1),collator);
+				}else{
+					startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
+					endComparison = tmpRecord.getField(i + 1).compareTo(tmp.getField(i + 1));
+				}
+			}else{
+				startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
+				endComparison = tmpRecord.getField(i + 1).compareTo(tmp.getField(i + 1));
+			}
+			if ((startComparison < 0 || (startComparison == 0 && !startInclude[(i-1)/2])) ||
+				(endComparison > 0    || (endComparison == 0   && !endInclude[(i-1)/2])) ) {
 				return getNext();
 			}
 		}
@@ -235,7 +271,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#put(java.lang.Object, org.jetel.data.DataRecord)
 	 */
 	public boolean put(Object key, DataRecord data) {
-		lookupTable.add(data);
+		lookupTable.add(data.duplicate());
 		return true;
 	}
 
@@ -267,6 +303,79 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 */
 	public Iterator<DataRecord> iterator() {
 		return lookupTable.iterator();
+	}
+	
+	public static RangeLookupTable fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+        RangeLookupTable lookupTable = null;
+        String id;
+        String type;
+        
+        //reading obligatory attributes
+        try {
+            id = xattribs.getString(XML_ID_ATTRIBUTE);
+            type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+        } catch(AttributeNotFoundException ex) {
+            throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(),ex);
+        }
+        
+        //check type
+        if (!type.equalsIgnoreCase(XML_LOOKUP_TYPE_RANGE_LOOKUP)) {
+            throw new XMLConfigurationException("Can't create range lookup table from type " + type);
+        }
+        
+        //create simple lookup table
+        try{
+        	RuleBasedCollator collator = null;
+        	if (xattribs.exists(XML_USE_I18N) && xattribs.getBoolean(XML_USE_I18N)) {
+        		if (xattribs.exists(XML_LOCALE)) {
+        			collator = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(XML_LOCALE));
+        		}else{
+        			collator = (RuleBasedCollator)Collator.getInstance();
+        		}
+        	}
+            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
+            Parser parser;
+            String dataTypeStr = xattribs.getString(XML_LOOKUP_DATA_TYPE);
+            
+            // which data parser to use
+            if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
+                parser = new DelimitedDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            } else {
+                parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            }
+            if (xattribs.exists(XML_FILE_URL)) {
+            	parser.setDataSource(FileUtils.getReadableChannel(graph.getProjectURL(), xattribs.getString(XML_FILE_URL)));
+            }else{
+            	parser = null;
+            }
+            boolean[] startInclude = null;
+            if (xattribs.exists(XML_START_INCLUDE)){
+            	String[] sI = xattribs.getString(XML_START_INCLUDE).split(",");
+            	startInclude = new boolean[sI.length];
+            	for (int i = 0; i < sI.length; i++) {
+					startInclude[i] = Boolean.parseBoolean(sI[i]);
+				}
+            }
+            boolean[] endInclude = null;
+            if (xattribs.exists(XML_START_INCLUDE)){
+            	String[] eI = xattribs.getString(XML_END_INCLUDE).split(",");
+            	endInclude = new boolean[eI.length];
+            	for (int i = 0; i < eI.length; i++) {
+					endInclude[i] = Boolean.parseBoolean(eI[i]);
+				}
+            }
+            
+            if (startInclude != null) {
+            	lookupTable =  new RangeLookupTable(id, metadata, parser, collator, startInclude, endInclude);
+            }else{
+            	lookupTable =  new RangeLookupTable(id, metadata, parser, collator);
+            }
+            return lookupTable;
+            
+         }catch(Exception ex){
+             throw new XMLConfigurationException("can't create simple lookup table",ex);
+         }
 	}
 	
 	public boolean[] getEndInclude() {
@@ -359,9 +468,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			for (int i=0;i<startComparator.length;i++){
 				startComparison = startComparator[i].compare(o1, o2);
 				endComparison = endComparator[i].compare(o1, o2);
-				if (endComparison == -1) return -1;
+				if (endComparison < 0) return -1;
 				if (!(startComparison == 0 && endComparison == 0) ){
-					if (startComparison == 1 && endComparison == 0) {
+					if (startComparison > 0 && endComparison == 0) {
 						return -1;
 					}else{
 						return 1;
