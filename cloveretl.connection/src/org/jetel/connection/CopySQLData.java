@@ -24,6 +24,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 
@@ -485,7 +486,13 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			((DateDataField) field).setValue(resultSet.getDate(fieldSQL));
+			Date date = resultSet.getDate(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(date);
+			}
+			
 		}
 
 
@@ -775,7 +782,11 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			pStatement.setString(fieldSQL, field.toString());
+			if (!field.isNull()) {
+		    	pStatement.setString(fieldSQL, field.toString());
+		   	}else{
+			   	pStatement.setNull(fieldSQL, java.sql.Types.VARCHAR);
+		   	}
 		}
 
 	}
@@ -817,7 +828,13 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			((DateDataField) field).setValue(resultSet.getTimestamp(fieldSQL));
+			Timestamp timestamp = resultSet.getTimestamp(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(timestamp);
+			}
+			
 		}
 
 
@@ -880,7 +897,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setJetel(ResultSet resultSet) throws SQLException {
-			field.fromString(resultSet.getBoolean(fieldSQL) ? _TRUE_ : _FALSE_);
+			if (resultSet.wasNull()) {
+				field.setValue((Object)null);
+			}else{
+				field.fromString(resultSet.getBoolean(fieldSQL) ? _TRUE_ : _FALSE_);	
+			}
+			
 		}
 
 
@@ -892,8 +914,12 @@ public abstract class CopySQLData {
 		 * @since                    October 7, 2002
 		 */
 		void setSQL(PreparedStatement pStatement) throws SQLException {
-			char value = ((StringDataField) field).getCharSequence().charAt(0);
-			pStatement.setBoolean(fieldSQL, ((value == _TRUE_CHAR_) || (value == _TRUE_SMCHAR_)));
+			if (!field.isNull()) {
+				char value = ((StringDataField) field).getCharSequence().charAt(0);
+				pStatement.setBoolean(fieldSQL,	((value == _TRUE_CHAR_) || (value == _TRUE_SMCHAR_)));
+			}else{
+				pStatement.setNull(fieldSQL, java.sql.Types.BOOLEAN);
+			}
 		}
 
 	}
