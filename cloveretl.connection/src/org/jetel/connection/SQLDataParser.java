@@ -47,7 +47,7 @@ public class SQLDataParser implements Parser {
 	protected IParserExceptionHandler exceptionHandler;
 	protected DataRecordMetadata metadata;
 	protected int recordCounter;
-	protected int fieldCount;
+	protected int fieldCount = 0;
 
 	protected DBConnection dbConnection;
 	protected String sqlQuery;
@@ -202,6 +202,9 @@ public class SQLDataParser implements Parser {
 	protected void initSQLMap(DataRecord record){
 		try{
 			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
+			while (fieldCount < transMap.length -1 && transMap[fieldCount + 1] != null) {
+				fieldCount++;
+			}
 		}catch (Exception ex) {
             logger.debug(ex.getMessage(),ex);
 			throw new RuntimeException(ex.getMessage(),ex);
@@ -213,7 +216,6 @@ public class SQLDataParser implements Parser {
 	 */
 	public void init(DataRecordMetadata _metadata) throws ComponentNotReadyException {
 		metadata = _metadata;
-		fieldCount = _metadata.getNumFields();
 	}
 
 	/* (non-Javadoc)
