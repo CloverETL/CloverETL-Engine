@@ -192,7 +192,11 @@ public abstract class CopySQLData {
 	 * @param record	New DataRecord object to be used within transmap
 	 */
 	public static void resetDataRecord(CopySQLData[] transMap,DataRecord record){
-	    for(int i=0;i<transMap.length;transMap[i++].setCloverRecord(record));
+	    for(int i=0;i<transMap.length;i++){
+	    	if (transMap[i] != null) {
+	    		transMap[i].setCloverRecord(record);
+	    	}
+	    }
 	}
 	
     /**
