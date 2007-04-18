@@ -1,3 +1,22 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 package org.jetel.component.aggregate;
 
 import java.util.ArrayList;
@@ -19,8 +38,8 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * Applies aggregate functions on records.
  * 
- * @author Jaroslav Urban
- *
+ * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class AggregateProcessor {
 	// regular expression matching a correct aggregate function mapping
@@ -387,8 +406,8 @@ public class AggregateProcessor {
 	/**
 	 * Mapping of an aggregation function onto an input and output field.
 	 * 
-	 * @author Jaroslav Urban
-	 *
+	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
 	 */
 	private class FunctionMappingItem {
 		private String inputField;
@@ -473,8 +492,8 @@ public class AggregateProcessor {
 	/**
 	 * One aggregation group with its aggregation functions and their intermediate results.
 	 * 
-	 * @author Jaroslav Urban
-	 *
+	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
 	 */
 	private class AggregationGroup {
 		private KeyFieldItem[] keyFields;
@@ -545,8 +564,8 @@ public class AggregateProcessor {
 		/**
 		 * Stores the values of keys which have to be copied to the result later.
 		 * 
-		 * @author Jaroslav Urban
-		 *
+		 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+		 *         (c) Javlin Consulting (www.javlinconsulting.cz)
 		 */
 		private class KeyFieldItem {
 			// index of output field where the key will be stored
@@ -585,8 +604,8 @@ public class AggregateProcessor {
 	/**
 	 * Iterator over the results of unsorted aggregation.
 	 * 
-	 * @author Jaroslav Urban
-	 *
+	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
 	 */
 	private class UnsortedResultsIterator implements Iterator<DataRecord> {
 		Iterator<String> keyIterator;
