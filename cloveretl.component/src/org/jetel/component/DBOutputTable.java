@@ -45,6 +45,8 @@ import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
@@ -70,7 +72,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>[0]- records rejected by database<br><i>optional</i></td></tr>
+ * <td>[0]- records rejected by database. If in this metadata there is more fields then in input metadata
+ * and last field is of type string, this field is filled by error message<br><i>optional</i></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -173,6 +176,8 @@ public class DBOutputTable extends Node {
 	private int maxErrors;
 	private boolean useBatch;
 	private int batchSize;
+	private boolean fillError = false;
+    private int countError=0;
 
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DB_OUTPUT_TABLE";
@@ -182,6 +187,7 @@ public class DBOutputTable extends Node {
 	private final static int RECORDS_IN_COMMIT = 100;
 	private final static int RECORDS_IN_BATCH = 25;
 	private final static int MAX_ALLOWED_ERRORS = 0;
+	private final static int MAX_WARNINGS = 3;
 
 	static Log logger = LogFactory.getLog(DBOutputTable.class);
 
@@ -284,6 +290,13 @@ public class DBOutputTable extends Node {
         }
         dbConnection = (DBConnection) conn;
         dbConnection.init();
+        //fill error if exist port for rejected records & input and rejected metadata are diffrent
+        //	& last field of rejected metadata is of type string 
+        fillError = (getOutputPort(WRITE_REJECTED_TO_PORT) != null && 
+        		!getOutputPort(WRITE_REJECTED_TO_PORT).getMetadata().equals(getInputPort(READ_FROM_PORT).getMetadata())) && 
+        		getOutputPort(WRITE_REJECTED_TO_PORT).getMetadata().getField(
+        				getOutputPort(WRITE_REJECTED_TO_PORT).getMetadata().getNumFields() - 1).
+        				getType() == DataFieldMetadata.STRING_FIELD;
 	}
 
 
@@ -310,6 +323,10 @@ public class DBOutputTable extends Node {
 		InputPort inPort = getInputPort(READ_FROM_PORT);
 		OutputPort rejectedPort=getOutputPort(WRITE_REJECTED_TO_PORT);
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
+		DataRecord rejectedRecord = rejectedPort != null ? new DataRecord(rejectedPort.getMetadata()) : null;
+		if (rejectedRecord != null) {
+			rejectedRecord.init();
+		}		
 		CopySQLData[] transMap;
 		List dbFieldTypes;
 		String sql;
@@ -372,9 +389,9 @@ public class DBOutputTable extends Node {
 		 */
 		try{
 			if (useBatch){
-				runInBatchMode(inPort,rejectedPort,inRecord,transMap);
+				runInBatchMode(inPort,rejectedPort,inRecord, rejectedRecord, transMap);
 			}else{
-				runInNormalMode(inPort,rejectedPort,inRecord,transMap);
+				runInNormalMode(inPort,rejectedPort,inRecord,rejectedRecord, transMap);
 			}
 		} catch (Exception ex) {
 			logger.error(ex);
@@ -389,10 +406,9 @@ public class DBOutputTable extends Node {
 	}
 
 	private void runInNormalMode(InputPort inPort,OutputPort rejectedPort,
-			DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
+			DataRecord inRecord, DataRecord rejectedRecord, CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
 		int i;
 		int recCount = 0;
-		int countError=0;
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
@@ -404,8 +420,17 @@ public class DBOutputTable extends Node {
 					preparedStatement.executeUpdate();
 				}catch(SQLException ex){
 					countError++;
-					if (rejectedPort!=null){
-						rejectedPort.writeRecord(inRecord);
+					if (rejectedPort != null) {
+						rejectedRecord.copyFieldsByPosition(inRecord);
+						if (fillError) {
+							rejectedRecord.getField(rejectedRecord.getNumFields() - 1).setValue(ex.getMessage());
+						}
+						rejectedPort.writeRecord(rejectedRecord);
+					}
+					if (countError <= MAX_WARNINGS) {
+						logger.warn(ex.getMessage());
+					}else if (countError == MAX_WARNINGS + 1){
+						logger.warn("more errors...");
 					}
 					if (countError>maxErrors && maxErrors!=-1){
 						throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
@@ -427,11 +452,11 @@ public class DBOutputTable extends Node {
 
 
 	private void runInBatchMode(InputPort inPort,OutputPort rejectedPort,
-	        DataRecord inRecord,CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
+	        DataRecord inRecord, DataRecord rejectedRecord, CopySQLData[] transMap) throws SQLException,InterruptedException,IOException{
 	    int i;
 	    int batchCount=0;
 	    int recCount = 0;
-	    int countError=0;
+	    DataRecordMetadata rejectedMetadata = rejectedPort.getMetadata();
 	    DataRecord[] dataRecordHolder;
 	    int holderCount=0;
 	    
@@ -443,7 +468,8 @@ public class DBOutputTable extends Node {
 	    if (rejectedPort!=null){
 	        dataRecordHolder=new DataRecord[batchSize];
 	        for (int j=0;j<batchSize;j++){
-	            dataRecordHolder[j]=inRecord.duplicate();
+	        	dataRecordHolder[j] = new DataRecord(rejectedMetadata);
+	        	dataRecordHolder[j].init();
 	        }
 	    }else{
 	        dataRecordHolder=null;
@@ -457,13 +483,28 @@ public class DBOutputTable extends Node {
 	            }
 	            try{
 	                preparedStatement.addBatch();
-	                if (dataRecordHolder!=null) dataRecordHolder[holderCount++].copyFrom(inRecord);
-	            }catch(SQLException ex){
-	                countError++;;
-	                if (rejectedPort!=null){
-	                    rejectedPort.writeRecord(inRecord);
+	                if (dataRecordHolder!=null) {
+	                	dataRecordHolder[holderCount].copyFieldsByPosition(inRecord);
+						if (fillError) {
+							dataRecordHolder[holderCount].getField(rejectedMetadata.getNumFields() - 1).reset();
+						}
+						holderCount++;
 	                }
-	                if (countError>maxErrors && maxErrors!=-1){
+	            }catch(SQLException ex){
+	                countError++;
+					if (rejectedPort != null) {
+						rejectedRecord.copyFieldsByPosition(inRecord);
+						if (fillError) {
+							rejectedRecord.getField(rejectedRecord.getNumFields() - 1).setValue(ex.getMessage());
+						}
+						rejectedPort.writeRecord(rejectedRecord);
+					}
+					if (countError <= MAX_WARNINGS) {
+						logger.warn(ex.getMessage());
+					}else if (countError == MAX_WARNINGS + 1){
+						logger.warn("more errors...");
+					}
+					if (countError>maxErrors && maxErrors!=-1){
 	                    throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
 	                }
 	            }
@@ -474,10 +515,12 @@ public class DBOutputTable extends Node {
 	                preparedStatement.executeBatch();
 	                preparedStatement.clearBatch();
 	            } catch (BatchUpdateException ex) {
+	            	countError++;
 	                preparedStatement.clearBatch();
-	                //logger.debug(ex); this might generate a lots of messages
-                    flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
-	                if (countError>maxErrors && maxErrors!=-1){
+					if (dataRecordHolder != null) {
+						flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
+					}
+					if (countError>maxErrors && maxErrors!=-1){
 	                    throw new SQLException("Batch error:"+ex.getMessage());
 	                }
 	            }
@@ -490,9 +533,11 @@ public class DBOutputTable extends Node {
 	                    preparedStatement.executeBatch();
 	                    preparedStatement.clearBatch();
 	                } catch (BatchUpdateException ex) {
+	                	countError++;
 	                    preparedStatement.clearBatch();
-	                    //logger.debug(ex); this might generate a lots of messageslogger.debug(ex);
-                        flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
+						if (dataRecordHolder != null) {
+							flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
+						}
 	                    if (countError>maxErrors && maxErrors!=-1){
 	                        throw new SQLException("Batch error:"+ex.getMessage());
 	                    }
@@ -508,8 +553,10 @@ public class DBOutputTable extends Node {
 	    try{
 	        preparedStatement.executeBatch();
 	    }catch (BatchUpdateException ex) {
-	        //logger.debug(ex); this might generate a lots of messages
-            flushErrorRecords(dataRecordHolder,holderCount,ex,rejectedPort);
+	    	countError++;
+			if (dataRecordHolder != null) {
+				flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
+			}
 	        if (dataRecordHolder!=null){
 	            Arrays.fill(dataRecordHolder,null);
 	        }
@@ -526,22 +573,45 @@ public class DBOutputTable extends Node {
 	}
 	
     
-    private void flushErrorRecords(DataRecord[] records,int recCount, BatchUpdateException ex,OutputPort port) 
+    private void flushErrorRecords(DataRecord[] records,int recCount, SQLException ex, OutputPort port) 
     throws IOException,InterruptedException {
-        int[] updateCounts=ex.getUpdateCounts();
+        int[] updateCounts=((BatchUpdateException)ex).getUpdateCounts();
         int i=0;
 
         if (records==null) return;
         
         while(i<updateCounts.length){
             if (updateCounts[i]==Statement.EXECUTE_FAILED){
+				if (fillError) {
+					records[i].getField(records[i].getNumFields() - 1).setValue(ex.getMessage());
+				}
+				if (countError <= MAX_WARNINGS) {
+					logger.warn(ex.getMessage());
+				}else if (countError == MAX_WARNINGS + 1){
+					logger.warn("more errors...");
+				}
                 port.writeRecord(records[i]);
+				ex = ex.getNextException();
             }
             i++;
         }
         // flush rest of the records for which we don't have update counts
+        StringBuilder message = new StringBuilder();
+    	while (ex != null) {
+    		message.append(ex.getMessage());
+    		ex = ex.getNextException();
+    	}
+		if (countError <= MAX_WARNINGS) {
+			logger.warn(message);
+		}else if (countError == MAX_WARNINGS + 1){
+			logger.warn("more errors...");
+		}
+		if (fillError) {
+			records[i].getField(records[i].getNumFields() - 1).setValue(message);
+		}				
         while(i<recCount){
-            port.writeRecord(records[i++]);
+			port.writeRecord(records[i]);
+			i++;
         }
     }
 	
