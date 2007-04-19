@@ -202,9 +202,9 @@ public class SQLDataParser implements Parser {
 	protected void initSQLMap(DataRecord record){
 		try{
 			transMap = CopySQLData.sql2JetelTransMap( SQLUtil.getFieldTypes(resultSet.getMetaData()),metadata, record);
-			while (fieldCount < transMap.length -1 && transMap[fieldCount + 1] != null) {
+			do {
 				fieldCount++;
-			}
+			}while (fieldCount < transMap.length && transMap[fieldCount] != null); 
 		}catch (Exception ex) {
             logger.debug(ex.getMessage(),ex);
 			throw new RuntimeException(ex.getMessage(),ex);
