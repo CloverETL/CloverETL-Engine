@@ -19,6 +19,7 @@
 */
 package org.jetel.data;
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -357,14 +358,22 @@ public class ByteDataField extends DataField implements Comparable{
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
         if(!isNull) {
-            dataBuffer.put(value);
+    		try {
+    			dataBuffer.put(value);
+    		} catch (BufferOverflowException e) {
+    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    		}
         }
 	}
 
     @Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
-            dataBuffer.put(value);
+    		try {
+    			dataBuffer.put(value);
+    		} catch (BufferOverflowException e) {
+    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    		}
         }
     }
 

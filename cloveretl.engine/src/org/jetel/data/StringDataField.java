@@ -20,13 +20,13 @@
 // FILE: c:/projects/jetel/org/jetel/data/StringDataField.java
 
 package org.jetel.data;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.text.Collator;
 import java.text.RuleBasedCollator;
 
 import org.jetel.exception.BadDataFormatException;
@@ -292,13 +292,21 @@ public class StringDataField extends DataField implements CharSequence{
 	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
+		try {
+			dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+		}
 	}
 
     @Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
-            dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
+    		try {
+    			dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
+    		} catch (BufferOverflowException e) {
+    			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    		}
         }
     }
 
@@ -339,8 +347,12 @@ public class StringDataField extends DataField implements CharSequence{
     	buffer.put((byte) length);
        */
 	   
-		for(int counter = 0; counter < length; counter++) {
-			buffer.putChar(value.charAt(counter));
+		try {
+			for(int counter = 0; counter < length; counter++) {
+				buffer.putChar(value.charAt(counter));
+			}
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + buffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
 		}
 	}
 
