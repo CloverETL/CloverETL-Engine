@@ -299,45 +299,6 @@ public class ByteDataField extends DataField implements Comparable{
         }
     }
 
-	/**
-	 *  Parses byte array value from string (convers characters in string into byte
-	 *  array using system's default charset encoder)
-	 *
-	 *@param  valueStr  value
-	 *@since            October 29, 2002
-	 *@deprecated
-	 */
-	public void fromString(String valueStr) {
-        if(valueStr == null || valueStr.length() == 0) {
-            setNull(true);
-            return;
-        }
-        this.value = valueStr.getBytes();
-        setNull(false);
-	}
-
-    /**
-     * Parses byte array value from string (convers characters in string into byte
-     *  array using specified charset encoder)
-     * 
-     * @param valueStr  value
-     * @param charset charset to be used for encoding String into bytes
-     * @since 19.11.2006
-     * @deprecated
-     */
-    public void fromString(String valueStr,String charset){
-        if(valueStr == null || valueStr.length() == 0) {
-            setNull(true);
-            return;
-        }
-        try{
-            this.value = valueStr.getBytes(charset);
-        }catch(UnsupportedEncodingException ex){
-            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
-                    this.metadata.getName()+"\"",ex);
-        }
-        setNull(false);
-    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)

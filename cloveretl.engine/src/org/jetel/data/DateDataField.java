@@ -342,32 +342,6 @@ public class DateDataField extends DataField implements Comparable{
         }
     }
 
-	/**
-	 *  Parses date value from string representation. If format string is defined,
-	 *  then it is used as expected pattern.
-	 *
-	 * @param  _valueStr  Description of Parameter
-	 * @since             April 23, 2002
-	 * @deprecated
-	 */
-	public void fromString(String _valueStr) {
-		//parsePosition.setIndex(0);
-		if (_valueStr == null || _valueStr.length() == 0) {
-		    setNull(true);
-			return;
-		}
-		try {
-			if (dateFormat != null) {
-				value = dateFormat.parse(_valueStr);//, parsePosition);
-			} else {
-				value = SimpleDateFormat.getDateInstance().parse(_valueStr);
-			}
-			setNull(false);
-		} catch (ParseException e) {
-			throw new BadDataFormatException("not a Date", _valueStr);
-		}
-
-	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)

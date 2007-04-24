@@ -397,26 +397,6 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	}
 
 
-	/**
-	 *  Parses decimal value from its string representation
-	 *
-	 *@param  valueStr  Description of Parameter
-	 *@since            March 28, 2002
-	 *@deprecated
-	 */
-	public void fromString(String valueStr) {
-		if(valueStr == null || valueStr.equals("")) {
-		    setNull(true);
-			return;
-		}
-		try {
-			value.fromString(valueStr, numericFormat);
-			setNull(value.isNaN());
-		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */

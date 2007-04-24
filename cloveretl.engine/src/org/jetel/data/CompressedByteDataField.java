@@ -148,38 +148,6 @@ public class CompressedByteDataField extends ByteDataField {
 		return ZipUtils.decompress(super.value, dataLen);
 	}
 
-	/**
-	 * @deprecated
-	 */
-	public void fromString(String valueStr) {
-        if(valueStr == null || valueStr.length() == 0) {
-            setNull(true);
-            return;
-        }
-        byte[] bytes = valueStr.getBytes();
-        setValue(bytes);
-        dataLen = bytes.length;
-        setNull(false);
-	}
-
-	/**
-	 * @deprecated
-	 */
-    public void fromString(String valueStr,String charset){
-        if(valueStr == null || valueStr.length() == 0) {
-            setNull(true);
-            return;
-        }
-        try{
-            byte[] bytes = valueStr.getBytes(charset);
-            setValue(bytes);
-            dataLen = bytes.length;
-        }catch(UnsupportedEncodingException ex){
-            throw new RuntimeException(ex.toString()+" when calling fromString() on field \""+
-                    this.metadata.getName()+"\"",ex);
-        }
-        setNull(false);
-    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ByteDataField#fromString(java.lang.String)
