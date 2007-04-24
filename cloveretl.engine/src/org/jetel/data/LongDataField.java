@@ -346,26 +346,6 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	}
 
 
-	/**
-	 *  Parses decimal value from its string representation
-	 *
-	 * @param  valueStr  Description of Parameter
-	 * @since            March 28, 2002
-	 * @deprecated
-	 */
-	public void fromString(String valueStr) {
-		if (valueStr == null || valueStr.length() == 0) {
-		    setNull(true);
-			return;
-		}
-		try {
-			this.value = Long.parseLong(valueStr);
-            setNull(this.value == Long.MIN_VALUE);
-		} catch (Exception ex) {
-			throw new BadDataFormatException(getMetadata().getName() + " cannot be set to " + valueStr, valueStr);
-		}
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */

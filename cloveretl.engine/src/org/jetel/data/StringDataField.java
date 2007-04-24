@@ -313,17 +313,6 @@ public class StringDataField extends DataField implements CharSequence{
 	}
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  value  Description of the Parameter
-	 * @since         April 23, 2002
-	 * @deprecated
-	 */
-	public void fromString(String value) {
-		setValue(value);
-	}
-
 	/* (non-Javadoc)
 	 * @see org.jetel.data.DataField#fromString(java.lang.CharSequence)
 	 */
