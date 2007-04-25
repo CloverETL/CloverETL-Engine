@@ -34,7 +34,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class FirstNonNull extends AggregateFunction {
-	private static final String NAME = "FIRSTNONNULL";
+	private static final String NAME = "firstnonnull";
 	
 	private DataField data;
 	
@@ -46,7 +46,7 @@ public class FirstNonNull extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		nullableInput = inputField.isNullable();
 		return;
 	}
@@ -55,12 +55,16 @@ public class FirstNonNull extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
+		if (inputFieldMetadata == null) {
+			return;
+		}
+
 		if (inputFieldMetadata.getType() != outputField.getType()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_OUTPUT_AS_INPUT);
+			throw new AggregationException(AggregateFunction.ERROR_OUTPUT_AS_INPUT);
 		}
 		if (nullableInput && !outputField.isNullable()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+			throw new AggregationException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
 	}
 

@@ -97,18 +97,18 @@ public abstract class AggregateFunction {
 	/**
 	 * Checks the compatibility of the type of an input field.
 	 * @param inputField
-	 * @throws AggregateProcessorException if the input field type has incopatible type; the exception
+	 * @throws AggregationException if the input field type has incopatible type; the exception
 	 * message should contain a description of the incompatibility (e.g. "must be Numeric").
 	 */
-	public abstract void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException;
+	public abstract void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException;
 	
 	/**
 	 * Checks the compatibility of the type of an output field.
 	 * @param outputField
-	 * @throws AggregateProcessorException if the output field type has incopatible type; the exception
+	 * @throws AggregationException if the output field type has incopatible type; the exception
 	 * message should contain a description of the incompatibility (e.g. "must be Numeric").
 	 */
-	public abstract void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException;
+	public abstract void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException;
 
 	
 	public int getInputFieldIndex() {

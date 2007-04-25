@@ -22,7 +22,7 @@ package org.jetel.component;
 import java.util.Iterator;
 
 import org.jetel.component.aggregate.AggregateProcessor;
-import org.jetel.component.aggregate.AggregateProcessorException;
+import org.jetel.component.aggregate.AggregationException;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -91,6 +91,10 @@ import org.w3c.dom.Element;
 public class Aggregate extends Node {
 	/** Name of the component. */
 	public final static String COMPONENT_TYPE = "AGGREGATE";
+	/** Assignation sign in the aggregation function mapping. */
+	public final static String ASSIGN_SIGN = ":=";
+	/** Delimiter of the aggregation mapping items. */
+	public final static String MAPPING_DELIMITER = ";";
 	
 	// required attributes
 	private static final String XML_AGGREGATE_KEY_ATTRIBUTE = "aggregateKey";
@@ -213,7 +217,7 @@ public class Aggregate extends Node {
 			processor = new AggregateProcessor(mapping, oldMapping, recordKey, sorted, 
 					getInputPort(READ_FROM_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT).getMetadata(),
 					charset);
-		} catch (AggregateProcessorException e) {
+		} catch (AggregationException e) {
 			throw new ComponentNotReadyException(e);
 		}
 	}
@@ -240,8 +244,7 @@ public class Aggregate extends Node {
             
             //read mapping attribute
             if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-            	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE).split(
-            			Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE).split(MAPPING_DELIMITER);
             }
 
             //read old mapping attribute
