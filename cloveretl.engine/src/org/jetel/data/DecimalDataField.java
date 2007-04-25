@@ -19,6 +19,7 @@
 */
 package org.jetel.data;
 import java.math.BigDecimal;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
@@ -451,7 +452,11 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	 *@since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		value.serialize(buffer);
+		try {
+			value.serialize(buffer);
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
 

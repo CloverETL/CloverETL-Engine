@@ -20,6 +20,7 @@
 package org.jetel.data;
 
 import java.io.UnsupportedEncodingException;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
@@ -201,7 +202,11 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) {
         if(!isNull) {
-            dataBuffer.put(getByteArray());
+        	try {
+        		dataBuffer.put(getByteArray());
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + getByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
 	}
 
@@ -210,7 +215,11 @@ public class CompressedByteDataField extends ByteDataField {
      */
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
-            dataBuffer.put(getByteArray());
+        	try {
+        		dataBuffer.put(getByteArray());
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + getByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
     }
 
@@ -218,13 +227,17 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.ByteDataField#serialize(java.nio.ByteBuffer)
 	 */
 	public void serialize(ByteBuffer buffer) {
-        if(isNull) {
-            ByteBufferUtils.encodeLength(buffer, 0);
-        } else {
-            ByteBufferUtils.encodeLength(buffer, dataLen);
-            ByteBufferUtils.encodeLength(buffer, value.length);
-            buffer.put(value);
-        }
+        try {
+            if(isNull) {
+                ByteBufferUtils.encodeLength(buffer, 0);
+            } else {
+                ByteBufferUtils.encodeLength(buffer, dataLen);
+                ByteBufferUtils.encodeLength(buffer, value.length);
+               	buffer.put(value);
+            }
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
 	/* (non-Javadoc)

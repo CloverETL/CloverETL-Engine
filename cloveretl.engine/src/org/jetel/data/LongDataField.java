@@ -19,6 +19,7 @@
  */
 package org.jetel.data;
 import java.math.BigDecimal;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -385,13 +386,21 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		try {
+			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString())).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
 	}
 
     @Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
-            dataBuffer.putLong(value);
+        	try {
+        		dataBuffer.putLong(value);
+        	} catch (BufferOverflowException e) {
+				throw new RuntimeException("Size of data value is " + Long.toString(value).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
     }
 
@@ -403,7 +412,11 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		buffer.putLong(value);
+		try {
+			buffer.putLong(value);
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
 	}
 
 
