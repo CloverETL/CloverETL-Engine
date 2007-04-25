@@ -22,6 +22,7 @@ package org.jetel.data.primitive;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -531,14 +532,18 @@ public final class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#serialize(java.nio.ByteBuffer)
 	 */
 	public void serialize(ByteBuffer byteBuffer) {
-		if(isNaN()) {
-			byteBuffer.put((byte) 0);
-			return;
-		}
-        byte[] bytes = value.unscaledValue().toByteArray();
-		byteBuffer.put((byte) bytes.length);
-		byteBuffer.put(bytes);
-		byteBuffer.putInt(value.scale());
+		try {
+			if(isNaN()) {
+				byteBuffer.put((byte) 0);
+				return;
+			}
+	        byte[] bytes = value.unscaledValue().toByteArray();
+			byteBuffer.put((byte) bytes.length);
+			byteBuffer.put(bytes);
+			byteBuffer.putInt(value.scale());
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
 	/**
@@ -591,7 +596,11 @@ public final class HugeDecimal implements Decimal {
 	 * @see org.jetel.data.primitive.Decimal#toCharBuffer(java.text.NumberFormat)
 	 */
     public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException {
-        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
+    	try {
+    		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString(numericFormat))).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
     /**
@@ -599,8 +608,16 @@ public final class HugeDecimal implements Decimal {
      */
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNaN()) {
-            dataBuffer.put(value.unscaledValue().toByteArray());
-            dataBuffer.putInt(value.scale());
+        	try {
+        		dataBuffer.put(value.unscaledValue().toByteArray());
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + value.unscaledValue().toByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
+        	try {
+        		dataBuffer.putInt(value.scale());
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + Integer.toString(value.scale()).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
     }
     

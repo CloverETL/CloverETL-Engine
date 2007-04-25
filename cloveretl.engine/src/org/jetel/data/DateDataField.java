@@ -20,6 +20,7 @@
 // FILE: c:/projects/jetel/org/jetel/data/DateDataField.java
 
 package org.jetel.data;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -332,13 +333,21 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since                                October 31, 2002
 	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder) throws CharacterCodingException {
-		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		try {
+			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString())).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
 	}
 
     @Override
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNull) {
-            dataBuffer.putLong(value.getTime());
+        	try {
+        		dataBuffer.putLong(value.getTime());
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + Long.toString(value.getTime()).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
     }
 
@@ -373,10 +382,14 @@ public class DateDataField extends DataField implements Comparable{
 	 * @since          April 23, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-		if (value != null) {
-			buffer.putLong(value.getTime());
-		} else {
-			buffer.putLong(0);
+		try {
+			if (value != null) {
+				buffer.putLong(value.getTime());
+			} else {
+				buffer.putLong(0);
+			}
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
 	}
 

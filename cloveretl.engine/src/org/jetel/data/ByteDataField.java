@@ -361,7 +361,7 @@ public class ByteDataField extends DataField implements Comparable{
     		try {
     			dataBuffer.put(value);
     		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     		}
         }
 	}
@@ -372,7 +372,7 @@ public class ByteDataField extends DataField implements Comparable{
     		try {
     			dataBuffer.put(value);
     		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("Size of data value is " + value.length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     		}
         }
     }
@@ -385,12 +385,16 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since          October 29, 2002
 	 */
 	public void serialize(ByteBuffer buffer) {
-        if(isNull) {
-            ByteBufferUtils.encodeLength(buffer, 0);
-        } else {
-            ByteBufferUtils.encodeLength(buffer, value.length);
-            buffer.put(value);
-        }
+        try {
+            if(isNull) {
+                ByteBufferUtils.encodeLength(buffer, 0);
+            } else {
+                ByteBufferUtils.encodeLength(buffer, value.length);
+               	buffer.put(value);
+            }
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
 

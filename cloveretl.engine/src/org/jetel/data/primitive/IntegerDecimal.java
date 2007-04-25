@@ -22,6 +22,7 @@ package org.jetel.data.primitive;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.math.RoundingMode;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
@@ -477,10 +478,14 @@ public final class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#serialize(java.nio.ByteBuffer)
      */
     public void serialize(ByteBuffer byteBuffer) {
-        if(isNaN())
-            byteBuffer.putLong(Long.MIN_VALUE);
-        else
-            byteBuffer.putLong(value);
+    	try {
+    		if(isNaN())
+    			byteBuffer.putLong(Long.MIN_VALUE);
+    		else
+    			byteBuffer.putLong(value);
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + byteBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
     }
 
     /**
@@ -525,7 +530,11 @@ public final class IntegerDecimal implements Decimal {
      * @see org.jetel.data.Decimal#toCharBuffer(java.text.NumberFormat)
      */
     public void toByteBuffer(ByteBuffer dataBuffer, CharsetEncoder encoder, NumericFormat numericFormat) throws CharacterCodingException {
-        dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
+    	try {
+    		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString(numericFormat))).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
     }
 
     /**
@@ -533,8 +542,16 @@ public final class IntegerDecimal implements Decimal {
      */
     public void toByteBuffer(ByteBuffer dataBuffer) {
         if(!isNaN()) {
-            dataBuffer.putLong(value);
-            dataBuffer.putInt(scale);
+        	try {
+        		dataBuffer.putLong(value);
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + Long.toString(value).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
+        	try {
+        		dataBuffer.putInt(scale);
+        	} catch (BufferOverflowException e) {
+        		throw new RuntimeException("Size of data value is " + Integer.toString(scale).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+        	}
         }
     }
     

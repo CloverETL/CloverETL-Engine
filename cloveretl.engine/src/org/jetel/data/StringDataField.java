@@ -295,7 +295,7 @@ public class StringDataField extends DataField implements CharSequence{
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
 	}
 
@@ -305,7 +305,7 @@ public class StringDataField extends DataField implements CharSequence{
     		try {
     			dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
     		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     		}
         }
     }
@@ -337,23 +337,23 @@ public class StringDataField extends DataField implements CharSequence{
 	public void serialize(ByteBuffer buffer) {
 	    final int length = value.length();
 	    
-        ByteBufferUtils.encodeLength(buffer, length);
-        
-        /* old code
-	    do {
-	    	buffer.put((byte)(0x80 | (byte) length));
-            length = length >> 7;
-	    } while((length >> 7) > 0);
-    	buffer.put((byte) length);
-       */
-	   
 		try {
+			ByteBufferUtils.encodeLength(buffer, length);
+        
+			/* old code
+	    	do {
+	    		buffer.put((byte)(0x80 | (byte) length));
+            	length = length >> 7;
+	    	} while((length >> 7) > 0);
+    		buffer.put((byte) length);
+			 */
+	   
 			for(int counter = 0; counter < length; counter++) {
 				buffer.putChar(value.charAt(counter));
 			}
-		} catch (BufferOverflowException e) {
-			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + buffer.limit() + ". Enhance appropriate parameter in defautProperties file.", e);
-		}
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
 	}
 
 

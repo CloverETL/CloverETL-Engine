@@ -18,6 +18,7 @@
 *
 */
 package org.jetel.util;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 /**
@@ -216,7 +217,11 @@ public class BitArray {
      *@since          October 29, 2002
      */
     public void serialize(ByteBuffer buffer) {
-         buffer.put(bits,0,lengthBytes);
+    	try {
+    		buffer.put(bits,0,lengthBytes);
+    	} catch (BufferOverflowException e) {
+    		throw new RuntimeException("The size of data buffer is only " + buffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    	}
     }
 
 
