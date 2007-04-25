@@ -32,7 +32,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class Count extends AggregateFunction {
-	private static final String NAME = "COUNT";
+	private static final String NAME = "count";
 	
 	private int count = 0;
 
@@ -41,7 +41,7 @@ public class Count extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		return;
 	}
 
@@ -49,9 +49,9 @@ public class Count extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
 		if (!outputField.isNumeric()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 	}
 

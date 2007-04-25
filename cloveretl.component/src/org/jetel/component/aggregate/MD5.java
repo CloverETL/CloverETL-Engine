@@ -40,7 +40,7 @@ import org.jetel.util.Base64;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class MD5 extends AggregateFunction {
-	private static final String NAME = "MD5";
+	private static final String NAME = "md5";
 	
 	private int loopCount = 0;
 	private MessageDigest md5;
@@ -55,7 +55,7 @@ public class MD5 extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		nullableInput = inputField.isNullable();
 		return;
 	}
@@ -64,12 +64,12 @@ public class MD5 extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void  checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+	public void  checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
 		if (nullableInput && !outputField.isNullable()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+			throw new AggregationException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
 		if (outputField.getType() != DataFieldMetadata.STRING_FIELD) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_STRING);
+			throw new AggregationException(AggregateFunction.ERROR_STRING);
 		}
 	}
 

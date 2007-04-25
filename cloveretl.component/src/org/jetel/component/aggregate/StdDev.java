@@ -34,7 +34,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class StdDev extends AggregateFunction {
-	private static final String NAME = "STDDEV";
+	private static final String NAME = "stddev";
 	
 	// Mean
 	private double mean = 0;
@@ -48,9 +48,9 @@ public class StdDev extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		if (!inputField.isNumeric()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 		return;
 	}
@@ -59,12 +59,12 @@ public class StdDev extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
 		if (!outputField.isNullable()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+			throw new AggregationException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
 		if (!outputField.isNumeric()){
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NUMERIC);
+			throw new AggregationException(AggregateFunction.ERROR_NUMERIC);
 		}
 	}
 

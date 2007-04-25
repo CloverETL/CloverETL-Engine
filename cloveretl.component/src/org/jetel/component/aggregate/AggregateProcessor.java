@@ -26,8 +26,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -42,14 +40,8 @@ import org.jetel.metadata.DataRecordMetadata;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class AggregateProcessor {
-	// regular expression matching a correct aggregate function mapping
-	private static final String MAPPING_FUNCTION_REGEX = "^[\\w ]*=[\\w ]*\\([\\w ]*\\)$";
-	// regular expression matching a correct field mapping
-	private static final String MAPPING_FIELD_REGEX = "^[\\w ]*=[\\w ]*$";
-	
-	// registry of available aggregate functions, key is the function name (lowercase)
-	private Map<String, Class<? extends AggregateFunction>> functions = 
-		new HashMap<String, Class<? extends AggregateFunction>>();
+	// registry of available aggregate functions
+	private FunctionRegistry functionRegistry = new FunctionRegistry();
 	// function mapping
 	private List<FunctionMappingItem> functionMapping = new ArrayList<FunctionMappingItem>();
 	// field mapping, key is the output field, value is the input field
@@ -65,8 +57,6 @@ public class AggregateProcessor {
 	
 	// aggregation key
 	private RecordKey recordKey;
-	// fields of the aggregation key
-	private Set<String> keyFields;
 	// true if input is sorted
 	private boolean sorted;
 	// input metadata
@@ -87,18 +77,12 @@ public class AggregateProcessor {
 	 * @param inMetadata metadata of the input.
 	 * @param outMetadata metadata of the output.
 	 * @param charset charset of the output.
-	 * @throws AggregateProcessorException
+	 * @throws AggregationException
 	 */
 	public AggregateProcessor(String[] mapping, boolean oldMapping, RecordKey recordKey, boolean sorted, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata, String charset) 
-	throws AggregateProcessorException {
+	throws AggregationException {
 		this.recordKey = recordKey;
-		
-		keyFields = new HashSet<String>();
-		int[] keyFieldIndices = recordKey.getKeyFields();
-		for (int i : keyFieldIndices) {
-			keyFields.add(inMetadata.getField(i).getName());
-		}
 		
 		this.sorted = sorted;
 		if (!sorted) {
@@ -108,7 +92,6 @@ public class AggregateProcessor {
 		this.inMetadata = inMetadata;
 		this.outMetadata = outMetadata;
 		this.charset = charset;
-		initFunctions();
 		if (oldMapping) {
 			processMapping(convertOldMapping(mapping));
 		} else {
@@ -118,47 +101,6 @@ public class AggregateProcessor {
 		fieldMappingSize = fieldMapping.keySet().size();
 	}
 
-	/**
-	 * Initializes aggregation funcions. All aggregation functions must be initialized and 
-	 * registered here.
-	 * 
-	 * @throws ProcessorInitializationException
-	 */
-	private void initFunctions() throws AggregateProcessorException {
-		registerFunction(new Count());
-		registerFunction(new Min());
-		registerFunction(new Max());
-		registerFunction(new Sum());
-		registerFunction(new First());
-		registerFunction(new Last());
-		registerFunction(new Avg());
-		registerFunction(new StdDev());
-		registerFunction(new CRC32());
-		registerFunction(new MD5());
-		registerFunction(new FirstNonNull());
-		registerFunction(new LastNonNull());
-	}
-	
-	/**
-	 * Registers an aggregation function, i.e. makes it available for use during aggregation.
-	 * @param f
-	 */
-	private void registerFunction(AggregateFunction f) {
-		if (getFunction(f.getName()) != null) {
-			throw new IllegalArgumentException("Aggregate function already registered: " + f.getName());
-		}
-		addFunction(f.getName(), f.getClass());
-	}
-	
-	/**
-	 * Adds an aggregation function to the registry.
-	 * 
-	 * @param name name
-	 * @param f
-	 */
-	private void addFunction(String name, Class<? extends AggregateFunction> f) {
-		functions.put(name.toLowerCase(), f);
-	}
 	
 	/**
 	 * 
@@ -166,7 +108,7 @@ public class AggregateProcessor {
 	 * @return aggregation function from the registry.
 	 */
 	private Class<? extends AggregateFunction> getFunction(String name) {
-		return functions.get(name.toLowerCase());
+		return functionRegistry.getFunction(name);
 	}
 	
 	/**
@@ -254,67 +196,21 @@ public class AggregateProcessor {
 	 * @param mapping the function mapping.
 	 * @throws ProcessorInitializationException
 	 */
-	private void processMapping(String[] mapping) throws AggregateProcessorException {
-		Pattern functionPattern = Pattern.compile(MAPPING_FUNCTION_REGEX);
-		Pattern fieldPattern = Pattern.compile(MAPPING_FIELD_REGEX);
-		// set of already used output fields, used to detect multiple uses of the same output field
-		Set<String> usedOutputFields = new HashSet<String>(); 
+	private void processMapping(String[] mapping) throws AggregationException {
+		AggregateMappingParser parser = new AggregateMappingParser(mapping, 
+				recordKey, functionRegistry,
+				inMetadata, outMetadata);
+		List<AggregateMappingParser.FunctionMapping> functionMappings = parser.getFunctionMapping();
+		List<AggregateMappingParser.FieldMapping> fieldMappings = parser.getFieldMapping();
 		
-		for (String expression : mapping) {
-			Matcher functionMatcher = functionPattern.matcher(expression);
-			Matcher fieldMatcher = fieldPattern.matcher(expression);
-			
-			if (functionMatcher.matches()) {
-				// mapping contains an aggregate function
-				
-				// parse the output field name
-				int equalsIndex = expression.indexOf("=");
-				String outputField = expression.substring(0, equalsIndex).trim();
-
-				// parse the aggregate function name
-				int parenthesesIndex = expression.indexOf("(", equalsIndex + 1);
-				String functionName = expression.substring(equalsIndex + 1, parenthesesIndex).trim();
-
-				// parse the input field name
-				String inputField = expression.substring(parenthesesIndex + 1, expression.length() - 1).trim();
-
-				if (!usedOutputFields.contains(outputField)) {
-					usedOutputFields.add(outputField);
-				} else {
-					throw new AggregateProcessorException("Output field mapped multiple times: " + outputField);
-				}
-				
-				addFunctionMapping(functionName, inputField, outputField);
-			} else if (fieldMatcher.matches()) {
-				// mapping contains the name of a field in input
-				
-				String[] parsedExpression = expression.split("=");
-				String inputField = parsedExpression[1].trim();
-				String outputField = parsedExpression[0].trim();
-
-				if (!isKeyField(inputField)) {
-					throw new AggregateProcessorException("Input field is not the key: " + inputField);
-				}
-				if (usedOutputFields.contains(outputField)) {
-					throw new AggregateProcessorException("Output field mapped multiple times: " + outputField);
-				}
-				
-				usedOutputFields.add(outputField);
-				addFieldMapping(inputField, outputField);
-			} else {
-				throw new AggregateProcessorException("Invalid aggregate function mapping: "
-						+ expression);
-			}
+		for (AggregateMappingParser.FieldMapping fieldMapping : fieldMappings) {
+			addFieldMapping(fieldMapping.getInputField(), fieldMapping.getOutputField());
 		}
-	}
-	
-	/**
-	 * 
-	 * @param field field name
-	 * @return <tt>true</tt> if field is part of the record key.
-	 */
-	private boolean isKeyField(String field) {
-		return keyFields.contains(field);
+		for (AggregateMappingParser.FunctionMapping functionMapping : functionMappings) {
+			addFunctionMapping(functionMapping.getFunctionName(), 
+					functionMapping.getInputField(),
+					functionMapping.getOutputField());
+		}
 	}
 	
 	/**
@@ -326,9 +222,13 @@ public class AggregateProcessor {
 	 * @throws ProcessorInitializationException
 	 */
 	private void addFunctionMapping(String functionName, String inputField, String outputField)
-	throws AggregateProcessorException {
+	throws AggregationException {
 		AggregateFunction f = createFunctionInstance(functionName);
-		checkFields(f, inputField, outputField);
+
+		// TODO potrebne?
+		if (!inputField.equals("")) {
+			f.setInputFieldMetadata(inMetadata.getField(inputField));
+		}
 		
 		functionMapping.add(new FunctionMappingItem(functionName, inputField, outputField));
 	}
@@ -340,13 +240,8 @@ public class AggregateProcessor {
 	 * @return aggregation function.
 	 * @throws ProcessorInitializationException
 	 */
-	private AggregateFunction createFunctionInstance(String name) throws AggregateProcessorException {
+	private AggregateFunction createFunctionInstance(String name) throws AggregationException {
 		AggregateFunction result = null;
-		if (getFunction(name) == null) {
-			throw new AggregateProcessorException("Aggregate function not found: "
-					+ name);
-		}
-		
 		try {
 			result = getFunction(name).newInstance();
 			result.setRecordKey(recordKey);
@@ -354,55 +249,14 @@ public class AggregateProcessor {
 			result.setCharset(charset);
 			result.init();
 		} catch (InstantiationException e) {
-			throw new AggregateProcessorException("Cannot instantiate aggregate function", e);
+			throw new AggregationException("Cannot instantiate aggregate function", e);
 		} catch (IllegalAccessException e) {
-			throw new AggregateProcessorException("Cannot instantiate aggregate function", e);
+			throw new AggregationException("Cannot instantiate aggregate function", e);
 		} 
 		
 		return result; 
 	}
 
-	/**
-	 * Checks compatibility of input and output fields with an aggregation function. The data types
-	 * of the fields and the presence of an input field (as a parameter for a function) are checked.
-	 *  
-	 * @param function
-	 * @param inputField
-	 * @param outputField
-	 * @throws AggregateProcessorException
-	 */
-	private void checkFields(AggregateFunction function, String inputField, String outputField) 
-	throws AggregateProcessorException {
-		if (!function.requiresInputField() && !inputField.equals("")) {
-			throw new AggregateProcessorException("Function " + function.getName() 
-					+ " doesn't accept any field as a parameter: " + inputField);
-		}
-		if (!inputField.equals("")) {
-			DataFieldMetadata inputFieldMetadata = inMetadata.getField(inputField);
-			if (inputFieldMetadata == null) {
-				throw new AggregateProcessorException("Input field not found: " + inputField);
-			}
-			try {
-				function.checkInputFieldType(inputFieldMetadata);
-			} catch (AggregateProcessorException e) {
-				throw new AggregateProcessorException("Input field " + inputField + " has " +
-						"invalid type: " + e.getMessage());
-			}
-			function.setInputFieldMetadata(inputFieldMetadata);
-		}
-		
-		if (outMetadata.getField(outputField) == null) {
-			throw new AggregateProcessorException("Output field not found: " + outputField);
-		}
-		try {
-			function.checkOutputFieldType(outMetadata.getField(outputField));
-		} catch (AggregateProcessorException e) {
-			throw new AggregateProcessorException("Function " + function.getName() 
-					+ ": output field " + outputField + " has " +
-					"invalid type: " + e.getMessage());
-		}
-	}
-	
 	/**
 	 * Mapping of an aggregation function onto an input and output field.
 	 * 
@@ -477,14 +331,7 @@ public class AggregateProcessor {
 	 * @throws ProcessorInitializationException
 	 */
 	private void addFieldMapping(String inputField, String outputField)
-	throws AggregateProcessorException {
-		if (inMetadata.getField(inputField) == null) {
-			throw new AggregateProcessorException("Input field not found: " + inputField);
-		}
-		if (outMetadata.getField(outputField) == null) {
-			throw new AggregateProcessorException("Output field not found: " + outputField);
-		}
-		
+	throws AggregationException {
 		fieldMapping.put(outMetadata.getFieldPosition(outputField), 
 				inMetadata.getFieldPosition(inputField));
 	}
@@ -499,7 +346,7 @@ public class AggregateProcessor {
 		private KeyFieldItem[] keyFields;
 		private AggregateFunction[] functions;
 		
-		public AggregationGroup(DataRecord firstInput) throws AggregateProcessorException {
+		public AggregationGroup(DataRecord firstInput) throws AggregationException {
 			storeKeyFields(firstInput);
 			int count = functionMapping.size();
 			functions = new AggregateFunction[count];

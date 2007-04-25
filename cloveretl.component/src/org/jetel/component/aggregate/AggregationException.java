@@ -20,18 +20,18 @@
 package org.jetel.component.aggregate;
 
 /**
- * Indicates failed initialization of the Aggregate Processor.
+ * Indicates error in aggregator initialization.
  * 
  * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
-public class AggregateProcessorException extends Exception {
+public class AggregationException extends Exception {
 
 	/**
 	 * Allocates a new <tt>ProcessorInitializationException</tt> object.
 	 * @param arg0 error message
 	 */
-	public AggregateProcessorException(String arg0) {
+	public AggregationException(String arg0) {
 		super(arg0);
 	}
 
@@ -41,7 +41,7 @@ public class AggregateProcessorException extends Exception {
 	 *
 	 * @param cause
 	 */
-	public AggregateProcessorException(Throwable cause) {
+	public AggregationException(Throwable cause) {
 		super(cause);
 	}
 
@@ -52,7 +52,7 @@ public class AggregateProcessorException extends Exception {
 	 * @param arg0
 	 * @param cause
 	 */
-	public AggregateProcessorException(String arg0, Throwable cause) {
+	public AggregationException(String arg0, Throwable cause) {
 		super(arg0, cause);
 	}
 

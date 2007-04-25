@@ -37,7 +37,7 @@ import org.jetel.metadata.DataFieldMetadata;
  *         (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class CRC32 extends AggregateFunction {
-	private static final String NAME = "CRC32";
+	private static final String NAME = "crc32";
 	
 	private int loopCount = 0;
 	private java.util.zip.CRC32 crc32;
@@ -52,7 +52,7 @@ public class CRC32 extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkInputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregateProcessorException {
+	public void checkInputFieldType(DataFieldMetadata inputField) throws AggregationException {
 		nullableInput = inputField.isNullable();
 		return;
 	}
@@ -61,12 +61,12 @@ public class CRC32 extends AggregateFunction {
 	 * @see org.jetel.component.aggregate.AggregateFunction#checkOutputFieldType(org.jetel.metadata.DataFieldMetadata)
 	 */
 	@Override
-	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregateProcessorException {
+	public void checkOutputFieldType(DataFieldMetadata outputField) throws AggregationException {
 		if (nullableInput && !outputField.isNullable()) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
+			throw new AggregationException(AggregateFunction.ERROR_NULLABLE_BECAUSE_INPUT);
 		}
 		if (outputField.getType() != DataFieldMetadata.LONG_FIELD) {
-			throw new AggregateProcessorException(AggregateFunction.ERROR_LONG);
+			throw new AggregationException(AggregateFunction.ERROR_LONG);
 		}
 	}
 
