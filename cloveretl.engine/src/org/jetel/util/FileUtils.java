@@ -28,6 +28,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
@@ -41,6 +42,8 @@ import java.util.zip.ZipOutputStream;
 
 import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
+
+import sun.misc.BASE64Encoder;
 /**
  *  Helper class with some useful methods regarding file manipulation
  *
@@ -149,28 +152,32 @@ public class FileUtils {
      * @throws IOException
      */
     public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
-        String strURL = input;
         String zipAnchor = null;
         URL url;
+		boolean isZip = false;
+		boolean isGzip = false;
         
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
+        	isZip = true;
             if(!input.contains("#")) { //url is given without anchor - later is returned channel from first zip entry 
-                strURL = input.substring(input.indexOf(':') + 1);
                 zipAnchor = null;
+            	input = input.substring(input.indexOf(':') + 1);
             } else {
-                strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
                 zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
             }
-        }else if (input.startsWith("gzip:")) {
-            strURL = input.substring(input.indexOf(':') + 1);
+        }
+        else if (input.startsWith("gzip:")) {
+        	isGzip = true;
+        	input = input.substring(input.indexOf(':') + 1);
         }
         
         //open channel
-        url = FileUtils.getFileURL(contextURL, strURL); 
+        url = FileUtils.getFileURL(contextURL, input); 
 
-        //resolve url format for zip files
-        if(input.startsWith("zip:")) {
+        if (isZip) {
+            //resolve url format for zip files
             ZipInputStream zin = new ZipInputStream(url.openStream()) ;     
             ZipEntry entry;
             while((entry = zin.getNextEntry()) != null) {
@@ -191,14 +198,27 @@ public class FileUtils {
             } else {
                 throw new IOException("Wrong anchor (" + zipAnchor + ") to zip file.");
             }
-        }else if (input.startsWith("gzip:")) {
+        } 
+        
+        // gzip
+        else if (isGzip) {
             GZIPInputStream gzin = new GZIPInputStream(url.openStream(), Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzin);
         }
         
-        return Channels.newChannel(url.openStream());
+        URLConnection uc = url.openConnection();
+        // check autorization
+        if (url.getUserInfo() != null) {
+            uc.setRequestProperty("Authorization", "Basic " + encode(url.getUserInfo()));
+        }
+        return Channels.newChannel(uc.getInputStream());
     }
 
+    private static String encode (String source) {
+    	  BASE64Encoder enc = new sun.misc.BASE64Encoder();
+    	  return enc.encode(source.getBytes());
+   	 }
+    
 	/**
      * Creates WritableByteChannel from the url definition.
      * <p>All standard url format are acceptable (including ftp://) plus extended form of url by zip & gzip construction:</p>
@@ -214,41 +234,59 @@ public class FileUtils {
 	 * @throws IOException
 	 */
 	public static WritableByteChannel getWritableChannel(URL contextURL, String input, boolean appendData) throws IOException {
-        String strURL = input;
         String zipAnchor = null;
-        OutputStream os;
-		URL url;
+		boolean isZip = false;
+		boolean isGzip = false;
+		boolean isFtp = false;
 		
-        //resolve url format for zip files
+		// prepare string/path to output file
 		if(input.startsWith("zip:")) {
-            if(strURL.contains("#")) {
-                strURL = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
+	        //resolve url format for zip files
+			isZip = true;
+            if(input.contains("#")) {
                 zipAnchor = input.substring(input.lastIndexOf('#') + 1);
+                input = input.substring(input.indexOf(':') + 1, input.lastIndexOf('#'));
             } else {
-                strURL = input.substring(input.indexOf(':') + 1);
+            	input = input.substring(input.indexOf(':') + 1);
                 zipAnchor = "default_output";
             }
+        } else if(input.startsWith("gzip:")) {
+            //resolve url format for gzip files
+    		isGzip = true;
+    		input = input.substring(5);
+        } else if (input.startsWith("ftp")) {
+        	isFtp = true;
         }
-        
-		//open channel
-		if(!strURL.startsWith("ftp")) {
-			os = new FileOutputStream(strURL, appendData);
-		} else {
-		    url = FileUtils.getFileURL(contextURL, strURL); 
+
+		// create output stream
+        OutputStream os = null;
+		if(isFtp) {
+			// ftp output stream
+			URL url = FileUtils.getFileURL(contextURL, input); 
 			os = url.openConnection().getOutputStream();
+		} else {
+			// file input stream 
+			os = new FileOutputStream(input, appendData);
 		}
-		//resolve url format for zip files
-		if(input.startsWith("zip:")) {
+
+		// create writable channel
+		// zip channel
+		if(isZip) {
+			// resolve url format for zip files
 			ZipOutputStream zout = new ZipOutputStream(os);
 			ZipEntry entry = new ZipEntry(zipAnchor);
 			zout.putNextEntry(entry);
 			return Channels.newChannel(zout);
-        } else if (input.startsWith("gzip:")) {
+        } 
+		
+		// gzip channel
+		else if (isGzip) {
             GZIPOutputStream gzos = new GZIPOutputStream(os, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzos);
-        } else {
-        	return Channels.newChannel(os);
-        }
+        } 
+		
+		// other channel
+       	return Channels.newChannel(os);
 	}
     
 	/**
