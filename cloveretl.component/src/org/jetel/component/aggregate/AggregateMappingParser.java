@@ -19,7 +19,11 @@
 */
 package org.jetel.component.aggregate;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,6 +31,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.jetel.component.Aggregate;
+import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -42,14 +47,26 @@ import org.jetel.metadata.DataRecordMetadata;
 public class AggregateMappingParser {
 	private static final String MAPPING_LEFT_SIDE_REGEX = "^[\\w]*[ ]*" + Aggregate.ASSIGN_SIGN + "[ ]*";
 	// regular expression matching a correct aggregate function mapping
-	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\w ]*\\)$";
+	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\w ]*\\)";
 	// regular expression matching a correct field mapping
-	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*$";
+	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*";
+	// regular expression matching a correct string constant mapping
+	private static final String MAPPING_STRING_REGEX = "\\\"[\\w .,!?'-]*\\\"";
+	// regular expression matching a correct integer constant mapping
+	private static final String MAPPING_INT_REGEX = "[\\d]*";
+	// regular expression matching a correct date constant mapping
+	private static final String MAPPING_DATE_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2}";
 
 	private static final Pattern functionPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX);
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX + "$");
 	private static final Pattern fieldPattern = 
-		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FIELD_REGEX);
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FIELD_REGEX + "$");
+	private static final Pattern stringPattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_STRING_REGEX + "$");
+	private static final Pattern intPattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_INT_REGEX + "$");
+	private static final Pattern datePattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATE_REGEX + "$");
 	
 	// set of already used output fields, used to detect multiple uses of the same output field
 	private Set<String> usedOutputFields = new HashSet<String>(); 
@@ -63,6 +80,9 @@ public class AggregateMappingParser {
 	
 	private List<FunctionMapping> functionMapping = new ArrayList<FunctionMapping>();
 	private List<FieldMapping> fieldMapping = new ArrayList<FieldMapping>();
+	private List<ConstantMapping> constantMapping = new ArrayList<ConstantMapping>();
+	
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
 	
 	/**
 	 * 
@@ -103,16 +123,21 @@ public class AggregateMappingParser {
 			String expr2 = expression.trim();
 			Matcher functionMatcher = functionPattern.matcher(expr2);
 			Matcher fieldMatcher = fieldPattern.matcher(expr2);
+			Matcher stringMatcher = stringPattern.matcher(expr2);
+			Matcher intMatcher = intPattern.matcher(expr2);
+			Matcher dateMatcher = datePattern.matcher(expr2);
 
 			try {
 				if (functionMatcher.matches()) {
-					// mapping contains an aggregate function
-
 					parseFunction(expr2);
 				} else if (fieldMatcher.matches()) {
-					// mapping contains the name of a field in input
-
 					parseFieldMapping(expr2);
+				} else if (stringMatcher.matches()) {
+					parseStringConstantMapping(expr2);
+				} else if (intMatcher.matches()) {
+					parseIntConstantMapping(expr2);
+				} else if (dateMatcher.matches()) {
+					parseDateConstantMapping(expr2);
 				} else {
 					throw new AggregationException("Invalid mapping format");
 				}
@@ -141,20 +166,10 @@ public class AggregateMappingParser {
 		// parse the input field name
 		String inputField = function.substring(parenthesesIndex + 1, function.length() - 1).trim();
 
-		if (!usedOutputFields.contains(outputField)) {
-			usedOutputFields.add(outputField);
+		if (inputField.equals("")) {
+			checkFieldExistence(outputField);
 		} else {
-			throw new AggregationException("Output field mapped multiple times: " + outputField);
-		}
-
-		// check existence of fields in metadata
-		if (!inputField.equals("")) {
-			if (inMetadata.getField(inputField) == null) {
-				throw new AggregationException("Input field not found: " + inputField);
-			}
-		}
-		if (outMetadata.getField(outputField) == null) {
-			throw new AggregationException("Output field not found: " + outputField);
+			checkFieldExistence(inputField, outputField);
 		}
 		
 		// check if the function is registered
@@ -164,6 +179,7 @@ public class AggregateMappingParser {
 		}
 		
 		checkFunctionFields(functionName, inputField, outputField);
+		registerOutputFieldUsage(outputField);
 		functionMapping.add(new FunctionMapping(functionName, inputField, outputField));
 	}
 	
@@ -221,21 +237,108 @@ public class AggregateMappingParser {
 		if (!isKeyField(inputField)) {
 			throw new AggregationException("Input field is not the key: " + inputField);
 		}
-		if (usedOutputFields.contains(outputField)) {
-			throw new AggregationException("Output field mapped multiple times: " + outputField);
-		}
-		
-		if (inMetadata.getField(inputField) == null) {
-			throw new AggregationException("Input field not found: " + inputField);
-		}
-		if (outMetadata.getField(outputField) == null) {
-			throw new AggregationException("Output field not found: " + outputField);
-		}
-		
-		usedOutputFields.add(outputField);
+
+		checkFieldExistence(inputField, outputField);
+		registerOutputFieldUsage(outputField);
 		fieldMapping.add(new FieldMapping(inputField, outputField));
 	}
 	
+	/**
+	 * Parses an integer constant mapping.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseIntConstantMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String constant = parsedExpression[1].trim();
+		String outputField = parsedExpression[0].trim();
+		
+		Integer value = Integer.valueOf(constant);
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(new ConstantMapping(value, outputField));
+	}
+
+	/**
+	 * Parses a string constant mapping.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseStringConstantMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		// remove the leading and trailing quotation marks
+		String constant = parsedExpression[1].trim().replaceAll("\"", "");	
+		String outputField = parsedExpression[0].trim();
+		
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(new ConstantMapping(constant, outputField));
+	}
+
+	/**
+	 * Parses a date constant mapping.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseDateConstantMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String constant = parsedExpression[1].trim();
+		String outputField = parsedExpression[0].trim();
+		
+		Date value;
+		try {
+			value = DATE_FORMAT.parse(constant);
+		} catch (ParseException e) {
+			throw new AggregationException("Date is in invalid  format: " + constant, e);
+		}
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(new ConstantMapping(value, outputField));
+	}
+
+	/**
+	 * Registers an output field as used (by some mapping).
+	 * 
+	 * @param outputField name of the output field.
+	 * @throws AggregationException if the output field is already used.
+	 */
+	private void registerOutputFieldUsage(String outputField) throws AggregationException {
+		if (!usedOutputFields.contains(outputField)) {
+			usedOutputFields.add(outputField);
+		} else {
+			throw new AggregationException("Output field mapped multiple times: " + outputField);
+		}
+	}
+	
+	/**
+	 * Checks whether the fields exist (in the metadata).
+	 * 
+	 * @param inputField name of an input field.
+	 * @param outputField name of an output field.
+	 * @throws AggregationException if any of the fields doesn't exist.
+	 */
+	private void checkFieldExistence(String inputField, String outputField) throws AggregationException {
+		if (inMetadata.getField(inputField) == null) {
+			throw new AggregationException("Input field not found: " + inputField);
+		}
+		checkFieldExistence(outputField);
+	}
+
+	/**
+	 * Checkss whether an output field exists (in the metadata).
+	 * 
+	 * @param outputField name of an output field.
+	 * @throws AggregationException if the output field doesn't exist.
+	 */
+	private void checkFieldExistence(String outputField) throws AggregationException {
+		if (outMetadata.getField(outputField) == null) {
+			throw new AggregationException("Output field not found: " + outputField);
+		}
+	}
+
 	/**
 	 * 
 	 * @return the field mapping.
@@ -250,6 +353,14 @@ public class AggregateMappingParser {
 	 */
 	public List<FunctionMapping> getFunctionMapping() {
 		return functionMapping;
+	}
+	
+	/**
+	 * 
+	 * @return the constant mapping.
+	 */
+	public List<ConstantMapping> getConstantMapping() {
+		return constantMapping;
 	}
 
 	/**
@@ -316,6 +427,42 @@ public class AggregateMappingParser {
 
 		public String getOutputField() {
 			return outputField;
+		}
+	}
+	
+	/**
+	 * Mapping of a constant.
+	 * 
+	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 * @created 30.4.2007
+	 */
+	public static class ConstantMapping {
+		private String outputField;
+		private Object value;
+		
+		public ConstantMapping(int value, String outputField) {
+			this.value = new Integer(value);
+			this.outputField = outputField;
+		}
+
+		public ConstantMapping(String value, String outputField) {
+			this.value = value;
+			this.outputField = outputField;
+		}
+		
+		public ConstantMapping(Date value, String outputField) {
+			this.value = value;
+			this.outputField = outputField;
+		}
+
+		public String getOutputField() {
+			return outputField;
+		}
+
+		public Object getValue() {
+			return value;
 		}
 	}
 }

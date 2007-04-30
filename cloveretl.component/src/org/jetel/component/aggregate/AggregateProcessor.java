@@ -21,16 +21,15 @@ package org.jetel.component.aggregate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetel.component.Aggregate;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -48,6 +47,8 @@ public class AggregateProcessor {
 	private Map<Integer, Integer> fieldMapping = new HashMap<Integer, Integer>();
 	// number of keys in the field mapping
 	private int fieldMappingSize;
+	// constants mapping
+	private List<ConstantMappingItem> constantMapping = new ArrayList<ConstantMappingItem>();
 	
 	private boolean sortedGroupChanged = false;
 	
@@ -176,7 +177,7 @@ public class AggregateProcessor {
 		for (int i = 0; i < keyFields.length; i++) {
 			String keyField = inMetadata.getField(keyFields[i]).getName();
 			String outField = outMetadata.getField(i).getName();
-			result[i] = outField + "=" + keyField;
+			result[i] = outField + Aggregate.ASSIGN_SIGN + "$" + keyField;
 		}
 
 		// process function mappings
@@ -185,7 +186,7 @@ public class AggregateProcessor {
 		int tmpIndex = recordKey.getKeyFields().length;
 		for (int i = tmpIndex; i < result.length; i++) {
 			String outField = outMetadata.getField(i).getName();
-			result[i] = outField + "=" + oldMapping[i - tmpIndex];  
+			result[i] = outField + Aggregate.ASSIGN_SIGN + oldMapping[i - tmpIndex];  
 		}
 
 		return result;
@@ -202,6 +203,7 @@ public class AggregateProcessor {
 				inMetadata, outMetadata);
 		List<AggregateMappingParser.FunctionMapping> functionMappings = parser.getFunctionMapping();
 		List<AggregateMappingParser.FieldMapping> fieldMappings = parser.getFieldMapping();
+		List<AggregateMappingParser.ConstantMapping> constantMappings = parser.getConstantMapping();
 		
 		for (AggregateMappingParser.FieldMapping fieldMapping : fieldMappings) {
 			addFieldMapping(fieldMapping.getInputField(), fieldMapping.getOutputField());
@@ -210,6 +212,9 @@ public class AggregateProcessor {
 			addFunctionMapping(functionMapping.getFunctionName(), 
 					functionMapping.getInputField(),
 					functionMapping.getOutputField());
+		}
+		for (AggregateMappingParser.ConstantMapping constantMapping : constantMappings) {
+			addConstantMapping(constantMapping.getValue(), constantMapping.getOutputField());
 		}
 	}
 	
@@ -225,7 +230,6 @@ public class AggregateProcessor {
 	throws AggregationException {
 		AggregateFunction f = createFunctionInstance(functionName);
 
-		// TODO potrebne?
 		if (!inputField.equals("")) {
 			f.setInputFieldMetadata(inMetadata.getField(inputField));
 		}
@@ -337,6 +341,16 @@ public class AggregateProcessor {
 	}
 	
 	/**
+	 * Registers a mapping of a constant onto an output field.
+	 * 
+	 * @param value value of the constant.
+	 * @param outputField
+	 */
+	private void addConstantMapping(Object value, String outputField) {
+		constantMapping.add(new ConstantMappingItem(value, outMetadata.getFieldPosition(outputField)));
+	}
+	
+	/**
 	 * One aggregation group with its aggregation functions and their intermediate results.
 	 * 
 	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
@@ -370,6 +384,7 @@ public class AggregateProcessor {
 		public void storeResult(DataRecord outRecord) {
 			outRecord.setToNull();
 			applyFieldMapping(outRecord);
+			applyConstantMapping(outRecord);
 			for (AggregateFunction function : functions) {
 				function.storeResult(outRecord.getField(function.getOutputFieldIndex()));
 			}
@@ -409,6 +424,17 @@ public class AggregateProcessor {
 		}
 
 		/**
+		 * Applies the constant mapping.
+		 * 
+		 * @param outputRecord
+		 */
+		private void applyConstantMapping(DataRecord outputRecord) {
+			for (ConstantMappingItem item : constantMapping) {
+				outputRecord.getField(item.getOutputField()).setValue(item.getValue());
+			}
+		}
+		
+		/**
 		 * Stores the values of keys which have to be copied to the result later.
 		 * 
 		 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
@@ -445,6 +471,47 @@ public class AggregateProcessor {
 			public int getIndex() {
 				return index;
 			}
+		}
+	}
+	
+	/**
+	 * Represents one mapping of a constant onto an output field.
+	 * 
+	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
+	 *         (c) Javlin Consulting (www.javlinconsulting.cz)
+	 *
+	 * @created 30.4.2007
+	 */
+	private static class ConstantMappingItem {
+		private int outputField;
+		private Object value;
+		
+		/**
+		 * 
+		 * Allocates a new <tt>ConstantMappingItem</tt> object.
+		 *
+		 * @param value
+		 * @param outputField
+		 */
+		public ConstantMappingItem(Object value, int outputField) {
+			this.outputField = outputField;
+			this.value = value;
+		}
+
+		/**
+		 * 
+		 * @return index of the output field used to store the constant.
+		 */
+		public int getOutputField() {
+			return outputField;
+		}
+
+		/**
+		 * 
+		 * @return value of the constant.
+		 */
+		public Object getValue() {
+			return value;
 		}
 	}
 	
