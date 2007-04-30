@@ -45,6 +45,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created Apr 23, 2007
  */
 public class AggregateMappingParser {
+	// regexp matching the left half of an aggregation mapping item (including the assign sign)
 	private static final String MAPPING_LEFT_SIDE_REGEX = "^[\\w]*[ ]*" + Aggregate.ASSIGN_SIGN + "[ ]*";
 	// regular expression matching a correct aggregate function mapping
 	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\w ]*\\)";
@@ -257,7 +258,7 @@ public class AggregateMappingParser {
 		Integer value = Integer.valueOf(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, outputField));
+		constantMapping.add(new ConstantMapping(value, constant, outputField));
 	}
 
 	/**
@@ -296,7 +297,7 @@ public class AggregateMappingParser {
 		}
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, outputField));
+		constantMapping.add(new ConstantMapping(value, constant, outputField));
 	}
 
 	/**
@@ -439,30 +440,76 @@ public class AggregateMappingParser {
 	 * @created 30.4.2007
 	 */
 	public static class ConstantMapping {
+		// name of the output field
 		private String outputField;
+		// value of the constant
 		private Object value;
+		// value of the constant before parsing 
+		private String stringValue;
 		
-		public ConstantMapping(int value, String outputField) {
+		/**
+		 * 
+		 * Allocates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value integer constant value.
+		 * @param stringValue string representation of the value before parsing.
+		 * @param outputField name of the output field.
+		 */
+		public ConstantMapping(int value, String stringValue, String outputField) {
 			this.value = new Integer(value);
+			this.stringValue = stringValue;
 			this.outputField = outputField;
 		}
 
+		/**
+		 * 
+		 * Allocates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value string constant value.
+		 * @param outputField name of the output field.
+		 */
 		public ConstantMapping(String value, String outputField) {
 			this.value = value;
+			this.stringValue = "\"" + value + "\"";
 			this.outputField = outputField;
 		}
 		
-		public ConstantMapping(Date value, String outputField) {
+		/**
+		 * 
+		 * Allocates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value
+		 * @param stringValue string representation of the value before parsing.
+		 * @param outputField name of the output field.
+		 */
+		public ConstantMapping(Date value, String stringValue, String outputField) {
 			this.value = value;
+			this.stringValue = stringValue;
 			this.outputField = outputField;
 		}
 
+		/**
+		 * 
+		 * @return name of the output field where the constant will be stored.
+		 */
 		public String getOutputField() {
 			return outputField;
 		}
 
+		/**
+		 * 
+		 * @return value of the constant.
+		 */
 		public Object getValue() {
 			return value;
+		}
+
+		/**
+		 * 
+		 * @return string representation of the constant before parsing.
+		 */
+		public String getStringValue() {
+			return stringValue;
 		}
 	}
 }
