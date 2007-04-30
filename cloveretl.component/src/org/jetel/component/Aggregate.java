@@ -240,6 +240,8 @@ public class Aggregate extends Node {
             if(xattribs.exists(XML_AGGREGATE_KEY_ATTRIBUTE)) {
                 aggregateKey = xattribs.getString(XML_AGGREGATE_KEY_ATTRIBUTE).split(
                 		Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
+            } else {
+            	throw new XMLConfigurationException("Attribute is missing: " + XML_AGGREGATE_KEY_ATTRIBUTE);
             }
             
             //read mapping attribute
@@ -256,6 +258,11 @@ public class Aggregate extends Node {
             	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE).split(
             			Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             	oldMapping = true;
+            }
+            
+            if (mapping == null) {
+            	throw new XMLConfigurationException("Aggregation mapping must be provided in the " +
+            			XML_MAPPING_ATTRIBUTE + " or " + XML_OLD_MAPPING_ATTRIBUTE + " attribute");
             }
             
             //read sorted attribute
