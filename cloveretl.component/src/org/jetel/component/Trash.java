@@ -135,12 +135,16 @@ public class Trash extends Node {
 		DataRecord record = new DataRecord(inPort.getMetadata());
 		record.init();
 		try {
+			int count = 0;
 			while (record != null && runIt) {
 				record = inPort.readRecord(record);
 				if (writer != null && record != null) {
 			        writer.write(record);
-					if (debugFilename == null)
-						formatter.flush(); // if we debug into stdout
+					if (debugFilename == null) {
+						if (count >= TextTableFormatter.MAX_ROW_ANALYZED)
+							formatter.flush(); // if we debug into stdout
+					}
+					count++;
 				}
 				SynchronizeUtils.cloverYield();
 			}

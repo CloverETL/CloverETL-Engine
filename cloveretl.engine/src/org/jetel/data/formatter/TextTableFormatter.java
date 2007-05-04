@@ -79,7 +79,7 @@ public class TextTableFormatter implements Formatter {
 	private int prefixOffset; 
 	private int headerOffset; 
 
-	private static final int MAX_COUNT_ANALYZED_COUNT = 20;
+	public static final int MAX_ROW_ANALYZED = 20;
 	private static final int PADDING_SPACE = 3;
 
 	private static final byte[] TABLE_CORNER = new byte[] {('+')};
@@ -339,7 +339,7 @@ public class TextTableFormatter implements Formatter {
 		if (dataRecords != null) {
 			dataRecords.add(record.duplicate());
 			writeHeader = true;
-			if (dataRecords.size() < MAX_COUNT_ANALYZED_COUNT) {
+			if (dataRecords.size() < MAX_ROW_ANALYZED) {
 				return 0;
 			}
 			analyzeRows(dataRecords, setOutputFieldNames);
