@@ -173,7 +173,7 @@ public class TextTableFormatter implements Formatter {
             counter++;
             sCounter = Integer.toString(counter);
             
-			if (dataBuffer.remaining() < fieldBuffer.limit()){
+			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
 				directFlush();
 			}
 			//change field value to bytes
@@ -198,7 +198,7 @@ public class TextTableFormatter implements Formatter {
         Object o;
         int lenght;
 		for (int i=0;i<maskAnalize.length;i++){
-			if (dataBuffer.remaining() < fieldBuffer.limit()){
+			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
 				directFlush();
 			}
 			//change field value to bytes
