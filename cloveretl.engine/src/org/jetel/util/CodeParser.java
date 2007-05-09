@@ -858,6 +858,7 @@ public class CodeParser {
 		//imports
 		transCode.append("// automatically generated on ");
 		transCode.append(java.util.Calendar.getInstance().getTime()).append("\n");
+        transCode.append("import java.util.*;\n");
 		transCode.append("import org.jetel.data.*;\n");
 		transCode.append("import org.jetel.graph.*;\n");
 		transCode.append("import org.jetel.metadata.*;\n");
