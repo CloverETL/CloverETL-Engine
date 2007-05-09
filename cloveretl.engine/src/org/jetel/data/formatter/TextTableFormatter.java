@@ -166,6 +166,7 @@ public class TextTableFormatter implements Formatter {
 	public int writeRecord(DataRecord record) throws IOException {
         int sentBytes=0;
         int mark;
+        int lenght;
         
         sentBytes += writeString(TABLE_VERTICAL);
 
@@ -183,7 +184,8 @@ public class TextTableFormatter implements Formatter {
 			fieldBuffer.flip();
             
 			blank.clear();
-			blank.limit(prefixOffset - fieldBuffer.limit());
+			lenght = prefixOffset - fieldBuffer.limit();
+			blank.limit(lenght > 0 ? lenght : 0);
             mark=dataBuffer.position();
 
 			//put field value to data buffer
@@ -196,7 +198,6 @@ public class TextTableFormatter implements Formatter {
         
 		//for each record field which is in mask change its name to value
         Object o;
-        int lenght;
 		for (int i=0;i<maskAnalize.length;i++){
 			if (dataBuffer.remaining() < fieldBuffer.limit()+blank.capacity()){
 				directFlush();
