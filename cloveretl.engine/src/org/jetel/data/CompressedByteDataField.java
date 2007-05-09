@@ -205,7 +205,7 @@ public class CompressedByteDataField extends ByteDataField {
         	try {
         		dataBuffer.put(getByteArray());
         	} catch (BufferOverflowException e) {
-        		throw new RuntimeException("Size of data value is " + getByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
         	}
         }
 	}
@@ -218,7 +218,7 @@ public class CompressedByteDataField extends ByteDataField {
         	try {
         		dataBuffer.put(getByteArray());
         	} catch (BufferOverflowException e) {
-        		throw new RuntimeException("Size of data value is " + getByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
         	}
         }
     }

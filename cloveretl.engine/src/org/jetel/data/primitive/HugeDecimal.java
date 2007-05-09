@@ -599,7 +599,7 @@ public final class HugeDecimal implements Decimal {
     	try {
     		dataBuffer.put(encoder.encode(CharBuffer.wrap(toString(numericFormat))));
     	} catch (BufferOverflowException e) {
-    		throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString(numericFormat))).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     	}
 	}
 
@@ -611,12 +611,12 @@ public final class HugeDecimal implements Decimal {
         	try {
         		dataBuffer.put(value.unscaledValue().toByteArray());
         	} catch (BufferOverflowException e) {
-        		throw new RuntimeException("Size of data value is " + value.unscaledValue().toByteArray().length + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
         	}
         	try {
         		dataBuffer.putInt(value.scale());
         	} catch (BufferOverflowException e) {
-        		throw new RuntimeException("Size of data value is " + Integer.toString(value.scale()).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
         	}
         }
     }
