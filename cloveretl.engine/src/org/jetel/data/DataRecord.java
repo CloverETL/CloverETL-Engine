@@ -159,7 +159,7 @@ public class DataRecord implements Serializable, Comparable {
 			//fieldMetadata = metadata.getField(i);
 			sourceField = _record.getField(i);
 			targetField = this.getField(i);
-			if (sourceField.getType() == targetField.getType()) {
+			if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
 				targetField.setValue(sourceField.getValue());
 			} else {
 				targetField.setToDefaultValue();
@@ -189,7 +189,7 @@ public class DataRecord implements Serializable, Comparable {
             if (srcFieldPos >= 0) {
                 sourceField = sourceRecord.getField(srcFieldPos);
                 result[i] = true;
-                if (sourceField.getType() == targetField.getType()) {
+                if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
                     targetField.setValue(sourceField.getValue());
                 } else {
                     targetField.setToDefaultValue();
