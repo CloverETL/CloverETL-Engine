@@ -230,7 +230,7 @@ public abstract class CopySQLData {
 					" contains less fields than source JDBC record !");
 		}
 		
-		CopySQLData[] transMap = new CopySQLData[metadata.getNumFields()];
+		CopySQLData[] transMap = new CopySQLData[fieldTypes.size()];
 		int i = 0;
 		for (ListIterator iterator = fieldTypes.listIterator(); iterator.hasNext(); ) {
 			transMap[i] = createCopyObject(((Integer) iterator.next()).shortValue(),
