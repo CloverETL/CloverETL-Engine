@@ -295,7 +295,7 @@ public class StringDataField extends DataField implements CharSequence{
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(value)));
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
 	}
 
@@ -305,7 +305,7 @@ public class StringDataField extends DataField implements CharSequence{
     		try {
     			dataBuffer.put(Charset.defaultCharset().encode(value.toString()));
     		} catch (BufferOverflowException e) {
-    			throw new RuntimeException("Size of data value is " + value.length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
     		}
         }
     }

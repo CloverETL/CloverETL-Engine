@@ -389,7 +389,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 		try {
 			dataBuffer.put(encoder.encode(CharBuffer.wrap(toString())));
 		} catch (BufferOverflowException e) {
-			throw new RuntimeException("Size of data value is " + encoder.encode(CharBuffer.wrap(toString())).limit() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
 		}
 	}
 
@@ -399,7 +399,7 @@ public class LongDataField extends DataField implements Numeric, Comparable{
         	try {
         		dataBuffer.putLong(value);
         	} catch (BufferOverflowException e) {
-				throw new RuntimeException("Size of data value is " + Long.toString(value).length() + " but the size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
         	}
         }
     }
