@@ -426,7 +426,7 @@ public class Denormalizer extends Node {
 					order
 					);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				denorm.setCharset(XML_CHARSET_ATTRIBUTE);
+				denorm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 
 			denorm.setTransformationParameters(xattribs.attributes2Properties(

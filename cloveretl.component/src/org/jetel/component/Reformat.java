@@ -19,7 +19,6 @@
 */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.util.Enumeration;
 import java.util.Properties;
 
@@ -35,7 +34,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -75,7 +73,7 @@ import org.w3c.dom.Element;
  *  </tr>
  *  <tr><td><b>transform</b></td><td>contains definition of transformation as java source, in internal clover format or in Transformation Language</td></tr>
  *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
- *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
+ *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><i>..optional attribute..</i></td><td>any additional attribute is passed to transformation
  * class in Properties object - as a key->value pair. There is no limit to how many optional
  * attributes can be used.</td>
@@ -232,13 +230,9 @@ public class Reformat extends Node {
 			transformation.init(transformationParameters, inMetadata,
 					outMetadata);
 		} else {
-		    try {
-				transformation = RecordTransformFactory.createTransform(
-				        transform, transformClass, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-				        charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this,"Can't read extern transformation",e);
-			}
+			transformation = RecordTransformFactory.createTransform(transform, transformClass, 
+					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					this.getClass().getClassLoader());
 		}
 	}
 
@@ -305,7 +299,7 @@ public class Reformat extends Node {
 			reformat.setTransformationParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_TRANSFORM_ATTRIBUTE,XML_TRANSFORMCLASS_ATTRIBUTE}));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				reformat.setCharset(XML_CHARSET_ATTRIBUTE);
+				reformat.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 		} catch (Exception ex) {
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);

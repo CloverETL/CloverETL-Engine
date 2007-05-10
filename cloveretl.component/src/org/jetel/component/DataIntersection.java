@@ -391,13 +391,9 @@ public class DataIntersection extends Node {
         if (transformation != null){
         	transformation.init(transformationParameters, inMetadata, outMetadata);
         }else{
-            try {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, "Can't read extern transform", e);
-			}
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
+					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					this.getClass().getClassLoader());
         }
 	}
 
@@ -482,7 +478,7 @@ public class DataIntersection extends Node {
                     xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				intersection.setCharset(XML_CHARSET_ATTRIBUTE);
+				intersection.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			if (xattribs.exists(XML_SLAVEOVERRIDEKEY_ATTRIBUTE)) {
 				intersection.setSlaveOverrideKey(xattribs.getString(XML_SLAVEOVERRIDEKEY_ATTRIBUTE).
