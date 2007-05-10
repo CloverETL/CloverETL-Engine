@@ -204,6 +204,9 @@ public class AggregateOld extends Node {
         }
         xmlElement.setAttribute("sorted",String.valueOf(sorted));
         xmlElement.setAttribute(XML_EQUAL_NULL_ATTRIBUTE,String.valueOf(equalNULLs));
+        if (charset != null) {
+        	xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, charset);
+        }
     }
 
 	/**
