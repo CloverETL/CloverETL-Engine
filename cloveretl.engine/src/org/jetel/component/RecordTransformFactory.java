@@ -44,6 +44,7 @@ import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.CodeParser;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.FileUtils;
+import org.jetel.util.StringUtils;
 
 public class RecordTransformFactory {
 
@@ -58,36 +59,22 @@ public class RecordTransformFactory {
     public static final Pattern PATTERN_PREPROCESS_2 = Pattern.compile("\\$\\{in\\."); 
     
     public static RecordTransform createTransform(String transform, String transformClass, 
-    		ReadableByteChannel transformReader, String charset, Node node, 
+    		String transformURL, String charset, Node node, 
     		DataRecordMetadata[] inMetadata, DataRecordMetadata[] outMetadata, 
     		Properties transformationParameters, ClassLoader classLoader) throws ComponentNotReadyException {
         RecordTransform transformation = null;
         Log logger = LogFactory.getLog(node.getClass());
         
         //without these parameters we cannot create transformation
-        if(transform == null && transformClass == null && transformReader == null) {
+        if(transform == null && transformClass == null && transformURL == null) {
             throw new ComponentNotReadyException("Record transformation is not defined.");
         }
         
         if (transformClass != null) {
             //get transformation from link to the compiled class
             transformation = RecordTransformFactory.loadClass(logger, transformClass);
-        }else if (transform == null && transformReader != null){
-        	try {
-				ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-				CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
-					Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-				int pos;
-				transform = new String(); 
-				do {
-					pos = ByteBufferUtils.reload(buffer, transformReader);
-					buffer.flip();
-					transform += decoder.decode(buffer).toString();
-					buffer.rewind();
-				} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(node, "Can't read extern code", e);
-			}
+        }else if (transform == null && transformURL != null){
+        	transform = FileUtils.getStringFromURL(node.getGraph().getProjectURL(), transformURL, charset);
         }
         if (transformClass == null) {
             
