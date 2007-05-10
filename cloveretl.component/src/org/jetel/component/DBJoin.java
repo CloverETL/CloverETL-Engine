@@ -315,8 +315,8 @@ public class DBJoin extends Node {
 			}
 			if (transformSource != null || transformClassName != null) {
 				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
+						transformSource, transformClassName, transformURL, charset, this, inMetadata, 
+						outMetadata, transformationParameters, this.getClass().getClassLoader());
 			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
@@ -342,7 +342,7 @@ public class DBJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_CLASS_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				dbjoin.setCharset(XML_CHARSET_ATTRIBUTE);
+				dbjoin.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			dbjoin.setTransformationParameters(xattribs.attributes2Properties(new String[]{XML_TRANSFORM_CLASS_ATTRIBUTE}));
 			if (xattribs.exists(XML_DB_METADATA_ATTRIBUTE)){

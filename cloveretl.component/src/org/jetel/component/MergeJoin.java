@@ -390,13 +390,9 @@ public class MergeJoin extends Node {
 		if (transformation != null){
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		}else{
-            try {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset, this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, "Can't read extern transform", e);
-			}
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
+					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					this.getClass().getClassLoader());
         }
 	}
 
@@ -580,7 +576,7 @@ public class MergeJoin extends Node {
                     joinType,
                     xattribs.getBoolean(XML_ALLOW_SLAVE_DUPLICATES_ATTRIBUTE, true));
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(XML_CHARSET_ATTRIBUTE);
+				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 			join.setTransformationParameters(xattribs.attributes2Properties(
 	                new String[]{XML_ID_ATTRIBUTE,XML_JOINKEY_ATTRIBUTE,

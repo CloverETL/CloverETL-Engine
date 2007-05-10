@@ -336,7 +336,7 @@ public class Normalizer extends Node {
 					xattribs.getString(XML_TRANSFORMCLASS_ATTRIBUTE, null),
 					xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE, null));
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	norm.setCharset(XML_CHARSET_ATTRIBUTE);
+            	norm.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
 
 			norm.setTransformationParameters(xattribs.attributes2Properties(

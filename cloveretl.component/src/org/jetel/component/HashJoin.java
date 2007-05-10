@@ -350,13 +350,9 @@ public class HashJoin extends Node {
 		if (transformation != null){
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		}else{
-			try {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset,this, inMetadata, outMetadata, transformationParameters, this.getClass().getClassLoader());
-			} catch (IOException e) {
-				throw new ComponentNotReadyException(this, "Can't read extern transform", e);
-			}
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
+					transformURL, charset,this, inMetadata, outMetadata, transformationParameters, 
+					this.getClass().getClassLoader());
 		}
 	}
 
@@ -677,7 +673,7 @@ public class HashJoin extends Node {
                     xattribs.getString(XML_TRANSFORMURL_ATTRIBUTE,null),
 					joinType);
 			if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-				join.setCharset(XML_CHARSET_ATTRIBUTE);
+				join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
 			}
 
 			if (xattribs.exists(XML_HASHTABLESIZE_ATTRIBUTE)) {

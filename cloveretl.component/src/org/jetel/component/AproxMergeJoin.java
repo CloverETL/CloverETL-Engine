@@ -578,32 +578,18 @@ public class AproxMergeJoin extends Node {
 		if (transformation != null) {
 			transformation.init(transformationParameters, inMetadata, outMetadata);
 		} else {
-			try {
-				transformation = RecordTransformFactory.createTransform(
-						transformSource, transformClassName, transformURL != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset, this, inMetadata, outMetadata, transformationParameters, 
-						this.getClass().getClassLoader());
-			} catch (IOException e) {
-				ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
-				ex.setAttributeName(XML_TRANSFORM_URL_ATTRIBUTE);
-				throw ex;
-			}
+			transformation = RecordTransformFactory.createTransform(transformSource, transformClassName, 
+					transformURL, charset, this, inMetadata, outMetadata, transformationParameters, 
+					this.getClass().getClassLoader());
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(SUSPICIOUS_OUT).getMetadata() };
 		if (transformationForSuspicious != null) {
 			transformationForSuspicious.init(transformationParametersForSuspicious, 
 					inMetadata,	outMetadata);
 		} else {
-			try {
-				transformationForSuspicious = RecordTransformFactory.createTransform(
-						transformSourceForSuspicious, transformClassNameForSuspicious, 
-						transformURLForsuspicious != null ? FileUtils.getReadableChannel(getGraph().getProjectURL(), transformURL) : null, 
-						charset, this, inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
-			} catch (IOException e) {
-				ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
-				ex.setAttributeName(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE);
-				throw ex;
-			}
+			transformationForSuspicious = RecordTransformFactory.createTransform(transformSourceForSuspicious, 
+					transformClassNameForSuspicious, transformURLForsuspicious, charset, this, 
+					inMetadata, outMetadata, transformationParametersForSuspicious, this.getClass().getClassLoader());
 		}
 		// initializing join parameters
 		joinKeys = new String[joinParameters.length];
@@ -716,7 +702,7 @@ public class AproxMergeJoin extends Node {
                     xattribs.getString(XML_TRANSFORM_URL_ATTRIBUTE, null),
                     xattribs.getString(XML_TRANSFORM_URL_FOR_SUSPICIOUS_ATTRIBUTE, null));
             if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-            	join.setCharset(XML_CHARSET_ATTRIBUTE);
+            	join.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
             }
 			if (xattribs.exists(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE)) {
 				join.setSlaveOverrideKey(xattribs.getString(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE).
