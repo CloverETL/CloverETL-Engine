@@ -115,8 +115,9 @@ public class FileUtils {
 	 * @param fileURL URL specifying the location of file from which to read
 	 * @return
 	 */
-	public static String getStringFromURL(URL contextURL, String fileURL){
+	public static String getStringFromURL(URL contextURL, String fileURL, String charset){
         URL url;
+        String chSet = charset != null ? charset : Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 		try {
 			url = FileUtils.getFileURL(contextURL, fileURL);
 		}catch(MalformedURLException ex){
@@ -126,7 +127,7 @@ public class FileUtils {
 		StringBuffer sb = new StringBuffer(2048);
 		try {
             char[] charBuf=new char[256];
-            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream()));
+            BufferedReader in=new BufferedReader(new InputStreamReader(url.openStream(), chSet));
             int readNum;
             
             while ((readNum=in.read(charBuf,0,charBuf.length)) != -1) {
@@ -338,6 +339,7 @@ public class FileUtils {
 		}
 		return true;
 	}
+	
 }
 
 /*
