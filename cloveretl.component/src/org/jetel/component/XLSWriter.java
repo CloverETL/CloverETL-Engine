@@ -78,11 +78,11 @@ import org.w3c.dom.Element;
  *  <tr><td><b>namesRow</b></td><td>index of row, where to write metadata names</td>
  *  <tr><td><b>firstDataRow</b></td><td>index of row, where to write first data record</td>
  *  <tr><td><b>firstColumn</b></td><td>code of column from which data will be written</td>
- *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. If it is not set data
+ *  <tr><td><b>sheetName</b></td><td>name of sheet for writing data. If it is not set 
+ *   new sheet with default name is created</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
  *  <tr><td><b>recordsPerFile</b></td><td>max number of records in one output file</td>
- *   new sheet with default name is created</td>
  *  <tr><td><b>sheetNumber</b></td><td>number of sheet for writing data (starting from 0).
  *   If it is not set new sheet with default name is created. If sheetName and sheetNumber 
  *   are both set, sheetNumber is ignored</td>
