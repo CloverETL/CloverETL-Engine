@@ -75,6 +75,7 @@ import org.w3c.dom.Text;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>sqlQuery</b><br><i>optional</i></td><td>query to be sent to database<br><i><code>sqlQuery</code> or <code>url</code> must be defined</i></td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by url</td>
+ *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>fetchSize</b><br><i>optional</i></td><td>how many records should be fetched from db at once. <i>See JDBC's java.sql.Statement.setFetchSize()</i><br><b><code>MIN_INT</code></b> constant
  * is implemented - is resolved to Integer.MIN_INT value <i>(good for MySQL JDBC driver)</i></td>
@@ -113,6 +114,7 @@ public class DBInputTable extends Node {
 	private static final String XML_URL_ATTRIBUTE = "url";
 	private static final String XML_FETCHSIZE_ATTRIBUTE = "fetchSize";
 	private static final String XML_SQLCODE_ELEMENT = "SQLCode";
+	private static final String XML_CHARSET_ATTRIBUTE = "charset"; 
 	
 	private SQLDataParser parser;
 	private PolicyType policyType;
@@ -249,7 +251,8 @@ public class DBInputTable extends Node {
                 String query = null;
                 if (xattribs.exists(XML_URL_ATTRIBUTE))
                 {
-                   query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getProjectURL(), xattribs.getString(XML_URL_ATTRIBUTE)));
+                   query=xattribs.resolveReferences(FileUtils.getStringFromURL(graph.getProjectURL(), 
+                		   xattribs.getString(XML_URL_ATTRIBUTE), xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
                 }else if (xattribs.exists(XML_SQLQUERY_ATTRIBUTE)){
                     query = xattribs.getString(XML_SQLQUERY_ATTRIBUTE);
                 }else if (xattribs.exists(XML_SQLCODE_ELEMENT)){
