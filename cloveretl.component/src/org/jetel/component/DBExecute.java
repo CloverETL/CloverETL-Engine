@@ -71,6 +71,7 @@ import org.w3c.dom.Text;
  *  </tr>
  *  <tr><td><b>sqlStatementDelimiter</b><br><i>optional</i></td><td>delimiter of sql statement in sqlQuery attribute</td>
  *  <tr><td><b>url</b><br><i>optional</i></td><td>url location of the query<br>the query will be loaded from file referenced by the url</td>
+ *  <tr><td><b>charset </b><i>optional</i></td><td>encoding of extern query</td></tr>
  *  <tr><td><b>inTransaction</b></td><td>boolean value (Y/N) specifying whether statement(s) should be executed
  * in transaction. If Yes, then failure of one statement means that all changes will be rolled back by database.<br>
  * <i>Works only if database supports transactions.</i></td></tr>
@@ -111,6 +112,7 @@ public class DBExecute extends Node {
 	private static final String XML_URL_ATTRIBUTE = "url";
     private static final String XML_PROCEDURE_CALL_ATTRIBUTE = "callStatement";
     private static final String XML_STATEMENT_DELIMITER = "sqlStatementDelimiter";
+    private static final String XML_CHARSET_ATTRIBUTE = "charset";
 	
 	private DBConnection dbConnection;
 	private String dbConnectionName;
@@ -348,9 +350,9 @@ public class DBExecute extends Node {
             } else if (xattribs.exists(XML_DBSQL_ATTRIBUTE)) {
                 query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
             } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
-                query = xattribs
-                        .resolveReferences(FileUtils.getStringFromURL(graph.getProjectURL(), xattribs
-                                .getString(XML_URL_ATTRIBUTE)));
+                query = xattribs.resolveReferences(FileUtils.getStringFromURL(
+						graph.getProjectURL(), xattribs.getString(XML_URL_ATTRIBUTE), 
+						xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
             } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
                 query = xattribs.getString(XML_SQLCODE_ELEMENT);
             } else {// we try to get it from child text node - slightly obsolete
