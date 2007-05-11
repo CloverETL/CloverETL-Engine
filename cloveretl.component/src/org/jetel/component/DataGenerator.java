@@ -305,11 +305,7 @@ public class DataGenerator extends Node {
         			sequenceIndex = StringUtils.findString(metadata.getField(i).getName(), 
         				sequenceFields);
 	        		if (sequenceIndex > -1){//field found among sequence fields
-						if (cutMetadata.getNumFields() > 1) {
-							cutMetadata.delField(metadata.getField(i).getName());
-						}else{
-							cutMetadata = null;
-						}
+						cutMetadata.delField(metadata.getField(i).getName());
 						if (sequenceIDs[sequenceIndex] == null){//not given sequence id
 	            			//find any sequence in graph
 	            			specialValue[i][0]  = getGraph().getSequences().hasNext() ? (String)getGraph().getSequences().next() : null;
@@ -330,7 +326,7 @@ public class DataGenerator extends Node {
 		}else{
 			random = new Random();
 		}
-		if (cutMetadata != null) {
+		if (cutMetadata.getNumFields() > 0) {
 			//prepare approperiate data parser
 			switch (metadata.getRecType()) {
 			case DataRecordMetadata.DELIMITED_RECORD:
