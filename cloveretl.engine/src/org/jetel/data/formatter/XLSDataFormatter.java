@@ -51,6 +51,8 @@ import org.jetel.metadata.DataFieldMetadata;
  */
 public class XLSDataFormatter extends XLSFormatter {
 
+	private static int MAX_ROWS_IN_SHEET = 65536;
+	
 	private HSSFWorkbook wb;
 	private HSSFSheet sheet;
 	private HSSFRow row;
@@ -225,6 +227,10 @@ public class XLSDataFormatter extends XLSFormatter {
 			}
 		}
 		recCounter++;
+		if (recCounter % MAX_ROWS_IN_SHEET == 0) {
+			setSheetNumber(-1);
+			prepareSheet();
+		}
         
         return 0;
 	}
