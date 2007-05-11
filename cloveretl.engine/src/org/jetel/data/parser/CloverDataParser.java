@@ -112,11 +112,9 @@ public class CloverDataParser implements Parser {
         	inData = (String)in;
         	indexFileURL = null;
         }
-    	String fileName;
+    	String fileName = new File(inData).getName();
         if ((inData).endsWith(".zip")) {
-            fileName = (inData).substring((inData).lastIndexOf(File.separator)+1,(inData).lastIndexOf('.'));
-        }else{
-            fileName  = (inData).substring((inData).lastIndexOf(File.separator)+1);
+            fileName = fileName.substring(0,fileName.lastIndexOf('.')); 
         }
         //set input stream
         try {
@@ -176,13 +174,10 @@ public class CloverDataParser implements Parser {
                     indexFile.close();
                 }else{//read index from binary file
                     if (indexFileURL == null){
-                    	String dirString = (inData).substring(0,
-                        		(inData).lastIndexOf(File.separatorChar)+1);
-                        File dir = new File(dirString);
+                        File dir = new File(inData).getParentFile();
                         indexFile = new DataInputStream(new FileInputStream(
-                                dir + (StringUtils.isEmpty(dirString) ? "" : 
-                                	File.separator) + fileName + 
-                                	CloverDataFormatter.INDEX_EXTENSION));
+                        		(dir != null ? dir.getAbsolutePath() + CloverDataFormatter.FILE_SEPARATOR : "") 
+                                	+ fileName + CloverDataFormatter.INDEX_EXTENSION));
                     }else{
                         indexFile = new DataInputStream(new FileInputStream(indexFileURL));
                     }
