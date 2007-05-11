@@ -63,7 +63,7 @@ import org.w3c.dom.Element;
  * <td>Reads data from input port and writes them to binary file in Clover internal
  *  format. With records can be saved indexes of records in binary file (for 
  *  reading not all records afterward) and metadata definition. If compressData 
- *  attribuet is set to "true" (default) value, data are saved in zip file with the structure:<br>DATA/fileName<br>INDEX/fileName.idx<br>
+ *  attribuet is set to "true", data are saved in zip file with the structure:<br>DATA/fileName<br>INDEX/fileName.idx<br>
  *   METADATA/fileName.fmt<br>If compressData attribute is set to "false", all files
  *   are saved in the same directory (as specified in fileURL attribute)</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
@@ -79,7 +79,8 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>fileURL</b></td><td>path to the output file </td>
  *  <tr><td><b>compressData</b><br><i>optional</i></td><td>whether to compress data (save them to zip 
- *  archive) or not (true/false - default true)</td>
+ *  archive) or not (true/false). If this attribute is not set, data are zipped if fileURL ends
+ *  with ".zip"</td>
  *  <tr><td><b>append</b><br><i>optional</i></td><td>whether to append data at
  *   the end if output file exists or replace it (true/false - default true)</td>
  *  <tr><td><b>saveIndex</b><br><i>optional</i></td><td>indicates if indexes to records 
@@ -160,7 +161,8 @@ public class CloverDataWriter extends Node {
 	 */
 	private void saveMetadata() throws IOException{
 		if (out instanceof FileOutputStream) {
-			String dir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+			String dir = new File(fileURL).getParent();
+			dir = dir != null ? dir + CloverDataFormatter.FILE_SEPARATOR : "";
 			FileOutputStream metaFile = new FileOutputStream(
 					dir + fileName + CloverDataFormatter.METADATA_EXTENSION);
 			DataRecordMetadataXMLReaderWriter.write(metadata,metaFile);			
@@ -268,7 +270,7 @@ public class CloverDataWriter extends Node {
 					zipData.close();
 				}
 			}else{//compressData = false
-				String dir = fileURL.substring(0,fileURL.lastIndexOf(File.separatorChar)+1);
+				String dir = new File(fileURL).getParent() + CloverDataFormatter.FILE_SEPARATOR;
 				out = new FileOutputStream(dir + fileName, append);
 			}
 		}catch(IOException ex){
@@ -301,7 +303,11 @@ public class CloverDataWriter extends Node {
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aDataWriter.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
-			aDataWriter.setCompressData(xattribs.getBoolean(XML_COMPRESSDATA_ATTRIBUTE,true));
+			if (xattribs.exists(XML_COMPRESSDATA_ATTRIBUTE)) {
+				aDataWriter.setCompressData(xattribs.getBoolean(XML_COMPRESSDATA_ATTRIBUTE));
+			}else{
+				aDataWriter.setCompressData(null);
+			}
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -360,12 +366,22 @@ public class CloverDataWriter extends Node {
         this.numRecords = numRecords;
     }
 
-	public void setCompressData(boolean compressData) {
-		this.compressData = compressData;
-		if (compressData && fileURL.endsWith(".zip")){
-			fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1,fileURL.lastIndexOf('.'));
-		}else{
-			fileName = fileURL.substring(fileURL.lastIndexOf(File.separatorChar)+1);
+	/**
+	 * Sets proper value of compressData attribute and finds file name from fileURL
+	 * 
+	 * @param compressData true, fals or null. If null, compress data attribute is set to "true"
+	 * 	if fileURL ends with ".zip"
+	 */
+	public void setCompressData(Boolean compressData) {
+		if (compressData != null) {
+			this.compressData = compressData;
+		}		
+		fileName = new File(fileURL).getName();
+		if (compressData == null) {
+			this.compressData = fileURL.endsWith(".zip");
+		}
+		if (this.compressData && fileURL.endsWith(".zip")) {
+			fileName = fileName.substring(0,fileName.lastIndexOf('.'));
 		}
 	}
 
