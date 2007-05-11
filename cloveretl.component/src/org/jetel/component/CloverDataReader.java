@@ -63,14 +63,12 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"CLOVER_READER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>fileURL</b></td><td>path to the data file. It archive 
- *  storing data, data indexes and metadata description or binary file with data
- *  saved in Clover internal format. </td>
+ *  <tr><td><b>fileURL</b></td><td>path to the data file. </td>
  *  <tr><td><b>compressedData</b><br><i>optional</i></td><td>whether data file is zip archive or
  *   not. If not set we try to guess it from fileURL: if it ends with ".zip" 
  *   true else false</td>
  *  <tr><td><b>indexFileURL</b><br><i>optional</i></td><td>if index file is not 
- *  in the same directory as data filr or has not expected name (fileURL.idx)</td>
+ *  in the same directory as data file or has not expected name (fileURL.idx)</td>
  *  <tr><td><b>startRecord</b><br><i>optional</i></td><td>index of first parsed record</td>
  *  <tr><td><b>finalRecord</b><br><i>optional</i></td><td>index of final parsed record</td>
  *  </tr>
