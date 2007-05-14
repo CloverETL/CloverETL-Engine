@@ -16,10 +16,6 @@
 	<property file="../cloveretl.engine/build.properties"/>
 
 	<!-- =========================== LIBRARIES ============================= -->
-	<fileset id="component-libs" dir="${dir.lib}">
-		<include name="**/*.jar"/>
-	</fileset>
-
 	<fileset id="engine-libs" dir="${engine.dir.lib}">
 		<include name="**/*.jar"/>
 		<include name="**/*.zip"/>
@@ -37,10 +33,6 @@
 
 		<copy todir="${dist.src}/cloveretl.connection/src">
 			<fileset dir="${dir.src}" />
-		</copy>
-		
-		<copy todir="${dist.src}/cloveretl.component/lib">
-			<fileset dir="${dir.lib}" />
 		</copy>
 		
 		<copy todir="${dist.src}/cloveretl.connection">
@@ -93,7 +85,6 @@
 			target="1.5" source="1.5" 
 			classpath="${dir.dist}${engine.dist}">
 			<classpath>
-				<fileset refid="component-libs"/>			
 				<fileset refid="engine-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
@@ -123,12 +114,6 @@
 		</jar>
 		<!-- copy plugin manifest -->
 		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
-		<!-- copy all libraries from lib directory -->
-		<copy todir="${dir.dist}/plugins/${plugin.dir.name}/lib">
-			<fileset dir="${dir.lib}">
-				<include name="**/*"/>
-			</fileset>
-		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
