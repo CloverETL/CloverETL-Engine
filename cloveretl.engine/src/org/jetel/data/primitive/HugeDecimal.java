@@ -610,10 +610,6 @@ public final class HugeDecimal implements Decimal {
         if(!isNaN()) {
         	try {
         		dataBuffer.put(value.unscaledValue().toByteArray());
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        	try {
         		dataBuffer.putInt(value.scale());
         	} catch (BufferOverflowException e) {
     			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
