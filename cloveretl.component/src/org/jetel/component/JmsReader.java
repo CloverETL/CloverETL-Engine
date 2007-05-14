@@ -177,24 +177,7 @@ public class JmsReader extends Node {
 		}
 		if (psor == null) {
 			if (psorClass == null && psorCode == null) {
-				try {
-					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), psorURL);
-					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
-						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-					int pos;
-					psorCode = new String(); 
-					do {
-						pos = ByteBufferUtils.reload(buffer, xformReader);
-						buffer.flip();
-						psorCode += decoder.decode(buffer).toString();
-						buffer.rewind();
-					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-				} catch (IOException e) {
-					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
-					ex.setAttributeName(XML_PSORURL_ATTRIBUTE);
-					throw ex;
-				}
+				psorCode = FileUtils.getStringFromURL(getGraph().getProjectURL(), psorURL, charset);
 			}
 			psor = psorClass == null ? createProcessorDynamic(psorCode)
 					: createProcessor(psorClass);
