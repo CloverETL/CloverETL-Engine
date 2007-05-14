@@ -438,12 +438,14 @@ public class TransformationGraphAnalyzer {
             final Edge edge = (Edge) it1.next();
             Node writer = edge.getWriter();
             if(writer != null) writer.removeOutputPort(edge);
+            node.getPhase().deleteEdge(edge);
         }
 
         for(Iterator it1 = node.getOutPorts().iterator(); it1.hasNext();) {
             final Edge edge = (Edge) it1.next();
             final Node reader = edge.getReader();
             if(reader != null) reader.removeInputPort(edge);
+            node.getPhase().deleteEdge(edge);
         }
     }
 
