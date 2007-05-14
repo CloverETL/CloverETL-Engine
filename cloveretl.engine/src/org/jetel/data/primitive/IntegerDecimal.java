@@ -544,10 +544,6 @@ public final class IntegerDecimal implements Decimal {
         if(!isNaN()) {
         	try {
         		dataBuffer.putLong(value);
-        	} catch (BufferOverflowException e) {
-    			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
-        	}
-        	try {
         		dataBuffer.putInt(scale);
         	} catch (BufferOverflowException e) {
     			throw new RuntimeException("The size of data buffer is only " + dataBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
