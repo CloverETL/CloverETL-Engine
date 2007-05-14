@@ -181,7 +181,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	                        keyRecord,lookupKey.getKeyFields());
 	            } catch (JetelException ex){
 	                throw new RuntimeException("Can't create keyRecord transmap: "+ex.getMessage());
-	            }catch (Exception ex) {
+	            }catch (Throwable ex) {
 	                // PreparedStatement parameterMetadata probably not implemented - use work-around
 	                // we only guess the correct data types on JDBC side
 	                try{
