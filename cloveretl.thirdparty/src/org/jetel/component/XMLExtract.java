@@ -708,6 +708,8 @@ public class XMLExtract extends Node {
         InputSource is = new InputSource(new StringReader(inString));
         
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setCoalescing(true);
+
         Document doc;
         
         try {
