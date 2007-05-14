@@ -136,7 +136,10 @@ public class Phase implements Comparable {
 		while (edgeIterator.hasNext()) {
 			try {
 				edge = (Edge) edgeIterator.next();
-				edge.init();
+                if(edge.getType() != Edge.EDGE_TYPE_PHASE_CONNECTION || 
+                        edge.getWriter().getPhase() == this) { 
+                    edge.init(); //initialization is called only once also for phase edges
+                }
 			} catch (ComponentNotReadyException ex) {
 				logger.error(ex);
 				return false;
@@ -244,9 +247,19 @@ public class Phase implements Comparable {
      * been registered withing graph
 	 */
 	public void addEdge(Edge edge) throws GraphConfigurationException {
+        assignEdge(edge);
 		graph.addEdge(edge);
 	}
 
+    /**
+     *  Deletes edge from the graph (through this Phase).<br>
+     *  Edge is registered globally within Graph. 
+     * @param edge the edge to be removed from th graph
+     */
+    public void deleteEdge(Edge edge) {
+        graph.deleteEdge(edge);
+        edgesInPhase.remove(edge);
+    }
 
 	/**
 	 *  Removes all Nodes from Phase

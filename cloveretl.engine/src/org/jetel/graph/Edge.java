@@ -359,7 +359,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 */
 	public void close() throws InterruptedException {
 		edge.close();
-        if(edgeDebuger != null) edgeDebuger.close();
+        if(edgeDebuger != null) {
+            edgeDebuger.close();
+            edgeDebuger = null;
+        }
 	}
 	
 	public boolean hasData(){

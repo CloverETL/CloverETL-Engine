@@ -568,7 +568,7 @@ public final class TransformationGraph {
 	}
     
     public void deleteNode(Node node){
-        nodes.remove(node);
+        nodes.remove(node.getId());
     }
 
 	/**
@@ -595,7 +595,7 @@ public final class TransformationGraph {
 	}
 
     public void deleteEdge(Edge edge){
-        edges.remove(edge);
+        edges.remove(edge.getId());
     }
 
 	/**
