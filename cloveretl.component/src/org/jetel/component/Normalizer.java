@@ -200,24 +200,7 @@ public class Normalizer extends Node {
 			if (xformClass != null) {
 				norm = createNormalizer(xformClass);
 			}else if (xform == null) {
-				try {
-					ReadableByteChannel xformReader = FileUtils.getReadableChannel(getGraph().getProjectURL(), xformURL);
-					ByteBuffer buffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-					CharsetDecoder decoder = charset != null ? decoder = Charset.forName(charset).newDecoder(): 
-						Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
-					int pos;
-					xform = new String(); 
-					do {
-						pos = ByteBufferUtils.reload(buffer, xformReader);
-						buffer.flip();
-						xform += decoder.decode(buffer).toString();
-						buffer.rewind();
-					} while (pos == Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
-				} catch (IOException e) {
-					ComponentNotReadyException ex = new ComponentNotReadyException(this, "Can't read extern transformation", e);
-					ex.setAttributeName(XML_TRANSFORMURL_ATTRIBUTE);
-					throw ex;
-				}
+				xform = FileUtils.getStringFromURL(getGraph().getProjectURL(), xformURL, charset);
 			}
 			if (xformClass == null) {
 				switch (guessTransformType(xform)) {

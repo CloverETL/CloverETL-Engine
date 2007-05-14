@@ -375,11 +375,10 @@ public class Partition extends Node {
 		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){//set source for parttion function to load dynamic in init() method
 		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
 		    }else if (xattribs.exists(XML_PARTITIONURL_ATTRIBUTE)){
-		    	if (xattribs.exists(XML_CHARSET_ATTRIBUTE)) {
-		    		partition.setCharset(xattribs.getString(XML_CHARSET_ATTRIBUTE));
-		    	}
-		    	partition.setPartitionFunction(FileUtils.getReadableChannel(
-		    			partition.getGraph().getProjectURL(), xattribs.getString(XML_PARTITIONURL_ATTRIBUTE)));
+		    	partition.setPartitionFunction(FileUtils.getStringFromURL(
+		    			partition.getGraph().getProjectURL(), 
+		    			xattribs.getString(XML_PARTITIONURL_ATTRIBUTE),
+		    			xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
 		    }else{//set proper standard partition function
 			    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
 			    	partitionFce = new RangePartition(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
