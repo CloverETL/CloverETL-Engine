@@ -217,6 +217,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				dbf = DocumentBuilderFactory.newInstance();
 
 				dbf.setNamespaceAware(true);
+                dbf.setCoalescing(true);
 
 				// Optional: set various configuration options
 				dbf.setValidating(validation);

@@ -211,6 +211,7 @@ public class TransformationGraphXMLReaderWriter {
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
  
  			dbf.setNamespaceAware(true);
+            dbf.setCoalescing(true);
 
 			// Optional: set various configuration options
 			dbf.setValidating(validation);
@@ -451,7 +452,7 @@ public class TransformationGraphXMLReaderWriter {
 			// process edge element attributes "id" & "fileURL"
 			try{
 			edgeID = attributes.getString(IGraphElement.XML_ID_ATTRIBUTE);
-			edgeMetadataID = attributes.getString("metadata");
+			edgeMetadataID = attributes.getString("metadata", null); //metadata paramater on the edge can be empty for disabled edges
 			fromNodeAttr = attributes.getString("fromNode");
 			toNodeAttr = attributes.getString("toNode");
 			}catch(AttributeNotFoundException ex){
@@ -461,8 +462,8 @@ public class TransformationGraphXMLReaderWriter {
                 debugMode = attributes.getBoolean("debugMode", false);
             
             fastPropagate = attributes.getBoolean("fastPropagate", false);
-			Object metadataObj=metadata.get(edgeMetadataID);
-			if (metadataObj == null) {
+			Object metadataObj = edgeMetadataID != null ? metadata.get(edgeMetadataID) : null;
+			if (metadataObj == null && edgeMetadataID != null) {
 				throw new XMLConfigurationException("Can't find metadata ID: " + edgeMetadataID);
 			}
 			// do we have real metadata or stub only ??

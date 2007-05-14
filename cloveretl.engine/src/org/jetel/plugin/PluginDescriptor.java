@@ -115,6 +115,7 @@ public class PluginDescriptor {
 
     public void init() throws ComponentNotReadyException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setCoalescing(true);
         Document doc;
         
         try {
