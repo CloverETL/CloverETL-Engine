@@ -20,8 +20,7 @@
 package org.jetel.component.aggregate;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -36,7 +35,7 @@ import java.util.Map;
 public class FunctionRegistry {
 	// registry of available aggregate functions, key is the function name (lowercase)
 	private Map<String, Class<? extends AggregateFunction>> functions = 
-		new HashMap<String, Class<? extends AggregateFunction>>();
+		new LinkedHashMap<String, Class<? extends AggregateFunction>>();
 
 	/**
 	 * 
@@ -45,6 +44,8 @@ public class FunctionRegistry {
 	 */
 	public FunctionRegistry() {
 		registerFunction(new Count());
+		registerFunction(new CountNonNull());
+		registerFunction(new CountUnique());
 		registerFunction(new Min());
 		registerFunction(new Max());
 		registerFunction(new Sum());
@@ -81,7 +82,7 @@ public class FunctionRegistry {
 	 */
 	private void registerFunction(AggregateFunction f) {
 		if (getFunction(f.getName()) != null) {
-			throw new IllegalArgumentException("Aggregate function already registered: " + f.getName());
+			throw new IllegalArgumentException("Aggregation function already registered: " + f.getName());
 		}
 		addFunction(f.getName(), f.getClass());
 	}
