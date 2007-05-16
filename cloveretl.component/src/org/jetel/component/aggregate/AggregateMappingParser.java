@@ -122,6 +122,9 @@ public class AggregateMappingParser {
 	private void parseMapping(String[] mapping) throws AggregationException {
 		for (String expression : mapping) {
 			String expr2 = expression.trim();
+			if (expr2.equals("")) {
+				continue;
+			}
 			Matcher functionMatcher = functionPattern.matcher(expr2);
 			Matcher fieldMatcher = fieldPattern.matcher(expr2);
 			Matcher stringMatcher = stringPattern.matcher(expr2);
@@ -203,6 +206,10 @@ public class AggregateMappingParser {
 		if (!function.requiresInputField() && !inputField.equals("")) {
 			throw new AggregationException("Function " + function.getName() 
 					+ " doesn't accept any field as a parameter: " + inputField);
+		}
+		if (function.requiresInputField() && inputField.equals("")) {
+			throw new AggregationException("Function " + function.getName()
+					+ " requires an input field as a parameter");
 		}
 		if (!inputField.equals("")) {
 			DataFieldMetadata inputFieldMetadata = inMetadata.getField(inputField);
