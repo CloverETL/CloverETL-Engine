@@ -46,9 +46,9 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class AggregateMappingParser {
 	// regexp matching the left half of an aggregation mapping item (including the assign sign)
-	private static final String MAPPING_LEFT_SIDE_REGEX = "^[\\w]*[ ]*" + Aggregate.ASSIGN_SIGN + "[ ]*";
+	private static final String MAPPING_LEFT_SIDE_REGEX = "^\\$[\\w]*[ ]*" + Aggregate.ASSIGN_SIGN + "[ ]*";
 	// regular expression matching a correct aggregate function mapping
-	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\w ]*\\)";
+	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\$\\w ]*\\)";
 	// regular expression matching a correct field mapping
 	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*";
 	// regular expression matching a correct string constant mapping
@@ -161,14 +161,20 @@ public class AggregateMappingParser {
 	private void parseFunction(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String function = parsedExpression[1].trim();
-		String outputField = parsedExpression[0].trim();
+		String outputField = parsedExpression[0].trim().substring(1);	// skip the leading "$"
 
 		// parse the aggregate function name
 		int parenthesesIndex = function.indexOf("(");
 		String functionName = function.substring(0, parenthesesIndex).trim().toLowerCase();
 
 		// parse the input field name
-		String inputField = function.substring(parenthesesIndex + 1, function.length() - 1).trim();
+		String inputField = null;
+		if (parenthesesIndex + 1 == function.indexOf(")")) {
+			// right after the left parenthesis is the right parenthesis, so no input field is set
+			inputField = "";
+		} else {
+			inputField = function.substring(parenthesesIndex + 2, function.length() - 1).trim();
+		}
 
 		if (inputField.equals("")) {
 			checkFieldExistence(outputField);
@@ -239,7 +245,7 @@ public class AggregateMappingParser {
 	private void parseFieldMapping(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String inputField = parsedExpression[1].trim().substring(1); // skip the leading "$"
-		String outputField = parsedExpression[0].trim();
+		String outputField = parsedExpression[0].trim().substring(1); // skip the leading "$"
 
 		// check existence of fields in metadata
 		if (!isKeyField(inputField)) {
