@@ -351,7 +351,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             }
             boolean[] startInclude = null;
             if (xattribs.exists(XML_START_INCLUDE)){
-            	String[] sI = xattribs.getString(XML_START_INCLUDE).split(",");
+            	String[] sI = xattribs.getString(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             	startInclude = new boolean[sI.length];
             	for (int i = 0; i < sI.length; i++) {
 					startInclude[i] = Boolean.parseBoolean(sI[i]);
@@ -359,7 +359,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             }
             boolean[] endInclude = null;
             if (xattribs.exists(XML_START_INCLUDE)){
-            	String[] eI = xattribs.getString(XML_END_INCLUDE).split(",");
+            	String[] eI = xattribs.getString(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             	endInclude = new boolean[eI.length];
             	for (int i = 0; i < eI.length; i++) {
 					endInclude[i] = Boolean.parseBoolean(eI[i]);
