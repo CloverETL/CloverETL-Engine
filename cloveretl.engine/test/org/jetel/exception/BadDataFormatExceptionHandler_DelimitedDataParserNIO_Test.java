@@ -27,7 +27,6 @@ import junit.framework.TestCase;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.DelimitedDataParser;
-import org.jetel.exception.BadDataFormatException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataXMLReaderWriter;
 
@@ -324,7 +323,11 @@ public class BadDataFormatExceptionHandler_DelimitedDataParserNIO_Test  extends 
 					record = aParser2.getNext(record);
 					recCount++;
 				} catch (BadDataFormatException e) {
-					System.out.println(e.getMessage());
+					for (BadDataFormatException exception : e) {
+						System.out.println(exception.getMessage());
+					}					
+					System.out.println("Message from handler:");
+					System.out.println(aHandler.getErrorMessage());
 				}
 			}
 		} catch (Exception ee){

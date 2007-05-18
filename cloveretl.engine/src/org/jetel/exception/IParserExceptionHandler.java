@@ -54,8 +54,6 @@ public interface IParserExceptionHandler {
     
     public String getErrorMessage();
     
-    public List<ParseException> getErrors();
-    
     public BadDataFormatException getException();
     
     public DataRecord getRecord();
@@ -66,19 +64,5 @@ public interface IParserExceptionHandler {
     
     public abstract PolicyType getType();
 
-}
-
-class ParseException {
-	
-	int fieldNumber;
-	String offendingValue;
-	String errorMessage;
-
-	ParseException(int fieldNumber, String offendingValue, String errorMessage) {
-		super();
-		this.fieldNumber = fieldNumber;
-		this.offendingValue = offendingValue;
-		this.errorMessage = errorMessage;
-	}
 	
 }
