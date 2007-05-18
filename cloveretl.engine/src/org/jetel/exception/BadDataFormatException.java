@@ -20,7 +20,10 @@
 
 package org.jetel.exception;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 
 import org.jetel.util.StringUtils;
 
@@ -28,7 +31,7 @@ import org.jetel.util.StringUtils;
  * @author Martin Zatopek, Javlin Consulting (www.javlinconsulting.cz)
  *
  */
-public class BadDataFormatException extends RuntimeException implements Iterable<BadDataFormatException>,Iterator<BadDataFormatException> {
+public class BadDataFormatException extends RuntimeException implements Iterable<BadDataFormatException>, Iterator<BadDataFormatException> {
     
 	private CharSequence offendingValue;
     
@@ -60,8 +63,12 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         this.offendingValue = offendingValue;
     }
 
-    public void nextException(BadDataFormatException next){
-    	this.next = next;
+    public synchronized void setNextException(BadDataFormatException next){
+    	BadDataFormatException theEnd = this;
+    	while (theEnd.next != null) {
+    	    theEnd = theEnd.next;
+    	}
+    	theEnd.next = next;
     }
     
 	public void setOffendingValue(CharSequence offendingValue) {
@@ -109,10 +116,6 @@ public class BadDataFormatException extends RuntimeException implements Iterable
         this.recordNumber = recordNumber;
     }
 
-	public Iterator<BadDataFormatException> iterator() {
-		return this;
-	}
-
 	public boolean hasNext() {
 		return next != null;
 	}
@@ -123,6 +126,16 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 
 	public void remove() {
 		throw new UnsupportedOperationException();
+	}
+
+	public Iterator<BadDataFormatException> iterator() {
+		List<BadDataFormatException> exceptions = new ArrayList<BadDataFormatException>();
+		BadDataFormatException ex = this;
+		do {
+			exceptions.add(ex);
+			ex = ex.next;
+		}while (ex != null);
+		return exceptions.iterator();
 	}
     
 }

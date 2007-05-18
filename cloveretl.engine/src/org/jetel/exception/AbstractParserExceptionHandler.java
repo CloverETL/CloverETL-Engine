@@ -42,8 +42,6 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     
     protected BadDataFormatException exception = null;
     
-    protected List<ParseException> errors = new ArrayList<ParseException>();
-    
     public void handleException() {
         exceptionThrowed = false;
         handle();
@@ -61,38 +59,32 @@ public abstract class AbstractParserExceptionHandler implements IParserException
         this.exceptionThrowed = true;
         this.record = record;
         this.recordNumber = recordNumber;
-        errors.add(new ParseException(fieldNumber,offendingValue,errorMessage));
         exception.setFieldNumber(fieldNumber);
         exception.setOffendingValue(offendingValue);
         exception.setRecordNumber(recordNumber);
         if (this.exception == null) {
         	this.exception = exception;
         }else{
-        	this.exception.nextException(exception);
+        	this.exception.setNextException(exception);
         }
     }
     
     public String getErrorMessage() {
-        StringBuilder errorMess = new StringBuilder();
-        ParseException element;
-        for (Iterator<ParseException> iter = errors.iterator(); iter.hasNext();) {
-        	element = iter.next();
+		if (exception == null)	return "";
+		StringBuilder errorMess = new StringBuilder();
+		for (BadDataFormatException ex : exception) {
 			errorMess.append("Field number: ");
-			errorMess.append(element.fieldNumber);
+			errorMess.append(ex.getFieldNumber());
 			errorMess.append(", offending value: ");
-			errorMess.append(element.offendingValue);
+			errorMess.append(ex.getOffendingValue());
 			errorMess.append(", message: ");
-			errorMess.append(element.errorMessage);
+			errorMess.append(ex.getMessage());
 			errorMess.append(".");
 		}
-        return errorMess.toString();
-    }
+		return errorMess.toString();
+	}
     
-    public List<ParseException> getErrors() {
-    	return errors;
-    }
-    
-    public BadDataFormatException getException() {
+     public BadDataFormatException getException() {
     	return exception;
     }
 
