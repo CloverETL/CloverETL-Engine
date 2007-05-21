@@ -202,6 +202,7 @@ public class SimpleGather extends Node {
    		 
     		checkInputPorts(status, 1, Integer.MAX_VALUE);
             checkOutputPorts(status, 1, 1);
+            checkMetadata(status, getInMetadata(), getOutMetadata());
 
             try {
                 init();

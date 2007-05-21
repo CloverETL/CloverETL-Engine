@@ -333,6 +333,7 @@ import org.w3c.dom.Element;
             
             checkInputPorts(status, 2, 2);
             checkOutputPorts(status, 1, Integer.MAX_VALUE);
+            checkMetadata(status, getInputPort(FOREIGN_ON_PORT).getMetadata(), getOutMetadata());
 
             try {
                 init();

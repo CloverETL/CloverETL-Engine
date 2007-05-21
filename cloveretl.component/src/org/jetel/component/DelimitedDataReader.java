@@ -285,6 +285,7 @@ public class DelimitedDataReader extends Node {
         
         checkInputPorts(status, 0, 0);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
+        checkMetadata(status, getOutMetadata());
 
         try {
             init();

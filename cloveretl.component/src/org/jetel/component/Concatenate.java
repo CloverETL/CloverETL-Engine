@@ -176,6 +176,7 @@ public class Concatenate extends Node {
         
         checkInputPorts(status, 1, Integer.MAX_VALUE);
         checkOutputPorts(status, 1, 1);
+        checkMetadata(status, getInMetadata());
 
         try {
             init();

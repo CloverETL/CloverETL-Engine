@@ -507,6 +507,8 @@ public class DataIntersection extends Node {
         
         checkInputPorts(status, 2, 2);
         checkOutputPorts(status, 3, 3);
+        checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT_A).getMetadata());
+        checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT_B).getMetadata());
 
 //        try {
 //            init();

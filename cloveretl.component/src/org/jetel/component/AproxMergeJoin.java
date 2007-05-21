@@ -805,6 +805,8 @@ public class AproxMergeJoin extends Node {
         
         checkInputPorts(status, 2, 2);
         checkOutputPorts(status, 4, 4);
+        checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
+        checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
 
         try {
         	
