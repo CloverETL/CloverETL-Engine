@@ -110,7 +110,7 @@ public class Aggregate extends Node {
 	private final static int READ_FROM_PORT = 0;
 
 	private String[] aggregateKeys;
-	private String[] mapping;
+	private String mapping;
 	private boolean sorted;
 	private boolean oldMapping; // true if old mapping format is used
 	
@@ -130,7 +130,7 @@ public class Aggregate extends Node {
 	 * @param sorted specifies if the input is sorted.
 	 * @param oldMapping set to <tt>true</tt> if the function mapping is in the old format.
 	 */
-	public Aggregate(String id, String[] aggregateKeys, String[] mapping, boolean sorted, boolean oldMapping) {
+	public Aggregate(String id, String[] aggregateKeys, String mapping, boolean sorted, boolean oldMapping) {
 		super(id);
 		
 		this.aggregateKeys = aggregateKeys;
@@ -232,7 +232,7 @@ public class Aggregate extends Node {
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		String[] aggregateKey = null;
-		String[] mapping = null;
+		String mapping = null;
 		boolean oldMapping = false;
         boolean sorted = true;
 		try {
@@ -246,7 +246,7 @@ public class Aggregate extends Node {
             
             //read mapping attribute
             if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
-            	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE).split(MAPPING_DELIMITER);
+            	mapping = xattribs.getString(XML_MAPPING_ATTRIBUTE);
             }
 
             //read old mapping attribute
@@ -255,8 +255,7 @@ public class Aggregate extends Node {
             		throw new XMLConfigurationException("New and old aggregation function mappings " +
             				"used simultaneously");
             	}
-            	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE).split(
-            			Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            	mapping = xattribs.getString(XML_OLD_MAPPING_ATTRIBUTE);
             	oldMapping = true;
             }
             
@@ -302,9 +301,8 @@ public class Aggregate extends Node {
         	xmlElement.setAttribute(XML_AGGREGATE_KEY_ATTRIBUTE,
         			StringUtils.stringArraytoString(aggregateKeys, Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
         }
-        if (mapping.length > 0){
-        	xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE,
-        			StringUtils.stringArraytoString(mapping, Defaults.Component.KEY_FIELDS_DELIMITER.charAt(0)));
+        if (mapping != null){
+        	xmlElement.setAttribute(XML_MAPPING_ATTRIBUTE,mapping);
         }
         xmlElement.setAttribute(XML_SORTED_ATTRIBUTE, String.valueOf(sorted));
         

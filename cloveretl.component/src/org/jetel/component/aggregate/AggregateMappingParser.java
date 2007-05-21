@@ -52,11 +52,17 @@ public class AggregateMappingParser {
 	// regular expression matching a correct field mapping
 	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*";
 	// regular expression matching a correct string constant mapping
-	private static final String MAPPING_STRING_REGEX = "\\\"[\\w .,!?'-]*\\\"";
+	private static final String MAPPING_STRING_REGEX = "\\\".*\\\"";
 	// regular expression matching a correct integer constant mapping
 	private static final String MAPPING_INT_REGEX = "[\\d]*";
+	// regular expression matching a correct double constant mapping
+	private static final String MAPPING_DOUBLE_REGEX = "[\\d]*\\.[\\d]*";
 	// regular expression matching a correct date constant mapping
+	// see Defaults.DEFAULT_DATE_FORMAT
 	private static final String MAPPING_DATE_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2}";
+	// regular expression matching a correct datetime constant mapping
+	// see Defaults.DEFAULT_DATETIME_FORMAT
+	private static final String MAPPING_DATETIME_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}";
 
 	private static final Pattern functionPattern = 
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX + "$");
@@ -66,8 +72,12 @@ public class AggregateMappingParser {
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_STRING_REGEX + "$");
 	private static final Pattern intPattern = 
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_INT_REGEX + "$");
+	private static final Pattern doublePattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DOUBLE_REGEX + "$");
 	private static final Pattern datePattern = 
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATE_REGEX + "$");
+	private static final Pattern datetimePattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATETIME_REGEX + "$");
 	
 	// set of already used output fields, used to detect multiple uses of the same output field
 	private Set<String> usedOutputFields = new HashSet<String>(); 
@@ -84,6 +94,7 @@ public class AggregateMappingParser {
 	private List<ConstantMapping> constantMapping = new ArrayList<ConstantMapping>();
 	
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATE_FORMAT);
+	private static final DateFormat DATETIME_FORMAT = new SimpleDateFormat(Defaults.DEFAULT_DATETIME_FORMAT);
 	
 	/**
 	 * 
@@ -96,7 +107,7 @@ public class AggregateMappingParser {
 	 * @param outMetadata output metadata.
 	 * @throws AggregationException
 	 */
-	public AggregateMappingParser(String[] mapping, 
+	public AggregateMappingParser(String mapping, 
 			RecordKey recordKey, FunctionRegistry registry, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata) 
 	throws AggregationException {
@@ -110,7 +121,7 @@ public class AggregateMappingParser {
 			keyFields.add(inMetadata.getField(i).getName());
 		}
 
-		parseMapping(mapping);
+		parseMapping(splitMapping(mapping));
 	}
 	
 	/**
@@ -130,6 +141,8 @@ public class AggregateMappingParser {
 			Matcher stringMatcher = stringPattern.matcher(expr2);
 			Matcher intMatcher = intPattern.matcher(expr2);
 			Matcher dateMatcher = datePattern.matcher(expr2);
+			Matcher datetimeMatcher = datetimePattern.matcher(expr2);
+			Matcher doubleMatcher = doublePattern.matcher(expr2);
 
 			try {
 				if (functionMatcher.matches()) {
@@ -142,6 +155,10 @@ public class AggregateMappingParser {
 					parseIntConstantMapping(expr2);
 				} else if (dateMatcher.matches()) {
 					parseDateConstantMapping(expr2);
+				} else if (datetimeMatcher.matches()) {
+					parseDateTimeConstantMapping(expr2);
+				} else if (doubleMatcher.matches()) {
+					parseDoubleConstantMapping(expr2);
 				} else {
 					throw new AggregationException("Invalid mapping format");
 				}
@@ -161,8 +178,7 @@ public class AggregateMappingParser {
 	private void parseFunction(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String function = parsedExpression[1].trim();
-		String outputField = parsedExpression[0].trim().substring(1);	// skip the leading "$"
-
+		String outputField = parseOutputField(parsedExpression[0]);
 		// parse the aggregate function name
 		int parenthesesIndex = function.indexOf("(");
 		String functionName = function.substring(0, parenthesesIndex).trim().toLowerCase();
@@ -245,7 +261,7 @@ public class AggregateMappingParser {
 	private void parseFieldMapping(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String inputField = parsedExpression[1].trim().substring(1); // skip the leading "$"
-		String outputField = parsedExpression[0].trim().substring(1); // skip the leading "$"
+		String outputField = parseOutputField(parsedExpression[0]);
 
 		// check existence of fields in metadata
 		if (!isKeyField(inputField)) {
@@ -266,9 +282,26 @@ public class AggregateMappingParser {
 	private void parseIntConstantMapping(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
-		String outputField = parsedExpression[0].trim();
+		String outputField = parseOutputField(parsedExpression[0]);
 		
 		Integer value = Integer.valueOf(constant);
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(new ConstantMapping(value, constant, outputField));
+	}
+
+	/**
+	 * Parses a double constant mapping.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseDoubleConstantMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String constant = parsedExpression[1].trim();
+		String outputField = parseOutputField(parsedExpression[0]);
+		
+		Double value = Double.valueOf(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
 		constantMapping.add(new ConstantMapping(value, constant, outputField));
@@ -283,8 +316,10 @@ public class AggregateMappingParser {
 	private void parseStringConstantMapping(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
-		String constant = parsedExpression[1].trim().replaceAll("\"", "");	
-		String outputField = parsedExpression[0].trim();
+		String constant = parsedExpression[1].trim().substring(1, parsedExpression[1].trim().length() - 1);
+		// replace \" with " 
+		constant = constant.replaceAll("\\\\\"", "\""); 
+		String outputField = parseOutputField(parsedExpression[0]);
 		
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
@@ -300,11 +335,33 @@ public class AggregateMappingParser {
 	private void parseDateConstantMapping(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
-		String outputField = parsedExpression[0].trim();
+		String outputField = parseOutputField(parsedExpression[0]);
 		
 		Date value;
 		try {
 			value = DATE_FORMAT.parse(constant);
+		} catch (ParseException e) {
+			throw new AggregationException("Date is in invalid  format: " + constant, e);
+		}
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(new ConstantMapping(value, constant, outputField));
+	}
+
+	/**
+	 * Parses a datetime constant mapping.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseDateTimeConstantMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String constant = parsedExpression[1].trim();
+		String outputField = parseOutputField(parsedExpression[0]);
+		
+		Date value;
+		try {
+			value = DATETIME_FORMAT.parse(constant);
 		} catch (ParseException e) {
 			throw new AggregationException("Date is in invalid  format: " + constant, e);
 		}
@@ -445,6 +502,68 @@ public class AggregateMappingParser {
 	}
 	
 	/**
+	 * Parses the name of the output field from an aggregation mapping item.
+	 * @param expr mapping item.
+	 * @return name of the output field.
+	 */
+	private String parseOutputField(String expr) {
+		return expr.trim().substring(1);	// skip the leading "$"
+	}
+	
+	/**
+	 * Splits the mapping string into mapping items. It's compatible with double quoted
+	 * strings, so a delimiter in a double quoted string doesn't cause a split.
+	 *  
+	 * @param mapping
+	 * @return mapping items.
+	 */
+	private String[] splitMapping(String mapping) {
+		System.out.println("XXX parsing mapping: " + mapping);
+		ArrayList<String> result = new ArrayList<String>();
+		
+		StringBuilder item = new StringBuilder();
+		boolean insideQuotes = false;
+		char prevChar = '\0';
+		for (int i = 0; i < mapping.length(); i++) {
+			char c = mapping.charAt(i);
+			System.out.println("XXX char: " + c);
+			if (insideQuotes) {
+				if ((c == '"') && (prevChar != '\\')) {
+					System.out.println("XXX quote end");
+					insideQuotes = false;
+				} 
+				item.append(c);
+			} else {
+				if (c == '"') {
+					System.out.println("XXX quote begin");
+					insideQuotes = true;
+					item.append(c);
+				} else if (c == ';') {// TODO ake mozu byt delimitre?
+					System.out.println("XXX split");
+					result.add(item.toString());
+					item = new StringBuilder();
+				} else {
+					item.append(c);
+				}
+			}
+			System.out.println("XXX item: " + item.toString());
+
+			prevChar = c;
+		}
+		String lastString = item.toString();
+		if (!lastString.equals("")) {	// if the ";" is the last char of the mapping, 
+										// then an empty last item is created
+			result.add(item.toString());
+		}
+		
+		System.out.println("XXX MAPPING:");
+		for (String expr : result) {
+			System.out.println("XXX " + expr);
+		}
+		
+		return (String[]) result.toArray(new String[result.size()]);
+	}
+	/**
 	 * Mapping of a constant.
 	 * 
 	 * @author Jaroslav Urban (jaroslav.urban@javlinconsulting.cz)
@@ -478,12 +597,27 @@ public class AggregateMappingParser {
 		 * 
 		 * Allocates a new <tt>ConstantMapping</tt> object.
 		 *
+		 * @param value double constant value.
+		 * @param stringValue string representation of the value before parsing.
+		 * @param outputField name of the output field.
+		 */
+		public ConstantMapping(double value, String stringValue, String outputField) {
+			this.value = new Double(value);
+			this.stringValue = stringValue;
+			this.outputField = outputField;
+		}
+
+		/**
+		 * 
+		 * Allocates a new <tt>ConstantMapping</tt> object.
+		 *
 		 * @param value string constant value.
 		 * @param outputField name of the output field.
 		 */
 		public ConstantMapping(String value, String outputField) {
 			this.value = value;
-			this.stringValue = "\"" + value + "\"";
+			// the replace adds a backslash in front of '"'
+			this.stringValue = "\"" + value.replaceAll("\"", "\\\\\"") + "\"";
 			this.outputField = outputField;
 		}
 		
