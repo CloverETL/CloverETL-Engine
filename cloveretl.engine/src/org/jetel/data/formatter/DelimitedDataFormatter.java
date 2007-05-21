@@ -47,7 +47,6 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class DelimitedDataFormatter implements Formatter {
 	
-    private final static String DELIMITER_SYSTEM_PROPERTY_NAME="line.separator";
     private String charSet = null;
 	// Attributes
 	private DataRecordMetadata metadata;
@@ -65,8 +64,6 @@ public class DelimitedDataFormatter implements Formatter {
 	private ByteBuffer footer; 
 	private ByteBuffer header; 
     
-	private static String NEW_LINE_STR;
-
 	// Associations
 
 	// Operations
@@ -76,7 +73,6 @@ public class DelimitedDataFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER;
-		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
 		metadata = null;
 	}
 	
@@ -85,7 +81,6 @@ public class DelimitedDataFormatter implements Formatter {
 		dataBuffer = ByteBuffer.allocateDirect(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		charSet = charEncoder;
-		NEW_LINE_STR=System.getProperty(DELIMITER_SYSTEM_PROPERTY_NAME,"\n");
 		metadata = null;
 	}
 	
