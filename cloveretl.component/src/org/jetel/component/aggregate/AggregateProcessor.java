@@ -172,21 +172,40 @@ public class AggregateProcessor {
 	private String[] convertOldMapping(String[] oldMapping) {
 		String[] result = new String[oldMapping.length + recordKey.getKeyFields().length];
 
-		// process key mappings
+		// process key mappings (int the old mapping, all key fields were copied
+		// to the first output fields)
+		
 		int[] keyFields = recordKey.getKeyFields();
 		for (int i = 0; i < keyFields.length; i++) {
 			String keyField = inMetadata.getField(keyFields[i]).getName();
 			String outField = outMetadata.getField(i).getName();
-			result[i] = outField + Aggregate.ASSIGN_SIGN + "$" + keyField;
+			result[i] = "$" + outField + Aggregate.ASSIGN_SIGN + "$" + keyField;
 		}
 
 		// process function mappings
 		
-		// output fields with indices lesser than this contain key values
+		// output fields with indices lesser than the tmpIndex contain key values, skip them
 		int tmpIndex = recordKey.getKeyFields().length;
 		for (int i = tmpIndex; i < result.length; i++) {
 			String outField = outMetadata.getField(i).getName();
-			result[i] = outField + Aggregate.ASSIGN_SIGN + oldMapping[i - tmpIndex];  
+			
+			// convert the function mapping from functionName(parameter) to functionName($parameter)
+			String oldMappingItem = oldMapping[i - tmpIndex].trim();
+			int parenthesesIndex = oldMappingItem.indexOf("(");
+			String functionName = oldMappingItem.substring(0, parenthesesIndex).trim().toLowerCase();
+			String inputField = null;
+			if (parenthesesIndex + 1 == oldMappingItem.indexOf(")")) {
+				// right after the left parenthesis is the right parenthesis, so no input field is set
+			} else {
+				inputField = oldMappingItem.substring(parenthesesIndex + 1, oldMappingItem.length() - 1).trim();
+			}
+			String newMappingItem = functionName + "(";
+			if (inputField != null) {
+				newMappingItem += "$" + inputField;
+			}
+			newMappingItem += ")";
+			
+			result[i] = "$" + outField + Aggregate.ASSIGN_SIGN + newMappingItem;  
 		}
 
 		return result;
