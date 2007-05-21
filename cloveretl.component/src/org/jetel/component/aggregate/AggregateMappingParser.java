@@ -518,7 +518,6 @@ public class AggregateMappingParser {
 	 * @return mapping items.
 	 */
 	private String[] splitMapping(String mapping) {
-		System.out.println("XXX parsing mapping: " + mapping);
 		ArrayList<String> result = new ArrayList<String>();
 		
 		StringBuilder item = new StringBuilder();
@@ -526,27 +525,22 @@ public class AggregateMappingParser {
 		char prevChar = '\0';
 		for (int i = 0; i < mapping.length(); i++) {
 			char c = mapping.charAt(i);
-			System.out.println("XXX char: " + c);
 			if (insideQuotes) {
 				if ((c == '"') && (prevChar != '\\')) {
-					System.out.println("XXX quote end");
 					insideQuotes = false;
 				} 
 				item.append(c);
 			} else {
 				if (c == '"') {
-					System.out.println("XXX quote begin");
 					insideQuotes = true;
 					item.append(c);
-				} else if (c == ';') {// TODO ake mozu byt delimitre?
-					System.out.println("XXX split");
+				} else if (Aggregate.MAPPING_DELIMITER.indexOf(c) != -1) {
 					result.add(item.toString());
 					item = new StringBuilder();
 				} else {
 					item.append(c);
 				}
 			}
-			System.out.println("XXX item: " + item.toString());
 
 			prevChar = c;
 		}
