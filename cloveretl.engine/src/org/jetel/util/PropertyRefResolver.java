@@ -127,7 +127,7 @@ public class PropertyRefResolver {
 		    resolveRef2(strBuf,strict);
 		    return StringUtils.stringToSpecChar(strBuf);
 		}else{
-		    return StringUtils.stringToSpecChar(value);
+		    return value;
 		}
 	}
     
@@ -148,10 +148,11 @@ public class PropertyRefResolver {
 	 * @throws AttributeNotFoundException @throws AttributeNotFoundException if referenced property does not exist
 	 */
 	public boolean resolveRef(StringBuffer value,boolean strict) {
-		boolean result = true;
-	    if (resolve){
-	      result =  resolveRef2(value,strict);
+	    if (!resolve) {
+            return false;
 	    }
+        boolean result = true;
+	    result =  resolveRef2(value,strict);
 	    String tmp = StringUtils.stringToSpecChar(value);
 	    value.setLength(0);
 	    value.append(tmp);
