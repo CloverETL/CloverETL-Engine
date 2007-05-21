@@ -175,7 +175,7 @@ public class DataParser implements Parser {
     			    delimiterSearcher.addPattern(delimiters[j], -2); //separator for skipping first line
     			}
             } else {
-                delimiterSearcher.addPattern(System.getProperty("line.separator"), -2); //separator for skipping first line
+                delimiterSearcher.addPattern("\n", -2); //separator for skipping first line
             }
 		}
 		delimiterSearcher.compile();
