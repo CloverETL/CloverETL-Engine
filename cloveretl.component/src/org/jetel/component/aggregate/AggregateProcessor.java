@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jetel.component.Aggregate;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -80,7 +81,7 @@ public class AggregateProcessor {
 	 * @param charset charset of the output.
 	 * @throws AggregationException
 	 */
-	public AggregateProcessor(String[] mapping, boolean oldMapping, RecordKey recordKey, boolean sorted, 
+	public AggregateProcessor(String mapping, boolean oldMapping, RecordKey recordKey, boolean sorted, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata, String charset) 
 	throws AggregationException {
 		this.recordKey = recordKey;
@@ -169,8 +170,9 @@ public class AggregateProcessor {
 	 * @param oldMapping function mapping in the old format.
 	 * @return function mapping in the new format.
 	 */
-	private String[] convertOldMapping(String[] oldMapping) {
-		String[] result = new String[oldMapping.length + recordKey.getKeyFields().length];
+	private String convertOldMapping(String oldMapping) {
+		String[] oldMappingSplit = oldMapping.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		String[] result = new String[oldMappingSplit.length + recordKey.getKeyFields().length];
 
 		// process key mappings (int the old mapping, all key fields were copied
 		// to the first output fields)
@@ -190,7 +192,7 @@ public class AggregateProcessor {
 			String outField = outMetadata.getField(i).getName();
 			
 			// convert the function mapping from functionName(parameter) to functionName($parameter)
-			String oldMappingItem = oldMapping[i - tmpIndex].trim();
+			String oldMappingItem = oldMappingSplit[i - tmpIndex].trim();
 			int parenthesesIndex = oldMappingItem.indexOf("(");
 			String functionName = oldMappingItem.substring(0, parenthesesIndex).trim().toLowerCase();
 			String inputField = null;
@@ -208,7 +210,11 @@ public class AggregateProcessor {
 			result[i] = "$" + outField + Aggregate.ASSIGN_SIGN + newMappingItem;  
 		}
 
-		return result;
+		String resultString = new String();
+		for (String s : result) {
+			resultString += s + Aggregate.MAPPING_DELIMITER;
+		}
+		return resultString;
 	}
 	/**
 	 * Processes the aggregation function mapping.
@@ -216,7 +222,7 @@ public class AggregateProcessor {
 	 * @param mapping the function mapping.
 	 * @throws ProcessorInitializationException
 	 */
-	private void processMapping(String[] mapping) throws AggregationException {
+	private void processMapping(String mapping) throws AggregationException {
 		AggregateMappingParser parser = new AggregateMappingParser(mapping, 
 				recordKey, functionRegistry,
 				inMetadata, outMetadata);
