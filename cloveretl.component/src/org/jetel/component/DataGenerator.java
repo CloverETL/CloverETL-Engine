@@ -375,6 +375,7 @@ public class DataGenerator extends Node {
   		 
 		checkInputPorts(status, 0, 0);
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
+        checkMetadata(status, getOutMetadata());
         
         //check if on all output ports are the same metadata
         metadata = getOutputPort(0).getMetadata();

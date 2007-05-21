@@ -43,6 +43,7 @@ import org.jetel.graph.runtime.CloverRuntime;
 import org.jetel.graph.runtime.ErrorMsgBody;
 import org.jetel.graph.runtime.Message;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 
@@ -919,6 +920,71 @@ public abstract class Node extends GraphElement implements Runnable {
         }
 
         return status;
+    }
+    
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> inMetadata,
+    		Collection<DataRecordMetadata> outMetadata){
+    	Iterator<DataRecordMetadata> iterator = inMetadata.iterator();
+    	DataRecordMetadata metadata = null, nextMetadata;
+    	if (iterator.hasNext()) {
+    		metadata = iterator.next();
+    	}
+    	//check input metadata
+    	while (iterator.hasNext()) {
+    		nextMetadata = iterator.next();
+    		if (!metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		}
+    		metadata = nextMetadata;
+    	}
+    	if (outMetadata == null) {
+    		return status;
+    	}
+    	//check if input metadata equals output metadata
+    	iterator = outMetadata.iterator();
+    	if (iterator.hasNext()) {
+    		nextMetadata = iterator.next();
+    		if (!metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		}
+    		metadata = nextMetadata;
+    	}
+    	//check output metadata
+    	while (iterator.hasNext()) {
+    		nextMetadata = iterator.next();
+    		if (!metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		}
+    		metadata = nextMetadata;
+    	}
+    	return status;
+    }
+    
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, DataRecordMetadata inMetadata, 
+    		Collection<DataRecordMetadata> outMetadata){
+    	Collection<DataRecordMetadata> inputMetadata = new ArrayList<DataRecordMetadata>(1);
+    	inputMetadata.add(inMetadata);
+    	return checkMetadata(status, inputMetadata, outMetadata);
+    }
+    
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> inMetadata, 
+    		DataRecordMetadata outMetadata){
+    	Collection<DataRecordMetadata> outputMetadata = new ArrayList<DataRecordMetadata>(1);
+    	outputMetadata.add(outMetadata);
+    	return checkMetadata(status, inMetadata, outputMetadata);
+    }
+
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, DataRecordMetadata inMetadata, 
+    		DataRecordMetadata outMetadata) {
+		Collection<DataRecordMetadata> inputMetadata = new ArrayList<DataRecordMetadata>(1);
+		inputMetadata.add(inMetadata);
+		Collection<DataRecordMetadata> outputMetadata = new ArrayList<DataRecordMetadata>(1);
+		outputMetadata.add(outMetadata);
+		return checkMetadata(status, inputMetadata, outputMetadata);
+	}
+    
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata){
+    	return checkMetadata(status, metadata, (Collection<DataRecordMetadata>)null);
     }
 }
 /*

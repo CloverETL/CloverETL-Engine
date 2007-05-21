@@ -277,6 +277,7 @@ public class ExtFilter extends org.jetel.graph.Node {
         
         checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 1, 2);
+        checkMetadata(status, getInMetadata(), getOutMetadata());
 
         try {
             init();

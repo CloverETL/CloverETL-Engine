@@ -306,6 +306,7 @@ public class SequenceChecker extends Node {
    		 
     		checkInputPorts(status, 1, 1);
             checkOutputPorts(status, 0, Integer.MAX_VALUE);
+            checkMetadata(status, getInMetadata(), getOutMetadata());
 
             try {
                 init();

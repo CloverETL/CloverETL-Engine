@@ -425,6 +425,7 @@ public class Partition extends Node {
    		 
     		checkInputPorts(status, 1, 1);
             checkOutputPorts(status, 1, Integer.MAX_VALUE);
+            checkMetadata(status, getInMetadata(), getOutMetadata());
 
             try {
             	

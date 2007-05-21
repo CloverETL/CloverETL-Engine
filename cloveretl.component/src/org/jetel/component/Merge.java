@@ -288,6 +288,7 @@ public class Merge extends Node {
             
             checkInputPorts(status, 2, Integer.MAX_VALUE);
             checkOutputPorts(status, 1, 1);
+            checkMetadata(status, getInMetadata());
 
             try {
                 init();
