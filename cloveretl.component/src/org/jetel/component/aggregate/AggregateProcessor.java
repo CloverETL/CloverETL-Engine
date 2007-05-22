@@ -255,7 +255,7 @@ public class AggregateProcessor {
 	throws AggregationException {
 		AggregateFunction f = createFunctionInstance(functionName);
 
-		if (!inputField.equals("")) {
+		if (inputField != null) {
 			f.setInputFieldMetadata(inMetadata.getField(inputField));
 		}
 		
