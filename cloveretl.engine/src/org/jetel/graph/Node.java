@@ -922,6 +922,25 @@ public abstract class Node extends GraphElement implements Runnable {
         return status;
     }
     
+    /**
+     * Checks if metadatas in given list are all equal 
+     * 
+     * @param status
+     * @param metadata list of metadata to check
+     * @return
+     */
+    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata){
+    	return checkMetadata(status, metadata, (Collection<DataRecordMetadata>)null);
+    }
+
+    /**
+     * Checks if all metadata (in inMetadata list as well as in outMetadata list) are equal
+     * 
+     * @param status
+     * @param inMetadata
+     * @param outMetadata
+     * @return
+     */
     protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> inMetadata,
     		Collection<DataRecordMetadata> outMetadata){
     	Iterator<DataRecordMetadata> iterator = inMetadata.iterator();
@@ -983,9 +1002,6 @@ public abstract class Node extends GraphElement implements Runnable {
 		return checkMetadata(status, inputMetadata, outputMetadata);
 	}
     
-    protected ConfigurationStatus checkMetadata(ConfigurationStatus status, Collection<DataRecordMetadata> metadata){
-    	return checkMetadata(status, metadata, (Collection<DataRecordMetadata>)null);
-    }
 }
 /*
  *  end class Node
