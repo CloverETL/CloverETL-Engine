@@ -26,7 +26,9 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
 /**
- * Calculates the standard deviation of an aggregation group.
+ * Calculates the standard deviation of an aggregation group. The standard deviation
+ * is calculated in a way that is equivalent to the use of the formula:
+ * sqrt(1/n * sum_through_x(sqr(x_i - avg(x)))).
  * 
  * Input field must be Numeric, output field must be Numeric and nullable.
  * 
