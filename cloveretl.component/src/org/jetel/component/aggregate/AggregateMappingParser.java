@@ -187,12 +187,11 @@ public class AggregateMappingParser {
 		String inputField = null;
 		if (parenthesesIndex + 1 == function.indexOf(")")) {
 			// right after the left parenthesis is the right parenthesis, so no input field is set
-			inputField = "";
 		} else {
 			inputField = function.substring(parenthesesIndex + 2, function.length() - 1).trim();
 		}
 
-		if (inputField.equals("")) {
+		if (inputField == null) {
 			checkFieldExistence(outputField);
 		} else {
 			checkFieldExistence(inputField, outputField);
@@ -225,15 +224,15 @@ public class AggregateMappingParser {
 					+ " : " + e.getMessage(), e);
 		}
 		
-		if (!function.requiresInputField() && !inputField.equals("")) {
+		if (!function.requiresInputField() && (inputField != null)) {
 			throw new AggregationException("Function " + function.getName() 
 					+ " doesn't accept any field as a parameter: " + inputField);
 		}
-		if (function.requiresInputField() && inputField.equals("")) {
+		if (function.requiresInputField() && (inputField == null)) {
 			throw new AggregationException("Function " + function.getName()
 					+ " requires an input field as a parameter");
 		}
-		if (!inputField.equals("")) {
+		if (inputField != null) {
 			DataFieldMetadata inputFieldMetadata = inMetadata.getField(inputField);
 			try {
 				function.checkInputFieldType(inputFieldMetadata);
@@ -548,11 +547,6 @@ public class AggregateMappingParser {
 		if (!lastString.equals("")) {	// if the ";" is the last char of the mapping, 
 										// then an empty last item is created
 			result.add(item.toString());
-		}
-		
-		System.out.println("XXX MAPPING:");
-		for (String expr : result) {
-			System.out.println("XXX " + expr);
 		}
 		
 		return (String[]) result.toArray(new String[result.size()]);
