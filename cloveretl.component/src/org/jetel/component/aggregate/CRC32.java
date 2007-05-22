@@ -134,5 +134,6 @@ public class CRC32 extends AggregateFunction {
 	@Override
 	public void clear() {
 		crc32.reset();
+		loopCount = 0;
 	}
 }
