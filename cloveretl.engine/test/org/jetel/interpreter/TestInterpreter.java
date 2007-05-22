@@ -1767,7 +1767,8 @@ public class TestInterpreter extends TestCase {
 						"	$0.Value:=nvl(0,$in1.Value);\n" +
 						"	}\n" +
 						"test();\n" +
-						"print_err($0.Age); "+
+						"print_err('Age='+ $0.Age); "+
+						"if (isnull($0.Age)) {print_err('!!!! Age is null!!!')}" +
 						"print_err($1.City); "+
 						"//print_err($out.City); " +
 						"print_err($1.City); "+
@@ -1791,6 +1792,7 @@ public class TestInterpreter extends TestCase {
 		      executor.setInputRecords(new DataRecord[] {record,record1});
 		      executor.setOutputRecords(new DataRecord[]{out,out1});
 		      SetVal.setString(record1,2,"Prague");
+		      record.getField("Age").setNull(true);
 		      
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
