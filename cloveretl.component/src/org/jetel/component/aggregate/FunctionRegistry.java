@@ -46,17 +46,17 @@ public class FunctionRegistry {
 		registerFunction(new Count());
 		registerFunction(new CountNonNull());
 		registerFunction(new CountUnique());
-		registerFunction(new Min());
-		registerFunction(new Max());
 		registerFunction(new Sum());
-		registerFunction(new First());
-		registerFunction(new Last());
 		registerFunction(new Avg());
 		registerFunction(new StdDev());
+		registerFunction(new Min());
+		registerFunction(new Max());
+		registerFunction(new First());
+		registerFunction(new FirstNonNull());
+		registerFunction(new Last());
+		registerFunction(new LastNonNull());
 		registerFunction(new CRC32());
 		registerFunction(new MD5());
-		registerFunction(new FirstNonNull());
-		registerFunction(new LastNonNull());
 	}
 
 	/**
