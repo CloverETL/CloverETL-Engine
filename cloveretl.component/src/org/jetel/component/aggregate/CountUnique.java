@@ -113,7 +113,13 @@ public class CountUnique extends AggregateFunction {
 
 	@Override
 	public void update(DataRecord record) throws Exception {
-		uniqueValues.add(record.getField(inputFieldIndex));
+		DataField input = record.getField(inputFieldIndex);
+		if (input.isNull()) {
+			// must do this, because two null fields are not equall
+			uniqueValues.add(null);
+		} else {
+			uniqueValues.add(input.duplicate());
+		}
 	}
 
 }
