@@ -177,7 +177,7 @@ public class AggregateMappingParser {
 	 */
 	private void parseFunction(String expression) throws AggregationException {
 		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
-		String function = parsedExpression[1].trim();
+		String function = parsedExpression[1].trim().replaceAll(" ", "");	// removes additional spaces
 		String outputField = parseOutputField(parsedExpression[0]);
 		// parse the aggregate function name
 		int parenthesesIndex = function.indexOf("(");
