@@ -75,6 +75,7 @@ public class DBFDataParser implements Parser {
 
     private int fieldSizes[];
 
+    private DataFieldMetadata dataFieldMetadata; 
     
     public DBFDataParser() {
     }
@@ -195,12 +196,16 @@ public class DBFDataParser implements Parser {
     private void populateField(DataRecord record, int fieldNum, CharBuffer data) {
         try {
             //removeBinaryZeros(data);
-            char fieldType=metadata.getField(fieldNum).getType();
+        	dataFieldMetadata = metadata.getField(fieldNum);
+            char fieldType=dataFieldMetadata.getType();
             if (fieldType==DataFieldMetadata.DATE_FIELD || fieldType==DataFieldMetadata.DATETIME_FIELD){
                 if (StringUtils.isBlank(data)){
                     record.getField(fieldNum).setNull(true);
                     return;
                 }
+            }
+            if (dataFieldMetadata.isTrim()) {
+            	StringUtils.trim(data);
             }
             record.getField(fieldNum).fromString(data.toString());
         } catch (BadDataFormatException bdfe) {
