@@ -20,9 +20,8 @@
 package org.jetel.data;
 
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -370,6 +369,37 @@ public class RecordKey {
     public void setEqualNULLs(boolean equalNULLs) {
         this.equalNULLs = equalNULLs;
     }
+    
+    /**
+     * This method checks if two RecordKeys are comparable
+     * 
+     * @param secondKey
+     * @return Integer array with numbers of incomparable fields, odd numbers are from this key 
+     * 	and even numbers are from second key. When lenghts of the keys differ, proper numbers are
+     * 	returned as null. When keys are comparable there is returned array of length zero.
+     */
+    public Integer[] getIncomparableFields(RecordKey secondKey){
+    	List<Integer> incomparable = new ArrayList<Integer>();
+		int[] record2KeyFields = secondKey.getKeyFields();
+		DataRecordMetadata secondMetadata = secondKey.metadata;
+		for (int i = 0; i < Math.max(keyFields.length, record2KeyFields.length); i++) {
+			if (i<keyFields.length && i<record2KeyFields.length) {
+				if (metadata.getFieldType(keyFields[i]) != secondMetadata.getFieldType(record2KeyFields[i])) {
+					incomparable.add(keyFields[i]);
+					incomparable.add(record2KeyFields[i]);
+				}
+			}else if (i>=keyFields.length) {
+				incomparable.add(null);
+				incomparable.add(record2KeyFields[i]);
+			}else {
+				incomparable.add(keyFields[i]);
+				incomparable.add(null);
+			}
+		}
+		
+    	return incomparable.toArray(new Integer[0]);
+    }
+    
 }
 // end RecordKey
 
