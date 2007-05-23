@@ -33,8 +33,8 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFFunctionDeclaration;
-import org.jetel.interpreter.node.CLVFStart;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
