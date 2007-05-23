@@ -343,6 +343,12 @@ public class StringUtils {
 		return buf;
 	}
 	
+    public static StringBuilder trim(StringBuilder buf) {
+        trimLeading(buf);
+        trimTrailing(buf);
+        return buf;
+    }
+    
     /**
      * This method removes from the string characters which are not letters nor digits
      * 
@@ -371,7 +377,7 @@ public class StringUtils {
     }
 	
 	/**
-	 * This method removed from string blank space
+	 * This method removes from string blank space
 	 * 
 	 * @param str - input String
 	 * @return input string without blank space
@@ -388,6 +394,18 @@ public class StringUtils {
 		}
         return new String(result,0,counter);
 	}
+    
+    public static StringBuilder removeBlankSpace(StringBuilder target,CharSequence str){
+        int length=str.length();
+        char character = 0;
+        for (int j=0;j<length;j++){
+            character=str.charAt(j);
+            if (!Character.isWhitespace(character)) {
+                target.append(character);
+            }
+        }
+        return target;
+    }
     
      /**
       * Test whether parameter consists of space characters
@@ -599,11 +617,54 @@ public class StringUtils {
     	return 3;
     }
     
-}
 
+
+    /**
+     * This method copies substring of source to target.
+     * 
+     * @param target    target to which save the substring
+     * @param src       source string
+     * @param from      positing at which start (zero based)
+     * @param length    number of characters to take
+     * @return          target containing substring of original or empty string if specified from/length values
+     *                  are out of ranges.
+     * @since 23.5.2007
+     */
+    public static StringBuilder subString(StringBuilder target,CharSequence src,int from, int length) {
+        final int end=from+length;
+        final int maxLength=src.length();
+        for(int i= ( from<0 ? 0 : from );i<end;i++) {
+            if (i>=maxLength) break;
+            target.append(src.charAt(i));
+        }
+        return target;
+    }
+    
+    /**
+     * This method copies substring of source to target.
+     * 
+     * @param target    target to which save the substring
+     * @param src       source string
+     * @param from      positing at which start (zero based)
+     * @param length    number of characters to take
+     * @return          target containing substring of original or empty string if specified from/length values
+     *                  are out of ranges.
+     * @since 23.5.2007
+     */
+    
+    public static StringBuffer subString(StringBuffer target,CharSequence src,int from, int length) {
+        final int end=from+length;
+        final int maxLength=src.length();
+        for(int i= ( from<0 ? 0 : from );i<end;i++) {
+            if (i>=maxLength) break;
+            target.append(src.charAt(i));
+        }
+        return target;
+    }
 
 
 /*
  *  End class StringUtils
  */
 
+}
