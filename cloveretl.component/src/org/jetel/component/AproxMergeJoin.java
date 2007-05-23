@@ -37,6 +37,8 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -804,8 +806,16 @@ public class AproxMergeJoin extends Node {
         
         checkInputPorts(status, 2, 2);
         checkOutputPorts(status, 4, 4);
-        checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
-        checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
+        try {
+			checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
+		} catch (NullPointerException e1) {
+			//do nothing: metadata are null (defined dynamically)
+		}
+       try {
+			checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
+		} catch (NullPointerException e1) {
+				//do nothing: metadata are null (defined dynamically)
+		}
 
         try {
         	
@@ -816,13 +826,6 @@ public class AproxMergeJoin extends Node {
     		DataRecordMetadata[] outMetadata = new DataRecordMetadata[2];
     		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata();
     		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata();
-    		if (!outMetadata[0].equals(inMetadata[0])){
-    			throw new ComponentNotReadyException("Wrong metadata on output port no 2 (NOT_MATCH_DRIVER_OUT)");
-    		}
-    		if (!outMetadata[1].equals(inMetadata[1])) {
-    			throw new ComponentNotReadyException(
-    					"Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
-    		}
     		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
     				.getMetadata() };
     		// initializing join parameters
@@ -853,8 +856,58 @@ public class AproxMergeJoin extends Node {
     		RecordKey[] recKey = new RecordKey[2];
     		recKey[DRIVER_ON_PORT] = new RecordKey(joinKeys, getInputPort(DRIVER_ON_PORT).getMetadata());
     		recKey[SLAVE_ON_PORT] = new RecordKey(slaveOverrideKeys, getInputPort(SLAVE_ON_PORT).getMetadata());
-    		recKey[DRIVER_ON_PORT].init();
-    		recKey[SLAVE_ON_PORT].init();
+    		try {
+				recKey[DRIVER_ON_PORT].init();
+    		}catch (NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_JOIN_KEY_ATTRIBUTE);
+				throw ex;
+			}
+    		try {
+				recKey[SLAVE_ON_PORT].init();
+    		}catch (NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+				throw ex;
+			}
+			Integer[] incomparable;
+			ConfigurationProblem problem;
+			try{
+				incomparable = recKey[0].getIncomparableFields(recKey[1]);
+    		}catch (NullPointerException e){
+				//metadata are null (defined dynamically)
+				incomparable = new Integer[0];
+				if (joinKeys.length != slaveOverrideKeys.length) {
+					problem = new ConfigurationProblem("Keys have different lengths!!!", Severity.ERROR, this, Priority.NORMAL);
+					problem.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+					status.add(problem);
+				}
+			}
+			Integer d,s;
+			String message;
+			for (int i = 0; i < incomparable.length; i+=2) {
+				d = incomparable[i];
+				s = incomparable[i+1];
+				message = "Field "
+						+ (d != null ? StringUtils.quote(inMetadata[0].getName() + '.' + inMetadata[0].getField(d).getName())
+								+ " (" + inMetadata[0].getFieldTypeAsString(d)	+ ")" 
+							: "null")
+						+ " is not comparable with field "
+						+ (s != null ? StringUtils.quote(inMetadata[1].getName() + '.' + inMetadata[1].getField(s).getName())
+								+ " ("	+ inMetadata[1].getFieldTypeAsString(s)	+ ")" 
+							: "null");
+				if (d == null || s == null) {
+					problem = new ConfigurationProblem(message, Severity.ERROR, this, Priority.NORMAL);
+				}else {
+					problem = new ConfigurationProblem(message, Severity.WARNING, this, Priority.NORMAL);
+				}
+				problem.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+				status.add(problem);
+			}
     		fieldsToCompare[DRIVER_ON_PORT]=recKey[DRIVER_ON_PORT].getKeyFields();
     		fieldsToCompare[SLAVE_ON_PORT]=recKey[SLAVE_ON_PORT].getKeyFields();
     		comparator = new StringAproxComparator[joinParameters.length];
@@ -872,8 +925,54 @@ public class AproxMergeJoin extends Node {
     		recordKey = new RecordKey[2];
     		recordKey[DRIVER_ON_PORT] = new RecordKey(matchingKey, getInputPort(DRIVER_ON_PORT).getMetadata());
     		recordKey[SLAVE_ON_PORT] = new RecordKey(slaveMatchingKey, getInputPort(SLAVE_ON_PORT).getMetadata());
-    		recordKey[DRIVER_ON_PORT].init();
-    		recordKey[SLAVE_ON_PORT].init();
+    		try {
+				recordKey[DRIVER_ON_PORT].init();
+    		}catch (NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_MATCHING_KEY_ATTRIBUTE);
+				throw ex;
+			}
+    		try {
+				recordKey[SLAVE_ON_PORT].init();
+    		}catch (NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE);
+				throw ex;
+			}
+			try{
+				incomparable = recordKey[0].getIncomparableFields(recordKey[1]);
+    		}catch (NullPointerException e){
+				//metadata are null (defined dynamically)
+				incomparable = new Integer[0];
+				if (joinKeys.length != slaveOverrideKeys.length) {
+					problem = new ConfigurationProblem("Keys have different lengths!!!", Severity.ERROR, this, Priority.NORMAL);
+					problem.setAttributeName(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE);
+					status.add(problem);
+				}
+			}
+			for (int i = 0; i < incomparable.length; i+=2) {
+				d = incomparable[i];
+				s = incomparable[i+1];
+				message = "Field "
+						+ (d != null ? StringUtils.quote(inMetadata[0].getName() + '.' + inMetadata[0].getField(d).getName())
+								+ " (" + inMetadata[0].getFieldTypeAsString(d)	+ ")" 
+							: "null")
+						+ " is not comparable with field "
+						+ (s != null ? StringUtils.quote(inMetadata[1].getName() + '.' + inMetadata[1].getField(s).getName())
+								+ " ("	+ inMetadata[1].getFieldTypeAsString(s)	+ ")" 
+							: "null");
+				if (d == null || s == null) {
+					problem = new ConfigurationProblem(message, Severity.ERROR, this, Priority.NORMAL);
+				}else {
+					problem = new ConfigurationProblem(message, Severity.WARNING, this, Priority.NORMAL);
+				}
+				problem.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+				status.add(problem);
+			}
     		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
     		conformityFieldsForSuspicious = findOutFields(slaveOverrideKeys,getOutputPort(SUSPICIOUS_OUT).getMetadata());
     		dataBuffer = ByteBuffer.allocateDirect(Defaults.Record.MAX_RECORD_SIZE);

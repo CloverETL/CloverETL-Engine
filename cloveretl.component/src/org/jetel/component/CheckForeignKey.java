@@ -33,10 +33,13 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -331,13 +334,72 @@ import org.w3c.dom.Element;
         public ConfigurationStatus checkConfig(ConfigurationStatus status) {
             super.checkConfig(status);
             
-            checkInputPorts(status, 2, 2);
-            checkOutputPorts(status, 1, Integer.MAX_VALUE);
-            checkMetadata(status, getInputPort(FOREIGN_ON_PORT).getMetadata(), getOutMetadata());
+    		DataRecordMetadata primaryMetadata = getInputPort(PRIMARY_ON_PORT).getMetadata();
+    		DataRecordMetadata foreignMetadata = getInputPort(FOREIGN_ON_PORT).getMetadata();
 
-            try {
-                init();
-                free();
+    		checkInputPorts(status, 2, 2);
+            checkOutputPorts(status, 1, Integer.MAX_VALUE);
+            try{
+            	checkMetadata(status, foreignMetadata, getOutMetadata());
+    		}catch (NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+            }
+
+			try {
+	    		try {
+					(primaryKey = new RecordKey(primaryKeys, primaryMetadata)).init();
+	    		}catch (NullPointerException e){
+					//do nothing: metadata are null (defined dynamically)
+				} catch (RuntimeException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+					ex.setAttributeName(XML_PRIMARYKEY_ATTRIBUTE);
+					throw ex;
+				}
+	            try {
+					(foreignKey = new RecordKey(foreignKeys,foreignMetadata)).init();
+	    		}catch (NullPointerException e){
+					//do nothing: metadata are null (defined dynamically)
+				} catch (RuntimeException e) {
+					ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+					ex.setAttributeName(XML_FOREIGNKEY_ATTRIBUTE);
+					throw ex;
+				}
+				Integer[] incomparable;
+				ConfigurationProblem problem = null;
+				try{
+					incomparable = primaryKey.getIncomparableFields(foreignKey);
+	    		}catch (NullPointerException e){
+					//metadata are null (defined dynamically)
+					incomparable = new Integer[0];
+					if (primaryKeys.length != foreignKeys.length) {
+						problem = new ConfigurationProblem("Keys have different lengths!!!", Severity.ERROR, this, Priority.NORMAL);
+						problem.setAttributeName(XML_FOREIGNKEY_ATTRIBUTE);
+						status.add(problem);
+					}
+				}
+				Integer d,s;
+				String message;
+				for (int i = 0; i < incomparable.length; i+=2) {
+					d = incomparable[i];
+					s = incomparable[i+1];
+					message = "Field "
+							+ (d != null ? StringUtils.quote(primaryMetadata.getName() + '.' + primaryMetadata.getField(d).getName())
+									+ " (" + primaryMetadata.getFieldTypeAsString(d)	+ ")" 
+								: "null")
+							+ " is not comparable with field "
+							+ (s != null ? StringUtils.quote(foreignMetadata.getName() + '.' + foreignMetadata.getField(s).getName())
+									+ " ("	+ foreignMetadata.getFieldTypeAsString(s)	+ ")" 
+								: "null");
+					if (d == null || s == null) {
+						problem = new ConfigurationProblem(message, Severity.ERROR, this, Priority.NORMAL);
+					}else {
+						problem = new ConfigurationProblem(message, Severity.WARNING, this, Priority.NORMAL);
+					}
+					problem.setAttributeName(XML_FOREIGNKEY_ATTRIBUTE);
+				}
+
+//                init();
+//                free();
             } catch (ComponentNotReadyException e) {
                 ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
                 if(!StringUtils.isEmpty(e.getAttributeName())) {
