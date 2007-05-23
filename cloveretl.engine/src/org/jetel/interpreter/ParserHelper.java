@@ -26,6 +26,10 @@ package org.jetel.interpreter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jetel.interpreter.data.TLVariable;
+import org.jetel.interpreter.extensions.TLFunctionFactory;
+import org.jetel.interpreter.extensions.TLFunctionPrototype;
+
 /**
  * @author david
  * @since  28.5.2006
@@ -35,10 +39,22 @@ import java.util.Map;
  */
 public class ParserHelper {
 
+    static class VarDeclaration {
+        String name;
+        int type;
+        int slot;
+
+        VarDeclaration(String name, int type,int slot) {
+            this.name = name;
+            this.type = type;
+            this.slot = slot;
+        }
+    }
+    
      static final int INITIAL_HASH_MAP_SIZE=64;
     
-     Map globalVariableSymbol;
-     Map localVariableSymbol;
+     Map<String,VarDeclaration> globalVariableSymbol;
+     Map<String,VarDeclaration> localVariableSymbol;
      Map functionSymbol;
      int globalVariableSlotCounter;
      int localVariableSlotCounter;
@@ -49,54 +65,65 @@ public class ParserHelper {
      * 
      */
     public ParserHelper() {
-        globalVariableSymbol=new HashMap(INITIAL_HASH_MAP_SIZE);
-        localVariableSymbol=new HashMap(INITIAL_HASH_MAP_SIZE);
+        globalVariableSymbol=new HashMap<String,VarDeclaration>(INITIAL_HASH_MAP_SIZE);
+        localVariableSymbol=new HashMap<String,VarDeclaration>(INITIAL_HASH_MAP_SIZE);
         functionSymbol=new HashMap(INITIAL_HASH_MAP_SIZE);
         globalVariableSlotCounter=0;
         localVariableSlotCounter=0;
         inFunctionDeclaration=false;
+        TLFunctionFactory.init();
     }
 
-    public Integer getNewGlobalSlot(){
-           return new Integer(globalVariableSlotCounter++); 
+    public int getNewGlobalSlot(){
+           return globalVariableSlotCounter++; 
     }
     
-    public Integer getNewLocalSlot(){
-        return new Integer(localVariableSlotCounter++); 
+    public int getNewLocalSlot(){
+        return localVariableSlotCounter++; 
     }
     
-    public boolean addVariable(String name){
+    public boolean addVariable(String name,int type){
         if (inFunctionDeclaration){
-            return addLocalVariable(name);
+            return addLocalVariable(name,type);
         }else{
-            return addGlobalVariable(name);
+            return addGlobalVariable(name,type);
         }
     }
     
-    public boolean addGlobalVariable(String name){
+    public boolean addGlobalVariable(String name,int type){
         if (globalVariableSymbol.containsKey(name)){
             return false;
         }
-        globalVariableSymbol.put(name,getNewGlobalSlot());
+        globalVariableSymbol.put(name,new VarDeclaration(name,type,getNewGlobalSlot()));
         return true;
     }
     
-    public boolean addLocalVariable(String name){
+    public boolean addLocalVariable(String name,int type){
         if (localVariableSymbol.containsKey(name)){
             return false;
         }
-        localVariableSymbol.put(name,getNewLocalSlot());
+        localVariableSymbol.put(name,new VarDeclaration(name,type,getNewLocalSlot()));
         return true;
     }
     
     public int getGlobalVariableSlot(String name){
-        Integer slot=(Integer)globalVariableSymbol.get(name);
-        return slot!=null ? slot.intValue() : -1;
+        VarDeclaration varDecl=globalVariableSymbol.get(name);
+        return varDecl!=null ?  varDecl.slot : -1;
     }
     
     public int getLocalVariableSlot(String name){
-        Integer slot=(Integer)localVariableSymbol.get(name);
-        return slot!=null ? slot.intValue() : -1;
+        VarDeclaration varDecl=localVariableSymbol.get(name);
+        return varDecl!=null ? varDecl.slot: -1;
+    }
+    
+    public int getGlobalVariableType(String name){
+        VarDeclaration varDecl=globalVariableSymbol.get(name);
+        return varDecl!=null ?  varDecl.type : -1;
+    }
+    
+    public int getLocalVariableType(String name){
+        VarDeclaration varDecl=localVariableSymbol.get(name);
+        return varDecl!=null ? varDecl.type: -1;
     }
     
     public void enteredFunctionDeclaration(String name){
@@ -109,5 +136,17 @@ public class ParserHelper {
     public void exitedFunctionDeclaration(){
         inFunctionDeclaration=false;
         functionName=null;
+    }
+    
+    public TLFunctionPrototype getExternalFunction(String name) {
+       return TLFunctionFactory.getFunction(name);
+    }
+    
+    public boolean isExternalFunction(String name) {
+        return TLFunctionFactory.exists(name);
+     }
+    
+    void dumpExternalFunctions() {
+        TLFunctionFactory.dump();
     }
 }

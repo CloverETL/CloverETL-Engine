@@ -25,6 +25,9 @@ import java.util.Calendar;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.Numeric;
+import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.data.TLVariable;
 
 /**
  * @author dpavlis
@@ -41,21 +44,27 @@ public class Stack {
     
 	// these constants are used by interpreter when true or false
 	// result has to be indicated
-	public static final Boolean TRUE_VAL= Boolean.TRUE;
-	public static final Boolean FALSE_VAL= Boolean.FALSE;
+	public static final TLValue TRUE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.TRUE);
+	public static final TLValue FALSE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.FALSE);
+
+    public static final TLValue NULL_VAL = new TLValue(TLValueType.NULL,null);
+	public static final TLValue NUM_ZERO = new TLValue(TLValueType.INTEGER,new CloverInteger(0));
+    public static final TLValue NUM_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(1)); 
+    public static final TLValue NUM_MINUS_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(-1)); 
+	public static final TLValue NUM_PI = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
+    public static final TLValue NUM_E = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
     
-	public static final Numeric NUM_ZERO = new CloverInteger(0);
-    public static final Numeric NUM_ONE = new CloverInteger(1); 
-    public static final Numeric NUM_MINUS_ONE = new CloverInteger(-1); 
-	public static final Numeric NUM_PI = new CloverDouble(Math.PI);
-    public static final Numeric NUM_E = new CloverDouble(Math.E);
+    public static final TLValue EMPTY_STRING=new TLValue(TLValueType.STRING,new StringBuilder(0));
+    
+    public static final Numeric NUM_ONE_P = new CloverInteger(1);
+    public static final Numeric NUM_MINUS_ONE_P = new CloverInteger(-1);
     
     // useful instance variables (used when evaluating certain expressions) 
     public Calendar calendar; 
     
-    Object[] stack;
-    Object[] globalVarSlot;
-    Object[] localVarSlot;
+    TLValue[] stack;
+    TLVariable[] globalVarSlot;
+    TLVariable[] localVarSlot;
     int [] functionCallStack;
     int top;
     int funcStackTop;
@@ -67,9 +76,9 @@ public class Stack {
 	}
 	 
 	public Stack(int depth,int varSlotLength){
-		stack= new Object[depth];
-        globalVarSlot= new Object[varSlotLength];
-        localVarSlot= new Object[varSlotLength];
+		stack= new TLValue[depth];
+        globalVarSlot= new TLVariable[varSlotLength];
+        localVarSlot= new TLVariable[varSlotLength];
         functionCallStack = new int[STACK_DEPTH];
 		top= -1;
         funcStackTop= -1;
@@ -85,7 +94,7 @@ public class Stack {
 		top=-1;
 	}
     
-	public final void push(Object obj){
+	public final void push(TLValue obj){
 		if (top>=stack.length){
 			throw new TransformLangExecutorRuntimeException("Internal error: exceeded Interpreter stack depth !!!");
 		}
@@ -96,69 +105,90 @@ public class Stack {
 	/**
 	 * @return top object placed on stack (last put)
 	 */
-	public final Object pop(){
+	public final TLValue pop(){
         if (top<0) return null;
-		Object obj=stack[top];
+        TLValue obj=stack[top];
 		stack[top--]=null;
 		return obj;
 	}
+    
+    public final TLValue[] pop(int length) {
+        TLValue[] val=new TLValue[length];
+        for(int i=length;i>0;val[--i]=pop());
+        /*  if ((top-length)<0) return null;
+        TLValue[] val=new TLValue[length];
+        while(length>0) {
+            val[--length]=stack[top];
+            stack[top--]=null;
+        }
+        */
+        return val;
+    }
 	
-	public final void set(Object obj){
+	public final void set(TLValue obj){
 		stack[top]=obj;
 	}
 	
-	public final Object get(){
+	public final TLValue get(){
 		if (top<0) return null;
 		return stack[top];
 	}
     
-    public final void storeVar(boolean local, int slot,Object value){
+    /**
+     * @return length/depth of stack - how many parameters it contains
+     * @since 20.3.2007
+     */
+    public final int length() {
+        return top+1;
+    }
+    
+    public final void storeVar(boolean local, int slot,TLVariable variable){
         if (local){
-            storeLocalVar(slot,value);
+            storeLocalVar(slot,variable);
         }else{
-            storeGlobalVar(slot,value);
+            storeGlobalVar(slot,variable);
         }
     }
     
-    public final Object getVar(boolean local,int slot){
+    public final TLVariable getVar(boolean local,int slot){
         return local ? getLocalVar(slot) : getGlobalVar(slot);
     }
     
-	public final void storeGlobalVar(int slot,Object value){
+	public final void storeGlobalVar(int slot,TLVariable value){
        try{
         globalVarSlot[slot]=value;
        }catch(IndexOutOfBoundsException ex){
            if (globalVarSlot.length>=MAX_ALLOWED_DEPTH){
                throw new TransformLangExecutorRuntimeException("Internal error: exceeded max length of global variable storage");
            }
-           Object[] temp=new Object[(int)(GROW_FACTOR*globalVarSlot.length)];
+           TLVariable[] temp=new TLVariable[(int)(GROW_FACTOR*globalVarSlot.length)];
            System.arraycopy(globalVarSlot,0,temp,0,globalVarSlot.length);
            globalVarSlot=temp;
            globalVarSlot[slot]=value;
        }
 	}
 	
-	public final Object getGlobalVar(int slot){
+	public final TLVariable getGlobalVar(int slot){
 		return globalVarSlot[slot];
 	}
     
-	public final void storeLocalVar(int slot,Object value){
+	public final void storeLocalVar(int slot,TLVariable variable){
 	    int slotNum=slot+localVarSlotOffset;
 	    try{
-	        localVarSlot[slotNum]=value;
+	        localVarSlot[slotNum]=variable;
 	    }catch(IndexOutOfBoundsException ex){
             if (localVarSlot.length>=MAX_ALLOWED_DEPTH){
                    throw new TransformLangExecutorRuntimeException("Internal error: exceeded max length of local variable storage");
                }
-	        Object[] temp=new Object[(int)(GROW_FACTOR*localVarSlot.length)];
+            TLVariable[] temp=new TLVariable[(int)(GROW_FACTOR*localVarSlot.length)];
 	        System.arraycopy(localVarSlot,0,temp,0,localVarSlot.length);
 	        localVarSlot=temp;
-	        localVarSlot[slotNum]=value;
+	        localVarSlot[slotNum]=variable;
 	    }
         localVarCounter++;
 	}
 	
-	public final Object getLocalVar(int slot){
+	public final TLVariable getLocalVar(int slot){
 	    return localVarSlot[slot+localVarSlotOffset];
 	}
 	
