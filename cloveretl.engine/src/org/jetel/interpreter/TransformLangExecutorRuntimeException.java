@@ -19,7 +19,7 @@
 
 package org.jetel.interpreter;
 
-import org.jetel.interpreter.node.SimpleNode;
+import org.jetel.interpreter.ASTnode.SimpleNode;
 
 /**
  * @author dpavlis
