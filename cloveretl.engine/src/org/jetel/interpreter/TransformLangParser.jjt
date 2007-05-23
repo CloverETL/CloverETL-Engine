@@ -1,6 +1,6 @@
 /*
-    Clover.ETL - filtering conditions grammar.
-    (c) 2004-06 David.Pavlis <david_pavlis@hotmail.com>
+    Clover.ETL - Transformation language grammar.
+    (c) 2004-07 David.Pavlis <david.pavlis@centrum.cz>
     Released under LGPL license.
     
     (Adapted from Ken Beesley and Metamata's javacc 'Interpreter' example.)
@@ -13,10 +13,12 @@ options {
    VISITOR=true; 
    NODE_USES_PARSER=true;
    NODE_PREFIX="CLVF";
+   //NODE_PACKAGE="org.jetel.interpreter.ASTnode";
    NODE_PACKAGE="org.jetel.interpreter";
    NODE_SCOPE_HOOK=true; // save line & column number
    JAVA_UNICODE_ESCAPE = true ;
    BUILD_NODE_FILES=false; // change to True only if new Node has been added 
+   
 }
 
 
@@ -28,7 +30,7 @@ package org.jetel.interpreter;
 
 import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.interpreter.node.*;
+import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.StringUtils;
 import java.util.Map;
 import java.util.HashMap;
@@ -44,7 +46,7 @@ public class TransformLangParser extends ExpParser {
        Map inDataRecordsMap;
        Map outDataRecordsMap;
 	   ParserHelper parserHelper;       
-       List parseExceptions;
+       List<Throwable> parseExceptions;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
               this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,"UTF-8");
@@ -68,7 +70,7 @@ public class TransformLangParser extends ExpParser {
               this.outRecordsMetadata=outRecordsMetadata;
               inDataRecordsMap=new HashMap(inRecordsMetadata.length);
               outDataRecordsMap=new HashMap(outRecordsMetadata.length);
-              parseExceptions=new LinkedList();
+              parseExceptions=new LinkedList<Throwable>();
               for(int i=0;i<inRecordsMetadata.length;i++){
                 inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
               }
@@ -142,6 +144,10 @@ public class TransformLangParser extends ExpParser {
      
      public final int getGlobalVariableSlot(String name){
      	return parserHelper.getGlobalVariableSlot(name);
+     }
+     
+     public final String unquote(String image){
+     	return image.substring(1,image.length()-1);
      }
       
    /**
@@ -254,8 +260,8 @@ TOKEN: {
 | <MULTIPLY: "*" >
 | <DIVIDE: "/" >
 | <MODULO: "%" >
-| <PLUS_PLUS: "++" >
-| <MINUS_MINUS: "--" >
+| <INCR: "++" >
+| <DECR: "--" >
 }
 
 /* Clover Field Identifiers */
@@ -283,15 +289,41 @@ TOKEN: {
 
 
 TOKEN : /* variable Types */
-{ 
-   < INT_VAR: "int" >
- |  < LONG_VAR: "long" >
- |  < DATE_VAR: "date" >
- |  < DOUBLE_VAR: "number" | "double" >
- |  < DECIMAL_VAR: "decimal" >
- |  < BOOLEAN_VAR: "boolean" >
- |  < STRING_VAR: "string" >
+{ /*<VARIABLE_TYPE: <INT_VAR>|<LONG_VAR>|<DATE_VAR>|<DOUBLE_VAR>|<DECIMAL_VAR>|
+	<BOOLEAN_VAR>|<STRING_VAR>|<LIST_VAR>|<MAP_VAR>|<RECORD_VAR>|<OBJECT_VAR>> |*/
+   <INT_VAR: "int" >
+ |  <LONG_VAR: "long" >
+ |  <DATE_VAR: "date" >
+ |  <DOUBLE_VAR: "number" | "double" >
+ |  <DECIMAL_VAR: "decimal" >
+ |  <BOOLEAN_VAR: "boolean" >
+ |  <STRING_VAR: "string" >
+ |  <LIST_VAR: "list" >
+ |  <MAP_VAR: "map" >
+ |  <RECORD_VAR: "record" >
+ |  <OBJECT_VAR: "object" >
  }
+
+/* reserved workds */
+TOKEN :
+{
+  < BREAK: "break" >
+| < CONTINUE: "continue" >
+| < ELSE: "else" >
+| < FOR: "for" >
+| < FOR_EACH: "foreach" >
+| < FUNCTION: "function" >
+| < IF: "if" >
+| < RETURN: "return" >
+| < WHILE: "while" >
+| < CASE: "case" >
+| < ENUM: "enum" >
+| < IMPORT: "import" >
+| < SWITCH: "switch" >
+| < CASE_DEFAULT: "default" >
+| < DO: "do" >
+}
+
 
 /* 
  *  The start nonterminal and its productions. 
@@ -328,9 +360,11 @@ CLVFStartExpression StartExpression() : {}
 
 void CompilationUnit() #void :
 {
-   // String name;
+   String name;
 }
 {
+	//(ImportSource() ";" )*
+
    (
        VarDeclaration() ";"
    
@@ -348,13 +382,17 @@ void CompilationUnit() #void :
    <EOF>
 }
 
+//void ImportSource() #void ://{//	Token t;//}//{//	// must parse whole tree and insert it at this place////	<IMPORT> t=<STRING_LITERAL> ////	{////		new Parser( file );////		parser.parse();////		insert it here;////		token_source=null;////	}//}
+
 void FunctionDeclaration() :
 {
-	Token t;
+	Token t,r;
  	int order=0; 
  }
 {
-	"function"
+	//TODO: add function types
+	
+	<FUNCTION>
 	t = <IDENTIFIER> { 
 		jjtThis.setName(t.image); 
 		if (parserHelper.functionSymbol.put(t.image,jjtThis)!=null){
@@ -364,15 +402,17 @@ void FunctionDeclaration() :
 		}
 		
 	"("  
-		 [t = <IDENTIFIER> { jjtThis.addVarName(order++, t.image); 
-							if (!parserHelper.addLocalVariable(t.image)){
+		 [ 
+		 	t = <IDENTIFIER> { jjtThis.addVarName(order++, t.image); 
+							if (!parserHelper.addLocalVariable(t.image,OBJECT_VAR)){
 							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
 							  +parserHelper.functionName);
 							}
 						} ]
 		
-		( "," t = <IDENTIFIER> { jjtThis.addVarName(order++,t.image); 
-							if (!parserHelper.addLocalVariable(t.image)){
+		( ","  
+			  t = <IDENTIFIER> { jjtThis.addVarName(order++,t.image); 
+							if (!parserHelper.addLocalVariable(t.image,OBJECT_VAR)){
 							  throw new ParseException(t,"parameter ["+t.image+"] already declared in function"
 							  +parserHelper.functionName);
 							}
@@ -398,11 +438,22 @@ void FunctionDeclaration() :
 */
 
 void VarDeclaration():
-{  Token t,l,p;}{  try {    (<INT_VAR>{      jjtThis.setType(INT_VAR);    }    | <LONG_VAR>{      jjtThis.setType(LONG_VAR);    }    | <DOUBLE_VAR>{      jjtThis.setType(DOUBLE_VAR);    }    | <DECIMAL_VAR>{      jjtThis.setType(DECIMAL_VAR);    }    | <STRING_VAR>{      jjtThis.setType(STRING_VAR);    }    | <DATE_VAR>{      jjtThis.setType(DATE_VAR);    }    | <BOOLEAN_VAR>{      jjtThis.setType(BOOLEAN_VAR);    }    )
+{  Token t,l,p;  int varSlot;
+}{  try {
+  	
+    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR>
+	/* //TODO:
+    | <RECORD_VAR>{
+      jjtThis.setType(MAP_VAR);
+    }*/    ) 
+    
+    {
+    	jjtThis.setType(getToken(0).kind);
+    }
 
     ["(" l=<INTEGER_LITERAL> { jjtThis.setLength(l.image);} [ "," p=<INTEGER_LITERAL>  { jjtThis.setPrecision(p.image); } ] ")"   ] 
       
-    t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image)){        throw new ParseException(t, "variable ["+t.image+"] already declared");
+    t = <IDENTIFIER>{      if (!parserHelper.addVariable(t.image,jjtThis.getType())){        throw new ParseException(t, "variable ["+t.image+"] already declared");
       }      else {        // is it local variable declaration ?
 		if (parserHelper.inFunctionDeclaration){          jjtThis.setVarSlot(parserHelper.getLocalVariableSlot(t.image));          jjtThis.setLocalVariale(true);        }        else {          jjtThis.setVarSlot(parserHelper.getGlobalVariableSlot(t.image));          jjtThis.setLocalVariale(false);        }        jjtThis.setName(t.image);      }    }
     
@@ -511,11 +562,10 @@ void UnaryExpression() #void :
 {
 	 LOOKAHEAD(2) PrimaryExpression()
 	 | "-" PrimaryExpression() #MinusNode(1)
-	 | ( LOOKAHEAD( PrimaryExpression() ) <PLUS_PLUS> #PlusPlusNode(1)
-	 	|<PLUS_PLUS> PrimaryExpression()     #PlusPlusNode(1) )
-	 | LOOKAHEAD(PrimaryExpression()) <MINUS_MINUS>  #MinusMinusNode(1)
-	 | <MINUS_MINUS> PrimaryExpression()     #MinusMinusNode(1)
+	 | LOOKAHEAD(2) VarExp() <INCR>  #PlusPlusNode(1)
+	 | LOOKAHEAD(2) VarExp() <DECR>  #MinusMinusNode(1)
 	 | <NOT> UnaryExpression() #Negation(1)
+	 | "size" "(" VarExp() ")" #SizeNode(1)
 	 
 	 
 } 
@@ -535,8 +585,9 @@ void PrimaryExpression() #void : {}
 
 void FunctionCall() #void : {}
 {
- 	BuildInFunction()
- 	|FunctionCallStatement()
+ 	LOOKAHEAD(2) BuildInFunction()
+ 	| FunctionCallStatement()
+ 	
 }
 
 void LitExp() #void :            // 
@@ -553,7 +604,7 @@ void LitExp() #void :            //
  |t=<INTEGER_LITERAL>
   	{ jjtThis.setVal(INTEGER_LITERAL,t.image);}   #Literal
  |t=<STRING_LITERAL>
-  	{ jjtThis.setVal(STRING_LITERAL,StringUtils.stringToSpecChar(t.image.substring(1,t.image.length()-1))); }   #Literal
+  	{ jjtThis.setVal(STRING_LITERAL,StringUtils.stringToSpecChar(unquote(t.image))); }   #Literal
  |t=<BOOLEAN_LITERAL>
   	{ jjtThis.setVal(BOOLEAN_LITERAL,t.image);}   #Literal
  |t=<DATE_LITERAL>
@@ -590,32 +641,46 @@ void GlobalParameterExp() #void :
 }
 
 
-void VarExp() #void :               // IDExp -> ID
+void VarExp() #VariableLiteral :
 {
-	Token t;
+	Token t,u;
 	int varSlot;
+	int varType;
+	boolean indexset=false;
 }
 {
 	try{
+	
+	// primitive type
   t=<IDENTIFIER> { 
 
   		// first, look for local var reference
   		if (parserHelper.inFunctionDeclaration && 
   				(varSlot=parserHelper.getLocalVariableSlot(t.image))>=0){
   			jjtThis.setLocalVariale(true);
+  			varType=parserHelper.getLocalVariableType(t.image);
   		}else{
     		if ((varSlot=parserHelper.getGlobalVariableSlot(t.image))<0){
   				throw new ParseException(t,"variable ["+t.image+"] is not declared");
     		}
     		jjtThis.setLocalVariale(false);
+    		varType=parserHelper.getGlobalVariableType(t.image);
 	  	}
   	jjtThis.setVarSlot(varSlot); 
   	jjtThis.setVarName(t.image);
+  	jjtThis.setVarType(varType); 
   	} 
-  	#VariableLiteral
+  	
+  	 // it may be LIST or MAP
+	 [  "[" [AdditiveExpression() {jjtThis.indexSet=true;} ] "]" ]
+  	
+//  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
+//  	}
+  	
 	}catch(ParseException e){
 		parseExceptions.add(e);
 	}
+	
 }
 
 void RegexLiteral() #void :
@@ -651,6 +716,8 @@ void Statement() #void :
 		  WhileStatement()
 		|
 		  ForStatement()
+		| 
+		  ForeachStatement()
 		|
 		  DoStatement() 
 		|
@@ -659,8 +726,6 @@ void Statement() #void :
 		   ContinueStatement()
 		|
 		   ReturnStatement()
-		| 
-		  BuildInProcedure()
 		| 
 		  StatementExpression()
 		
@@ -687,33 +752,30 @@ void Block() :
 }
 
 void StatementExpression() #void :
-/*
- * The last expansion of this production accepts more than the legal
- * SPL expansions for StatementExpression.
- */
 {}
 {
 	
    (
-   	LOOKAHEAD(<PLUS_PLUS>)PlusplusStatement()
-   |LOOKAHEAD(<MINUS_MINUS>)MinusMinusStatement()
+   	LOOKAHEAD(<INCR>)IncrStatement()
+   |LOOKAHEAD(<DECR>)DecrStatement()
    |LOOKAHEAD(2) Assignment() 
-   |FunctionCallStatement() 
+   |FunctionCall() 
    ) ";"
 }
 
-void PlusplusStatement() #void:
+void IncrStatement() #PlusPlusNode(1):
 {}
 {
-	(  VarExp() <PLUS_PLUS>  
-	 |  <PLUS_PLUS> VarExp() )  #PlusPlusNode(1)
+	(  VarExp() <INCR> {jjtThis.setPrefix(false); }
+	 |  <INCR> VarExp() {jjtThis.setPrefix(true); }) { jjtThis.setStatementExpr(true); }
 }
 
-void MinusMinusStatement() #void:
+void DecrStatement() #MinusMinusNode(1):
 {}
 {
-	( VarExp() <MINUS_MINUS>
-	| <MINUS_MINUS> VarExp() ) #MinusMinusNode(1)
+	( VarExp() <DECR> {jjtThis.setPrefix(false); }
+	| <DECR> VarExp() {jjtThis.setPrefix(true); }) { jjtThis.setStatementExpr(true); }
+		 
 }
 
 void IfStatement() :
@@ -724,7 +786,7 @@ void IfStatement() :
  */
 {}
 {
-  "if" "(" Expression() ")" Statement() [ LOOKAHEAD(2) "else" Statement() ]
+  <IF> "(" Expression() ")" Statement() [ LOOKAHEAD(2) <ELSE> Statement() ]
 }
 
 void SwitchStatement() :
@@ -735,54 +797,62 @@ void SwitchStatement() :
  */
 {}
 {
-  "switch"  "(" Expression() ")"
+  <SWITCH>  "(" Expression() ")"
   "{"
   	 CaseExpression()
      ( CaseExpression() )*
-  	 [ LOOKAHEAD(1) "default" ":" Statement() ] { jjtThis.setDefaultClause(true); }
+  	 [ LOOKAHEAD(1) <CASE_DEFAULT> ":" Statement() { jjtThis.setDefaultClause(true); } ] 
   "}"
 }
 
 void CaseExpression() :
 {}
 {
-  "case" Expression() ":" Statement()
+  <CASE> Expression() ":" Statement()
 }
 
 
 void WhileStatement() :
 {}
 {
-  "while" "(" Expression() ")" Statement()
+  <WHILE> "(" Expression() ")" Statement()
 }
 
 void ForStatement() :
 {}
 {
-  "for" "(" Expression() ";" Expression() ";" Expression() ")" Statement()
+  <FOR> "(" Expression() ";" Expression() ";" Expression() ")" Statement()
+}
+
+void ForeachStatement() :
+{
+	Token t;
+}
+{
+	<FOR_EACH> "(" VarExp() ":" VarExp() ")" Statement()
 }
 
 void DoStatement() #DoStatement(2) :
 {}
 {
-  "do" Statement() "while" "(" Expression() ")" 
+  <DO> Statement() <WHILE> "(" Expression() ")" 
 }
 
 void BreakStatement() :
 {}
 {
-	"break"
+	<BREAK>
 }
 
 void ContinueStatement() :
 {}
 {
-	"continue"
+	<CONTINUE>
 }
 
 void ReturnStatement() : {}
 {
-    "return" [LOOKAHEAD(2) Expression()]
+    <RETURN> [LOOKAHEAD(2) Expression()]
 	
 
 //(  [ Expression() ] ) #EmptyExpression(jjtree.nodeArity()==0)
@@ -795,23 +865,34 @@ void FunctionCallStatement() :
 {
 	 t=<IDENTIFIER> { 
 	 	jjtThis.setName( t.image); 
-	 	if ((functionNode=(CLVFFunctionDeclaration)parserHelper.functionSymbol.get(t.image))==null){
-	 		throw new ParseException(t,"function \""+t.image+"\" not declared");
+	 	System.err.println(" @In function call !!! ["+t.image+"]");
+	 	// is it alrady declared function ??
+	 	if ((functionNode=(CLVFFunctionDeclaration)parserHelper.functionSymbol.get(t.image))!=null){
+	 			 	jjtThis.setCallNode(functionNode);
+	 	}else if (parserHelper.isExternalFunction(t.image)){
+	 				System.err.println("it is external function");
+	 				jjtThis.setExternalFunction(parserHelper.getExternalFunction(t.image));
+	 	}else{ 
+	 		System.err.println("function not declared");
+	 		throw new RuntimeException(new ParseException(t,"function \""+t.image+"\" not declared"));
 	 	}
-	 	jjtThis.setCallNode(functionNode);
 	 	}
 	"(" [ FunctionCallParameter() ] ( "," FunctionCallParameter() )* ")"
-	
+
+	{
+		System.err.println(" @out of function call !!!");
 	 // verify number of call parameters
-	 {
-	 	if (functionNode.numParams!=jjtThis.jjtGetNumChildren())
-	  		throw new ParseException(t,"wrong number of parameters when calling \""+functionNode.name+"\"");
-	 }
+		/*
+	 	if (!jjtThis.validateParams()){
+	 		System.err.println("wrong arguments");
+	  		throw new RuntimeException(new ParseException(t,"wrong number of parameters when calling \""+functionNode.name+"\""));
+	 	}*/
+	}
 }
 
 void FunctionCallParameter() #void : {}
 {
-	Expression()
+	ConditionalOrExpression()
 }
 
 
@@ -820,15 +901,8 @@ void FunctionCallParameter() #void : {}
 void BuildInFunction() #void :
 { }
 {
-	"substring" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #SubStrNode(3) // (string,from index,length)
-	|"uppercase" "(" AdditiveExpression() ")" #UppercaseNode(1)
-	|"lowercase" "(" AdditiveExpression() ")" #LowercaseNode(1)
-	|"trim" "(" AdditiveExpression() ")" #TrimNode(1)
-	|"length" "(" AdditiveExpression() ")" #LengthNode(1)
-	|ConcatNode()
-	|DateAddNode()
+	DateAddNode()
 	|DateDiffNode()
-	|"today" "(" ")" #TodayNode(0)
 	|"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
 	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
@@ -837,35 +911,19 @@ void BuildInFunction() #void :
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|Date2StrNode()
 	|Str2DateNode()
-	|"sqrt" "(" AdditiveExpression() ")" #SqrtNode(1)
-	|"log" "(" AdditiveExpression() ")" #LogNode(1)
-	|"log10" "(" AdditiveExpression() ")" #Log10Node(1)
-	|"exp" "(" AdditiveExpression() ")" #ExpNode(1)
-	|"pow" "(" AdditiveExpression()"," AdditiveExpression() ")" #PowNode(2)
-	|"pi" "(" ")" #PINode(0)
-	|"round" "(" AdditiveExpression() ")" #RoundNode(1)
 	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
 	|Date2NumNode()
 	|SequenceNode()
 	|LookupNode()
-	
-}
 
-
-void BuildInProcedure() #void : {}
-{
-	PrintErrNode()
+// 	procedures 
+	|PrintErrNode()
 	|"print_stack" "(" ")" #PrintStackNode(0)
 	|"breakpoint" "(" ")" #BreakpointNode(0)
 	| PrintLogNode()
 	|"raise_error" "(" AdditiveExpression() ")" #RaiseErrorNode(1)
 }
 
-void ConcatNode() : // concatenates strings
-{}
-{
-   "concat" "(" AdditiveExpression() ( "," AdditiveExpression() )+ ")"
-}
 
 void DateAddNode() :
 { Token t;}
@@ -886,14 +944,14 @@ void DateDiffNode() :
 void Date2StrNode() :
 { Token t; }
 {
-	"date2str" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(t.image.substring(1,t.image.length()-1)); } 
+	"date2str" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(unquote(t.image)); } 
 	 ")"
 }
 
 void Str2DateNode() :
 { Token t; }
 {
-	"str2date" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(t.image.substring(1,t.image.length()-1)); }
+	"str2date" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(unquote(t.image)); }
 	")" 
 }
 
@@ -1001,8 +1059,27 @@ void LookupNode() :
 		("," AdditiveExpression())*
 		")"
 		"." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); }  // WHICH FIELD 
-		) 		|("lookup_next"	"("		t=<IDENTIFIER> { jjtThis.setOperation(1); jjtThis.setLookupName(t.image); }
-		")" "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } 		) 	|(// how many records we have found		"lookup_found" "("		t=<IDENTIFIER> { jjtThis.setOperation(2); jjtThis.setLookupName(t.image); }		")"		) 	|(// do something with lookup		"lookup_admin" "("		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","		(			( "init" 	{jjtThis.setOperation(3);} )			|( "free" 	{jjtThis.setOperation(4);} )		)		")"		)	)
+		) 
+	
+	|("lookup_next"	"("
+		t=<IDENTIFIER> { jjtThis.setOperation(1); jjtThis.setLookupName(t.image); }
+		")" "." k=<IDENTIFIER> { jjtThis.setLookupField(k.image); } 
+		) 
+	|(// how many records we have found
+		"lookup_found" "("
+		t=<IDENTIFIER> { jjtThis.setOperation(2); jjtThis.setLookupName(t.image); }
+		")"
+		) 
+	|(// do something with lookup
+		"lookup_admin" "("
+		t=<IDENTIFIER> { jjtThis.setLookupName(t.image); } ","
+		(
+			( "init" 	{jjtThis.setOperation(3);} )
+			|( "free" 	{jjtThis.setOperation(4);} )
+		)
+		")"
+		)
+	)
 }
 
 TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "minute" | "sec" | "second" | "millisec" | "millisecond" > }
@@ -1010,7 +1087,7 @@ TOKEN : { <DATE_FIELD_LITERAL : "year" |"month" | "week" | "day" | "hour" | "min
 
 TOKEN : /* IDENTIFIERS */
 {
-  < IDENTIFIER: <LETTER> (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
+  < IDENTIFIER: (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
 /* error token which is generated by lexer if it can't match with any other */
