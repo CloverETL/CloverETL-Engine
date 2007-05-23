@@ -33,6 +33,8 @@ import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -40,7 +42,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -505,21 +506,93 @@ public class DataIntersection extends Node {
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
         
+        DataRecordMetadata driverMetadata = getInputPort(DRIVER_ON_PORT).getMetadata();
+        DataRecordMetadata slaveMetadata = getInputPort(SLAVE_ON_PORT).getMetadata();
+        //port number checking
         checkInputPorts(status, 2, 2);
         checkOutputPorts(status, 3, 3);
-        checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT_A).getMetadata());
-        checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(WRITE_TO_PORT_B).getMetadata());
+        //compiliance of input and output metadata checking
+        try {
+			checkMetadata(status, driverMetadata, getOutputPort(WRITE_TO_PORT_A).getMetadata());
+		} catch (NullPointerException e1) {
+			//do nothing: metadata are null (defined dynamically)
+		}
+        try {
+			checkMetadata(status, slaveMetadata, getOutputPort(WRITE_TO_PORT_B).getMetadata());
+		} catch (NullPointerException e1) {
+			//do nothing: metadata are null (defined dynamically)
+		}
 
-//        try {
-//            init();
+		if (slaveOverrideKeys == null) {
+			slaveOverrideKeys = joinKeys;
+		}
+		//join key checking
+       try {
+			recordKeys = new RecordKey[2];
+			recordKeys[0] = new RecordKey(joinKeys, driverMetadata);
+			recordKeys[1] = new RecordKey(slaveOverrideKeys, slaveMetadata);
+			try {
+				recordKeys[0].init();
+			}catch(NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			} catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_JOINKEY_ATTRIBUTE);
+				throw ex;
+			}
+			try {
+				recordKeys[1].init();
+			} catch(NullPointerException e){
+				//do nothing: metadata are null (defined dynamically)
+			}catch (RuntimeException e) {
+				ComponentNotReadyException ex = new ComponentNotReadyException(this,e);
+				ex.setAttributeName(XML_SLAVEOVERRIDEKEY_ATTRIBUTE);
+				throw ex;
+			}
+			Integer[] incomparable;
+			ConfigurationProblem problem;
+			try{
+				incomparable = recordKeys[0].getIncomparableFields(recordKeys[1]);
+			}catch(NullPointerException e){
+				//metadata are null (defined dynamically)
+				incomparable = new Integer[0];
+				if (joinKeys.length != slaveOverrideKeys.length) {
+					problem = new ConfigurationProblem("Keys have different lengths!!!", Severity.ERROR, this, Priority.NORMAL);
+					problem.setAttributeName(XML_SLAVEOVERRIDEKEY_ATTRIBUTE);
+					status.add(problem);
+				}
+			}
+			Integer d,s;
+			String message;
+			for (int i = 0; i < incomparable.length; i+=2) {
+				d = incomparable[i];
+				s = incomparable[i+1];
+				message = "Field "
+						+ (d != null ? StringUtils.quote(driverMetadata.getName() + '.' + driverMetadata.getField(d).getName())
+								+ " (" + driverMetadata.getFieldTypeAsString(d)	+ ")" 
+							: "null")
+						+ " is not comparable with field "
+						+ (s != null ? StringUtils.quote(slaveMetadata.getName() + '.' + slaveMetadata.getField(s).getName())
+								+ " ("	+ slaveMetadata.getFieldTypeAsString(s)	+ ")" 
+							: "null");
+				if (d == null || s == null) {
+					problem = new ConfigurationProblem(message, Severity.ERROR, this, Priority.NORMAL);
+				}else {
+					problem = new ConfigurationProblem(message, Severity.WARNING, this, Priority.NORMAL);
+				}
+				problem.setAttributeName(XML_SLAVEOVERRIDEKEY_ATTRIBUTE);
+				status.add(problem);
+			}
+
+ //            init();
 //            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
         
         return status;
     }
