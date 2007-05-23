@@ -208,6 +208,44 @@ public class MultiFileReader {
 	}		
 
 	/**
+	 * Tries to obtain one record
+	 * @param record Instance to be filled with obtained data
+	 * @return null on error, the record otherwise
+	 * @throws JetelException
+	 */
+	public DataRecord getNext() throws JetelException {
+        //in case that fileURL doesn't contain valid file url
+        if(noInputFile) {
+            return null;
+        }
+        
+        //check for index of last returned record
+        if(numRecords > 0 && numRecords == counter) {
+            return null;
+        }
+        
+        //shall i skip some records?
+        if(skip > 0) {
+            skip(skip);
+            skip = 0;
+        }
+        
+        //use parser to get next record
+        DataRecord rec;
+        try {
+            while((rec = parser.getNext()) == null && nextSource());
+        } catch(JetelException e) {
+            counter++;
+            throw e;
+        }
+        if(rec != null) {
+            counter++;
+        }
+        
+        return rec;
+	}		
+
+	/**
 	 * Releases resources held by the instance
 	 *
 	 */
