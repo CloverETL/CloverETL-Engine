@@ -1578,26 +1578,28 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     public Object visit(CLVFVariableLiteral node, Object data) {
         TLVariable var = stack.getVar(node.localVar, node.varSlot);
         TLValue index = null;
-        try {
-            switch (var.getType()) {
-            case LIST:
-                node.jjtGetChild(0).jjtAccept(this, data);
-                index = stack.pop();
-                stack.push(var.getValue(index.getInt()));
-                break;
-            case MAP:
-                node.jjtGetChild(0).jjtAccept(this, data);
-                index = stack.pop();
-                stack.push(var.getValue(index.getString()));
-                break;
-            default:
-                stack.push(var.getValue());
-            }
-        } catch (Exception ex) {
-            throw new TransformLangExecutorRuntimeException(node,
-                    "invalid index \"" + index + "\" of variable \""
-                    + var.getName() + "\" - type "
-                    + var.getType().toString(), ex);
+        if (node.indexSet) {
+            try {
+                switch (var.getType()) {
+                case LIST:
+                    node.jjtGetChild(0).jjtAccept(this, data);
+                    index = stack.pop();
+                    stack.push(var.getValue(index.getInt()));
+                    break;
+                case MAP:
+                    node.jjtGetChild(0).jjtAccept(this, data);
+                    index = stack.pop();
+                    stack.push(var.getValue(index.getString()));
+                    break;
+                }
+            } catch (Exception ex) {
+                throw new TransformLangExecutorRuntimeException(node,
+                        "invalid index \"" + index + "\" of variable \""
+                        + var.getName() + "\" - type "
+                        + var.getType().toString(), ex);
+            } 
+        }else {
+            stack.push(var.getValue());
         }
         return data;
     }
