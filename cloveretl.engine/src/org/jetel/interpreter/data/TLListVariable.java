@@ -41,7 +41,7 @@ public class TLListVariable extends TLVariable {
     }
     
     public TLValue getValue() {
-        throw new UnsupportedOperationException();
+        return value;
     }
     
     public TLValue getValue(int index) {
@@ -53,14 +53,18 @@ public class TLListVariable extends TLVariable {
     }
     
     public void setValue(TLValue value) {
-        throw new UnsupportedOperationException();
+        if (value.type==this.value.type) {
+            this.value.getList().addAll(value.getList());
+        }else {
+            throw new RuntimeException("incompatible value type: "+value.type);
+        }
     }
     
     public void setValue(int index,TLValue value) {
         if (index<0) {
-            value.getList().add(value);
+            this.value.getList().add(value);
         }else {
-            value.getList().set(index, value);
+            this.value.getList().set(index, value);
         }
     }
     
