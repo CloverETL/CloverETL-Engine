@@ -23,6 +23,7 @@
  */
 package org.jetel.interpreter.data;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -30,20 +31,19 @@ import org.jetel.data.DataField;
 
 public class TLMapVariable extends TLVariable {
 
-    protected Map<String,TLValue> map;
     
     public TLMapVariable(String name) {
         super(name,TLValueType.MAP);
-        map=new HashMap<String,TLValue>();
+        value.setValue(new HashMap<String,TLValue>());      
     }
     
     public TLMapVariable(String name,int initialSize) {
         super(name,TLValueType.MAP);
-        map=new HashMap<String,TLValue>(initialSize);
+        value.setValue(new HashMap<String,TLValue>(initialSize)); 
     }
     
     public TLValue getValue() {
-        throw new UnsupportedOperationException();
+        return value;
     }
     
     public TLValue getValue(int index) {
@@ -51,11 +51,15 @@ public class TLMapVariable extends TLVariable {
     }
     
     public TLValue getValue(String key) {
-        return map.get(key);
+        return (TLValue)value.getMap().get(key);
     }
     
     public void setValue(TLValue value) {
-        throw new UnsupportedOperationException();
+        if (value.type==this.value.type) {
+            this.value.getMap().putAll(value.getMap());
+        }else {
+            throw new RuntimeException("incompatible value type: "+value.type);
+        }
     }
     
     public void setValue(int index,TLValue value) {
@@ -63,7 +67,7 @@ public class TLMapVariable extends TLVariable {
     }
     
     public void setValue(String key,TLValue value) {
-        map.put(key, value);
+        this.value.getMap().put(key, value);
     }
     
     public void setValue(DataField fieldValue) {
@@ -75,25 +79,25 @@ public class TLMapVariable extends TLVariable {
     }
     
     public void setValue(String key,DataField fieldValue) {
-        map.put(key, new TLValue(fieldValue));
+        this.value.getMap().put(key, new TLValue(fieldValue));
     }
  
     @Override public boolean isNULL() {
-        return map.size()==0;
+        return value.getMap().size()==0;
     }
     
     
     public int getLength() {
-        return map.size();
+        return value.getMap().size();
     }
    
     
     @Override public String toString() {
-        return name+" : "+value.type.getName()+" : "+map.toString();
+        return name+" : "+value.type.getName()+" : "+value.getMap().toString();
     }
     
     public Map getMap() {
-        return map;
+        return value.getMap();
     }
 
 }
