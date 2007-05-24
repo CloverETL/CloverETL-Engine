@@ -43,8 +43,8 @@ public interface TransformLangParserConstants {
   int MULTIPLY = 48;
   int DIVIDE = 49;
   int MODULO = 50;
-  int PLUS_PLUS = 51;
-  int MINUS_MINUS = 52;
+  int INCR = 51;
+  int DECR = 52;
   int FIELD_ID = 53;
   int REC_NAME_FIELD_ID = 54;
   int REC_NUM_FIELD_ID = 55;
@@ -58,9 +58,28 @@ public interface TransformLangParserConstants {
   int DECIMAL_VAR = 63;
   int BOOLEAN_VAR = 64;
   int STRING_VAR = 65;
-  int DATE_FIELD_LITERAL = 131;
-  int IDENTIFIER = 132;
-  int ERROR = 133;
+  int LIST_VAR = 66;
+  int MAP_VAR = 67;
+  int RECORD_VAR = 68;
+  int OBJECT_VAR = 69;
+  int BREAK = 70;
+  int CONTINUE = 71;
+  int ELSE = 72;
+  int FOR = 73;
+  int FOR_EACH = 74;
+  int FUNCTION = 75;
+  int IF = 76;
+  int RETURN = 77;
+  int WHILE = 78;
+  int CASE = 79;
+  int ENUM = 80;
+  int IMPORT = 81;
+  int SWITCH = 82;
+  int CASE_DEFAULT = 83;
+  int DO = 84;
+  int DATE_FIELD_LITERAL = 127;
+  int IDENTIFIER = 128;
+  int ERROR = 129;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -133,45 +152,41 @@ public interface TransformLangParserConstants {
     "\"decimal\"",
     "\"boolean\"",
     "\"string\"",
+    "\"list\"",
+    "\"map\"",
+    "\"record\"",
+    "\"object\"",
+    "\"break\"",
+    "\"continue\"",
+    "\"else\"",
+    "\"for\"",
+    "\"foreach\"",
     "\"function\"",
+    "\"if\"",
+    "\"return\"",
+    "\"while\"",
+    "\"case\"",
+    "\"enum\"",
+    "\"import\"",
+    "\"switch\"",
+    "\"default\"",
+    "\"do\"",
     "\",\"",
     "\"{\"",
     "\"}\"",
     "\"=\"",
     "\":\"",
-    "\"if\"",
-    "\"else\"",
-    "\"switch\"",
-    "\"default\"",
-    "\"case\"",
-    "\"while\"",
-    "\"for\"",
-    "\"do\"",
-    "\"break\"",
-    "\"continue\"",
-    "\"return\"",
-    "\"substring\"",
-    "\"uppercase\"",
-    "\"lowercase\"",
-    "\"trim\"",
-    "\"length\"",
-    "\"today\"",
+    "\"size\"",
+    "\"[\"",
+    "\"]\"",
     "\"isnull\"",
     "\"nvl\"",
     "\"replace\"",
     "\"iif\"",
-    "\"sqrt\"",
-    "\"log\"",
-    "\"log10\"",
-    "\"exp\"",
-    "\"pow\"",
-    "\"pi\"",
-    "\"round\"",
     "\"trunc\"",
     "\"print_stack\"",
     "\"breakpoint\"",
     "\"raise_error\"",
-    "\"concat\"",
     "\"dateadd\"",
     "\"datediff\"",
     "\"date2str\"",
