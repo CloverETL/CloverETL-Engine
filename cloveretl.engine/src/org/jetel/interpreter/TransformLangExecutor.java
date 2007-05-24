@@ -1626,7 +1626,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } catch (Exception ex) {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
-                                + "\" to variable \"" + varNode.varName, ex);
+                                + "\" to variable \"" + varNode.varName+"\"", ex);
             }
             break;
         case MAP_VAR:
@@ -1637,7 +1637,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } catch (Exception ex) {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
-                                + "\" to variable \"" + varNode.varName, ex);
+                                + "\" to variable \"" + varNode.varName+"\"", ex);
             }
             break;
         default:
@@ -1648,7 +1648,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         "invalid assignment of \"" + valueToAssign.getValue()
                                 + "[" + valueToAssign.type
                                 + "] \" to variable \""
-                                + variableToAssign.getName() + "["
+                                + variableToAssign.getName() + "\" ["
                                 + variableToAssign.getType()
                                 + "] \" - incompatible data types");
             }
