@@ -45,8 +45,8 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.node.CLVFStart;
-import org.jetel.interpreter.node.CLVFStartExpression;
+import org.jetel.interpreter.ASTnode.CLVFStart;
+import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -1045,7 +1045,7 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      assertEquals(true, ((Boolean)executor.getResult()).booleanValue() );
+		      assertEquals(true, executor.getResult().getBoolean());
 		      
 		      parseTree.dump("");
 		      
@@ -1074,7 +1074,7 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
       
-              assertEquals(1,((CloverInteger)executor.getResult()).intValue());
+              assertEquals(1, executor.getResult().getInt());
 		      
 		      
 		      parseTree.dump("");
@@ -1112,7 +1112,7 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
 		      
-              assertEquals(true,((Boolean)executor.getResult()).booleanValue());
+              assertEquals(true, executor.getResult().getBoolean());
 		      
 		      
 		      parseTree.dump("");

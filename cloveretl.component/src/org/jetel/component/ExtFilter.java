@@ -40,7 +40,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
-import org.jetel.interpreter.node.CLVFStartExpression;
+import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
@@ -184,7 +184,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 				}
                 record.deserialize(recordBuffer);
 				executor.visit(recordFilter,null);
-				if (((Boolean)executor.getResult()).booleanValue()){
+				if (executor.getResult().getBoolean()){
                     recordBuffer.rewind();
 					outPort.writeRecordDirect(recordBuffer);
 				}else if (rejectedPort!=null){
