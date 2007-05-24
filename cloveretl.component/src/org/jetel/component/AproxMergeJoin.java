@@ -877,7 +877,7 @@ public class AproxMergeJoin extends Node {
 			Integer[] incomparable;
 			ConfigurationProblem problem;
 			try{
-				incomparable = recKey[0].getIncomparableFields(recKey[1]);
+				incomparable = recKey[DRIVER_ON_PORT].getIncomparableFields(recKey[SLAVE_ON_PORT]);
     		}catch (NullPointerException e){
 				//metadata are null (defined dynamically)
 				incomparable = new Integer[0];
@@ -944,7 +944,7 @@ public class AproxMergeJoin extends Node {
 				throw ex;
 			}
 			try{
-				incomparable = recordKey[0].getIncomparableFields(recordKey[1]);
+				incomparable = recordKey[DRIVER_ON_PORT].getIncomparableFields(recordKey[SLAVE_ON_PORT]);
     		}catch (NullPointerException e){
 				//metadata are null (defined dynamically)
 				incomparable = new Integer[0];
@@ -970,7 +970,7 @@ public class AproxMergeJoin extends Node {
 				}else {
 					problem = new ConfigurationProblem(message, Severity.WARNING, this, Priority.NORMAL);
 				}
-				problem.setAttributeName(XML_SLAVE_OVERRRIDE_KEY_ATTRIBUTE);
+				problem.setAttributeName(XML_SLAVE_MATCHING_OVERRIDE_ATTRIBUTE);
 				status.add(problem);
 			}
     		conformityFieldsForConforming = findOutFields(joinKeys,getOutputPort(CONFORMING_OUT).getMetadata());
