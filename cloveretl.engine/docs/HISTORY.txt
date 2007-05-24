@@ -2,6 +2,14 @@
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
 
+REL 2-1-3
+---------
+Release in particular repairing bugs from 2.1.2 version.
+
+Changes/bug fixes:
++ fixes mainly in internal transformation language - isnull() method now process also numeric fields
+  and switch command does not ignore last default branch
+
 REL 2-1-2
 ---------
 Release in particular repairing bugs from 2.1.1 version.
