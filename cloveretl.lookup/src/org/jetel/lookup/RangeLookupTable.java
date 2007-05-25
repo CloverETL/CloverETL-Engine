@@ -52,6 +52,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_DATA_TYPE_DELIMITED ="delimited";
+    private static final String XML_START_FIELDS = "startFields";
+    private static final String XML_END_FIELDS = "endFields";
     private static final String XML_CHARSET = "charset";
     private static final String XML_USE_I18N = "useI18N";
     private static final String XML_LOCALE = "locale";
@@ -64,6 +66,10 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected SortedSet<DataRecord> subTable;
 	protected int numFound;
 	protected RecordKey lookupKey;
+	protected RecordKey startKey;
+	protected int[] startField;
+	protected RecordKey endKey;
+	protected int[] endField;
 	protected DataRecord tmpRecord;
 	protected IntervalRecordComparator comparator;
 	protected int[] keyFields = null;
@@ -86,10 +92,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @param startInclude indicates whether start points belong to the intervals or not
 	 * @param endInclude indicates whether end points belong to the intervals or not
 	 */
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			RuleBasedCollator collator, boolean[] startInclude, boolean[] endInclude){
+	public RangeLookupTable(String id, DataRecordMetadata metadata, String[] startFields, 
+			String[] endFields, Parser parser, RuleBasedCollator collator, boolean[] startInclude, boolean[] endInclude){
 		super(id);
 		this.metadata = metadata;
+		startKey = new RecordKey(startFields, metadata);
+		endKey = new RecordKey(endFields, metadata);
 		this.dataParser = parser;
 		this.collator = collator;
 		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
@@ -114,21 +122,22 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @param parser
 	 * @param collator
 	 */
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			RuleBasedCollator collator){
-		this(id,metadata,parser,collator,new boolean[(metadata.getNumFields() - 1)/2],
+	public RangeLookupTable(String id, DataRecordMetadata metadata, String[] startFields, 
+			String[] endFields, Parser parser, RuleBasedCollator collator){
+		this(id,metadata,startFields, endFields, parser,collator,new boolean[(metadata.getNumFields() - 1)/2],
 				new boolean[(metadata.getNumFields() - 1)/2]);
 		Arrays.fill(startInclude, true);
 		Arrays.fill(endInclude, false);
 	}
 
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser, 
-			boolean[] startInclude, boolean[] endInclude){
-		this(id,metadata,parser,null,startInclude,endInclude);
+	public RangeLookupTable(String id, DataRecordMetadata metadata, String[] startFields, 
+			String[] endFields, Parser parser,	boolean[] startInclude, boolean[] endInclude){
+		this(id,metadata,startFields, endFields, parser,null,startInclude,endInclude);
 	}
 	
-	public RangeLookupTable(String id, DataRecordMetadata metadata, Parser parser){
-		this(id,metadata,parser,null);
+	public RangeLookupTable(String id, DataRecordMetadata metadata, String[] startFields, 
+			String[] endFields, Parser parser){
+		this(id,metadata,startFields, endFields, parser,null);
 	}
 
 	/* (non-Javadoc)
@@ -139,7 +148,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         if(isInitialized()) return;
 		super.init();
 		
-		comparator = new IntervalRecordComparator(metadata,collator);
+		startKey.init();
+		startField = startKey.getKeyFields();
+		endKey.init();
+		endField = endKey.getKeyFields();
+		
+		comparator = new IntervalRecordComparator(metadata, startField, endField, collator);
 		
 		lookupTable = new TreeSet<DataRecord>(comparator);
 
@@ -176,8 +190,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	public DataRecord get(Object[] keys) {
 		//prepare "interval" from keyRecord:set start end end for the value
 		for (int i=0;i<keys.length;i++){
-			tmpRecord.getField(2*i+1).setValue(keys[i]);
-			tmpRecord.getField(2*(i+1)).setValue(keys[i]);
+			tmpRecord.getField(startField[i]).setValue(keys[i]);
+			tmpRecord.getField(endField[i]).setValue(keys[i]);
 		}
 		return get();
 	}
@@ -191,8 +205,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		//prepare "interval" from keyRecord:set start end end for the value
 		for (int i=0;i<lookupKey.getLenght();i++){
-			tmpRecord.getField(2*i+1).setValue(keyRecord.getField(keyFields[i]));
-			tmpRecord.getField(2*(i+1)).setValue(keyRecord.getField(keyFields[i]));
+			tmpRecord.getField(startField[i]).setValue(keyRecord.getField(keyFields[i]));
+			tmpRecord.getField(endField[i]).setValue(keyRecord.getField(keyFields[i]));
 		}
 		return get();
 	}
@@ -229,23 +243,23 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			return null;
 		}
 		//if value is not in interval try next
-		for (int i=1;i<tmp.getNumFields();i+=2){
+		for (int i=0;i<startField.length;i++){
 			if (collator != null){
-				if (tmpRecord.getField(i).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
-					startComparison = ((StringDataField)tmpRecord.getField(i)).compareTo(
-							tmp.getField(i), collator);
-					endComparison = ((StringDataField)tmpRecord.getField(i + 1)).compareTo(
-							tmp.getField(i + 1),collator);
+				if (tmpRecord.getField(startField[i]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+					startComparison = ((StringDataField)tmpRecord.getField(startField[i])).compareTo(
+							tmp.getField(startField[i]), collator);
+					endComparison = ((StringDataField)tmpRecord.getField(endField[i])).compareTo(
+							tmp.getField(endField[i]),collator);
 				}else{
-					startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
-					endComparison = tmpRecord.getField(i + 1).compareTo(tmp.getField(i + 1));
+					startComparison = tmpRecord.getField(startField[i]).compareTo(tmp.getField(startField[i]));
+					endComparison = tmpRecord.getField(endField[i]).compareTo(tmp.getField(endField[i]));
 				}
 			}else{
-				startComparison = tmpRecord.getField(i).compareTo(tmp.getField(i));
-				endComparison = tmpRecord.getField(i + 1).compareTo(tmp.getField(i + 1));
+				startComparison = tmpRecord.getField(startField[i]).compareTo(tmp.getField(startField[i]));
+				endComparison = tmpRecord.getField(endField[i]).compareTo(tmp.getField(endField[i]));
 			}
-			if ((startComparison < 0 || (startComparison == 0 && !startInclude[(i-1)/2])) ||
-				(endComparison > 0    || (endComparison == 0   && !endInclude[(i-1)/2])) ) {
+			if ((startComparison < 0 || (startComparison == 0 && !startInclude[i])) ||
+				(endComparison > 0    || (endComparison == 0   && !endInclude[i])) ) {
 				return getNext();
 			}
 		}
@@ -310,11 +324,15 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         RangeLookupTable lookupTable = null;
         String id;
         String type;
+        String[] startFields;
+        String[] endFields;
         
         //reading obligatory attributes
         try {
             id = xattribs.getString(XML_ID_ATTRIBUTE);
             type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+            startFields = xattribs.getString(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+            endFields = xattribs.getString(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         } catch(AttributeNotFoundException ex) {
             throw new XMLConfigurationException("Can't create lookup table - " + ex.getMessage(),ex);
         }
@@ -378,9 +396,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             }
             
             if (startInclude != null) {
-            	lookupTable =  new RangeLookupTable(id, metadata, parser, collator, startInclude, endInclude);
+            	lookupTable =  new RangeLookupTable(id, metadata, startFields, endFields, parser, collator, startInclude, endInclude);
             }else{
-            	lookupTable =  new RangeLookupTable(id, metadata, parser, collator);
+            	lookupTable =  new RangeLookupTable(id, metadata, startFields, endFields, parser, collator);
             }
             return lookupTable;
             
@@ -434,7 +452,9 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	private class IntervalRecordComparator implements Comparator<DataRecord>{
 		
 		RecordComparator[] startComparator;//comparators for odd fields
+		int[] startFields;
 		RecordComparator[] endComparator;//comparators for even fields
+		int[] endFields;
 		int startComparison;
 		int endComparison;
 
@@ -444,17 +464,22 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		 * @param metadata metadata of records, which defines lookup table
 		 * @param collator collator for comparing string data fields
 		 */
-		public IntervalRecordComparator(DataRecordMetadata metadata, RuleBasedCollator collator) {
-			startComparator = new RecordComparator[(metadata.getNumFields()-1)/2];
-			endComparator = new RecordComparator[(metadata.getNumFields()-1)/2];
+		public IntervalRecordComparator(DataRecordMetadata metadata, int[] startFields,
+				int[] endFields, RuleBasedCollator collator) {
+			if (startFields.length != endFields.length) {
+				throw new IllegalArgumentException("Number of start fields is diffrent then number of and fields!!!");
+			}
+			startComparator = new RecordComparator[startFields.length];
+			endComparator = new RecordComparator[endFields.length];
 			for (int i=0;i<startComparator.length;i++){
-				startComparator[i] = new RecordComparator(new int[]{2*i+1},collator);
-				endComparator[i] = new RecordComparator(new int[]{2*(i+1)},collator);
+				startComparator[i] = new RecordComparator(new int[]{startFields[i]},collator);
+				endComparator[i] = new RecordComparator(new int[]{endFields[i]},collator);
 			}
 		}
 
-		public IntervalRecordComparator(int[] keyFields) {
-			this(metadata,null);
+		public IntervalRecordComparator(DataRecordMetadata metadata, int[] startFields,
+				int[] endFields) {
+			this(metadata, startFields, endFields, null);
 		}
 		
 		/* (non-Javadoc)

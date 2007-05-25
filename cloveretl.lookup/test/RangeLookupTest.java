@@ -50,11 +50,13 @@ public class RangeLookupTest extends TestCase {
         lookupMetadata.addField(new DataFieldMetadata("start1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("end1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        		new Object[]{"RangeLookup",lookupMetadata, new String[]{"start","start1"}, 
+        		new String[]{"end","end1"},null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class, Parser.class});
         lookupNotOverlap = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"start","start1"}, 
+        		new String[]{"end","end1"},null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,Parser.class});
         lookup.init();
         lookupNotOverlap.init();
     	record = new DataRecord(lookupMetadata);
@@ -211,7 +213,188 @@ public class RangeLookupTest extends TestCase {
     		}
     	}
   }
-    
+
+    public void test_getDataRecord2() throws IOException,ComponentNotReadyException{
+        lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
+        lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start1",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end1",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata, new String[]{"start1","start"}, 
+        		new String[]{"end","end1"},null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class, Parser.class});
+        lookupNotOverlap = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"start1","start"}, 
+        		new String[]{"end","end1"},null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,Parser.class});
+        lookup.init();
+        lookupNotOverlap.init();
+    	record = new DataRecord(lookupMetadata);
+    	record.init();
+      	record.getField("name").setValue("10-20,100-200");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("15-20,100-200");
+    	record.getField("start").setValue(15);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("20-25,100-200");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(25);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,0-100");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,100-200");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,0-100");
+    	record.getField("start").setValue(30);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,100-200");
+    	record.getField("start").setValue(30);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(100);
+      	record.getField("end1").setValue(200);
+       	lookup.put(record, record.duplicate());
+    	record.getField("name").setValue("0-10,0-100");
+    	record.getField("start").setValue(0);
+      	record.getField("end").setValue(10);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+       	record.getField("name").setValue("0-10,100-200");
+    	record.getField("start").setValue(0);
+       	record.getField("start1").setValue(100);
+      	record.getField("end").setValue(10);
+      	record.getField("end1").setValue(200);
+      	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("10-20,0-100");
+    	record.getField("start").setValue(10);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookup.put(record, record.duplicate());
+
+      	record.getField("name").setValue("10-20,100-200");
+    	record.getField("start").setValue(11);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(101);
+      	record.getField("end1").setValue(200);
+       	lookupNotOverlap.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,0-100");
+    	record.getField("start").setValue(21);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookupNotOverlap.put(record, record.duplicate());
+    	record.getField("name").setValue("20-30,100-200");
+    	record.getField("start").setValue(21);
+       	record.getField("end").setValue(30);
+      	record.getField("start1").setValue(101);
+      	record.getField("end1").setValue(200);
+       	lookupNotOverlap.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,0-100");
+    	record.getField("start").setValue(31);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookupNotOverlap.put(record, record.duplicate());
+    	record.getField("name").setValue("30-40,100-200");
+    	record.getField("start").setValue(31);
+       	record.getField("end").setValue(40);
+      	record.getField("start1").setValue(101);
+      	record.getField("end1").setValue(200);
+       	lookupNotOverlap.put(record, record.duplicate());
+    	record.getField("name").setValue("0-10,0-100");
+    	record.getField("start").setValue(0);
+      	record.getField("end").setValue(10);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookupNotOverlap.put(record, record.duplicate());
+       	record.getField("name").setValue("0-10,100-200");
+    	record.getField("start").setValue(0);
+       	record.getField("start1").setValue(101);
+      	record.getField("end").setValue(10);
+      	record.getField("end1").setValue(200);
+      	lookupNotOverlap.put(record, record.duplicate());
+      	record.getField("name").setValue("10-20,0-100");
+    	record.getField("start").setValue(11);
+       	record.getField("end").setValue(20);
+      	record.getField("start1").setValue(0);
+      	record.getField("end1").setValue(100);
+       	lookupNotOverlap.put(record, record.duplicate());
+
+       	metadata = new DataRecordMetadata("in",DataRecordMetadata.DELIMITED_RECORD);
+       	metadata.addField(new DataFieldMetadata("id",DataFieldMetadata.INTEGER_FIELD,";"));
+       	metadata.addField(new DataFieldMetadata("value",DataFieldMetadata.INTEGER_FIELD,";"));
+       	metadata.addField(new DataFieldMetadata("value1",DataFieldMetadata.INTEGER_FIELD,";"));
+      	record = new DataRecord(metadata);
+    	record.init();
+       	RecordKey key = new RecordKey(new int[]{1,2},metadata);
+       	lookup.setLookupKey(key);
+       	lookupNotOverlap.setLookupKey(key);
+
+       	DataRecord tmp,tmp1;
+       	System.out.println("Lookup table:");
+    	for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+			System.out.print(iter.next() + "\n");
+		}
+    	
+      	System.out.println("LookupNotOverlap table:");
+    	for (Iterator iter = lookupNotOverlap.iterator(); iter.hasNext();) {
+			System.out.print(iter.next() + "\n");
+		}
+    	
+    	
+    	for (int i=0;i<200;i++){
+    		record.getField("id").setValue(i);
+    		record.getField("value").setValue(random.nextInt(41));
+    		record.getField("value1").setValue(random.nextInt(201));
+    		System.out.println("Record " + i + ":\n" + record);
+    		tmp = lookup.get(record);
+    		tmp1 = lookupNotOverlap.get(record);
+    		System.out.println("Num found: " + lookup.getNumFound());
+    		System.out.println("Num found: " + lookupNotOverlap.getNumFound());
+    		while (tmp != null || tmp1 != null) {
+				if (tmp != null) {
+	    			System.out.println("Next:\n" + tmp);
+	    			assertTrue((Integer)record.getField("value").getValue() >= (Integer)tmp.getField("start1").getValue());
+	        		assertTrue((Integer)record.getField("value").getValue() <= (Integer)tmp.getField("end").getValue());
+	        		assertTrue((Integer)record.getField("value1").getValue() >= (Integer)tmp.getField("start").getValue());
+	        		assertTrue((Integer)record.getField("value1").getValue() <= (Integer)tmp.getField("end1").getValue());
+					tmp = lookup.getNext();
+				}    	   		
+				if (tmp1 != null) {
+	    			System.out.println("Next1:\n" + tmp1);
+	    			assertTrue((Integer)record.getField("value").getValue() >= (Integer)tmp1.getField("start1").getValue());
+	        		assertTrue((Integer)record.getField("value").getValue() <= (Integer)tmp1.getField("end").getValue());
+	        		assertTrue((Integer)record.getField("value1").getValue() >= (Integer)tmp1.getField("start").getValue());
+	        		assertTrue((Integer)record.getField("value1").getValue() <= (Integer)tmp1.getField("end1").getValue());
+					tmp1 = lookupNotOverlap.getNext();
+				}    	   		
+    		}
+    	}
+  }
+
     public void test_largeData() throws IOException,ComponentNotReadyException,JetelException{
         lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
         lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
@@ -242,8 +425,9 @@ public class RangeLookupTest extends TestCase {
         parser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "rangeLookup.dat.xls"));
         
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,parser}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"s1","s2","s3","s4","s5","s6","s7","s8"},
+        		new String[]{"e1","e2","e3","e4","e5","e6","e7","e8"}, parser}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,Parser.class});
         lookup.init();
 
         DataRecord tmp = new DataRecord(lookupMetadata);
@@ -320,8 +504,9 @@ public class RangeLookupTest extends TestCase {
         lookupMetadata.addField(new DataFieldMetadata("start1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("end1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        		new Object[]{"RangeLookup",lookupMetadata, new String[]{"start","start1"}, 
+        		new String[]{"end","end1"},null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,Parser.class});
         lookup.init();
     	record = new DataRecord(lookupMetadata);
     	record.init();
@@ -425,8 +610,9 @@ public class RangeLookupTest extends TestCase {
 //        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.NUMERIC_FIELD,";"));
 //        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.NUMERIC_FIELD,";"));
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class});
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"start"},
+        		new String[]{"end"}, null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,Parser.class});
         lookup.init();
     	record = new DataRecord(lookupMetadata);
     	record.init();
@@ -507,8 +693,11 @@ public class RangeLookupTest extends TestCase {
         lookupMetadata.addField(new DataFieldMetadata("start1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookupMetadata.addField(new DataFieldMetadata("end1",DataFieldMetadata.INTEGER_FIELD,";"));
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata,null,new boolean[]{true,true},new boolean[]{true,true}}, 
-        		new Class[]{String.class,DataRecordMetadata.class,Parser.class,boolean[].class,boolean[].class});
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"start", "start1"}, 
+        		new String[]{"end", "end1"}, 
+        		null,new boolean[]{true,true},new boolean[]{true,true}}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class,
+        		Parser.class,boolean[].class,boolean[].class});
         lookup.init();
      	record = new DataRecord(lookupMetadata);
     	record.init();
@@ -575,8 +764,10 @@ public class RangeLookupTest extends TestCase {
         lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.STRING_FIELD,";"));
         RuleBasedCollator collator = (RuleBasedCollator)RuleBasedCollator.getInstance();
         lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
-        		new Object[]{"RangeLookup",lookupMetadata, null, collator}, 
-        		new Class[]{String.class,DataRecordMetadata.class, Parser.class, RuleBasedCollator.class});
+        		new Object[]{"RangeLookup",lookupMetadata, new String[]{"start"}, 
+        		new String[]{"end"}, null, collator}, 
+        		new Class[]{String.class,DataRecordMetadata.class, String[].class, String[].class,
+        		Parser.class, RuleBasedCollator.class});
         lookup.init();
      	record = new DataRecord(lookupMetadata);
     	record.init();
