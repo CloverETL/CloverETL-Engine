@@ -137,6 +137,7 @@ public class DBConnection extends GraphElement implements IConnection {
 
 	public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
 	public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
+	public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
 	public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
 	public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
@@ -639,7 +640,7 @@ public class DBConnection extends GraphElement implements IConnection {
         Statement statement;
         ResultSet resultSet;
 
-        String sqlQuery = parameters.getProperty("sqlQuery");
+        String sqlQuery = parameters.getProperty(SQL_QUERY_PROPERTY);
         if(StringUtils.isEmpty(sqlQuery)) {
             throw new IllegalArgumentException("JDBC stub for clover metadata can't find sqlQuery parameter.");
         }
