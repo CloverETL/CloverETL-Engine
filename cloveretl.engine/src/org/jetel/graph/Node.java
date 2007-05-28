@@ -951,8 +951,13 @@ public abstract class Node extends GraphElement implements Runnable {
     	//check input metadata
     	while (iterator.hasNext()) {
     		nextMetadata = iterator.next();
-    		if (!metadata.equals(nextMetadata)) {
-    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		if (metadata == null || !metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + 
+	    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+	    					" does not equal to metadata " + 
+	    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
+    					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
+    					this, Priority.NORMAL));
     		}
     		metadata = nextMetadata;
     	}
@@ -963,16 +968,26 @@ public abstract class Node extends GraphElement implements Runnable {
     	iterator = outMetadata.iterator();
     	if (iterator.hasNext()) {
     		nextMetadata = iterator.next();
-    		if (!metadata.equals(nextMetadata)) {
-    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		if (metadata == null || !metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + 
+    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+    					" does not equal to metadata " + 
+    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
+					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
+					this, Priority.NORMAL));
     		}
     		metadata = nextMetadata;
     	}
     	//check output metadata
     	while (iterator.hasNext()) {
     		nextMetadata = iterator.next();
-    		if (!metadata.equals(nextMetadata)) {
-    			status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadata.getName()) + " does not equal to metadata " + StringUtils.quote(nextMetadata.getName()), Severity.ERROR, this, Priority.NORMAL));
+    		if (metadata == null || !metadata.equals(nextMetadata)) {
+    			status.add(new ConfigurationProblem("Metadata " + 
+    					StringUtils.quote(metadata == null ? "null" : metadata.getName()) + 
+    					" does not equal to metadata " + 
+    					StringUtils.quote(nextMetadata == null ? "null" : nextMetadata.getName()), 
+					metadata == null || nextMetadata == null ? Severity.WARNING : Severity.ERROR, 
+					this, Priority.NORMAL));
     		}
     		metadata = nextMetadata;
     	}
