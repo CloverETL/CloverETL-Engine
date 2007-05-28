@@ -607,6 +607,9 @@ public class DataRecordMetadata implements Serializable {
     }
     
     public boolean equals(Object o){
+    	if (o == null) {
+    		return false;
+    	}
     	if (!(o instanceof DataRecordMetadata)) {
     		return false;
     	}
