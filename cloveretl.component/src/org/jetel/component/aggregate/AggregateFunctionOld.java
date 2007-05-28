@@ -167,7 +167,7 @@ public class AggregateFunctionOld implements Iterator {
 			}
 			
 			if(functionNumber == FNC_COUNT) { // parameter for COUNT aggregate function is not meanfull
-			    if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+			    if(!(outMetadata.getField(recordKey.getLength() + i).isNumeric()))
 			        throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 				aggregateItems[i] = new AggregateItem(functionNumber, -1);
 				continue;
@@ -207,24 +207,24 @@ public class AggregateFunctionOld implements Iterator {
 			if(functionNumber == FNC_SUM 
 			        || functionNumber == FNC_AVG
 			        || functionNumber == FNC_STDEV)
-			    if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+			    if(!(outMetadata.getField(recordKey.getLength() + i).isNumeric()))
 			        throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 			if(functionNumber == FNC_MIN
 			        || functionNumber == FNC_MAX
                     || functionNumber == FNC_FIRST
                     || functionNumber == FNC_LAST)
 			    if(!(fieldMetadata.isNumeric())) {
-			        if(fieldMetadata.getType() != outMetadata.getField(recordKey.getLenght() + i).getType())
+			        if(fieldMetadata.getType() != outMetadata.getField(recordKey.getLength() + i).getType())
 					    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
-			    } else if(!(outMetadata.getField(recordKey.getLenght() + i).isNumeric()))
+			    } else if(!(outMetadata.getField(recordKey.getLength() + i).isNumeric()))
 				    throw new RuntimeException("Incorrect output data type for aggregate function: " + FNC_INDEX[functionNumber]);
 			if(functionNumber == FNC_CRC32)
-			    if(!(outMetadata.getField(recordKey.getLenght() + i).getType() == DataFieldMetadata.LONG_FIELD)) {
-                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLenght() + i).getTypeAsString());
+			    if(!(outMetadata.getField(recordKey.getLength() + i).getType() == DataFieldMetadata.LONG_FIELD)) {
+                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLength() + i).getTypeAsString());
                 }
             if(functionNumber == FNC_MD5)
-                if(!(outMetadata.getField(recordKey.getLenght() + i).getType() == DataFieldMetadata.STRING_FIELD)) {
-                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLenght() + i).getTypeAsString());
+                if(!(outMetadata.getField(recordKey.getLength() + i).getType() == DataFieldMetadata.STRING_FIELD)) {
+                    throw new RuntimeException("Incorrect output data type for " + FNC_INDEX[functionNumber] + " function: " + outMetadata.getField(recordKey.getLength() + i).getTypeAsString());
                 }
             
 			aggregateItems[i] = new AggregateItem(functionNumber, fieldNum.intValue());
