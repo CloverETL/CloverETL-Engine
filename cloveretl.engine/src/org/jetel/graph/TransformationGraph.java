@@ -63,7 +63,7 @@ import org.jetel.util.TypedProperties;
 
 public final class TransformationGraph {
 
-    public static final String PROPERTY_PROJECT_DIR = "PROJECT_DIR";
+    public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
     
 	private Map <Integer,Phase> phases;
 
@@ -221,7 +221,7 @@ public final class TransformationGraph {
     public URL getProjectURL() {
         if(firstCallprojectURL) {
             firstCallprojectURL = false;
-            String projectURLStr = getGraphProperties().getStringProperty(PROPERTY_PROJECT_DIR);
+            String projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
             
             if(projectURLStr != null) {
                 try {
