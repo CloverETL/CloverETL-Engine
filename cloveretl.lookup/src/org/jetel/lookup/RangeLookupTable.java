@@ -204,7 +204,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			throw new RuntimeException("Set lookup key first!!!!");
 		}
 		//prepare "interval" from keyRecord:set start end end for the value
-		for (int i=0;i<lookupKey.getLenght();i++){
+		for (int i=0;i<lookupKey.getLength();i++){
 			tmpRecord.getField(startField[i]).setValue(keyRecord.getField(keyFields[i]));
 			tmpRecord.getField(endField[i]).setValue(keyRecord.getField(keyFields[i]));
 		}
