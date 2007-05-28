@@ -46,7 +46,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
@@ -749,9 +748,9 @@ public class HashJoin extends Node {
     		slaveKeys = new RecordKey[slaveCnt];
     		for (int idx = 0; idx < slaveCnt; idx++) {
     			driverKeys[idx] = new RecordKey(driverJoiners[idx], driverPort.getMetadata());
-    			driverKeys[idx].init();
     			slaveKeys[idx] = new RecordKey(slaveJoiners[idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-    			slaveKeys[idx].init();
+    			RecordKey.checkKeys(driverKeys[idx], XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+    					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
     		}
 
     		// allocate maps		

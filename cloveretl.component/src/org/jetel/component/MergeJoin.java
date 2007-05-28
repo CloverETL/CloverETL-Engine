@@ -43,7 +43,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
@@ -616,11 +615,11 @@ public class MergeJoin extends Node {
         			joiners = replJoiners;
         		}
         		driverKey = new RecordKey(joiners[0], getInputPort(DRIVER_ON_PORT).getMetadata());
-        		driverKey.init();
         		slaveKeys = new RecordKey[slaveCnt];
         		for (int idx = 0; idx < slaveCnt; idx++) {
         			slaveKeys[idx] = new RecordKey(joiners[1 + idx], getInputPort(FIRST_SLAVE_PORT + idx).getMetadata());
-        			slaveKeys[idx].init();
+        			RecordKey.checkKeys(driverKey, XML_JOINKEY_ATTRIBUTE, slaveKeys[idx], 
+        					XML_SLAVEOVERRIDEKEY_ATTRIBUTE, status, this);
         		}
         		reader = new InputReader[inputCnt];
         		reader[0] = new DriverReader(getInputPort(DRIVER_ON_PORT), driverKey);
