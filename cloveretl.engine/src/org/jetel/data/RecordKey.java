@@ -27,7 +27,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
+import org.jetel.graph.GraphElement;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  *  This class serves the role of DataRecords comparator.<br>
@@ -168,7 +174,7 @@ public class RecordKey {
 	 * Gets number of fields defined by this key.
 	 * @return length of key
 	 */
-	public int getLenght() {
+	public int getLength() {
 	    return keyFields.length;
 	}
 	
@@ -221,7 +227,7 @@ public class RecordKey {
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
 		if (keyFields.length != record2KeyFields.length) {
-			throw new RuntimeException("Can't compare. keys have different number of DataFields");
+			throw new RuntimeException("Can't compare. Keys have different number of DataFields");
 		}
 
 		if (equalNULLs){
@@ -370,7 +376,7 @@ public class RecordKey {
         this.equalNULLs = equalNULLs;
     }
     
-    /**
+	/**
      * This method checks if two RecordKeys are comparable
      * 
      * @param secondKey
@@ -378,7 +384,7 @@ public class RecordKey {
      * 	and even numbers are from second key. When lenghts of the keys differ, proper numbers are
      * 	returned as null. When keys are comparable there is returned array of length zero.
      */
-    public Integer[] getIncomparableFields(RecordKey secondKey){
+    private Integer[] getIncomparableFields(RecordKey secondKey){
     	List<Integer> incomparable = new ArrayList<Integer>();
 		int[] record2KeyFields = secondKey.getKeyFields();
 		DataRecordMetadata secondMetadata = secondKey.metadata;
@@ -400,6 +406,90 @@ public class RecordKey {
     	return incomparable.toArray(new Integer[0]);
     }
     
+    /**
+     * This method checks if two keys are comparable
+     * 
+     * @param masterKey first key
+     * @param masterAtrribute xml attribute corresponding to first key
+     * @param slaveKey second key
+     * @param slaveAttribute xml attribute corresponding to second key
+     * @param status status to save problems
+     * @param component owner of status 
+     * @return
+     */
+    public static ConfigurationStatus checkKeys(RecordKey masterKey, String masterAttribute, 
+    		RecordKey slaveKey, String slaveAttribute, ConfigurationStatus status, GraphElement component) {
+    	
+    	boolean isNull = false;
+    	Integer[] incomparable = null;
+    	ConfigurationProblem problem;
+    	//init master key
+    	try{
+    		masterKey.init();
+    	}catch(NullPointerException e) {
+    		problem = new ConfigurationProblem("Key metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
+    		status.add(problem);
+    		incomparable = new Integer[0];
+    		isNull = true;
+    	}catch(RuntimeException e) {
+    		problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, component, Priority.NORMAL, masterAttribute); 
+    		status.add(problem);
+    		incomparable = new Integer[0];
+    	}
+    	//init slave key
+    	try{
+    		slaveKey.init();
+    	}catch(NullPointerException e) {
+    		problem = new ConfigurationProblem("Slave metadata are null.",Severity.WARNING, component, Priority.NORMAL, masterAttribute );
+    		status.add(problem);
+    		incomparable = new Integer[0];
+    		isNull = true;
+    	}catch(RuntimeException e) {
+    		problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, component, Priority.NORMAL, masterAttribute);
+    		status.add(problem);
+    		incomparable = new Integer[0];
+    	}
+    	
+    	//if one of metadata are null check lengths of keys
+    	if (isNull) {
+    		int masterLength = masterKey.keyFields != null ? masterKey.keyFields.length :
+    			masterKey.keyFieldNames.length;
+    		int slaveLength = slaveKey.keyFields != null ? slaveKey.keyFields.length :
+    			slaveKey.keyFieldNames.length;
+    		if (!(masterLength == slaveLength)) {
+    			problem = new ConfigurationProblem("Keys have different number of DataFields", Severity.ERROR, component, Priority.NORMAL, slaveAttribute);
+    			status.add(problem);
+    		}
+    	}
+    	
+    	//check if key fields are comparable
+    	String message;
+    	Integer d,s;
+    	if (incomparable == null) {
+    		incomparable = masterKey.getIncomparableFields(slaveKey);
+    	}
+		for (int i = 0; i < incomparable.length; i+=2) {
+			d = incomparable[i];
+			s = incomparable[i+1];
+			message = "Field "
+					+ (d != null ? StringUtils.quote(masterKey.metadata.getName() + '.' + masterKey.metadata.getField(d).getName())
+							+ " (" + masterKey.metadata.getFieldTypeAsString(d)	+ ")" 
+						: "null")
+					+ " is not comparable with field "
+					+ (s != null ? StringUtils.quote(slaveKey.metadata.getName() + '.' + slaveKey.metadata.getField(s).getName())
+							+ " ("	+ slaveKey.metadata.getFieldTypeAsString(s)	+ ")" 
+						: "null");
+			if (d == null || s == null) {
+				problem = new ConfigurationProblem(message, Severity.ERROR, component, Priority.NORMAL);
+			}else {
+				problem = new ConfigurationProblem(message, Severity.WARNING, component, Priority.NORMAL);
+			}
+			problem.setAttributeName(slaveAttribute);
+			status.add(problem);
+		}
+   	
+    	return status;
+    }
 }
 // end RecordKey
 
