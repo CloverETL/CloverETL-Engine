@@ -51,7 +51,8 @@ public class TLMapVariable extends TLVariable {
     }
     
     public TLValue getValue(String key) {
-        return (TLValue)value.getMap().get(key);
+        TLValue val=(TLValue)value.getMap().get(key);
+        return val!=null ? val : TLValue.NULL_VAL;
     }
     
     public void setValue(TLValue value) {
@@ -67,7 +68,11 @@ public class TLMapVariable extends TLVariable {
     }
     
     public void setValue(String key,TLValue value) {
-        this.value.getMap().put(key, value);
+        if (value.isNull()) {
+            this.value.getMap().remove(key);
+        }else {
+            this.value.getMap().put(key, value);
+        }
     }
     
     public void setValue(DataField fieldValue) {

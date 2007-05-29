@@ -60,11 +60,17 @@ public class TLListVariable extends TLVariable {
         }
     }
     
-    public void setValue(int index,TLValue value) {
-        if (index<0) {
-            this.value.getList().add(value);
-        }else {
-            this.value.getList().set(index, value);
+    public void setValue(int index, TLValue value) {
+        if (value.isNull()) {
+            if (index < 0)
+                index = this.value.getList().size() - 1;
+            this.value.getList().remove(index);
+        } else {
+            if (index < 0) {
+                this.value.getList().add(value);
+            } else {
+                this.value.getList().set(index, value);
+            }
         }
     }
     
