@@ -1,4 +1,4 @@
-package org.jetel.util.xpath;
+package org.jetel.data.parser;
 
 import java.util.Iterator;
 import java.util.LinkedList;

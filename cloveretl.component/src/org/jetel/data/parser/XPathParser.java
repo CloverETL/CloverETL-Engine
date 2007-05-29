@@ -25,8 +25,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.xpath.XPathContext;
-import org.jetel.util.xpath.XPathElement;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -127,7 +125,6 @@ public class XPathParser implements Parser {
         	}
     	    //sequence fields initialization
         	sequence.init();
-        	sequence.reset();
         	xpathContext.setSequence(sequence); // String id, TransformationGraph graph, String name
         } else if (aSeqField != null) {
         	/*<Context xpath="/bookstore/bookstore" outPort="0" sequenceField="a4" sequenceId="Sequence0">
