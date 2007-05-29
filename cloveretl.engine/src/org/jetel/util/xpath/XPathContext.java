@@ -81,6 +81,8 @@ public class XPathContext {
 	
 	private BadDataFormatException bdfe = null;
 	
+	private StringBuilder stringBuilder = new StringBuilder();
+	
 	/**
 	 * Constructor
 	 */
@@ -219,7 +221,7 @@ public class XPathContext {
 				if (xpathContext.generatedKeys != null) {
 					xpathContext.iGeneratedKeys = new int[xpathContext.generatedKeys.length];
 					for (int i=0; i<xpathContext.generatedKeys.length; i++) {
-						Integer fieldPos = (Integer)tmp.record.getMetadata().getFieldNames().get(xpathContext.generatedKeys[i]);
+						Integer fieldPos = (Integer)xpathContext.record.getMetadata().getFieldNames().get(xpathContext.generatedKeys[i]);
 						if (fieldPos == null) 
 							throw new TransformerException("Clover field name '" + xpathContext.generatedKeys[i] + "' not found in metadata");
 						xpathContext.iGeneratedKeys[i] = fieldPos.intValue();
@@ -283,10 +285,16 @@ public class XPathContext {
 				parentContext4Keys.getNextInner();
 				parentContext4Keys.recordLoaded = true;
 				Object value;
+				stringBuilder.setLength(0);
 				for (int i=0; i<iParentKeys.length; i++) {
 					value = parentContext4Keys.record.getField(iParentKeys[i]).getValue();
 					if (value != null) {
-						record.getField(iGeneratedKeys[i]).fromString(value.toString());
+						if (iGeneratedKeys.length == 1 && iParentKeys.length > 1) {
+							stringBuilder.append(value.toString());
+							record.getField(iGeneratedKeys[0]).fromString(stringBuilder.toString());
+						} else {
+							record.getField(iGeneratedKeys[i]).fromString(value.toString());
+						}
 					}
 				}
 			}
