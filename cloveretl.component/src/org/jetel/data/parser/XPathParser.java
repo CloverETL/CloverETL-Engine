@@ -36,7 +36,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
- * This class 
+ * This class is parser for Xml XPath reader. 
  * 
  * 
  * @author ausperger
@@ -69,13 +69,11 @@ public class XPathParser implements Parser {
 		this.xpathDocument = document;
 	}
 	
-	// http://www.exampledepot.com/egs/org.w3c.dom/pkg.html
 	public XPathContext parseXPath(Document xmlDocument) throws SAXException, IOException, ParserConfigurationException, TransformerException, XPathException, DOMException, ComponentNotReadyException {
 		// create and process document 
 		return parseDocument(xmlDocument);
 	}
 	
-	// http://www.exampledepot.com/egs/org.w3c.dom/pkg.html
 	public XPathContext parseXPath(InputStream inputStream) throws SAXException, IOException, ParserConfigurationException, TransformerException, XPathException, DOMException, ComponentNotReadyException {
 		// create and process document 
 		Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(inputStream);
@@ -174,7 +172,8 @@ public class XPathParser implements Parser {
 	    if (generatedKeys==null ^ parentKeys==null)
 	    	throw new TransformerException("Wrong value " + ATTRIBUTE_PARENT_KEY + "='"+ sParentKeys +
 	    			"' or " + ATTRIBUTE_GENERATED_KEY +"='"+ sGenKey + "'.");
-	    if (generatedKeys!=null && parentKeys!=null && generatedKeys.length != parentKeys.length) {
+	    if (generatedKeys!=null && parentKeys!=null && 
+	    		!((generatedKeys.length==1 && parentKeys.length>1) || generatedKeys.length == parentKeys.length)) {
 	    	throw new TransformerException("Wrong value " + ATTRIBUTE_PARENT_KEY + "='"+ sParentKeys +
 	    			"' or " + ATTRIBUTE_GENERATED_KEY +"='"+ sGenKey + "'.");
 	    }
@@ -264,7 +263,7 @@ public class XPathParser implements Parser {
 	}
 
 
-	public void init(DataRecordMetadata metadata) //TODO odstranit metadata
+	public void init(DataRecordMetadata metadata)
 	throws ComponentNotReadyException {		
 		try {
 			xpathContext = parseXPath(xpathDocument);
