@@ -47,7 +47,7 @@ public class Stack {
 	public static final TLValue TRUE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.TRUE);
 	public static final TLValue FALSE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.FALSE);
 
-    public static final TLValue NULL_VAL = new TLValue(TLValueType.NULL,null);
+    public static final TLValue NULL_VAL = TLValue.NULL_VAL;
 	public static final TLValue NUM_ZERO = new TLValue(TLValueType.INTEGER,new CloverInteger(0));
     public static final TLValue NUM_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(1)); 
     public static final TLValue NUM_MINUS_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(-1)); 

@@ -35,10 +35,14 @@ import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.Decimal;
+import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
 public class TLValue {
+    
+    public static TLValue NULL_VAL=new TLValue(TLValueType.NULL,null);
+    
     public TLValueType type;
     public Object value;
     
@@ -52,8 +56,7 @@ public class TLValue {
     }
     
     public TLValue(DataField field) {
-        this.type=convertType(field.getMetadata());
-        this.value=field.getValueDuplicate();
+        setValue(field);
     }
     
     public void setValue(Object _value) {
@@ -62,10 +65,15 @@ public class TLValue {
     
     public final void setValue(DataField field) {
         this.type=convertType(field.getMetadata());
-        if (field.isNull())
+        if (field.isNull()) {
             this.value=null;
-        else
-            this.value=field.getValueDuplicate();
+        }else {
+            if (type.isNumeric()) {
+                this.value=((Numeric)field).duplicateNumeric();
+            }else {
+                this.value=field.getValueDuplicate();
+            }
+        }
     }
     
     public Object getValue() {
@@ -172,6 +180,27 @@ public class TLValue {
         }
     }
     
+    public final static TLValue convertValue(DataField field) {
+        switch(field.getMetadata().getType()) {
+        case DataFieldMetadata.INTEGER_FIELD:
+            return new TLValue(TLValueType.INTEGER,new CloverInteger((Numeric)field));
+        case DataFieldMetadata.LONG_FIELD:
+            return new TLValue(TLValueType.LONG,new CloverLong((Numeric)field));
+        case DataFieldMetadata.NUMERIC_FIELD:
+            return new TLValue(TLValueType.DOUBLE,new CloverDouble((Numeric)field));
+        case DataFieldMetadata.DECIMAL_FIELD:
+            return new TLValue(TLValueType.DECIMAL,((Decimal)field).createCopy());
+        case DataFieldMetadata.DATE_FIELD:
+           return new TLValue(TLValueType.DATE,field.getValueDuplicate());
+        case DataFieldMetadata.BYTE_FIELD:
+        case DataFieldMetadata.STRING_FIELD:
+            return new TLValue(TLValueType.STRING,field.getValueDuplicate());
+        default:
+            return new TLValue(TLValueType.STRING,field.toString());
+        
+        }
+    }
+    
     public final void copyToDataField(DataField field) {
         if (value == null) {
             field.setNull(true);
@@ -196,7 +225,7 @@ public class TLValue {
     }
     
     @Override public String toString() {
-        return value.toString();
+        return value!=null ? value.toString() : "null";
     }
     
     public TLValue duplicate() {

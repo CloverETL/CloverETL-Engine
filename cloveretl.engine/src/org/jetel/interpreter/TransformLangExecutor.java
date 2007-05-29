@@ -738,7 +738,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			stack.push(Stack.NULL_VAL);
 		} else {
 			DataField field = record.getField(node.fieldNo);
-            stack.push(new TLValue(field));
+            if (field.isNull())
+                stack.push(Stack.NULL_VAL);
+            else
+                stack.push(new TLValue(field));
 		}
         
         // old
