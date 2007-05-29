@@ -85,7 +85,7 @@ ${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});&
 &#13;
 </attr>
 </Node>
-<Node enabled="enabled" guiHeight="0" guiName="XMLExtract" guiWidth="0" guiX="20" guiY="20" id="XML_EXTRACT0" type="XML_XPATH_READER">
+<Node enabled="enabled" guiHeight="0" guiName="XML XPath Reader" guiWidth="0" guiX="20" guiY="20" id="XML_XPATH_READER0" type="XML_XPATH_READER">
 <attr name="fileURL">${WORKSPACE}/data/other/employees.xml</attr>
 <attr name="mapping"><![CDATA[
 	<Context xpath="/employees/employee" outPort="0">
@@ -104,11 +104,11 @@ ${out.0.financial_bonus} = ((${in.1.monthly_bonus})*12)+(${in.1.yearly_bonus});&
 </attr>
 </Node>
 <Edge fromNode="MERGE_JOIN0:0" guiBendpoints="" id="Edge5" inPort="0 (Join - Benefits)" metadata="Metadata6" outPort="0 (Merge Join)" toNode="DELIMITED_DATA_WRITER1:0"/>
-<Edge debugMode="false" fromNode="XML_EXTRACT0:0" guiBendpoints="" id="Edge2" inPort="0 (Employees)" metadata="Metadata0" outPort="0 (XMLExtract)" toNode="DELIMITED_DATA_WRITER0:0"/>
-<Edge fromNode="XML_EXTRACT0:1" guiBendpoints="" id="Edge16" inPort="0 (Children)" metadata="Metadata1" outPort="1 (XMLExtract)" toNode="DELIMITED_DATA_WRITER2:0"/>
-<Edge fromNode="XML_EXTRACT0:2" guiBendpoints="" id="Edge21" inPort="0 (Merge Join)" metadata="Metadata2" outPort="2 (XMLExtract)" toNode="MERGE_JOIN0:0"/>
-<Edge fromNode="XML_EXTRACT0:3" guiBendpoints="" id="Edge22" inPort="1 (Merge Join)" metadata="Metadata3" outPort="3 (XMLExtract)" toNode="MERGE_JOIN0:1"/>
-<Edge debugMode="false" fromNode="XML_EXTRACT0:4" guiBendpoints="" id="Edge23" inPort="0 (Projects)" metadata="Metadata5" outPort="4 (XMLExtract)" toNode="DELIMITED_DATA_WRITER3:0"/>
-<Edge fromNode="XML_EXTRACT0:5" guiBendpoints="" id="Edge24" inPort="0 (Customers)" metadata="Metadata4" outPort="5 (XMLExtract)" toNode="DELIMITED_DATA_WRITER4:0"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:0" guiBendpoints="" id="Edge2" inPort="0 (Employees)" metadata="Metadata0" outPort="0 (XML XPath Reader)" toNode="DELIMITED_DATA_WRITER0:0"/>
+<Edge fromNode="XML_XPATH_READER0:1" guiBendpoints="" id="Edge16" inPort="0 (Children)" metadata="Metadata1" outPort="1 (XML XPath Reader)" toNode="DELIMITED_DATA_WRITER2:0"/>
+<Edge fromNode="XML_XPATH_READER0:2" guiBendpoints="" id="Edge21" inPort="0 (Merge Join)" metadata="Metadata2" outPort="2 (XML XPath Reader)" toNode="MERGE_JOIN0:0"/>
+<Edge fromNode="XML_XPATH_READER0:3" guiBendpoints="" id="Edge22" inPort="1 (Merge Join)" metadata="Metadata3" outPort="3 (XML XPath Reader)" toNode="MERGE_JOIN0:1"/>
+<Edge debugMode="false" fromNode="XML_XPATH_READER0:4" guiBendpoints="" id="Edge23" inPort="0 (Projects)" metadata="Metadata5" outPort="4 (XML XPath Reader)" toNode="DELIMITED_DATA_WRITER3:0"/>
+<Edge fromNode="XML_XPATH_READER0:5" guiBendpoints="" id="Edge24" inPort="0 (Customers)" metadata="Metadata4" outPort="5 (XML XPath Reader)" toNode="DELIMITED_DATA_WRITER4:0"/>
 </Phase>
 </Graph>
