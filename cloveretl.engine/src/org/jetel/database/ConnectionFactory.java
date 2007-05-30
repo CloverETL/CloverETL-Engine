@@ -24,7 +24,6 @@ package org.jetel.database;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +49,14 @@ public class ConnectionFactory {
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
     private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
-    private final static Map connectionMap = new HashMap();
+    private final static Map<String, ConnectionDescription> connectionMap = new HashMap<String, ConnectionDescription>();
     
     public static void init() {
         //ask plugin framework for connections
-        List connectionExtensions = Plugins.getExtensions(ConnectionDescription.EXTENSION_POINT_ID);
+        List<Extension> connectionExtensions = Plugins.getExtensions(ConnectionDescription.EXTENSION_POINT_ID);
         
         //register all connection
-        for(Iterator it = connectionExtensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
+        for(Extension extension : connectionExtensions) {
             try {
                 registerConnection(new ConnectionDescription(extension));
             } catch(Exception e) {
@@ -86,7 +84,7 @@ public class ConnectionFactory {
      */
     private final static Class getConnectionClass(String connectionType) {
         String className = null;
-        ConnectionDescription connectionDescription = (ConnectionDescription) connectionMap.get(connectionType);
+        ConnectionDescription connectionDescription = connectionMap.get(connectionType);
         
         try {
             if(connectionDescription == null) { 
@@ -96,11 +94,8 @@ public class ConnectionFactory {
                 return Class.forName(connectionType); 
             } else {
                 className = connectionDescription.getClassName();
-                //activate plugin if necessary
+
                 PluginDescriptor pluginDescriptor = connectionDescription.getPluginDescriptor();
-                if(!pluginDescriptor.isActive()) {
-                    pluginDescriptor.activatePlugin();
-                }
                 
                 //find class of connection
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());

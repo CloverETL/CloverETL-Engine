@@ -1,0 +1,48 @@
+<plugin
+   id="org.jetel.tlfunction"
+   version="2.2.0"
+   provider-name="Javlin Consulting s.r.o.">
+
+	<runtime>
+		<library path="../../../cloveretl.tlfunction/bin"/>
+   	</runtime> 
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="math"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.MathLib"/>
+		<parameter id="function">
+			<value>sqrt</value>
+			<value>log</value>
+			<value>log10</value>
+			<value>exp</value>
+			<value>round</value>
+			<value>pow</value>
+			<value>pi</value>
+			<value>random</value>
+		</parameter>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="date"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.DateLib"/>
+		<parameter id="function">
+			<value>today</value>
+		</parameter>
+	</extension>
+
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="string"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.StringLib"/>
+		<parameter id="function">
+			<value>concat</value>
+			<value>uppercase</value>
+			<value>lowercase</value>
+			<value>substring</value>
+			<value>left</value>
+			<value>right</value>
+			<value>trim</value>
+			<value>length</value>
+		</parameter>
+	</extension>
+	
+</plugin>

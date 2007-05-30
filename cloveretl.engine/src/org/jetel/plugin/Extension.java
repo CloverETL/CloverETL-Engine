@@ -19,7 +19,8 @@
 */
 package org.jetel.plugin;
 
-import java.util.Properties;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * This class represents extension point of engine.
@@ -30,26 +31,31 @@ public class Extension {
 
     private final String pointId;
     
-    private final Properties parameters;
+    private final Map<String, ExtensionParameter> parameters;
 
     private final PluginDescriptor plugin;
     
-    public Extension(String pointId, Properties parameters, PluginDescriptor plugin) {
+    public Extension(String pointId, PluginDescriptor plugin) {
         this.pointId = pointId;
-        this.parameters = parameters;
+        this.parameters = new HashMap<String, ExtensionParameter>();
         this.plugin = plugin;
     }
 
-    public Properties getParameters() {
+    public void addParameter(String key, ExtensionParameter parameter) {
+        parameters.put(key, parameter);
+    }
+    
+    public Map<String, ExtensionParameter> getParameters() {
         return parameters;
     }
 
-    public String getParameter(String key) {
-        return parameters.getProperty(key);
+    public ExtensionParameter getParameter(String key) {
+        return parameters.get(key);
     }
     
-    public String getParameter(String key, String defaultValue) {
-        return parameters.getProperty(key, defaultValue);
+    public ExtensionParameter getParameter(String key, String defaultValue) {
+        ExtensionParameter ret = parameters.get(key);
+        return ret != null ? ret : new ExtensionParameter(defaultValue);
     }
 
     public PluginDescriptor getPlugin() {

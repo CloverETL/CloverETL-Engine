@@ -25,31 +25,26 @@ package org.jetel.interpreter.extensions;
 
 import java.util.Calendar;
 
-import org.jetel.data.primitive.CloverDouble;
-import org.jetel.data.primitive.Numeric;
-import org.jetel.interpreter.Stack;
-import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
-import org.jetel.util.StringUtils;
 
-public class DateLib {
+public class DateLib extends TLFunctionLibrary {
 
-    public static void init() {
-
-        // TODAY
-
-        TLFunctionFactory.registerFunction(new TLFunctionPrototype("date",
-                "today", new TLValueType[] { },
-                TLValueType.DATE) {
-            @Override
-            public TLValue execute(TLValue[] params, TLContext context) {
-                return new TLValue(TLValueType.DATE,Calendar.getInstance().getTime());
-            }
-        });
+    public DateLib() {
+        super();
         
-        
-        
+        library.put("date", dateFunction);
+        library.put("Date.date", dateFunction);
     }
+    
+    // TODAY
+    private TLFunctionPrototype dateFunction = 
+        new TLFunctionPrototype("date", "today", new TLValueType[] { }, TLValueType.DATE) {
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            return new TLValue(TLValueType.DATE,Calendar.getInstance().getTime());
+        }
+    };
+    
 }

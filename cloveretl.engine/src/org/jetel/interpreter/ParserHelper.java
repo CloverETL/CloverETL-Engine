@@ -71,7 +71,6 @@ public class ParserHelper {
         globalVariableSlotCounter=0;
         localVariableSlotCounter=0;
         inFunctionDeclaration=false;
-        TLFunctionFactory.init();
     }
 
     public int getNewGlobalSlot(){

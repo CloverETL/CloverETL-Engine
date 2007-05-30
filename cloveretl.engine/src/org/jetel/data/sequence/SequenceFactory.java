@@ -24,7 +24,6 @@ package org.jetel.data.sequence;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +49,14 @@ public class SequenceFactory {
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
     private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
-    private final static Map sequenceMap = new HashMap();
+    private final static Map<String, SequenceDescription> sequenceMap = new HashMap<String, SequenceDescription>();
     
     public static void init() {
         //ask plugin framework for sequences
-        List sequenceExtensions = Plugins.getExtensions(SequenceDescription.EXTENSION_POINT_ID);
+        List<Extension> sequenceExtensions = Plugins.getExtensions(SequenceDescription.EXTENSION_POINT_ID);
         
         //register all sequences
-        for(Iterator it = sequenceExtensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
+        for(Extension extension : sequenceExtensions) {
             try {
                 registerSequence(new SequenceDescription(extension));
             } catch(Exception e) {
@@ -86,7 +84,7 @@ public class SequenceFactory {
      */
     private final static Class getSequenceClass(String sequenceType) {
         String className = null;
-        SequenceDescription sequenceDescription = (SequenceDescription) sequenceMap.get(sequenceType);
+        SequenceDescription sequenceDescription = sequenceMap.get(sequenceType);
         
         try {
             if(sequenceDescription == null) { 
@@ -96,11 +94,8 @@ public class SequenceFactory {
                 return Class.forName(sequenceType); 
             } else {
                 className = sequenceDescription.getClassName();
-                //activate plugin if necessary
+
                 PluginDescriptor pluginDescriptor = sequenceDescription.getPluginDescriptor();
-                if(!pluginDescriptor.isActive()) {
-                    pluginDescriptor.activatePlugin();
-                }
                 
                 //find class of component
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());

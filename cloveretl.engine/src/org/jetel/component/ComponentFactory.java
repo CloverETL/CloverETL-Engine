@@ -25,7 +25,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -51,15 +50,14 @@ public class ComponentFactory {
 
 	private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
 	private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
-	private final static Map componentMap = new HashMap();
+	private final static Map<String, ComponentDescription> componentMap = new HashMap<String, ComponentDescription>();
 	
 	public static void init() {
         //ask plugin framework for components
-        List componentExtensions = Plugins.getExtensions(ComponentDescription.EXTENSION_POINT_ID);
+        List<Extension> componentExtensions = Plugins.getExtensions(ComponentDescription.EXTENSION_POINT_ID);
         
         //register all components
-        for(Iterator it = componentExtensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
+        for(Extension extension : componentExtensions) {
             try {
                 registerComponent(new ComponentDescription(extension));
             } catch(Exception e) {
@@ -87,7 +85,7 @@ public class ComponentFactory {
      */
     public final static Class getComponentClass(String componentType) {
         String className = null;
-        ComponentDescription componentDescription = (ComponentDescription) componentMap.get(componentType);
+        ComponentDescription componentDescription = componentMap.get(componentType);
         
         try {
             if(componentDescription == null) { 
@@ -97,11 +95,8 @@ public class ComponentFactory {
                 return Class.forName(componentType); 
             } else {
                 className = componentDescription.getClassName();
-                //activate plugin if necessary
+
                 PluginDescriptor pluginDescriptor = componentDescription.getPluginDescriptor();
-                if(!pluginDescriptor.isActive()) {
-                    pluginDescriptor.activatePlugin();
-                }
                 
                 //find class of component
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());

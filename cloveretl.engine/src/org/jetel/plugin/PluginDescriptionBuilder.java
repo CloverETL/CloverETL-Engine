@@ -19,10 +19,9 @@
 */
 package org.jetel.plugin;
 
-import java.util.Properties;
-
 import javax.naming.directory.InvalidAttributesException;
 
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -143,21 +142,35 @@ public class PluginDescriptionBuilder {
             throw new InvalidAttributesException("Plugin.extension 'point-id' attribute is not set.");
         }
 
+        Extension extension = plugin.addExtension(extensionElement.getAttribute(POINT_ID_ATTR));
+
         //parameter elements
-        Properties parameters = new Properties();
         NodeList nodes = extensionElement.getElementsByTagName(PARAMETER_ELEMENT);
         for(int i = 0; i < nodes.getLength(); i++) {
-            readParameter((Element) nodes.item(i), parameters);
+            readParameter((Element) nodes.item(i), extension);
         }
         
-        plugin.addExtension(extensionElement.getAttribute(POINT_ID_ATTR), parameters);
     }
 
-    private void readParameter(Element parameterElement, Properties parameters) throws InvalidAttributesException {
+    private void readParameter(Element parameterElement, Extension extension) throws InvalidAttributesException {
         if(!parameterElement.hasAttribute(ID_ATTR)) {
             throw new InvalidAttributesException("Plugin.extension.parameter 'id' attribute is not set.");
         }
-        parameters.put(parameterElement.getAttribute(ID_ATTR), parameterElement.getAttribute(VALUE_ATTR));
+        if(parameterElement.hasAttribute(VALUE_ATTR)) {
+            extension.addParameter(parameterElement.getAttribute(ID_ATTR), new ExtensionParameter(parameterElement.getAttribute(VALUE_ATTR)));
+        } else {
+            ExtensionParameter extensionParameter = new ExtensionParameter();
+            NodeList valuesElements = parameterElement.getElementsByTagName(VALUE_ATTR);
+            for(int i = 0; i < valuesElements.getLength(); i++) {
+                String value = valuesElements.item(i).getTextContent();
+                if(!StringUtils.isEmpty(value)) {
+                    extensionParameter.addValue(value);
+                }
+            }
+            if(!extensionParameter.isEmpty()) {
+                extension.addParameter(parameterElement.getAttribute(ID_ATTR), extensionParameter);
+            }
+        }
     }
 
     private void readRequires(Element requiresElement) throws InvalidAttributesException {

@@ -23,7 +23,6 @@
  */
 package org.jetel.interpreter.extensions;
 
-import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
