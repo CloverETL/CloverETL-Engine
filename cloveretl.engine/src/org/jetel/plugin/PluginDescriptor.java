@@ -26,7 +26,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 
 import javax.naming.directory.InvalidAttributesException;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -71,17 +70,17 @@ public class PluginDescriptor {
     /**
      * List of all requires plugins.
      */
-    private List prerequisites;
+    private List<PluginPrerequisite> prerequisites;
     
     /**
      * List of all class path. Definition for plugin class loader. 
      */
-    private List libraries;
+    private List<String> libraries;
     
     /**
      * List of all imlemented extensions points by this plugin.
      */
-    private List extensions;
+    private List<Extension> extensions;
 
     /**
      * ClassLoader for this plugin. Is defined base on all libraries.
@@ -108,9 +107,9 @@ public class PluginDescriptor {
     public PluginDescriptor(File manifest) {
         this.manifest = manifest; 
         
-        prerequisites = new ArrayList();
-        libraries = new ArrayList();
-        extensions = new ArrayList();
+        prerequisites = new ArrayList<PluginPrerequisite>();
+        libraries = new ArrayList<String>();
+        extensions = new ArrayList<Extension>();
     }
 
     public void init() throws ComponentNotReadyException {
@@ -186,8 +185,9 @@ public class PluginDescriptor {
 
     public ClassLoader getClassLoader() {
         if(!isActive()) {
-            logger.warn("PluginDescription.getClassLoader(): Plugin " + getId() + " is not already active.");
-            return null;
+            activatePlugin();
+//            logger.warn("PluginDescription.getClassLoader(): Plugin " + getId() + " is not already active.");
+//            return null;
         }
         if(classLoader == null) {
             classLoader = new PluginClassLoader(PluginDescriptor.class.getClassLoader(), this);
@@ -210,14 +210,15 @@ public class PluginDescriptor {
         return urls;
     }
     
-    public void addExtension(String pointId, Properties parameters) {
-        extensions.add(new Extension(pointId, parameters, this));
+    public Extension addExtension(String pointId) {
+        Extension ret = new Extension(pointId, this); 
+        extensions.add(ret);
+        return ret;
     }
 
-    public List getExtensions(String pointId) {
-        List ret = new ArrayList();
-        for(Iterator it = extensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
+    public List<Extension> getExtensions(String pointId) {
+        List<Extension> ret = new ArrayList<Extension>();
+        for(Extension extension : extensions) {
             if(extension.getPointId().equals(pointId)) {
                 ret.add(extension);
             }
@@ -233,13 +234,12 @@ public class PluginDescriptor {
         prerequisites.add(new PluginPrerequisite(pluginId, pluginVersion, match));
     }
 
-    public List getPrerequisites() {
+    public List<PluginPrerequisite> getPrerequisites() {
         return prerequisites;
     }
     
     public void checkDependences() {
-        for(Iterator it = prerequisites.iterator(); it.hasNext();) {
-            PluginPrerequisite prerequisite = (PluginPrerequisite) it.next();
+        for(PluginPrerequisite prerequisite : prerequisites) {
             if(Plugins.getPluginDescriptor(prerequisite.getPluginId()) == null) {
                 logger.error("Plugin " + getId() + " depend on unknown plugin " + prerequisite.getPluginId());
             }
@@ -321,9 +321,7 @@ public class PluginDescriptor {
         ret.append("\tversion - " + getVersion() + "\n");
         ret.append("\tprovider-name - " + getProviderName() + "\n");
         
-        for(Iterator it = extensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
-            
+        for(Extension extension : extensions) {
             ret.append("\t\tpoint-id  - " + extension.getPointId() + " - " + extension.getParameters() + "\n" );
         }
         

@@ -29,45 +29,59 @@ import java.util.Map;
 
 public class TLFunctionFactory {
     
-    public static String DEFAULT_LIBRARY = "DEF_LIB";
+//    public static String DEFAULT_LIBRARY = "DEF_LIB";
     
     private static Map<String,TLFunctionPrototype> functionLib=new HashMap<String,TLFunctionPrototype>(64);
     
     private TLFunctionFactory() {
     }
-
-    // static {} 
-    
-    public static void init() {
-        StringLib.init();
-        MathLib.init();
-        DateLib.init();
-    }
-    
-    public static boolean exists(String library,String functionName) {
-        return functionLib.containsKey(library+"."+functionName);
-    }
     
     public static boolean exists(String functionName) {
-        return exists(DEFAULT_LIBRARY,functionName);
+        if(functionLib.containsKey(functionName)) {
+            return true;
+        } else {
+            return TLFunctionPluginRepository.exists(functionName);
+        }
     }
-    
-    public static TLFunctionPrototype getFunction(String library,String functionName){
-        TLFunctionPrototype function =functionLib.get(library+"."+functionName);
-       return function;
+
+    public static TLFunctionPrototype getFunction(String functionName) {
+        TLFunctionPrototype function = functionLib.get(functionName);
+        if(function == null) {
+            function = TLFunctionPluginRepository.getFunction(functionName);
+            registerFunction(function);
+        }
+        return function;
     }
-    
-    public static TLFunctionPrototype getFunction(String functionName){
-        return getFunction(DEFAULT_LIBRARY,functionName);
-    }
-        
-    public static void registerFunction(String library,TLFunctionPrototype function){
-        functionLib.put(library+"."+function.name, function);
-    }
-    
+
     public static void registerFunction(TLFunctionPrototype function){
-        registerFunction(DEFAULT_LIBRARY,function);
-     }
+        functionLib.put(function.name, function);
+    }
+
+    
+//    public static boolean exists(String library,String functionName) {
+//        return functionLib.containsKey(library+"."+functionName);
+//    }
+//    
+//    public static boolean exists(String functionName) {
+//        return exists(DEFAULT_LIBRARY,functionName);
+//    }
+//    
+//    public static TLFunctionPrototype getFunction(String library,String functionName){
+//        TLFunctionPrototype function =functionLib.get(library+"."+functionName);
+//       return function;
+//    }
+//    
+//    public static TLFunctionPrototype getFunction(String functionName){
+//        return getFunction(DEFAULT_LIBRARY,functionName);
+//    }
+//        
+//    public static void registerFunction(String library,TLFunctionPrototype function){
+//        functionLib.put(library+"."+function.name, function);
+//    }
+//    
+//    public static void registerFunction(TLFunctionPrototype function){
+//        registerFunction(DEFAULT_LIBRARY,function);
+//     }
 
     public static void dump() {
         System.out.println("#registered functions: "+functionLib.size());

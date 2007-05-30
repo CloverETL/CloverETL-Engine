@@ -24,7 +24,6 @@ package org.jetel.data.lookup;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -50,15 +49,14 @@ public class LookupTableFactory {
 
     private final static String NAME_OF_STATIC_LOAD_FROM_XML = "fromXML";
     private final static Class[] PARAMETERS_FOR_METHOD = new Class[] { TransformationGraph.class, Element.class };
-    private final static Map lookupTableMap = new HashMap();
+    private final static Map<String, LookupTableDescription> lookupTableMap = new HashMap<String, LookupTableDescription>();
     
     public static void init() {
         //ask plugin framework for lookup tables
-        List lookupTableExtensions = Plugins.getExtensions(LookupTableDescription.EXTENSION_POINT_ID);
+        List<Extension> lookupTableExtensions = Plugins.getExtensions(LookupTableDescription.EXTENSION_POINT_ID);
         
         //register all lookup tables
-        for(Iterator it = lookupTableExtensions.iterator(); it.hasNext();) {
-            Extension extension = (Extension) it.next();
+        for(Extension extension : lookupTableExtensions) {
             try {
                 registerLookupTable(new LookupTableDescription(extension));
             } catch(Exception e) {
@@ -85,7 +83,7 @@ public class LookupTableFactory {
      */
     private final static Class getLookupTableClass(String lookupTableType) {
         String className = null;
-        LookupTableDescription lookupTableDescription = (LookupTableDescription) lookupTableMap.get(lookupTableType);
+        LookupTableDescription lookupTableDescription = lookupTableMap.get(lookupTableType);
         
         try {
             if(lookupTableDescription == null) { 
@@ -95,11 +93,8 @@ public class LookupTableFactory {
                 return Class.forName(lookupTableType); 
             } else {
                 className = lookupTableDescription.getClassName();
-                //activate plugin if necessary
+
                 PluginDescriptor pluginDescriptor = lookupTableDescription.getPluginDescriptor();
-                if(!pluginDescriptor.isActive()) {
-                    pluginDescriptor.activatePlugin();
-                }
                 
                 //find class of lookupTable
                 return Class.forName(className, true, pluginDescriptor.getClassLoader());

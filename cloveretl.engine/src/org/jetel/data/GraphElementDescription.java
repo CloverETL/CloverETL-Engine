@@ -54,8 +54,8 @@ public class GraphElementDescription {
         if(!extension.getPointId().equals(extensionPointId)) {
             throw new IllegalArgumentException("Invalid extension point id (unexpected exception).");
         }
-        this.type = extension.getParameter(TYPE);
-        this.className = extension.getParameter(CLASS);
+        this.type = extension.getParameter(TYPE).getString();
+        this.className = extension.getParameter(CLASS).getString();
         this.pluginDescriptor = extension.getPlugin();
         if(type == null || className == null) {
             throw new IllegalArgumentException("Extension hasn't type or className parameter defined.");

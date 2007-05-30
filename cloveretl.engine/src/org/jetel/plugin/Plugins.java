@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +34,7 @@ import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
 
 /**
  * This class contains all static method, which provide access to all loadable plugins.
@@ -50,11 +50,11 @@ public class Plugins {
     /**
      * Collection of PluginDescriptor(s).
      */
-    private static Map pluginDescriptors;
+    private static Map<String, PluginDescriptor> pluginDescriptors;
 
-    private static Map activePlugins;
+    private static Map<String, PluginDescriptor> activePlugins;
     
-    private static Map deactivePlugins;
+    private static Map<String, PluginDescriptor> deactivePlugins;
 
     private static File[] pluginDirectories;
     
@@ -64,9 +64,9 @@ public class Plugins {
     
     public static void init(String directory) {
         //remove all previous settings
-        pluginDescriptors = new HashMap();
-        activePlugins = new HashMap();
-        deactivePlugins = new HashMap();
+        pluginDescriptors = new HashMap<String, PluginDescriptor>();
+        activePlugins = new HashMap<String, PluginDescriptor>();
+        deactivePlugins = new HashMap<String, PluginDescriptor>();
 
         if(directory == null) {
             directory = Defaults.DEFAULT_PLUGINS_DIRECTORY;
@@ -96,13 +96,13 @@ public class Plugins {
         SequenceFactory.init();
         LookupTableFactory.init();
         ConnectionFactory.init();
+        TLFunctionPluginRepository.init();
     }
 
-    public static List getExtensions(String extensionName) {
-        List ret = new ArrayList();
+    public static List<Extension> getExtensions(String extensionName) {
+        List<Extension> ret = new ArrayList<Extension>();
         
-        for(Iterator it = pluginDescriptors.values().iterator(); it.hasNext();) {
-            PluginDescriptor plugin = (PluginDescriptor) it.next();
+        for(PluginDescriptor plugin : pluginDescriptors.values()) {
             ret.addAll(plugin.getExtensions(extensionName));
         }
         
@@ -135,11 +135,11 @@ public class Plugins {
         }
     }
 
-    public static List getClassLoaders(ClassLoader exclude) {
-        List ret = new ArrayList();
+    public static List<ClassLoader> getClassLoaders(ClassLoader exclude) {
+        List<ClassLoader> ret = new ArrayList<ClassLoader>();
         
-        for(Iterator it = pluginDescriptors.values().iterator(); it.hasNext();) {
-            ClassLoader cl = ((PluginDescriptor) it.next()).getClassLoader();
+        for(PluginDescriptor plugin : pluginDescriptors.values()) {
+            ClassLoader cl = plugin.getClassLoader();
             if(cl != exclude) {
                 ret.add(cl);
             }
@@ -149,8 +149,8 @@ public class Plugins {
     }
     
     private static void checkDependences() {
-        for(Iterator it = pluginDescriptors.values().iterator(); it.hasNext();) {
-            ((PluginDescriptor) it.next()).checkDependences();
+        for(PluginDescriptor plugin : pluginDescriptors.values()) {
+            plugin.checkDependences();
         }
     }
 
@@ -159,7 +159,7 @@ public class Plugins {
     }
 
     public static PluginDescriptor getPluginDescriptor(String pluginId) {
-        return (PluginDescriptor) pluginDescriptors.get(pluginId);
+        return pluginDescriptors.get(pluginId);
     }
     
     public static void activatePlugin(String pluginID) {
@@ -169,15 +169,15 @@ public class Plugins {
             return;
         }
         if(activePlugins.containsKey(pluginID)) {
-            logger.error("Attempt activate already active plugin: " + pluginID);
+            logger.error("Attempt activate already actived plugin: " + pluginID);
             return;
         }
         if(deactivePlugins.containsKey(pluginID)) {
-            logger.error("Attempt activate already deactive plugin: " + pluginID);
+            logger.error("Attempt activate already deactived plugin: " + pluginID);
             return;
         }
         //activation
-        PluginDescriptor pluginDescriptor = (PluginDescriptor) pluginDescriptors.get(pluginID);
+        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
         activePlugins.put(pluginID, pluginDescriptor);
         pluginDescriptor.activate();
     }
@@ -197,7 +197,7 @@ public class Plugins {
             return;
         }
         //deactivation
-        PluginDescriptor pluginDescriptor = (PluginDescriptor) pluginDescriptors.get(pluginID);
+        PluginDescriptor pluginDescriptor = pluginDescriptors.get(pluginID);
         activePlugins.remove(pluginID);
         deactivePlugins.put(pluginID, pluginDescriptor);
         pluginDescriptor.deactivate();

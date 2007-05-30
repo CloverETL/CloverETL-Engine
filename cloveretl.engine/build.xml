@@ -268,6 +268,7 @@
 			<sourcepath path="../cloveretl.lookup/src"/>
 			<sourcepath path="../cloveretl.thirdparty/src"/>
 			<!--sourcepath path="../cloveretl.engine.oracle/src"/-->
+			<sourcepath path="../cloveretl.tlfunction/src"/>
 			<doclet name="com.sun.tools.doclets.standard.Standard">
 				<param name="-breakiterator" value="on" />
 				<!-- Following tag definition is here to get rid of complains produced by standard doclet-->
