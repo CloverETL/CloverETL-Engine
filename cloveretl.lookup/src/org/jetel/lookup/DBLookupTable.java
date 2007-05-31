@@ -19,7 +19,6 @@
 */
 package org.jetel.lookup;
 
-import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -37,15 +36,18 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
-import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.SimpleCache;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -75,6 +77,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_DBCONNECTION = "dbConnection";
     private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
+    
+    protected String metadataId;
+    protected String connectionId;
 
 	protected DataRecordMetadata dbMetadata;
 	protected DBConnection dbConnection;
@@ -96,6 +101,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected int cacheNumber = 0;
 	protected int totalNumber = 0;
   
+	
+	public DBLookupTable(String id, String connectionId, String metadataId, String sqlQuery){
+		super(id);
+		this.connectionId = connectionId;
+		this.metadataId = metadataId;
+		this.sqlQuery = sqlQuery;
+	}
 	/**
 	 *  Constructor for the DBLookupTable object
 	 *
@@ -401,7 +413,24 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-   	// if caching is required, crate map to store records
+		
+		if (dbConnection == null) {
+			dbConnection = (DBConnection)getGraph().getConnection(connectionId);
+		}
+		if (dbConnection == null) {
+			throw new ComponentNotReadyException("Connection " + StringUtils.quote(connectionId) + 
+					" does not exist!!!");
+		}
+		
+		if (dbMetadata == null) {
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+		}
+        if (dbMetadata == null) {
+        	throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataId) + 
+					" does not exist!!!");
+        }
+
+        // if caching is required, crate map to store records
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
             resultCache.enableDuplicity();
@@ -477,11 +506,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         //String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         
         try {
-            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
-
-            lookupTable = new DBLookupTable(id, (DBConnection) graph
-                    .getConnection(xattribs.getString(XML_DBCONNECTION)),
-                    metadata, xattribs.getString(XML_SQL_QUERY));
+            lookupTable = new DBLookupTable(id, xattribs.getString(XML_DBCONNECTION),
+                    xattribs.getString(XML_METADATA_ID), xattribs.getString(XML_SQL_QUERY));
             
             if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
                 lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
@@ -525,7 +551,23 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
+
+		if (dbConnection == null) {
+			dbConnection = (DBConnection)getGraph().getConnection(connectionId);
+		}
+		if (dbConnection == null) {
+			status.add(new ConfigurationProblem("Connection " + StringUtils.quote(connectionId) + 
+					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION));
+		}
+
+		if (dbMetadata == null) {
+			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
+		}
+        if (dbMetadata == null) {
+        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
+					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
+        }
+        
         return status;
     }
 

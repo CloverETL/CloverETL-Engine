@@ -30,20 +30,26 @@ import org.jetel.data.Defaults;
 import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
@@ -73,11 +79,19 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_DATA_TYPE_DELIMITED ="delimited";
+    private static final String XML_DATA_TYPE_FIXED ="fixed";
     private static final String XML_CHARSET = "charset";
+	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     
+    protected String metadataName;
 	protected DataRecordMetadata metadata;
+	protected String fileURL;
+	protected String dataType;
+	protected String charset;
+	protected boolean byteMode = false;
 	protected Parser dataParser;
 	protected Map<HashKey, DataRecord> lookupTable;
+	protected String[] keys;
 	protected RecordKey indexKey;
 	protected HashKey lookupKey;
 	protected int numFound;
@@ -108,7 +122,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.tableInitialSize=initialSize;
 	}
 
-	
+	public SimpleLookupTable(String id, String metadataName, String[] keys, int initialSize){
+		super(id);
+		this.metadataName = metadataName;
+		this.keys = keys;
+		this.tableInitialSize = initialSize;
+	}
+
 	/**
 	 *Constructor for the SimpleLookupTable object.
 	 *
@@ -164,6 +184,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    return data;
 	}
 	
+	
 	/**
 	 *  Initializtaion of lookup table - loading all data into it.
 	 *
@@ -173,11 +194,38 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	synchronized public void init() throws ComponentNotReadyException {
         if(isInitialized()) return;
 		super.init();
-	    DataRecord record=new DataRecord(metadata);
+
+		if (metadata == null) {
+			metadata = getGraph().getDataRecordMetadata(metadataName);
+		}		
+		if (metadata == null) {
+			throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataName) + 
+					" does not exist!!!");
+		}
+		
+        if (indexKey == null) {
+        	indexKey = new RecordKey(keys, metadata);
+        }
+        indexKey.init();
+        
+		DataRecord record=new DataRecord(metadata);
 	    record.init();
 		
 	    if (lookupTable==null){
 	        lookupTable = new HashMap<HashKey, DataRecord>(tableInitialSize);
+	    }
+	    
+	    if (charset == null) {
+	    	charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
+	    }
+	    if (dataType != null && fileURL != null) {
+	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
+	    		dataParser = new DelimitedDataParser(charset);
+	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
+	    		dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
+	    	}else{
+	    		dataParser = new DataParser(charset);
+	    	}
 	    }
         
 		/* populate the lookupTable (Map) with data
@@ -188,11 +236,13 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         if (dataParser != null) {
             dataParser.init(metadata);
             try {
-                while (dataParser.getNext(record) != null) {
+               dataParser.setDataSource(FileUtils.getReadableChannel(getGraph() != null ? 
+            		   getGraph().getProjectURL() : null, fileURL));
+               while (dataParser.getNext(record) != null) {
                     DataRecord storeRecord = record.duplicate();
                     lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
                 }
-            } catch (JetelException e) {
+            } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
             dataParser.close();
@@ -223,22 +273,23 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         try{
             int initialSize = xattribs.getInteger(XML_LOOKUP_INITIAL_SIZE, Defaults.Lookup.LOOKUP_INITIAL_CAPACITY);
             String[] keys = xattribs.getString(XML_LOOKUP_KEY).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
-            Parser parser;
-            String dataTypeStr = xattribs.getString(XML_LOOKUP_DATA_TYPE);
+            String metadata = xattribs.getString(XML_METADATA_ID);
             
-            // which data parser to use
-            if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
-                parser = new DelimitedDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
-            } else {
-                parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+            lookupTable = new SimpleLookupTable(id, metadata, keys, initialSize);
+
+            if (xattribs.exists(XML_LOOKUP_DATA_TYPE)) {
+            	lookupTable.setDataType(xattribs.getString(XML_LOOKUP_DATA_TYPE));
             }
+            
             if (xattribs.exists(XML_FILE_URL)) {
-            	parser.setDataSource(FileUtils.getReadableChannel(graph.getProjectURL(), xattribs.getString(XML_FILE_URL)));
-            }else{
-            	parser = null;
+            	lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
             }
-            lookupTable = new SimpleLookupTable(id, metadata, keys, parser, initialSize);
+            if (xattribs.exists(XML_CHARSET)) {
+            	lookupTable.setCharset(xattribs.getString(XML_CHARSET));
+            }
+            if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
+            	lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE));
+            }
             
             return lookupTable;
             
@@ -318,7 +369,26 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
         super.checkConfig(status);
-        //TODO
+
+		if (metadata == null) {
+			metadata = getGraph().getDataRecordMetadata(metadataName);
+		}		
+        if (metadata == null) {
+        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataName) + 
+					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
+        }
+        
+        if (indexKey == null) {
+        	indexKey = new RecordKey(keys, metadata);
+        }
+    	try{
+    		indexKey.init();
+    	}catch(NullPointerException e) {
+    		status.add(new ConfigurationProblem("Key metadata are null.",Severity.WARNING, this, Priority.NORMAL, XML_LOOKUP_KEY ));
+    	}catch(RuntimeException e) {
+    		status.add(new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, Priority.NORMAL, XML_LOOKUP_KEY));
+    	}
+    
         return status;
     }
     
@@ -353,5 +423,38 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     public Iterator<DataRecord> iterator() {
     	return lookupTable.values().iterator();
     }
+
+	public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	public String getFileURL() {
+		return fileURL;
+	}
+
+	public void setFileURL(String fileURL) {
+		this.fileURL = fileURL;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+	public boolean isByteMode() {
+		return byteMode;
+	}
+
+	public void setByteMode(boolean byteMode) {
+		this.byteMode = byteMode;
+	}
+
 }
 
