@@ -37,8 +37,8 @@ public class CLVFFunctionDeclaration extends SimpleNode {
       this.name=name;
   }
   
-  public void addVarName(int order,String name){
-      varNames[order]=name;
+  public void addVarName(int order,String _name){
+      varNames[order]=_name;
       numParams++;
   }
   

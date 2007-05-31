@@ -5,6 +5,7 @@ package org.jetel.interpreter.ASTnode;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
 import org.jetel.interpreter.data.TLContext;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
 
  
@@ -15,6 +16,7 @@ public class CLVFFunctionCallStatement extends SimpleNode {
     public CLVFFunctionDeclaration callNode;
     public TLFunctionPrototype externalFunction;
     public TLContext context;
+    public TLValue[] externalFunctionParams;
     
   public CLVFFunctionCallStatement(int id) {
     super(id);
@@ -43,8 +45,10 @@ public class CLVFFunctionCallStatement extends SimpleNode {
   }
   
   @Override public void init() {
-      super.init();
-      this.context=externalFunction.createContext();
+          if (externalFunction!=null) {
+              this.context=externalFunction.createContext();
+              this.externalFunctionParams=new TLValue[requiredNumParams()];
+          }
   }
   
   @Override public String toString() {
@@ -57,13 +61,16 @@ public class CLVFFunctionCallStatement extends SimpleNode {
       else if (callNode!=null)
           return callNode.numParams;
       else
-          return -1;
+          return 0;
   }
   
   public final boolean validateParams() {
-      if (externalFunction!=null) 
-          return jjtGetNumChildren()>=externalFunction.getParameterTypes().length;
-      else
-          return jjtGetNumChildren()==callNode.numParams;
+      if (externalFunction!=null) {
+          int numParams=jjtGetNumChildren();
+          return (((externalFunction.getMaxParams()!=-1) &&
+                      (numParams>=externalFunction.getParameterTypes().length) && (numParams<=externalFunction.getMaxParams()))
+              || (numParams==externalFunction.getParameterTypes().length));
+      }
+      return jjtGetNumChildren()==callNode.numParams;
   }
 }
