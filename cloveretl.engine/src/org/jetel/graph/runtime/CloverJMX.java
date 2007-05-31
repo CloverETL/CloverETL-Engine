@@ -138,13 +138,8 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     }
     
     public String[] getNodesList(int phase){
-        List <Node> nodes=watchDog.getTransformationGraph().getPhase(phase).getNodes();
-        String[] nodeIDs=new String[nodes.size()];
-        int i=0;
-        for(Node node: nodes) {
-            nodeIDs[i++]=node.getId();
-        }
-        return nodeIDs;
+        Map tracking=watchDog.getTransformationGraph().getPhase(phase).getTracking();
+        return (String[])tracking.keySet().toArray(new String[tracking.size()]);
    }
     
     public int getUpdateInterval() {
