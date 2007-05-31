@@ -60,6 +60,7 @@ public class RecordKey {
 	private String keyFieldNames[];
 	private final static char KEY_ITEMS_DELIMITER = ':';
 	private final static int DEFAULT_STRING_KEY_LENGTH = 32;
+	private boolean isInitialized = false;
 
 	private StringBuffer keyStr;
 
@@ -116,6 +117,8 @@ public class RecordKey {
 	 * @since    May 2, 2002
 	 */
 	public void init() {
+		
+		if (isInitialized) return;
 
 	    if (keyFields == null) {
             Integer position;
@@ -137,6 +140,8 @@ public class RecordKey {
                 keyFieldNames[i]=metadata.getField(keyFields[i]).getName();
             }
         }
+	    
+	    isInitialized = true;
 	}
 
 
