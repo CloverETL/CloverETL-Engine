@@ -236,12 +236,15 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
         if (dataParser != null) {
             dataParser.init(metadata);
             try {
-               dataParser.setDataSource(FileUtils.getReadableChannel(getGraph() != null ? 
-            		   getGraph().getProjectURL() : null, fileURL));
-               while (dataParser.getNext(record) != null) {
-                    DataRecord storeRecord = record.duplicate();
-                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
-                }
+				if (fileURL != null) {
+					dataParser.setDataSource(FileUtils.getReadableChannel(
+							getGraph() != null ? getGraph().getProjectURL() : null,
+							fileURL));
+				}               
+				while (dataParser.getNext(record) != null) {
+	                    DataRecord storeRecord = record.duplicate();
+	                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
+	            }
             } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
