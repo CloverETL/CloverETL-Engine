@@ -29,32 +29,61 @@ import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
-public class MathLib extends TLFunctionLibrary {
+public class MathLib implements ITLFunctionLibrary {
+    
+    private static final String LIBRARY_NAME = "Math";
+    
+    enum Function {
+        SQRT("sqrt"),
+        LOG("log"),
+        LOG10("log10"),
+        EXP("exp"),
+        ROUND("round"),
+        POW("pow"),
+        PI("pi"),
+        RANDOM("random");
+        
+        public String name;
+        
+        private Function(String name) {
+            this.name = name;
+        }
+        
+        public static Function fromString(String s) {
+            for(Function function : Function.values()) {
+                if(s.equalsIgnoreCase(function.name) || s.equalsIgnoreCase(LIBRARY_NAME + "." + function.name)) {
+                    return function;
+                }
+            }
+            return null;
+        }
+    }
     
     public MathLib() {
         super();
         
-        library.put("sqrt", sqrtFunction);
-        library.put("Math.sqrt", sqrtFunction);
-        library.put("log", logFunction);
-        library.put("Math.log", logFunction);
-        library.put("log10", log10Function);
-        library.put("Math.log10", log10Function);
-        library.put("exp", expFunction);
-        library.put("Math.exp", expFunction);
-        library.put("round", roundFunction);
-        library.put("Math.round", roundFunction);
-        library.put("pow", powFunction);
-        library.put("Math.pow", powFunction);
-        library.put("pi", piFunction);
-        library.put("Math.pi", piFunction);
-        library.put("random", randomFunction);
-        library.put("Math.random", randomFunction);
+    }
+
+    public TLFunctionPrototype getFunction(String functionName) {
+        switch(Function.fromString(functionName)) {
+        case SQRT: return new SqrtFunction();
+        case LOG: return new LogFunction();
+        case LOG10: return new Log10Function();
+        case EXP: return new ExpFunction();
+        case ROUND: return new RoundFunction();
+        case POW: return new PowFunction();
+        case PI: return new PiFunction();
+        case RANDOM: return new RandomFunction();
+        default: return null;
+        }
     }
     
     // SQRT
-    private TLFunctionPrototype sqrtFunction = 
-        new TLFunctionPrototype("math", "sqrt", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class SqrtFunction extends TLFunctionPrototype {
+        public SqrtFunction() {
+            super("math", "sqrt", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -72,11 +101,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "sqrt - wrong type of literal(s)");
         }
-    };
-
+    }
+    
     // LOG
-    private TLFunctionPrototype logFunction = 
-        new TLFunctionPrototype("math", "log", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class LogFunction extends TLFunctionPrototype {
+        public LogFunction() {
+            super("math", "log", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+        
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -94,11 +126,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "log - wrong type of literal(s)");
         }
-    };
-
+    }
+    
     // LOG10
-    private TLFunctionPrototype log10Function = 
-        new TLFunctionPrototype("math", "log10", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class Log10Function extends TLFunctionPrototype {
+        public Log10Function() {
+            super("math", "log10", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+        
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -116,11 +151,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "log10 - wrong type of literal(s)");
         }
-    };
+    }
  
     // EXP
-    private TLFunctionPrototype expFunction = 
-        new TLFunctionPrototype("math", "exp", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class ExpFunction extends TLFunctionPrototype {
+        public ExpFunction() {
+            super("math", "exp", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -138,11 +176,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "exp - wrong type of literal(s)");
         }
-    };                        
+    }                        
 
     // ROUND
-    private TLFunctionPrototype roundFunction = 
-        new TLFunctionPrototype("math", "round", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class RoundFunction extends TLFunctionPrototype { 
+        public RoundFunction() {
+            super("math", "round", new TLValueType[] { TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -160,11 +201,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "round - wrong type of literal(s)");
         }
-    };                        
+    }                        
     
     // POW
-    private TLFunctionPrototype powFunction = 
-        new TLFunctionPrototype("math", "pow", new TLValueType[] { TLValueType.DECIMAL, TLValueType.DECIMAL }, TLValueType.DOUBLE) {
+    class PowFunction extends TLFunctionPrototype { 
+        public PowFunction() {
+            super("math", "pow", new TLValueType[] { TLValueType.DECIMAL, TLValueType.DECIMAL }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -181,11 +225,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "pow - wrong type of literal(s)");
         }
-    };                        
+    }                        
     
     // PI
-    private TLFunctionPrototype piFunction = 
-        new TLFunctionPrototype("math", "pi", new TLValueType[] { }, TLValueType.DOUBLE) {
+    class PiFunction extends TLFunctionPrototype { 
+        public PiFunction() {
+            super("math", "pi", new TLValueType[] { }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -202,11 +249,14 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "pi - wrong type of literal(s)");
         }
-    };          
+    }          
 
     // RANDOM
-    private TLFunctionPrototype randomFunction = 
-        new TLFunctionPrototype("math", "random", new TLValueType[] { }, TLValueType.DOUBLE) {
+    class RandomFunction extends TLFunctionPrototype {
+        public RandomFunction() {
+            super("math", "random", new TLValueType[] { }, TLValueType.DOUBLE);
+        }
+
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
@@ -223,6 +273,6 @@ public class MathLib extends TLFunctionLibrary {
             throw new TransformLangExecutorRuntimeException(null,
                     params, "random - wrong type of literal(s)");
         }
-    };                        
+    }                        
 
 }
