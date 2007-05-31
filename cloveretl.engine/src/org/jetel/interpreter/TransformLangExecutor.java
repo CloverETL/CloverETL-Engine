@@ -1626,6 +1626,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                 }else {
                     variableToAssign.setValue(-1,valueToAssign);
                 }
+            } catch (IndexOutOfBoundsException ex) {
+                throw new TransformLangExecutorRuntimeException(node,
+                        "index \""+index+"\" is outside current limits of list/array \"" 
+                        + varNode.varName+"\"", ex);
             } catch (Exception ex) {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
@@ -1709,8 +1713,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             // put call parameters on stack
             node.childrenAccept(this, data);
             // convert stack content into values
-            TLValue[] params=stack.pop(node.jjtGetNumChildren());
-            TLValue returnVal=node.externalFunction.execute(params, node.context);
+            TLValue returnVal=node.externalFunction.execute(stack.pop(node.externalFunctionParams,node.jjtGetNumChildren()),
+                    node.context);
             stack.push(returnVal);
 
         } else {

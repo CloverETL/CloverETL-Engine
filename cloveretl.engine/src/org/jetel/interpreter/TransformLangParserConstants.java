@@ -58,28 +58,29 @@ public interface TransformLangParserConstants {
   int DECIMAL_VAR = 63;
   int BOOLEAN_VAR = 64;
   int STRING_VAR = 65;
-  int LIST_VAR = 66;
-  int MAP_VAR = 67;
-  int RECORD_VAR = 68;
-  int OBJECT_VAR = 69;
-  int BREAK = 70;
-  int CONTINUE = 71;
-  int ELSE = 72;
-  int FOR = 73;
-  int FOR_EACH = 74;
-  int FUNCTION = 75;
-  int IF = 76;
-  int RETURN = 77;
-  int WHILE = 78;
-  int CASE = 79;
-  int ENUM = 80;
-  int IMPORT = 81;
-  int SWITCH = 82;
-  int CASE_DEFAULT = 83;
-  int DO = 84;
-  int DATE_FIELD_LITERAL = 127;
-  int IDENTIFIER = 128;
-  int ERROR = 129;
+  int BYTE_VAR = 66;
+  int LIST_VAR = 67;
+  int MAP_VAR = 68;
+  int RECORD_VAR = 69;
+  int OBJECT_VAR = 70;
+  int BREAK = 71;
+  int CONTINUE = 72;
+  int ELSE = 73;
+  int FOR = 74;
+  int FOR_EACH = 75;
+  int FUNCTION = 76;
+  int IF = 77;
+  int RETURN = 78;
+  int WHILE = 79;
+  int CASE = 80;
+  int ENUM = 81;
+  int IMPORT = 82;
+  int SWITCH = 83;
+  int CASE_DEFAULT = 84;
+  int DO = 85;
+  int DATE_FIELD_LITERAL = 128;
+  int IDENTIFIER = 129;
+  int ERROR = 130;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -152,6 +153,7 @@ public interface TransformLangParserConstants {
     "\"decimal\"",
     "\"boolean\"",
     "\"string\"",
+    "\"byte\"",
     "\"list\"",
     "\"map\"",
     "\"record\"",

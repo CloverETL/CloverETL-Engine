@@ -198,6 +198,13 @@ SPECIAL_TOKEN: {  <"//"> : WithinLineComment }
 }
 <WithinLineComment> MORE: { <~[]> }
 
+SPECIAL_TOKEN: { <"#include"> : WithinInclude }
+<WithinInclude> SPECIAL_TOKEN:
+{
+	<"\n"> : DEFAULT
+}
+<WithingInclude> MORE: { <~[]> }
+
 
 /* Literals */
 TOKEN : {
@@ -298,6 +305,7 @@ TOKEN : /* variable Types */
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
+ |  <BYTE_VAR: "byte" >
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >
@@ -697,7 +705,7 @@ void RegexLiteral() #void :
  */
 
 void Statement() #void :
-{}
+{ Token t;}
 {
 	
 	try{
@@ -733,7 +741,7 @@ void Statement() #void :
 	}catch (ParseException e) {
 		parseExceptions.add(e);
 // following code causes strange behaviour in case of certain bugs
-//    Token t;//    do {//      t = getNextToken();//    } while (t.kind != SEMICOLON);
+    do {      t = getNextToken();    } while (t.kind != SEMICOLON);
   }
 }
 
@@ -865,28 +873,23 @@ void FunctionCallStatement() :
 {
 	 t=<IDENTIFIER> { 
 	 	jjtThis.setName( t.image); 
-	 	System.err.println(" @In function call !!! ["+t.image+"]");
-	 	// is it alrady declared function ??
+	 	// is it already declared function ??
 	 	if ((functionNode=(CLVFFunctionDeclaration)parserHelper.functionSymbol.get(t.image))!=null){
 	 			 	jjtThis.setCallNode(functionNode);
 	 	}else if (parserHelper.isExternalFunction(t.image)){
-	 				System.err.println("it is external function");
 	 				jjtThis.setExternalFunction(parserHelper.getExternalFunction(t.image));
 	 	}else{ 
-	 		System.err.println("function not declared");
-	 		throw new RuntimeException(new ParseException(t,"function \""+t.image+"\" not declared"));
+	 		throw new ParseException(t,"function \""+t.image+"\" not declared");
 	 	}
 	 	}
 	"(" [ FunctionCallParameter() ] ( "," FunctionCallParameter() )* ")"
 
 	{
-		System.err.println(" @out of function call !!!");
 	 // verify number of call parameters
-		/*
 	 	if (!jjtThis.validateParams()){
-	 		System.err.println("wrong arguments");
-	  		throw new RuntimeException(new ParseException(t,"wrong number of parameters when calling \""+functionNode.name+"\""));
-	 	}*/
+	 		//System.err.println("wrong #arguments");
+	  		throw new ParseException(t,"wrong number of parameters when calling \""+t.image+"\"");
+	 	}
 	}
 }
 

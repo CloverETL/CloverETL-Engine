@@ -44,16 +44,14 @@ public class Stack {
     
 	// these constants are used by interpreter when true or false
 	// result has to be indicated
-	public static final TLValue TRUE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.TRUE);
-	public static final TLValue FALSE_VAL= new TLValue(TLValueType.BOOLEAN,Boolean.FALSE);
+	public static final TLValue TRUE_VAL= TLValue.NULL_VAL;
+	public static final TLValue FALSE_VAL= TLValue.FALSE_VAL;
 
     public static final TLValue NULL_VAL = TLValue.NULL_VAL;
-	public static final TLValue NUM_ZERO = new TLValue(TLValueType.INTEGER,new CloverInteger(0));
-    public static final TLValue NUM_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(1)); 
-    public static final TLValue NUM_MINUS_ONE = new TLValue(TLValueType.INTEGER,new CloverInteger(-1)); 
-	public static final TLValue NUM_PI = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
-    public static final TLValue NUM_E = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
-    
+	public static final TLValue NUM_ZERO = TLValue.NUM_ZERO_VAL;
+    public static final TLValue NUM_ONE = TLValue.NUM_ONE_VAL;
+    public static final TLValue NUM_MINUS_ONE = TLValue.NUM_MINUS_ONE_VAL; 
+	
     public static final TLValue EMPTY_STRING=new TLValue(TLValueType.STRING,new StringBuilder(0));
     
     public static final Numeric NUM_ONE_P = new CloverInteger(1);
@@ -114,14 +112,11 @@ public class Stack {
     
     public final TLValue[] pop(int length) {
         TLValue[] val=new TLValue[length];
+       return pop(val,length);
+    }
+    
+    public final TLValue[] pop(TLValue[] val, int length) {
         for(int i=length;i>0;val[--i]=pop());
-        /*  if ((top-length)<0) return null;
-        TLValue[] val=new TLValue[length];
-        while(length>0) {
-            val[--length]=stack[top];
-            stack[top--]=null;
-        }
-        */
         return val;
     }
 	
