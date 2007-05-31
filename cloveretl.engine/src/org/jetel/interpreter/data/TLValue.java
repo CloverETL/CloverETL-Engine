@@ -39,9 +39,17 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 
-public class TLValue {
+public class TLValue implements Comparable<TLValue>{
     
-    public static TLValue NULL_VAL=new TLValue(TLValueType.NULL,null);
+    public static final TLValue NULL_VAL=new TLValue(TLValueType.NULL,null);
+    public static final TLValue TRUE_VAL=new TLValue(TLValueType.BOOLEAN,Boolean.TRUE);
+    public static final TLValue FALSE_VAL=new TLValue(TLValueType.BOOLEAN,Boolean.FALSE);
+    public static final TLValue NUM_ZERO_VAL = new TLValue(TLValueType.INTEGER,new CloverInteger(0));
+    public static final TLValue NUM_ONE_VAL = new TLValue(TLValueType.INTEGER,new CloverInteger(1)); 
+    public static final TLValue NUM_MINUS_ONE_VAL = new TLValue(TLValueType.INTEGER,new CloverInteger(-1)); 
+    public static final TLValue NUM_PI_VAL = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.PI));
+    public static final TLValue NUM_E_VAL = new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.E));
+    
     
     public TLValueType type;
     public Object value;
@@ -64,7 +72,7 @@ public class TLValue {
     }
     
     public final void setValue(DataField field) {
-        this.type=convertType(field.getMetadata());
+        this.type=TLValueType.convertType(field.getMetadata());
         if (field.isNull()) {
             this.value=null;
         }else {
@@ -160,26 +168,6 @@ public class TLValue {
         return type;
     }
 
-    public final static TLValueType convertType(DataFieldMetadata fieldMeta) {
-        switch (fieldMeta.getType()) {
-        case DataFieldMetadata.INTEGER_FIELD:
-            return TLValueType.INTEGER;
-        case DataFieldMetadata.LONG_FIELD:
-            return TLValueType.LONG;
-        case DataFieldMetadata.NUMERIC_FIELD:
-            return TLValueType.DOUBLE;
-        case DataFieldMetadata.DECIMAL_FIELD:
-            return TLValueType.DECIMAL;
-        case DataFieldMetadata.DATE_FIELD:
-            return TLValueType.DATE;
-        case DataFieldMetadata.BYTE_FIELD:
-        case DataFieldMetadata.STRING_FIELD:
-            return TLValueType.STRING;
-        default:
-            return TLValueType.STRING;
-        }
-    }
-    
     public final static TLValue convertValue(DataField field) {
         switch(field.getMetadata().getType()) {
         case DataFieldMetadata.INTEGER_FIELD:
@@ -271,5 +259,12 @@ public class TLValue {
         if (this.value!= null)
             return this.value.hashCode();
         return super.hashCode();
+    }
+
+    public int compareTo(TLValue o) {
+        if (this.value instanceof Comparable) {
+            return ((Comparable)this.value).compareTo(o);
+        }
+        return -1;
     }
 }
