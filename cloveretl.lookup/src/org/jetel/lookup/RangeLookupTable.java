@@ -15,13 +15,19 @@ import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
+import org.jetel.exception.ConfigurationStatus.Priority;
+import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.GraphElement;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -29,18 +35,18 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.MiscUtils;
+import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 
 /**
- * Range lookup table contains records, which defines intervals. It means that they must
- * have special structure: first field is the name of the interval, odd fields marks starts of
- * intervals, even fields (from 2) means corresponding ends of intervals, eg: Lookup table defined 
+ * Range lookup table contains records, which defines intervals, eg: Lookup table defined 
  * as follows:<br>
  * low_slow,0,10,0,50<br>
  * low_fast,0,10,50,100<br>
  * high_slow,10,20,0,50<br>
  * high_fast,10,20,50,100<br>
- * has 4 intervals with 2 searching parameters: first from interval 0-10, and second from interval 0-100.<br>
+ * with startFields = {1,3} and endFields = {2,4} 
+ * has 4 intervals with 2 searching parameters: first from interval 0-20, and second from interval 0-100.<br>
  * Intervals can overlap. By default start point is included and end point is excluded.
  * It is possible to change this settings during construction or by by proper set method.
  */
@@ -52,6 +58,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_DATA_TYPE_DELIMITED ="delimited";
+    private static final String XML_DATA_TYPE_FIXED ="fixed";
+ 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     private static final String XML_START_FIELDS = "startFields";
     private static final String XML_END_FIELDS = "endFields";
     private static final String XML_CHARSET = "charset";
@@ -61,14 +69,17 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_END_INCLUDE = "endInclude";
 
     protected DataRecordMetadata metadata;//defines lookup table
+    protected String metadataId;
 	protected Parser dataParser;
 	protected TreeSet<DataRecord> lookupTable;//set of intervals
 	protected SortedSet<DataRecord> subTable;
 	protected int numFound;
 	protected RecordKey lookupKey;
 	protected RecordKey startKey;
+	protected String[] startFields;
 	protected int[] startField;
 	protected RecordKey endKey;
+	protected String[] endFields;
 	protected int[] endField;
 	protected DataRecord tmpRecord;
 	protected IntervalRecordComparator comparator;
@@ -77,6 +88,12 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected RuleBasedCollator collator = null;
 	protected boolean[] startInclude;
 	protected boolean[] endInclude;
+	protected boolean useI18N;
+	protected String locale;
+	protected String dataType;
+	protected boolean byteMode = false;
+	protected String charset;
+	protected String fileURL;
 	
 	private DataRecord tmp;
 	private int startComparison;
@@ -96,8 +113,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			String[] endFields, Parser parser, RuleBasedCollator collator, boolean[] startInclude, boolean[] endInclude){
 		super(id);
 		this.metadata = metadata;
-		startKey = new RecordKey(startFields, metadata);
-		endKey = new RecordKey(endFields, metadata);
+		this.startFields = startFields;
+		this.endFields = endFields;
 		this.dataParser = parser;
 		this.collator = collator;
 		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
@@ -139,7 +156,58 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			String[] endFields, Parser parser){
 		this(id,metadata,startFields, endFields, parser,null);
 	}
+	
+	public RangeLookupTable(String id, String metadataId, String[] startFields, String[] endFields){
+		super(id);
+		this.metadataId = metadataId;
+		this.startFields = startFields;
+		this.endFields = endFields;
+	}
 
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+		super.checkConfig(status);
+
+		if (metadata == null) {
+			metadata = getGraph().getDataRecordMetadata(metadataId);
+		}		
+        if (metadata == null) {
+        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
+					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
+        }
+
+        if (startKey == null) {
+			startKey = new RecordKey(startFields, metadata);
+		}		
+		if (endKey == null) {
+			endKey = new RecordKey(endFields, metadata);
+		}		
+		RecordKey.checkKeys(startKey, XML_START_FIELDS, endKey, XML_END_FIELDS, status, this);
+		
+		if (startInclude == null) {
+			startInclude = new boolean[startFields.length];
+			Arrays.fill(startInclude, true);
+		}
+		
+		if (endInclude == null) {
+			endInclude = new boolean[endFields.length];
+			Arrays.fill(endInclude, false);
+		}
+		
+		for (int i = 0; i < startFields.length; i++) {
+			if (startFields[i].equals(endFields[i]) && !(startInclude[i] && endInclude[i])) {
+				status.add(new ConfigurationProblem("Interval "
+						+ StringUtils.quote(startFields[i] + " - "
+								+ endFields[i]) + " is empty ("
+						+ (!startInclude[i] ? "startInclude[" : "endInclude[")
+						+ i + "] is false).", Severity.WARNING, this,
+						Priority.NORMAL));
+			}
+		}
+		
+		return status;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#init()
 	 */
@@ -148,10 +216,32 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         if(isInitialized()) return;
 		super.init();
 		
-		startKey.init();
+		if (metadata == null) {
+			metadata = getGraph().getDataRecordMetadata(metadataId);
+		}
+        if (metadata == null) {
+        	throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataId) + 
+					" does not exist!!!");
+        }
+
+		if (startKey == null) {
+			startKey = new RecordKey(startFields, metadata);
+			startKey.init();
+		}        
 		startField = startKey.getKeyFields();
-		endKey.init();
+		if (endKey == null) {
+			endKey = new RecordKey(endFields, metadata);
+			endKey.init();
+		}		
 		endField = endKey.getKeyFields();
+		
+		if (collator == null && useI18N) {
+			if (locale != null) {
+				collator = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(locale));
+			}else{
+				collator = (RuleBasedCollator)Collator.getInstance();
+			}
+		}
 		
 		comparator = new IntervalRecordComparator(metadata, startField, endField, collator);
 		
@@ -159,14 +249,26 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	    tmpRecord=new DataRecord(metadata);
 	    tmpRecord.init();
+
+	    if (dataType != null && fileURL != null) {
+	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
+	    		dataParser = new DelimitedDataParser(charset);
+	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
+	    		dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
+	    	}else{
+	    		dataParser = new DataParser(charset);
+	    	}
+	    }
+	    
 	    //read records from file
         if (dataParser != null) {
             dataParser.init(metadata);
             try {
+                dataParser.setDataSource(FileUtils.getReadableChannel(getGraph().getProjectURL(), fileURL));
                 while (dataParser.getNext(tmpRecord) != null) {
                     lookupTable.add(tmpRecord.duplicate());
                 }
-            } catch (JetelException e) {
+            } catch (Exception e) {
                 throw new ComponentNotReadyException(this, e.getMessage(), e);
             }
             dataParser.close();
@@ -324,6 +426,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         RangeLookupTable lookupTable = null;
         String id;
         String type;
+        String metadata;
         String[] startFields;
         String[] endFields;
         
@@ -331,6 +434,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
         try {
             id = xattribs.getString(XML_ID_ATTRIBUTE);
             type = xattribs.getString(XML_TYPE_ATTRIBUTE);
+            metadata = xattribs.getString(XML_METADATA_ID);
             startFields = xattribs.getString(XML_START_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
             endFields = xattribs.getString(XML_END_FIELDS).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         } catch(AttributeNotFoundException ex) {
@@ -342,69 +446,57 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
             throw new XMLConfigurationException("Can't create range lookup table from type " + type);
         }
         
-        //create simple lookup table
-        try{
-        	RuleBasedCollator collator = null;
-        	if (xattribs.exists(XML_USE_I18N) && xattribs.getBoolean(XML_USE_I18N)) {
-        		if (xattribs.exists(XML_LOCALE)) {
-        			collator = (RuleBasedCollator)Collator.getInstance(MiscUtils.createLocale(XML_LOCALE));
-        		}else{
-        			collator = (RuleBasedCollator)Collator.getInstance();
-        		}
-        	}
-            DataRecordMetadata metadata = graph.getDataRecordMetadata(xattribs.getString(XML_METADATA_ID));
-            Parser parser;
-            String dataTypeStr = xattribs.getString(XML_LOOKUP_DATA_TYPE);
-            
-            // which data parser to use
-            if(dataTypeStr.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
-                parser = new DelimitedDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
-            } else {
-                parser = new FixLenCharDataParser(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
-            }
-            if (xattribs.exists(XML_FILE_URL)) {
-            	parser.setDataSource(FileUtils.getReadableChannel(graph.getProjectURL(), xattribs.getString(XML_FILE_URL)));
-            }else{
-            	parser = null;
-            }
-            boolean[] startInclude = null;
-            if (xattribs.exists(XML_START_INCLUDE)){
-            	String[] sI = xattribs.getString(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-            	startInclude = new boolean[sI.length];
-            	for (int i = 0; i < sI.length; i++) {
+        lookupTable = new RangeLookupTable(id, metadata, startFields, endFields);
+        
+        try {
+			lookupTable.setUseI18N(xattribs.getBoolean(XML_USE_I18N, false));
+			if (xattribs.exists(XML_LOCALE)){
+				lookupTable.setLocale(XML_LOCALE);
+			}
+			if (xattribs.exists(XML_LOOKUP_DATA_TYPE)) {
+				lookupTable.setDataType(xattribs.getString(XML_LOOKUP_DATA_TYPE));
+			}
+			if (xattribs.exists(XML_FILE_URL)){
+				lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
+			}
+			lookupTable.setCharset(xattribs.getString(XML_CHARSET, Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+			boolean[] startInclude = null;
+			if (xattribs.exists(XML_START_INCLUDE)){
+				String[] sI = xattribs.getString(XML_START_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				startInclude = new boolean[sI.length];
+				for (int i = 0; i < sI.length; i++) {
 					startInclude[i] = Boolean.parseBoolean(sI[i]);
 				}
-            }
-            boolean[] endInclude = null;
-            if (xattribs.exists(XML_END_INCLUDE)){
-            	String[] eI = xattribs.getString(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
-            	endInclude = new boolean[eI.length];
-            	for (int i = 0; i < eI.length; i++) {
+			}
+			boolean[] endInclude = null;
+			if (xattribs.exists(XML_END_INCLUDE)){
+				String[] eI = xattribs.getString(XML_END_INCLUDE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+				endInclude = new boolean[eI.length];
+				for (int i = 0; i < eI.length; i++) {
 					endInclude[i] = Boolean.parseBoolean(eI[i]);
 				}
-            	if (startInclude == null) {
-                	startInclude = new boolean[endInclude.length];
-                	for (int i = 0; i < endInclude.length; i++) {
-    					startInclude[i] = true;
-    				}
-            	}
-            }else if (xattribs.exists(XML_START_INCLUDE)){
-               	endInclude = new boolean[startInclude.length];
-            	for (int i = 0; i < endInclude.length; i++) {
+				if (startInclude == null) {
+			    	startInclude = new boolean[endInclude.length];
+			    	for (int i = 0; i < endInclude.length; i++) {
+						startInclude[i] = true;
+					}
+				}
+			}else if (xattribs.exists(XML_START_INCLUDE)){
+			   	endInclude = new boolean[startInclude.length];
+				for (int i = 0; i < endInclude.length; i++) {
 					endInclude[i] = false;
 				}
-            }
-            
-            if (startInclude != null) {
-            	lookupTable =  new RangeLookupTable(id, metadata, startFields, endFields, parser, collator, startInclude, endInclude);
-            }else{
-            	lookupTable =  new RangeLookupTable(id, metadata, startFields, endFields, parser, collator);
-            }
-            return lookupTable;
-            
-         }catch(Exception ex){
-             throw new XMLConfigurationException("can't create simple lookup table",ex);
-         }
+			}
+			lookupTable.setStartInclude(startInclude);
+			lookupTable.setEndInclude(endInclude);
+			
+			lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE, false));
+			
+			return lookupTable;
+			
+		} catch (AttributeNotFoundException e) {
+            throw new XMLConfigurationException("can't create simple lookup table",e);
+		}
 	}
 	
 	public boolean[] getEndInclude() {
@@ -412,11 +504,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public void setEndInclude(boolean[] endInclude) {
-		if (endInclude.length != (metadata.getNumFields() - 1)/2) {
-			throw new InvalidParameterException("endInclude parameter has wrong number " +
-					"of elements: " + endInclude.length + " (should be " + 
-					(metadata.getNumFields() - 1)/2 + ")");
-		}
 		this.endInclude = endInclude;
 	}
 	
@@ -429,11 +516,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	}
 
 	public void setStartInclude(boolean[] startInclude) {
-		if (startInclude.length != (metadata.getNumFields() - 1)/2) {
-			throw new InvalidParameterException("startInclude parameter has wrong number " +
-					"of elements: " + startInclude.length + " (should be " + 
-					(metadata.getNumFields() - 1)/2 + ")");
-		}
 		this.startInclude = startInclude;
 	}
 
@@ -516,6 +598,55 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			return 0;
 		}
 
+	}
+
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public boolean isUseI18N() {
+		return useI18N;
+	}
+
+	public void setUseI18N(boolean useI18N) {
+		this.useI18N = useI18N;
+	}
+
+	public boolean isByteMode() {
+		return byteMode;
+	}
+
+	public void setByteMode(boolean byteMode) {
+		this.byteMode = byteMode;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+	public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	public String getFileURL() {
+		return fileURL;
+	}
+
+	public void setFileURL(String fileURL) {
+		this.fileURL = fileURL;
 	}
 
 
