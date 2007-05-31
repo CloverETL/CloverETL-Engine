@@ -41,6 +41,7 @@ public class MathLib implements ITLFunctionLibrary {
         ROUND("round"),
         POW("pow"),
         PI("pi"),
+        E("E"),
         RANDOM("random");
         
         public String name;
@@ -73,6 +74,7 @@ public class MathLib implements ITLFunctionLibrary {
         case ROUND: return new RoundFunction();
         case POW: return new PowFunction();
         case PI: return new PiFunction();
+        case E: return new EFunction();
         case RANDOM: return new RandomFunction();
         default: return null;
         }
@@ -235,21 +237,21 @@ public class MathLib implements ITLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            if (params[0].type.isNumeric()) {
-                TLValue retVal;
-                try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.PI));
-                    return retVal;
-                } catch (Exception ex) {
-                    throw new TransformLangExecutorRuntimeException(
-                            "Error when executing PI function", ex);
-                }
-            }
-            throw new TransformLangExecutorRuntimeException(null,
-                    params, "pi - wrong type of literal(s)");
+            return TLValue.NUM_PI_VAL;
         }
-    }          
+    }         
+    
+    //  E
+    class EFunction extends TLFunctionPrototype { 
+        public EFunction() {
+            super("math", "E", new TLValueType[] { }, TLValueType.DOUBLE);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            return TLValue.NUM_E_VAL;
+        }
+    }     
 
     // RANDOM
     class RandomFunction extends TLFunctionPrototype {
