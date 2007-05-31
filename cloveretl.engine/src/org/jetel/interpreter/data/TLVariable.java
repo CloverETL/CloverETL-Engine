@@ -63,7 +63,7 @@ public class TLVariable {
     }
  
     public final boolean isArray() {
-        return value.type==TLValueType.LIST;
+        return value.type.isArray();
     }
     
     public final  boolean isMap() {

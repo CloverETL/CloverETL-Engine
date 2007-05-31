@@ -23,37 +23,43 @@
  */
 package org.jetel.interpreter.data;
 
+import org.jetel.metadata.DataFieldMetadata;
+
 public enum TLValueType {
-    NULL(0,"NULL",true,false),
-    INTEGER(1,"INTEGER",true,true),
-    LONG(2,"LONG",true,true),
-    DOUBLE(3,"DOUBLE",true,true),
-    DECIMAL(4,"DECIMAL",true,true),
-    STRING(5,"STRING",true,false),
-    DATE(6,"DATE",true,false),
-    BOOLEAN(7,"BOOLEAN",true,false),
-    LIST(20,"LIST",false,false),
-    MAP(30,"MAP",false,false),
-    OBJECT(40,"OBJECT",false,false),
-    RECORD(50,"RECORD",false,false);
+    NULL(0,"NULL",true,false,false),
+    INTEGER(1,"INTEGER",true,true,false),
+    LONG(2,"LONG",true,true,false),
+    DOUBLE(3,"DOUBLE",true,true,false),
+    DECIMAL(4,"DECIMAL",true,true,false),
+    BYTE(5,"BYTE",true,false,true),
+    STRING(6,"STRING",true,false,true),
+    DATE(7,"DATE",true,false,false),
+    BOOLEAN(8,"BOOLEAN",true,false,false),
+    LIST(20,"LIST",false,false,true),
+    MAP(30,"MAP",false,false,true),
+    OBJECT(40,"OBJECT",false,false,false),
+    RECORD(50,"RECORD",false,false,true);
     
     private final int code;
     private final String name;
     private boolean primitive;
     private boolean numeric;
+    private boolean array;
     
-    TLValueType(int _code,String _name,boolean _primitive,boolean _numeric){
+    TLValueType(int _code,String _name,boolean _primitive,boolean _numeric, boolean _array){
         code=_code;
         name=_name;
         primitive=_primitive;
         numeric=_numeric;
+        array=_array;
     }
     
-    public int code(){return code;}
-    public String getName(){return name;}
+    public final int code(){return code;}
+    public final String getName(){return name;}
     public String toString(){return name;}
-    public boolean isPrimitive() {return primitive;}
-    public boolean isNumeric() {return numeric;}
+    public final boolean isPrimitive() {return primitive;}
+    public final boolean isNumeric() {return numeric;}
+    public final boolean isArray() {return array;}
     
     public boolean isCompatible(TLValueType _type) {
         if (_type == this)
@@ -67,7 +73,6 @@ public enum TLValueType {
                 return true;
         case STRING:
             return true;
-
         case OBJECT:
             return true;
         }
@@ -92,6 +97,27 @@ public enum TLValueType {
         }
         if (_type==NULL) return true;
         return false;
+    }
+
+    public final static TLValueType convertType(DataFieldMetadata fieldMeta) {
+        switch (fieldMeta.getType()) {
+        case DataFieldMetadata.INTEGER_FIELD:
+            return INTEGER;
+        case DataFieldMetadata.LONG_FIELD:
+            return LONG;
+        case DataFieldMetadata.NUMERIC_FIELD:
+            return DOUBLE;
+        case DataFieldMetadata.DECIMAL_FIELD:
+            return DECIMAL;
+        case DataFieldMetadata.DATE_FIELD:
+            return DATE;
+        case DataFieldMetadata.BYTE_FIELD:
+            return BYTE;
+        case DataFieldMetadata.STRING_FIELD:
+            return STRING;
+        default:
+            return STRING;
+        }
     }
 
 }
