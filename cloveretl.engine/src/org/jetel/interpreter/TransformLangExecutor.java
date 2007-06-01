@@ -1539,6 +1539,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case LIST_VAR:
             if (node.length>0) {
                 variable = new TLListVariable(node.name,node.length);
+                ((TLListVariable)variable).fill(Stack.NULL_VAL, node.length);
             }else {
                 variable = new TLListVariable(node.name);
             }
