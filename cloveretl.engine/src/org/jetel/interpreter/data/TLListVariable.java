@@ -37,7 +37,7 @@ public class TLListVariable extends TLVariable {
     
     public TLListVariable(String name,int initialSize) {
         super(name,TLValueType.LIST);
-        value.setValue(new ArrayList<TLValue>(initialSize));        
+        value.setValue(new ArrayList<TLValue>(initialSize));      
     }
     
     public TLValue getValue() {
@@ -106,5 +106,10 @@ public class TLListVariable extends TLVariable {
     
     public List getList() {
         return value.getList();
+    }
+    
+    public void fill(TLValue val,int count) {
+        List<TLValue> list=value.getList();
+        for (int i=0;i<count;i++) list.add(val);
     }
 }
