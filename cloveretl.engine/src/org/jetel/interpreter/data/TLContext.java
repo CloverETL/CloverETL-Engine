@@ -23,16 +23,38 @@
  */
 package org.jetel.interpreter.data;
 
+import org.jetel.data.primitive.CloverDouble;
+import org.jetel.data.primitive.CloverInteger;
+
 public class TLContext<T> {
 
     public T context;
-    
+
     public void setContext(T ctx) {
-        this.context=ctx;
+        this.context = ctx;
     }
-    
+
     public T getContext() {
         return context;
     }
-    
+
+    public static TLContext<StringBuilder> createStringContext() {
+        TLContext<StringBuilder> context = new TLContext<StringBuilder>();
+        context.setContext(new StringBuilder(40));
+        return context;
+    }
+
+    public static TLContext<CloverInteger> createIntegerContext() {
+        TLContext<CloverInteger> context = new TLContext<CloverInteger>();
+        context.setContext(new CloverInteger(0));
+        return context;
+    }
+
+    public static TLContext<CloverDouble> createDoubleContext() {
+        TLContext<CloverDouble> context = new TLContext<CloverDouble>();
+        context.setContext(new CloverDouble(0));
+        return context;
+
+    }
+
 }

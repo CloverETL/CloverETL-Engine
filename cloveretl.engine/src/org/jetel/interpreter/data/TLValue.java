@@ -152,9 +152,9 @@ public class TLValue implements Comparable<TLValue>{
         throw new RuntimeException("not a "+TLValueType.MAP+" value");
     }
     
-    public final List getList() {
+    public final List<TLValue> getList() {
         if (type==TLValueType.LIST) {
-            return (List)value;
+            return (List<TLValue>)value;
         }
         throw new RuntimeException("not a "+TLValueType.LIST+" value");
     }
