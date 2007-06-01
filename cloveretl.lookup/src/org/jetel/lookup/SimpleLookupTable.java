@@ -218,7 +218,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    if (charset == null) {
 	    	charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	    }
-	    if (dataType != null && fileURL != null) {
+	    if (dataParser == null && fileURL != null) {
 	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
 	    		dataParser = new DelimitedDataParser(charset);
 	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
