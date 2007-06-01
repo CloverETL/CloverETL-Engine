@@ -24,7 +24,6 @@ import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
-import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.exception.ConfigurationStatus.Priority;
 import org.jetel.exception.ConfigurationStatus.Severity;
@@ -250,7 +249,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	    tmpRecord=new DataRecord(metadata);
 	    tmpRecord.init();
 
-	    if (dataType != null && fileURL != null) {
+	    if (dataParser == null && fileURL != null) {
 	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
 	    		dataParser = new DelimitedDataParser(charset);
 	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
@@ -527,6 +526,54 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		setStartInclude(new boolean[]{startInclude});
 	}
 
+
+	public String getLocale() {
+		return locale;
+	}
+
+	public void setLocale(String locale) {
+		this.locale = locale;
+	}
+
+	public boolean isUseI18N() {
+		return useI18N;
+	}
+
+	public void setUseI18N(boolean useI18N) {
+		this.useI18N = useI18N;
+	}
+
+	public boolean isByteMode() {
+		return byteMode;
+	}
+
+	public void setByteMode(boolean byteMode) {
+		this.byteMode = byteMode;
+	}
+
+	public String getCharset() {
+		return charset;
+	}
+
+	public void setCharset(String charset) {
+		this.charset = charset;
+	}
+
+	public String getDataType() {
+		return dataType;
+	}
+
+	public void setDataType(String dataType) {
+		this.dataType = dataType;
+	}
+
+	public String getFileURL() {
+		return fileURL;
+	}
+
+	public void setFileURL(String fileURL) {
+		this.fileURL = fileURL;
+	}
 	
 	/**
 	 * Comparator for special records (defining range lookup table). 
@@ -604,54 +651,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	}
 
-
-	public String getLocale() {
-		return locale;
-	}
-
-	public void setLocale(String locale) {
-		this.locale = locale;
-	}
-
-	public boolean isUseI18N() {
-		return useI18N;
-	}
-
-	public void setUseI18N(boolean useI18N) {
-		this.useI18N = useI18N;
-	}
-
-	public boolean isByteMode() {
-		return byteMode;
-	}
-
-	public void setByteMode(boolean byteMode) {
-		this.byteMode = byteMode;
-	}
-
-	public String getCharset() {
-		return charset;
-	}
-
-	public void setCharset(String charset) {
-		this.charset = charset;
-	}
-
-	public String getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
-	}
-
-	public String getFileURL() {
-		return fileURL;
-	}
-
-	public void setFileURL(String fileURL) {
-		this.fileURL = fileURL;
-	}
 
 
 }
