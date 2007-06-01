@@ -91,7 +91,7 @@ import org.w3c.dom.Element;
  * <li>*-maxNumber</li>
  * <li>minNumber-*</li></ul>
  * or as their combination separated by comma, eg. 1,3,5-7,9-*<br>
- *  This attribute has higher priority then sheetName. One of theese atributes has to be set.</td>
+ *  This attribute has higher priority then sheetName. If no one of these attributes is set, data are read from first (0) sheet.</td>
  *  <tr><td><b>metadataRow</b></td><td>number of row where are names of columns</td>
  *  <tr><td><b>fieldMap</b></td><td>Pairs of clover fields and xls columns
  *   (cloverField=xlsColumn) separated by :;| {colon, semicolon, pipe}.
@@ -260,7 +260,14 @@ public class XLSReader extends Node {
 				if (!number.hasNext()) {
 					throw new IllegalArgumentException("There is no sheet with requested number");
 				}				
-			}            
+			}else if (sheetName == null) {
+				sheetNumber = "0";
+			}
+			if (sheetNumber != null) {
+				parser.setSheetNumber(sheetNumber);
+			}else{
+				parser.setSheetName(sheetName);
+			}
 	        try{//sheet number OK, check file name
 	            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
 	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
@@ -430,7 +437,15 @@ public class XLSReader extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
- 		//set proper mapping type beetwen clover and xls fields
+		
+		if (sheetNumber != null) {
+			parser.setSheetNumber(sheetNumber);
+		}else if (sheetName != null) {
+			parser.setSheetName(sheetName);
+		}else{
+			parser.setSheetNumber("0");
+		}
+ 		//set proper mapping type between clover and xls fields
 		if (fieldMap != null){
 			String[] cloverFields = new String[fieldMap.length];
 			String[] xlsFields = new String[fieldMap.length];
@@ -468,12 +483,11 @@ public class XLSReader extends Node {
         reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	}
 
-	private void setSheetName(String sheetName) {
+	public void setSheetName(String sheetName) {
 		this.sheetName = sheetName;
-		parser.setSheetName(sheetName);
 	}
 
-	private void setMetadataRow(int metadaRow) {
+	public void setMetadataRow(int metadaRow) {
 		this.metadataRow = metadaRow;
 		try {
 			parser.setMetadataRow(metadataRow - 1);
@@ -484,7 +498,6 @@ public class XLSReader extends Node {
 
 	public void setSheetNumber(String sheetNumber) {
 		this.sheetNumber = sheetNumber;
-		parser.setSheetNumber(sheetNumber);
 	}
 
 	public void setNumRecords(int numRecords) {
