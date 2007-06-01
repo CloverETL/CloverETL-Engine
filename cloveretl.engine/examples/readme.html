@@ -2,10 +2,9 @@
 <HTML>
 <HEAD>
 	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=utf-8">
-	<TITLE>CloverETL examples</TITLE>
 	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Linux)">
 	<META NAME="CREATED" CONTENT="20061005;11474600">
-	<META NAME="CHANGED" CONTENT="20070522;9194300">
+	<META NAME="CHANGED" CONTENT="20070601;14170000">
 	<STYLE TYPE="text/css">
 	<!--
 		@page { size: 8.5in 11in }
@@ -14,27 +13,34 @@
 </HEAD>
 <BODY LANG="en-US" DIR="LTR">
 <H1><FONT COLOR="#008000">Running CloverETL examples</FONT></H1>
-<P STYLE="margin-bottom: 0in"><I>by David Pavlis, Agata Vackova, Last
-modified 
+<I>by Agata Vackova, Last modified 
 <SCRIPT LANGUAGE="javascript">
 document.writeln(document.lastModified)
 </SCRIPT>
-</I></P>
+</I>
 <HR>
-<H2>Prerequisites</H2>
-<P>I assume that you have downloaded a binary package of <A HREF="http://cloveretl.berlios.de/download/#framework" TARGET="_blank">CloverETL</A>
-framework and <A HREF="http://cloveretl.berlios.de/download/#examples" TARGET="_blank">Clover
-Examples</A> or you built one from sources. Extract both zip files to
-the same directory.<BR>When executing examples, You have to be in
-directory where you unzipped the examples. Let's assume you have
-extracted the archives into <TT>/home</TT>. Then when executing any
-example, you have to be switched in <TT>/home/cloverETL/examples</TT>
-(the directory where the <TT>.grf</TT> files are). 
+<H2>Preliminaries</H2>
+<P>Complete <A HREF="http://wiki.clovergui.net/">documentation to
+CloverETL</A>. 
 </P>
-<H4><I>Note: It is a good idea to read <A HREF="http://cloveretl.berlios.de/docs/doc1.html" TARGET="_blank">CloverETL
-general documentation</A> first.</I> 
-</H4>
-<H3>Common things</H3>
+<P>Detailed <A HREF="http://wiki.clovergui.net/www/doku.php?id=examples">examples
+description</A>. 
+</P>
+<P>Clover Examples zip file contains complete Eclipse project, so if
+you use CloverGUI you can <A HREF="#Importing examples to Eclipse |outline">import</A>
+it to your workspace. 
+</P>
+<H2>Prerequisites</H2>
+<P>I assume that you have <A HREF="http://www.clovergui.net/downloads.php">downloaded</A>
+a binary package of <B>CloverETL engine</B> and <B>Clover Examples</B>
+or you built one from sources. Extract both zip files to the same
+directory.<BR>When executing examples, You have to be in directory
+where you unzipped the examples. Let's assume you have extracted the
+archives into <TT>/home</TT>. Then when executing any example, you
+have to be switched in <TT>/home/cloverETL/examples</TT> (the
+directory where the <TT>.grf</TT> files are). 
+</P>
+<H2><A NAME="Common things|outline"></A>Common things</H2>
 <P>The examples presented here use various inputs and create various
 outputs. In general, input data is taken from files stored in <TT>data/</TT>
 subdirectory. Outputs are created in <TT>output/</TT> subdirectory
@@ -42,13 +48,16 @@ and required metadata is read from <TT>metadata/</TT> subdirectory.
 </P>
 <P>In the directory with examples there is file workspace.prm with
 WORKSPACE parameter definition. You have to change this parameter to
-proper value before running graphs.</P>
+proper value before running graphs. 
+</P>
 <P>For graphs, which connect to database you have to configure
 connection properly . Example configuration files (koule_postgre.cfg,
 interbase.cfg and oracle.cfg) are included to example package. 
 </P>
 <P>For graph with transformation code <TT>tools.jar</TT> should be in
-classpath.</P>
+classpath (if you use CloverGUI set it in <TT>example</TT> project
+properties). 
+</P>
 <P>To run graphs you can use scripts (run.bat or run.sh) included in
 examples package. They assumes that environment variable JAVA_HOME is
 set to java home directory. Or you can use old fashion way: 
@@ -56,8 +65,8 @@ set to java home directory. Or you can use old fashion way:
 <PRE>  JARSPATH=&quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/poi-2.5.1.jar&quot;
   JARSPATH=&quot;$JARSPATH:../lib/commons-cli-1.0.jar:../lib/jms.jar:../lib/jxl.jar&quot;
   JARSPATH=&quot;$JARSPATH:../lib/log4j-1.2.12.zip:../lib/javolution.jar:javaExamples&quot;
-  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../plugins graphSimpleCopy.grf</PRE><H4>
-Important notes</H4>
+  java -cp &quot;$JARSPATH&quot; org.jetel.main.runGraph -plugins ../plugins graphSimpleCopy.grf</PRE><H3>
+Important notes</H3>
 <P>There is shown above how to run transformations on Linux (Unix)
 machine. If you have Windows installed, just change the <TT>java -cp
 &quot;../cloveretl.engine.jar:../lib/commons-logging.jar:../lib/log4j-1.2.12.zip:../lib/javolution.jar:javaExamples&quot;
@@ -66,11 +75,37 @@ machine. If you have Windows installed, just change the <TT>java -cp
 - the Java classpath delimiter on Windows is <TT>;</TT> (semicolon)
 not <TT>:</TT> (colon). 
 </P>
-<P>CloverETL requires Java (JVM) version 1.5 or higher ! 
+<P><B>CloverETL requires Java (JVM) version 1.5 or higher ! </B>
 </P>
-<P><B>Detailed description of all examples you can found on </B><A HREF="http://home.javlinconsulting.cz/wiki/doku.php?id=examples"><B>CloverETL
-examples</B></A> <B>page.</B></P>
-<H2><BR><BR>
-</H2>
+<H3><A NAME="Importing examples to Eclipse |outline"></A>Importing
+examples to Eclipse 
+</H3>
+<H4>Step 1</H4>
+<P>Begin the import from the Eclipse File menu item. 
+</P>
+<H4><IMG SRC="img/FileMenu.png" NAME="graphics1" ALIGN=LEFT WIDTH=428 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
+</H4>
+<H4>Step 2</H4>
+<P>This screenshot show the screen as it initially comes up. Select
+General and then Existing Project into Workspace. 
+</P>
+<H4><IMG SRC="img/ImportWindow.png" NAME="graphics2" ALIGN=LEFT WIDTH=525 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
+</H4>
+<H4>Step 3</H4>
+<P>This is the next page of wizard. If you haven't extract examples
+from archive, change the radio button. Then click proper Browse
+button to choose directory or archive file. 
+</P>
+<H4><IMG SRC="img/ImportWindow2.png" NAME=" NAME="graphics3" ALIGN=LEFT WIDTH=525 HEIGHT=550 BORDER=0><BR CLEAR=LEFT><BR><BR>
+</H4>
+<H4>Step 4</H4>
+<P>After clicking Finish button project will import to your
+workspace. 
+</P>
+<P><A HREF="#Common things|outline">Set WORKSPACE and connection
+parameters</A> and you can run graphs. 
+</P>
+<P><BR><BR>
+</P>
 </BODY>
 </HTML>
