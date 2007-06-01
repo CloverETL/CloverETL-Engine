@@ -28,23 +28,53 @@ import java.util.Calendar;
 import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.interpreter.extensions.StringLib.Function;
 
 public class DateLib extends TLFunctionLibrary {
 
+    private static final String LIBRARY_NAME = "Date";
+
+    enum Function {
+        TODAY("today");
+        
+        public String name;
+        
+        private Function(String name) {
+            this.name = name;
+        }
+        
+        public static Function fromString(String s) {
+            for(Function function : Function.values()) {
+                if(s.equalsIgnoreCase(function.name) || s.equalsIgnoreCase(LIBRARY_NAME + "." + function.name)) {
+                    return function;
+                }
+            }
+            return null;
+        }
+    }
+
     public DateLib() {
         super();
-        
-        library.put("date", dateFunction);
-        library.put("Date.date", dateFunction);
+     }
+
+    public TLFunctionPrototype getFunction(String functionName) {
+        switch(Function.fromString(functionName)) {
+        case TODAY: return new TodayFunction();
+        default: return null;
+       }
     }
-    
+
     // TODAY
-    private TLFunctionPrototype dateFunction = 
-        new TLFunctionPrototype("date", "today", new TLValueType[] { }, TLValueType.DATE) {
+    class TodayFunction extends TLFunctionPrototype {
+    	
+    	public TodayFunction(){
+    		super("date", "today", new TLValueType[] { }, TLValueType.DATE);
+    	}
+    
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             return new TLValue(TLValueType.DATE,Calendar.getInstance().getTime());
         }
-    };
+    }
     
 }

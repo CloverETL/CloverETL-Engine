@@ -33,30 +33,59 @@ import org.jetel.util.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
 
-    public StringLib() {
-        super();
+    private static final String LIBRARY_NAME = "String";
+
+    enum Function {
+        CONCAT("concat"),
+        UPPERCASE("uppercase"),
+        LOWERCASE("lowercase"),
+        LEFT("left"),
+        RIGHT("right"),
+        TRIM("trim"),
+        LENGTH("length");
         
-        library.put("concat", concatFunction);
-        library.put("String.concat", concatFunction);
-        library.put("uppercase", uppercaseFunction);
-        library.put("String.uppercase", uppercaseFunction);
-        library.put("lowercase", lowercaseFunction);
-        library.put("String.lowercase", lowercaseFunction);
-        library.put("substring", substringFunction);
-        library.put("String.substring", substringFunction);
-        library.put("left", leftFunction);
-        library.put("String.left", leftFunction);
-        library.put("right", rightFunction);
-        library.put("String.right", rightFunction);
-        library.put("trim", trimFunction);
-        library.put("String.trim", trimFunction);
-        library.put("length", lengthFunction);
-        library.put("String.length", lengthFunction);
+        public String name;
+        
+        private Function(String name) {
+            this.name = name;
+        }
+        
+        public static Function fromString(String s) {
+            for(Function function : Function.values()) {
+                if(s.equalsIgnoreCase(function.name) || s.equalsIgnoreCase(LIBRARY_NAME + "." + function.name)) {
+                    return function;
+                }
+            }
+            return null;
+        }
     }
 
+    public StringLib() {
+        super();
+    }
+    
+    public TLFunctionPrototype getFunction(String functionName) {
+        switch(Function.fromString(functionName)) {
+        case CONCAT: return new ConcatFunction();
+        case UPPERCASE: return new UppercaseFunction();
+        case LOWERCASE: return new LowerCaseFunction();
+        case LEFT: return new LeftFunction();
+        case RIGHT: return new RightFunction();
+        case TRIM: return new TrimFunction();
+        case LENGTH: return new LengthFunction();
+        default: return null;
+       }
+    }
+    
+
+
     // CONCAT
-    private TLFunctionPrototype concatFunction = 
-        new TLFunctionPrototype("string", "concat", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING) {
+    class ConcatFunction extends TLFunctionPrototype {
+
+    	public ConcatFunction() {
+    		super("string", "concat", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
+    	}
+    	
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
@@ -77,18 +106,15 @@ public class StringLib extends TLFunctionLibrary {
             }
             return new TLValue(TLValueType.STRING, strBuf);
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+     }
 
     // UPPERCASE
-    private TLFunctionPrototype uppercaseFunction = 
-        new TLFunctionPrototype("string", "uppercase", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING) {
+    class UppercaseFunction extends TLFunctionPrototype {
+    	
+    	public UppercaseFunction(){
+    		super("string", "uppercase", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
+    	}
+    	
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
@@ -109,49 +135,46 @@ public class StringLib extends TLFunctionLibrary {
             return new TLValue(TLValueType.STRING, strBuf);
         }
 
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+    }
 
     // LOWERCASE
-    private TLFunctionPrototype lowercaseFunction = 
-        new TLFunctionPrototype("string", "lowercase", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING) {
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
+    class LowerCaseFunction extends TLFunctionPrototype {
 
-            if (!params[0].isNull()
-                    && params[0].type == TLValueType.STRING) {
-                CharSequence seq = params[0].getCharSequence();
-                strBuf.ensureCapacity(seq.length());
-                for (int i = 0; i < seq.length(); i++) {
-                    strBuf.append(Character.toLowerCase(seq.charAt(i)));
-                }
-            } else {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "uppercase - wrong type of literal");
-            }
+    	public LowerCaseFunction() {
+			super("string", "lowercase",
+					new TLValueType[] { TLValueType.STRING },
+					TLValueType.STRING);
+		}
 
-            return new TLValue(TLValueType.STRING, strBuf);
-        }
+		@Override
+		public TLValue execute(TLValue[] params, TLContext context) {
+			StringBuilder strBuf = (StringBuilder) context.getContext();
+			strBuf.setLength(0);
 
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+			if (!params[0].isNull() && params[0].type == TLValueType.STRING) {
+				CharSequence seq = params[0].getCharSequence();
+				strBuf.ensureCapacity(seq.length());
+				for (int i = 0; i < seq.length(); i++) {
+					strBuf.append(Character.toLowerCase(seq.charAt(i)));
+				}
+			} else {
+				throw new TransformLangExecutorRuntimeException(params,
+						"uppercase - wrong type of literal");
+			}
 
+			return new TLValue(TLValueType.STRING, strBuf);
+		}
+
+	}
+    
     // SUBSTRING
-    private TLFunctionPrototype substringFunction = 
-        new TLFunctionPrototype("string", "substring", new TLValueType[] {TLValueType.STRING, TLValueType.INTEGER, TLValueType.INTEGER }, TLValueType.STRING) {
-        @Override
+    class SubstringFunction extends TLFunctionPrototype {
+    	
+    	public SubstringFunction(){
+    		super("string", "substring", new TLValueType[] {TLValueType.STRING, TLValueType.INTEGER, TLValueType.INTEGER }, TLValueType.STRING);
+    	}
+
+    	@Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
             strBuf.setLength(0);
@@ -179,19 +202,16 @@ public class StringLib extends TLFunctionLibrary {
                     .subString(strBuf, params[0].getCharSequence(),
                             from, length));
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+    }
 
     // LEFT
-    private TLFunctionPrototype leftFunction = 
-        new TLFunctionPrototype("string", "left", new TLValueType[] { TLValueType.STRING, TLValueType.INTEGER }, TLValueType.STRING) {
-        @Override
+    class LeftFunction extends TLFunctionPrototype {
+    	
+    	public LeftFunction(){
+    		super("string", "left", new TLValueType[] { TLValueType.STRING, TLValueType.INTEGER }, TLValueType.STRING);
+    	}
+
+    	@Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
             strBuf.setLength(0);
@@ -217,18 +237,15 @@ public class StringLib extends TLFunctionLibrary {
                     .subString(strBuf, params[0].getCharSequence(), 0,
                             length));
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+    }
 
     // RIGHT
-    private TLFunctionPrototype rightFunction = 
-        new TLFunctionPrototype("string", "right", new TLValueType[] { TLValueType.STRING, TLValueType.INTEGER }, TLValueType.STRING) {
+    class RightFunction extends TLFunctionPrototype {
+    	
+    	public RightFunction(){
+    		super("string", "right", new TLValueType[] { TLValueType.STRING, TLValueType.INTEGER }, TLValueType.STRING);
+    	}
+    
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
@@ -258,18 +275,15 @@ public class StringLib extends TLFunctionLibrary {
                     .subString(strBuf, params[0].getCharSequence(),
                             from, length));
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+    }
 
     // TRIM
-    private TLFunctionPrototype trimFunction = 
-        new TLFunctionPrototype("string", "trim", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING) {
+    class TrimFunction extends TLFunctionPrototype {
+    	
+    	public TrimFunction(){
+    		super("string", "trim", new TLValueType[] { TLValueType.STRING }, TLValueType.STRING);
+    	}
+    
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             StringBuilder strBuf = (StringBuilder) context.getContext();
@@ -287,19 +301,16 @@ public class StringLib extends TLFunctionLibrary {
             return new TLValue(TLValueType.STRING, strBuf);
 
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-            context.setContext(new StringBuilder(40));
-            return context;
-        }
-    };
+    }
 
     
     // LENGTH
-    private TLFunctionPrototype lengthFunction = 
-        new TLFunctionPrototype("string", "length", new TLValueType[] { TLValueType.STRING }, TLValueType.INTEGER) {
+    class LengthFunction extends TLFunctionPrototype {
+    	
+    	public LengthFunction() {
+    		super ("string", "length", new TLValueType[] { TLValueType.STRING }, TLValueType.INTEGER);
+		} 
+    
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             CloverInteger intBuf = (CloverInteger) context.getContext();
@@ -312,13 +323,6 @@ public class StringLib extends TLFunctionLibrary {
             return new TLValue(TLValueType.INTEGER, intBuf);
 
         }
-
-        @Override
-        public TLContext createContext() {
-            TLContext<CloverInteger> context = new TLContext<CloverInteger>();
-            context.setContext(new CloverInteger(0));
-            return context;
-        }
-    };
-            
+    }
+             
 }
