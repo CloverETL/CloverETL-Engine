@@ -79,7 +79,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_DATA_TYPE_DELIMITED ="delimited";
-    private static final String XML_DATA_TYPE_FIXED ="fixed";
+    public static final String XML_DATA_TYPE_FIXED ="fixed";
     private static final String XML_CHARSET = "charset";
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     

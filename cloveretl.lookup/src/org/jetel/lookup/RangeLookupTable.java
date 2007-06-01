@@ -57,7 +57,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
     private static final String XML_DATA_TYPE_DELIMITED ="delimited";
-    private static final String XML_DATA_TYPE_FIXED ="fixed";
+    public static final String XML_DATA_TYPE_FIXED ="fixed";
  	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     private static final String XML_START_FIELDS = "startFields";
     private static final String XML_END_FIELDS = "endFields";
