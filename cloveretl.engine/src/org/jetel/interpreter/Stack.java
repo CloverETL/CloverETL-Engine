@@ -44,7 +44,7 @@ public class Stack {
     
 	// these constants are used by interpreter when true or false
 	// result has to be indicated
-	public static final TLValue TRUE_VAL= TLValue.NULL_VAL;
+	public static final TLValue TRUE_VAL= TLValue.TRUE_VAL;
 	public static final TLValue FALSE_VAL= TLValue.FALSE_VAL;
 
     public static final TLValue NULL_VAL = TLValue.NULL_VAL;

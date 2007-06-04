@@ -43,23 +43,22 @@ public interface TransformLangParserTreeConstants
   public int JJTFUNCTIONCALLSTATEMENT = 36;
   public int JJTISNULLNODE = 37;
   public int JJTNVLNODE = 38;
-  public int JJTREPLACENODE = 39;
-  public int JJTIFFNODE = 40;
-  public int JJTTRUNCNODE = 41;
-  public int JJTPRINTSTACKNODE = 42;
-  public int JJTBREAKPOINTNODE = 43;
-  public int JJTRAISEERRORNODE = 44;
-  public int JJTDATEADDNODE = 45;
-  public int JJTDATEDIFFNODE = 46;
-  public int JJTDATE2STRNODE = 47;
-  public int JJTSTR2DATENODE = 48;
-  public int JJTDATE2NUMNODE = 49;
-  public int JJTSTR2NUMNODE = 50;
-  public int JJTNUM2STRNODE = 51;
-  public int JJTPRINTERRNODE = 52;
-  public int JJTPRINTLOGNODE = 53;
-  public int JJTSEQUENCENODE = 54;
-  public int JJTLOOKUPNODE = 55;
+  public int JJTIFFNODE = 39;
+  public int JJTTRUNCNODE = 40;
+  public int JJTPRINTSTACKNODE = 41;
+  public int JJTBREAKPOINTNODE = 42;
+  public int JJTRAISEERRORNODE = 43;
+  public int JJTDATEADDNODE = 44;
+  public int JJTDATEDIFFNODE = 45;
+  public int JJTDATE2STRNODE = 46;
+  public int JJTSTR2DATENODE = 47;
+  public int JJTDATE2NUMNODE = 48;
+  public int JJTSTR2NUMNODE = 49;
+  public int JJTNUM2STRNODE = 50;
+  public int JJTPRINTERRNODE = 51;
+  public int JJTPRINTLOGNODE = 52;
+  public int JJTSEQUENCENODE = 53;
+  public int JJTLOOKUPNODE = 54;
 
 
   public String[] jjtNodeName = {
@@ -102,7 +101,6 @@ public interface TransformLangParserTreeConstants
     "FunctionCallStatement",
     "IsNullNode",
     "NVLNode",
-    "ReplaceNode",
     "IffNode",
     "TruncNode",
     "PrintStackNode",

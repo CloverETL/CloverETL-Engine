@@ -4,8 +4,8 @@ package org.jetel.interpreter.ASTnode;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
-import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.extensions.TLContext;
 import org.jetel.interpreter.extensions.TLFunctionPrototype;
 
  
@@ -47,7 +47,8 @@ public class CLVFFunctionCallStatement extends SimpleNode {
   @Override public void init() {
           if (externalFunction!=null) {
               this.context=externalFunction.createContext();
-              this.externalFunctionParams=new TLValue[requiredNumParams()];
+              this.externalFunctionParams=new TLValue[jjtGetNumChildren()];
+              //may not work for some: this.externalFunctionParams=new TLValue[requiredNumParams()];
           }
   }
   

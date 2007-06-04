@@ -4,87 +4,89 @@ package org.jetel.interpreter;
 public interface TransformLangParserConstants {
 
   int EOF = 0;
-  int INTEGER_LITERAL = 12;
-  int DIGIT = 13;
-  int LETTER = 14;
-  int UNDERSCORE = 15;
-  int DECIMAL_LITERAL = 16;
-  int HEX_LITERAL = 17;
-  int OCTAL_LITERAL = 18;
-  int FLOATING_POINT_LITERAL = 19;
-  int EXPONENT = 20;
-  int STRING_LITERAL = 21;
-  int QUOTED_STRING = 22;
-  int DQUOTED_STRING = 23;
-  int UNTERMINATED_STRING_LITERAL = 24;
-  int UNTERMINATED_QUOTED_STRING = 25;
-  int UNTERMINATED_DQUOTED_STRING = 26;
-  int BOOLEAN_LITERAL = 27;
-  int TRUE = 28;
-  int FALSE = 29;
-  int DATE_LITERAL = 30;
-  int DATETIME_LITERAL = 31;
-  int SEMICOLON = 32;
-  int NULL_LITERAL = 33;
-  int MAPPING = 34;
-  int OR = 35;
-  int AND = 36;
-  int NOT = 37;
-  int EQUAL = 38;
-  int NON_EQUAL = 39;
-  int LESS_THAN = 40;
-  int LESS_THAN_EQUAL = 41;
-  int GREATER_THAN = 42;
-  int GREATER_THAN_EQUAL = 43;
-  int REGEX_EQUAL = 44;
-  int CMPOPERATOR = 45;
-  int MINUS = 46;
-  int PLUS = 47;
-  int MULTIPLY = 48;
-  int DIVIDE = 49;
-  int MODULO = 50;
-  int INCR = 51;
-  int DECR = 52;
-  int FIELD_ID = 53;
-  int REC_NAME_FIELD_ID = 54;
-  int REC_NUM_FIELD_ID = 55;
-  int GLOBAL_PARAMETER_ID = 56;
-  int OPEN_PAR = 57;
-  int CLOSE_PAR = 58;
-  int INT_VAR = 59;
-  int LONG_VAR = 60;
-  int DATE_VAR = 61;
-  int DOUBLE_VAR = 62;
-  int DECIMAL_VAR = 63;
-  int BOOLEAN_VAR = 64;
-  int STRING_VAR = 65;
-  int BYTE_VAR = 66;
-  int LIST_VAR = 67;
-  int MAP_VAR = 68;
-  int RECORD_VAR = 69;
-  int OBJECT_VAR = 70;
-  int BREAK = 71;
-  int CONTINUE = 72;
-  int ELSE = 73;
-  int FOR = 74;
-  int FOR_EACH = 75;
-  int FUNCTION = 76;
-  int IF = 77;
-  int RETURN = 78;
-  int WHILE = 79;
-  int CASE = 80;
-  int ENUM = 81;
-  int IMPORT = 82;
-  int SWITCH = 83;
-  int CASE_DEFAULT = 84;
-  int DO = 85;
-  int DATE_FIELD_LITERAL = 128;
-  int IDENTIFIER = 129;
-  int ERROR = 130;
+  int INTEGER_LITERAL = 15;
+  int DIGIT = 16;
+  int LETTER = 17;
+  int UNDERSCORE = 18;
+  int DECIMAL_LITERAL = 19;
+  int HEX_LITERAL = 20;
+  int OCTAL_LITERAL = 21;
+  int FLOATING_POINT_LITERAL = 22;
+  int EXPONENT = 23;
+  int STRING_LITERAL = 24;
+  int QUOTED_STRING = 25;
+  int DQUOTED_STRING = 26;
+  int UNTERMINATED_STRING_LITERAL = 27;
+  int UNTERMINATED_QUOTED_STRING = 28;
+  int UNTERMINATED_DQUOTED_STRING = 29;
+  int BOOLEAN_LITERAL = 30;
+  int TRUE = 31;
+  int FALSE = 32;
+  int DATE_LITERAL = 33;
+  int DATETIME_LITERAL = 34;
+  int SEMICOLON = 35;
+  int NULL_LITERAL = 36;
+  int MAPPING = 37;
+  int OR = 38;
+  int AND = 39;
+  int NOT = 40;
+  int EQUAL = 41;
+  int NON_EQUAL = 42;
+  int LESS_THAN = 43;
+  int LESS_THAN_EQUAL = 44;
+  int GREATER_THAN = 45;
+  int GREATER_THAN_EQUAL = 46;
+  int REGEX_EQUAL = 47;
+  int CMPOPERATOR = 48;
+  int MINUS = 49;
+  int PLUS = 50;
+  int MULTIPLY = 51;
+  int DIVIDE = 52;
+  int MODULO = 53;
+  int INCR = 54;
+  int DECR = 55;
+  int FIELD_ID = 56;
+  int REC_NAME_FIELD_ID = 57;
+  int REC_NUM_FIELD_ID = 58;
+  int GLOBAL_PARAMETER_ID = 59;
+  int OPEN_PAR = 60;
+  int CLOSE_PAR = 61;
+  int INT_VAR = 62;
+  int LONG_VAR = 63;
+  int DATE_VAR = 64;
+  int DOUBLE_VAR = 65;
+  int DECIMAL_VAR = 66;
+  int BOOLEAN_VAR = 67;
+  int STRING_VAR = 68;
+  int BYTE_VAR = 69;
+  int LIST_VAR = 70;
+  int MAP_VAR = 71;
+  int RECORD_VAR = 72;
+  int OBJECT_VAR = 73;
+  int BREAK = 74;
+  int CONTINUE = 75;
+  int ELSE = 76;
+  int FOR = 77;
+  int FOR_EACH = 78;
+  int FUNCTION = 79;
+  int IF = 80;
+  int RETURN = 81;
+  int WHILE = 82;
+  int CASE = 83;
+  int ENUM = 84;
+  int IMPORT = 85;
+  int SWITCH = 86;
+  int CASE_DEFAULT = 87;
+  int DO = 88;
+  int DATE_FIELD_LITERAL = 130;
+  int IDENTIFIER = 131;
+  int ERROR = 132;
 
   int DEFAULT = 0;
   int WithinComment = 1;
   int WithinLineComment = 2;
+  int WithinInclude = 3;
+  int WithingInclude = 4;
 
   String[] tokenImage = {
     "<EOF>",
@@ -99,6 +101,9 @@ public interface TransformLangParserConstants {
     "\"//\"",
     "\"\\n\"",
     "<token of kind 11>",
+    "\"#include\"",
+    "\"\\n\"",
+    "<token of kind 14>",
     "<INTEGER_LITERAL>",
     "<DIGIT>",
     "<LETTER>",
@@ -183,7 +188,6 @@ public interface TransformLangParserConstants {
     "\"]\"",
     "\"isnull\"",
     "\"nvl\"",
-    "\"replace\"",
     "\"iif\"",
     "\"trunc\"",
     "\"print_stack\"",

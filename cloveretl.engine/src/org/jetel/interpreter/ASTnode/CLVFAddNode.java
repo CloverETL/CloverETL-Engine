@@ -3,8 +3,12 @@
 package org.jetel.interpreter.ASTnode;
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLValue;
 
 public class CLVFAddNode extends SimpleNode {
+ 
+  public TLValue nodeVal;
+    
   public CLVFAddNode(int id) {
     super(id);
   }

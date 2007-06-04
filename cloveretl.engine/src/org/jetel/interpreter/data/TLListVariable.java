@@ -104,7 +104,7 @@ public class TLListVariable extends TLVariable {
         return name+" : "+value.type.getName()+" : "+value.getList().toString();
     }
     
-    public List getList() {
+    public List<TLValue> getList() {
         return value.getList();
     }
     

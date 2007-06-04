@@ -37,7 +37,13 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 		this.nodeInError=node;
 		this.arguments=arguments;
 	}
-	
+    
+    public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message,Throwable cause){
+        super(message,cause);
+        this.nodeInError=node;
+        this.arguments=arguments;
+    }
+    
 	public TransformLangExecutorRuntimeException(Object[] arguments,String message){
 		super(message);
 		this.nodeInError=null;
@@ -75,6 +81,18 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 	public Object[] getArguments(){
 		return arguments;
 	}
+    
+    public int getColumn() {
+        if (nodeInError!=null)
+            return nodeInError.getColumnNumber();
+        return -1;
+    }
+    
+    public int getLine() {
+        if (nodeInError!=null)
+            return nodeInError.getLineNumber();
+        return -1;
+    }
 	
 	public String getMessage(){
 		StringBuffer strBuf=new StringBuffer("Interpreter runtime exception");
@@ -83,7 +101,11 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
             strBuf.append(" column ").append(nodeInError.getColumnNumber());
         }
         strBuf.append(" : ");
-		strBuf.append(super.getMessage()).append("\n");
+		strBuf.append(super.getMessage());
+        if (super.getCause()!=null) {
+            strBuf.append(" - '").append(super.getCause().getMessage()).append("' : ");
+        }
+        strBuf.append("\n");
 		if (arguments !=null){
 			for(int i=0;i<arguments.length;i++){
 				strBuf.append("arg[").append(i).append("] ");

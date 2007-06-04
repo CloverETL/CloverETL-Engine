@@ -101,7 +101,7 @@ public class TLMapVariable extends TLVariable {
         return name+" : "+value.type.getName()+" : "+value.getMap().toString();
     }
     
-    public Map getMap() {
+    public Map<String,TLValue> getMap() {
         return value.getMap();
     }
 
