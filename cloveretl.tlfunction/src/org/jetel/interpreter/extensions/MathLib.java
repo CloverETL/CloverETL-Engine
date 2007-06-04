@@ -25,7 +25,6 @@ package org.jetel.interpreter.extensions;
 
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
-import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
@@ -80,6 +79,7 @@ public class MathLib implements ITLFunctionLibrary {
         }
     }
     
+    
     // SQRT
     class SqrtFunction extends TLFunctionPrototype {
         public SqrtFunction() {
@@ -89,11 +89,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.sqrt(params[0]
-                                    .getDouble())));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.sqrt(params[0].getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -102,6 +100,11 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "sqrt - wrong type of literal(s)");
+        }
+        
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }
     
@@ -114,11 +117,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.log((params[0]
-                                    .getDouble()))));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.log(params[0].getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -127,6 +128,10 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "log - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }
     
@@ -139,11 +144,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.log10((params[0]
-                                    .getDouble()))));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.log10(params[0].getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -152,6 +155,10 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "log10 - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }
  
@@ -164,11 +171,10 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.exp((params[0]
-                                    .getDouble()))));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.exp(params[0]
+                                    .getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -177,6 +183,10 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "exp - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }                        
 
@@ -189,11 +199,10 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.round((params[0]
-                                    .getDouble()))));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.round(params[0]
+                                    .getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -202,6 +211,10 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "round - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }                        
     
@@ -214,10 +227,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.pow(params[0].getDouble(),params[1].getDouble())));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.pow(params[0].getDouble(),params[1].getDouble()));
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -226,6 +238,10 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "pow - wrong type of literal(s)");
+        }
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }                        
     
@@ -262,10 +278,9 @@ public class MathLib implements ITLFunctionLibrary {
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
             if (params[0].type.isNumeric()) {
-                TLValue retVal;
+                TLValue retVal=(TLValue)context.getContext();
                 try {
-                    retVal = new TLValue(TLValueType.DOUBLE,
-                            new CloverDouble(Math.random()));
+                    ((CloverDouble)retVal.getValue()).setValue(Math.random());
                     return retVal;
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
@@ -274,6 +289,11 @@ public class MathLib implements ITLFunctionLibrary {
             }
             throw new TransformLangExecutorRuntimeException(null,
                     params, "random - wrong type of literal(s)");
+        }
+        
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDoubleContext();
         }
     }                        
 

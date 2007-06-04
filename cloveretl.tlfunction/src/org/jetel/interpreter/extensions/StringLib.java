@@ -23,10 +23,13 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.jetel.data.primitive.CloverInteger;
+import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
-import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.StringUtils;
@@ -38,7 +41,7 @@ public class StringLib extends TLFunctionLibrary {
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
-                "length"), SOUNDEX("soundex");
+                "length"), SOUNDEX("soundex"), REPLACE("replace");
 
         public String name;
 
@@ -82,6 +85,8 @@ public class StringLib extends TLFunctionLibrary {
             return new LengthFunction();
         case SOUNDEX:
             return new SoundexFunction();
+        case REPLACE:
+           // return new ReplaceFunction();
         default:
             return null;
         }
@@ -92,12 +97,13 @@ public class StringLib extends TLFunctionLibrary {
 
         public ConcatFunction() {
             super("string", "concat", new TLValueType[] { TLValueType.STRING },
-                    TLValueType.STRING);
+                    TLValueType.STRING,999);
         }
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
             strBuf.setLength(0);
             for (int i = 0; i < params.length; i++) {
                 if (!params[i].isNull()) {
@@ -112,7 +118,7 @@ public class StringLib extends TLFunctionLibrary {
                             "concat - wrong type of literal(s)");
                 }
             }
-            return new TLValue(TLValueType.STRING, strBuf);
+            return val;
         }
 
         @Override
@@ -132,7 +138,8 @@ public class StringLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
             strBuf.setLength(0);
 
             if (!params[0].isNull() && params[0].type == TLValueType.STRING) {
@@ -146,7 +153,7 @@ public class StringLib extends TLFunctionLibrary {
                         "uppercase - wrong type of literal");
             }
 
-            return new TLValue(TLValueType.STRING, strBuf);
+            return val;
         }
 
         @Override
@@ -167,9 +174,10 @@ public class StringLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
             strBuf.setLength(0);
-
+            
             if (!params[0].isNull() && params[0].type == TLValueType.STRING) {
                 CharSequence seq = params[0].getCharSequence();
                 strBuf.ensureCapacity(seq.length());
@@ -181,7 +189,7 @@ public class StringLib extends TLFunctionLibrary {
                         "uppercase - wrong type of literal");
             }
 
-            return new TLValue(TLValueType.STRING, strBuf);
+            return val;
         }
 
         @Override
@@ -198,6 +206,316 @@ public class StringLib extends TLFunctionLibrary {
             super("string", "substring", new TLValueType[] {
                     TLValueType.STRING, TLValueType.INTEGER,
                     TLValueType.INTEGER }, TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
+            strBuf.setLength(0);
+            
+            int length, from;
+            if (params[0].isNull() || params[1].isNull() || params[2].isNull()) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "substring - NULL value not allowed");
+            }
+
+            try {
+                length = params[2].getInt();
+                from = params[1].getInt();
+            } catch (Exception ex) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "substring - " + ex.getMessage());
+            }
+
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "substring - wrong type of literal(s)");
+            }
+
+            StringUtils.subString(strBuf, params[0].getCharSequence(), from, length);
+            return val;
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
+    // LEFT
+    class LeftFunction extends TLFunctionPrototype {
+
+        public LeftFunction() {
+            super("string", "left", new TLValueType[] { TLValueType.STRING,
+                    TLValueType.INTEGER }, TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
+            strBuf.setLength(0);
+            
+            int length;
+            if (params[0].isNull() || params[1].isNull()) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "left - NULL value not allowed");
+            }
+
+            try {
+                length = params[1].getInt();
+            } catch (Exception ex) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "left - " + ex.getMessage());
+            }
+
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "left - wrong type of literal(s)");
+            }
+
+            StringUtils.subString(strBuf, params[0].getCharSequence(), 0, length);
+            return val;
+            
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
+    // RIGHT
+    class RightFunction extends TLFunctionPrototype {
+
+        public RightFunction() {
+            super("string", "right", new TLValueType[] { TLValueType.STRING,
+                    TLValueType.INTEGER }, TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
+            strBuf.setLength(0);
+            
+            int length;
+            if (params[0].isNull() || params[1].isNull()) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "right - NULL value not allowed");
+            }
+
+            try {
+                length = params[1].getInt();
+            } catch (Exception ex) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "right - " + ex.getMessage());
+            }
+
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "right - wrong type of literal(s)");
+            }
+
+            CharSequence src = params[0].getCharSequence();
+            int from = src.length() - length;
+
+            StringUtils.subString(strBuf, src,from, length);
+            return val;
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
+    // TRIM
+    class TrimFunction extends TLFunctionPrototype {
+
+        public TrimFunction() {
+            super("string", "trim", new TLValueType[] { TLValueType.STRING },
+                    TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
+            strBuf.setLength(0);
+            
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "trim - wrong type of literal");
+            }
+            strBuf.append(params[0].getCharSequence());
+            StringUtils.trim(strBuf);
+
+            if (strBuf.length() == 0)
+                return Stack.EMPTY_STRING;
+
+            return val;
+
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
+    // LENGTH
+    class LengthFunction extends TLFunctionPrototype {
+
+        public LengthFunction() {
+            super("string", "length", new TLValueType[] { TLValueType.STRING },
+                    TLValueType.INTEGER);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            Numeric intBuf = val.getNumeric();
+            
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "length - wrong type of literal");
+            }
+            intBuf.setValue(params[0].getCharSequence().length());
+
+            return val;
+
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createIntegerContext();
+        }
+    }
+
+    // SOUNDEX
+    class SoundexFunction extends TLFunctionPrototype {
+
+        private static final int SIZE = 4;
+
+        public SoundexFunction() {
+            super("string", "soundex",
+                    new TLValueType[] { TLValueType.STRING },
+                    TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder targetStrBuf = (StringBuilder)val.value;
+            targetStrBuf.setLength(0);
+            
+            if (params[0].type != TLValueType.STRING) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        "soundex - wrong type of literal");
+            }
+
+            CharSequence src = params[0].getCharSequence();
+            int length = src.length();
+            char srcChars[] = new char[length];
+            for (int i = 0; i < length; i++)
+                srcChars[i]=Character.toUpperCase(src.charAt(i++));
+            char firstLetter = srcChars[0];
+
+            // convert letters to numeric code
+            for (int i = 0; i < srcChars.length; i++) {
+                switch (srcChars[i]) {
+                case 'B':
+                case 'F':
+                case 'P':
+                case 'V': {
+                    srcChars[i] = '1';
+                    break;
+                }
+
+                case 'C':
+                case 'G':
+                case 'J':
+                case 'K':
+                case 'Q':
+                case 'S':
+                case 'X':
+                case 'Z': {
+                    srcChars[i] = '2';
+                    break;
+                }
+
+                case 'D':
+                case 'T': {
+                    srcChars[i] = '3';
+                    break;
+                }
+
+                case 'L': {
+                    srcChars[i] = '4';
+                    break;
+                }
+
+                case 'M':
+                case 'N': {
+                    srcChars[i] = '5';
+                    break;
+                }
+
+                case 'R': {
+                    srcChars[i] = '6';
+                    break;
+                }
+
+                default: {
+                    srcChars[i] = '0';
+                    break;
+                }
+                }
+            }
+
+            // remove duplicates
+            targetStrBuf.append(firstLetter);
+            char last = srcChars[0];
+            for (int i = 1; i < srcChars.length; i++) {
+                if (srcChars[i] != '0' && srcChars[i] != last) {
+                    last = srcChars[i];
+                    targetStrBuf.append(last);
+                }
+            }
+
+            // pad with 0's or truncate
+            for (int i = targetStrBuf.length(); i < SIZE; i++) {
+                targetStrBuf.append('0');
+            }
+            targetStrBuf.setLength(SIZE);
+            return val;
+
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
+    /*
+    
+    class ReplaceFunction extends TLFunctionPrototype {
+
+        class ReplaceStore{
+            public Pattern pattern;
+            public Matcher matcher;
+            public TLValue storedRegex;
+            public TLValue result;
+        }
+        
+        
+        public ReplaceFunction() {
+            super("string", "replace", new TLValueType[] {
+                    TLValueType.STRING, TLValueType.STRING,
+                    TLValueType.STRING }, TLValueType.STRING);
         }
 
         @Override
@@ -229,254 +547,44 @@ public class StringLib extends TLFunctionLibrary {
 
         @Override
         public TLContext createContext() {
-            return TLContext.createStringContext();
+            TLContext<ReplaceStore> context = new TLContext<ReplaceStore>();
+            context.setContext(new ReplaceStore());
+            return context;
         }
     }
 
-    // LEFT
-    class LeftFunction extends TLFunctionPrototype {
+    /*
+    ******
+    node.jjtGetChild(0).jjtAccept(this, data);
+    TLValue str = stack.pop();
+    node.jjtGetChild(1).jjtAccept(this, data);
+    TLValue regexStr = stack.pop();
+    node.jjtGetChild(2).jjtAccept(this, data);
+    TLValue withO = stack.pop();
 
-        public LeftFunction() {
-            super("string", "left", new TLValueType[] { TLValueType.STRING,
-                    TLValueType.INTEGER }, TLValueType.STRING);
+    xxx
+
+    if (str.type==TLValueType.STRING && str.type==withO.type &&  str.type==regexStr.type) {
+
+        if (node.pattern == null || !node.stored.equals(regexStr)) {
+            node.pattern = Pattern.compile(((CharSequence) regexStr)
+                    .toString());
+            node.matcher = node.pattern.matcher((CharSequence) str);
+            node.stored = regexStr;
+        } else {
+            node.matcher.reset((CharSequence) str);
         }
+        stack.push(new TLValue(TLValueType.STRING,node.matcher.replaceAll(withO.getString())));
 
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
-            int length;
-            if (params[0].isNull() || params[1].isNull()) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "left - NULL value not allowed");
-            }
-
-            try {
-                length = params[1].getInt();
-            } catch (Exception ex) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "left - " + ex.getMessage());
-            }
-
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "left - wrong type of literal(s)");
-            }
-
-            return new TLValue(TLValueType.STRING, StringUtils.subString(
-                    strBuf, params[0].getCharSequence(), 0, length));
-        }
-
-        @Override
-        public TLContext createContext() {
-            return TLContext.createStringContext();
-        }
+    } else {
+        Object[] arguments = { withO, regexStr, str };
+        throw new TransformLangExecutorRuntimeException(node,arguments,
+                "replace - wrong type of literal(s)");
     }
 
-    // RIGHT
-    class RightFunction extends TLFunctionPrototype {
-
-        public RightFunction() {
-            super("string", "right", new TLValueType[] { TLValueType.STRING,
-                    TLValueType.INTEGER }, TLValueType.STRING);
-        }
-
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
-            int length;
-            if (params[0].isNull() || params[1].isNull()) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "right - NULL value not allowed");
-            }
-
-            try {
-                length = params[1].getInt();
-            } catch (Exception ex) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "right - " + ex.getMessage());
-            }
-
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "right - wrong type of literal(s)");
-            }
-
-            CharSequence src = params[0].getCharSequence();
-            int from = src.length() - length;
-
-            return new TLValue(TLValueType.STRING, StringUtils.subString(
-                    strBuf, params[0].getCharSequence(), from, length));
-        }
-
-        @Override
-        public TLContext createContext() {
-            return TLContext.createStringContext();
-        }
-    }
-
-    // TRIM
-    class TrimFunction extends TLFunctionPrototype {
-
-        public TrimFunction() {
-            super("string", "trim", new TLValueType[] { TLValueType.STRING },
-                    TLValueType.STRING);
-        }
-
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "trim - wrong type of literal");
-            }
-            strBuf.append(params[0].getCharSequence());
-            StringUtils.trim(strBuf);
-
-            if (strBuf.length() == 0)
-                return Stack.EMPTY_STRING;
-
-            return new TLValue(TLValueType.STRING, strBuf);
-
-        }
-
-        @Override
-        public TLContext createContext() {
-            return TLContext.createStringContext();
-        }
-    }
-
-    // LENGTH
-    class LengthFunction extends TLFunctionPrototype {
-
-        public LengthFunction() {
-            super("string", "length", new TLValueType[] { TLValueType.STRING },
-                    TLValueType.INTEGER);
-        }
-
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            CloverInteger intBuf = (CloverInteger) context.getContext();
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "length - wrong type of literal");
-            }
-            intBuf.setValue(params[0].getCharSequence().length());
-
-            return new TLValue(TLValueType.INTEGER, intBuf);
-
-        }
-
-        @Override
-        public TLContext createContext() {
-            return TLContext.createIntegerContext();
-        }
-    }
-
-    // SOUNDEX
-    class SoundexFunction extends TLFunctionPrototype {
-
-        private static final int SIZE = 4;
-
-        public SoundexFunction() {
-            super("string", "soundex",
-                    new TLValueType[] { TLValueType.STRING },
-                    TLValueType.STRING);
-        }
-
-        @Override
-        public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "soundex - wrong type of literal");
-            }
-
-            CharSequence src = params[0].getCharSequence();
-            int length = src.length();
-            char x[] = new char[length];
-            for (int i = 0; i < length; Character.toUpperCase(src.charAt(i++)))
-                ;
-            char firstLetter = x[0];
-
-            // convert letters to numeric code
-            for (int i = 0; i < x.length; i++) {
-                switch (x[i]) {
-                case 'B':
-                case 'F':
-                case 'P':
-                case 'V': {
-                    x[i] = '1';
-                    break;
-                }
-
-                case 'C':
-                case 'G':
-                case 'J':
-                case 'K':
-                case 'Q':
-                case 'S':
-                case 'X':
-                case 'Z': {
-                    x[i] = '2';
-                    break;
-                }
-
-                case 'D':
-                case 'T': {
-                    x[i] = '3';
-                    break;
-                }
-
-                case 'L': {
-                    x[i] = '4';
-                    break;
-                }
-
-                case 'M':
-                case 'N': {
-                    x[i] = '5';
-                    break;
-                }
-
-                case 'R': {
-                    x[i] = '6';
-                    break;
-                }
-
-                default: {
-                    x[i] = '0';
-                    break;
-                }
-                }
-            }
-
-            // remove duplicates
-            strBuf.append(firstLetter);
-            char last = x[0];
-            for (int i = 1; i < x.length; i++) {
-                if (x[i] != '0' && x[i] != last) {
-                    last = x[i];
-                    strBuf.append(last);
-                }
-            }
-
-            // pad with 0's or truncate
-            for (int i = strBuf.length(); i < SIZE; i++) {
-                strBuf.append('0');
-            }
-            strBuf.setLength(SIZE);
-            return new TLValue(TLValueType.STRING, strBuf);
-
-        }
-
-        @Override
-        public TLContext createContext() {
-            return TLContext.createStringContext();
-        }
-    }
-
+    return data;
+    ******
+    
+    
+    */
 }

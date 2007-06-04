@@ -25,7 +25,6 @@ package org.jetel.interpreter.extensions;
 
 import java.util.Calendar;
 
-import org.jetel.interpreter.data.TLContext;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.extensions.StringLib.Function;
@@ -73,7 +72,14 @@ public class DateLib extends TLFunctionLibrary {
     
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            return new TLValue(TLValueType.DATE,Calendar.getInstance().getTime());
+            TLValue val=((TLValue)context.getContext());
+            val.getDate().setTime(Calendar.getInstance().getTimeInMillis()); 
+            return  val;
+        }
+        
+        @Override
+        public TLContext createContext() {
+            return TLContext.createDateContext();
         }
     }
     
