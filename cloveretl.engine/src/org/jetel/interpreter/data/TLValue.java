@@ -38,6 +38,8 @@ import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
+import org.jetel.util.Compare;
+import org.jetel.util.StringUtils;
 
 public class TLValue implements Comparable<TLValue>{
     
@@ -184,7 +186,7 @@ public class TLValue implements Comparable<TLValue>{
         case DataFieldMetadata.STRING_FIELD:
             return new TLValue(TLValueType.STRING,field.getValueDuplicate());
         default:
-            return new TLValue(TLValueType.STRING,field.toString());
+            throw new IllegalArgumentException("Don't know how to convert "+field.getType());
         
         }
     }
@@ -229,7 +231,7 @@ public class TLValue implements Comparable<TLValue>{
             newVal.value = ((Date) value).clone();
             break;
         case STRING:
-            newVal.value = new StringBuilder(((StringBuilder) value));
+            newVal.value = new StringBuilder((CharSequence)value);
             break;
         case BOOLEAN:
             newVal.value = value;
@@ -241,7 +243,7 @@ public class TLValue implements Comparable<TLValue>{
             newVal.value = new HashMap<String, TLValue>((Map) value);
             break;
         default:
-            throw new UnsupportedOperationException(
+            throw new IllegalArgumentException(
                     "Can't duplicate value type: " + type);
         }
 
@@ -250,8 +252,10 @@ public class TLValue implements Comparable<TLValue>{
     
     @Override
     public boolean equals(Object obj) {
-        if (this.value == null )return false;
-        return this.value.equals(obj);
+        if (obj instanceof TLValue) {
+            return compareTo((TLValue)obj)==0;
+        }
+        return false;
     }
     
     @Override
@@ -262,9 +266,55 @@ public class TLValue implements Comparable<TLValue>{
     }
 
     public int compareTo(TLValue o) {
-        if (this.value instanceof Comparable) {
-            return ((Comparable)this.value).compareTo(o);
+        if (this.value==null) return -1;
+        else if (o.value==null) return 1;
+        else if (type!=o.type) return -1;
+        switch (type) {
+        case INTEGER:
+        case DOUBLE:
+        case LONG:
+        case DECIMAL:
+            return getNumeric().compareTo(o.getNumeric());
+        case DATE:
+            return getDate().compareTo(o.getDate());
+        case STRING:
+            return Compare.compare(getCharSequence(), o.getCharSequence());
+        case BOOLEAN:
+            return getBoolean()==o.getBoolean() ? 0 : -1;
+        case LIST:
+        case MAP:
+            return -1;
+        default:
+            throw new IllegalArgumentException(
+                    "Can't compare value type: " + type + " with type: "+o.type);
         }
-        return -1;
+
     }
+    
+    public final static TLValue create(TLValueType type) {
+        switch (type) {
+        case INTEGER:
+            return new TLValue(type,new CloverInteger(0));
+        case DOUBLE:
+            return new TLValue(type,new CloverDouble(0));
+        case LONG:
+            return new TLValue(type,new CloverLong(0));
+        case DECIMAL:
+            return new TLValue(type,DecimalFactory.getDecimal());
+        case DATE:
+            return new TLValue(type,new Date(0));
+        case STRING:
+            return new TLValue(type,new StringBuilder());
+        case BOOLEAN:
+            return TLValue.FALSE_VAL;
+        case LIST:
+            return new TLValue(type,new ArrayList<TLValue>());
+        case MAP:
+            return new TLValue(type,new HashMap<String, TLValue>());
+        default:
+            throw new IllegalArgumentException(
+                    "Can't create value type: " + type);
+        }
+    }
+    
 }

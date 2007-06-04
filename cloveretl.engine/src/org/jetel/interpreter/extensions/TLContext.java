@@ -21,10 +21,15 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package org.jetel.interpreter.data;
+package org.jetel.interpreter.extensions;
+
+import java.util.Date;
 
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
+import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
+import org.jetel.metadata.DataFieldMetadata;
 
 public class TLContext<T> {
 
@@ -38,23 +43,30 @@ public class TLContext<T> {
         return context;
     }
 
-    public static TLContext<StringBuilder> createStringContext() {
-        TLContext<StringBuilder> context = new TLContext<StringBuilder>();
-        context.setContext(new StringBuilder(40));
+    public static TLContext<TLValue> createStringContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(new TLValue(TLValueType.STRING, new StringBuilder(40)));
         return context;
     }
 
-    public static TLContext<CloverInteger> createIntegerContext() {
-        TLContext<CloverInteger> context = new TLContext<CloverInteger>();
-        context.setContext(new CloverInteger(0));
+    public static TLContext<TLValue> createIntegerContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(new TLValue(TLValueType.INTEGER,new CloverInteger(0)));
         return context;
     }
 
-    public static TLContext<CloverDouble> createDoubleContext() {
-        TLContext<CloverDouble> context = new TLContext<CloverDouble>();
-        context.setContext(new CloverDouble(0));
+    public static TLContext<TLValue> createDoubleContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(new TLValue(TLValueType.DOUBLE,new CloverDouble(0)));
         return context;
 
     }
 
+    public static TLContext<TLValue> createDateContext() {
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(new TLValue(TLValueType.DATE,new Date(0)));
+        return context;
+
+    }
+    
 }

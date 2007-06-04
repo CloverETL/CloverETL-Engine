@@ -5,12 +5,14 @@ import java.util.Calendar;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLValue;
 ;
 
 public class CLVFDateAddNode extends SimpleNode {
 	
     public Calendar calendar;
     public int calendarField;
+    public TLValue nodeVal;
 	
 	public CLVFDateAddNode(int id) {
 		super(id);

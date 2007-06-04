@@ -4,9 +4,13 @@ package org.jetel.interpreter.ASTnode;
 
 import org.jetel.interpreter.ExpParser;
 import org.jetel.interpreter.TransformLangParserVisitor;
+import org.jetel.interpreter.data.TLValue;
 
 public class CLVFDivNode extends SimpleNode {
-  public CLVFDivNode(int id) {
+
+    public TLValue nodeVal;
+    
+    public CLVFDivNode(int id) {
     super(id);
   }
 

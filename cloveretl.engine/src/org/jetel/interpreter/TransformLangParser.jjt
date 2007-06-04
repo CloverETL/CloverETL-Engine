@@ -740,8 +740,12 @@ void Statement() #void :
 		  )
 	}catch (ParseException e) {
 		parseExceptions.add(e);
+
 // following code causes strange behaviour in case of certain bugs
-    do {      t = getNextToken();    } while (t.kind != SEMICOLON);
+// let's put some cap on interations
+//	int i=0;
+//    do {//      t = getNextToken();
+//      i++;//    } while (t.kind != SEMICOLON || t.kind != EOF || i < 99);
   }
 }
 
@@ -908,7 +912,6 @@ void BuildInFunction() #void :
 	|DateDiffNode()
 	|"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
-	|"replace" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression() ")"  #ReplaceNode(3) // (string,pattern,new_content)
 	|Str2NumNode()
 	|Num2StrNode()
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
