@@ -51,7 +51,7 @@ public final class JetelVersion {
     /**
      * <code>JAVA_REQUIRED_VERSION</code> - minimum Java version required by the library
      */
-    public static final String JAVA_REQUIRED_VERSION = "1.4";
+    public static final String JAVA_REQUIRED_VERSION = "1.5";
     
     public static final String LIBRARY_BUILD_DATETIME ="@BUILD_TIME@";
     
