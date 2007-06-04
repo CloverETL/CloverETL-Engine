@@ -165,6 +165,7 @@ public class runGraph {
         String password = null;
         String logHost = null;
         boolean onlyCheckConfig = false;
+        String graphFileName = null;
         
         System.out
                 .println("***  CloverETL framework/transformation graph runner ver "
@@ -175,11 +176,6 @@ public class runGraph {
                 + " build#" + JetelVersion.BUILD_NUMBER + " compiled "
                 + JetelVersion.LIBRARY_BUILD_DATETIME);
         System.out.println();
-
-        if (args.length < 1) {
-            printHelp();
-            System.exit(-1);
-        }
 
         // process command line arguments
         for (int i = 0; i < args.length; i++) {
@@ -231,7 +227,14 @@ public class runGraph {
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
+            } else {
+                graphFileName = args[i];
             }
+        }
+
+        if (graphFileName == null) {
+            printHelp();
+            System.exit(-1);
         }
 
         // setup log4j appenders
@@ -265,10 +268,9 @@ public class runGraph {
             System.out.println("Graph definition loaded from STDIN");
             in = System.in;
         } else {
-            System.out.println("Graph definition file: "
-                    + args[args.length - 1]);
+            System.out.println("Graph definition file: " + graphFileName);
             try {
-                URL fileURL = FileUtils.getFileURL(null, args[args.length - 1]);
+                URL fileURL = FileUtils.getFileURL(null, graphFileName);
                 in = fileURL.openStream();
             } catch (IOException e) {
                 System.err
