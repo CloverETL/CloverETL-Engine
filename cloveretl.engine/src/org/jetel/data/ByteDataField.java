@@ -309,7 +309,12 @@ public class ByteDataField extends DataField implements Comparable{
             setNull(true);
             return;
         }
-        this.value = seq.toString().getBytes();
+        try {
+            this.value = seq.toString().getBytes(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e.toString() + " when calling fromString() on field \""+
+                    this.metadata.getName()+"\"", e);
+        }
         setNull(false);
 	}
 
