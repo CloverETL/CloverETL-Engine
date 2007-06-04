@@ -3,7 +3,7 @@
 		<library path="../../../cloveretl.engine.oracle/bin"/>
 	</runtime>
 	
-	<requires engine-version="2.1.0">
+	<requires engine-version="2.2.0">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.component"/>
 	</requires>

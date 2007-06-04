@@ -9,7 +9,7 @@
 	
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
-	<property name="minor_version" value="1"/>
+	<property name="minor_version" value="2"/>
 	<property name="revision_version" value="0"/>
 	
 	
@@ -17,11 +17,14 @@
 	<property name="dir.bin.default" value="${basedir}/bin"/>
 	<property name="dir.doc.default" value="${basedir}/javadoc"/>
 	<property name="dir.dist.default" value="${basedir}/build"/>
+	<property name="dir.distribution" value="${basedir}/dist"/>
 	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="dir.docs" value="${basedir}/docs"/>
 	<property name="dir.src" value="src"/>
 	<property name="dir.src.tmp" value="src_tmp"/>
-	
+	<property name="dir.examples" value="examples"/>
+	<property name="dir.tmp" value="__tmp"/>
+
 	<!--load external properties-->
 	<property file="build.properties"/>
 		
@@ -47,15 +50,14 @@
 	</target>
 
 	<target name="dist.src" description="Creates source distribution">
-		<property name="src.distribution.dir" value="${basedir}/dist.src"/>
-		<delete dir="${src.distribution.dir}"/>
-		<mkdir dir="${src.distribution.dir}/cloverETL"/>
+		<delete dir="${dir.tmp}"/>
+		<mkdir dir="${dir.tmp}/cloverETL"/>
 		
 		<!-- call source target for all plugins -->
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.src" param="plugin.dir"/>
 
 		<!-- copy source for engine itself -->
-		<property name="src.distribution.dir.engine" value="${src.distribution.dir}/cloverETL/cloveretl.engine"/>
+		<property name="src.distribution.dir.engine" value="${dir.tmp}/cloverETL/cloveretl.engine"/>
 
 		<copy todir="${src.distribution.dir.engine}/src">
 			<fileset dir="${dir.src}" />
@@ -89,33 +91,51 @@
 		<move file="${src.distribution.dir.engine}/../readme.src.txt" tofile="${src.distribution.dir.engine}/../readme.txt"/>
 		
 		<!-- create zip package for source distribution -->
-		<zip destfile="${src.distribution.dir}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${src.distribution.dir}"/>
+		<mkdir dir="${dir.distribution}"/>
+		<zip destfile="${dir.distribution}/cloverETL.src.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
 
-		<delete dir="${src.distribution.dir}/cloverETL"/>
+		<delete dir="${dir.tmp}"/>
 	</target>
 
 	<target name="plugin.src" description="Private target for copy source of plugin. Don't call direct.">
 		<echo message="Copy source from plugin - ${plugin.dir}"/>
 		<ant dir="${plugin.dir}" target="dist.src" inheritAll="false">
-			<property name="dist.src" value="${src.distribution.dir}/cloverETL"/>
+			<property name="dist.src" value="${basedir}/${dir.tmp}/cloverETL"/>
 		</ant>
 	</target>
 
 	<target name="dist.bin" depends="build" description="Creates binary distribution">
-		<property name="distribution.dir" value="${basedir}/dist"/>
-		<delete dir="${distribution.dir}" />
+		<delete dir="${dir.tmp}"/>
 		
 		<!-- binary distribution -->
-		<mkdir dir="${distribution.dir}/cloverETL"/>
+		<mkdir dir="${dir.tmp}/cloverETL"/>
 
-		<copy todir="${distribution.dir}/cloverETL">
+		<copy todir="${dir.tmp}/cloverETL">
 			<fileset dir="${dir.dist}" />
 		</copy>
 
 		<!-- create zip distribution package -->
-		<zip destfile="${distribution.dir}/cloverETL.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${distribution.dir}"/>
+		<mkdir dir="${dir.distribution}"/>
+		<zip destfile="${dir.distribution}/cloverETL.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
 
-		<delete dir="${distribution.dir}/cloverETL"/>
+		<delete dir="${dir.tmp}"/>
+	</target>
+
+	<target name="dist.examples" description="Creates examples distribution">
+		<delete dir="${dir.tmp}"/>
+		
+		<!-- binary distribution -->
+		<mkdir dir="${dir.tmp}/examples"/>
+
+		<copy todir="${dir.tmp}/examples">
+			<fileset dir="${dir.examples}" />
+		</copy>
+
+		<!-- create zip distribution package -->
+		<mkdir dir="${dir.distribution}"/>
+		<zip destfile="${dir.distribution}/cloverExamples.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.tmp}"/>
+
+		<delete dir="${dir.tmp}"/>
 	</target>
 
 
@@ -123,8 +143,9 @@
 	<target name="clean" depends="checkproperties" description="Delete old compiled files">
 		<delete dir="${dir.bin}"/>
 		<delete dir="${dir.dist}"/>
-		<delete dir="${distribution.dir}"/>
+		<delete dir="${dir.distribution}"/>
 		<delete dir="${dir.doc}"/>
+		<delete dir="${dir.tmp}"/>
 	</target>
 
 	<!-- Target sets directory-properties unless they have been defined (in parent ant build) -->
@@ -281,9 +302,7 @@
 		</javadoc>
 		
 		<!-- create zip package for javadoc -->
-		<zip destfile="${dir.doc}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
-
-		<delete dir="${dir.doc}/cloverETL"/>
+		<zip destfile="${dir.distribution}/cloverETL.javadoc.rel-${major_version}-${minor_version}-${revision_version}.zip" basedir="${dir.doc}"/>
 	</target>
 	
 </project>
