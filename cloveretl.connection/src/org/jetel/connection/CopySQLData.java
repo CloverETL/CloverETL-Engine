@@ -443,6 +443,7 @@ public abstract class CopySQLData {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
                 return new CopyByte(record, fromIndex, toIndex);
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
