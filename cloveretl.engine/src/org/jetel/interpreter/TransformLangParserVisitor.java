@@ -9,6 +9,7 @@ public interface TransformLangParserVisitor
   public Object visit(SimpleNode node, Object data);
   public Object visit(CLVFStart node, Object data);
   public Object visit(CLVFStartExpression node, Object data);
+  public Object visit(CLVFImportSource node, Object data);
   public Object visit(CLVFFunctionDeclaration node, Object data);
   public Object visit(CLVFVarDeclaration node, Object data);
   public Object visit(CLVFAssignment node, Object data);
