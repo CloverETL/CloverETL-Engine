@@ -113,8 +113,8 @@ import org.w3c.dom.Element;
  *  	 joined records which has conformity smaller then conformity limit</td></tr>
  *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
  *    <tr><td><b>joinType</b><br><i>optional</i></td><td>inner/leftOuter/fullOuter Specifies type of join operation. Default is inner.</td></tr>
- *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. Default is false - multiple
- *    duplicate records are discarded - only the last one is used for join.</td></tr>
+ *    <tr><td><b>slaveDuplicates</b><br><i>optional</i></td><td>true/false - allow records on slave port with duplicate keys. If false - multiple
+ *    duplicate records are discarded - only the last one is used for join. Default is true.</td></tr>
  *    </table>
  *    <h4>Example:</h4> <pre>&lt;Node id="JOIN" type="MERGE_JOIN" joinKey="CustomerID" transformClass="org.jetel.test.reformatOrders"/&gt;</pre>
  *<pre>&lt;Node id="JOIN" type="HASH_JOIN" joinKey="EmployeeID*EmployeeID" joinType="inner"&gt;
@@ -992,6 +992,7 @@ public class MergeJoin extends Node {
 		}
 
 		public void rewindRun() {
+			needsRewind = false;
 		}
 
 		public DataRecord getSample() {
