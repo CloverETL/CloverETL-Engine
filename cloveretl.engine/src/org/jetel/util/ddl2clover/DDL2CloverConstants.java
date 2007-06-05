@@ -39,27 +39,31 @@ public interface DDL2CloverConstants {
   int REAL = 44;
   int ROWS = 45;
   int SMALLINT = 46;
-  int TABLE = 47;
-  int TIME = 48;
-  int TIMESTAMP = 49;
-  int TEMPORARY = 50;
-  int TINYINT = 51;
-  int UNIQUE = 52;
-  int VARBINARY = 53;
-  int VARCHAR = 54;
-  int VARCHAR2 = 55;
-  int STRING_LITERAL = 56;
-  int INTEGER_LITERAL = 57;
-  int FLOAT_LITERAL = 58;
-  int EXP = 59;
-  int IDENTIFIER = 60;
-  int LETTER = 61;
-  int DIGIT = 62;
-  int CLOSEPAREN = 63;
-  int COMA = 64;
-  int DOT = 65;
-  int OPENPAREN = 66;
-  int SEMICOLON = 67;
+  int STRING = 47;
+  int TABLE = 48;
+  int TEXT = 49;
+  int TIME = 50;
+  int TIMESTAMP = 51;
+  int TEMPORARY = 52;
+  int TINYINT = 53;
+  int UNIQUE = 54;
+  int VARBINARY = 55;
+  int VARCHAR = 56;
+  int VARCHAR2 = 57;
+  int STRING_LITERAL = 58;
+  int INTEGER_LITERAL = 59;
+  int FLOAT_LITERAL = 60;
+  int EXP = 61;
+  int IDENTIFIER = 62;
+  int LETTER = 63;
+  int DIGIT = 64;
+  int CLOSEPAREN = 65;
+  int COMA = 66;
+  int DOT = 67;
+  int OPENPAREN = 68;
+  int SEMICOLON = 69;
+  int STRSTR = 70;
+  int ALL = 71;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -113,7 +117,9 @@ public interface DDL2CloverConstants {
     "\"real\"",
     "\"rows\"",
     "\"smallint\"",
+    "\"string\"",
     "\"table\"",
+    "\"text\"",
     "\"time\"",
     "\"timestamp\"",
     "\"temporary\"",
@@ -134,6 +140,8 @@ public interface DDL2CloverConstants {
     "\".\"",
     "\"(\"",
     "\";\"",
+    "\"\\\"\"",
+    "<ALL>",
   };
 
 }

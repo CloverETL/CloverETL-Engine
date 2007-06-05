@@ -37,6 +37,7 @@ public class DDL2Clover {
 	private static final Long doubleLenght = Long.valueOf(String.valueOf(15));
 	private static final Long dateLenght = Long.valueOf(10); // "10.10.2007"
 	private static final Long dateTimeLenght = Long.valueOf(24); // "10.10.2007 23:10:10.111"
+	private static final Long textLenght = Long.valueOf(256);
 	
 	public static void main(String args[]) throws ParseException, FileNotFoundException {
 		DDL2Clover parser = new DDL2Clover(new FileInputStream(new File("./src/org/jetel/util/ddl2clover/ddl_statements.txt")));
@@ -142,9 +143,9 @@ TOKEN:
 	|	< REAL: "real" >
 	|	< ROWS: "rows" >
 	|	< SMALLINT: "smallint" >
-//	|	< STRING: "string" >
+	|	< STRING: "string" >
 	|	< TABLE: "table" >
-//	|	< TEXT: "text" >
+	|	< TEXT: "text" >
 	|	< TIME: "time" >
 	|	< TIMESTAMP: "timestamp" >
 	|	< TEMPORARY: "temporary" >
@@ -173,6 +174,8 @@ TOKEN:
 	|	< DOT: "." >
 	|	< OPENPAREN: "(" >
 	|	< SEMICOLON: ";" >
+	|	< STRSTR: "\"" >
+	|	< ALL: (["\u0000"-"\uFFFF"]) >
 }
 
 /*******************************************************************
@@ -217,12 +220,14 @@ List<DataFieldMetadata> tableElementList() :
 	{ 
 		ret.setDelimiter(fieldDelimiter);
 		list.add(ret); 
+		skipAllUptoComaOrCloseParen();
 	}
 	(<COMA> ret = tableElement() 	
 	{
 		if (ret != null) {
 			ret.setDelimiter(fieldDelimiter);
 			list.add(ret); 
+			skipAllUptoComaOrCloseParen();
 		}
 	})*
 	{
@@ -233,6 +238,27 @@ List<DataFieldMetadata> tableElementList() :
 	<CLOSEPAREN> 
 	{ return list; }
 }
+
+JAVACODE
+void skipAllUptoComaOrCloseParen() {
+	Token tok;
+	int nesting = 0;
+	boolean strStr = false;
+	while (true) {
+		tok = getToken(1);
+        if (tok.kind == STRSTR && strStr) strStr=false;
+        else if (tok.kind == STRSTR && !strStr) strStr=true;
+   		else if (!strStr) {
+			if (tok.kind == OPENPAREN) nesting++;
+	        else if (tok.kind == CLOSEPAREN && nesting > 0) nesting--;
+			else if (tok.kind == COMA && nesting == 0) return;
+			else if (tok.kind == CLOSEPAREN && nesting == 0) return;
+		}
+        tok = getNextToken();
+        if (tok.image.equals("")) return;
+	}
+}
+
 
 void tableScope() :
 {}
@@ -379,6 +405,8 @@ DataType dataType() :
 	|	<INTEGER> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
 	|	<REAL> { type = DataFieldMetadata.DECIMAL_FIELD; }		(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
 	|	<SMALLINT> { type = DataFieldMetadata.INTEGER_FIELD; }	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : integerLenght; }
+	|	<STRING> { type = DataFieldMetadata.STRING_FIELD; } 	(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
+	|	<TEXT> { type = DataFieldMetadata.STRING_FIELD; } 		(<OPENPAREN> temp = integerLiteral() <CLOSEPAREN> )? { lenght = temp != null ? temp : textLenght; }
 	|	<TIME> { type = DataFieldMetadata.DATE_FIELD;			lenght = dateTimeLenght;} // ?
 	|	<TIMESTAMP> { type = DataFieldMetadata.DATE_FIELD;		lenght = dateTimeLenght;}
 	|	<NUMBER> { type = DataFieldMetadata.DECIMAL_FIELD; }	(<OPENPAREN> temp = integerLiteral() (<COMA> scale = integerLiteral() )? <CLOSEPAREN> )? { lenght = temp != null ? temp : doubleLenght; }
