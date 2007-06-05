@@ -4,12 +4,18 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.StringUtils;
+import org.jetel.util.FileUtils;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
 
 public class TransformLangParserTokenManager implements TransformLangParserConstants
 {

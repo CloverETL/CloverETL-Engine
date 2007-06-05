@@ -25,12 +25,18 @@ import org.jetel.data.DataRecord;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.StringUtils;
+import org.jetel.util.FileUtils;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.List;
 import java.util.LinkedList;
+import java.io.FileInputStream;
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.nio.channels.Channels;
 
 public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements TransformLangParserTreeConstants/*@egen*/ {/*@bgen(jjtree)*/
   protected JJTTransformLangParserState jjtree = new JJTTransformLangParserState();
@@ -43,6 +49,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
        Map outDataRecordsMap;
 	   ParserHelper parserHelper;       
        List<Throwable> parseExceptions;
+       String sourceFilename;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
               this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,"UTF-8");
@@ -73,6 +80,17 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
               for(int i=0;i<outRecordsMetadata.length;i++){
                 outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
               }
+      }
+      
+      TransformLangParser(TransformLangParser parent,String filename,java.io.InputStream stream){
+			  this(stream);
+			  this.sourceFilename=filename;
+			  this.parserHelper=parent.parserHelper;
+              this.inRecordsMetadata=parent.inRecordsMetadata;
+              this.outRecordsMetadata=parent.outRecordsMetadata;
+              this.inDataRecordsMap=parent.inDataRecordsMap;
+              this.outDataRecordsMap=parent.outDataRecordsMap;
+              this.parseExceptions=parent.parseExceptions;    	
       }
 
       public final DataRecordMetadata getInRecordMeta(){
@@ -142,7 +160,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
      	return parserHelper.getGlobalVariableSlot(name);
      }
      
-     public final String unquote(String image){
+     public static final String unquote(String image){
      	return image.substring(1,image.length()-1);
      }
       
@@ -435,7 +453,7 @@ void CompilationUnit()       :
    String name;
 }
 {
-	//(ImportSource() ";" )*
+	(ImportSource() ";" )*
 
    (
        VarDeclaration() ";"
@@ -454,7 +472,43 @@ void CompilationUnit()       :
    <EOF>
 }
 
-//void ImportSource() #void ://{//	Token t;//}//{//	// must parse whole tree and insert it at this place////	<IMPORT> t=<STRING_LITERAL> ////	{////		new Parser( file );////		parser.parse();////		insert it here;////		token_source=null;////	}//}
+void ImportSource() :{/*@bgen(jjtree) ImportSource */
+        CLVFImportSource jjtn000 = new CLVFImportSource(this, JJTIMPORTSOURCE);
+        boolean jjtc000 = true;
+        jjtree.openNodeScope(jjtn000);
+        jjtreeOpenNodeScope(jjtn000);
+/*@egen*/	Token t;}{/*@bgen(jjtree) ImportSource */
+        try {
+/*@egen*/	// must parse whole tree and insert it at this place	<IMPORT> t=<STRING_LITERAL>/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+          jjtreeCloseNodeScope(jjtn000);
+        }
+/*@egen*/ 	{		String filenameURL=unquote(t.image);
+		InputStream stream;
+		try{
+			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
+			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
+		}catch(Exception ex){
+			throw new ParseException(t,"can't open for import file \""+filenameURL+"\"",ex);
+		} 
+		CLVFStart parseTree;
+		try{
+			TransformLangParser parser = new TransformLangParser(this,filenameURL,stream);
+		 	parseTree = parser.Start();
+		}catch(ParseException e){
+			e.setFilename(filenameURL);
+			throw e;
+			//new ParseException(t,"error when parsing import file \""+filenameURL+"\"",e);
+		}		jjtn000.jjtAddChild(parseTree, 0);	}/*@bgen(jjtree)*/
+        } finally {
+          if (jjtc000) {
+            jjtree.closeNodeScope(jjtn000, true);
+            jjtreeCloseNodeScope(jjtn000);
+          }
+        }
+/*@egen*/}
 
 void FunctionDeclaration() :
 {/*@bgen(jjtree) FunctionDeclaration */
