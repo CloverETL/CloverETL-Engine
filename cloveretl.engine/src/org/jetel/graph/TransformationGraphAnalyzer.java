@@ -22,13 +22,11 @@
 package org.jetel.graph;
 import java.io.PrintStream;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
 
@@ -419,9 +417,13 @@ public class TransformationGraphAnalyzer {
                     final int sourceIdx = inEdge.getOutputPortNumber();
                     final int targetIdx = outEdge.getInputPortNumber();
                     disconnectAllEdges(node);
-                    if (inEdge != null && targetNode != null) {
-                        sourceNode.addOutputPort(sourceIdx, inEdge);
-                        targetNode.addInputPort(targetIdx, inEdge);
+                    sourceNode.addOutputPort(sourceIdx, inEdge);
+                    targetNode.addInputPort(targetIdx, inEdge);
+                    try {
+                        node.getGraph().addEdge(inEdge);
+                    } catch (GraphConfigurationException e) {
+                        logger.error("Unexpected error: " + e.getMessage());
+                        e.printStackTrace();
                     }
                 }
             }
@@ -438,14 +440,14 @@ public class TransformationGraphAnalyzer {
             final Edge edge = (Edge) it1.next();
             Node writer = edge.getWriter();
             if(writer != null) writer.removeOutputPort(edge);
-            node.getPhase().deleteEdge(edge);
+            node.getGraph().deleteEdge(edge);
         }
 
         for(Iterator it1 = node.getOutPorts().iterator(); it1.hasNext();) {
             final Edge edge = (Edge) it1.next();
             final Node reader = edge.getReader();
             if(reader != null) reader.removeInputPort(edge);
-            node.getPhase().deleteEdge(edge);
+            node.getGraph().deleteEdge(edge);
         }
     }
 
