@@ -63,6 +63,26 @@ public class ParseException extends Exception {
       specialConstructor = false;
     }
 
+  public ParseException(Token token, String message,Throwable ex) {
+      super(message,ex);
+      currentToken = token;
+      specialConstructor = false;
+    }
+  
+  public ParseException(Token token, String message,String filename,Throwable ex) {
+      super(message,ex);
+      currentToken = token;
+      specialConstructor = false;
+      this.filename=filename;
+    }
+  
+  /**
+   * If exception is result of parsing "import file" then filename
+   * is the name of the file
+   */
+  
+  public String filename;
+  
   /**
    * This variable determines which constructor was used to create
    * this object and thereby affects the semantics of the
@@ -107,11 +127,15 @@ public class ParseException extends Exception {
                 if (currentToken.next != null) {
                     return super.getMessage() + " at line "
                             + currentToken.next.beginLine + ", column "
-                            + currentToken.next.beginColumn + "." + eol;
+                            + currentToken.next.beginColumn + "." +
+                            (filename!=null ? " in file \""+filename+"\"": "")+
+                            eol;
                 } else {
                     return super.getMessage() + " at line "
                             + currentToken.beginLine + ", column "
-                            + currentToken.beginColumn + "." + eol;
+                            + currentToken.beginColumn + "." +
+                            (filename!=null ? " in file \""+filename+"\"": "")+
+                            eol;
                 }
             } else {
                 return super.getMessage();
@@ -207,5 +231,21 @@ public class ParseException extends Exception {
       }
       return retval.toString();
    }
+
+/**
+ * @return the filename
+ * @since 4.6.2007
+ */
+public String getFilename() {
+    return filename;
+}
+
+/**
+ * @param filename the filename to set
+ * @since 4.6.2007
+ */
+public void setFilename(String filename) {
+    this.filename = filename;
+}
 
 }
