@@ -191,6 +191,7 @@ public class RecordKey {
 	 * @return          -1 ; 0 ; 1
 	 */
 	public int compare(DataRecord record1, DataRecord record2) {
+		if (record1 == record2) return 0;
 		int compResult;
 		if (record1.getMetadata() != record2.getMetadata()) {
 			throw new RuntimeException("Can't compare - records have different metadata associated." +
@@ -229,6 +230,7 @@ public class RecordKey {
 	 * @return            -1 ; 0 ; 1
 	 */
 	public int compare(RecordKey secondKey, DataRecord record1, DataRecord record2) {
+		if (record1 == record2) return 0;
 		int compResult;
 		int[] record2KeyFields = secondKey.getKeyFields();
 		if (keyFields.length != record2KeyFields.length) {
