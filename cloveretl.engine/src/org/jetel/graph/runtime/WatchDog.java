@@ -384,14 +384,14 @@ public class WatchDog extends Thread implements CloverRuntime {
                     
                     int i=0;
                     for (InputPort port : node.getInPorts()){
-                        trackingDetail.updateRows(PortType.IN_PORT, i, port.getRecordCounter());
-                        trackingDetail.updateBytes(PortType.IN_PORT, i, port.getByteCounter());
+                        trackingDetail.updateRows(PortType.IN_PORT, i, port.getInputRecordCounter());
+                        trackingDetail.updateBytes(PortType.IN_PORT, i, port.getInputByteCounter());
                         i++;    
                     }
                     i=0;
                     for (OutputPort port : node.getOutPorts()){
-                        trackingDetail.updateRows(PortType.OUT_PORT, i, port.getRecordCounter());
-                        trackingDetail.updateBytes(PortType.OUT_PORT, i, port.getByteCounter());
+                        trackingDetail.updateRows(PortType.OUT_PORT, i, port.getOutputRecordCounter());
+                        trackingDetail.updateBytes(PortType.OUT_PORT, i, port.getOutputByteCounter());
                         
                        if (port instanceof Edge){
                             trackingDetail.updateWaitingRows(i, ((Edge)port).getBufferedRecords());

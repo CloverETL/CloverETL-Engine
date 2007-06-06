@@ -19,6 +19,9 @@
 */
 package org.jetel.data;
 
+import static org.jetel.util.ByteBufferUtils.decodeLength;
+import static org.jetel.util.ByteBufferUtils.encodeLength;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -26,11 +29,7 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.locks.ReentrantLock;
-import static org.jetel.util.ByteBufferUtils.decodeLength;
-import static org.jetel.util.ByteBufferUtils.encodeLength;
 
 /**
  *  Class implementing DynamicRecordBuffer backed by temporary file - i.e. unlimited
@@ -188,7 +187,7 @@ public class DynamicRecordBuffer {
 	 *@exception  IOException  In case of IO failure
 	 *@since                   September 17, 2002
 	 */
-	public void writeRecord(ByteBuffer record) throws IOException {
+	public int writeRecord(ByteBuffer record) throws IOException {
 		if(isClosed){
 			throw new IOException("Buffer has been closed !");
 		}
@@ -206,6 +205,7 @@ public class DynamicRecordBuffer {
 		} catch (BufferOverflowException ex) {
 			throw new IOException("WriteBuffer is not big enough to accomodate data record !");
 		}
+        return recordSize;
 	}
 
     
@@ -216,7 +216,7 @@ public class DynamicRecordBuffer {
      * @throws IOException
      * @since 27.11.2006
      */
-    public void writeRecord(DataRecord record) throws IOException {
+    public int writeRecord(DataRecord record) throws IOException {
         if (isClosed) {
             throw new IOException("Buffer has been closed !");
         }
@@ -243,6 +243,7 @@ public class DynamicRecordBuffer {
             throw new IOException(
                     "WriteBuffer is not big enough to accomodate data record !");
         }
+        return length;
     }
     
     

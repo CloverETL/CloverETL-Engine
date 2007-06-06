@@ -76,28 +76,27 @@ public class DirectEdge extends EdgeBase {
 
 
 	
-	public int getRecordCounter() {
+	public int getOutputRecordCounter() {
 		return recordCounter;
 	}
 
+    public int getInputRecordCounter() {
+        return recordCounter;
+    }
 
-    public long getByteCounter(){
+
+    public long getOutputByteCounter(){
         return byteCounter; 
     }
-    
+
+    public long getInputByteCounter(){
+        return byteCounter; 
+    }
+
     public int getBufferedRecords(){
         return bufferedRecords.get();
     }
 	
-	/**
-	 *  Gets the Open attribute of the Edge object
-	 *
-	 * @return    The Open value
-	 * @since     June 6, 2002
-	 */
-	public boolean isOpen() {
-		return !isClosed;
-	}
 
 
 	/**
@@ -325,7 +324,7 @@ public class DirectEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public synchronized void close() throws InterruptedException {
+	public void eof() throws InterruptedException {
         if (writeBuffer.remaining()<SIZEOF_INT){
             flushWriteBuffer();
         }
@@ -339,7 +338,9 @@ public class DirectEdge extends EdgeBase {
         //do nothing
     }
     
-	public boolean hasData(){
+	public boolean hasData() {
+        if(isClosed) return false;
+        
         if (!readBuffer.hasRemaining()){
             if (writerWait){
                 try {
@@ -354,6 +355,11 @@ public class DirectEdge extends EdgeBase {
         }
         return true;
 	}
+
+    @Override
+    public boolean isEOF() {
+        return isClosed;
+    }
 }
 /*
  *  end class DirectEdge

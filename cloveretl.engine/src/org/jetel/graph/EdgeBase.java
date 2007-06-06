@@ -49,16 +49,6 @@ public abstract class EdgeBase {
 		this.proxy = proxy;
 	}
 
-
-	/**
-	 *  Gets the Open attribute of the Edge object
-	 *
-	 *@return    The Open value
-	 *@since     June 6, 2002
-	 */
-	public abstract boolean isOpen();
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -67,8 +57,7 @@ public abstract class EdgeBase {
 	 */
 	public abstract void init() throws IOException;
 
-
-
+    
 	// Operations
 	/**
 	 *  An operation that does read one DataRecord from Edge
@@ -82,22 +71,33 @@ public abstract class EdgeBase {
 
 	public abstract DataRecord readRecord(DataRecord record) throws IOException, InterruptedException;
 
-
-	/**
-	 *  Gets the recordCounter - how many records passed through
-     *  this edge so far.
-	 *
-	 *@return    The recordCounter value
-	 */
-	public abstract int getRecordCounter();
+    /**
+     *  Gets the recordCounter - how many records came in this edge so far.
+     *
+     *@return    The recordCounter value
+     */
+    public abstract int getOutputRecordCounter();
 
     /**
-     * Gets the byteCounter - how many bytes passed through
-     *  this edge so far.
+     *  Gets the recordCounter - how many records came out this edge so far.
+     *
+     *@return    The recordCounter value
+     */
+    public abstract int getInputRecordCounter();
+
+    /**
+     * Gets the byteCounter - how many bytes came in this edge so far.
      * 
      * @return The byteCounter value
      */
-    public abstract long getByteCounter();
+    public abstract long getOutputByteCounter();
+
+    /**
+     * Gets the byteCounter - how many bytes came out this edge so far.
+     * 
+     * @return The byteCounter value
+     */
+    public abstract long getInputByteCounter();
 
     
     /**
@@ -143,22 +143,10 @@ public abstract class EdgeBase {
 	 */
 	public abstract void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException;
 
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@since    April 2, 2002
-	 */
-	public abstract void open();
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 *@since    April 2, 2002
-	 */
-	public abstract void close() throws InterruptedException;
-	
+    public abstract void eof() throws InterruptedException;
+    
+    public abstract boolean isEOF();
+    
     public abstract void free();
     
 	public abstract boolean hasData();
