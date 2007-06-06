@@ -65,9 +65,16 @@ public interface InputPort {
 	 *
 	 * @return    The EOF value
 	 * @since     April 2, 2002
+     * @deprecated
 	 */
+    @Deprecated
 	public boolean isOpen();
 
+    /**
+     * This method tests whether EOF mark was sended via this port.
+     * @return
+     */
+    public boolean isEOF();
 
 	/**
 	 *  Gets the Metadata describing data records passing through this port
@@ -92,16 +99,33 @@ public interface InputPort {
 	 *
 	 * @return    number of records which passed this port
 	 * @since     May 17, 2002
+     * @deprecated use getInputRecordCounter() method instead
 	 */
+    @Deprecated
 	public int getRecordCounter();
+    
+    /**
+     *  Gets the number of records passed (so far) through this input port.
+     *
+     * @return    number of records which passed this input port
+     */
+    public int getInputRecordCounter();
     
     /**
      * Gets the number of bytes passed (so far) through this port
      * 
      * @return  number of bytes which passed this port
+     * @deprecated use getInputByteCounter() method instead
      */
+    @Deprecated
     public long getByteCounter();
-    
+
+    /**
+     * Gets the number of bytes passed (so far) through this input port.
+     * 
+     * @return  number of bytes which passed this input port
+     */
+    public long getInputByteCounter();
 	
 	/**
 	 * Method which tests whether data is awaiting/ready to be read

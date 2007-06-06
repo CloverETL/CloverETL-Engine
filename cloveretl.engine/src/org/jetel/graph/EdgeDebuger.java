@@ -65,10 +65,6 @@ public class EdgeDebuger {
         }
     }
 
-    public void open() {
-        //EMPTY
-    }
-
     public void close() {
         try {
             if(!isReadMode) {

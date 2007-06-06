@@ -42,14 +42,14 @@ import org.jetel.data.DynamicRecordBuffer;
  */
 public class BufferedEdge extends EdgeBase {
 
-	protected int recordCounter;
+    protected int outputRecordCounter;
+    protected int inputRecordCounter;
     protected long byteCounter;
     protected int internalBufferSize;
-
+    protected boolean isEOF;
+    
     protected DynamicRecordBuffer recordBuffer;
     
-	protected boolean isOpen;
-	
 	public BufferedEdge(Edge proxy) {
 	    this(proxy,Defaults.Graph.BUFFERED_EDGE_INTERNAL_BUFFER_SIZE);
 	}
@@ -67,31 +67,26 @@ public class BufferedEdge extends EdgeBase {
 	}
 	
 	
-	public int getRecordCounter() {
-		return recordCounter;
+	public int getOutputRecordCounter() {
+		return outputRecordCounter;
 	}
 
+    public int getInputRecordCounter() {
+        return inputRecordCounter;
+    }
 
-    public long getByteCounter(){
+    public long getOutputByteCounter(){
         return byteCounter;
     }
-    
+
+    public long getInputByteCounter(){
+        return byteCounter;
+    }
+
     public int getBufferedRecords(){
         return recordBuffer.getBufferedRecords();
     }
     
-	
-	/**
-	 *  Gets the Open attribute of the Edge object
-	 *
-	 * @return    The Open value
-	 * @since     June 6, 2002
-	 */
-	public boolean isOpen() {
-		return isOpen;
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -103,9 +98,10 @@ public class BufferedEdge extends EdgeBase {
 		// we are ready to supply data
         recordBuffer=new DynamicRecordBuffer(internalBufferSize);
         recordBuffer.init();
-		recordCounter = 0;
+        outputRecordCounter = 0;
+        inputRecordCounter = 0;
         byteCounter=0;
-		isOpen=true;
+        isEOF = false;
 	}
 
 	// Operations
@@ -120,6 +116,7 @@ public class BufferedEdge extends EdgeBase {
 	 */
 
 	public DataRecord readRecord(DataRecord record) throws IOException, InterruptedException {
+        inputRecordCounter++;
         return recordBuffer.readRecord(record);
     }
 
@@ -134,6 +131,7 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+        inputRecordCounter++;
         return recordBuffer.readRecod(record);
     }
 
@@ -147,7 +145,8 @@ public class BufferedEdge extends EdgeBase {
 	 * @since                            April 2, 2002
 	 */
 	public void writeRecord(DataRecord record) throws IOException, InterruptedException {
-	   recordBuffer.writeRecord(record);
+        outputRecordCounter++;
+        byteCounter += recordBuffer.writeRecord(record);
 	}
 
 
@@ -159,8 +158,9 @@ public class BufferedEdge extends EdgeBase {
 	 * @exception  InterruptedException  Description of Exception
 	 * @since                            August 13, 2002
 	 */
-	public  void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
-	    recordBuffer.writeRecord(record);
+	public void writeRecordDirect(ByteBuffer record) throws IOException, InterruptedException {
+        outputRecordCounter++;
+	    byteCounter += recordBuffer.writeRecord(record);
     }
 
 	/**
@@ -168,24 +168,20 @@ public class BufferedEdge extends EdgeBase {
 	 *
 	 * @since    April 2, 2002
 	 */
-	public  void open() {
-		isOpen=true;
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @since    April 2, 2002
-	 */
-	public  void close() {
+	public void eof() {
         try{
             recordBuffer.setEOF();
+            isEOF = true;
         }catch(IOException ex){
             throw new RuntimeException("Error when closing BufferedEdge: "+ex.getMessage(),ex);
         }
 	}
 
+    @Override
+    public boolean isEOF() {
+        return isEOF;
+    }
+    
     @Override
     public void free() {
         try {

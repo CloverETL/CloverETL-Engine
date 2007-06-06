@@ -73,7 +73,7 @@ public class EdgeTest extends TestCase {
 		    throw new RuntimeException(ex);
 		}
 
-		assertTrue(edge.isOpen());
+		assertTrue(!edge.isEOF());
 		assertFalse(edge.hasData());
 	
 		try{
@@ -107,8 +107,7 @@ public class EdgeTest extends TestCase {
 	    final DataRecord record2=new DataRecord(aDelimitedDataRecordMetadata);
 	    record2.init();
 	    record1.init();
-	    edge.open();
-	    assertTrue(edge.isOpen());
+	    assertTrue(!edge.isEOF());
 		assertFalse(edge.hasData());
 		
 		thread1=new ProducerThread(record1,(DirectEdge)edge);
@@ -130,8 +129,7 @@ public class EdgeTest extends TestCase {
 		assertEquals(ProducerThread.NUM_REC,thread2.getCounter());
 		
 		// ROUND 2 - MIN , MAX priority
-		edge.open();
-	    assertTrue(edge.isOpen());
+	    assertTrue(!edge.isEOF());
 		assertFalse(edge.hasData());
 		thread1=new ProducerThread(record1,(DirectEdge)edge);
 		thread2=new ConsumerThread(record2,(DirectEdge)edge);
@@ -172,7 +170,7 @@ public class EdgeTest extends TestCase {
 	            }
 	        }
 	        try {
-				edge.close();
+				edge.eof();
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

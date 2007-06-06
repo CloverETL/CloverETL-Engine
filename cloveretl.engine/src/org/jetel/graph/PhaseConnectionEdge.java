@@ -47,7 +47,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 	private int readCounter;
     private long writeByteCounter;
     private long readByteCounter;
-	private boolean isOpen;
 	private boolean isReadMode;
 	private boolean wasInitialized;
 
@@ -84,35 +83,26 @@ public class PhaseConnectionEdge extends EdgeBase {
 
 
 
-	/**
-	 *  Gets the number of records passed through this port IN
-	 *
-	 * @return    The RecordCounterIn value
-	 * @since     April 18, 2002
-	 */
-	public int getRecordCounter() {
-		return isReadMode ? readCounter: writeCounter;
+	public int getOutputRecordCounter() {
+		return writeCounter;
 	}
 
-    public long getByteCounter(){
-        return isReadMode ? readByteCounter : writeByteCounter;
+    public int getInputRecordCounter() {
+        return readCounter;
+    }
+
+    public long getOutputByteCounter(){
+        return writeByteCounter;
+    }
+
+    public long getInputByteCounter(){
+        return readByteCounter;
     }
 
     public int getBufferedRecords(){
         return writeCounter-readCounter;
     }
     
-	/**
-	 *  Gets the Open attribute of the Edge object
-	 *
-	 * @return    The Open value
-	 * @since     June 6, 2002
-	 */
-	public boolean isOpen() {
-		return isOpen;
-	}
-
-
 	/**
 	 *  Description of the Method
 	 *
@@ -130,7 +120,6 @@ public class PhaseConnectionEdge extends EdgeBase {
 			dataTape.open();
 			dataTape.addDataChunk();
 			wasInitialized = true;
-			isOpen=true;
 		}
 	}
 
@@ -148,7 +137,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 */
 
 	public  DataRecord readRecord(DataRecord record) throws IOException {
-	    if (! (isOpen && isReadMode)) {
+	    if (!isReadMode) {
 			return null;
 		}
 		if (dataTape.get(record)){
@@ -172,7 +161,7 @@ public class PhaseConnectionEdge extends EdgeBase {
 	 * @since                            August 13, 2002
 	 */
 	public boolean readRecordDirect(ByteBuffer record) throws IOException {
-	    if (! (isOpen && isReadMode)) {
+	    if (!isReadMode) {
 			return false;
 		} 
 		
@@ -224,23 +213,12 @@ public class PhaseConnectionEdge extends EdgeBase {
 	    writeCounter++;
 	}
 
-
 	/**
 	 *  Description of the Method
 	 *
 	 * @since    April 2, 2002
 	 */
-	public void open() {
-		isOpen = true;
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @since    April 2, 2002
-	 */
-	public void close() {
+	public void eof() {
 	    // as writer closes the
 	    // port/edge - no more data is to be written, flush
 	    // the buffer of the data tape, we will start reading data
@@ -254,11 +232,8 @@ public class PhaseConnectionEdge extends EdgeBase {
 	}
 
 	public boolean hasData(){
-		return (writeCounter > 0 ? true : false);
+		return writeCounter - readCounter > 0;
 	}
-	
-	
-	
 	
 	/* (non-Javadoc)
 	 * clean up
@@ -271,8 +246,10 @@ public class PhaseConnectionEdge extends EdgeBase {
 	        // ignore
 	    }
 	}
-}
-/*
- *  end class PhaseConnectionEdge
- */
 
+    @Override
+    public boolean isEOF() {
+        return isReadMode;
+    }
+    
+}

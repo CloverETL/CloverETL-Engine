@@ -287,6 +287,7 @@ public abstract class Node extends GraphElement implements Runnable {
 	 *@param  portNum   port number (0...)
 	 *@return           The RecordCount value
 	 *@since            May 17, 2002
+     *@deprecated
 	 */
 	public int getRecordCount(char portType, int portNum) {
 		int count;
@@ -295,14 +296,14 @@ public abstract class Node extends GraphElement implements Runnable {
 		try {
 			switch (portType) {
 				case OUTPUT_PORT:
-					count = ((OutputPort) outPorts.get(port)).getRecordCounter();
+					count = ((OutputPort) outPorts.get(port)).getOutputRecordCounter();
 					break;
 				case INPUT_PORT:
-					count = ((InputPort) inPorts.get(port)).getRecordCounter();
+					count = ((InputPort) inPorts.get(port)).getInputRecordCounter();
 					break;
 				case LOG_PORT:
 					if (logPort != null) {
-						count = logPort.getRecordCounter();
+						count = logPort.getOutputRecordCounter();
 					} else {
 						count = -1;
 					}

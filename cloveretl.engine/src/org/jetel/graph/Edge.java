@@ -135,23 +135,48 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	}
 
 
-	/**
-	 *  Gets the number of records passed through this port IN
-	 *
-	 * @return    The RecordCounterIn value
-	 * @since     April 18, 2002
+	/* (non-Javadoc)
+	 * @see org.jetel.graph.InputPort#getRecordCounter()
 	 */
 	public int getRecordCounter() {
-		return edge.getRecordCounter();
+		return edge.getOutputRecordCounter();
 	}
+    
+    /* (non-Javadoc)
+     * @see org.jetel.graph.OutputPort#getOutputRecordCounter()
+     */
+    public int getOutputRecordCounter() {
+        return edge.getOutputRecordCounter();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.InputPort#getInputRecordCounter()
+     */
+    public int getInputRecordCounter() {
+        return edge.getInputRecordCounter();
+    }
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.InputPort#getByteCounter()
 	 */
 	public long getByteCounter(){
-	    return edge.getByteCounter();
+	    return edge.getOutputByteCounter();
     }
-    
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.OutputPort#getOutputByteCounter()
+     */
+    public long getOutputByteCounter(){
+        return edge.getOutputByteCounter();
+    }
+
+    /* (non-Javadoc)
+     * @see org.jetel.graph.InputPort#getInputByteCounter()
+     */
+    public long getInputByteCounter(){
+        return edge.getInputByteCounter();
+    }
+
      public int getBufferedRecords(){
          return edge.getBufferedRecords();
      }
@@ -184,11 +209,15 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 *
 	 * @return    The Open value
 	 * @since     June 6, 2002
+     * @deprecated use hasData() method instead
 	 */
 	public boolean isOpen() {
-		return edge.isOpen();
+		return !isEOF();
 	}
 
+    public boolean isEOF() {
+        return edge.isEOF();
+    }
 
 	/**
 	 *  This method creates appropriate version of Edge (direct or buffered)
@@ -344,27 +373,31 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	/**
 	 *  Description of the Method
 	 *
-	 * @since    April 2, 2002
+	 * @deprecated 
 	 */
 	public void open() {
-		edge.open();
-        if(edgeDebuger != null) edgeDebuger.open();
+        //DO NOTHING
 	}
 
 
 	/**
-	 *  Description of the Method
-	 *
-	 * @since    April 2, 2002
+     * @deprecated use direct eof() method
 	 */
 	public void close() throws InterruptedException {
-		edge.close();
+        eof();
+	}
+	
+    /* (non-Javadoc)
+     * @see org.jetel.graph.OutputPort#eof()
+     */
+    public void eof() throws InterruptedException {
+        edge.eof();
         if(edgeDebuger != null) {
             edgeDebuger.close();
             edgeDebuger = null;
         }
-	}
-	
+    }
+    
 	public boolean hasData(){
 		return edge.hasData();
 	}

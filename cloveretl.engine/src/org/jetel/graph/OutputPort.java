@@ -63,14 +63,23 @@ public interface OutputPort {
 	 * An operation that closes the port indicating that no more data is available
 	 *
 	 * @since    April 2, 2002
+     * @deprecated use eof() method instead
 	 */
+    @Deprecated
 	public void close() throws InterruptedException;
 
+    /**
+     * An operation that sends message indicating that no more data is available.
+     */
+    public void eof() throws InterruptedException;
+    
 	/**
 	 * An operation that opens the port indicating that data will be available
 	 *
 	 * @since    April 2, 2002
+     * @deprecated
 	 */
+    @Deprecated
 	public void open();
 
 	/**
@@ -96,16 +105,33 @@ public interface OutputPort {
 	 *
 	 * @return    number of records which passed this port
 	 * @since     May 17, 2002
+     * @deprecated use getOutputRecordCounter() method instead
 	 */
+    @Deprecated
 	public int getRecordCounter();
     
+    /**
+     *  Gets the number of records passed (so far) through this output port.
+     *
+     * @return    number of records which passed this output port
+     */
+    public int getOutputRecordCounter();
     
     /**
      * Gets the number of bytes passed (so far) through this port
      * 
      * @return  number of bytes which passed this port
+     * @deprecated use getOutputByteCounter() method instead
      */
+    @Deprecated
     public long getByteCounter();
+    
+    /**
+     * Gets the number of bytes passed (so far) through this output port
+     * 
+     * @return  number of bytes which passed this output port
+     */
+    public long getOutputByteCounter();
     
     /**
      * Gets the id number of output port connected writer.

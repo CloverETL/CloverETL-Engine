@@ -62,32 +62,26 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         
     }
 
-
-    
-    public int getRecordCounter() {
+    public int getOutputRecordCounter() {
         return recordCounter;
     }
 
-    public long getByteCounter(){
+    public int getInputRecordCounter() {
+        return recordCounter;
+    }
+
+    public long getOutputByteCounter() {
         return byteCounter;
     }
 
+    public long getInputByteCounter() {
+        return byteCounter;
+    }
     
     public int getBufferedRecords(){
         return bufferedRecords.get();
     }
     
-    /**
-     *  Gets the Open attribute of the Edge object
-     *
-     * @return    The Open value
-     * @since     June 6, 2002
-     */
-    public boolean isOpen() {
-        return recordBuffer.isOpen();
-    }
-
-
     /**
      *  Description of the Method
      *
@@ -101,7 +95,9 @@ public class DirectEdgeFastPropagate extends EdgeBase {
                                             Defaults.Record.MAX_RECORD_SIZE);
         recordCounter = 0;
         byteCounter=0;
-        bufferedRecords=new AtomicInteger(0); 
+        bufferedRecords=new AtomicInteger(0);
+
+        recordBuffer.open();
     }
 
 
@@ -220,31 +216,16 @@ public class DirectEdgeFastPropagate extends EdgeBase {
         bufferedRecords.incrementAndGet();
     }
 
-
-    
-
-    /**
-     *  Description of the Method
-     *
-     * @since    April 2, 2002
-     */
-    public void open() {
-        recordBuffer.open();
-        bufferedRecords.set(0);
-        recordCounter=0;
-        byteCounter=0;
-    }
-
-
-    /**
-     *  Description of the Method
-     *
-     * @since    April 2, 2002
-     */
-    public void close() {
+    @Override
+    public void eof() {
         recordBuffer.close();
     }
 
+    @Override
+    public boolean isEOF() {
+        return !recordBuffer.isOpen();
+    }
+    
     @Override
     public void free() {
         //do nothing

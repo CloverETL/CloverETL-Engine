@@ -146,6 +146,13 @@ public class Trash implements OutputPort, OutputPortDirect {
         return byteCounter;
     }
 
+    public int getOutputRecordCounter() {
+        return recordCounter;
+    }
+    
+    public long getOutputByteCounter(){
+        return byteCounter;
+    }
 
 	/**
 	 *  Gets the Writer attribute of the Edge object
@@ -247,6 +254,11 @@ public class Trash implements OutputPort, OutputPortDirect {
 
     public int getOutputPortNumber() {
         return portNum;
+    }
+
+
+    public void eof() throws InterruptedException {
+        
     }
 
 }
