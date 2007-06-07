@@ -346,6 +346,17 @@ TOKEN :
 | < DO: "do" >
 }
 
+TOKEN :  /* date parts */
+{ <YEAR: "year" >
+  |<MONTH: "month" > 
+  |<WEEK: "week" >
+  |<DAY:  "day" >
+  |<HOUR:  "hour" >
+  |<MINUTE: "minute" >
+  |<SECOND: "second" >
+  |<MILLISEC: "millisec" >
+}
+  
 
 /* 
  *  The start nonterminal and its productions. 
@@ -491,7 +502,7 @@ void ImportSource() :{/*@bgen(jjtree) ImportSource */
 			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
 			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
 		}catch(Exception ex){
-			throw new ParseException(t,"can't open for import file \""+filenameURL+"\"",ex);
+			throw new ParseException(t,"can't open import file \""+filenameURL+"\"",ex);
 		} 
 		CLVFStart parseTree;
 		try{
@@ -1271,6 +1282,7 @@ void UnaryExpression()       :
 void PrimaryExpression()       : {}
 {
 	 LOOKAHEAD(2) FunctionCall()
+	 |LOOKAHEAD(2) SymbolNameExp()
      |LitExp()
      |VarExp()
      |InputFieldExp()
@@ -1707,6 +1719,57 @@ void RegexLiteral()       :
                          jjtreeCloseNodeScope(jjtn001);
                        }
                      }
+/*@egen*/
+}
+
+
+void SymbolNameExp() :
+{/*@bgen(jjtree) SymbolNameExp */
+  CLVFSymbolNameExp jjtn000 = new CLVFSymbolNameExp(this, JJTSYMBOLNAMEEXP);
+  boolean jjtc000 = true;
+  jjtree.openNodeScope(jjtn000);
+  jjtreeOpenNodeScope(jjtn000);
+/*@egen*/
+}
+{/*@bgen(jjtree) SymbolNameExp */
+ try {
+/*@egen*/
+ (	
+	 <INT_VAR>
+ |  <LONG_VAR>
+ |  <DATE_VAR>
+ |  <DOUBLE_VAR>
+ |  <DECIMAL_VAR>
+ |  <BOOLEAN_VAR>
+ |  <STRING_VAR>
+ |  <BYTE_VAR>
+ |  <LIST_VAR>
+ |  <MAP_VAR>
+ |  <RECORD_VAR>
+	 |  <OBJECT_VAR>
+	|<YEAR>
+  	|<MONTH> 
+  	|<WEEK>
+  	|<DAY>
+  	|<HOUR>
+  	|<MINUTE>
+  	|<SECOND>
+  	|<MILLISEC> )/*@bgen(jjtree)*/
+        {
+          jjtree.closeNodeScope(jjtn000, true);
+          jjtc000 = false;
+          jjtreeCloseNodeScope(jjtn000);
+        }
+/*@egen*/
+  	{
+  	 	jjtn000.setType(getToken(0).kind);
+  	 }/*@bgen(jjtree)*/
+ } finally {
+   if (jjtc000) {
+     jjtree.closeNodeScope(jjtn000, true);
+     jjtreeCloseNodeScope(jjtn000);
+   }
+ }
 /*@egen*/
 }
 
@@ -2336,7 +2399,6 @@ void BuildInFunction()       :
                                                                  }
 /*@egen*/
 	|Str2NumNode()
-	|Num2StrNode()
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression()/*@bgen(jjtree) #IffNode( 3) */
                                                                                                {
                                                                                                  CLVFIffNode jjtn003 = new CLVFIffNode(this, JJTIFFNODE);
@@ -2353,8 +2415,6 @@ void BuildInFunction()       :
                                                                                                  }
                                                                                                }
 /*@egen*/ // (condition, express if true, express else)
-	|Date2StrNode()
-	|Str2DateNode()
 	|"trunc" "(" AdditiveExpression()/*@bgen(jjtree) #TruncNode( 1) */
                                           {
                                             CLVFTruncNode jjtn004 = new CLVFTruncNode(this, JJTTRUNCNODE);
@@ -2501,75 +2561,6 @@ void DateDiffNode() :
 /*@egen*/
 }
 
-void Date2StrNode() :
-{/*@bgen(jjtree) Date2StrNode */
-  CLVFDate2StrNode jjtn000 = new CLVFDate2StrNode(this, JJTDATE2STRNODE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-  jjtreeOpenNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) Date2StrNode */
-        try {
-/*@egen*/
-	"date2str" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtn000.setFormat(unquote(t.image)); } 
-	 ")"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtreeCloseNodeScope(jjtn000);
-          }
-        }
-/*@egen*/
-}
-
-void Str2DateNode() :
-{/*@bgen(jjtree) Str2DateNode */
-  CLVFStr2DateNode jjtn000 = new CLVFStr2DateNode(this, JJTSTR2DATENODE);
-  boolean jjtc000 = true;
-  jjtree.openNodeScope(jjtn000);
-  jjtreeOpenNodeScope(jjtn000);
-/*@egen*/ Token t; }
-{/*@bgen(jjtree) Str2DateNode */
-        try {
-/*@egen*/
-	"str2date" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtn000.setFormat(unquote(t.image)); }
-	")"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtreeCloseNodeScope(jjtn000);
-          }
-        }
-/*@egen*/ 
-}
 
 void Date2NumNode() :
 {/*@bgen(jjtree) Date2NumNode */
@@ -2636,44 +2627,6 @@ void Str2NumNode() :
     [ "," t=<INTEGER_LITERAL> {jjtn000.setRadix(t.image);}]
     ] 
     
-    ")"/*@bgen(jjtree)*/
-        } catch (Throwable jjte000) {
-          if (jjtc000) {
-            jjtree.clearNodeScope(jjtn000);
-            jjtc000 = false;
-          } else {
-            jjtree.popNode();
-          }
-          if (jjte000 instanceof RuntimeException) {
-            throw (RuntimeException)jjte000;
-          }
-          if (jjte000 instanceof ParseException) {
-            throw (ParseException)jjte000;
-          }
-          throw (Error)jjte000;
-        } finally {
-          if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000, true);
-            jjtreeCloseNodeScope(jjtn000);
-          }
-        }
-/*@egen*/
-}
-
-void Num2StrNode() :
-{/*@bgen(jjtree) Num2StrNode */
-        CLVFNum2StrNode jjtn000 = new CLVFNum2StrNode(this, JJTNUM2STRNODE);
-        boolean jjtc000 = true;
-        jjtree.openNodeScope(jjtn000);
-        jjtreeOpenNodeScope(jjtn000);
-/*@egen*/ 
-	Token t;
-}
-{/*@bgen(jjtree) Num2StrNode */
-        try {
-/*@egen*/
-	"num2str" "(" AdditiveExpression() 
-    [ "," t=<INTEGER_LITERAL> {jjtn000.setRadix(t.image);}]
     ")"/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {

@@ -84,9 +84,8 @@ public class ParserHelper {
     public boolean addVariable(String name,int type){
         if (inFunctionDeclaration){
             return addLocalVariable(name,type);
-        }else{
-            return addGlobalVariable(name,type);
         }
+        return addGlobalVariable(name,type);
     }
     
     public boolean addGlobalVariable(String name,int type){

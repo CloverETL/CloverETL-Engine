@@ -350,6 +350,17 @@ TOKEN :
 | < DO: "do" >
 }
 
+TOKEN :  /* date parts */
+{ <YEAR: "year" >
+  |<MONTH: "month" > 
+  |<WEEK: "week" >
+  |<DAY:  "day" >
+  |<HOUR:  "hour" >
+  |<MINUTE: "minute" >
+  |<SECOND: "second" >
+  |<MILLISEC: "millisec" >
+}
+  
 
 /* 
  *  The start nonterminal and its productions. 
@@ -414,7 +425,7 @@ void ImportSource() :{	Token t;}{	// must parse whole tree and insert it at
 			stream=Channels.newInputStream(FileUtils. getReadableChannel(null, filenameURL)); 
 			// stream=new BufferedInputStream(new FileInputStream(filenameURL));
 		}catch(Exception ex){
-			throw new ParseException(t,"can't open for import file \""+filenameURL+"\"",ex);
+			throw new ParseException(t,"can't open import file \""+filenameURL+"\"",ex);
 		} 
 		CLVFStart parseTree;
 		try{
@@ -616,6 +627,7 @@ void UnaryExpression() #void :
 void PrimaryExpression() #void : {}
 {
 	 LOOKAHEAD(2) FunctionCall()
+	 |LOOKAHEAD(2) SymbolNameExp()
      |LitExp()
      |VarExp()
      |InputFieldExp()
@@ -731,6 +743,37 @@ void RegexLiteral() #void :
 }
 {
   t=<STRING_LITERAL> { jjtThis.setRegex(t.image); } #RegexLiteral
+}
+
+
+void SymbolNameExp() :
+{
+}
+{
+ (	
+	 <INT_VAR>
+ |  <LONG_VAR>
+ |  <DATE_VAR>
+ |  <DOUBLE_VAR>
+ |  <DECIMAL_VAR>
+ |  <BOOLEAN_VAR>
+ |  <STRING_VAR>
+ |  <BYTE_VAR>
+ |  <LIST_VAR>
+ |  <MAP_VAR>
+ |  <RECORD_VAR>
+	 |  <OBJECT_VAR>
+	|<YEAR>
+  	|<MONTH> 
+  	|<WEEK>
+  	|<DAY>
+  	|<HOUR>
+  	|<MINUTE>
+  	|<SECOND>
+  	|<MILLISEC> )
+  	{
+  	 	jjtThis.setType(getToken(0).kind);
+  	 }
 }
 
 
@@ -947,10 +990,7 @@ void BuildInFunction() #void :
 	|"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
 	|Str2NumNode()
-	|Num2StrNode()
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
-	|Date2StrNode()
-	|Str2DateNode()
 	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
 	|Date2NumNode()
 	|SequenceNode()
@@ -981,19 +1021,6 @@ void DateDiffNode() :
 	")"
 }
 
-void Date2StrNode() :
-{ Token t; }
-{
-	"date2str" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(unquote(t.image)); } 
-	 ")"
-}
-
-void Str2DateNode() :
-{ Token t; }
-{
-	"str2date" "(" AdditiveExpression() "," t=<STRING_LITERAL> { jjtThis.setFormat(unquote(t.image)); }
-	")" 
-}
 
 void Date2NumNode() :
 { Token t; }
@@ -1025,16 +1052,6 @@ void Str2NumNode() :
     [ "," t=<INTEGER_LITERAL> {jjtThis.setRadix(t.image);}]
     ] 
     
-    ")"
-}
-
-void Num2StrNode() :
-{ 
-	Token t;
-}
-{
-	"num2str" "(" AdditiveExpression() 
-    [ "," t=<INTEGER_LITERAL> {jjtThis.setRadix(t.image);}]
     ")"
 }
 
