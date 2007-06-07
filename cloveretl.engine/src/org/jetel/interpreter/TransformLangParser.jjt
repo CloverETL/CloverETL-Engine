@@ -615,8 +615,6 @@ void UnaryExpression() #void :
 {
 	 LOOKAHEAD(2) PrimaryExpression()
 	 | "-" PrimaryExpression() #MinusNode(1)
-	 | LOOKAHEAD(2) VarExp() <INCR>  #PlusPlusNode(1)
-	 | LOOKAHEAD(2) VarExp() <DECR>  #MinusMinusNode(1)
 	 | <NOT> UnaryExpression() #Negation(1)
 	 | "size" "(" VarExp() ")" #SizeNode(1)
 	 
@@ -626,10 +624,14 @@ void UnaryExpression() #void :
 
 void PrimaryExpression() #void : {}
 {
-	 LOOKAHEAD(2) FunctionCall()
-	 |LOOKAHEAD(2) SymbolNameExp()
+	 LOOKAHEAD(3) FunctionCall()
+	 |LOOKAHEAD(3) SymbolNameExp()
      |LitExp()
-     |VarExp()
+     | LOOKAHEAD(3) VarExp() <INCR>  #PlusPlusNode(1)
+	 | LOOKAHEAD(3) VarExp() <DECR>  #MinusMinusNode(1)
+	// | LOOKAHEAD(3) <INCR> VarExp()   #PlusPlusNode(1)
+	// | LOOKAHEAD(3)<DECR> VarExp()   #MinusMinusNode(1)
+	 |VarExp()
      |InputFieldExp()
      |GlobalParameterExp()
      |<OPEN_PAR> Expression() <CLOSE_PAR>
