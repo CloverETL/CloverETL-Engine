@@ -78,9 +78,17 @@ public interface TransformLangParserConstants {
   int SWITCH = 86;
   int CASE_DEFAULT = 87;
   int DO = 88;
-  int DATE_FIELD_LITERAL = 130;
-  int IDENTIFIER = 131;
-  int ERROR = 132;
+  int YEAR = 89;
+  int MONTH = 90;
+  int WEEK = 91;
+  int DAY = 92;
+  int HOUR = 93;
+  int MINUTE = 94;
+  int SECOND = 95;
+  int MILLISEC = 96;
+  int DATE_FIELD_LITERAL = 135;
+  int IDENTIFIER = 136;
+  int ERROR = 137;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -178,6 +186,14 @@ public interface TransformLangParserConstants {
     "\"switch\"",
     "\"default\"",
     "\"do\"",
+    "\"year\"",
+    "\"month\"",
+    "\"week\"",
+    "\"day\"",
+    "\"hour\"",
+    "\"minute\"",
+    "\"second\"",
+    "\"millisec\"",
     "\",\"",
     "\"{\"",
     "\"}\"",
@@ -195,11 +211,8 @@ public interface TransformLangParserConstants {
     "\"raise_error\"",
     "\"dateadd\"",
     "\"datediff\"",
-    "\"date2str\"",
-    "\"str2date\"",
     "\"date2num\"",
     "\"str2num\"",
-    "\"num2str\"",
     "\"print_err\"",
     "\"print_log\"",
     "\"trace\"",

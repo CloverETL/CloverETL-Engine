@@ -29,13 +29,15 @@ import org.jetel.interpreter.ASTnode.SimpleNode;
  * other run occures.
  */
 public class TransformLangExecutorRuntimeException extends RuntimeException {
-	SimpleNode nodeInError;
+	/**
+     * 
+     */
+    private static final long serialVersionUID = 5326484475745284143L;
+    SimpleNode nodeInError;
 	Object[] arguments;
 	
 	public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message){
-		super(message);
-		this.nodeInError=node;
-		this.arguments=arguments;
+		this(node,arguments,message,null);
 	}
     
     public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message,Throwable cause){
@@ -45,39 +47,37 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
     }
     
 	public TransformLangExecutorRuntimeException(Object[] arguments,String message){
-		super(message);
-		this.nodeInError=null;
-		this.arguments=arguments;
+	    this(null,arguments,message,null);
 	}
 	
 	public TransformLangExecutorRuntimeException(SimpleNode node,String message){
-		super(message);
-		this.nodeInError=node;
-		this.arguments=null;
+	    this(node,null,message,null);
 	}
 	
 	public TransformLangExecutorRuntimeException(String message){
-		super(message);
-		this.nodeInError=null;
-		this.arguments=null;
+	    this(null,null,message,null);
 	}
 	
     public TransformLangExecutorRuntimeException(String message, Throwable cause){
-        super(message,cause);
-        this.nodeInError=null;
-        this.arguments=null;
+        this(null,null,message,cause);
     }
     
     public TransformLangExecutorRuntimeException(SimpleNode node,String message, Throwable cause){
-        super(message,cause);
-        this.nodeInError=node;
-        this.arguments=null;
+        this(node,null,message,cause);
     }
-	
+    
+    public TransformLangExecutorRuntimeException(Object[] arguments,String message,Throwable cause){
+        this(null,arguments,message,cause);
+    }
+    
 	public SimpleNode getNode(){
 		return nodeInError;
 	}
 	
+    public void setNode(SimpleNode inError){
+        nodeInError=inError;
+    }
+    
 	public Object[] getArguments(){
 		return arguments;
 	}

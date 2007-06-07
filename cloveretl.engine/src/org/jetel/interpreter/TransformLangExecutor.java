@@ -794,43 +794,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-   
-    public Object visit(CLVFNum2StrNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            if (node.radix == 10) {
-                stack.push(new TLValue(TLValueType.STRING,a.toString()));
-            } else {
-                switch(a.type) {
-                case INTEGER:
-                    stack.push(new TLValue(TLValueType.STRING,Integer.toString(a.getInt(),
-                            node.radix)));
-                    break;
-                case LONG:
-                    stack.push(new TLValue(TLValueType.STRING,Long.toString(a.getLong(),
-                            node.radix)));
-                    break;
-                case DOUBLE:
-                    stack.push(new TLValue(TLValueType.STRING,Double.toHexString(a.getDouble())));
-                    break;
-                default:
-                    Object[] arguments = { a, new Integer(node.radix) };
-                throw new TransformLangExecutorRuntimeException(node,
-                        arguments,
-                "num2str - can't convert number to string using specified radix");
-                }
-            }
-            } else {
-                Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(node, arguments,
-                "num2str - wrong type of literal");
-            }
-
-        return data;
-    }
-
     public Object visit(CLVFStr2NumNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
@@ -886,42 +849,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    public Object visit(CLVFDate2StrNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type==TLValueType.DATE) {
-                stack.push(new TLValue(TLValueType.STRING,node.dateFormat.format(a.getDate())));
-        } else {
-            Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "date2str - wrong type of literal");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFStr2DateNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type==TLValueType.STRING) {
-            try {
-                stack.push(new TLValue(TLValueType.DATE,node.dateFormat.parse(a.getString())));
-            } catch (java.text.ParseException ex) {
-                Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(node,arguments,
-                        "str2date - can't convert \"" + a + "\"");
-            }
-        } else {
-            Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "str2date - wrong type of literal");
-        }
-
-        return data;
-    }
-
     public Object visit(CLVFIffNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue condition = stack.pop();
@@ -1558,14 +1485,20 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
      * Declaration & calling of Functions here
      */
     public Object visit(CLVFFunctionCallStatement node, Object data) {
-       // EXTERNAL FUNCTION
+        // EXTERNAL FUNCTION
         if (node.externalFunction != null) {
             // put call parameters on stack
             node.childrenAccept(this, data);
             // convert stack content into values
-            TLValue returnVal=node.externalFunction.execute(stack.pop(node.externalFunctionParams,node.jjtGetNumChildren()),
-                    node.context);
-            stack.push(returnVal);
+            try {
+                TLValue returnVal = node.externalFunction.execute(stack.pop(
+                        node.externalFunctionParams, node.jjtGetNumChildren()),
+                        node.context);
+                stack.push(returnVal);
+            } catch (TransformLangExecutorRuntimeException ex) {
+                ex.setNode(node);
+                throw ex;
+            }
 
         } else {
             // INTERNAL FUNCTION
@@ -1587,7 +1520,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             for (int i = 0; i < numChildren; i++) {
                 executionNode.jjtGetChild(i).jjtAccept(this, data);
                 returnData = stack.pop(); // in case there is anything on top
-                                            // of stack
+                // of stack
                 // check for break or continue statements
                 if (breakFlag) {
                     breakFlag = false;
@@ -1950,6 +1883,11 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
     public Object visit(CLVFImportSource node,Object data) {
         node.childrenAccept(this, data);
+        return data;
+    }
+    
+    public Object visit(CLVFSymbolNameExp node,Object data) {
+        stack.push(node.value);
         return data;
     }
     
