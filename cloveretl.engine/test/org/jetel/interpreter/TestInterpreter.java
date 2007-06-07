@@ -25,6 +25,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Properties;
 
 import junit.framework.TestCase;
@@ -47,6 +48,8 @@ import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
+import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLVariable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -152,7 +155,7 @@ public class TestInterpreter extends TestCase {
 						"int j; j=-1; print_err(j);\n"+
 						"int minInt; minInt="+Integer.MIN_VALUE+"; print_err(minInt, true);\n"+
 						"int maxInt; maxInt="+Integer.MAX_VALUE+"; print_err(maxInt, true);\n"+
-						"int field; field=$Value; print_err(field)";
+						"int field; field=$Value; print_err(field);";
 
 		try {
 		      print_code(expStr);
@@ -172,12 +175,11 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(0,((CloverInteger)result[0]).intValue());
-		      assertEquals(-1,((CloverInteger)result[1]).intValue());
-		      assertEquals(Integer.MIN_VALUE,((CloverInteger)result[2]).intValue());
-		      assertEquals(Integer.MAX_VALUE,((CloverInteger)result[3]).intValue());
-		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),((CloverInteger)result[4]).intValue());
+		      assertEquals(0,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt());
+		      assertEquals(-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getInt());
+		      assertEquals(Integer.MIN_VALUE,executor.getGlobalVariable(parser.getGlobalVariableSlot("minInt")).getValue().getInt());
+		      assertEquals(Integer.MAX_VALUE,executor.getGlobalVariable(parser.getGlobalVariableSlot("maxInt")).getValue().getInt());
+		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("field")).getValue().getInt());
 	    } catch (ParseException e) {
 	    	System.err.println(e.getMessage());
 	    	e.printStackTrace();
@@ -212,13 +214,11 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(0,((CloverLong)result[0]).longValue());
-		      assertEquals(-1,((CloverLong)result[1]).longValue());
-		      assertEquals(Long.MIN_VALUE+1,((CloverLong)result[2]).longValue());
-		      assertEquals(Long.MAX_VALUE,((CloverLong)result[3]).longValue());
-		      assertEquals(((Integer)record.getField("Value").getValue()).longValue(),((CloverLong)result[4]).longValue());
-//		      assertEquals(Integer.MAX_VALUE,((CloverInteger)result[5]).intValue());
+		      assertEquals(0,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getLong());
+		      assertEquals(-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
+		      assertEquals(Long.MIN_VALUE+1,executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getLong());
+		      assertEquals(Long.MAX_VALUE,executor.getGlobalVariable(parser.getGlobalVariableSlot("maxLong")).getValue().getLong());
+		      assertEquals(((Integer)record.getField("Value").getValue()).longValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("field")).getValue().getLong());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -256,15 +256,14 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(DecimalFactory.getDecimal(0),((Decimal)result[0]));
-		      assertEquals(DecimalFactory.getDecimal(-1),((Decimal)result[1]));
-		      assertEquals(DecimalFactory.getDecimal(999999.999),((Decimal)result[2]));
-		      assertEquals(DecimalFactory.getDecimal(0),((Decimal)result[3]));
-		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),((Decimal)result[4]).getInt());
-		      assertEquals((Double)record.getField("Age").getValue(),new Double(((Decimal)result[5]).getDouble()));
-		      assertEquals(new Double(Double.MIN_VALUE),new Double(((Decimal)result[6]).getDouble()));
-//		      assertEquals(DecimalFactory.getDecimal(),(Decimal)result[7]);
+		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(999999.999),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("maxLong")).getValue().getNumeric());
+		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getValue().getNumeric().getInt());
+		      assertEquals((Double)record.getField("Age").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getNumeric());
+		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getValue().getNumeric());
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
@@ -289,7 +288,7 @@ public class TestInterpreter extends TestCase {
 						"number minLong; minLong=999999.99911; print_err(minLong);  \n"+
 						"number fieldValue; fieldValue=$Value; print_err(fieldValue);\n"+
 						"number fieldAge; fieldAge=$Age; print_err(fieldAge);\n"+
-						"number minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble)" +
+						"number minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble);\n" +
 						"number def;print_err(def);\n";
 	      print_code(expStr);
 
@@ -309,14 +308,13 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(new CloverDouble(0),((CloverDouble)result[0]));
-		      assertEquals(new CloverDouble(-1),((CloverDouble)result[1]));
-		      assertEquals(new CloverDouble(999999.99911),((CloverDouble)result[2]));
-		      assertEquals(new CloverDouble(((Integer)record.getField("Value").getValue())),((CloverDouble)result[3]));
-		      assertEquals(new CloverDouble((Double)record.getField("Age").getValue()),((CloverDouble)result[4]));
-		      assertEquals(new CloverDouble(Double.MIN_VALUE),((CloverDouble)result[5]));
-		      assertEquals(new CloverDouble(0),((CloverDouble)result[6]));
+		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getDouble());
+		      assertEquals(new CloverDouble(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getDouble());
+		      assertEquals(new CloverDouble(999999.99911),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getDouble());
+		      assertEquals(new CloverDouble(((Integer)record.getField("Value").getValue())),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getValue().getDouble());
+		      assertEquals(new CloverDouble((Double)record.getField("Age").getValue()),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getDouble());
+		      assertEquals(new CloverDouble(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getDouble());
+		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getValue().getDouble());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -352,18 +350,15 @@ public class TestInterpreter extends TestCase {
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
 		      
 		      parseTree.dump("");
 		      
-		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("0",((StringBuilder)result[0]).toString());
-		      assertEquals("hello",((StringBuilder)result[1]).toString());
-		      assertEquals(record.getField("Name").getValue().toString(),((StringBuilder)result[2]).toString());
-		      assertEquals(record.getField("City").getValue().toString(),((StringBuilder)result[3]).toString());
-		      assertEquals(tmp.toString(),((StringBuilder)result[4]).toString());
-		      assertEquals("a\u0101\u0102A",((StringBuilder)result[5]).toString());
+		      assertEquals("0",executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getString());
+		      assertEquals("hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getValue().getString());
+		      assertEquals(record.getField("Name").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldName")).getValue().getString());
+		      assertEquals(record.getField("City").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldCity")).getValue().getString());
+		      assertEquals(tmp.toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("longString")).getValue().getString());
+		      assertEquals("a\u0101\u0102A",executor.getGlobalVariable(parser.getGlobalVariableSlot("specialChars")).getValue().getString());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -401,13 +396,10 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 
-
-		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(new GregorianCalendar(2006,7,01).getTime(),((Date)result[0]));
-		      assertEquals(new GregorianCalendar(2006,7,02,15,15).getTime(),((Date)result[1]));
-		      assertEquals(new GregorianCalendar(2006,0,01,01,02,03).getTime(),((Date)result[2]));
-		      assertEquals((Date)record.getField("Born").getValue(),((Date)result[3]));
+		      assertEquals(new GregorianCalendar(2006,7,01).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d3")).getValue().getDate());
+		      assertEquals(new GregorianCalendar(2006,7,02,15,15).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getValue().getDate());
+		      assertEquals(new GregorianCalendar(2006,0,01,01,02,03).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getValue().getDate());
+		      assertEquals((Date)record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("born")).getValue().getDate());
 
 
 		      
@@ -443,10 +435,9 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(true,((Boolean)result[0]).booleanValue());
-		      assertEquals(false,((Boolean)result[1]).booleanValue());
-		      assertEquals(false,((Boolean)result[2]).booleanValue());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getValue().getBoolean());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -461,8 +452,9 @@ public class TestInterpreter extends TestCase {
 						"b2=false ; print_err(b2);\n"+
 						"string b4; b4=\"hello\"; print_err(b4);\n"+
 						"b2 = true; print_err(b2);\n" +
-						"if b2 {int in;in=2;print_err('in')}\n"+
-						"print_err(b2)";
+						"int in;\n" +
+						"if (b2) {in=2;print_err('in');}\n"+
+						"print_err(b2);";
 	      print_code(expStr);
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -488,11 +480,10 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(true,((Boolean)result[0]).booleanValue());
-		      assertEquals(true,((Boolean)result[1]).booleanValue());
-		      assertEquals("hello",((StringBuffer)result[2]).toString());
-//		      assertEquals(2,((CloverInteger)result[3]).getInt());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getValue().getBoolean());
+		      assertEquals("hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getValue().getString());
+//		      assertEquals(2,executor.getGlobalVariable(parser.getGlobalVariableSlot("in")).getValue().getInt());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -507,7 +498,7 @@ public class TestInterpreter extends TestCase {
 						"int j; j=100;\n" +
 						"int iplusj;iplusj=i+j; print_err(\"plus int:\"+iplusj);\n" +
 						"long l;l="+Integer.MAX_VALUE/10+"l;print_err(l);\n" +
-						"long m;m="+(Integer.MAX_VALUE)+"l;print_err(m)\n" +
+						"long m;m="+(Integer.MAX_VALUE)+"l;print_err(m);\n" +
 						"long lplusm;lplusm=l+m;print_err(\"plus long:\"+lplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
 						"number m1; m1=0.001;print_err(m1);\n" +
@@ -543,17 +534,16 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("iplusj",110,((CloverInteger)result[2]).getInt());
-		      assertEquals("lplusm",(long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,((CloverLong)result[5]).getLong());
-		      assertEquals("nplusm1",new CloverDouble(0.001),(CloverDouble)result[8]);
-		      assertEquals("nplusj",new CloverDouble(100),(CloverDouble)result[9]);
-		      assertEquals("dplusd1",new Double(0.1000),new Double(((Decimal)result[12]).getDouble()));
-		      assertEquals("dplusj",new Double(100.1),new Double(((Decimal)result[13]).getDouble()));
-		      assertEquals("dplusn",new Double(10.1),new Double(((Decimal)result[14]).getDouble()));
-		      assertEquals("spluss1","hello world",(((StringBuilder)result[17]).toString()));
-		      assertEquals("splusm1","hello0.0010",(((StringBuilder)result[18]).toString()));
-		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),(Date)result[20]);
+		      assertEquals("iplusj",110,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
+		      assertEquals("lplusm",(long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
+		      assertEquals("nplusm1",new CloverDouble(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("nplusj",new CloverDouble(100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
+		      assertEquals("dplusd1",new Double(0.1000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getDouble());
+		      assertEquals("dplusj",new Double(100.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getDouble());
+		      assertEquals("dplusn",new Double(10.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getDouble());
+		      assertEquals("spluss1","hello world",executor.getGlobalVariable(parser.getGlobalVariableSlot("spluss1")).getValue().getString());
+		      assertEquals("splusm1","hello0.0010",executor.getGlobalVariable(parser.getGlobalVariableSlot("splusm1")).getValue().getString());
+		      assertEquals("dateplus",new GregorianCalendar(2004,01,9,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getValue().getDate());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -568,7 +558,7 @@ public class TestInterpreter extends TestCase {
 						"int j; j=100;\n" +
 						"int iplusj;iplusj=i-j; print_err(\"minus int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
-						"long m;m=1;print_err(m)\n" +
+						"long m;m=1;print_err(m);\n" +
 						"long lplusm;lplusm=l-m;print_err(\"minus long:\"+lplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
 						"number m1; m1=0.001;print_err(m1);\n" +
@@ -600,16 +590,15 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("iplusj",-90,((CloverInteger)result[2]).getInt());
-		      assertEquals("lplusm",(long)Integer.MAX_VALUE+9,((CloverLong)result[5]).getLong());
-		      assertEquals("nplusm1",new CloverDouble(-0.001),(CloverDouble)result[8]);
-		      assertEquals("nplusj",new CloverDouble(-100),(CloverDouble)result[9]);
-		      assertEquals("dplusd1",new Double(0.0900),new Double(((Decimal)result[12]).getDouble()));
-		      assertEquals("dplusj",new Double(-99.9),new Double(((Decimal)result[13]).getDouble()));
-		      assertEquals("dplusn",new Double(0.0900),new Double(((Decimal)result[14]).getDouble()));
-		      assertEquals("d1minusm1",new CloverDouble(-0.0009),(CloverDouble)result[15]);
-		      assertEquals("dateplus",new GregorianCalendar(2004,0,20,15,00,30).getTime(),(Date)result[17]);
+		      assertEquals("iplusj",-90,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
+		      assertEquals("lplusm",(long)Integer.MAX_VALUE+9,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
+		      assertEquals("nplusm1",new CloverDouble(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
+		      assertEquals("nplusj",new CloverDouble(-100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
+		      assertEquals("dplusd1",new Double(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getDouble());
+		      assertEquals("dplusj",new Double(-99.9),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getDouble());
+		      assertEquals("dplusn",new Double(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getDouble());
+		      assertEquals("d1minusm1",new CloverDouble(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getValue().getDouble());
+		      assertEquals("dateplus",new GregorianCalendar(2004,0,20,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getValue().getDate());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -624,7 +613,7 @@ public class TestInterpreter extends TestCase {
 						"int j; j=100;\n" +
 						"int iplusj;iplusj=i*j; print_err(\"multiply int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
-						"long m;m=1;print_err(m)\n" +
+						"long m;m=1;print_err(m);\n" +
 						"long lplusm;lplusm=l*m;print_err(\"multiply long:\"+lplusm);\n" +
 						"number n; n=0.1;print_err(n);\n" +
 						"number m1; m1=-0.01;print_err(m1);\n" +
@@ -653,14 +642,13 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("i*j",1000,((CloverInteger)result[2]).getInt());
-		      assertEquals("l*m",(long)Integer.MAX_VALUE+10,((CloverLong)result[5]).getLong());
-		      assertEquals("n*m1",new CloverDouble(-0.001),(CloverDouble)result[8]);
-		      assertEquals("m1*j",new CloverDouble(-1),(CloverDouble)result[9]);
-		      assertEquals("d*d1",DecimalFactory.getDecimal(-1.0000),(Decimal)result[12]);
-		      assertEquals("d*j",DecimalFactory.getDecimal(-10),(Decimal)result[13]);
-		      assertEquals("d*n",DecimalFactory.getDecimal(-0.0100),(Decimal)result[14]);
+		      assertEquals("i*j",1000,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
+		      assertEquals("l*m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
+		      assertEquals("n*m1",new CloverDouble(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("m1*j",new CloverDouble(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals("d*d1",DecimalFactory.getDecimal(-1.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
+		      assertEquals("d*j",DecimalFactory.getDecimal(-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
+		      assertEquals("d*n",DecimalFactory.getDecimal(-0.0100),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -676,7 +664,7 @@ public class TestInterpreter extends TestCase {
 						"int iplusj;iplusj=i/j; print_err(\"div int:\"+iplusj);\n" +
 						"int jdivi;jdivi=j/i; print_err(\"div int:\"+jdivi);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
-						"long m;m=1;print_err(m)\n" +
+						"long m;m=1;print_err(m);\n" +
 						"long lplusm;lplusm=l/m;print_err(\"div long:\"+lplusm);\n" +
 						"number n; n=0;print_err(n);\n" +
 						"number m1; m1=0.01;print_err(m1);\n" +
@@ -708,17 +696,16 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("i/j",0,((CloverInteger)result[2]).getInt());
-		      assertEquals("j/i",10,((CloverInteger)result[3]).getInt());
-		      assertEquals("l/m",(long)Integer.MAX_VALUE+10,((CloverLong)result[6]).getLong());
-		      assertEquals("n/m1",new CloverDouble(0),(CloverDouble)result[10]);
-		      assertEquals("m1/n",new CloverDouble(Double.POSITIVE_INFINITY),(CloverDouble)result[11]);
-		      assertEquals("m1/n1",new CloverDouble(0.001),(CloverDouble)result[12]);
-		      assertEquals("j/n1",new CloverDouble(10),(CloverDouble)result[13]);
-		      assertEquals("d/d1",DecimalFactory.getDecimal(0.1/0.01),(Decimal)result[16]);
-		      assertEquals("d/j",DecimalFactory.getDecimal(0.0000),(Decimal)result[17]);
-		      assertEquals("n1/d",DecimalFactory.getDecimal(100.0000),(Decimal)result[18]);
+		      assertEquals("i/j",0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
+		      assertEquals("j/i",10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("jdivi")).getValue().getInt()));
+		      assertEquals("l/m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
+		      assertEquals("n/m1",new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("m1/n",new CloverDouble(Double.POSITIVE_INFINITY),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn")).getValue().getDouble());
+		      assertEquals("m1/n1",new CloverDouble(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn1")).getValue().getDouble());
+		      assertEquals("j/n1",new CloverDouble(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals("d/d1",DecimalFactory.getDecimal(0.1/0.01),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
+		      assertEquals("d/j",DecimalFactory.getDecimal(0.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
+		      assertEquals("n1/d",DecimalFactory.getDecimal(100.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -733,7 +720,7 @@ public class TestInterpreter extends TestCase {
 						"int j; j=103;\n" +
 						"int iplusj;iplusj=j%i; print_err(\"mod int:\"+iplusj);\n" +
 						"long l;l="+((long)Integer.MAX_VALUE+10)+";print_err(l);\n" +
-						"long m;m=2;print_err(m)\n" +
+						"long m;m=2;print_err(m);\n" +
 						"long lplusm;lplusm=l%m;print_err(\"mod long:\"+lplusm);\n" +
 						"number n; n=10.2;print_err(n);\n" +
 						"number m1; m1=2;print_err(m1);\n" +
@@ -762,14 +749,13 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(3,((CloverInteger)result[2]).getInt());
-		      assertEquals(((long)Integer.MAX_VALUE+10)%2,((CloverLong)result[5]).getLong());
-		      assertEquals(new CloverDouble(10.2%2),(CloverDouble)result[8]);
-		      assertEquals(new CloverDouble(10.2%10),(CloverDouble)result[9]);
-		      assertEquals(DecimalFactory.getDecimal(0.1),(Decimal)result[12]);
-		      assertEquals(DecimalFactory.getDecimal(10),(Decimal)result[13]);
-		      assertEquals(DecimalFactory.getDecimal(0.1),(Decimal)result[14]);
+		      assertEquals(3,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
+		      assertEquals(((long)Integer.MAX_VALUE+10)%2,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
+		      assertEquals(new CloverDouble(10.2%2),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals(new CloverDouble(10.2%10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
+		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -817,11 +803,10 @@ public class TestInterpreter extends TestCase {
 		    	  throw new RuntimeException("Parse exception");
 		      }
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(9,((CloverInteger)result[0]).getInt());
-		      assertEquals(new CloverLong(Long.MAX_VALUE-10),((CloverLong)result[1]));
-		      assertEquals(DecimalFactory.getDecimal(2),(Decimal)result[2]);
-		      assertEquals(new CloverDouble(5.5),(CloverDouble)result[3]);
+		      assertEquals(9,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
+		      assertEquals(new CloverLong(Long.MAX_VALUE-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
+		      assertEquals(DecimalFactory.getDecimal(2),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getValue().getNumeric());
+		      assertEquals(new CloverDouble(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -848,7 +833,7 @@ public class TestInterpreter extends TestCase {
 						"string s1;s1=\"hello \";print_err(\"s1=\"+s1);\n" +
 						"boolean eq6;eq6=s.eq.s1;print_err(\"eq6=\"+eq6);\n" +
 						"boolean eq7;eq7=s==trim(s1);print_err(\"eq7=\"+eq7);\n" +
-						"date mydate;mydate=2006-01-01;print_err(\"mydate=\"+mydate)\n" +
+						"date mydate;mydate=2006-01-01;print_err(\"mydate=\"+mydate);\n" +
 						"date anothermydate;print_err(\"anothermydate=\"+anothermydate);\n" +
 						"boolean eq8;eq8=mydate.eq.anothermydate;print_err(\"eq8=\"+eq8);\n" +
 						"anothermydate=2006-1-1 0:0:0;print_err(\"anothermydate=\"+anothermydate);\n" +
@@ -872,17 +857,16 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(true,((Boolean)result[2]).booleanValue());
-		      assertEquals(true,((Boolean)result[4]).booleanValue());
-		      assertEquals(true,((Boolean)result[6]).booleanValue());
-		      assertEquals(true,((Boolean)result[8]).booleanValue());
-		      assertEquals(true,((Boolean)result[9]).booleanValue());
-		      assertEquals(false,((Boolean)result[12]).booleanValue());
-		      assertEquals(true,((Boolean)result[13]).booleanValue());
-		      assertEquals(false,((Boolean)result[16]).booleanValue());
-		      assertEquals(true,((Boolean)result[17]).booleanValue());
-		      assertEquals(false,((Boolean)result[18]).booleanValue());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq9")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq10")).getValue().getBoolean());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -918,10 +902,9 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(true,((Boolean)result[2]).booleanValue());
-		      assertEquals(true,((Boolean)result[4]).booleanValue());
-		      assertEquals(false,((Boolean)result[6]).booleanValue());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
+		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getValue().getBoolean());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -945,7 +928,7 @@ public class TestInterpreter extends TestCase {
 						"string s;s='hello';print_err(\"s=\"+s);\n" +
 						"string s1;s1=\"hello\";print_err(\"s1=\"+s1);\n" +
 						"boolean eq6;eq6=s<s1;print_err(\"eq6=\"+eq6);\n" +
-						"date mydate;mydate=2006-01-01;print_err(\"mydate=\"+mydate)\n" +
+						"date mydate;mydate=2006-01-01;print_err(\"mydate=\"+mydate);\n" +
 						"date anothermydate;print_err(\"anothermydate=\"+anothermydate);\n" +
 						"boolean eq7;eq7=mydate.lt.anothermydate;print_err(\"eq7=\"+eq7);\n" +
 						"anothermydate=2006-1-1 0:0:0;print_err(\"anothermydate=\"+anothermydate);\n" +
@@ -968,15 +951,14 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("eq1",true,((Boolean)result[2]).booleanValue());
-		      assertEquals("eq2",true,((Boolean)result[4]).booleanValue());
-		      assertEquals("eq3",true,((Boolean)result[6]).booleanValue());
-		      assertEquals("eq4",false,((Boolean)result[8]).booleanValue());
-		      assertEquals("eq5",true,((Boolean)result[9]).booleanValue());
-		      assertEquals("eq6",false,((Boolean)result[12]).booleanValue());
-		      assertEquals("eq7",true,((Boolean)result[15]).booleanValue());
-		      assertEquals("eq8",true,((Boolean)result[16]).booleanValue());
+		      assertEquals("eq1",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
+		      assertEquals("eq2",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
+		      assertEquals("eq3",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq3")).getValue().getBoolean());
+		      assertEquals("eq4",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq4")).getValue().getBoolean());
+		      assertEquals("eq5",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq5")).getValue().getBoolean());
+		      assertEquals("eq6",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq6")).getValue().getBoolean());
+		      assertEquals("eq7",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq7")).getValue().getBoolean());
+		      assertEquals("eq8",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq8")).getValue().getBoolean());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1018,8 +1000,7 @@ public class TestInterpreter extends TestCase {
 		     
 
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(true,((Boolean)result[1]).booleanValue());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1138,14 +1119,14 @@ public class TestInterpreter extends TestCase {
 						"number n;\n" +
 						"if (d==0.1) n=0;\n" +
 						"if (d==0.1 || l<=1) n=0;\n" +
-						"else {n=-1;print_err('n rovne -1')}\n" +
+						"else {n=-1;print_err('n rovne -1');}\n" +
 						"date date1; date1=2006-01-01;print_err(date1);\n" +
 						"date date2; date2=2006-02-01;print_err(date2);\n" +
 						"boolean result;result=false;\n" +
 						"boolean compareDates;compareDates=date1<=date2;print_err(compareDates);\n" +
 						"if (date1<=date2) \n" +
 						"{  print_err('before if (i<j)');\n" +
-						"	if (i<j) print_err('date1<today and i<j') else print_err('date1<date2 only')\n" +
+						"	if (i<j) print_err('date1<today and i<j'); else print_err('date1<date2 only');\n" +
 						"	result=true;}\n" +
 						"result=false;" +
 						"if (i<j) result=true;\n" +
@@ -1177,12 +1158,10 @@ public class TestInterpreter extends TestCase {
 		    	  throw new RuntimeException("Parse exception");
 		      }
 		     
-		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(1,((CloverLong)result[2]).getLong());
-		      assertEquals(DecimalFactory.getDecimal(0),(Decimal)result[3]);
-		      assertEquals(new CloverDouble(0),(CloverDouble)result[4]);
-		      assertEquals(true,((Boolean)result[7]).booleanValue());
+		      assertEquals(1,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getValue().getLong());
+		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getValue().getNumeric());
+		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getValue().getBoolean());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1207,7 +1186,7 @@ public class TestInterpreter extends TestCase {
 						"	case 5.0:mont='june';\n" +
 						"	case 6.0:mont='july';\n" +
 						"	case 7.0:mont='august';\n" +
-						"	case 3:print_err('4th month')\n" +
+						"	case 3:print_err('4th month');\n" +
 						"	case 8.0:mont='september';\n" +
 						"	case 9.0:mont='october';\n" +
 						"	case 10.0:mont='november';\n" +
@@ -1216,15 +1195,15 @@ public class TestInterpreter extends TestCase {
 						"print_err('month:'+mont);\n" +
 						"boolean ok;ok=(n.ge.0)and(n.lt.12);\n" +
 						"switch (ok) {\n" +
-						"	case true:print_err('OK')\n" +
-						"	case false:print_err('WRONG')};\n" +
+						"	case true:print_err('OK');\n" +
+						"	case false:print_err('WRONG');};\n" +
 						"switch (born) {\n" +
 						"	case 2006-01-01:{mont='January';print_err('january');}\n" +
-						"	case 1973-04-23:{mont='April';print_err('april');}\n" +
-						"	default:print_err('other')};\n"+
+						"	case 1973-04-23:{mont='April';print_err('april');}}\n" +
+						"//	default:print_err('other')};\n"+
 						"switch (born<1996-08-01) {\n" +
 						"	case true:{print_err('older then ten');}\n" +
-						"	default:print_err('younger then ten')};\n";
+						"	default:print_err('younger then ten');};\n";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
 	      print_code(expStr);
@@ -1245,10 +1224,9 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(3,((CloverInteger)result[1]).getInt());
-		      assertEquals("April",((StringBuilder)result[2]).toString());
-		      assertEquals(true,((Boolean)result[4]).booleanValue());
+		      assertEquals(3,executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getInt());
+		      assertEquals("April",executor.getGlobalVariable(parser.getGlobalVariableSlot("mont")).getValue().getString());
+		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("ok")).getValue().getBoolean());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1287,8 +1265,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(39,((CloverInteger)result[2]).getInt());
+		      assertEquals(39,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1332,8 +1309,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(72,((CloverInteger)result[2]).getInt());
+		      assertEquals(72,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1388,9 +1364,9 @@ public class TestInterpreter extends TestCase {
 		      
               int iVarSlot=parser.getGlobalVariableSlot("i");
               int yerVarSlot=parser.getGlobalVariableSlot("yer");
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(101,((CloverInteger)result[yerVarSlot]).getInt());
-		      assertEquals(11,((CloverInteger)result[iVarSlot]).getInt());
+		      TLVariable[] result = executor.stack.globalVarSlot;
+		      assertEquals(101,result[yerVarSlot].getValue().getInt());
+		      assertEquals(11,result[iVarSlot].getValue().getInt());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1404,12 +1380,12 @@ public class TestInterpreter extends TestCase {
 		String expStr = "date born; born=$Born;print_err(born);\n" +
 						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
-						"int i;" +
+						"int i;\n" +
 						"while (born<now) {\n" +
 						"	++yer;\n" +
 						"	born=dateadd(born,1,year);\n" +
 						"	for (i=0;i<20;++i) \n" +
-						"		if (i==10) break\n" +
+						"		if (i==10) break;\n" +
 						"}\n" +
 						"print_err('years on the end:'+yer);\n"+
 						"print_err('i after while:'+i);\n" ;
@@ -1433,9 +1409,8 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(34,((CloverInteger)result[2]).getInt());
-		      assertEquals(10,((CloverInteger)result[3]).getInt());
+		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
+		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1452,8 +1427,8 @@ public class TestInterpreter extends TestCase {
 						"int i;\n" +
 						"for (i=0;i<10;i=i+1) {\n" +
 						"	print_err('i='+i);\n" +
-						"	if (i>5) continue\n" +
-						"	print_err('After if')" +
+						"	if (i>5) continue;\n" +
+						"	print_err('After if');" +
 						"}\n" +
 						"print_err('new loop starting');\n" +
 						"while (born<now) {\n" +
@@ -1462,7 +1437,7 @@ public class TestInterpreter extends TestCase {
 						"	born=dateadd(born,1,year);\n" +
 						"	if (yer>30) continue\n" +
 						"	for (i=0;i<20;++i) \n" +
-						"		if (i==10) break\n" +
+						"		if (i==10) break;\n" +
 						"}\n" +
 						"print_err('years on the end:'+yer);\n"+
 						"print_err('i after while:'+i);\n" ;
@@ -1486,9 +1461,8 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals(34,((CloverInteger)result[2]).getInt());
-		      assertEquals(0,((CloverInteger)result[3]).getInt());
+		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
+		      assertEquals(0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1501,13 +1475,13 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\nReturn test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
 						"function year_before(now) {\n" +
-						"	return dateadd(now,-1,year)" +
+						"	return dateadd(now,-1,year);" +
 						"}\n" +
 						"function age(born){\n" +
 						"	date now;int yer;\n" +
 						"	now=today();yer=0;\n" +
 						"	for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
-						"	if (yer>0) return yer else return -1" +
+						"	if (yer>0) return yer; else return -1;" +
 						"}\n" +
 						"print_err('years born'+age(born));\n" +
 						"print_err(\"year before:\"+year_before(born));\n" +
@@ -1541,7 +1515,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
+		      //TODO
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1621,23 +1595,22 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("subs","ello ",((StringBuilder)result[2]).toString());
-		      assertEquals("upper","ELLO ",((StringBuilder)result[3]).toString());
-		      assertEquals("lower","ello hi   ",((StringBuilder)result[4]).toString());
-		      assertEquals("t(=trim)","im  ello hi",((StringBuilder)result[5]).toString());
-		      assertEquals("l(=length)",5,((Decimal)result[6]).getInt());
-		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),((StringBuilder)result[7]).toString());
-//		      assertEquals("datum",record.getField("Born").getValue(),(Date)result[8]);
-		      assertEquals("ddiff",-2,((CloverLong)result[10]).getLong());
-		      assertEquals("isn",false,((Boolean)result[12]).booleanValue());
-		      assertEquals("s1",new CloverDouble(6),(CloverDouble)result[13]);
-		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),((StringBuilder)result[14]).toString());
-		      assertEquals("stn",0.25125,((Decimal)result[15]).getDouble());
-		      assertEquals("nts","22",((StringBuilder)result[16]).toString());
-		      assertEquals("dtn",11.0,((Decimal)result[18]).getDouble());
-		      assertEquals("ii",21,((CloverInteger)result[19]).getInt());
-		      assertEquals("dts","02.12.24",((StringBuilder)result[21]).toString());
+		      assertEquals("subs","ello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("subs")).getValue().getString());
+		      assertEquals("upper","ELLO ",executor.getGlobalVariable(parser.getGlobalVariableSlot("upper")).getValue().getString());
+		      assertEquals("lower","ello hi   ",executor.getGlobalVariable(parser.getGlobalVariableSlot("lower")).getValue().getString());
+		      assertEquals("t(=trim)","im  ello hi",executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getValue().getString());
+		      assertEquals("l(=length)",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getValue().getInt());
+		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("c")).getValue().getString());
+//		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
+		      assertEquals("ddiff",-2,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getValue().getLong());
+		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getValue().getBoolean());
+		      assertEquals("s1",new CloverDouble(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getValue().getDouble());
+		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getValue().getString());
+		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getValue().getDouble());
+		      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getValue().getString());
+		      assertEquals("dtn",11.0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dtn")).getValue().getDouble());
+		      assertEquals("ii",21,executor.getGlobalVariable(parser.getGlobalVariableSlot("ii")).getValue().getInt());
+		      assertEquals("dts","02.12.24",executor.getGlobalVariable(parser.getGlobalVariableSlot("dts")).getValue().getString());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1669,7 +1642,7 @@ public class TestInterpreter extends TestCase {
 						"print_err('truncation of '+(-po)+'='+t);\n" +
 						"date date1;date1=2004-01-02 17:13:20;\n" +
 						"date tdate1; tdate1=trunc(date1);\n" +
-						"print_err('truncation of '+date1+'='+tdate1)\n";
+						"print_err('truncation of '+date1+'='+tdate1);\n";
 
 	      print_code(expStr);
 		try {
@@ -1695,18 +1668,17 @@ public class TestInterpreter extends TestCase {
 		      }
 
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("pi",new CloverDouble(Math.PI),(CloverDouble)result[0]);
-		      assertEquals("sqrt",new CloverDouble(Math.sqrt(Math.PI)),(CloverDouble)result[1]);
-		      assertEquals("sqrt(9)",new CloverDouble(3),(CloverDouble)result[3]);
-		      assertEquals("ln",new CloverDouble(Math.log(3)),(CloverDouble)result[4]);
-		      assertEquals("log10",new CloverDouble(Math.log10(3)),(CloverDouble)result[6]);
-		      assertEquals("exp",new CloverDouble(Math.exp(Math.log10(3))),(CloverDouble)result[7]);
-		      assertEquals("power",new CloverDouble(Math.pow(3,1.2)),(CloverDouble)result[8]);
-		      assertEquals("power--",new CloverDouble(Math.pow(-10,-0.3)),(CloverDouble)result[9]);
-		      assertEquals("round",new CloverInteger(-4),(CloverInteger)result[10]);
-		      assertEquals("truncation",new CloverInteger(-3),(CloverInteger)result[11]);
-		      assertEquals("date truncation",new GregorianCalendar(2004,00,02).getTime(),(Date)result[13]);
+		      assertEquals("pi",new CloverDouble(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getValue().getDouble());
+		      assertEquals("sqrt",new CloverDouble(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("number")).getValue().getDouble());
+		      assertEquals("sqrt(9)",new CloverDouble(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getValue().getDouble());
+		      assertEquals("ln",new CloverDouble(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getValue().getDouble());
+		      assertEquals("log10",new CloverDouble(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getValue().getDouble());
+		      assertEquals("exp",new CloverDouble(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getValue().getDouble());
+		      assertEquals("power",new CloverDouble(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getValue().getDouble());
+		      assertEquals("power--",new CloverDouble(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getValue().getDouble());
+		      assertEquals("round",new CloverInteger(-4),executor.getGlobalVariable(parser.getGlobalVariableSlot("r")).getValue().getInt());
+		      assertEquals("truncation",new CloverInteger(-3),executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getValue().getInt());
+		      assertEquals("date truncation",new GregorianCalendar(2004,00,02).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("tdate1")).getValue().getDate());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1742,8 +1714,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
-		      assertEquals("num",10,((Numeric)result[1]).getInt());
+		      assertEquals("num",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("num")).getValue().getNumeric());
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1800,7 +1771,6 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      Object[] result = executor.stack.globalVarSlot;
 		      assertEquals("result",out.getField("Name").getValue().toString());
 		      assertEquals(record.getField("Age").getValue(),out.getField("Age").getValue());
 		      assertEquals("My City "+record.getField("City").getValue().toString(), out.getField("City").getValue().toString());
