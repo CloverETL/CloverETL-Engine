@@ -100,7 +100,11 @@ public class TLVariable {
     }
     
     public void setValue(TLValue value) {
-        this.value=value;
+        if (this.value.type!=value.type&&this.value.type.isNumeric()) {
+            this.value.getNumeric().setValue(value.getNumeric());
+        }else {
+            this.value=value;
+        }
     }
     
     public boolean setValueStrict(TLValue value) {
