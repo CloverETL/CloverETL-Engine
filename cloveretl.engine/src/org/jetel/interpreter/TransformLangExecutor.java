@@ -18,13 +18,11 @@
 
 package org.jetel.interpreter;
 
-import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -34,12 +32,66 @@ import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.data.primitive.HugeDecimal;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ASTnode.*;
+import org.jetel.interpreter.ASTnode.CLVFAddNode;
+import org.jetel.interpreter.ASTnode.CLVFAnd;
+import org.jetel.interpreter.ASTnode.CLVFAssignment;
+import org.jetel.interpreter.ASTnode.CLVFBlock;
+import org.jetel.interpreter.ASTnode.CLVFBreakStatement;
+import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
+import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
+import org.jetel.interpreter.ASTnode.CLVFComparison;
+import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
+import org.jetel.interpreter.ASTnode.CLVFDate2NumNode;
+import org.jetel.interpreter.ASTnode.CLVFDateAddNode;
+import org.jetel.interpreter.ASTnode.CLVFDateDiffNode;
+import org.jetel.interpreter.ASTnode.CLVFDivNode;
+import org.jetel.interpreter.ASTnode.CLVFDoStatement;
+import org.jetel.interpreter.ASTnode.CLVFForStatement;
+import org.jetel.interpreter.ASTnode.CLVFForeachStatement;
+import org.jetel.interpreter.ASTnode.CLVFFunctionCallStatement;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFGlobalParameterLiteral;
+import org.jetel.interpreter.ASTnode.CLVFIfStatement;
+import org.jetel.interpreter.ASTnode.CLVFIffNode;
+import org.jetel.interpreter.ASTnode.CLVFImportSource;
+import org.jetel.interpreter.ASTnode.CLVFInputFieldLiteral;
+import org.jetel.interpreter.ASTnode.CLVFIsNullNode;
+import org.jetel.interpreter.ASTnode.CLVFLiteral;
+import org.jetel.interpreter.ASTnode.CLVFLookupNode;
+import org.jetel.interpreter.ASTnode.CLVFMapping;
+import org.jetel.interpreter.ASTnode.CLVFMinusMinusNode;
+import org.jetel.interpreter.ASTnode.CLVFMinusNode;
+import org.jetel.interpreter.ASTnode.CLVFModNode;
+import org.jetel.interpreter.ASTnode.CLVFMulNode;
+import org.jetel.interpreter.ASTnode.CLVFNVLNode;
+import org.jetel.interpreter.ASTnode.CLVFNegation;
+import org.jetel.interpreter.ASTnode.CLVFOr;
+import org.jetel.interpreter.ASTnode.CLVFOutputFieldLiteral;
+import org.jetel.interpreter.ASTnode.CLVFPlusPlusNode;
+import org.jetel.interpreter.ASTnode.CLVFPrintErrNode;
+import org.jetel.interpreter.ASTnode.CLVFPrintLogNode;
+import org.jetel.interpreter.ASTnode.CLVFPrintStackNode;
+import org.jetel.interpreter.ASTnode.CLVFRaiseErrorNode;
+import org.jetel.interpreter.ASTnode.CLVFRegexLiteral;
+import org.jetel.interpreter.ASTnode.CLVFReturnStatement;
+import org.jetel.interpreter.ASTnode.CLVFSequenceNode;
+import org.jetel.interpreter.ASTnode.CLVFSizeNode;
+import org.jetel.interpreter.ASTnode.CLVFStart;
+import org.jetel.interpreter.ASTnode.CLVFStartExpression;
+import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
+import org.jetel.interpreter.ASTnode.CLVFStr2NumNode;
+import org.jetel.interpreter.ASTnode.CLVFSubNode;
+import org.jetel.interpreter.ASTnode.CLVFSwitchStatement;
+import org.jetel.interpreter.ASTnode.CLVFSymbolNameExp;
+import org.jetel.interpreter.ASTnode.CLVFTruncNode;
+import org.jetel.interpreter.ASTnode.CLVFVarDeclaration;
+import org.jetel.interpreter.ASTnode.CLVFVariableLiteral;
+import org.jetel.interpreter.ASTnode.CLVFWhileStatement;
+import org.jetel.interpreter.ASTnode.Node;
+import org.jetel.interpreter.ASTnode.SimpleNode;
 import org.jetel.interpreter.data.TLListVariable;
 import org.jetel.interpreter.data.TLMapVariable;
 import org.jetel.interpreter.data.TLValue;
@@ -1340,11 +1392,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             TLValue initValue = stack.pop();
             TLValueType type =variable.getType();
             if (type.isStrictlyCompatible(initValue.type)) {
-                if (type.isNumeric()) {
-                    variable.getValue().getNumeric().setValue(initValue.getNumeric());
-                }else {
-                    variable.setValue(initValue);
-                }
+                  variable.setValue(initValue);
             }else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + initValue
@@ -1432,11 +1480,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         default:
             TLValueType type=variableToAssign.getType();
             if (type.isCompatible(valueToAssign.type)) {
-                if (type.isNumeric()) {
-                    variableToAssign.getValue().getNumeric().setValue(valueToAssign.getNumeric());
-                }else {
                     variableToAssign.setValue(valueToAssign);
-                }
             } else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
