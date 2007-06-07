@@ -166,14 +166,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(0,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt());
 		      assertEquals(-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getInt());
@@ -205,14 +205,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(0,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getLong());
 		      assertEquals(-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
@@ -247,22 +247,22 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      
-		      parseTree.dump("");
-		      
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(999999.999),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("maxLong")).getValue().getNumeric());
 		      assertEquals(((Integer)record.getField("Value").getValue()).intValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getValue().getNumeric().getInt());
-		      assertEquals((Double)record.getField("Age").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getNumeric());
-		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getNumeric());
+		      assertEquals((Double)record.getField("Age").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getDouble());
+		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getDouble());
 		      assertEquals(DecimalFactory.getDecimal(),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getValue().getNumeric());
 
 		      if (parser.getParseExceptions().size()>0){
@@ -299,22 +299,22 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
 		      
-		      parseTree.dump("");
-		      
-		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getDouble());
-		      assertEquals(new CloverDouble(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getDouble());
-		      assertEquals(new CloverDouble(999999.99911),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getDouble());
-		      assertEquals(new CloverDouble(((Integer)record.getField("Value").getValue())),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getValue().getDouble());
-		      assertEquals(new CloverDouble((Double)record.getField("Age").getValue()),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getDouble());
-		      assertEquals(new CloverDouble(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getDouble());
-		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getValue().getDouble());
+		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getDouble());
+		      assertEquals(new Double(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getDouble());
+		      assertEquals(new Double(999999.99911),executor.getGlobalVariable(parser.getGlobalVariableSlot("minLong")).getValue().getDouble());
+		      assertEquals(new Double(((Integer)record.getField("Value").getValue())),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldValue")).getValue().getDouble());
+		      assertEquals(new Double((Double)record.getField("Age").getValue()),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldAge")).getValue().getDouble());
+		      assertEquals(new Double(Double.MIN_VALUE),executor.getGlobalVariable(parser.getGlobalVariableSlot("minDouble")).getValue().getDouble());
+		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("def")).getValue().getDouble());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -345,13 +345,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("0",executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getString());
 		      assertEquals("hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getValue().getString());
@@ -386,7 +387,8 @@ public class TestInterpreter extends TestCase {
 
   		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
-		      
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
 		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
@@ -394,8 +396,6 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      parseTree.dump("");
-
 		      assertEquals(new GregorianCalendar(2006,7,01).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d3")).getValue().getDate());
 		      assertEquals(new GregorianCalendar(2006,7,02,15,15).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d2")).getValue().getDate());
 		      assertEquals(new GregorianCalendar(2006,0,01,01,02,03).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1")).getValue().getDate());
@@ -426,14 +426,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getValue().getBoolean());
 		      assertEquals(false,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getValue().getBoolean());
@@ -471,14 +471,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getValue().getBoolean());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getValue().getBoolean());
@@ -525,19 +525,19 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("iplusj",110,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
 		      assertEquals("lplusm",(long)Integer.MAX_VALUE+(long)Integer.MAX_VALUE/10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
-		      assertEquals("nplusm1",new CloverDouble(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
-		      assertEquals("nplusj",new CloverDouble(100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
+		      assertEquals("nplusm1",new Double(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("nplusj",new Double(100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
 		      assertEquals("dplusd1",new Double(0.1000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getDouble());
 		      assertEquals("dplusj",new Double(100.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getDouble());
 		      assertEquals("dplusn",new Double(10.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getDouble());
@@ -581,23 +581,23 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      
-		      parseTree.dump("");
-		      
 		      assertEquals("iplusj",-90,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
 		      assertEquals("lplusm",(long)Integer.MAX_VALUE+9,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
-		      assertEquals("nplusm1",new CloverDouble(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
-		      assertEquals("nplusj",new CloverDouble(-100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
+		      assertEquals("nplusm1",new Double(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("nplusj",new Double(-100),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusj")).getValue().getDouble());
 		      assertEquals("dplusd1",new Double(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getDouble());
 		      assertEquals("dplusj",new Double(-99.9),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getDouble());
 		      assertEquals("dplusn",new Double(0.0900),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getDouble());
-		      assertEquals("d1minusm1",new CloverDouble(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getValue().getDouble());
+		      assertEquals("d1minusm1",new Double(-0.0009),executor.getGlobalVariable(parser.getGlobalVariableSlot("d1minusm1")).getValue().getDouble());
 		      assertEquals("dateplus",new GregorianCalendar(2004,0,20,15,00,30).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("dateplus")).getValue().getDate());
 
 		} catch (ParseException e) {
@@ -633,20 +633,20 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("i*j",1000,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
 		      assertEquals("l*m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
-		      assertEquals("n*m1",new CloverDouble(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
-		      assertEquals("m1*j",new CloverDouble(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
-		      assertEquals("d*d1",DecimalFactory.getDecimal(-1.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
+		      assertEquals("n*m1",new Double(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("m1*j",new Double(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals("d*d1",DecimalFactory.getDecimal(-1.001,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
 		      assertEquals("d*j",DecimalFactory.getDecimal(-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
 		      assertEquals("d*n",DecimalFactory.getDecimal(-0.0100),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
 
@@ -687,22 +687,22 @@ public class TestInterpreter extends TestCase {
 
   		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("i/j",0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
 		      assertEquals("j/i",10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("jdivi")).getValue().getInt()));
 		      assertEquals("l/m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
-		      assertEquals("n/m1",new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
-		      assertEquals("m1/n",new CloverDouble(Double.POSITIVE_INFINITY),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn")).getValue().getDouble());
-		      assertEquals("m1/n1",new CloverDouble(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn1")).getValue().getDouble());
-		      assertEquals("j/n1",new CloverDouble(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals("n/m1",new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals("m1/n",new Double(Double.POSITIVE_INFINITY),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn")).getValue().getDouble());
+		      assertEquals("m1/n1",new Double(0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1divn1")).getValue().getDouble());
+		      assertEquals("j/n1",new Double(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
 		      assertEquals("d/d1",DecimalFactory.getDecimal(0.1/0.01),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
 		      assertEquals("d/j",DecimalFactory.getDecimal(0.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
 		      assertEquals("n1/d",DecimalFactory.getDecimal(100.0000),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
@@ -740,19 +740,19 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(3,(executor.getGlobalVariable(parser.getGlobalVariableSlot("iplusj")).getValue().getInt()));
 		      assertEquals(((long)Integer.MAX_VALUE+10)%2,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
-		      assertEquals(new CloverDouble(10.2%2),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
-		      assertEquals(new CloverDouble(10.2%10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
+		      assertEquals(new Double(10.2%2),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
+		      assertEquals(new Double(10.2%10),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
 		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
 		      assertEquals(DecimalFactory.getDecimal(0.1),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
@@ -786,14 +786,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
@@ -806,7 +806,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(9,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      assertEquals(new CloverLong(Long.MAX_VALUE-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
 		      assertEquals(DecimalFactory.getDecimal(2),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getValue().getNumeric());
-		      assertEquals(new CloverDouble(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
+		      assertEquals(new Double(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -848,14 +848,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
@@ -893,14 +893,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
@@ -942,14 +942,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("eq1",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq1")).getValue().getBoolean());
 		      assertEquals("eq2",true,executor.getGlobalVariable(parser.getGlobalVariableSlot("eq2")).getValue().getBoolean());
@@ -981,14 +981,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
@@ -1020,6 +1020,9 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
@@ -1027,9 +1030,6 @@ public class TestInterpreter extends TestCase {
 		      System.out.println("Finished interpreting.");
 
 		      assertEquals(true, executor.getResult().getBoolean());
-		      
-		      parseTree.dump("");
-		      
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1048,7 +1048,9 @@ public class TestInterpreter extends TestCase {
               
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
 		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
@@ -1056,9 +1058,6 @@ public class TestInterpreter extends TestCase {
               System.out.println("Finished interpreting.");
       
               assertEquals(1, executor.getResult().getInt());
-		      
-		      
-		      parseTree.dump("");
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1087,6 +1086,9 @@ public class TestInterpreter extends TestCase {
               
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
@@ -1094,9 +1096,6 @@ public class TestInterpreter extends TestCase {
               System.out.println("Finished interpreting.");
 		      
               assertEquals(true, executor.getResult().getBoolean());
-		      
-		      
-		      parseTree.dump("");
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1141,14 +1140,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
@@ -1160,7 +1159,7 @@ public class TestInterpreter extends TestCase {
 		     
 		      assertEquals(1,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getValue().getLong());
 		      assertEquals(DecimalFactory.getDecimal(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getValue().getNumeric());
-		      assertEquals(new CloverDouble(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
+		      assertEquals(new Double(0),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("result")).getValue().getBoolean());
 
 		} catch (ParseException e) {
@@ -1215,14 +1214,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(3,executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getInt());
 		      assertEquals("April",executor.getGlobalVariable(parser.getGlobalVariableSlot("mont")).getValue().getString());
@@ -1256,15 +1255,15 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      
-		      parseTree.dump("");
-		      
 		      assertEquals(39,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1300,15 +1299,15 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 
-		      
-		      parseTree.dump("");
-		      
 		      assertEquals(72,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1353,14 +1352,14 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
               int iVarSlot=parser.getGlobalVariableSlot("i");
               int yerVarSlot=parser.getGlobalVariableSlot("yer");
@@ -1400,14 +1399,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
@@ -1481,13 +1480,13 @@ public class TestInterpreter extends TestCase {
 						"	date now;int yer;\n" +
 						"	now=today();yer=0;\n" +
 						"	for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
-						"	if (yer>0) return yer; else return -1;" +
+						"	if (yer>0) return yer else return -1;" +
 						"}\n" +
 						"print_err('years born'+age(born));\n" +
 						"print_err(\"year before:\"+year_before(born));\n" +
 						" while (true) {print_err('pred return');" +
-						"return;" +
-						"print_err('po return')}" +
+						"return;\n" +
+						"print_err('po return');}\n" +
 						"print_err('za blokem');\n";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
 		record.getField("Born").setValue(born.getTime());
@@ -1500,7 +1499,9 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
-              parseTree.dump("");
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
               
             for(Iterator iter=parser.getParseExceptions().iterator();iter.hasNext();){
                 System.err.println(iter.next());
@@ -1511,9 +1512,6 @@ public class TestInterpreter extends TestCase {
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      //TODO
 		      
@@ -1586,14 +1584,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("subs","ello ",executor.getGlobalVariable(parser.getGlobalVariableSlot("subs")).getValue().getString());
 		      assertEquals("upper","ELLO ",executor.getGlobalVariable(parser.getGlobalVariableSlot("upper")).getValue().getString());
@@ -1604,7 +1602,7 @@ public class TestInterpreter extends TestCase {
 //		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
 		      assertEquals("ddiff",-2,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getValue().getLong());
 		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getValue().getBoolean());
-		      assertEquals("s1",new CloverDouble(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getValue().getDouble());
+		      assertEquals("s1",new Double(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getValue().getDouble());
 		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getValue().getString());
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getValue().getDouble());
 		      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getValue().getString());
@@ -1652,12 +1650,14 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-		      parseTree.dump("");
 
 		      if (parser.getParseExceptions().size()>0){
 		    	  //report error
@@ -1668,14 +1668,14 @@ public class TestInterpreter extends TestCase {
 		      }
 
 		      
-		      assertEquals("pi",new CloverDouble(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getValue().getDouble());
-		      assertEquals("sqrt",new CloverDouble(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("number")).getValue().getDouble());
-		      assertEquals("sqrt(9)",new CloverDouble(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getValue().getDouble());
-		      assertEquals("ln",new CloverDouble(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getValue().getDouble());
-		      assertEquals("log10",new CloverDouble(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getValue().getDouble());
-		      assertEquals("exp",new CloverDouble(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getValue().getDouble());
-		      assertEquals("power",new CloverDouble(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getValue().getDouble());
-		      assertEquals("power--",new CloverDouble(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getValue().getDouble());
+		      assertEquals("pi",new Double(Math.PI),executor.getGlobalVariable(parser.getGlobalVariableSlot("original")).getValue().getDouble());
+		      assertEquals("sqrt",new Double(Math.sqrt(Math.PI)),executor.getGlobalVariable(parser.getGlobalVariableSlot("number")).getValue().getDouble());
+		      assertEquals("sqrt(9)",new Double(3),executor.getGlobalVariable(parser.getGlobalVariableSlot("p9")).getValue().getDouble());
+		      assertEquals("ln",new Double(Math.log(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("ln")).getValue().getDouble());
+		      assertEquals("log10",new Double(Math.log10(3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("l10")).getValue().getDouble());
+		      assertEquals("exp",new Double(Math.exp(Math.log10(3))),executor.getGlobalVariable(parser.getGlobalVariableSlot("ex")).getValue().getDouble());
+		      assertEquals("power",new Double(Math.pow(3,1.2)),executor.getGlobalVariable(parser.getGlobalVariableSlot("po")).getValue().getDouble());
+		      assertEquals("power--",new Double(Math.pow(-10,-0.3)),executor.getGlobalVariable(parser.getGlobalVariableSlot("p")).getValue().getDouble());
 		      assertEquals("round",new CloverInteger(-4),executor.getGlobalVariable(parser.getGlobalVariableSlot("r")).getValue().getInt());
 		      assertEquals("truncation",new CloverInteger(-3),executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getValue().getInt());
 		      assertEquals("date truncation",new GregorianCalendar(2004,00,02).getTime(),executor.getGlobalVariable(parser.getGlobalVariableSlot("tdate1")).getValue().getDate());
@@ -1702,6 +1702,9 @@ public class TestInterpreter extends TestCase {
 
  		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record});
@@ -1710,9 +1713,6 @@ public class TestInterpreter extends TestCase {
 		      executor.setGlobalParameters(globalParameters);
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("num",10,executor.getGlobalVariable(parser.getGlobalVariableSlot("num")).getValue().getNumeric());
 		      
@@ -1738,8 +1738,8 @@ public class TestInterpreter extends TestCase {
 						"	$0.Value:=nvl(0,$in1.Value);\n" +
 						"	}\n" +
 						"test();\n" +
-						"print_err('Age='+ $0.Age); "+
-						"if (isnull($0.Age)) {print_err('!!!! Age is null!!!')}" +
+						"print_err('Age='+ $0.Age);\n "+
+						"if (isnull($0.Age)) {print_err('!!!! Age is null!!!');}\n" +
 						"print_err($1.City); "+
 						"//print_err($out.City); " +
 						"print_err($1.City); "+
@@ -1758,6 +1758,9 @@ public class TestInterpreter extends TestCase {
 
 		      System.out.println("Initializing parse tree..");
 		      parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
 		      System.out.println("Interpreting parse tree..");
 		      TransformLangExecutor executor=new TransformLangExecutor();
 		      executor.setInputRecords(new DataRecord[] {record,record1});
@@ -1767,9 +1770,6 @@ public class TestInterpreter extends TestCase {
 		      
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
-
-		      
-		      parseTree.dump("");
 		      
 		      assertEquals("result",out.getField("Name").getValue().toString());
 		      assertEquals(record.getField("Age").getValue(),out.getField("Age").getValue());
@@ -1804,16 +1804,15 @@ public class TestInterpreter extends TestCase {
 
               System.out.println("Initializing parse tree..");
               parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
               System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
               executor.setRuntimeLogger(logger);
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
-
-              
-              parseTree.dump("");
-              
               
         } catch (ParseException e) {
                 System.err.println(e.getMessage());
@@ -1840,17 +1839,16 @@ public class TestInterpreter extends TestCase {
 
               System.out.println("Initializing parse tree..");
               parseTree.init();
-              System.out.println("Interpreting parse tree..");
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+             System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
               executor.setRuntimeLogger(logger);
               executor.setGraph(graph);
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
-
-              
-              parseTree.dump("");
-              
               
         } catch (ParseException e) {
                 System.err.println(e.getMessage());
@@ -1879,6 +1877,9 @@ public class TestInterpreter extends TestCase {
 
               System.out.println("Initializing parse tree..");
               parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
               System.out.println("Interpreting parse tree..");
               TransformLangExecutor executor=new TransformLangExecutor();
               executor.setInputRecords(new DataRecord[] {record});
@@ -1886,10 +1887,6 @@ public class TestInterpreter extends TestCase {
               executor.setGraph(graph);
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
-
-              
-              parseTree.dump("");
-              
               
         } catch (ParseException e) {
                 System.err.println(e.getMessage());
