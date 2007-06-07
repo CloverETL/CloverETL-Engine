@@ -180,9 +180,234 @@ public class ByteArrayTest extends TestCase {
 		}
 	}
 
-	// TODO
+	public void test_appendByteArrayOfs() {
+		int ofs = 2;
+		int len = 8;
+		byteArrayBytes.append(bytes, ofs, len);
+		assertEquals(byteArrayBytes.count, bytes.length+len);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			if (i<bytes.length)	assertEquals(bytes[i], byteArrayBytes.value[i]);
+			else assertEquals(bytes[i%bytes.length+ofs], byteArrayBytes.value[i]);
+		}
+	}
 	
+	public void test_appendSeq() {
+		byteArrayBytes.append(sBytes);
+		assertEquals(byteArrayBytes.count, bytes.length*2);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			assertEquals(bytes[i%bytes.length], byteArrayBytes.value[i]);
+		}
+	}
+	
+	public void test_appendByteBuffer() {
+		byteArrayBytes.append(dataBuffer);
+		assertEquals(byteArrayBytes.count, bytes.length*2);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			assertEquals(bytes[i%bytes.length], byteArrayBytes.value[i]);
+		}
+	}
 
+	public void test_appendByteBufferFromPos2Lim() {
+		int ofs = 2;
+		int lim = 10;
+		dataBuffer.position(ofs);
+		dataBuffer.limit(lim);
+		byteArrayBytes.append(bytes, ofs, lim-ofs);
+		assertEquals(byteArrayBytes.count, bytes.length+lim-ofs);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			if (i<bytes.length)	assertEquals(bytes[i], byteArrayBytes.value[i]);
+			else assertEquals(bytes[i%bytes.length+ofs], byteArrayBytes.value[i]);
+		}
+	}
+	
+	public void test_delete() {
+		byteArrayBytes.deleteByteAt(6);
+		assertEquals(bytes.length-1, byteArrayBytes.count);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			if (i<6) assertEquals(bytes[i], byteArrayBytes.value[i]);
+			else assertEquals(bytes[i+1], byteArrayBytes.value[i]);
+		}
+	}
+	
+	public void test_deleteRange() {
+		byteArrayBytes.delete(6, 8);
+		assertEquals(bytes.length-2, byteArrayBytes.count);
+		for (int i=0; i<byteArrayBytes.count; i++) {
+			if (i<6) assertEquals(bytes[i], byteArrayBytes.value[i]);
+			else assertEquals(bytes[i+2], byteArrayBytes.value[i]);
+		}
+	}
+
+	public void test_replace() {
+		int ofs = 6;
+		byteArrayBytes.replace(ofs, (byte)99);
+		assertEquals(byteArrayBytes.value[ofs], (byte)99);
+	}
+	
+	public void test_replaceRange() {
+		int start = 6;
+		int end = 8;
+		byteArrayBytes.replace(start, end, bytes);
+		assertEquals(byteArrayBytes.count, bytes.length * 2 - end + start);
+		for (int i=0; i<start; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=start; i<start+bytes.length; i++) {
+			assertEquals(bytes[i-start], byteArrayBytes.value[i]);
+		}
+		for (int i=bytes.length+start; i<bytes.length * 2 - end + start; i++) {
+			assertEquals(bytes[i-start-bytes.length+end], byteArrayBytes.value[i]);
+		}
+	}
+
+	public void test_replaceSeq() {
+		int start = 6;
+		int end = 8;
+		byteArrayBytes.replace(start, end, sBytes);
+		assertEquals(byteArrayBytes.count, bytes.length * 2 - end + start);
+		for (int i=0; i<start; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=start; i<start+bytes.length; i++) {
+			assertEquals(bytes[i-start], byteArrayBytes.value[i]);
+		}
+		for (int i=bytes.length+start; i<bytes.length * 2 - end + start; i++) {
+			assertEquals(bytes[i-start-bytes.length+end], byteArrayBytes.value[i]);
+		}
+	}
+	
+	public void test_replaceByteBuffer() {
+		int start = 6;
+		int end = 8;
+		int position = 1;
+		dataBuffer.position(position);
+		byteArrayBytes.replace(start, end, dataBuffer);
+		assertEquals(byteArrayBytes.count, bytes.length * 2 - end + start - position);
+		for (int i=0; i<start; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=start+position; i<start+bytes.length; i++) {
+			assertEquals(bytes[i-start], byteArrayBytes.value[i-position]);
+		}
+		for (int i=bytes.length+start; i<bytes.length * 2 - end + start; i++) {
+			assertEquals(bytes[i-start-bytes.length+end], byteArrayBytes.value[i-position]);
+		}
+	}
+
+	public void test_insert() {
+		byteArrayBytes.insert(5, (byte)99);
+		assertEquals(bytes.length+1, byteArrayBytes.count);
+		for (int i=0; i<byteArrayBytes.count-1; i++) {
+			if (i<5) assertEquals(bytes[i], byteArrayBytes.value[i]);
+			else assertEquals(bytes[i], byteArrayBytes.value[i+1]);
+		}
+		assertEquals(byteArrayBytes.value[5], 99);
+	}
+
+	public void test_insertArray() {
+		int index = 5;
+		int ofs = 1;
+		int len = 10;
+		byteArrayBytes.insert(index, bytes, ofs, len);new String(byteArrayBytes.value);
+		assertEquals(byteArrayBytes.count, bytes.length + len);
+		for (int i=0; i<index; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=index; i<index+len; i++) {
+			assertEquals(bytes[i-index+ofs], byteArrayBytes.value[i]);
+		}
+		for (int i=index+len; i<bytes.length + len; i++) {
+			assertEquals(bytes[i-len], byteArrayBytes.value[i]);
+		}
+	}
+
+	public void test_insertSeq() {
+		int index = 5;
+		int ofs = 1;
+		int end = 11;
+		byteArrayBytes.insert(index, sBytes, ofs, end);new String(byteArrayBytes.value);
+		assertEquals(byteArrayBytes.count, bytes.length + end-ofs);
+		for (int i=0; i<index; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=index; i<index+end-ofs; i++) {
+			assertEquals(bytes[i-index+ofs], byteArrayBytes.value[i]);
+		}
+		for (int i=index+end-ofs; i<bytes.length + end-ofs; i++) {
+			assertEquals(bytes[i-end+ofs], byteArrayBytes.value[i]);
+		}
+	}
+
+	public void test_insertDataBuffer() {
+		int index = 5;
+		int pos = 1;
+		int len = 10;
+		dataBuffer.position(pos);
+		byteArrayBytes.insert(index, dataBuffer, len);new String(byteArrayBytes.value);
+		assertEquals(byteArrayBytes.count, bytes.length + len);
+		for (int i=0; i<index; i++) {
+			assertEquals(bytes[i], byteArrayBytes.value[i]);
+		}
+		for (int i=index; i<index+len; i++) {
+			assertEquals(bytes[i-index+pos], byteArrayBytes.value[i]);
+		}
+		for (int i=index+len; i<bytes.length + len; i++) {
+			assertEquals(bytes[i-len], byteArrayBytes.value[i]);
+		}
+	}
+
+	public void test_subArray() {
+		int start = 5;
+		int end = 9;
+		byte[] bytesRef = byteArrayBytes.subArray(start, end);
+		assertEquals(bytesRef.length, end-start);
+		for (int i=0; i<bytesRef.length; i++) {
+			assertEquals(bytesRef[i], byteArrayBytes.value[i+start]);
+		}
+	}
+	
+	public void test_getSetResetBit() {
+		int pos = 10;
+		byteArrayBytes.setBit(pos);
+		assertTrue(byteArrayBytes.getBit(pos));
+		byteArrayBytes.resetBit(pos);
+		assertFalse(byteArrayBytes.getBit(pos));
+		byteArrayBytes.setBit(pos);
+		assertTrue(byteArrayBytes.getBit(pos));
+	}
+	
+	public void test_bitAND() {
+		byteArrayZero.fromByte(new byte[]{(byte)(12), (byte)(65)});
+		byteArrayZero.bitAND(new byte[]{(byte)(8), (byte)(1)});
+		assertEquals(byteArrayZero.getValue()[0], (byte)8);
+		assertEquals(byteArrayZero.getValue()[1], (byte)1);
+	}	
+	
+	public void test_bitOR() {
+		byteArrayZero.fromByte(new byte[]{(byte)(12), (byte)(65)});
+		byteArrayZero.bitOR(new byte[]{(byte)(5), (byte)(66)});
+		assertEquals(byteArrayZero.getValue()[0], (byte)13);
+		assertEquals(byteArrayZero.getValue()[1], (byte)67);
+	}	
+
+	public void test_bitXOR() {
+		byteArrayZero.fromByte(new byte[]{(byte)(12), (byte)(65)});
+		byteArrayZero.bitXOR(new byte[]{(byte)(0), (byte)(255)});
+		assertEquals(byteArrayZero.getValue()[0], (byte)12);
+		assertEquals(byteArrayZero.getValue()[1], (byte)-66);
+	}	
+
+	public void test_decodeEncodeBase64() {
+		byteArrayBytes.ensureCapacity(100);
+		byteArrayBytes.value[20] = 54;
+		byteArrayBytes.encodeBase64(bytes);
+		byte[] data = byteArrayBytes.decodeBase64();
+		assertEquals(data.length, bytes.length);
+		for (int i=0; i<data.length; i++) {
+			assertEquals(data[i], bytes[i]);
+		}
+	}
+	
 	public void test_encodeDecodeBitString() {
 		String bitSeq = "011010101011010111";
 		byteArrayBytes.encodeBitString(bitSeq, '1', true);

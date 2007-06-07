@@ -517,7 +517,7 @@ public class ByteArray implements Comparable, Iterable {
     	if (start > end)
     	    throw new ArrayIndexOutOfBoundsException("start > end");
 
-    	byte[] bData = new byte[dataBuffer.limit()];
+    	byte[] bData = new byte[dataBuffer.limit() - dataBuffer.position()];
     	dataBuffer.get(bData);
     	int len = bData.length;
     	int newCount = count + len - (end - start);
@@ -601,22 +601,20 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
-	public ByteArray insert(int dstOffset, ByteBuffer data, int start, int end) {
+	public ByteArray insert(int dstOffset, ByteBuffer data, int length) {
         if (data == null)
     		return this;
     	if ((dstOffset < 0) || (dstOffset > count))
     	    throw new IndexOutOfBoundsException("dstOffset "+dstOffset);
-    	byte[] sByte = new byte[end-start];
-    	data.get(sByte, start, end-start);
-    	if ((start < 0) || (end < 0) || (start > end) || (end > sByte.length))
-                throw new IndexOutOfBoundsException("start " + start + ", end " + end + ", end-start " + sByte.length);
-    	int len = end - start;
-        if (len == 0) return this;
-    	int newCount = count + len;
+    	byte[] sByte = new byte[length];
+    	data.get(sByte, 0, length);
+    	if (length < 0)
+                throw new IndexOutOfBoundsException("length " + length);
+    	int newCount = count + length;
     	if (newCount > value.length)
     	    expandCapacity(newCount);
-    	System.arraycopy(value, dstOffset, value, dstOffset + len, count - dstOffset);
-    	System.arraycopy(sByte, start, value, dstOffset, end - start);
+    	System.arraycopy(value, dstOffset, value, dstOffset + length, count - dstOffset);
+    	System.arraycopy(sByte, 0, value, dstOffset, length);
     	count = newCount;
 		return this;
 	}
@@ -698,16 +696,53 @@ public class ByteArray implements Comparable, Iterable {
 		}
 	}
 
-	public String toBase64() {
-		return Base64.encodeBytes(value, 0, count);
+	public byte[] decodeBase64() {
+		return Base64.decode(value, 0, count);
 	}
 
-	public void fromBase64(String data) {
-		fromByte(Base64.decode(data));
+	public void encodeBase64(byte[] data) {
+		fromString(Base64.encodeBytes(data));
 	}
 
 	/**
-	 * Stores bit sequence like string "010011" to byte array.
+	 * Stores bit sequence like string "010011" into byte array.
+	 * 
+	 * @param seq
+	 * @param bitChar
+	 * @param bitCharValue
+	 */
+	public void encodeBitStringAppend(CharSequence seq, char bitChar, boolean bitValue) {
+        if(seq == null || seq.length() == 0) {
+            return;
+        }
+        String source = seq.toString();
+        int size = ((source.length()-1) >> 3) + count + 1;
+        if (value.length < size) {
+        	ensureCapacity(size);
+        }
+        int len = source.length()+count;
+        if (bitValue) {
+        	for (int i=count; i<len; i++) {
+            	if (source.charAt(i-count) == bitChar) {          		
+        			value[i >> 3] |= ((byte) (1 << (i % 8)));
+        		} else {
+        			value[i >> 3] &= (~((byte) (1 << (i % 8))));
+        		}
+        	}
+        } else {
+        	for (int i=count; i<len; i++) {
+            	if (source.charAt(i-count) != bitChar) {
+           			value[i >> 3] |= ((byte) (1 << (i % 8)));
+           		} else {
+           			value[i >> 3] &= (~((byte) (1 << (i % 8))));
+           		}
+        	}
+        }
+        count = size;
+	}
+
+	/**
+	 * Stores bit sequence like string "010011" into byte array.
 	 * 
 	 * @param seq
 	 * @param bitChar
@@ -718,13 +753,13 @@ public class ByteArray implements Comparable, Iterable {
             return;
         }
         String source = seq.toString();
-        int len = source.length() >> 3 + count + 1;
-        if (value.length < len) {
-        	ensureCapacity(len);
+        int size = ((source.length()-1) >> 3) + 1;
+        if (value.length < size) {
+        	ensureCapacity(size);
         }
-        len = source.length() + count;
+        int len = source.length();
         if (bitValue) {
-        	for (int i=count; i<len; i++) {
+        	for (int i=0; i<len; i++) {
             	if (source.charAt(i) == bitChar) {          		
         			value[i >> 3] |= ((byte) (1 << (i % 8)));
         		} else {
@@ -732,7 +767,7 @@ public class ByteArray implements Comparable, Iterable {
         		}
         	}
         } else {
-        	for (int i=count; i<len; i++) {
+        	for (int i=0; i<len; i++) {
             	if (source.charAt(i) != bitChar) {
            			value[i >> 3] |= ((byte) (1 << (i % 8)));
            		} else {
@@ -740,6 +775,7 @@ public class ByteArray implements Comparable, Iterable {
            		}
         	}
         }
+        count = size;
 	}
 	
 	/**
@@ -756,7 +792,7 @@ public class ByteArray implements Comparable, Iterable {
             throw new IndexOutOfBoundsException("start " + start + ", end " + end + ", end-start " + (end-start));
 		
 		StringBuilder sb = new StringBuilder(end - start);
-		for (int i=start; i<end; i++) {
+		for (int i=start; i<end+1; i++) {
 			sb.append(getBit(i) ? trueValue : falseValue);
 		}
 		return sb;
@@ -942,14 +978,18 @@ public class ByteArray implements Comparable, Iterable {
 	 * 
 	 * @param compressData
 	 */
-	public void compressData(boolean compressData) {
-		if (this.dataCompressed == compressData) return;
-		if (compressData) {
-			fromByte(ZipUtils.compress(value));
-		} else {
-			fromByte(ZipUtils.decompress(value));
-		}
-		this.dataCompressed = compressData;
+	public void compressData() {
+		if (dataCompressed) return;
+		byte[] compValue = new byte[count];
+		for (int i=0; i<count; i++) compValue[i] = value[i];
+		fromByte(ZipUtils.compress(compValue));
+		dataCompressed = true;
+	}
+	
+	public void deCompressData() {
+		if (!dataCompressed) return;
+		fromByte(ZipUtils.decompress(value));
+		dataCompressed = false;
 	}
 
 	/**
