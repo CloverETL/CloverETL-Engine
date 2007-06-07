@@ -278,7 +278,6 @@ public class ByteArray implements Comparable, Iterable {
 	 * @see java.lang.Object#equals(java.lang.Object)
 	 */
 	public boolean equals(Object obj) {
-	    if (obj==null) return false;
 		if (obj instanceof ByteArray || obj instanceof byte[]) {
 			return compareTo(obj) == 0;
 		} else {
@@ -300,7 +299,7 @@ public class ByteArray implements Comparable, Iterable {
 			byteObj= (byte[])obj;
 			oCount = byteObj.length;
 		}else {
-		    throw new ClassCastException("Can't compare ByteDataField and "+obj.getClass().getName());
+			return -1;
 		}
 		 
 		int compLength = count >= oCount ? count : oCount;
