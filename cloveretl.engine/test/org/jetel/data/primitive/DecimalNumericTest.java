@@ -441,6 +441,13 @@ public class DecimalNumericTest extends TestCase {
 		aLong.neg();
 		aDouble.div(aLong);
 		assertEquals(new Double(0),new Double(aDouble.getDouble()));
+		
+		CloverDouble d1 = new CloverDouble(0);
+		CloverDouble d2 = new CloverDouble(0.01);
+		d1.div(d2);
+		assertEquals(new CloverDouble(0), d1);
+		d1.div(d2.getDecimal());
+		assertEquals(new CloverDouble(0), d1);
 	}
 
 	public void test_maths_mod(){
