@@ -528,8 +528,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                     "div - wrong type of literals");
         }
 
-        if (node.nodeVal==null) {
-            node.nodeVal=a.duplicate();
+        if (node.nodeVal==null || node.nodeVal.type!=a.type) {
+            node.nodeVal=TLValue.create(a.type);
         }
         
         node.nodeVal.getNumeric().setValue(a.getNumeric());
@@ -1338,8 +1338,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         if (node.jjtHasChildren()) {
             node.jjtGetChild(0).jjtAccept(this, data);
             TLValue initValue = stack.pop();
-            if (variable.getType().isStrictlyCompatible(initValue.type)) {
-                variable.setValue(initValue);
+            TLValueType type =variable.getType();
+            if (type.isStrictlyCompatible(initValue.type)) {
+                if (type.isNumeric()) {
+                    variable.getValue().getNumeric().setValue(initValue.getNumeric());
+                }else {
+                    variable.setValue(initValue);
+                }
             }else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + initValue
@@ -1425,8 +1430,13 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             }
             break;
         default:
-            if (variableToAssign.getType().isCompatible(valueToAssign.type)) {
-                variableToAssign.setValue(valueToAssign);
+            TLValueType type=variableToAssign.getType();
+            if (type.isCompatible(valueToAssign.type)) {
+                if (type.isNumeric()) {
+                    variableToAssign.getValue().getNumeric().setValue(valueToAssign.getNumeric());
+                }else {
+                    variableToAssign.setValue(valueToAssign);
+                }
             } else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
