@@ -432,7 +432,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since       October 29, 2002
 	 */
 	public boolean equals(Object obj) {
-	    if (isNull || obj==null) return false;
+	    if (isNull) return false;
 	    
 		if (obj instanceof ByteDataField){
 			return Arrays.equals(this.value, ((ByteDataField) obj).value);
@@ -463,7 +463,7 @@ public class ByteDataField extends DataField implements Comparable{
 		}else if (obj instanceof byte[]){
 			byteObj= (byte[])obj;
 		}else {
-		    throw new ClassCastException("Can't compare ByteDataField and "+obj.getClass().getName());
+			return -1;
 		}
 		 
 		int compLength = value.length >= byteObj.length ? value.length : byteObj.length;
