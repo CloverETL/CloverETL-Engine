@@ -284,8 +284,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see org.jetel.data.lookup.LookupTable#get(java.lang.String)
 	 */
 	public DataRecord get(String keyString) {
-		tmpRecord.getField(1).fromString(keyString);
-		tmpRecord.getField(2).fromString(keyString);
+		tmpRecord.getField(startFields[0]).fromString(keyString);
+		tmpRecord.getField(endFields[0]).fromString(keyString);
 		return get();
 	}
 
