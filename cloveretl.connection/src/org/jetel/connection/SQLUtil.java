@@ -482,6 +482,7 @@ public class SQLUtil {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
                 return DataFieldMetadata.BYTE_FIELD;
 			//-----------------
 			// proximity assignment
