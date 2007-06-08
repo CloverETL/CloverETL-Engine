@@ -412,7 +412,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		if (key instanceof RecordKey){
 	        this.lookupKey=((RecordKey)key);
 	        keyFields = lookupKey.getKeyFields();
-	    }else{
+	    }else if (!(key instanceof String || key instanceof Object[])){
 	        throw new RuntimeException("Incompatible Object type specified as lookup key: "+key.getClass().getName());
 	    }
 	}
