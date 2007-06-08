@@ -28,7 +28,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.JExcelXLSDataFormatter;
-import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -134,8 +133,6 @@ public class XLSWriter extends Node {
 	private WritableByteChannel writableByteChannel;
 	private int recordsPerFile;
 	
-	private boolean usePOI = true;
-
 	/**
 	 * Constructor
 	 * 
@@ -147,11 +144,7 @@ public class XLSWriter extends Node {
 	public XLSWriter(String id,String fileURL, boolean append){
 		super(id);
 		this.fileURL = fileURL;
-		if (usePOI) {
-			formatter = new XLSDataFormatter(append);
-		}else{		
-			formatter = new JExcelXLSDataFormatter(append);
-		}
+		formatter = new JExcelXLSDataFormatter(append);
 	}
 	
 	/* (non-Javadoc)
