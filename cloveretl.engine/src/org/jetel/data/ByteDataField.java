@@ -432,7 +432,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since       October 29, 2002
 	 */
 	public boolean equals(Object obj) {
-	    if (isNull) return false;
+	    if (isNull || obj==null) return false;
 	    
 		if (obj instanceof ByteDataField){
 			return Arrays.equals(this.value, ((ByteDataField) obj).value);
@@ -463,7 +463,7 @@ public class ByteDataField extends DataField implements Comparable{
 		}else if (obj instanceof byte[]){
 			byteObj= (byte[])obj;
 		}else {
-			return -1;
+		    throw new IllegalArgumentException("Can't compare ByteDataField and "+obj.getClass().getName());
 		}
 		 
 		int compLength = value.length >= byteObj.length ? value.length : byteObj.length;
@@ -505,10 +505,10 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see	      org.jetel.data.DataField
 	 */
 	public int getSizeSerialized() {
-        final int length=value.length;
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);
         } else {
+            final int length = value.length;
             return length + ByteBufferUtils.lengthEncoded(length);
         }
 	}
