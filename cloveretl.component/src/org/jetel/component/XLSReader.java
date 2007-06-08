@@ -29,7 +29,6 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.parser.JExcelXLSDataParser;
-import org.jetel.data.parser.XLSDataParser;
 import org.jetel.data.parser.XLSParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -167,8 +166,6 @@ public class XLSReader extends Node {
 	private int metadataRow = 0;
 	private String[][] fieldMap;
 	
-	public final static boolean usePOI = true;
-
 	/**
 	 * @param id
 	 */
@@ -176,22 +173,14 @@ public class XLSReader extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.fieldMap = fieldMap;
-		if (usePOI) {
-			this.parser = new XLSDataParser();
-		}else{
-			this.parser = new JExcelXLSDataParser();
-		}
+		this.parser = new JExcelXLSDataParser();
 	}
 
 	public XLSReader(String id, String fileURL, String[][] fieldMap, String charset) {
 		super(id);
 		this.fileURL = fileURL;
 		this.fieldMap = fieldMap;
-		if (usePOI) {
-			this.parser = new XLSDataParser();
-		}else{
-			this.parser = new JExcelXLSDataParser(charset);
-		}
+		this.parser = new JExcelXLSDataParser(charset);
 	}
 
 	/* (non-Javadoc)
@@ -463,19 +452,19 @@ public class XLSReader extends Node {
 					for (int i=0;i<xlsFields.length;i++){
 						xlsFields[i] = xlsFields[i].substring(1);
 					}
-					parser.setMappingType(XLSDataParser.CLOVER_FIELDS_AND_XLS_NUMBERS);
+					parser.setMappingType(XLSParser.CLOVER_FIELDS_AND_XLS_NUMBERS);
 					parser.setXlsFields(xlsFields);
 				}else{
-					parser.setMappingType(XLSDataParser.CLOVER_FIELDS_AND_XLS_NAMES);
+					parser.setMappingType(XLSParser.CLOVER_FIELDS_AND_XLS_NAMES);
 					parser.setXlsFields(xlsFields);
 				}
 			}else {
-				parser.setMappingType(XLSDataParser.ONLY_CLOVER_FIELDS);
+				parser.setMappingType(XLSParser.ONLY_CLOVER_FIELDS);
 			}
 		}else if (metadataRow != 0){
-			parser.setMappingType(XLSDataParser.MAP_NAMES);
+			parser.setMappingType(XLSParser.MAP_NAMES);
 		}else{
-			parser.setMappingType(XLSDataParser.NO_METADATA_INFO);
+			parser.setMappingType(XLSParser.NO_METADATA_INFO);
 		}
         reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
         reader.setLogger(logger);
