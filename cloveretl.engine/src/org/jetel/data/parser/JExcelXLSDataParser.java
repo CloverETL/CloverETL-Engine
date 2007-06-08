@@ -37,7 +37,6 @@ import jxl.WorkbookSettings;
 
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.XLSDataFormatter;
 import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
@@ -131,7 +130,7 @@ public class JExcelXLSDataParser extends XLSParser {
 			Cell[] row = sheet.getRow(firstRow);
 			for (int i=0;i<row.length;i++){
 				cell = row[i];
-				names.add(XLSDataFormatter.getCellCode(cell.getColumn()) + " - " +
+				names.add(XLSFormatter.getCellCode(cell.getColumn()) + " - " +
 						cell.getContents().substring(0, Math.min(
 								cell.getContents().length(), MAX_NAME_LENGTH)));
 			}
@@ -244,8 +243,6 @@ public class JExcelXLSDataParser extends XLSParser {
        }catch(Exception ex){
             throw new ComponentNotReadyException(ex);
         }
-       logger.info("Reading data from sheet " + sheetCounter + " (" + 
-       		sheet.getName() + ")." );
         currentRow = firstRow;
          sheetCounter = -1;
          if (sheetNumber != null){
@@ -254,6 +251,8 @@ public class JExcelXLSDataParser extends XLSParser {
         if (!getNextSheet()) {
         	throw new ComponentNotReadyException("There is no sheet conforming sheet name nor sheet number pattern");
         }
+        logger.info("Reading data from sheet " + sheetCounter + " (" + 
+           		sheet.getName() + ")." );
 		if (metadata != null) {
         	fieldNumber = new int[metadata.getNumFields()][2];
         	mapFields();
