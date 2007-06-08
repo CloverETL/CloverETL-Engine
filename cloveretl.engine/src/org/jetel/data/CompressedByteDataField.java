@@ -72,7 +72,10 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.DataField#copy()
 	 */
 	public DataField duplicate(){
-	    return new CompressedByteDataField(metadata, value);
+		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, new byte[]{});
+		compressedByteDataField.value = value;
+		compressedByteDataField.dataLen = dataLen;
+	    return compressedByteDataField;
 	}
 
 	/* (non-Javadoc)
@@ -326,4 +329,8 @@ public class CompressedByteDataField extends ByteDataField {
         }
 	}
     
+	public int getDataLength() {
+		return dataLen;
+	}
+	
 }
