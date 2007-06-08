@@ -57,9 +57,10 @@ public class StructureFormatter implements Formatter {
 	private String mask;
 	private byte[] maskBytes;
 	private DataFieldParams[] maskAnalize;
+	private int[] fieldIndexes;
 	private int index;
 	private int lastIndex;
-	private String fieldName;
+	private int fieldIndex;
 	private ByteBuffer fieldBuffer; 
 	private ByteBuffer dataBuffer;
 	private CharsetEncoder encoder;
@@ -142,6 +143,10 @@ public class StructureFormatter implements Formatter {
 		//change list to array
 		maskAnalize = new DataFieldParams[maskAnalizeMap.size()];
 		maskAnalizeMap.toArray(maskAnalize);
+		fieldIndexes = new int[maskAnalize.length];
+		for (int i = 0; i < fieldIndexes.length; i++) {
+			fieldIndexes[i] = (Integer)fields.get(maskAnalize[i].name);
+		}
 	}
 
     /* (non-Javadoc)
@@ -176,7 +181,7 @@ public class StructureFormatter implements Formatter {
         int mark;
 		//for each record field which is in mask change its name to value
 		for (int i=0;i<maskAnalize.length;i++){
-			fieldName = maskAnalize[i].name;
+			fieldIndex = fieldIndexes[i];
 			index  = maskAnalize[i].index;
 			if (dataBuffer.remaining() < index - lastIndex){
 				flush();
@@ -186,7 +191,7 @@ public class StructureFormatter implements Formatter {
 			dataBuffer.put(maskBytes, lastIndex, index - lastIndex);
 			fieldBuffer.clear();
 			//change field value to bytes
-			record.getField(fieldName).toByteBuffer(fieldBuffer, encoder);
+			record.getField(fieldIndex).toByteBuffer(fieldBuffer, encoder);
 			fieldBuffer.flip();
             sentBytes+=dataBuffer.position()-mark;
 			if (dataBuffer.remaining() < fieldBuffer.limit()){
