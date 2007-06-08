@@ -156,6 +156,7 @@ public class Aggregate extends Node {
 			currentRecord.init();
 			previousRecord.init();
 			outRecord.init();
+			outRecord.reset();
 
 			while (currentRecord != null && runIt) {
 				currentRecord = inPort.readRecord(currentRecord);

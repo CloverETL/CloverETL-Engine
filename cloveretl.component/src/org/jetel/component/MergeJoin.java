@@ -284,7 +284,7 @@ public class MergeJoin extends Node {
 				inRecords[i] = minIndicator[i] ? reader[i].next() : null;
 		}
 		while (true) {
-			outRecords[0].reset();
+//			outRecords[0].reset();
 			if (!transformation.transform(inRecords, outRecords)) {
 				return false;
 			}
@@ -378,6 +378,7 @@ public class MergeJoin extends Node {
 		inRecords = new DataRecord[inputCnt];
 		outRecords = new DataRecord[]{new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outRecords[0].init();
+		outRecords[0].reset();
 		outPort = getOutputPort(WRITE_TO_PORT);
 		// init transformation
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[] {

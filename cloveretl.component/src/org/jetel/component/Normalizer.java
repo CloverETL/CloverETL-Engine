@@ -233,6 +233,7 @@ public class Normalizer extends Node {
 		inRecord.init();
 		DataRecord outRecord = new DataRecord(outMetadata);
 		outRecord.init();
+		outRecord.reset();
 		while (runIt) {
 			if (inPort.readRecord(inRecord) == null) { // no more input data
 				return;

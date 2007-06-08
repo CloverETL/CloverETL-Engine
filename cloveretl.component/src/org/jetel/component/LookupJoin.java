@@ -268,6 +268,7 @@ public class LookupJoin extends Node {
 		DataRecord[] outRecord = { new DataRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
 		outRecord[0].init();
+		outRecord[0].reset();
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
