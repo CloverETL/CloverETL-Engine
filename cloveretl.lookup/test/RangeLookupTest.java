@@ -2,7 +2,6 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.text.Collator;
 import java.text.RuleBasedCollator;
 import java.util.Date;
 import java.util.Iterator;
@@ -16,8 +15,9 @@ import org.jetel.data.StringDataField;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.JExcelXLSDataParser;
 import org.jetel.data.parser.Parser;
-import org.jetel.data.parser.XLSDataParser;
+import org.jetel.data.parser.XLSParser;
 import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.exception.ComponentNotReadyException;
@@ -419,7 +419,7 @@ public class RangeLookupTest extends TestCase {
        	fieldMetadata.setFormatStr("dd.MM.yy"); 
        	lookupMetadata.addField(fieldMetadata);
        	
-        XLSDataParser parser = new XLSDataParser();
+        XLSParser parser = new JExcelXLSDataParser();
         parser.setSheetNumber("0");
         parser.init(lookupMetadata);
         parser.setDataSource(new FileInputStream(enginePath + "" + File.separatorChar + "data" + File.separatorChar + "rangeLookup.dat.xls"));
@@ -578,6 +578,7 @@ public class RangeLookupTest extends TestCase {
 		}
     	
     	Integer[] keys = new Integer[2];
+    	lookup.setLookupKey(keys);
     	
     	for (int i=0;i<200;i++){
     		keys[0] = random.nextInt(40);
@@ -665,6 +666,8 @@ public class RangeLookupTest extends TestCase {
 
     	Decimal value = DecimalFactory.getDecimal();
     	double value1;
+    	
+    	lookup.setLookupKey("my string");
     	
     	for (int i=0;i<200;i++){
     		value1 = random.nextDouble() * 20;
