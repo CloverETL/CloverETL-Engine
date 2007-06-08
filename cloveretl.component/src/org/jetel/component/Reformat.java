@@ -185,6 +185,7 @@ public class Reformat extends Node {
 		for (int i=0;i<numOutputPorts;i++){
 		    outRecord[i]=new DataRecord(getOutputPort(i).getMetadata());
 		    outRecord[i].init();
+		    outRecord[i].reset();
 		}
 		
 		// MAIN PROCESSING LOOP

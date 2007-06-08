@@ -37,8 +37,6 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.OutputPort;
@@ -485,10 +483,12 @@ public class AproxMergeJoin extends Node {
 		DataRecordMetadata outConformingMetadata = conformingPort.getMetadata();
 		DataRecord outConformingRecord = new DataRecord(outConformingMetadata);
 		outConformingRecord.init();
+		outConformingRecord.reset();
 
 		DataRecordMetadata outSuspiciousMetadata = suspiciousPort.getMetadata();
 		DataRecord outSuspiciousRecord = new DataRecord(outSuspiciousMetadata);
 		outSuspiciousRecord.init();
+		outSuspiciousRecord.reset();
 
 		// tmp record for switching contents
 		DataRecord tmpRec;

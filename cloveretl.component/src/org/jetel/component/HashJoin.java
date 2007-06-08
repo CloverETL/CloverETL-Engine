@@ -317,6 +317,7 @@ public class HashJoin extends Node {
 		outRecords = new DataRecord[1];
 		outRecords[0] = new DataRecord(outPort.getMetadata());
 		outRecords[0].init();
+		outRecords[0].reset();
 
 		driverKeys = new RecordKey[slaveCnt];
 		slaveKeys = new RecordKey[slaveCnt];

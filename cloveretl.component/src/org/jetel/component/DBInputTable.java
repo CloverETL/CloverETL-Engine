@@ -173,6 +173,7 @@ public class DBInputTable extends Node {
 		// we need to create data record - take the metadata from first output port
 		DataRecord record = new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata());
 		record.init();
+		record.reset();
 		try {
 			parser.initSQLDataMap(record);
 

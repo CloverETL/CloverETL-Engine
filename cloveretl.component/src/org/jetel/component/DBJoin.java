@@ -42,7 +42,6 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Element;
 /**
@@ -198,6 +197,7 @@ public class DBJoin extends Node {
 		InputPort inPort=getInputPort(WRITE_TO_PORT);
 		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
 		outRecord[0].init();
+		outRecord[0].reset();
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
