@@ -130,7 +130,7 @@ public class JExcelXLSDataFormatter extends XLSFormatter {
 			}
 		}
 		try {
-			firstColumn = XLSDataFormatter.getCellNum(firstColumnIndex);
+			firstColumn = XLSFormatter.getCellNum(firstColumnIndex);
 		}catch(InvalidNameException ex){
 			throw new IllegalArgumentException(ex);
 		}

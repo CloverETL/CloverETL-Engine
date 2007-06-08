@@ -30,7 +30,7 @@ import javax.naming.InvalidNameException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.XLSDataFormatter;
+import org.jetel.data.formatter.XLSFormatter;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.JetelException;
@@ -273,7 +273,7 @@ public abstract class XLSParser implements Parser {
 		for (short i=0;i<cloverFields.length;i++){
 			int cellNumber;
 			try {
-				cellNumber = XLSDataFormatter.getCellNum(xlsFields[i]);
+				cellNumber = XLSFormatter.getCellNum(xlsFields[i]);
 			}catch(InvalidNameException ex){
 				throw new ComponentNotReadyException(ex);
 			}
