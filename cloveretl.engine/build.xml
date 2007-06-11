@@ -34,6 +34,14 @@
 		<include name="**/*.zip"/>
 	</fileset>
 
+	<filterset id="versionFilter">
+		<filter token="MAJOR_VERSION" value="${major_version}" />
+		<filter token="MINOR_VERSION" value="${minor_version}" />
+		<filter token="REVISION_VERSION" value="${revision_version}" />
+		<filter token="BUILD_NUMBER" value="${build.number}" />
+		<filter token="BUILD_TIME" value="${TODAY}" />
+	</filterset>
+		
 		<!-- =========================== TARGETS ============================== -->
 	<target name="build" depends="compile,package" description="Compiles sources and creates a JAR file">
 		<foreach list="${plugin.list}" inheritall="true" target="plugin.build" param="plugin.dir"/>
@@ -87,6 +95,7 @@
 
 		<copy todir="${src.distribution.dir.engine}/..">
 			<fileset file="readme.src.txt" />
+			<filterset refid="versionFilter"/>
 		</copy>
 		<move file="${src.distribution.dir.engine}/../readme.src.txt" tofile="${src.distribution.dir.engine}/../readme.txt"/>
 		
@@ -234,6 +243,7 @@
 		<!-- copy readme.txt -->
 		<copy todir="${dir.dist}">
 			<fileset file="${basedir}/readme.bin.txt"/>
+			<filterset refid="versionFilter"/>
 		</copy>
 		<move file="${dir.dist}/readme.bin.txt" tofile="${dir.dist}/readme.txt"/>
 		
@@ -252,12 +262,7 @@
 		<echo message="Copying source code.." />
 		<copy todir="${dir.src.tmp}">
 			<fileset dir="${dir.src}" />
-			<filterset>
-				<filter token="MAJOR_VERSION" value="${major_version}" />
-				<filter token="MINOR_VERSION" value="${minor_version}" />
-				<filter token="BUILD_NUMBER" value="${build.number}" />
-				<filter token="BUILD_TIME" value="${TODAY}" />
-			</filterset>
+			<filterset refid="versionFilter"/>
 		</copy>
 	</target>
 	
