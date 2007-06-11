@@ -61,10 +61,10 @@ public class AggregateMappingParser {
 	// regexp  matching a correct double constant mapping
 	private static final String MAPPING_DOUBLE_REGEX = "[\\d]*\\.[\\d]*";
 	// regexp  matching a correct date constant mapping
-	// see Defaults.DEFAULT_DATE_FORMAT
+	// @see Defaults#DEFAULT_DATE_FORMAT
 	private static final String MAPPING_DATE_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2}";
 	// regexp  matching a correct datetime constant mapping
-	// see Defaults.DEFAULT_DATETIME_FORMAT
+	// @see Defaults#DEFAULT_DATETIME_FORMAT
 	private static final String MAPPING_DATETIME_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}";
 
 	private static final Pattern functionPattern = 
