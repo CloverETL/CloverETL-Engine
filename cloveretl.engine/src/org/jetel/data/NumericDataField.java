@@ -174,7 +174,15 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	            this.value=((NumericDataField)fromField).value;
 	        }
 	        setNull(fromField.isNull);
-	    }
+	    } else if (fromField instanceof Numeric){
+            if (!fromField.isNull){
+                this.value = ((Numeric) fromField).getDouble();
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.copyFrom(fromField);
+        }
+
 	}
 	
 	/**

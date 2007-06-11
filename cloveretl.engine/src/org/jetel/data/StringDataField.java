@@ -138,8 +138,8 @@ public class StringDataField extends DataField implements CharSequence{
 	            this.value.append(((StringDataField)fieldFrom).value);
 	        }
 	        setNull(fieldFrom.isNull);
-	    }else{
-	        throw new ClassCastException("Incompatible DataField type "+DataFieldMetadata.type2Str(fieldFrom.getType()));
+	    } else {
+	        super.copyFrom(fieldFrom);
 	    }
 	}
 	

@@ -176,7 +176,9 @@ public class DateDataField extends DataField implements Comparable{
 	        	}
 	        }
 	        setNull(fromField.isNull);
-	    }
+	    } else {
+	        super.copyFrom(fromField);
+        }
 	}
 	
 	/**

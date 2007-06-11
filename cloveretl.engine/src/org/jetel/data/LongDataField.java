@@ -112,10 +112,17 @@ public class LongDataField extends DataField implements Numeric, Comparable{
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof LongDataField){
 	        if (!fromField.isNull){
-	            this.value=((LongDataField)fromField).value;
+	            this.value = ((LongDataField) fromField).value;
 	        }
 	        setNull(fromField.isNull);
-	    }
+	    } else if (fromField instanceof Numeric){
+            if (!fromField.isNull){
+                this.value = ((Numeric) fromField).getLong();
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.copyFrom(fromField);
+        }
 	}
 	
 	/**

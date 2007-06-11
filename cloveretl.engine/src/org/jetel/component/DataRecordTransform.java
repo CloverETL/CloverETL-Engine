@@ -135,7 +135,7 @@ public abstract class DataRecordTransform implements RecordTransform {
 	 */
 	protected boolean defaultTransform(DataRecord[] inputRecords, DataRecord[] outputRecords){
 	    for (int i = 0; i < inputRecords.length; i++) {
-			outputRecords[i].copyFieldsByPosition(inputRecords[i]);
+			outputRecords[i].copyFrom(inputRecords[i]);
 		}
 		return true;
 	}

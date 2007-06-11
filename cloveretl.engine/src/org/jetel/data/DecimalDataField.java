@@ -24,9 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
-import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
-import java.text.NumberFormat;
 import java.util.Locale;
 
 import org.jetel.data.primitive.Decimal;
@@ -167,8 +165,13 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 	            this.value.setValue(((DecimalDataField) fromField).value);
 	        }
 	        setNull(fromField.isNull);
+        } else if (fromField instanceof Numeric){
+            if (!fromField.isNull) {
+                this.value.setValue(((Numeric) fromField).getDecimal());
+            }
+            setNull(fromField.isNull);
 	    } else {
-	    	throw new RuntimeException("Can't copy value from '" + fromField.getClass().getName() + "' to Decimal field (" + getMetadata().getName() + ").");
+	    	super.copyFrom(fromField);
 	    }
 	}
 	
