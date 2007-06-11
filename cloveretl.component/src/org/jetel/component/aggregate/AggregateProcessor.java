@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.jetel.component.Aggregate;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
@@ -181,7 +180,7 @@ public class AggregateProcessor {
 		for (int i = 0; i < keyFields.length; i++) {
 			String keyField = inMetadata.getField(keyFields[i]).getName();
 			String outField = outMetadata.getField(i).getName();
-			result[i] = "$" + outField + Aggregate.ASSIGN_SIGN + "$" + keyField;
+			result[i] = "$" + outField + AggregateMappingParser.ASSIGN_SIGN + "$" + keyField;
 		}
 
 		// process function mappings
@@ -207,12 +206,12 @@ public class AggregateProcessor {
 			}
 			newMappingItem += ")";
 			
-			result[i] = "$" + outField + Aggregate.ASSIGN_SIGN + newMappingItem;  
+			result[i] = "$" + outField + AggregateMappingParser.ASSIGN_SIGN + newMappingItem;  
 		}
 
 		String resultString = new String();
 		for (String s : result) {
-			resultString += s + Aggregate.MAPPING_DELIMITER;
+			resultString += s + Defaults.Component.KEY_FIELDS_DELIMITER;
 		}
 		return resultString;
 	}

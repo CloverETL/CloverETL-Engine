@@ -91,10 +91,6 @@ import org.w3c.dom.Element;
 public class Aggregate extends Node {
 	/** Name of the component. */
 	public final static String COMPONENT_TYPE = "AGGREGATE";
-	/** Assignation sign in the aggregation function mapping. */
-	public final static String ASSIGN_SIGN = ":=";
-	/** Delimiter of the aggregation mapping items. */
-	public final static String MAPPING_DELIMITER = ";";
 	
 	// required attributes
 	private static final String XML_AGGREGATE_KEY_ATTRIBUTE = "aggregateKey";
@@ -186,6 +182,7 @@ public class Aggregate extends Node {
 
 			currentRecord.init();
 			outRecord.init();
+			outRecord.reset();
 
 			// read all data from input port to aggregateRecord
 			while ((currentRecord = inPort.readRecord(currentRecord)) != null && runIt) {
