@@ -148,10 +148,11 @@ public class MemSeqNoIncrementer extends Node {
 		//prepare fields for mapping and constants
 		AggregateMappingParser mappingParser;
 		try {
-			mappingParser = new AggregateMappingParser(mapping, 
-					new RecordKey((String[])inMetadata.getFieldNames().keySet().toArray(new String[0]),inMetadata), null, 
+			RecordKey metaKey = new RecordKey((String[])inMetadata.getFieldNames().keySet().toArray(new String[0]),inMetadata);
+			metaKey.init();
+			mappingParser = new AggregateMappingParser(mapping,metaKey, null, 
 					inMetadata, outMetadata);
-		}catch(AggregationException e){
+		}catch(Exception e){
 			ComponentNotReadyException ex = new ComponentNotReadyException(e);
 			ex.setAttributeName(XML_MAPPING_ATTRIBUTE);
 			throw ex;
@@ -201,10 +202,11 @@ public class MemSeqNoIncrementer extends Node {
 		
 		AggregateMappingParser mappingParser;
 		try {
-			mappingParser = new AggregateMappingParser(mapping, 
-					new RecordKey((String[])inMetadata.getFieldNames().keySet().toArray(new String[0]),inMetadata), null, 
+			RecordKey metaKey = new RecordKey((String[])inMetadata.getFieldNames().keySet().toArray(new String[0]),inMetadata);
+			metaKey.init();
+			mappingParser = new AggregateMappingParser(mapping,metaKey, null, 
 					inMetadata, getOutputPort(MAPPING_PORT).getMetadata());
-		}catch(AggregationException e){
+		}catch(Exception e){
 	   		problem = new ConfigurationProblem(e.getMessage(), Severity.ERROR, this, 
     				Priority.NORMAL, XML_MAPPING_ATTRIBUTE); 
     		status.add(problem);
