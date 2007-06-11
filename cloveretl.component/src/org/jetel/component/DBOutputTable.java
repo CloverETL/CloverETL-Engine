@@ -586,7 +586,7 @@ public class DBOutputTable extends Node {
 				}catch(SQLException ex){
 					countError++;
 					if (rejectedPort != null) {
-						rejectedRecord.copyFieldsByPosition(inRecord);
+						rejectedRecord.copyFrom(inRecord);
 						if (fillError) {
 							rejectedRecord.getField(rejectedRecord.getNumFields() - 1).setValue(ex.getMessage());
 						}
@@ -662,7 +662,7 @@ public class DBOutputTable extends Node {
 	            try{
 	                preparedStatement.addBatch();
 	                if (dataRecordHolder!=null) {
-	                	dataRecordHolder[holderCount].copyFieldsByPosition(inRecord);
+	                	dataRecordHolder[holderCount].copyFrom(inRecord);
 						if (fillError) {
 							dataRecordHolder[holderCount].getField(rejectedMetadata.getNumFields() - 1).reset();
 						}
@@ -671,7 +671,7 @@ public class DBOutputTable extends Node {
 	            }catch(SQLException ex){
 	                countError++;
 					if (rejectedPort != null) {
-						rejectedRecord.copyFieldsByPosition(inRecord);
+						rejectedRecord.copyFrom(inRecord);
 						if (fillError) {
 							rejectedRecord.getField(rejectedRecord.getNumFields() - 1).setValue(ex.getMessage());
 						}
