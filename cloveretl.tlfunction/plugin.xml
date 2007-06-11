@@ -18,6 +18,7 @@
 			<value>round</value>
 			<value>pow</value>
 			<value>pi</value>
+			<value>E</value>
 			<value>random</value>
 		</parameter>
 	</extension>
@@ -42,6 +43,7 @@
 			<value>right</value>
 			<value>trim</value>
 			<value>length</value>
+			<value>soundex</value>
 		</parameter>
 	</extension>
 	
