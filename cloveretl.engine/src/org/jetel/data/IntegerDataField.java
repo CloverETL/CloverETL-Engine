@@ -110,10 +110,17 @@ public class IntegerDataField extends DataField implements Numeric, Comparable {
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof IntegerDataField){
 	        if (!fromField.isNull){
-	            this.value=((IntegerDataField)fromField).value;
+	            this.value = ((IntegerDataField) fromField).value;
 	        }
 	        setNull(fromField.isNull);
-	    }
+	    } else if(fromField instanceof Numeric) {
+            if (!fromField.isNull){
+                this.value = ((Numeric) fromField).getInt();
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.copyFrom(fromField);
+        }
 	}
 	
 	/**

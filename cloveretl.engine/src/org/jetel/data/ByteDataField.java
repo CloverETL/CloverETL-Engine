@@ -119,7 +119,9 @@ public class ByteDataField extends DataField implements Comparable{
                         0, this.value, 0, length);
 	        }
 	        setNull(fromField.isNull);
-	    }
+	    } else {
+	        super.copyFrom(fromField);
+        }
 	}
 	
     @Override

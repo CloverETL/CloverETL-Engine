@@ -122,45 +122,42 @@ public class DataRecord implements Serializable, Comparable {
 	
 	/**
 	 * Set fields by copying the fields from the record passed as argument.
-	 * Does assume that both records have the same structure - i.e. metadata.
+	 * Does not assume that both records have the right same structure - i.e. metadata.
 	 * @param fromRecord DataRecord from which to get fields' values
 	 */
 	public void copyFrom(DataRecord fromRecord){
-	    for (int i=0;i<fields.length;i++){
+        int length = Math.min(fields.length, fromRecord.fields.length);
+        
+	    for (int i = 0; i < length; i++){
 	        this.fields[i].copyFrom(fromRecord.fields[i]);
 	    } 
 	}
 	
 	
 	/**
-	 *  Set fields by copying the fields from the record passed as argument.
+	 * Set fields by copying the fields from the record passed as argument.
 	 * Can handle situation when records are not exactly the same.
+     * For incompatible fields default value is setted.
+     * This operation is not intended for time critical purposes - in this case 
+     * consider to use copyFrom() method instead.
 	 *
-	 * @param  _record  Record from which fields are copied
+	 * @param  sourceRecord  Record from which fields are copied
 	 * @since
 	 */
 
-	public void copyFieldsByPosition(DataRecord _record) {
-		DataRecordMetadata sourceMetadata = _record.getMetadata();
-		DataField sourceField;
-		DataField targetField;
-		//DataFieldMetadata fieldMetadata;
-		int sourceLength = sourceMetadata.getNumFields();
-		int targetLength = this.metadata.getNumFields();
+	public void copyFieldsByPosition(DataRecord sourceRecord) {
 		int copyLength;
-		if (sourceLength < targetLength) {
-			copyLength = sourceLength;
-		} else {
-			copyLength = targetLength;
-		}
-
+        DataField sourceField;
+        DataField targetField;
+        
+		copyLength = Math.min(sourceRecord.fields.length, fields.length);
+        
 		for (int i = 0; i < copyLength; i++) {
-
 			//fieldMetadata = metadata.getField(i);
-			sourceField = _record.getField(i);
+			sourceField = sourceRecord.getField(i);
 			targetField = this.getField(i);
 			if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
-				targetField.setValue(sourceField.getValue());
+				targetField.copyFrom(sourceField);
 			} else {
 				targetField.setToDefaultValue();
 			}
@@ -168,8 +165,11 @@ public class DataRecord implements Serializable, Comparable {
 	}
 	
 	/**
-	 *  Set fields by copying name-matching fields' values from the record passed as argument.<br>
-     *  If two fields match by name but not by type, target field is set to default value.
+	 * Set fields by copying name-matching fields' values from the record passed as argument.<br>
+     * If two fields match by name but not by type, target field is set to default value.
+     * For incompatible fields default value is setted.
+     * This operation is not intended for time critical purposes - in this case 
+     * consider to use copyFrom() method instead.
 	 *  
 	 * @param sourceRecord from which copy data
 	 * @return boolean array with true values on positions, where values were copied from source record
@@ -190,7 +190,7 @@ public class DataRecord implements Serializable, Comparable {
                 sourceField = sourceRecord.getField(srcFieldPos);
                 result[i] = true;
                 if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
-                    targetField.setValue(sourceField.getValue());
+                    targetField.copyFrom(sourceField);
                 } else {
                     targetField.setToDefaultValue();
                 }

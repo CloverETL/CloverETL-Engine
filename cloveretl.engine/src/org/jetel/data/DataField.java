@@ -91,7 +91,9 @@ public abstract class DataField implements Serializable, Comparable {
 	 * Sets current field's value from DataField passed as argument
 	 * @param fieldFrom DataField from which to get the value
 	 */
-	public abstract void copyFrom(DataField fieldFrom);
+	public void copyFrom(DataField fieldFrom) {
+	    setValue(fieldFrom.getValueDuplicate());   
+    }
 	
 	/**
 	 *  An operation that sets value of the data field.
