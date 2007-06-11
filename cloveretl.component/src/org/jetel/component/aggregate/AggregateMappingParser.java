@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.component.Aggregate;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
@@ -45,22 +44,26 @@ import org.jetel.metadata.DataRecordMetadata;
  * @created Apr 23, 2007
  */
 public class AggregateMappingParser {
+	/** Assignation sign in the aggregation mapping. */
+	public final static String ASSIGN_SIGN = ":=";
+	// regexp matching the delimiter of the aggregation mapping items
+	private static final String MAPPING_DELIMITER_REGEX = "\\s*[;|]\\s*";
 	// regexp matching the left half of an aggregation mapping item (including the assign sign)
-	private static final String MAPPING_LEFT_SIDE_REGEX = "^\\$[\\w]*[ ]*" + Aggregate.ASSIGN_SIGN + "[ ]*";
-	// regular expression matching a correct aggregate function mapping
+	private static final String MAPPING_LEFT_SIDE_REGEX = "^\\$[\\w]*\\s*" + ASSIGN_SIGN + "\\s*";
+	// regexp  matching a correct aggregate function mapping
 	private static final String MAPPING_FUNCTION_REGEX = "[\\w ]*\\([\\$\\w ]*\\)";
-	// regular expression matching a correct field mapping
+	// regexp  matching a correct field mapping
 	private static final String MAPPING_FIELD_REGEX = "\\$[\\w ]*";
-	// regular expression matching a correct string constant mapping
+	// regexp  matching a correct string constant mapping
 	private static final String MAPPING_STRING_REGEX = "\\\".*\\\"";
-	// regular expression matching a correct integer constant mapping
+	// regexp  matching a correct integer constant mapping
 	private static final String MAPPING_INT_REGEX = "[\\d]*";
-	// regular expression matching a correct double constant mapping
+	// regexp  matching a correct double constant mapping
 	private static final String MAPPING_DOUBLE_REGEX = "[\\d]*\\.[\\d]*";
-	// regular expression matching a correct date constant mapping
+	// regexp  matching a correct date constant mapping
 	// see Defaults.DEFAULT_DATE_FORMAT
 	private static final String MAPPING_DATE_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2}";
-	// regular expression matching a correct datetime constant mapping
+	// regexp  matching a correct datetime constant mapping
 	// see Defaults.DEFAULT_DATETIME_FORMAT
 	private static final String MAPPING_DATETIME_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}";
 
@@ -177,7 +180,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseFunction(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String function = parsedExpression[1].trim().replaceAll(" ", "");	// removes additional spaces
 		String outputField = parseOutputField(parsedExpression[0]);
 		// parse the aggregate function name
@@ -259,7 +262,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseFieldMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String inputField = parsedExpression[1].trim().substring(1); // skip the leading "$"
 		String outputField = parseOutputField(parsedExpression[0]);
 
@@ -280,7 +283,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseIntConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -297,7 +300,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDoubleConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -314,7 +317,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseStringConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		// remove the leading and trailing quotation marks
 		String constant = parsedExpression[1].trim().substring(1, parsedExpression[1].trim().length() - 1);
 		// replace \" with " 
@@ -333,7 +336,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDateConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -355,7 +358,7 @@ public class AggregateMappingParser {
 	 * @throws AggregationException
 	 */
 	private void parseDateTimeConstantMapping(String expression) throws AggregationException {
-		String[] parsedExpression = expression.split(Aggregate.ASSIGN_SIGN);
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
 		String constant = parsedExpression[1].trim();
 		String outputField = parseOutputField(parsedExpression[0]);
 		
@@ -518,6 +521,7 @@ public class AggregateMappingParser {
 	 * @return mapping items.
 	 */
 	private String[] splitMapping(String mapping) {
+		Pattern delimiterPattern = Pattern.compile(MAPPING_DELIMITER_REGEX);
 		ArrayList<String> result = new ArrayList<String>();
 		
 		StringBuilder item = new StringBuilder();
@@ -534,7 +538,7 @@ public class AggregateMappingParser {
 				if (c == '"') {
 					insideQuotes = true;
 					item.append(c);
-				} else if (Aggregate.MAPPING_DELIMITER.indexOf(c) != -1) {
+				} else if (delimiterPattern.matcher(Character.toString(c)).matches()) {
 					result.add(item.toString());
 					item = new StringBuilder();
 				} else {
