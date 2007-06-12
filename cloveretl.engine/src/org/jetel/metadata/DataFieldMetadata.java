@@ -87,6 +87,9 @@ public class DataFieldMetadata implements Serializable {
 
     private Object defaultValue;
     
+    private String autoFilling;
+    
+    
 	/**
 	 * Field can be populated by execution of Java code which
 	 * can include references to fields from input records.  The
@@ -498,6 +501,13 @@ public class DataFieldMetadata implements Serializable {
 		return nullable;
 	}
 
+	public void setAutoFilling(String autoFilling) {
+		this.autoFilling = autoFilling;
+	}
+
+	public String getAutoFilling() {
+		return autoFilling;
+	}
 
 	/**
 	 * Sets the codeStr attribute of the DataFieldMetadata object

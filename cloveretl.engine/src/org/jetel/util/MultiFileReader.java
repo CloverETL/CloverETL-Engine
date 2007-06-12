@@ -22,7 +22,10 @@ package org.jetel.util;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -59,11 +62,15 @@ public class MultiFileReader {
 	private Iterator<String> filenameItor;
     private int skip;
 	private int fileSkip;
-	private int counter; //number of returned records
+	private int globalCounter; //number of returned records
+	private int sourceCounter; //number of returned records in one source
 	private int numRecords; //max number of returned records
-    private String filename;
     private boolean noInputFile = false;
-
+    
+    private String filename;
+    private Map<DataRecordMetadata, AutoFillingData> autoFillingMap;
+    private AutoFillingData autoFillingData;
+    
     /**
 	 * Sole ctor.
 	 * @param parser Parser to be used to obtain records from input files.
@@ -83,6 +90,8 @@ public class MultiFileReader {
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init(metadata);
+        autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
+        autoFillingData = addAutoFillingFields(metadata);
         
         WcardPattern pat = new WcardPattern();
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
@@ -132,6 +141,10 @@ public class MultiFileReader {
 		ReadableByteChannel stream = null; 
 		while (filenameItor.hasNext()) {
 			filename = filenameItor.next();
+			for (Object autoFillingData : autoFillingMap.entrySet()) {
+				((AutoFillingData)((Entry)autoFillingData).getValue()).sourceCounter = 0;
+			}
+			sourceCounter = 0;
 			logger.debug("Opening input file " + filename);
 			try {
 				stream = FileUtils.getReadableChannel(contextURL, filename);
@@ -182,7 +195,7 @@ public class MultiFileReader {
         }
         
         //check for index of last returned record
-        if(numRecords > 0 && numRecords == counter) {
+        if(numRecords > 0 && numRecords == globalCounter) {
             return null;
         }
         
@@ -197,11 +210,31 @@ public class MultiFileReader {
         try {
             while((rec = parser.getNext(record)) == null && nextSource());
         } catch(JetelException e) {
-            counter++;
+            globalCounter++;
+            sourceCounter++;
             throw e;
         }
         if(rec != null) {
-            counter++;
+            autoFillingData = autoFillingMap.get(rec.getMetadata());
+            if (autoFillingData == null) {
+            	autoFillingData = addAutoFillingFields(rec.getMetadata());
+            }
+           	for (int i : autoFillingData.globalRowCount) {
+           		rec.getField(i).setValue(globalCounter);
+           	}
+           	for (int i : autoFillingData.metadataRowCount) {
+           		rec.getField(i).setValue(autoFillingData.counter);
+           	}
+           	for (int i : autoFillingData.metadataSourceRowCount) {
+           		rec.getField(i).setValue(autoFillingData.sourceCounter);
+           	}
+           	for (int i : autoFillingData.sourceName) {
+           		rec.getField(i).setValue(filename);
+           	}
+            globalCounter++;
+            sourceCounter++;
+            autoFillingData.counter++;
+            autoFillingData.sourceCounter++;
         }
         
         return rec;
@@ -220,7 +253,7 @@ public class MultiFileReader {
         }
         
         //check for index of last returned record
-        if(numRecords > 0 && numRecords == counter) {
+        if(numRecords > 0 && numRecords == globalCounter) {
             return null;
         }
         
@@ -235,13 +268,34 @@ public class MultiFileReader {
         try {
             while((rec = parser.getNext()) == null && nextSource());
         } catch(JetelException e) {
-            counter++;
+            globalCounter++;
             throw e;
         }
         if(rec != null) {
-            counter++;
+            autoFillingData = autoFillingMap.get(rec.getMetadata());
+            if (autoFillingData == null) {
+            	autoFillingData = addAutoFillingFields(rec.getMetadata());
+            }
+           	for (int i : autoFillingData.globalRowCount) {
+           		rec.getField(i).setValue(globalCounter);
+           	}
+           	for (int i : autoFillingData.sourceRowCount) {
+           		rec.getField(i).setValue(sourceCounter);
+           	}
+           	for (int i : autoFillingData.metadataRowCount) {
+           		rec.getField(i).setValue(autoFillingData.counter);
+           	}
+           	for (int i : autoFillingData.metadataSourceRowCount) {
+           		rec.getField(i).setValue(autoFillingData.sourceCounter);
+           	}
+           	for (int i : autoFillingData.sourceName) {
+           		rec.getField(i).setValue(filename);
+           	}
+            globalCounter++;
+            sourceCounter++;
+            autoFillingData.counter++;
+            autoFillingData.sourceCounter++;
         }
-        
         return rec;
 	}		
 
@@ -252,4 +306,55 @@ public class MultiFileReader {
 	public void close() {
 		parser.close();
 	}
+	
+	private class AutoFillingData {
+	    private int[] globalRowCount;	// number of returned records for every getNext method
+	    private int[] sourceName;
+	    private int[] sourceRowCount;
+
+	    private int counter; // number of returned records for one metadata
+	    private int[] metadataRowCount;
+	    
+		private int sourceCounter; // number of returned records in one source for one metadata
+	    private int[] metadataSourceRowCount;
+	}
+	
+    private AutoFillingData addAutoFillingFields(DataRecordMetadata metadata) {
+        int numFields = metadata.getNumFields();
+        int[] globalRowCountTmp = new int[numFields];
+        int[] sourceRowCountTmp = new int[numFields];
+        int[] metadataRowCountTmp = new int[numFields];
+        int[] metadataSourceRowCountTmp = new int[numFields];
+        int[] sourceNameTmp = new int[numFields];
+        AutoFillingData data = new AutoFillingData();
+        int globalRowCountLen = 0;
+        int sourceNameLen = 0;
+	    int sourceRowCountLen = 0;
+	    int metadataRowCountLen = 0;
+	    int metadataSourceRowCountLen = 0;
+        for (int i=0; i<numFields; i++) {
+        	if (metadata.getField(i).getAutoFilling() != null) {
+        		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("global_row_count")) globalRowCountTmp[globalRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_row_count")) sourceRowCountTmp[sourceRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_row_count")) metadataRowCountTmp[metadataRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_source_row_count")) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_name")) sourceNameTmp[sourceNameLen++] = i;
+        	}
+        }
+        data.globalRowCount = new int[globalRowCountLen];
+        data.sourceRowCount = new int[sourceRowCountLen];
+        data.metadataRowCount = new int[metadataRowCountLen];
+        data.metadataSourceRowCount = new int[metadataSourceRowCountLen];
+        data.sourceName = new int[sourceNameLen];
+        // reduce arrays' sizes
+        System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
+        System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
+        System.arraycopy(metadataRowCountTmp, 0, data.metadataRowCount, 0, metadataRowCountLen);
+        System.arraycopy(metadataSourceRowCountTmp, 0, data.metadataSourceRowCount, 0, metadataSourceRowCountLen);
+        System.arraycopy(sourceNameTmp, 0, data.sourceName, 0, sourceNameLen);
+        
+        autoFillingMap.put(metadata, data);
+        return data;
+    }
+
 }

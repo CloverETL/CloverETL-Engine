@@ -349,6 +349,12 @@ public class DelimitedDataParser implements Parser {
 		// populate all data fields
 
 		while (fieldCounter < metadata.getNumFields()) {
+			// skip all fields that are internally filled 
+			if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+				fieldCounter++;
+				continue;
+			}
+			
 			// we clear our buffer
 			fieldStringBuffer.clear();
 			character = 0;

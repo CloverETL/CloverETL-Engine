@@ -157,6 +157,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 	private static final String COMPRESSED_ATTR = "compressed";
 	private static final String SHIFT_ATTR = "shift";
 	private static final String SIZE_ATTR = "size";
+	private static final String AUTO_FILLING_ATTR = "auto_filling";
 	
 	private static final String DEFAULT_CHARACTER_ENCODING = "UTF-8";
 
@@ -361,6 +362,9 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				if (field.getLocaleStr() != null) {
 					fieldElement.setAttribute(LOCALE_ATTR, field.getLocaleStr());
 				}
+				if (field.getAutoFilling() != null) {
+					fieldElement.setAttribute(AUTO_FILLING_ATTR, field.getAutoFilling());
+				}
 				fieldElement.setAttribute(NULLABLE_ATTR,
 				        String.valueOf(field.isNullable()));
 
@@ -505,6 +509,7 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 			String nullable = null;
 			String localeStr = null;
 			String compressed = null;
+			String autoFilling = null;
 			char fieldType = ' ';
 			Properties fieldProperties = new Properties();
 
@@ -532,6 +537,8 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 					localeStr = itemValue;
 				} else if (itemName.equalsIgnoreCase(COMPRESSED_ATTR)) {
 					compressed = itemValue;
+				} else if (itemName.equalsIgnoreCase(AUTO_FILLING_ATTR)) {
+					autoFilling = itemValue;
 				} else {
 					if (fieldProperties == null) {
 						fieldProperties = new Properties();
@@ -609,6 +616,10 @@ public class DataRecordMetadataXMLReaderWriter extends DefaultHandler {
 				field.setLocaleStr(localeStr);
 			}
 
+			if (autoFilling != null) {
+				field.setAutoFilling(autoFilling);
+			}
+			
 			recordMetadata.addField(field);
 		}
 		// check that at least one valid field definition has been found
