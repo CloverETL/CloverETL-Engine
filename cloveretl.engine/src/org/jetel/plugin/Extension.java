@@ -67,6 +67,16 @@ public class Extension {
     }
 
     public String toString() {
-        return "Extension point id: " + getPointId() + "\nParameters:\n" + getParameters();
+        StringBuilder ret = new StringBuilder(getPointId() + " { ");
+        
+        for(String key : parameters.keySet()) {
+            final ExtensionParameter parameter = parameters.get(key); 
+            ret.append(key + " = ");
+            ret.append(parameter);
+            ret.append("; ");
+        }
+        
+        ret.append(" }");
+        return ret.toString();
     }
 }
