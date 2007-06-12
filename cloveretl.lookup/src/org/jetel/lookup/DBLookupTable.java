@@ -422,14 +422,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					" does not exist!!!");
 		}
 		
-		if (dbMetadata == null) {
-			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
-		}
-        if (dbMetadata == null) {
-        	throw new ComponentNotReadyException("Metadata " + StringUtils.quote(metadataId) + 
-					" does not exist!!!");
-        }
-
         // if caching is required, crate map to store records
     	if (maxCached>0){
             this.resultCache= new SimpleCache(maxCached);
@@ -560,14 +552,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_DBCONNECTION));
 		}
 
-		if (dbMetadata == null) {
-			dbMetadata = getGraph().getDataRecordMetadata(metadataId);
-		}
-        if (dbMetadata == null) {
-        	status.add(new ConfigurationProblem("Metadata " + StringUtils.quote(metadataId) + 
-					" does not exist!!!", Severity.ERROR, this, Priority.NORMAL, XML_METADATA_ID));
-        }
-        
         return status;
     }
 
