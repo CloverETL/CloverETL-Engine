@@ -169,6 +169,10 @@ public class JExcelXLSDataParser extends XLSParser {
 		if (currentRow>=lastRow) return null;
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
+			// skip all fields that are internally filled 
+			if (metadata.getField(i).getAutoFilling() != null) {
+				continue;
+			}
 			if (fieldNumber[i][CLOVER_NUMBER] == -1) continue; //in metdata there is not any field corresponding to this column
 			try {
 				cell = sheet.getCell(fieldNumber[i][XLS_NUMBER], currentRow);

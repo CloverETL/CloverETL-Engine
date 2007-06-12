@@ -143,6 +143,10 @@ public class FixLenCharDataParser extends FixLenDataParser {
 		int recStart = rawRec.position();
 		int recEnd = rawRec.limit();
 		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
+			// skip all fields that are internally filled 
+			if (metadata.getField(fieldIdx).getAutoFilling() != null) {
+				continue;
+			}
 			skipLBlanks = skipLeadingBlanks || trim
 					|| (trim == null && metadata.getField(fieldIdx).isTrim());
 			skipTBlanks = skipTrailingBlanks || trim

@@ -263,6 +263,10 @@ public class DataParser implements Parser {
 		recordCounter++;
 		recordBuffer.clear();
 		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
+			// skip all fields that are internally filled 
+			if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+				continue;
+			}
 			skipBlanks = skipLeadingBlanks
 					|| trim == Boolean.TRUE
 					|| (trim == null && metadata.getField(fieldCounter).isTrim());

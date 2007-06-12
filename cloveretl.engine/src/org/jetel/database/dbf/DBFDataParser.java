@@ -175,6 +175,10 @@ public class DBFDataParser implements Parser {
         }
         // populate all data fields
         while (fieldCounter < metadata.getNumFields()) {
+        	if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+                fieldCounter++;
+                continue;
+        	}
             limit += fieldSizes[fieldCounter];
             charBuffer.limit(limit);
             charBuffer.position(position);
@@ -282,12 +286,18 @@ public class DBFDataParser implements Parser {
                             + ex.getMessage());
         }
         //verify that metadata correspond to num of fields (plus 1 - deleted flag)
-        if (metadata.getNumFields()!=(dbfAnalyzer.getNumFields()+1)){
+        int dbfFieldCount=0;
+        for (int i=0; i<metadata.getNumFields(); i++) {
+        	if (metadata.getField(i).getAutoFilling() == null) {
+        		dbfFieldCount++;
+        	}
+        }
+        
+        if (dbfFieldCount!=(dbfAnalyzer.getNumFields()+1)){
             throw new ComponentNotReadyException("Invalid metadata - DBF file indicates different number of fields than metadata!"); 
         }
         // initialize array of fields sizes
         fieldSizes = new int[metadata.getNumFields()];
-        DBFFieldMetadata[] fieldMetadata = dbfAnalyzer.getFields();
         for (int i = 0; i < fieldSizes.length; i++) {
             fieldSizes[i] = metadata.getField(i).getSize();
         }
