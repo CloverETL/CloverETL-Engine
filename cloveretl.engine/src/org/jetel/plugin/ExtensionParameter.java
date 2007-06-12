@@ -64,4 +64,16 @@ public class ExtensionParameter {
         }
     }
     
+    @Override
+    public String toString() {
+        StringBuilder ret = new StringBuilder();
+        
+        for(String value : values) {
+            ret.append(value);
+            ret.append(',');
+        }
+        
+        ret.setLength(ret.length() -1);
+        return ret.toString();
+    }
 }

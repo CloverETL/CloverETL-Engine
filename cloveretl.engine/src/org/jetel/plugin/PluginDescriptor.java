@@ -322,7 +322,8 @@ public class PluginDescriptor {
         ret.append("\tprovider-name - " + getProviderName() + "\n");
         
         for(Extension extension : extensions) {
-            ret.append("\t\tpoint-id  - " + extension.getPointId() + " - " + extension.getParameters() + "\n" );
+            ret.append("\t\t" + extension + "\n");
+            //ret.append("\t\tpoint-id  - " + extension.getPointId() + " - " + extension.getParameters() + "\n" );
         }
         
         return ret.toString();
