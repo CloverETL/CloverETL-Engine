@@ -407,12 +407,11 @@ public class DataGenerator extends Node {
 	 */
 	@Override
 	public Result execute() throws Exception {
-		boolean[] set;
+		boolean[] set = record.copyFieldsByName(patternRecord);
 		Object value = null;
 		Sequence sequence;
 		for (int i=0;i<recordsNumber && runIt;i++){
 			//set constant fields from pattern
-			set = record.copyFieldsByName(patternRecord);
 			for (int j = 0; j < set.length; j++) {
 				if (!set[j]){//j-th field have not been set yet 
 					if (randomField[j]) {//set random value
