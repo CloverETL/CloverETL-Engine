@@ -60,7 +60,7 @@ public class XPathContext {
 	//private boolean lastPortNode2 = false;
 
 	// indicates last node for document
-	private boolean lastNode = false;
+	private boolean lastNode;
 	
 	// points to parent node in tree structure
 	private XPathContext parentContext = null;
@@ -147,6 +147,7 @@ public class XPathContext {
 	 */
 	public void init(Source node) throws TransformerException {
 		init = true;
+		lastNode = false;
 		this.node = node;
 	}
 	
