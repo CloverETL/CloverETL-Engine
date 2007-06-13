@@ -20,9 +20,6 @@
 package org.jetel.component;
 
 import java.io.StringReader;
-import java.sql.Timestamp;
-import java.util.Arrays;
-import java.util.Date;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -84,13 +81,14 @@ import org.xml.sax.InputSource;
  *<br>
  * Mapping attribute contains mapping hierarchy in XML form. DTD of mapping:<br>
  * <code>
- * &lt;!ELEMENT Mappings (Mapping*)&gt;<br>
+ * &lt;!ELEMENT Context (Context* | Mapping*)&gt;<br>
+ * &lt;!ELEMENT Mapping&gt;<br>
  * 
- * &lt;!ELEMENT Mapping (Mapping*)&gt;<br>
- * &lt;!ATTLIST Mapping<br>
- * &nbsp;element NMTOKEN #REQUIRED<br>      
- * &nbsp;&nbsp;//name of binded XML element<br>  
- * &nbsp;outPort NMTOKEN #REQUIRED<br>      
+ * &lt;!ELEMENT Context (Context* | Mapping*)&gt;<br>
+ * &lt;!ATTLIST Context<br>
+ * &nbsp;xpath NMTOKEN #REQUIRED<br>      
+ * &nbsp;&nbsp;//xpath query to the xml node<br>  
+ * &nbsp;outPort NMTOKEN #REQUIRED<br>
  * &nbsp;&nbsp;//name of output port for this mapped XML element<br>
  * &nbsp;parentKey NMTOKEN #IMPLIED<br>     
  * &nbsp;&nbsp;//field name of parent record, which is copied into field of the current record<br>
@@ -103,11 +101,17 @@ import org.xml.sax.InputSource;
  * &nbsp;sequenceId NMTOKEN #IMPLIED<br>    
  * &nbsp;&nbsp;//we can supply sequence id used to fill a field defined in a sequenceField attribute<br>
  * &nbsp;&nbsp;//(if this attribute is omited, non-persistent PrimitiveSequence will be used)<br>
- * &nbsp;xmlFields NMTOKEN #IMPLIED<br>     
- * &nbsp;&nbsp;//comma separeted xml element names, which will be mapped on appropriate record fields<br>
- * &nbsp;&nbsp;//defined in cloverFields attribute<br>
- * &nbsp;cloverFields NMTOKEN #IMPLIED<br>  
- * &nbsp;&nbsp;//see xmlFields comment<br>
+
+ * &lt;!ELEMENT Mapping&gt;<br>
+ * &lt;!ATTLIST Mapping<br>
+ * &nbsp;cloverFields NMTOKEN #REQUIRED<br>  
+ * &nbsp;&nbsp;//name of metadata filed<br>
+ * &nbsp;xpath NMTOKEN #REQUIRED<br>      
+ * &nbsp;&nbsp;//xpath query to the xml value<br>  
+ * &nbsp;nodeName NMTOKEN #IMPLIED<br>  
+ * &nbsp;&nbsp;//direct xml node from where is taken a text, it is guicker to xpath<br>
+ * &nbsp;trim NMTOKEN #IMPLIED<br>  
+ * &nbsp;&nbsp;//trims leading and trailing space<br>
  * &gt;<br>
  * </code>
  * 
@@ -123,10 +127,9 @@ import org.xml.sax.InputSource;
  * &lt;/node&gt;<br>
  *  </pre>
  *
- * @author      dpavlis
- * @since       April 4, 2002
- * @revision    $Revision: 2447 $
- * @see         org.jetel.data.parser.DelimitedDataParser
+ * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ * @created 20.5.2007
  */
 public class XmlXPathReader extends Node {
 
@@ -234,6 +237,8 @@ public class XmlXPathReader extends Node {
 	    super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILE_ATTRIBUTE, this.fileURL);
 		xmlElement.setAttribute(XML_DATAPOLICY_ATTRIBUTE, policyType.toString());
+		xmlElement.setAttribute(XML_SKIP_ROWS_ATTRIBUTE, String.valueOf(skipRows));
+		xmlElement.setAttribute(XML_NUMRECORDS_ATTRIBUTE, String.valueOf(numRecords));
 	}
 
 
@@ -354,13 +359,5 @@ public class XmlXPathReader extends Node {
     public void setNumRecords(int numRecords) {
         this.numRecords = Math.max(numRecords, 0);
     }
-
-	public static void main(String args[]) {
-		
-		
-	}
-
-    
-    
 }
 
