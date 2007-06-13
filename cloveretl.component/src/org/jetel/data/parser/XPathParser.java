@@ -36,9 +36,9 @@ import org.xml.sax.SAXException;
 /**
  * This class is parser for Xml XPath reader. 
  * 
- * 
- * @author ausperger
- *
+ * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
+ * @created 20.5.2007
  */
 public class XPathParser implements Parser {
 
@@ -331,6 +331,10 @@ public class XPathParser implements Parser {
 		this.xpathDocument = xpathAttribute;
 	}
 
+	public Document getXPath() {
+		return xpathDocument;
+	}
+
 	public void assignRecord(DataRecord record, int i) {
 		xpathContext.assignRecord(record, i);
 	}
@@ -346,5 +350,4 @@ public class XPathParser implements Parser {
 	public void setGraph(TransformationGraph graph) {
 		this.graph = graph;
 	}
-
 }
