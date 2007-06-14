@@ -129,7 +129,8 @@ public class CloverDataFormatter implements Formatter {
         }
         writer = Channels.newChannel(this.out);
         if (saveIndex) {//create temporary index file
-            String dataDir = new File(fileURL).getParent() + FILE_SEPARATOR; 
+            String dataDir = new File(fileURL).getParent() != null ?  
+            		new File(fileURL).getParent() + FILE_SEPARATOR : ""; 
             idxTmpFile = new File(dataDir + fileName  + INDEX_EXTENSION + TMP_EXTENSION);
             try{
                 idxWriter = Channels.newChannel(new DataOutputStream(
