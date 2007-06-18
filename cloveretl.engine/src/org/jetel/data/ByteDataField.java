@@ -109,7 +109,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
 	 */
 	public void copyFrom(DataField fromField){
-	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField)){
+	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
 	        if (!fromField.isNull){
 	            int length = ((ByteDataField) fromField).value.length;
 	            if (this.value == null || this.value.length != length){
