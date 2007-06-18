@@ -73,7 +73,7 @@ public class CompressedByteDataField extends ByteDataField {
 	 */
 	public DataField duplicate(){
 		CompressedByteDataField compressedByteDataField = new CompressedByteDataField(metadata, new byte[]{});
-		compressedByteDataField.value = value;
+		compressedByteDataField.value = value; //potencial issue !
 		compressedByteDataField.dataLen = dataLen;
 	    return compressedByteDataField;
 	}
@@ -84,15 +84,17 @@ public class CompressedByteDataField extends ByteDataField {
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof CompressedByteDataField){
 	        if (!fromField.isNull){
-	            int length = ((CompressedByteDataField)fromField).value.length;
+	            int length = ((CompressedByteDataField) fromField).value.length;
 	            if (this.value == null || this.value.length != length){
 	                this.value = new byte[length];
 	            }
 	            System.arraycopy(((CompressedByteDataField) fromField).value, 0, this.value, 0, length);
 	        }
 	        setNull(fromField.isNull);
-	        dataLen = ((CompressedByteDataField)fromField).dataLen;
-	    }
+	        dataLen = ((CompressedByteDataField) fromField).dataLen;
+	    } else {
+	        super.copyFrom(fromField);
+        }
 	}
 	
 	/* (non-Javadoc)
@@ -321,11 +323,10 @@ public class CompressedByteDataField extends ByteDataField {
 	 * @see org.jetel.data.ByteDataField#getSizeSerialized()
 	 */
 	public int getSizeSerialized() {
-        final int length=value.length;
         if(isNull) {
             return ByteBufferUtils.lengthEncoded(0);
         } else {
-            return 2*ByteBufferUtils.lengthEncoded(length) + length;
+            return ByteBufferUtils.lengthEncoded(dataLen) + ByteBufferUtils.lengthEncoded(value.length) + value.length;
         }
 	}
     
