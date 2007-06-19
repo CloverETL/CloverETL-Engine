@@ -71,6 +71,7 @@ public abstract class FixLenDataParser implements Parser {
 	protected int fieldCnt;
 	protected int[] fieldStart;
 	protected int[] fieldEnd;
+	protected boolean[] isAutoFilling;
 	protected int recordLength;
 	protected int fieldIdx;
 	protected int recordIdx;
@@ -102,6 +103,7 @@ public abstract class FixLenDataParser implements Parser {
 		recordLength = metadata.getRecordSize();
 		fieldStart = new int[fieldCnt];
 		fieldEnd = new int[fieldCnt];
+		isAutoFilling = new boolean[fieldCnt];
 		int prevEnd = 0;
 		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
 			fieldStart[fieldIdx] = prevEnd + metadata.getField(fieldIdx).getShift();
@@ -110,6 +112,7 @@ public abstract class FixLenDataParser implements Parser {
 			if (fieldStart[fieldIdx] < 0 || fieldEnd[fieldIdx] > recordLength) {
 				throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
 			}
+			isAutoFilling[fieldIdx] = metadata.getField(fieldIdx).getAutoFilling() != null;
 		}
 	}
 

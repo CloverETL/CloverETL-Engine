@@ -222,6 +222,9 @@ public class MultiFileReader {
            	for (int i : autoFillingData.globalRowCount) {
            		rec.getField(i).setValue(globalCounter);
            	}
+           	for (int i : autoFillingData.sourceRowCount) {
+           		rec.getField(i).setValue(sourceCounter);
+           	}
            	for (int i : autoFillingData.metadataRowCount) {
            		rec.getField(i).setValue(autoFillingData.counter);
            	}

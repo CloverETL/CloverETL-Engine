@@ -170,7 +170,7 @@ public class JExcelXLSDataParser extends XLSParser {
 		char type;
 		for (short i=0;i<fieldNumber.length;i++){
 			// skip all fields that are internally filled 
-			if (metadata.getField(i).getAutoFilling() != null) {
+			if (isAutoFilling[i]) {
 				continue;
 			}
 			if (fieldNumber[i][CLOVER_NUMBER] == -1) continue; //in metdata there is not any field corresponding to this column

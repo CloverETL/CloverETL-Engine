@@ -76,6 +76,7 @@ public class DelimitedDataParser implements Parser {
 	private int recordCounter;
 	private char[][] delimiters;
 	private char[] fieldTypes;
+	private boolean[] isAutoFilling;
 	private boolean isEof;
 	private Boolean trim = null;
 
@@ -191,10 +192,12 @@ public class DelimitedDataParser implements Parser {
 		// create array of delimiters & initialize them
 		delimiters = new char[metadata.getNumFields()][];
 		fieldTypes = new char[metadata.getNumFields()];
+		isAutoFilling = new boolean[metadata.getNumFields()];
 		for (int i = 0; i < metadata.getNumFields(); i++) {
 			fieldMetadata = metadata.getField(i);
 			delimiters[i] = fieldMetadata.getDelimiter().toCharArray();
 			fieldTypes[i] = fieldMetadata.getType();
+			isAutoFilling[i] = fieldMetadata.getAutoFilling() != null;
 			// we handle only one character delimiters
 		}
 	}
@@ -350,7 +353,7 @@ public class DelimitedDataParser implements Parser {
 
 		while (fieldCounter < metadata.getNumFields()) {
 			// skip all fields that are internally filled 
-			if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+			if (isAutoFilling[fieldCounter]) {
 				fieldCounter++;
 				continue;
 			}

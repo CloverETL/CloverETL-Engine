@@ -79,7 +79,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 		int recStart = byteBuffer.position();
 		for (fieldIdx = 0; fieldIdx < fieldCnt; fieldIdx++) {
 			// skip all fields that are internally filled 
-			if (metadata.getField(fieldIdx).getAutoFilling() != null) {
+			if (isAutoFilling[fieldIdx]) {
 				continue;
 			}
 			try {
