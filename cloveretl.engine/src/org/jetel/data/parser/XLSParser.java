@@ -86,6 +86,7 @@ public abstract class XLSParser implements Parser {
 	protected String[] xlsFields = null;
 	protected int mappingType = -1;
 	protected int[][] fieldNumber ; //mapping of xls fields and clover fields
+	protected boolean[] isAutoFilling;
 	
 	protected final int XLS_NUMBER = 0;
 	protected final int CLOVER_NUMBER = 1;
@@ -175,6 +176,10 @@ public abstract class XLSParser implements Parser {
 	 */
 	public void init(DataRecordMetadata _metadata)throws ComponentNotReadyException{
 		this.metadata = _metadata;
+		isAutoFilling = new boolean[metadata.getNumFields()];
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
+		}
 	}
 
 	/* (non-Javadoc)

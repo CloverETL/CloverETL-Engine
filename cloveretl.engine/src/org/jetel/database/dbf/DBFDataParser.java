@@ -77,6 +77,8 @@ public class DBFDataParser implements Parser {
 
     private DataFieldMetadata dataFieldMetadata; 
     
+	private boolean[] isAutoFilling;
+
     public DBFDataParser() {
     }
 
@@ -175,7 +177,7 @@ public class DBFDataParser implements Parser {
         }
         // populate all data fields
         while (fieldCounter < metadata.getNumFields()) {
-        	if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+        	if (isAutoFilling[fieldCounter]) {
                 fieldCounter++;
                 continue;
         	}
@@ -237,6 +239,10 @@ public class DBFDataParser implements Parser {
     public void init(DataRecordMetadata _metadata)
             throws ComponentNotReadyException {
         metadata = _metadata;
+		isAutoFilling = new boolean[metadata.getNumFields()];
+		for (int i = 0; i < metadata.getNumFields(); i++) {
+			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
+		}
     }
 
     /* (non-Javadoc)

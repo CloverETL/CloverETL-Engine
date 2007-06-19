@@ -90,6 +90,8 @@ public class DataParser implements Parser {
 	
 	private Boolean trim = null; 
 	
+	private boolean[] isAutoFilling;
+	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		reader = null;
@@ -143,6 +145,7 @@ public class DataParser implements Parser {
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		tempReadBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		logString = new StringBuffer(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
+		isAutoFilling = new boolean[metadata.getNumFields()];
 
 		//save metadata
 		this.metadata = metadata;
@@ -159,6 +162,7 @@ public class DataParser implements Parser {
 					delimiterSearcher.addPattern(delimiters[j], i);
 				}
 			}
+			isAutoFilling[i] = metadata.getField(i).getAutoFilling() != null;
 		}
 
 		//aho-corasick initialize
@@ -264,7 +268,7 @@ public class DataParser implements Parser {
 		recordBuffer.clear();
 		for (fieldCounter = 0; fieldCounter < metadata.getNumFields(); fieldCounter++) {
 			// skip all fields that are internally filled 
-			if (metadata.getField(fieldCounter).getAutoFilling() != null) {
+			if (isAutoFilling[fieldCounter]) {
 				continue;
 			}
 			skipBlanks = skipLeadingBlanks
