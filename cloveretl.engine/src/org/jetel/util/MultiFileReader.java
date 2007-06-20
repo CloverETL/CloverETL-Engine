@@ -19,9 +19,11 @@
 */
 package org.jetel.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.ReadableByteChannel;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -68,6 +70,7 @@ public class MultiFileReader {
     private boolean noInputFile = false;
     
     private String filename;
+    private Date fileTimeStamp;
     private Map<DataRecordMetadata, AutoFillingData> autoFillingMap;
     private AutoFillingData autoFillingData;
     
@@ -148,6 +151,8 @@ public class MultiFileReader {
 			logger.debug("Opening input file " + filename);
 			try {
 				stream = FileUtils.getReadableChannel(contextURL, filename);
+				long timeStamp = new File(fileURL).lastModified();
+				fileTimeStamp = timeStamp == 0 ? null : new Date(timeStamp);				
 				logger.debug("Reading input file " + filename);
 				parser.setDataSource(stream);
 				if(fileSkip > 0) parser.skip(fileSkip);
@@ -234,6 +239,9 @@ public class MultiFileReader {
            	for (int i : autoFillingData.sourceName) {
            		rec.getField(i).setValue(filename);
            	}
+           	for (int i : autoFillingData.sourceTimeStamp) {
+           		rec.getField(i).setValue(fileTimeStamp);
+           	}
             globalCounter++;
             sourceCounter++;
             autoFillingData.counter++;
@@ -294,6 +302,9 @@ public class MultiFileReader {
            	for (int i : autoFillingData.sourceName) {
            		rec.getField(i).setValue(filename);
            	}
+           	for (int i : autoFillingData.sourceTimeStamp) {
+           		rec.getField(i).setValue(fileTimeStamp);
+           	}
             globalCounter++;
             sourceCounter++;
             autoFillingData.counter++;
@@ -312,8 +323,9 @@ public class MultiFileReader {
 	
 	private class AutoFillingData {
 	    private int[] globalRowCount;	// number of returned records for every getNext method
-	    private int[] sourceName;
 	    private int[] sourceRowCount;
+	    private int[] sourceName;
+	    private int[] sourceTimeStamp;
 
 	    private int counter; // number of returned records for one metadata
 	    private int[] metadataRowCount;
@@ -329,9 +341,11 @@ public class MultiFileReader {
         int[] metadataRowCountTmp = new int[numFields];
         int[] metadataSourceRowCountTmp = new int[numFields];
         int[] sourceNameTmp = new int[numFields];
+        int[] sourceTimeStampTmp = new int[numFields];
         AutoFillingData data = new AutoFillingData();
         int globalRowCountLen = 0;
         int sourceNameLen = 0;
+        int sourceTimeStampLen = 0;
 	    int sourceRowCountLen = 0;
 	    int metadataRowCountLen = 0;
 	    int metadataSourceRowCountLen = 0;
@@ -342,6 +356,7 @@ public class MultiFileReader {
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_row_count")) metadataRowCountTmp[metadataRowCountLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_source_row_count")) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_name")) sourceNameTmp[sourceNameLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_time_stamp")) sourceTimeStampTmp[sourceTimeStampLen++] = i;
         	}
         }
         data.globalRowCount = new int[globalRowCountLen];
@@ -349,12 +364,14 @@ public class MultiFileReader {
         data.metadataRowCount = new int[metadataRowCountLen];
         data.metadataSourceRowCount = new int[metadataSourceRowCountLen];
         data.sourceName = new int[sourceNameLen];
+        data.sourceTimeStamp = new int[sourceTimeStampLen];
         // reduce arrays' sizes
         System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
         System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
         System.arraycopy(metadataRowCountTmp, 0, data.metadataRowCount, 0, metadataRowCountLen);
         System.arraycopy(metadataSourceRowCountTmp, 0, data.metadataSourceRowCount, 0, metadataSourceRowCountLen);
         System.arraycopy(sourceNameTmp, 0, data.sourceName, 0, sourceNameLen);
+        System.arraycopy(sourceTimeStampTmp, 0, data.sourceTimeStamp, 0, sourceTimeStampLen);
         
         autoFillingMap.put(metadata, data);
         return data;
