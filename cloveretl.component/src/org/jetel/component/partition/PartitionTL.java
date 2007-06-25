@@ -27,7 +27,6 @@ import org.apache.commons.logging.Log;
 import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.graph.TransformationGraph;
@@ -67,8 +66,7 @@ public class PartitionTL implements PartitionFunction {
 	 * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
 	 */
 	public int getOutputPort(DataRecord record) {
-		return ((CloverInteger)wrapper.executePreparedFunction(record, null))
-				.getInt();
+		return wrapper.executePreparedFunction(record, null).getInt();
 	}
 
 	/* (non-Javadoc)

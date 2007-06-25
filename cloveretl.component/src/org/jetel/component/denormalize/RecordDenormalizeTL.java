@@ -26,6 +26,7 @@ import org.jetel.component.WrapperTL;
 import org.jetel.data.DataRecord;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -68,7 +69,7 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 				new DataRecordMetadata[]{targetMetadata});
 		wrapper.setParameters(parameters);
 		wrapper.init();
-		Object result = null;
+		TLValue result = null;
 		try {
 			result = wrapper.execute(INIT_FUNCTION_NAME, null);
 		} catch (JetelException e) {
@@ -78,25 +79,25 @@ public class RecordDenormalizeTL implements RecordDenormalize {
 		addInpuRecordIdentifier = wrapper.prepareFunctionExecution(ADDINPUT_FUNCTION_NAME);
 		getOutputRecordIdentifier = wrapper.prepareFunctionExecution(GETOUTPUT_FUNCTION_NAME);
 		
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#addInputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean addInputRecord(DataRecord inRecord) {
-		Object result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
+		TLValue result = wrapper.executePreparedFunction(addInpuRecordIdentifier , 
 				inRecord, null);
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordDenormalize#getOutputRecord(org.jetel.data.DataRecord)
 	 */
 	public boolean getOutputRecord(DataRecord outRecord) {
-		Object result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
+		TLValue result = wrapper.executePreparedFunction(getOutputRecordIdentifier, 
 				null, new DataRecord[]{outRecord},null);
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
 	}
 
 	/* (non-Javadoc)
