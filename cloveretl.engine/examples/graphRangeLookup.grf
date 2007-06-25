@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Tue Apr 17 10:02:41 CEST 2007" name="graphRangeLookup" revision="1.15">
+<Graph created="Mon Apr 16 10:51:00 CEST 2007" description="This graph ilustrates usage of range lookup table" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Mon Jun 25 11:55:51 CEST 2007" name="graphRangeLookup" revision="1.23">
 <Global>
 <Metadata id="Metadata1">
 <Record name="person" recordSize="-1" type="delimited">
@@ -9,7 +9,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata2">
-<Record name="personAtTime" recordDelimiter="" recordSize="-1" type="delimited">
+<Record name="personAtTime" recordSize="-1" type="delimited">
 <Field delimiter=";" name="name" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" format="dd.MM.yyyy" name="date" nullable="true" shift="0" type="date"/>
 <Field delimiter=";" format="##.00" name="time" nullable="true" shift="0" type="numeric"/>
@@ -28,30 +28,24 @@
 </Record>
 </Metadata>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
-<LookupTable id="LookupTable0" metadata="Metadata0" name="Tour schedule" type="rangeLookup">
-<attr name="useI18N">true</attr>
-<attr name="startInclude">true,true,true</attr>
-<attr name="endInclude">true,true,true</attr>
-<attr name="dataType">delimited</attr>
-<attr name="charset">ISO-8859-1</attr>
-</LookupTable>
+<LookupTable dataType="delimited" endFields="dateEnd;timeEnd;nameEnd" endInclude="true;true;true" id="LookupTable0" metadata="Metadata0" name="Tour schedule" startFields="dateStart;timeStart;nameStart" startInclude="true;true;true" type="rangeLookup" useI18N="true"/>
 </Global>
 <Phase number="0">
 <Node enabled="enabled" freeLookupTable="false" guiHeight="0" guiName="Lookup table reader/writer" guiWidth="0" guiX="260" guiY="74" id="LOOKUP_TABLE_READER_WRITER0" lookupTable="LookupTable0" type="LOOKUP_TABLE_READER_WRITER"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/other/TourSchedule.xls" guiHeight="0" guiName="XLS Data Reader" guiWidth="0" guiX="62" guiY="74" id="XLS_READER0" sheetNumber="0" type="XLS_READER"/>
-<Edge fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="0 (Lookup table reader/writer)" metadata="Metadata0" outPort="0 (XLS Data Reader)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
+<Edge debugMode="false" fromNode="XLS_READER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="LOOKUP_TABLE_READER_WRITER0:0"/>
 </Phase>
 <Phase number="1">
 <Node enabled="enabled" fileURL="${WORKSPACE}/output/peopleAtTour.out" guiHeight="0" guiName="Universal Data Writer" guiWidth="0" guiX="483" guiY="223" id="DATA_WRITER0" type="DATA_WRITER"/>
 <Node enabled="enabled" fileURL="${WORKSPACE}/data/delimited/peoplesOnTour.dat" guiHeight="0" guiName="Delimited Data Reader" guiWidth="0" guiX="63" guiY="223" id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
 <Node enabled="enabled" guiHeight="0" guiName="Lookup Join" guiWidth="0" guiX="261" guiY="223" id="LOOKUP_JOIN0" joinKey="date;time;name" lookupTable="LookupTable0" type="LOOKUP_JOIN">
-<attr name="transform">${out.0.name} = ${in.0.name};
+<attr name="transform"><![CDATA[${out.0.name} = ${in.0.name};
 ${out.0.date} = ${in.0.date};
 ${out.0.time} = ${in.0.time};
 ${out.0.activity} = ${in.1.name};
-</attr>
+]]></attr>
 </Node>
-<Edge fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="0 (Lookup Join)" metadata="Metadata1" outPort="0 (Delimited Data Reader)" toNode="LOOKUP_JOIN0:0"/>
-<Edge fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="0 (Universal Data Writer)" metadata="Metadata2" outPort="0 (Lookup Join)" toNode="DATA_WRITER0:0"/>
+<Edge debugMode="false" fromNode="DELIMITED_DATA_READER0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="LOOKUP_JOIN0:0"/>
+<Edge debugMode="false" fromNode="LOOKUP_JOIN0:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="DATA_WRITER0:0"/>
 </Phase>
 </Graph>
