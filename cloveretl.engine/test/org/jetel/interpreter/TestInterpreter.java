@@ -48,6 +48,7 @@ import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLValue;
@@ -345,7 +346,10 @@ public class TestInterpreter extends TestCase {
 						"string fieldName; fieldName=$Name; print_err(fieldName);\n"+
 						"string fieldCity; fieldCity=$City; print_err(fieldCity);\n"+
 						"string longString; longString=\""+tmp+"\"; print_err(longString);\n"+
-						"string specialChars; specialChars='a\u0101\u0102A'; print_err(specialChars);";
+						"string specialChars; specialChars='a\u0101\u0102A'; print_err(specialChars);\n" +
+						"string empty=\"\";print_err(empty+specialChars);\n" +
+						"print_err(\"\"+specialChars);\n" +
+						"print_err(concat('', specialChars));\n";
 	      print_code(expStr);
 		
 		try {
@@ -1612,8 +1616,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
-		      assertEquals(0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
+		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -2057,6 +2060,44 @@ public class TestInterpreter extends TestCase {
     }
     
     
+    public void test_function(){
+        System.out.println("\nFunction test:");
+        String expStr = "function myFunction(idx){\n" +
+        		"if (idx==1) print_err('idx equals 1'); else print_err('idx does not equal 1');}\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+              CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
+              executor.executeFunction(function, new CloverInteger[]{new CloverInteger(1)});
+    
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Parse exception",e);
+        }
+              
+    }
+
     public void print_code(String text){
         String[] lines=text.split("\n");
         System.out.println("\t:         1         2         3         4         5         ");
