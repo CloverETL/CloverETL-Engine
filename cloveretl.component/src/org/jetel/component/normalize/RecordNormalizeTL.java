@@ -28,6 +28,7 @@ import org.jetel.data.primitive.CloverInteger;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -70,7 +71,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 				new DataRecordMetadata[]{targetMetadata});
 		wrapper.setParameters(parameters);
 		wrapper.init();
-		Object result = null;
+		TLValue result = null;
 		try {
 			result = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
@@ -80,15 +81,14 @@ public class RecordNormalizeTL implements RecordNormalize {
 		lenghtFunctionIdentifier = wrapper.prepareFunctionExecution(LENGTH_FUNCTION_NAME);
 		transformFunctionIdentifier = wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
 	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.component.RecordNormalize#count(org.jetel.data.DataRecord)
 	 */
 	public int count(DataRecord source) {
-		return ((CloverInteger)wrapper.executePreparedFunction(lenghtFunctionIdentifier,
-				source,null)).getInt();
+		return wrapper.executePreparedFunction(lenghtFunctionIdentifier,source,null).getInt();
 	}
 
 	/* (non-Javadoc)
@@ -96,10 +96,10 @@ public class RecordNormalizeTL implements RecordNormalize {
 	 */
 	public boolean transform(DataRecord source, DataRecord target, int idx)
 			throws TransformException {
-		Object result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
+		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				new DataRecord[]{source}, new DataRecord[]{target}, 
-				new Object[]{new CloverInteger(idx)});
-		return result == null ? true : (Boolean)result;
+				new CloverInteger[]{new CloverInteger(idx)});
+		return result == null ? true : result.getBoolean();
 	}
 
 	/* (non-Javadoc)
