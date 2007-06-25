@@ -27,6 +27,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -73,7 +74,7 @@ public class RecordTransformTL implements RecordTransform {
 	        wrapper.setGraph(graph);
 		}
 		wrapper.init();
-		Object result = null;
+		TLValue result = null;
 		try {
 			result = wrapper.execute(INIT_FUNCTION_NAME,null);
 		} catch (JetelException e) {
@@ -82,15 +83,15 @@ public class RecordTransformTL implements RecordTransform {
 		
 		wrapper.prepareFunctionExecution(TRANSFORM_FUNCTION_NAME);
 		
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
  	}
 
 	
 	public  boolean transform(DataRecord[] inputRecords, DataRecord[] outputRecords)
 			throws TransformException{
-		Object result = wrapper.executePreparedFunction(inputRecords,
+		TLValue result = wrapper.executePreparedFunction(inputRecords,
 				outputRecords,null);
-		return result == null ? true : (Boolean)result;
+		return result == null ? true : result.getBoolean();
     }
 	
 

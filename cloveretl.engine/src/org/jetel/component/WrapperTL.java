@@ -35,6 +35,7 @@ import org.jetel.interpreter.TransformLangExecutor;
 import org.jetel.interpreter.TransformLangParser;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
+import org.jetel.interpreter.data.TLValue;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -214,7 +215,7 @@ public class WrapperTL {
 	 * @return result of executing function
 	 * @throws JetelException
 	 */
-	public Object execute(String functionName, DataRecord[] inputRecords, 
+	public TLValue execute(String functionName, DataRecord[] inputRecords, 
 			DataRecord[] outputRecords, Object[] data) throws JetelException{
 		CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
 		if (function == null) {//function with given name not found
@@ -241,7 +242,7 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Object execute(String functionName, DataRecord inRecord, Object[] data)
+	public TLValue execute(String functionName, DataRecord inRecord, Object[] data)
 			throws JetelException{
 		return execute(functionName, new DataRecord[]{inRecord}, null, data);
 	}
@@ -254,7 +255,7 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public Object execute(String functionName, Object[] data)throws JetelException{
+	public TLValue execute(String functionName, Object[] data)throws JetelException{
 		return execute(functionName, null, null, data);
 	}
 
@@ -289,7 +290,7 @@ public class WrapperTL {
 	 * @param data function parameters
 	 * @return
 	 */
-	public Object executePreparedFunction(int functionNumber, 
+	public TLValue executePreparedFunction(int functionNumber, 
 			DataRecord[] inputRecords, DataRecord[] outputRecords, Object[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
@@ -312,7 +313,7 @@ public class WrapperTL {
 	 * @param data function parameters
 	 * @return
 	 */
-	public Object executePreparedFunction(DataRecord[] inputRecords, 
+	public TLValue executePreparedFunction(DataRecord[] inputRecords, 
 			DataRecord[] outputRecords, Object[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
@@ -333,7 +334,7 @@ public class WrapperTL {
 	 * @param inRecord
 	 * @return
 	 */
-	public Object executePreparedFunction(int functionNumber, DataRecord inRecord,
+	public TLValue executePreparedFunction(int functionNumber, DataRecord inRecord,
 			Object[] data){
 		return executePreparedFunction(functionNumber, 
 				new DataRecord[]{inRecord}, null, data);
@@ -345,15 +346,15 @@ public class WrapperTL {
 	 * @param inRecord
 	 * @return
 	 */
-	public Object executePreparedFunction(DataRecord inRecord, Object[] data){
+	public TLValue executePreparedFunction(DataRecord inRecord, Object[] data){
 		return executePreparedFunction(new DataRecord[]{inRecord}, null, data);
 	}
 
-	public Object executePreparedFunction(int functionNumber, Object[] data){
+	public TLValue executePreparedFunction(int functionNumber, Object[] data){
 		return executePreparedFunction(functionNumber, null, null, data);
 	}
 
-	public Object executePreparedFunction(Object[] data){
+	public TLValue executePreparedFunction(Object[] data){
 		return executePreparedFunction(null, null, data);
 	}
 	/**
@@ -361,7 +362,7 @@ public class WrapperTL {
 	 * 
 	 * @return
 	 */
-	public Object executePreparedFunction(int functionNumber){
+	public TLValue executePreparedFunction(int functionNumber){
 		return executePreparedFunction(null, null);
 	}
 	
@@ -370,7 +371,7 @@ public class WrapperTL {
 	 * 
 	 * @return
 	 */
-	public Object executePreparedFunction(){
+	public TLValue executePreparedFunction(){
 		return executePreparedFunction(null, null);
 	}
 
