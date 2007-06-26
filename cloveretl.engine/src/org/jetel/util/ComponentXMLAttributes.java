@@ -74,6 +74,8 @@ import org.apache.commons.logging.Log;
 
 public class ComponentXMLAttributes {
 
+    private static final String STR_MAX_SHORT="MAX_SHORT";
+    private static final String STR_MIN_SHORT="MIN_SHORT";
     private static final String STR_MAX_INT="MAX_INT";
     private static final String STR_MIN_INT="MIN_INT";
     private static final String STR_MAX_LONG="MAX_LONG";
@@ -243,8 +245,6 @@ public class ComponentXMLAttributes {
 		return Integer.parseInt(value);
 	}
 
-
-
 	/**
 	 *  Returns the int value of specified XML attribute
 	 *
@@ -270,6 +270,39 @@ public class ComponentXMLAttributes {
 	    }
 	}
     
+	public short getShort(String key) throws AttributeNotFoundException {
+        String value=nodeXML.getAttribute(key);
+        if (value.length()==0){
+            throw new AttributeNotFoundException(key);
+        }
+        value = refResolver.resolveRef(value);
+        if (value.equalsIgnoreCase(STR_MIN_INT)){
+            return Short.MIN_VALUE;
+        }else if (value.equalsIgnoreCase(STR_MAX_INT)){
+            return Short.MAX_VALUE;
+        }
+		return Short.parseShort(value);
+	}
+
+	public short getShort(String key, short defaultValue) {
+	    String value=nodeXML.getAttribute(key);
+	    if (value.length()==0){
+	        return defaultValue;
+	    }
+	    try{
+	        value = refResolver.resolveRef(value);
+	        if (value.equalsIgnoreCase(STR_MIN_INT)){
+	            return Short.MIN_VALUE;
+	        }else if (value.equalsIgnoreCase(STR_MAX_INT)){
+	            return Short.MAX_VALUE;
+	        }
+			return Short.parseShort(value);
+	    } catch (NumberFormatException ex) {
+	        return defaultValue;
+	    }
+	}
+    
+
    
     
     /**
