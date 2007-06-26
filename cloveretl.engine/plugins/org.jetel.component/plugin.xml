@@ -263,11 +263,6 @@
 	</extension>
 
 	<extension point-id="component">
-		<parameter id="type" value="MEMSEQNO_INCREMENT"/>
-		<parameter id="className" value="org.jetel.component.MemSeqNoIncrementer"/>
-	</extension>
-
-	<extension point-id="component">
 		<parameter id="type" value="XML_XPATH_READER"/>
 		<parameter id="className" value="org.jetel.component.XmlXPathReader"/>
 	</extension>
