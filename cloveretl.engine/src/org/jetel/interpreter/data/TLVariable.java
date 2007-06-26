@@ -100,7 +100,9 @@ public class TLVariable {
     }
     
     public void setValue(TLValue value) {
+    	//small hack
         if (this.value.type!=value.type&&this.value.type.isNumeric()) {
+            this.value=TLValue.create(this.value.type);
             this.value.getNumeric().setValue(value.getNumeric());
         }else {
             this.value=value;
