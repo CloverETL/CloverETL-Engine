@@ -287,6 +287,7 @@ TOKEN: {
 | <MODULO: "%" >
 | <INCR: "++" >
 | <DECR: "--" >
+| <TILDA: "~" >
 }
 
 /* Clover Field Identifiers */
@@ -300,11 +301,6 @@ TOKEN: {
   | < REC_NUM_FIELD_ID:  "$" <DIGIT> (<DIGIT>)* "." (<LETTER>|<UNDERSCORE>) (<LETTER>|<DIGIT>|<UNDERSCORE>)* >
 }
 
-
-/* CloverParameter Identifier */
-TOKEN: {
-  < GLOBAL_PARAMETER_ID: "$" "{" <LETTER> (<LETTER>|<DIGIT>|<UNDERSCORE>)* "}"	>
-}
 
 /* Parenthesis */
 TOKEN: {
@@ -610,6 +606,46 @@ void MultiplicativeExpression() #void : {}
   )*
 }
 
+
+
+
+void PostfixOp() #Operator :
+{
+  Token t;
+}
+{
+  ( <INCR> | <DECR>)
+  {
+    jjtThis.setOperator(getToken(0).kind);
+  }
+}
+void PostfixExpression() #PostfixExpression(>1) :
+{}
+{
+	PrimaryExpression()  [ PostfixOp() ] 
+}
+
+
+void UnaryOp() #Operator :
+{
+  Token t;
+}
+{ 
+  (  <INCR> | <DECR> | <PLUS> | <MINUS> | <TILDA> | <NOT> )
+  {
+    jjtThis.setOperator(getToken(0).kind);
+  }
+}
+void UnaryExpression() #UnaryExpression(>1) :
+{}
+{ 
+	
+	 PostfixExpression()
+	|	UnaryOp() UnaryExpression()
+}
+
+
+/*  OLD CODE
 void UnaryExpression() #void :
 {}
 {
@@ -620,20 +656,15 @@ void UnaryExpression() #void :
 	 
 	 
 } 
-
+*/
 
 void PrimaryExpression() #void : {}
 {
 	 LOOKAHEAD(3) FunctionCall()
-	 |LOOKAHEAD(3) SymbolNameExp()
+	 | SymbolNameExp()
      |LitExp()
-     | LOOKAHEAD(3) VarExp() <INCR>  #PlusPlusNode(1)
-	 | LOOKAHEAD(3) VarExp() <DECR>  #MinusMinusNode(1)
-	// | LOOKAHEAD(3) <INCR> VarExp()   #PlusPlusNode(1)
-	// | LOOKAHEAD(3)<DECR> VarExp()   #MinusMinusNode(1)
 	 |VarExp()
      |InputFieldExp()
-     |GlobalParameterExp()
      |<OPEN_PAR> Expression() <CLOSE_PAR>
    
   
@@ -688,13 +719,6 @@ void OutputFieldExp() #void :// IDExp -> ID
   | t = <REC_NUM_FIELD_ID> { jjtThis.setRecordNumFieldName(t.image); } #OutputFieldLiteral
 }
 */
-void GlobalParameterExp() #void :           
-{
-	Token t;
-}
-{
-  t=<GLOBAL_PARAMETER_ID> { jjtThis.setParameterName(t.image.substring(2,t.image.length()-1)); } #GlobalParameterLiteral
-}
 
 
 void VarExp() #VariableLiteral :
@@ -815,6 +839,7 @@ void Statement() #void :
 		   ReturnStatement()
 		| 
 		  StatementExpression()
+		  
 		
 		  )
 	}catch (ParseException e) {
@@ -847,9 +872,12 @@ void StatementExpression() #void :
 {
 	
    (
-   	LOOKAHEAD(<INCR>)IncrStatement()
-   |LOOKAHEAD(<DECR>)DecrStatement()
-   |LOOKAHEAD(2) Assignment() 
+ //	 IncrStatement()
+ //  |LOOKAHEAD(<DECR>)DecrStatement()
+ //  |
+ 	LOOKAHEAD(2) Assignment() 
+ 	| LOOKAHEAD(2)  IncrStatement() 
+ 	| LOOKAHEAD(2)  DecrStatement() 
    |FunctionCall() 
    ) ";"
 }
@@ -858,14 +886,14 @@ void IncrStatement() #PlusPlusNode(1):
 {}
 {
 	(  VarExp() <INCR> {jjtThis.setPrefix(false); }
-	 |  <INCR> VarExp() {jjtThis.setPrefix(true); }) { jjtThis.setStatementExpr(true); }
+	 /*|  <INCR> VarExp() {jjtThis.setPrefix(true); } */) { jjtThis.setStatementExpr(true); }
 }
 
 void DecrStatement() #MinusMinusNode(1):
 {}
 {
 	( VarExp() <DECR> {jjtThis.setPrefix(false); }
-	| <DECR> VarExp() {jjtThis.setPrefix(true); }) { jjtThis.setStatementExpr(true); }
+	/* | <DECR> VarExp() {jjtThis.setPrefix(true); } */) { jjtThis.setStatementExpr(true); }
 		 
 }
 
