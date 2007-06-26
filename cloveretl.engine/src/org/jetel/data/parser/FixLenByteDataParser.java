@@ -70,6 +70,7 @@ public class FixLenByteDataParser extends FixLenDataParser {
 	protected DataRecord parseNext(DataRecord record) throws JetelException {
 		if (getData(recordLength) != recordLength) {
 			if (byteBuffer.remaining() != 0) {
+				byteBuffer.position(byteBuffer.remaining());
 				throw new BadDataFormatException("Incomplete record data");
 			} else {
 				return null;
