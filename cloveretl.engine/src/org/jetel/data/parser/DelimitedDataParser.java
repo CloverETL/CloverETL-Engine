@@ -418,10 +418,14 @@ public class DelimitedDataParser implements Parser {
 				}
 				if ((character == -1) && (totalCharCounter > 1)) {
 					//- incomplete record - do something
-					throw new RuntimeException("Incomplete record");
+					BadDataFormatException exception = new BadDataFormatException("Incomplete record");
+					exception.setRecordNumber(recordCounter);
+					exception.setFieldNumber(fieldCounter);
+					throw exception;
 				}
+			} catch (BadDataFormatException ex) {
+                throw ex;
 			} catch (Exception ex) {
-                ex.printStackTrace();
 				throw new RuntimeException(getErrorMessage(ex.getClass().getName()+":"+ex.getMessage(),null, 
 				        	recordCounter, fieldCounter),ex);
 			}
