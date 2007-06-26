@@ -29,6 +29,7 @@ import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.TransformException;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.metadata.DataRecordMetadata;
 
 /**
@@ -98,7 +99,7 @@ public class RecordNormalizeTL implements RecordNormalize {
 			throws TransformException {
 		TLValue result = wrapper.executePreparedFunction(transformFunctionIdentifier, 
 				new DataRecord[]{source}, new DataRecord[]{target}, 
-				new CloverInteger[]{new CloverInteger(idx)});
+				new TLValue[]{new TLValue(TLValueType.INTEGER, new CloverInteger(idx))});
 		return result == null ? true : result.getBoolean();
 	}
 
