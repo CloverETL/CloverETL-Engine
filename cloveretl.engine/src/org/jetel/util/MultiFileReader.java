@@ -94,7 +94,7 @@ public class MultiFileReader {
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
         parser.init(metadata);
         autoFillingMap = new HashMap<DataRecordMetadata, AutoFillingData>();
-        autoFillingData = addAutoFillingFields(metadata);
+    	if (metadata != null) autoFillingData = addAutoFillingFields(metadata);
         
         WcardPattern pat = new WcardPattern();
         pat.addPattern(fileURL, Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
