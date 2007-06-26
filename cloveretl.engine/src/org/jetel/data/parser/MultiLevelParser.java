@@ -249,16 +249,22 @@ public class MultiLevelParser extends FixLenDataParser {
 			}
 			fieldCnt[metaIdx] = metadata[metaIdx].getNumFields();
 	
-			recordLength[metaIdx] = metadata[metaIdx].getRecordSize();
+			recordLength[metaIdx] = metadata[metaIdx].getRecordSizeStripAutoFilling();
+			isAutoFilling = new boolean[fieldCnt[metaIdx]];
 			fieldStart[metaIdx] = new int[fieldCnt[metaIdx]];
 			fieldEnd[metaIdx] = new int[fieldCnt[metaIdx]];
 			int prevEnd = 0;
 			for (int fieldIdx = 0; fieldIdx < metadata[metaIdx].getNumFields(); fieldIdx++) {
-				fieldStart[metaIdx][fieldIdx] = prevEnd + metadata[metaIdx].getField(fieldIdx).getShift();
-				fieldEnd[metaIdx][fieldIdx] = fieldStart[metaIdx][fieldIdx] + metadata[metaIdx].getField(fieldIdx).getSize();
-				prevEnd = fieldEnd[metaIdx][fieldIdx];
-				if (fieldStart[metaIdx][fieldIdx] < 0 || fieldEnd[metaIdx][fieldIdx] > recordLength[metaIdx]) {
-					throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+				if (isAutoFilling[fieldIdx] = metadata[metaIdx].getField(fieldIdx).getAutoFilling() != null) {
+					fieldStart[metaIdx][fieldIdx] = prevEnd;
+					fieldEnd[metaIdx][fieldIdx] = prevEnd;
+				} else {
+					fieldStart[metaIdx][fieldIdx] = prevEnd + metadata[metaIdx].getField(fieldIdx).getShift();
+					fieldEnd[metaIdx][fieldIdx] = fieldStart[metaIdx][fieldIdx] + metadata[metaIdx].getField(fieldIdx).getSize();
+					prevEnd = fieldEnd[metaIdx][fieldIdx];
+					if (fieldStart[metaIdx][fieldIdx] < 0 || fieldEnd[metaIdx][fieldIdx] > recordLength[metaIdx]) {
+						throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+					}
 				}
 			}
 			record[metaIdx] = new DataRecord(metadata[metaIdx]);

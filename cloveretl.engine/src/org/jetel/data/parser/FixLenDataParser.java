@@ -100,19 +100,23 @@ public abstract class FixLenDataParser implements Parser {
 		recordIdx = 0;
 		fieldIdx = 0;
 
-		recordLength = metadata.getRecordSize();
+		recordLength = metadata.getRecordSizeStripAutoFilling();
 		fieldStart = new int[fieldCnt];
 		fieldEnd = new int[fieldCnt];
 		isAutoFilling = new boolean[fieldCnt];
 		int prevEnd = 0;
 		for (int fieldIdx = 0; fieldIdx < metadata.getNumFields(); fieldIdx++) {
-			fieldStart[fieldIdx] = prevEnd + metadata.getField(fieldIdx).getShift();
-			fieldEnd[fieldIdx] = fieldStart[fieldIdx] + metadata.getField(fieldIdx).getSize();
-			prevEnd = fieldEnd[fieldIdx];
-			if (fieldStart[fieldIdx] < 0 || fieldEnd[fieldIdx] > recordLength) {
-				throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+			if (isAutoFilling[fieldIdx] = metadata.getField(fieldIdx).getAutoFilling() != null) {
+				fieldStart[fieldIdx] = prevEnd;
+				fieldEnd[fieldIdx] = prevEnd;
+			} else {
+				fieldStart[fieldIdx] = prevEnd + metadata.getField(fieldIdx).getShift();
+				fieldEnd[fieldIdx] = fieldStart[fieldIdx] + metadata.getField(fieldIdx).getSize();
+				prevEnd = fieldEnd[fieldIdx];
+				if (fieldStart[fieldIdx] < 0 || fieldEnd[fieldIdx] > recordLength) {
+					throw new ComponentNotReadyException("field boundaries cannot be outside record boundaries");
+				}
 			}
-			isAutoFilling[fieldIdx] = metadata.getField(fieldIdx).getAutoFilling() != null;
 		}
 	}
 
