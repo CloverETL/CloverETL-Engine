@@ -216,7 +216,7 @@ public class WrapperTL {
 	 * @throws JetelException
 	 */
 	public TLValue execute(String functionName, DataRecord[] inputRecords, 
-			DataRecord[] outputRecords, Object[] data) throws JetelException{
+			DataRecord[] outputRecords, TLValue[] data) throws JetelException{
 		CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get(functionName);
 		if (function == null) {//function with given name not found
 			throw new JetelException("Function " + functionName + " not found");
@@ -242,7 +242,7 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public TLValue execute(String functionName, DataRecord inRecord, Object[] data)
+	public TLValue execute(String functionName, DataRecord inRecord, TLValue[] data)
 			throws JetelException{
 		return execute(functionName, new DataRecord[]{inRecord}, null, data);
 	}
@@ -255,7 +255,7 @@ public class WrapperTL {
 	 * @return
 	 * @throws JetelException
 	 */
-	public TLValue execute(String functionName, Object[] data)throws JetelException{
+	public TLValue execute(String functionName, TLValue[] data)throws JetelException{
 		return execute(functionName, null, null, data);
 	}
 
@@ -291,7 +291,7 @@ public class WrapperTL {
 	 * @return
 	 */
 	public TLValue executePreparedFunction(int functionNumber, 
-			DataRecord[] inputRecords, DataRecord[] outputRecords, Object[] data){
+			DataRecord[] inputRecords, DataRecord[] outputRecords, TLValue[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
 			executor.setInputRecords(inputRecords);
@@ -314,7 +314,7 @@ public class WrapperTL {
 	 * @return
 	 */
 	public TLValue executePreparedFunction(DataRecord[] inputRecords, 
-			DataRecord[] outputRecords, Object[] data){
+			DataRecord[] outputRecords, TLValue[] data){
 		//set input and output records (if given)
 		if (inputRecords != null) {
 			executor.setInputRecords(inputRecords);
@@ -335,7 +335,7 @@ public class WrapperTL {
 	 * @return
 	 */
 	public TLValue executePreparedFunction(int functionNumber, DataRecord inRecord,
-			Object[] data){
+			TLValue[] data){
 		return executePreparedFunction(functionNumber, 
 				new DataRecord[]{inRecord}, null, data);
 	}
@@ -346,15 +346,15 @@ public class WrapperTL {
 	 * @param inRecord
 	 * @return
 	 */
-	public TLValue executePreparedFunction(DataRecord inRecord, Object[] data){
+	public TLValue executePreparedFunction(DataRecord inRecord, TLValue[] data){
 		return executePreparedFunction(new DataRecord[]{inRecord}, null, data);
 	}
 
-	public TLValue executePreparedFunction(int functionNumber, Object[] data){
+	public TLValue executePreparedFunction(int functionNumber, TLValue[] data){
 		return executePreparedFunction(functionNumber, null, null, data);
 	}
 
-	public TLValue executePreparedFunction(Object[] data){
+	public TLValue executePreparedFunction(TLValue[] data){
 		return executePreparedFunction(null, null, data);
 	}
 	/**

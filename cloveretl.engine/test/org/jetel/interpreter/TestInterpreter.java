@@ -52,6 +52,7 @@ import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.data.TLValue;
+import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -2088,7 +2089,8 @@ public class TestInterpreter extends TestCase {
               System.out.println("Finished interpreting.");
               
               CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
-              executor.executeFunction(function, new CloverInteger[]{new CloverInteger(1)});
+              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
+              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
     
         } catch (ParseException e) {
             System.err.println(e.getMessage());

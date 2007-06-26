@@ -1599,10 +1599,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    public Object executeFunction(CLVFFunctionDeclaration executionNode, Object[] data) {
+    public Object executeFunction(CLVFFunctionDeclaration executionNode, TLValue[] data) {
         //put call parameters on stack
         if (data==null){
-            data=new Object[0];
+            data=new TLValue[0];
         }
         //TODO - check for function call parameter types
         
@@ -1610,7 +1610,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         stack.pushFuncCallFrame();
         // store call parameters from stack as local variables
         for (int i=executionNode.numParams-1;i>=0; i--) {
-        	stack.storeLocalVar(i, new TLVariable(executionNode.varNames[i], new TLValue(TLValueType.OBJECT,data[i])));
+        	stack.storeLocalVar(i, new TLVariable(executionNode.varNames[i], data[i]));
         }
        
         // execute function body
