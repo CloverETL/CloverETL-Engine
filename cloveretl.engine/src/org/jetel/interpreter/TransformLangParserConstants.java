@@ -45,10 +45,10 @@ public interface TransformLangParserConstants {
   int MODULO = 53;
   int INCR = 54;
   int DECR = 55;
-  int FIELD_ID = 56;
-  int REC_NAME_FIELD_ID = 57;
-  int REC_NUM_FIELD_ID = 58;
-  int GLOBAL_PARAMETER_ID = 59;
+  int TILDA = 56;
+  int FIELD_ID = 57;
+  int REC_NAME_FIELD_ID = 58;
+  int REC_NUM_FIELD_ID = 59;
   int OPEN_PAR = 60;
   int CLOSE_PAR = 61;
   int INT_VAR = 62;
@@ -86,9 +86,9 @@ public interface TransformLangParserConstants {
   int MINUTE = 94;
   int SECOND = 95;
   int MILLISEC = 96;
-  int DATE_FIELD_LITERAL = 135;
-  int IDENTIFIER = 136;
-  int ERROR = 137;
+  int DATE_FIELD_LITERAL = 134;
+  int IDENTIFIER = 135;
+  int ERROR = 136;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -153,10 +153,10 @@ public interface TransformLangParserConstants {
     "\"%\"",
     "\"++\"",
     "\"--\"",
+    "\"~\"",
     "<FIELD_ID>",
     "<REC_NAME_FIELD_ID>",
     "<REC_NUM_FIELD_ID>",
-    "<GLOBAL_PARAMETER_ID>",
     "\"(\"",
     "\")\"",
     "\"int\"",
@@ -199,7 +199,6 @@ public interface TransformLangParserConstants {
     "\"}\"",
     "\"=\"",
     "\":\"",
-    "\"size\"",
     "\"[\"",
     "\"]\"",
     "\"isnull\"",
