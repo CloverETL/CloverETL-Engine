@@ -224,16 +224,16 @@ public class AggregateMappingParser {
 		try {
 			function = registry.getFunction(functionName).newInstance();
 		} catch (Exception e) {
-			throw new AggregationException("Cannot instantiate aggregation function " + functionName
+			throw new AggregationException("Cannot instantiate aggregation function " + functionName + "()"
 					+ " : " + e.getMessage(), e);
 		}
 		
 		if (!function.requiresInputField() && (inputField != null)) {
-			throw new AggregationException("Function " + function.getName() 
-					+ " doesn't accept any field as a parameter: " + inputField);
+			throw new AggregationException("Function " + function.getName() + "()"
+					+ " doesn't accept any field as a parameter");
 		}
 		if (function.requiresInputField() && (inputField == null)) {
-			throw new AggregationException("Function " + function.getName()
+			throw new AggregationException("Function " + function.getName() + "()"
 					+ " requires an input field as a parameter");
 		}
 		if (inputField != null) {
@@ -242,16 +242,16 @@ public class AggregateMappingParser {
 				function.checkInputFieldType(inputFieldMetadata);
 			} catch (AggregationException e) {
 				throw new AggregationException("Input field " + inputField + " has " +
-						"invalid type: " + e.getMessage());
+						"invalid type, " + e.getMessage());
 			}
 		}
 		
 		try {
 			function.checkOutputFieldType(outMetadata.getField(outputField));
 		} catch (AggregationException e) {
-			throw new AggregationException("Function " + function.getName() 
+			throw new AggregationException("Function " + function.getName() + "()"
 					+ ": output field " + outputField + " has " +
-					"invalid type: " + e.getMessage());
+					"invalid type, " + e.getMessage());
 		}
 	}
 	
