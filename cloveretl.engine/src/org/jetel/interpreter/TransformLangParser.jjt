@@ -620,9 +620,9 @@ void PostfixOp() #Operator :
   }
 }
 void PostfixExpression() #PostfixExpression(>1) :
-{}
+{Token t;}
 {
-	PrimaryExpression()  [ PostfixOp() ] 
+	PrimaryExpression() [ PostfixOp() ] // [ ( t=<INCR> | t=<DECR>) { jjtThis.setOperator(t.kind); } ] 
 }
 
 
@@ -644,19 +644,6 @@ void UnaryExpression() #UnaryExpression(>1) :
 	|	UnaryOp() UnaryExpression()
 }
 
-
-/*  OLD CODE
-void UnaryExpression() #void :
-{}
-{
-	 LOOKAHEAD(2) PrimaryExpression()
-	 | "-" PrimaryExpression() #MinusNode(1)
-	 | <NOT> UnaryExpression() #Negation(1)
-	 | "size" "(" VarExp() ")" #SizeNode(1)
-	 
-	 
-} 
-*/
 
 void PrimaryExpression() #void : {}
 {
@@ -872,29 +859,19 @@ void StatementExpression() #void :
 {
 	
    (
- //	 IncrStatement()
- //  |LOOKAHEAD(<DECR>)DecrStatement()
- //  |
- 	LOOKAHEAD(2) Assignment() 
- 	| LOOKAHEAD(2)  IncrStatement() 
- 	| LOOKAHEAD(2)  DecrStatement() 
-   |FunctionCall() 
+ 	
+	LOOKAHEAD( 2 )  IncrDecrStatement()
+	| LOOKAHEAD( 2 ) Assignment() 
+	|FunctionCall()
+	
    ) ";"
-}
-
-void IncrStatement() #PlusPlusNode(1):
-{}
+  }
+ 
+void IncrDecrStatement() #IncrDecrStatement():
+{Token t;}
 {
-	(  VarExp() <INCR> {jjtThis.setPrefix(false); }
-	 /*|  <INCR> VarExp() {jjtThis.setPrefix(true); } */) { jjtThis.setStatementExpr(true); }
-}
-
-void DecrStatement() #MinusMinusNode(1):
-{}
-{
-	( VarExp() <DECR> {jjtThis.setPrefix(false); }
-	/* | <DECR> VarExp() {jjtThis.setPrefix(true); } */) { jjtThis.setStatementExpr(true); }
-		 
+	VarExp() ( t=<INCR> | t=<DECR> ) {jjtThis.setKind(t.kind); } 
+	
 }
 
 void IfStatement() :

@@ -56,12 +56,12 @@ import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFIfStatement;
 import org.jetel.interpreter.ASTnode.CLVFIffNode;
 import org.jetel.interpreter.ASTnode.CLVFImportSource;
+import org.jetel.interpreter.ASTnode.CLVFIncrDecrStatement;
 import org.jetel.interpreter.ASTnode.CLVFInputFieldLiteral;
 import org.jetel.interpreter.ASTnode.CLVFIsNullNode;
 import org.jetel.interpreter.ASTnode.CLVFLiteral;
 import org.jetel.interpreter.ASTnode.CLVFLookupNode;
 import org.jetel.interpreter.ASTnode.CLVFMapping;
-import org.jetel.interpreter.ASTnode.CLVFMinusMinusNode;
 import org.jetel.interpreter.ASTnode.CLVFMinusNode;
 import org.jetel.interpreter.ASTnode.CLVFModNode;
 import org.jetel.interpreter.ASTnode.CLVFMulNode;
@@ -69,7 +69,6 @@ import org.jetel.interpreter.ASTnode.CLVFNVLNode;
 import org.jetel.interpreter.ASTnode.CLVFOperator;
 import org.jetel.interpreter.ASTnode.CLVFOr;
 import org.jetel.interpreter.ASTnode.CLVFOutputFieldLiteral;
-import org.jetel.interpreter.ASTnode.CLVFPlusPlusNode;
 import org.jetel.interpreter.ASTnode.CLVFPostfixExpression;
 import org.jetel.interpreter.ASTnode.CLVFPrintErrNode;
 import org.jetel.interpreter.ASTnode.CLVFPrintLogNode;
@@ -1196,40 +1195,21 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return Stack.FALSE_VAL;
     }
 
-    public Object visit(CLVFPlusPlusNode node, Object data) {
-        Node childNode = node.jjtGetChild(0);
-        if (node.statement) {
-            CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
-            TLVariable var=stack.getVar(varNode.localVar, varNode.varSlot);
-            if (var.getType().isNumeric()) {
-                var.getValue().getNumeric().add(Stack.NUM_ONE_P);
-            }else if (var.getType()==TLValueType.DATE) {
-                stack.calendar.setTime(var.getValue().getDate());
-                stack.calendar.add(Calendar.DATE, 1);
-                var.getValue().setValue(stack.calendar.getTime());
-            }else {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
-            }
-        }
-        
-        return data;
-    }
 
-    public Object visit(CLVFMinusMinusNode node, Object data) {
+    public Object visit(CLVFIncrDecrStatement node, Object data) {
         Node childNode = node.jjtGetChild(0);
-        if (node.statement) {
             CLVFVariableLiteral varNode=(CLVFVariableLiteral) childNode;
             TLVariable var=stack.getVar(varNode.localVar, varNode.varSlot);
+            
             if (var.getType().isNumeric()) {
-                var.getValue().getNumeric().sub(Stack.NUM_ONE_P);
+                var.getValue().getNumeric().add( node.kind==INCR ? Stack.NUM_ONE_P : Stack.NUM_MINUS_ONE_P);
             }else if (var.getType()==TLValueType.DATE) {
                 stack.calendar.setTime(var.getValue().getDate());
-                stack.calendar.add(Calendar.DATE, -1);
+                stack.calendar.add(Calendar.DATE, node.kind == INCR ? 1 : -1);
                 var.getValue().setValue(stack.calendar.getTime());
             }else {
                 throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
             }
-        }
         
         return data;
     }
@@ -1394,7 +1374,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }else {
             stack.push(var.getValue());
         }
-        return data;
+        return var;
     }
 
     public Object visit(CLVFAssignment node, Object data) {
@@ -1915,37 +1895,34 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
  
     public Object visit(CLVFPostfixExpression node,Object data) {
-    	node.jjtGetChild(0).jjtAccept(this, data);
-    	TLValue val=stack.pop();
+    	// get variable && put value on stack by executing child node
+    	Node child=node.jjtGetChild(0);
+    	if (! (child instanceof CLVFVariableLiteral)){
+    		throw new TransformLangExecutorRuntimeException(node,"postfix expression is allowed only on variable");
+    	}
+    	TLVariable var=(TLVariable)child.jjtAccept(this, data);
     	int operatorType=((CLVFOperator)node.jjtGetChild(1)).kind;
     	
     	if (operatorType==INCR) {
-            if (val.type.isNumeric()) {
-                val=val.duplicate();
-                val.getNumeric().add(Stack.NUM_ONE_P);
-                stack.push(val);
-            }else if (val.type==TLValueType.DATE) {
-                stack.calendar.setTime(val.getDate());
+            if (var.getType().isNumeric()) {
+                var.getValue().getNumeric().add(Stack.NUM_ONE_P);
+            }else if (var.getType()==TLValueType.DATE) {
+                stack.calendar.setTime(var.getValue().getDate());
                 stack.calendar.add(Calendar.DATE, 1);
-                val.value=stack.calendar.getTime();
-                stack.push(val);
+                var.getValue().setValue(stack.calendar.getTime());
             }else {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
+                throw new TransformLangExecutorRuntimeException(node,"variable ["+var+"] is not of numeric or date type");
             }
     	}else{
-            if (val.type.isNumeric()) {
-                val=val.duplicate();
-                val.getNumeric().sub(Stack.NUM_ONE_P);
-                stack.push(val);
-            }else if (val.type==TLValueType.DATE) {
-                stack.calendar.setTime(val.getDate());
+    		if (var.getType().isNumeric()) {
+                var.getValue().getNumeric().sub(Stack.NUM_ONE_P);
+            }else if (var.getType()==TLValueType.DATE) {
+                stack.calendar.setTime(var.getValue().getDate());
                 stack.calendar.add(Calendar.DATE, -1);
-                val.value=stack.calendar.getTime();
-                stack.push(val);
+                var.getValue().setValue(stack.calendar.getTime());
             }else {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
+                throw new TransformLangExecutorRuntimeException(node,"variable ["+var+"] is not of numeric or date type");
             }
-            
     	}
     	
         return data;
@@ -1953,72 +1930,76 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFUnaryExpression node,Object data) {
     	int operatorType=((CLVFOperator)node.jjtGetChild(0)).kind;
-    	node.jjtGetChild(1).jjtAccept(this, data);
-    	TLValue val=stack.pop();
-
-    	switch(operatorType){
-    	case INCR: 
-    		if (val.type.isNumeric()) {
-                val=val.duplicate();
-                val.getNumeric().add(Stack.NUM_ONE_P);
-                stack.push(val);
-            }else if (val.type==TLValueType.DATE) {
-                stack.calendar.setTime(val.getDate());
-                stack.calendar.add(Calendar.DATE, 1);
-                val.value=stack.calendar.getTime();
-                stack.push(val);
-            }else {
-                throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
-            }
-    		break;
-    	case DECR:
-    		 if (val.type.isNumeric()) {
-                 val=val.duplicate();
-                 val.getNumeric().sub(Stack.NUM_ONE_P);
-                 stack.push(val);
-             }else if (val.type==TLValueType.DATE) {
-                 stack.calendar.setTime(val.getDate());
-                 stack.calendar.add(Calendar.DATE, -1);
-                 val.value=stack.calendar.getTime();
-                 stack.push(val);
-             }else {
-                 throw new TransformLangExecutorRuntimeException(node,"variable is not of numeric or date type");
-             }
-    		 break;
-    	case NOT:
-    	    if (val.type==TLValueType.BOOLEAN) {
-                stack.push(val.getBoolean() ? Stack.FALSE_VAL
-                        : Stack.TRUE_VAL);
-            } else {
-                throw new TransformLangExecutorRuntimeException(node, new Object[] { val },
-                        "logical condition does not evaluate to BOOLEAN value");
-            }
-
-    	case MINUS:
-    		if (val.type.isNumeric()) {
-                val=val.duplicate();
-                val.getNumeric().neg();
-                stack.push(val);
-            }else {
-                throw new TransformLangExecutorRuntimeException(node,new Object[] { val }, "variable is not of numeric type");
-            }
-    		break;
-    	case PLUS:
-    		if (val.type.isNumeric()) {
-                val=val.duplicate();
-                val.getNumeric().abs();
-                stack.push(val);
-            }else {
-                throw new TransformLangExecutorRuntimeException(node,new Object[] { val }, "variable is not of numeric type");
-            }
-    		break;
-    		default: 
-    			throw new TransformLangExecutorRuntimeException(node, "unsupported operation");
-    	}
+    	Node child=node.jjtGetChild(1);
+    	TLValue val;
     	
-    	
-        return data;
-    }
+    	switch (operatorType) {
+		case INCR:
+		case DECR:
+			// get variable && put value on stack by executing child node
+			if (!(child instanceof CLVFVariableLiteral)) {
+				throw new TransformLangExecutorRuntimeException(node,
+						"postfix expression is allowed only on variable");
+			}
+			TLVariable var = (TLVariable) child.jjtAccept(this, data);
+			if (var.getType().isNumeric()) {
+				var.getValue().getNumeric().add(
+						operatorType == INCR ? Stack.NUM_ONE_P
+								: Stack.NUM_MINUS_ONE_P);
+			} else if (var.getType() == TLValueType.DATE) {
+				stack.calendar.setTime(var.getValue().getDate());
+				stack.calendar
+						.add(Calendar.DATE, operatorType == INCR ? 1 : -1);
+				var.getValue().setValue(stack.calendar.getTime());
+			} else {
+				throw new TransformLangExecutorRuntimeException(node,
+						"variable [" + var + "] is not of numeric or date type");
+			}
+			child.jjtAccept(this, data);
+			break;
+		case NOT:
+			child.jjtAccept(this, data);
+			val = stack.pop();
+			if (val.type == TLValueType.BOOLEAN) {
+				stack.push(val.getBoolean() ? Stack.FALSE_VAL : Stack.TRUE_VAL);
+			} else {
+				throw new TransformLangExecutorRuntimeException(node,
+						new Object[] { val },
+						"logical condition does not evaluate to BOOLEAN value");
+			}
+			break;
+
+		case MINUS:
+			child.jjtAccept(this, data);
+			val = stack.pop();
+			if (val.type.isNumeric()) {
+				val = val.duplicate();
+				val.getNumeric().neg();
+				stack.push(val);
+			} else {
+				throw new TransformLangExecutorRuntimeException(node,
+						new Object[] { val }, "variable is not of numeric type");
+			}
+			break;
+		case PLUS:
+			child.jjtAccept(this, data);
+			val = stack.pop();
+			if (val.type.isNumeric()) {
+				val = val.duplicate();
+				val.getNumeric().abs();
+				stack.push(val);
+			} else {
+				throw new TransformLangExecutorRuntimeException(node,
+						new Object[] { val }, "variable is not of numeric type");
+			}
+			break;
+		default:
+			throw new TransformLangExecutorRuntimeException(node,
+					"unsupported operation");
+		}
+
+		return data;
+	}
 
 }
 
