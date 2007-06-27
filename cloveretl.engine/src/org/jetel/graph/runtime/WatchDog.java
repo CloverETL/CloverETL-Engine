@@ -82,6 +82,7 @@ public class WatchDog extends Thread implements CloverRuntime {
     private String causeNodeID;
     private CloverJMX mbean;
     private volatile boolean runIt;
+    private boolean threadCpuTimeIsSupported;
     
     private PrintTracking printTracking;
 
@@ -110,6 +111,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 		javaRuntime = Runtime.getRuntime();
         memMXB=ManagementFactory.getMemoryMXBean();
         threadMXB= ManagementFactory.getThreadMXBean();
+        threadCpuTimeIsSupported = threadMXB.isThreadCpuTimeSupported();
         
         inMsgQueue=new PriorityBlockingQueue<Message>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
@@ -378,9 +380,13 @@ public class WatchDog extends Thread implements CloverRuntime {
                     //
                     long threadId=node.getNodeThread().getId();
                    // ThreadInfo tInfo=threadMXB.getThreadInfo(threadId);
-                    trackingDetail.updateRunTime(threadMXB.getThreadCpuTime(threadId),
-                                    threadMXB.getThreadUserTime(threadId),
-                                    elapsedNano);
+                    if (threadCpuTimeIsSupported) {
+                        trackingDetail.updateRunTime(threadMXB.getThreadCpuTime(threadId),
+                                threadMXB.getThreadUserTime(threadId),
+                                elapsedNano);
+                    } else {
+                        trackingDetail.updateRunTime(-1, -1, elapsedNano);
+                    }
                     
                     int i=0;
                     for (InputPort port : node.getInPorts()){
