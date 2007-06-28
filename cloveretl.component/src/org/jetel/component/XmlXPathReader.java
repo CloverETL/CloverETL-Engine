@@ -115,6 +115,20 @@ import org.xml.sax.InputSource;
  * &gt;<br>
  * </code>
  * 
+ * Each context element mentioned in context hierarchy in mapping attribute of this component iterates
+ * over all matched xml nodes (results of XPath query). A nested context element query is evaluated on
+ * each result of the parent context. A translation xml nodes to clover data records is provided 
+ * by mapping elements of appropriate context. All mapping xpaths or nodeName, that are defined in mapping
+ * elements, bind results to clover fields. XML elements and clover fields with same names are mapped 
+ * by this component automatically on each other. XPath attribute can mapped arbitrary node value 
+ * by contrast to nodeName that can mapped only element from the query result. Mapping definition via 
+ * nodeName is quicker, so it is better to use nodeName than xpath if it is possible.
+ * 
+ * Record from nested Context element could be connected via key fields with parent record produced by
+ * parent Mapping element (see parentKey and generatedKey attribute notes). In case that retrieved values
+ * are not suitable to compose unique key, extractor could fill one or more fields with values comming
+ * from sequence (see sequenceField and sequenceId attribute). * 
+ * 
  *  <h4>Example:</h4>
  *  <pre>&lt;Node type="XML_XPATH_READER" id="XML_XPATH_READER0" fileURL="mydata.xml"&gt; <br>
  * &nbsp;&lt;attr name="mapping"&gt;<br>
