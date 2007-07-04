@@ -8,8 +8,8 @@ import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 public class CLVFSymbolNameExp extends SimpleNode {
     
-    TLValue typeValue;
-    int type;
+    public TLValue typeValue;
+    int typeConst;
     
   public CLVFSymbolNameExp(int id) {
     super(id);
@@ -26,11 +26,13 @@ public class CLVFSymbolNameExp extends SimpleNode {
   }
   
   public void setType(int type) {
-      this.type=type;
+      this.typeConst=type;
+      typeValue=new TLValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
   }
   
-  @Override public void init() {
-      typeValue=new TLValue(TLValueType.SYM_CONST,new CloverInteger(type));
+  @Override public void init(){
+  	  super.init();
+      typeValue=new TLValue(TLValueType.SYM_CONST,new CloverInteger(typeConst));
   }
   
 }
