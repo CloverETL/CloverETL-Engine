@@ -35,6 +35,7 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
     private static final long serialVersionUID = 5326484475745284143L;
     SimpleNode nodeInError;
 	Object[] arguments;
+	int errorCode;
 	
 	public TransformLangExecutorRuntimeException(SimpleNode node,Object[] arguments,String message){
 		this(node,arguments,message,null);
@@ -115,5 +116,13 @@ public class TransformLangExecutorRuntimeException extends RuntimeException {
 			}
 		}
 		return strBuf.toString();
+	}
+
+	public int getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(int errorCode) {
+		this.errorCode = errorCode;
 	}
 }
