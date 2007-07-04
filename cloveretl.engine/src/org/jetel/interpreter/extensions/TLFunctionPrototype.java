@@ -41,19 +41,21 @@ public abstract class TLFunctionPrototype {
     protected TLValueType[] parameterTypes;
     protected TLValueType returnType;
     protected int maxParams;
+    protected int minParams;
     
     protected TLFunctionPrototype(String library,String name,TLValueType[] parameterTypes,
-            TLValueType returnType,int maxParams) {
+            TLValueType returnType,int maxParams,int minParams) {
         this.name=name;
         this.library=library;
         this.parameterTypes=parameterTypes;
         this.returnType=returnType;
         this.maxParams=maxParams;
+        this.minParams=minParams;
     }
     
     protected TLFunctionPrototype(String library,String name,TLValueType[] parameterTypes,
             TLValueType returnType) {
-        this(library,name,parameterTypes,returnType,-1);
+        this(library,name,parameterTypes,returnType,parameterTypes.length,parameterTypes.length);
     }
     
     
@@ -123,4 +125,8 @@ public abstract class TLFunctionPrototype {
     public int getMaxParams() {
         return maxParams;
     }
+
+	public int getMinParams() {
+		return minParams;
+	}
 }
