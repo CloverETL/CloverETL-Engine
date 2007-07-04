@@ -45,6 +45,7 @@ public class CLVFFunctionCallStatement extends SimpleNode {
   }
   
   @Override public void init() {
+	  	super.init();
           if (externalFunction!=null) {
               this.context=externalFunction.createContext();
               this.externalFunctionParams=new TLValue[jjtGetNumChildren()];
@@ -68,9 +69,11 @@ public class CLVFFunctionCallStatement extends SimpleNode {
   public final boolean validateParams() {
       if (externalFunction!=null) {
           int numParams=jjtGetNumChildren();
-          return (((externalFunction.getMaxParams()!=-1) &&
-                      (numParams>=externalFunction.getParameterTypes().length) && (numParams<=externalFunction.getMaxParams()))
-              || (numParams==externalFunction.getParameterTypes().length));
+          int maxParams=externalFunction.getMaxParams();
+          int minParams=externalFunction.getMinParams();
+          int definedParams=externalFunction.getParameterTypes().length;
+          
+          return (numParams>=minParams && numParams<=maxParams);
       }
       return jjtGetNumChildren()==callNode.numParams;
   }
