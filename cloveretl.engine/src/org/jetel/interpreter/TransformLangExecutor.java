@@ -81,7 +81,6 @@ import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
 import org.jetel.interpreter.ASTnode.CLVFSubNode;
 import org.jetel.interpreter.ASTnode.CLVFSwitchStatement;
 import org.jetel.interpreter.ASTnode.CLVFSymbolNameExp;
-import org.jetel.interpreter.ASTnode.CLVFTruncNode;
 import org.jetel.interpreter.ASTnode.CLVFUnaryExpression;
 import org.jetel.interpreter.ASTnode.CLVFVarDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFVariableLiteral;
