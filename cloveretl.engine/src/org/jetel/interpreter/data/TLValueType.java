@@ -35,7 +35,7 @@ public enum TLValueType {
     STRING(6,"STRING",true,false,true),
     DATE(7,"DATE",true,false,false),
     BOOLEAN(8,"BOOLEAN",true,false,false),
-    SYM_CONST(9,"SYMBOLIC_CONSTANT",true,false,false),
+    SYM_CONST(9,"SYMBOLIC_CONSTANT",true,true,false),
     LIST(20,"LIST",false,false,true),
     MAP(30,"MAP",false,false,true),
     OBJECT(40,"OBJECT",false,false,false),
@@ -72,6 +72,7 @@ public enum TLValueType {
         case DECIMAL:
             if (_type!=NULL && _type.isNumeric())
                 return true;
+            break;
         case STRING:
             return true;
         case OBJECT:
