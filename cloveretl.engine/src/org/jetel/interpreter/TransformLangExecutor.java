@@ -44,9 +44,6 @@ import org.jetel.interpreter.ASTnode.CLVFBreakpointNode;
 import org.jetel.interpreter.ASTnode.CLVFCaseExpression;
 import org.jetel.interpreter.ASTnode.CLVFComparison;
 import org.jetel.interpreter.ASTnode.CLVFContinueStatement;
-import org.jetel.interpreter.ASTnode.CLVFDate2NumNode;
-import org.jetel.interpreter.ASTnode.CLVFDateAddNode;
-import org.jetel.interpreter.ASTnode.CLVFDateDiffNode;
 import org.jetel.interpreter.ASTnode.CLVFDivNode;
 import org.jetel.interpreter.ASTnode.CLVFDoStatement;
 import org.jetel.interpreter.ASTnode.CLVFForStatement;
@@ -81,7 +78,6 @@ import org.jetel.interpreter.ASTnode.CLVFSizeNode;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
-import org.jetel.interpreter.ASTnode.CLVFStr2NumNode;
 import org.jetel.interpreter.ASTnode.CLVFSubNode;
 import org.jetel.interpreter.ASTnode.CLVFSwitchStatement;
 import org.jetel.interpreter.ASTnode.CLVFSymbolNameExp;
@@ -717,6 +713,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
+    /*
     public Object visit(CLVFDateAddNode node, Object data) {
         int shiftAmount;
 
@@ -750,6 +747,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             return data;
     }
 
+*/
+
+    /*
     public Object visit(CLVFDate2NumNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue date = stack.pop();
@@ -765,7 +765,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         return data;
     }
-
+*/
+    
+    /*
     
     public Object visit(CLVFDateDiffNode node, Object data) {
         TLValue date1, date2;
@@ -826,6 +828,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         return data;
     }
+    
+    */
 
     public Object visit(CLVFMinusNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -844,6 +848,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
+    
+    /*
     public Object visit(CLVFStr2NumNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
@@ -898,6 +904,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         return data;
     }
+    
+    */
     
     public Object visit(CLVFIffNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -1497,6 +1505,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } catch (TransformLangExecutorRuntimeException ex) {
                 ex.setNode(node);
                 throw ex;
+            } catch (Exception ex){
+            	String msg="Java exception ["+ex.getClass().getName()+"] occured during external function call !";
+            	logger.debug(msg,ex);
+            	throw new TransformLangExecutorRuntimeException(node,msg,ex);
             }
 
         } else {
@@ -1708,6 +1720,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     */
     
+    /*
+    
     public Object visit(CLVFTruncNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue a = stack.pop();
@@ -1729,6 +1743,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         return data;
     }
+    */
     
     public Object visit(CLVFRaiseErrorNode node,Object data){
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -1791,58 +1806,63 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    public Object visit(CLVFLookupNode node,Object data){
-        DataRecord record=null;
-        if (node.lookup==null){
-            node.lookup=graph.getLookupTable(node.lookupName);
-            if (node.lookup==null){
-                throw new TransformLangExecutorRuntimeException(node,
-                        "Can't obtain LookupTable \""+node.lookupName+
-                        "\" from graph \""+graph.getName()+"\"");
-            }
-            node.fieldNum=node.lookup.getMetadata().getFieldPosition(node.fieldName);
-            if (node.fieldNum<0){
-                throw new TransformLangExecutorRuntimeException(node,
-                        "Invalid field name \""+node.fieldName+"\" at LookupTable \""+node.lookupName+
-                        "\" in graph \""+graph.getName()+"\"");
-            }
-        }
-        switch(node.opType){
-        case CLVFLookupNode.OP_INIT:
-            try{
-                node.lookup.init();
-            }catch(ComponentNotReadyException ex){
-                throw new TransformLangExecutorRuntimeException(node,
-                        "Error when initializing lookup table \""+node.lookupName+"\" :",
-                        ex);
-            }
-            return data;
-        case CLVFLookupNode.OP_FREE:
-            node.lookup.free();
-            return data;
-        case CLVFLookupNode.OP_NUM_FOUND:
-            stack.push(new TLValue(TLValueType.INTEGER,new CloverInteger(node.lookup.getNumFound())));
-            return data;
-        case CLVFLookupNode.OP_GET:
-            Object keys[]=new Object[node.jjtGetNumChildren()];
-            for(int i=0;i<node.jjtGetNumChildren();i++){
-                node.jjtGetChild(i).jjtAccept(this, data);
-                keys[i]=stack.pop();
-            }
-            record=node.lookup.get(keys);
-            break;
-        case CLVFLookupNode.OP_NEXT:
-            record=node.lookup.getNext();
-        }
-        
-        if(record!=null){
-            stack.push(new TLValue(record.getField(node.fieldNum)));
-        }else{
-            stack.push(Stack.NULL_VAL);
-        }
-        
-        return data;
-    }
+    public Object visit(CLVFLookupNode node, Object data) {
+		DataRecord record = null;
+		if (node.lookup == null) {
+			node.lookup = graph.getLookupTable(node.lookupName);
+			if (node.lookup == null) {
+				throw new TransformLangExecutorRuntimeException(node,
+						"Can't obtain LookupTable \"" + node.lookupName
+								+ "\" from graph \"" + graph.getName() + "\"");
+			}
+			if (node.opType == CLVFLookupNode.OP_GET || node.opType==CLVFLookupNode.OP_NEXT) {
+				node.fieldNum = node.lookup.getMetadata().getFieldPosition(
+						node.fieldName);
+				if (node.fieldNum < 0) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"Invalid field name \"" + node.fieldName
+									+ "\" at LookupTable \"" + node.lookupName
+									+ "\" in graph \"" + graph.getName() + "\"");
+				}
+			}
+		}
+		switch (node.opType) {
+		case CLVFLookupNode.OP_INIT:
+			try {
+				node.lookup.init();
+			} catch (ComponentNotReadyException ex) {
+				throw new TransformLangExecutorRuntimeException(node,
+						"Error when initializing lookup table \""
+								+ node.lookupName + "\" :", ex);
+			}
+			return data;
+		case CLVFLookupNode.OP_FREE:
+			node.lookup.free();
+			return data;
+		case CLVFLookupNode.OP_NUM_FOUND:
+			stack.push(new TLValue(TLValueType.INTEGER, new CloverInteger(
+					node.lookup.getNumFound())));
+			return data;
+		case CLVFLookupNode.OP_GET:
+			Object keys[] = new Object[node.jjtGetNumChildren()];
+			for (int i = 0; i < node.jjtGetNumChildren(); i++) {
+				node.jjtGetChild(i).jjtAccept(this, data);
+				keys[i] = stack.pop().getValue();
+			}
+			record = node.lookup.get(keys);
+			break;
+		case CLVFLookupNode.OP_NEXT:
+			record = node.lookup.getNext();
+		}
+
+		if (record != null) {
+			stack.push(new TLValue(record.getField(node.fieldNum)));
+		} else {
+			stack.push(Stack.NULL_VAL);
+		}
+
+		return data;
+	}
     
     public Object visit(CLVFPrintLogNode node, Object data) {
         if (runtimeLogger == null) {
@@ -1886,7 +1906,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
     
     public Object visit(CLVFSymbolNameExp node,Object data) {
-        stack.push(node.value);
+        stack.push(node.typeValue);
         return data;
     }
     
@@ -1983,6 +2003,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			break;
 		case PLUS:
 			child.jjtAccept(this, data);
+			
 			val = stack.pop();
 			if (val.type.isNumeric()) {
 				val = val.duplicate();
@@ -2002,4 +2023,3 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 	}
 
 }
-

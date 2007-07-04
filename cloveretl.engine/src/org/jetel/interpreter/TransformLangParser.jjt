@@ -992,14 +992,9 @@ void FunctionCallParameter() #void : {}
 void BuildInFunction() #void :
 { }
 {
-	DateAddNode()
-	|DateDiffNode()
-	|"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
+	"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
-	|Str2NumNode()
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
-	|"trunc" "(" AdditiveExpression() ")" #TruncNode(1)
-	|Date2NumNode()
 	|SequenceNode()
 	|LookupNode()
 
@@ -1009,57 +1004,6 @@ void BuildInFunction() #void :
 	|"breakpoint" "(" ")" #BreakpointNode(0)
 	| PrintLogNode()
 	|"raise_error" "(" AdditiveExpression() ")" #RaiseErrorNode(1)
-}
-
-
-void DateAddNode() :
-{ Token t;}
-{
-	"dateadd" "(" AdditiveExpression() "," AdditiveExpression() "," 
-			t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); }
-	")"
-}
-
-void DateDiffNode() :
-{ Token t;}
-{
-	"datediff" "(" AdditiveExpression() "," AdditiveExpression() "," 
-			t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); }
-	")"
-}
-
-
-void Date2NumNode() :
-{ Token t; }
-{
-	"date2num" "(" AdditiveExpression() "," t=<DATE_FIELD_LITERAL> { jjtThis.setCalendarField(t.image); } ")" 
-}
-
-void Str2NumNode() :
-{ 
-	Token t;
-}
-{
-	"str2num" "(" AdditiveExpression() 
-	
-	[ ","  
-	 (<INT_VAR>{
-      jjtThis.setType(INT_VAR);
-    }
-    | <LONG_VAR>{
-      jjtThis.setType(LONG_VAR);
-    }
-    | <DOUBLE_VAR>{
-      jjtThis.setType(DOUBLE_VAR);
-    }
-    | <DECIMAL_VAR>{
-      jjtThis.setType(DECIMAL_VAR);
-    }
-    )
-    [ "," t=<INTEGER_LITERAL> {jjtThis.setRadix(t.image);}]
-    ] 
-    
-    ")"
 }
 
 
