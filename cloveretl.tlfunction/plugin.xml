@@ -18,7 +18,7 @@
 			<value>round</value>
 			<value>pow</value>
 			<value>pi</value>
-			<value>E</value>
+			<value>e</value>
 			<value>random</value>
 		</parameter>
 	</extension>
@@ -28,6 +28,9 @@
 		<parameter id="className" value="org.jetel.interpreter.extensions.DateLib"/>
 		<parameter id="function">
 			<value>today</value>
+			<value>dateadd</value>
+			<value>datediff</value>
+			<value>trunc</value>
 		</parameter>
 	</extension>
 
@@ -44,6 +47,20 @@
 			<value>trim</value>
 			<value>length</value>
 			<value>soundex</value>
+			<value>replace</value>
+			<value>split</value>
+		</parameter>
+	</extension>
+	
+	<extension point-id="tlfunction">
+		<parameter id="libraryName" value="convert"/>
+		<parameter id="className" value="org.jetel.interpreter.extensions.ConvertLib"/>
+		<parameter id="function">
+		<value>num2str</value>
+        <value>date2str</value>
+        <value>str2date</value>
+        <value>date2num</value>
+        <value>str2num</value>
 		</parameter>
 	</extension>
 	
