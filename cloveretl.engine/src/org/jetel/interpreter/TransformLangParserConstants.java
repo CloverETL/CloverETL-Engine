@@ -86,9 +86,9 @@ public interface TransformLangParserConstants {
   int MINUTE = 94;
   int SECOND = 95;
   int MILLISEC = 96;
-  int DATE_FIELD_LITERAL = 134;
-  int IDENTIFIER = 135;
-  int ERROR = 136;
+  int DATE_FIELD_LITERAL = 129;
+  int IDENTIFIER = 130;
+  int ERROR = 131;
 
   int DEFAULT = 0;
   int WithinComment = 1;
@@ -204,14 +204,9 @@ public interface TransformLangParserConstants {
     "\"isnull\"",
     "\"nvl\"",
     "\"iif\"",
-    "\"trunc\"",
     "\"print_stack\"",
     "\"breakpoint\"",
     "\"raise_error\"",
-    "\"dateadd\"",
-    "\"datediff\"",
-    "\"date2num\"",
-    "\"str2num\"",
     "\"print_err\"",
     "\"print_log\"",
     "\"trace\"",

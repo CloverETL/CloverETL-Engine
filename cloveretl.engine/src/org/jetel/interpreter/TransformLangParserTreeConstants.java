@@ -44,18 +44,13 @@ public interface TransformLangParserTreeConstants
   public int JJTISNULLNODE = 37;
   public int JJTNVLNODE = 38;
   public int JJTIFFNODE = 39;
-  public int JJTTRUNCNODE = 40;
-  public int JJTPRINTSTACKNODE = 41;
-  public int JJTBREAKPOINTNODE = 42;
-  public int JJTRAISEERRORNODE = 43;
-  public int JJTDATEADDNODE = 44;
-  public int JJTDATEDIFFNODE = 45;
-  public int JJTDATE2NUMNODE = 46;
-  public int JJTSTR2NUMNODE = 47;
-  public int JJTPRINTERRNODE = 48;
-  public int JJTPRINTLOGNODE = 49;
-  public int JJTSEQUENCENODE = 50;
-  public int JJTLOOKUPNODE = 51;
+  public int JJTPRINTSTACKNODE = 40;
+  public int JJTBREAKPOINTNODE = 41;
+  public int JJTRAISEERRORNODE = 42;
+  public int JJTPRINTERRNODE = 43;
+  public int JJTPRINTLOGNODE = 44;
+  public int JJTSEQUENCENODE = 45;
+  public int JJTLOOKUPNODE = 46;
 
 
   public String[] jjtNodeName = {
@@ -99,14 +94,9 @@ public interface TransformLangParserTreeConstants
     "IsNullNode",
     "NVLNode",
     "IffNode",
-    "TruncNode",
     "PrintStackNode",
     "BreakpointNode",
     "RaiseErrorNode",
-    "DateAddNode",
-    "DateDiffNode",
-    "Date2NumNode",
-    "Str2NumNode",
     "PrintErrNode",
     "PrintLogNode",
     "SequenceNode",

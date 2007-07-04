@@ -46,14 +46,9 @@ public interface TransformLangParserVisitor
   public Object visit(CLVFIsNullNode node, Object data);
   public Object visit(CLVFNVLNode node, Object data);
   public Object visit(CLVFIffNode node, Object data);
-  public Object visit(CLVFTruncNode node, Object data);
   public Object visit(CLVFPrintStackNode node, Object data);
   public Object visit(CLVFBreakpointNode node, Object data);
   public Object visit(CLVFRaiseErrorNode node, Object data);
-  public Object visit(CLVFDateAddNode node, Object data);
-  public Object visit(CLVFDateDiffNode node, Object data);
-  public Object visit(CLVFDate2NumNode node, Object data);
-  public Object visit(CLVFStr2NumNode node, Object data);
   public Object visit(CLVFPrintErrNode node, Object data);
   public Object visit(CLVFPrintLogNode node, Object data);
   public Object visit(CLVFSequenceNode node, Object data);
