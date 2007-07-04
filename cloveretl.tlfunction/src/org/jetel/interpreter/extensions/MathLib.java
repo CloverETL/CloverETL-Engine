@@ -40,7 +40,7 @@ public class MathLib implements ITLFunctionLibrary {
         ROUND("round"),
         POW("pow"),
         PI("pi"),
-        E("E"),
+        E("e"),
         RANDOM("random");
         
         public String name;
@@ -260,7 +260,7 @@ public class MathLib implements ITLFunctionLibrary {
     //  E
     class EFunction extends TLFunctionPrototype { 
         public EFunction() {
-            super("math", "E", new TLValueType[] { }, TLValueType.DOUBLE);
+            super("math", "e", new TLValueType[] { }, TLValueType.DOUBLE);
         }
 
         @Override
@@ -277,18 +277,15 @@ public class MathLib implements ITLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            if (params[0].type.isNumeric()) {
                 TLValue retVal=(TLValue)context.getContext();
                 try {
-                    ((CloverDouble)retVal.getValue()).setValue(Math.random());
-                    return retVal;
+                    retVal.getNumeric().setValue(Math.random());
                 } catch (Exception ex) {
                     throw new TransformLangExecutorRuntimeException(
                             "Error when executing RANDOM function", ex);
                 }
-            }
-            throw new TransformLangExecutorRuntimeException(null,
-                    params, "random - wrong type of literal(s)");
+                
+                return retVal;
         }
         
         @Override

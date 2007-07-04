@@ -23,15 +23,17 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
+import org.jetel.util.Compare;
 import org.jetel.util.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
@@ -41,7 +43,7 @@ public class StringLib extends TLFunctionLibrary {
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
-                "length"), SOUNDEX("soundex"), REPLACE("replace");
+                "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT("charat") ;
 
         public String name;
 
@@ -86,7 +88,11 @@ public class StringLib extends TLFunctionLibrary {
         case SOUNDEX:
             return new SoundexFunction();
         case REPLACE:
-           // return new ReplaceFunction();
+            return new ReplaceFunction();
+        case SPLIT:
+            return new SplitFunction();
+        case CHAR_AT:
+        	return new CharAtFunction();
         default:
             return null;
         }
@@ -97,7 +103,7 @@ public class StringLib extends TLFunctionLibrary {
 
         public ConcatFunction() {
             super("string", "concat", new TLValueType[] { TLValueType.STRING },
-                    TLValueType.STRING,999);
+                    TLValueType.STRING,999,2);
         }
 
         @Override
@@ -500,18 +506,11 @@ public class StringLib extends TLFunctionLibrary {
         }
     }
 
-    /*
+    
+    //REPLACE
     
     class ReplaceFunction extends TLFunctionPrototype {
 
-        class ReplaceStore{
-            public Pattern pattern;
-            public Matcher matcher;
-            public TLValue storedRegex;
-            public TLValue result;
-        }
-        
-        
         public ReplaceFunction() {
             super("string", "replace", new TLValueType[] {
                     TLValueType.STRING, TLValueType.STRING,
@@ -520,71 +519,143 @@ public class StringLib extends TLFunctionLibrary {
 
         @Override
         public TLValue execute(TLValue[] params, TLContext context) {
-            StringBuilder strBuf = (StringBuilder) context.getContext();
-            strBuf.setLength(0);
-            int length, from;
-            if (params[0].isNull() || params[1].isNull() || params[2].isNull()) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "substring - NULL value not allowed");
+            RegexStore regex = (RegexStore) context.getContext();
+            if (regex.pattern==null){
+            	regex.initRegex(params[1].getString(), params[0].getCharSequence(),true,new TLValue(TLValueType.STRING,new StringBuffer()));
+            }else{
+            	// can we reuse pattern/matcher
+            	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,params[1].getCharSequence())!=0){
+            		//we can't
+            		regex.resetPattern(params[1].getString());
+            	}
+            	//            	 reset matcher
+                regex.resetMatcher(params[0].getCharSequence());
             }
-
-            try {
-                length = params[2].getInt();
-                from = params[1].getInt();
-            } catch (Exception ex) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "substring - " + ex.getMessage());
+            
+            String replacement=params[2].toString();
+            StringBuffer sb=(StringBuffer)regex.result.getValue();
+            while ( regex.matcher.find()) {
+                regex.matcher.appendReplacement(sb, replacement);
             }
+            regex.matcher.appendTail(sb);
+            
+			return regex.result;
 
-            if (params[0].type != TLValueType.STRING) {
-                throw new TransformLangExecutorRuntimeException(params,
-                        "substring - wrong type of literal(s)");
-            }
-
-            return new TLValue(TLValueType.STRING, StringUtils.subString(
-                    strBuf, params[0].getCharSequence(), from, length));
         }
 
         @Override
         public TLContext createContext() {
-            TLContext<ReplaceStore> context = new TLContext<ReplaceStore>();
-            context.setContext(new ReplaceStore());
+            TLContext<RegexStore> context = new TLContext<RegexStore>();
+            context.setContext(new RegexStore());
             return context;
         }
+        
+        
     }
 
-    /*
-    ******
-    node.jjtGetChild(0).jjtAccept(this, data);
-    TLValue str = stack.pop();
-    node.jjtGetChild(1).jjtAccept(this, data);
-    TLValue regexStr = stack.pop();
-    node.jjtGetChild(2).jjtAccept(this, data);
-    TLValue withO = stack.pop();
+    
+    class SplitFunction extends TLFunctionPrototype {
 
-    xxx
-
-    if (str.type==TLValueType.STRING && str.type==withO.type &&  str.type==regexStr.type) {
-
-        if (node.pattern == null || !node.stored.equals(regexStr)) {
-            node.pattern = Pattern.compile(((CharSequence) regexStr)
-                    .toString());
-            node.matcher = node.pattern.matcher((CharSequence) str);
-            node.stored = regexStr;
-        } else {
-            node.matcher.reset((CharSequence) str);
+        public SplitFunction() {
+            super("string", "split", new TLValueType[] {
+                    TLValueType.STRING, TLValueType.STRING}, TLValueType.STRING);
         }
-        stack.push(new TLValue(TLValueType.STRING,node.matcher.replaceAll(withO.getString())));
 
-    } else {
-        Object[] arguments = { withO, regexStr, str };
-        throw new TransformLangExecutorRuntimeException(node,arguments,
-                "replace - wrong type of literal(s)");
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            RegexStore regex = (RegexStore) context.getContext();
+            if (regex.pattern==null){
+            	regex.initRegex(params[1].getString(), params[0].getCharSequence(),false,new TLValue(TLValueType.LIST,new ArrayList<TLValue>()));
+            }else{
+            	// can we reuse pattern/matcher
+            	if(regex.storedRegex!=params[1].getValue() &&  Compare.compare(regex.storedRegex,params[1].getCharSequence())!=0){
+            		//we can't
+            		regex.resetPattern(params[1].getString());
+            	}
+            }
+            
+            String[] strArray=regex.pattern.split(params[0].getCharSequence());
+            List<TLValue> list=regex.result.getList();
+            list.clear();
+            for(String item : strArray){
+            	list.add(new TLValue(TLValueType.STRING,item));
+            }
+            
+            return regex.result;
+
+        }
+
+        @Override
+        public TLContext createContext() {
+            TLContext<RegexStore> context = new TLContext<RegexStore>();
+            context.setContext(new RegexStore());
+            return context;
+        }
+        
+        
     }
 
-    return data;
-    ******
+    //  CHAR AT
+    class CharAtFunction extends TLFunctionPrototype {
+
+        public CharAtFunction() {
+            super("string", "char_at", new TLValueType[] { TLValueType.STRING ,
+                    TLValueType.INTEGER}, TLValueType.STRING);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            StringBuilder strBuf = (StringBuilder)val.value;
+            strBuf.setLength(0);
+            
+            if (params[1].isNull()) {
+                throw new TransformLangExecutorRuntimeException(params,
+                        Function.CHAR_AT.name()+" - NULL value not allowed");
+            }
+            
+            if (!params[0].isNull()) {
+                try {
+                strBuf.append(params[0].getCharSequence().charAt(params[1].getInt()));
+                }catch(IndexOutOfBoundsException ex) {
+                    throw new TransformLangExecutorRuntimeException(params,
+                            Function.CHAR_AT.name()+" - character index is out of bounds",ex);
+                }catch(Exception ex) {
+                    throw new TransformLangExecutorRuntimeException(params,
+                            Function.CHAR_AT.name()+" - wrong type of literals",ex);
+                }
+            }
+            return val;
+        }
+
+        @Override
+        public TLContext createContext() {
+            return TLContext.createStringContext();
+        }
+    }
+
     
-    
-    */
+	class RegexStore{
+	    public Pattern pattern;
+	    public Matcher matcher;
+	    public String storedRegex;
+	    public TLValue result;
+	    
+	    public void initRegex(String regex,CharSequence input,boolean initMatcher,TLValue value){
+        	pattern=Pattern.compile(regex);
+        	if (initMatcher) matcher=pattern.matcher(input);
+        	storedRegex=regex;
+        	result=value;
+        }
+	    
+	    public void resetPattern(String regex){
+	    	pattern=Pattern.compile(regex);
+	    	matcher.usePattern(pattern);
+	    }
+	    
+	    public void resetMatcher(CharSequence input){
+	    	matcher.reset(input);
+	    }
+	}
+
 }
