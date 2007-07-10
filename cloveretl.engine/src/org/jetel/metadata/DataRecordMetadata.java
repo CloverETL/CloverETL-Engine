@@ -404,21 +404,7 @@ public class DataRecordMetadata implements Serializable {
 	}
 	
 	public short getRecordSize() {
-		if (recordSize != 0) {
-			return recordSize;
-		}
-		if (recType != FIXEDLEN_RECORD) {
-			return -1;	// unknown size
-		}
-		// compute size of fixed record (without trailing filler)
-		short recSize = (short)0;
-		short prevEnd = 0;
-		for (Object obj: fields) {
-			DataFieldMetadata field = (DataFieldMetadata)obj;
-			prevEnd += field.getSize() + field.getShift();
-			recSize = (short)Math.max(recSize, prevEnd);
-		}
-		return recSize;
+	    return recordSize;
 	}
 
 	public short getRecordSizeStripAutoFilling() {
