@@ -239,12 +239,12 @@ public class Normalizer extends Node {
 				return;
 			}
 			for (int idx = 0; idx < norm.count(inRecord); idx++) {
-				if (!norm.transform(inRecord, outRecord, idx)) {
-					logger.error(norm.getMessage());
-					throw new TransformException(norm.getMessage());
+				if (norm.transform(inRecord, outRecord, idx)) {
+					outPort.writeRecord(outRecord);
+					outRecord.reset();
+				}else{
+					logger.warn(norm.getMessage());
 				}
-				outPort.writeRecord(outRecord);
-				outRecord.reset();
 			}
 			SynchronizeUtils.cloverYield();
 		} // while
