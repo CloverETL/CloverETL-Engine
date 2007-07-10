@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
@@ -114,15 +115,7 @@ public class showData {
         String charset = null;
 		
 		Node extFilter = null;
-        
-		/*System.out.println("***  CloverETL graph component tester ver "+RUN_GRAPH_VERSION+", (c) 2002-06 D.Pavlis, released under GNU Lesser General Public License  ***");
-		System.out.println(" Running with framework version: "+JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION+" build#"+JetelVersion.BUILD_NUMBER+" compiled "+JetelVersion.LIBRARY_BUILD_DATETIME);
-		System.out.println();
-        */
-		if (args.length < 1) {
-			printHelp();
-			System.exit(-1);
-		}
+        	
         
 		Options options = new Options();
     	options.addOption(new Option("g", "cfg", true, "Path to property file"));
@@ -143,6 +136,11 @@ public class showData {
     	options.addOption(new Option("x", "logLevel", true, "Log level for logger {all, info, debug, ..}, default is error log level"));
     	options.addOption(new Option("r", "charset", true, "Charset for writer component"));
 
+    	if (args.length < 1) {
+			printHelp(options);
+			System.exit(-1);
+		}
+    	
     	PosixParser optParser = new PosixParser();
     	CommandLine cmdLine;
 		try {
@@ -555,7 +553,13 @@ public class showData {
 		return writer;
 	}
 	
-	private static void printHelp() {
+	private static void printHelp(Options options) {
+		//		 automatically generate the help statement
+		System.out.println("Usage: showData [..options..] <graph definition file> <component id>");
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.printHelp( "showData", options );
+		
+		/* obsolete code
 		System.out.println("Usage: showData [-P] [--(cfg|tracking|info|plugins|pass|loghost|mode|delimiter|file|expFilter|recFrom|recCount|fields|logLevel)] <graph definition file> <component id>");
 		System.out.println("Options:");
 		System.out.println("-P:<key>=<value>\tadd definition of property to global graph's property list");
@@ -575,6 +579,8 @@ public class showData {
         System.out.println("--fields\t\tShow only defined fields. If no fields defined, show all fields");
         System.out.println("--logLevel\t\tLog level for logger {all, info, debug, ..}, default is error log level");
         System.out.println("--charset\t\tCharset for writer component");
+        */
+        
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         System.out.println("Note: <component id> data will be shown over this component");
