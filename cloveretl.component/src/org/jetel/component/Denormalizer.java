@@ -301,18 +301,17 @@ public class Denormalizer extends Node {
 			currentRecord = inPort.readRecord(record);
 			if (endRun(prevRecord, currentRecord)) {
 				outRecord.reset();
-				if (!denorm.getOutputRecord(outRecord)) {
-					throw new TransformException(denorm.getMessage());
+				if (denorm.getOutputRecord(outRecord)) {
+					outPort.writeRecord(outRecord);
+				}else{
+					logger.warn(denorm.getMessage());
 				}
-				outPort.writeRecord(outRecord);
 			}
 			if (currentRecord == null) { // no more input data
 				return;
 			}
 			prevRecord = currentRecord.duplicate();
-			if (!denorm.addInputRecord(prevRecord)) {
-				throw new TransformException(denorm.getMessage());
-			}
+			denorm.addInputRecord(prevRecord);
 			SynchronizeUtils.cloverYield();
 		} // while
 	}
