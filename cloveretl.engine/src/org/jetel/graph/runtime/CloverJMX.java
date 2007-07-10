@@ -51,21 +51,25 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     private int runningNodes;
     private long runTimeMS;
     private WatchDog watchDog;
+    private boolean run;
     
     
     private Map<String,TrackingDetail> trackingMap;
     
-    public CloverJMX(WatchDog watchDog){
-        StringBuilder str=new StringBuilder(30);
-      //  str.append(org.jetel.util.JetelVersion.getMajorVersion()).append('.');
-      //  str.append(org.jetel.util.JetelVersion.getMinorVersion()).append(" build# ");
-      //  str.append(org.jetel.util.JetelVersion.getBuildNumber()).append(" compiled ");
-      //  str.append(org.jetel.util.JetelVersion.getBuildDatetime());
-        
-        cloverVersion=str.toString();
-        this.watchDog=watchDog;
-        runningGraphName=watchDog.getTransformationGraph().getName();
-    }
+    public CloverJMX(WatchDog watchDog, boolean run) {
+		this.run = run;
+		StringBuilder str = new StringBuilder(30);
+		// str.append(org.jetel.util.JetelVersion.getMajorVersion()).append('.');
+		// str.append(org.jetel.util.JetelVersion.getMinorVersion()).append("
+		// build# ");
+		// str.append(org.jetel.util.JetelVersion.getBuildNumber()).append("
+		// compiled ");
+		// str.append(org.jetel.util.JetelVersion.getBuildDatetime());
+
+		cloverVersion = str.toString();
+		this.watchDog = watchDog;
+		runningGraphName = watchDog.getTransformationGraph().getName();
+	}
     
    
     public String getCloverVersion() {
@@ -157,7 +161,8 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
 
     }
     
-    public synchronized void updated() { 
+    public synchronized void updated() {
+    	if (!run) return;
         Notification n = new Notification(UPDATE_NOTIFICATION_ID,
                                 this,
                                 sequenceNumber++, 
@@ -168,6 +173,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     } 
     
     public synchronized void phaseUpdated() { 
+    	if (!run) return;
         Notification n = new Notification(PHASE_UPDATE_NOTIFICATION_ID, 
                                 this, 
                                 sequenceNumber++, 
@@ -177,7 +183,8 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
         sendNotification(n); 
     } 
     
-    public synchronized void graphFinished(Result result) { 
+    public synchronized void graphFinished(Result result) {
+    	if (!run) return;
         Notification n = new Notification(GRAPH_FINISHED_NOTIFICATION_ID, 
                                 this, 
                                 sequenceNumber++, 
@@ -189,6 +196,7 @@ public class CloverJMX extends NotificationBroadcasterSupport  implements Clover
     } 
 
     public synchronized void graphStarted() { 
+    	if (!run) return;
         Notification n = new Notification(GRAPH_STARTED_NOTIFICATION_ID, 
                                 this, 
                                 sequenceNumber++, 
