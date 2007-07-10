@@ -81,12 +81,18 @@ public class WatchDog extends Thread implements CloverRuntime {
     private Throwable causeException;
     private String causeNodeID;
     private CloverJMX mbean;
+    private String mbeanName;
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
+    private boolean provideJMX=true;
+    private boolean textTracking;
+    
     
     private PrintTracking printTracking;
 
     public final static String TRACKING_LOGGER_NAME = "Tracking";
+    public final static String MBEAN_NAME_PREFIX = "CLOVERJMX";
+    public final static int WAITTIME_FOR_STOP_SIGNAL = 5000; //milliseconds
     private int[] _MSG_LOCK=new int[0];
     
     static Log logger = LogFactory.getLog(WatchDog.class);
@@ -146,8 +152,8 @@ public class WatchDog extends Thread implements CloverRuntime {
 		
         printTracking=new PrintTracking(true);
        
-        mbean=registerTrackingMBean();
-        mbean.graphStarted();
+       	mbean=registerTrackingMBean(provideJMX);
+       	mbean.graphStarted();
 
         //disabled by Kokon
 //        Thread trackingThread=new Thread(printTracking, TRACKING_LOGGER_NAME);
@@ -170,14 +176,20 @@ public class WatchDog extends Thread implements CloverRuntime {
 			javaRuntime.gc();
 		}
         mbean.graphFinished(result);
+     
         // wait to get JMX chance to propagate the message
-        try {
-            sleep(500);
-        }catch(InterruptedException ex) {
-            // do nothing
-        }
+		if (provideJMX) {
+			long timestamp = System.currentTimeMillis();
+			try {
+				while (runIt
+						&& (System.currentTimeMillis() - timestamp) < WAITTIME_FOR_STOP_SIGNAL)
+					sleep(250);
+			} catch (InterruptedException ex) {
+				// do nothing
+			}
+		}
         
-        //disabled by Kokon
+        // disabled by Kokon
 //        trackingThread.interrupt();
 		printPhasesSummary();
 	}
@@ -187,29 +199,31 @@ public class WatchDog extends Thread implements CloverRuntime {
      * 
      * @since 17.1.2007
      */
-    private CloverJMX registerTrackingMBean() {
-       mbean = new CloverJMX(this);
+    private CloverJMX registerTrackingMBean(boolean register) {
+       mbean = new CloverJMX(this,register);
         // register MBean
         MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
 
+        // shall we really registre our MBEAN ?
+        if (!register) return mbean;
+        
+        String namePart= (mbeanName!=null) ? mbeanName : MBEAN_NAME_PREFIX+graph.getName(); 
+        
         // Construct the ObjectName for the MBean we will register
         try {
             ObjectName name = new ObjectName(
-                    "org.jetel.graph.runtime:type=CloverJMX");
+                    "org.jetel.graph.runtime:type="+namePart);
             // Register the  MBean
             mbs.registerMBean(mbean, name);
 
         } catch (MalformedObjectNameException ex) {
-            ex.printStackTrace();
+            logger.error(ex);
         } catch (InstanceAlreadyExistsException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error(e);
         } catch (MBeanRegistrationException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error(e);
         } catch (NotCompliantMBeanException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+        	logger.error(e);
         }
         return mbean;
     }
@@ -763,6 +777,21 @@ public class WatchDog extends Thread implements CloverRuntime {
     public TransformationGraph getTransformationGraph() {
         return graph;
     }
+
+
+	public void setMbeanName(String mbeanName) {
+		this.mbeanName = mbeanName;
+	}
+
+
+	public void setUseJMX(boolean useJMX) {
+		this.provideJMX = useJMX;
+	}
+
+
+	public void setTextTracking(boolean textTracking) {
+		this.textTracking = textTracking;
+	}
     
     
 }
