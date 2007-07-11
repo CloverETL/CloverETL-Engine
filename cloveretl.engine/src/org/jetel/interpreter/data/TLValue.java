@@ -39,7 +39,6 @@ import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.util.Compare;
-import org.jetel.util.StringUtils;
 
 public class TLValue implements Comparable<TLValue>{
     
@@ -66,6 +65,7 @@ public class TLValue implements Comparable<TLValue>{
     }
     
     public TLValue(DataField field) {
+    	this.type=TLValueType.convertType(field.getMetadata());
         setValue(field);
     }
     
@@ -74,7 +74,6 @@ public class TLValue implements Comparable<TLValue>{
     }
     
     public final void setValue(DataField field) {
-        this.type=TLValueType.convertType(field.getMetadata());
         if (field.isNull()) {
             this.value=null;
         }else {
@@ -85,6 +84,7 @@ public class TLValue implements Comparable<TLValue>{
             }
         }
     }
+    
     
     public Object getValue() {
         return value;
@@ -201,16 +201,16 @@ public class TLValue implements Comparable<TLValue>{
             case DataFieldMetadata.NUMERIC_FIELD:
             case DataFieldMetadata.DECIMAL_FIELD:
                 if (type.isNumeric()) {
-                    ((Numeric) field).setValue((Numeric) value);
+                    ((Numeric) field).setValue(getNumeric());
                     return;
                 }
             case DataFieldMetadata.DATE_FIELD:
                 if (type == TLValueType.DATE) {
-                    ((DateDataField) field).setValue(value);
+                    ((DateDataField) field).setValue(getDate().getTime());
                     return;
                 }
             }
-        field.fromString((CharSequence) value.toString());
+        field.fromString(getCharSequence());
         }
     }
     
