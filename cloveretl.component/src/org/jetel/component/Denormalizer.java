@@ -311,7 +311,9 @@ public class Denormalizer extends Node {
 				return;
 			}
 			prevRecord = currentRecord.duplicate();
-			denorm.addInputRecord(prevRecord);
+			if (!denorm.addInputRecord(prevRecord)) {
+				logger.warn(denorm.getMessage());
+			}
 			SynchronizeUtils.cloverYield();
 		} // while
 	}
