@@ -81,11 +81,9 @@ public class WatchDog extends Thread implements CloverRuntime {
     private Throwable causeException;
     private String causeNodeID;
     private CloverJMX mbean;
-    private String mbeanName;
     private volatile boolean runIt;
     private boolean threadCpuTimeIsSupported;
     private boolean provideJMX=true;
-    private boolean textTracking;
     
     
     private PrintTracking printTracking;
@@ -108,7 +106,6 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 */
 	public WatchDog(TransformationGraph graph, Phase[] phases) {
 		super("WatchDog");
-		trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
 		setDaemon(true);
 		this.graph = graph;
 		this.phases = phases;
@@ -121,6 +118,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         
         inMsgQueue=new PriorityBlockingQueue<Message>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
+        trackingInterval=graph.getRuntimeParameters().getTrackingInterval();
 	}
 
 
@@ -133,9 +131,8 @@ public class WatchDog extends Thread implements CloverRuntime {
 	 * @param  phases    Description of the Parameter
 	 * @since            September 02, 2003
 	 */
-	public WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
+	@Deprecated public WatchDog(TransformationGraph graph, Phase[] phases, int tracking) {
 		this(graph,phases);
-		trackingInterval = tracking;
 	}
 
 
@@ -207,12 +204,13 @@ public class WatchDog extends Thread implements CloverRuntime {
         // shall we really registre our MBEAN ?
         if (!register) return mbean;
         
-        String namePart = createMBeanName(mbeanName, graph.getName()); 
+        String mbeanName=graph.getRuntimeParameters().getGraphFilename();
         
         // Construct the ObjectName for the MBean we will register
         try {
             ObjectName name = new ObjectName(
-                    "org.jetel.graph.runtime:type="+namePart);
+                    "org.jetel.graph.runtime:type="+MBEAN_NAME_PREFIX+( mbeanName!=null ? mbeanName : graph.getName() )
+            );
             // Register the  MBean
             mbs.registerMBean(mbean, name);
 
@@ -228,17 +226,6 @@ public class WatchDog extends Thread implements CloverRuntime {
         return mbean;
     }
 
-    /**
-     * Creates identifier for shared JMX mbean.
-     * 
-     * @param defaultMBeanName
-     * @param graphName
-     * @return
-     */
-    public static String createMBeanName(String defaultMBeanName, String graphName) {
-        return defaultMBeanName != null ? defaultMBeanName : MBEAN_NAME_PREFIX;// + graphName;
-    }
-    
     public void runPhase(int phaseNo){
         watchDogStatus = Result.RUNNING;
         logger.info("Thread started.");
@@ -814,20 +801,10 @@ public class WatchDog extends Thread implements CloverRuntime {
     }
 
 
-	public void setMbeanName(String mbeanName) {
-		this.mbeanName = mbeanName;
-	}
-
-
 	public void setUseJMX(boolean useJMX) {
 		this.provideJMX = useJMX;
 	}
 
-
-	public void setTextTracking(boolean textTracking) {
-		this.textTracking = textTracking;
-	}
-    
     
 }
 
