@@ -43,6 +43,7 @@ import org.jetel.database.IConnection;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.CloverRuntime;
+import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.graph.runtime.WatchDog;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.FileUtils;
@@ -63,8 +64,6 @@ import org.jetel.util.TypedProperties;
 
 public final class TransformationGraph {
 
-    public static final String PROJECT_DIR_PROPERTY = "PROJECT_DIR";
-    
 	private Map <Integer,Phase> phases;
 
 	private Map <String,Node> nodes;
@@ -97,10 +96,8 @@ public final class TransformationGraph {
 
 	private TypedProperties graphProperties;
 	
-	private int trackingInterval = Defaults.WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL;
-
-	private URL projectURL;
-    
+	private GraphRuntimeParameters runtimeParameters;
+	
     public TransformationGraph() {
         this(null);
     }
@@ -212,28 +209,28 @@ public final class TransformationGraph {
         }
     }
     
-    /**
-     * Returns URL from PROJECT_DIR graph property value.
-     * It is used as context URL for conversion from relative to absolute path.
-     * @return 
-     */
-    private boolean firstCallprojectURL = true;
-    public URL getProjectURL() {
-        if(firstCallprojectURL) {
-            firstCallprojectURL = false;
-            String projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
-            
-            if(projectURLStr != null) {
-                try {
-                    projectURL = FileUtils.getFileURL(null, projectURLStr);
-                } catch (MalformedURLException e) {
-                    logger.warn("Home project dir is not in valid URL format - " + projectURLStr);
-                }
-            }
-        }
-
-        return projectURL;
-    }
+//    /**
+//     * Returns URL from PROJECT_DIR graph property value.
+//     * It is used as context URL for conversion from relative to absolute path.
+//     * @return 
+//     */
+//    private boolean firstCallprojectURL = true;
+//    public URL getProjectURL() {
+//        if(firstCallprojectURL) {
+//            firstCallprojectURL = false;
+//            String projectURLStr = getGraphProperties().getStringProperty(PROJECT_DIR_PROPERTY);
+//            
+//            if(projectURLStr != null) {
+//                try {
+//                    projectURL = FileUtils.getFileURL(null, projectURLStr);
+//                } catch (MalformedURLException e) {
+//                    logger.warn("Home project dir is not in valid URL format - " + projectURLStr);
+//                }
+//            }
+//        }
+//
+//        return projectURL;
+//    }
     
 	/**
 	 *  Gets the IConnection object asssociated with the name provided
@@ -350,7 +347,7 @@ public final class TransformationGraph {
 	 */
 	public Result run() {
         long timestamp = System.currentTimeMillis();
-        watchDog = new WatchDog(this, phasesArray, trackingInterval);
+        watchDog = new WatchDog(this, phasesArray);
 
         logger.info("Starting WatchDog thread ...");
         watchDog.start();
@@ -768,7 +765,7 @@ public final class TransformationGraph {
 		}
         URL url;
         try {
-            url = FileUtils.getFileURL(getProjectURL(), fileURL);
+            url = FileUtils.getFileURL(runtimeParameters.getProjectURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -789,7 +786,7 @@ public final class TransformationGraph {
         }
         URL url; 
         try {
-            url = FileUtils.getFileURL(getProjectURL(), fileURL);
+            url = FileUtils.getFileURL(runtimeParameters.getProjectURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -828,8 +825,8 @@ public final class TransformationGraph {
 	/**
 	 * @param trackingInterval Sets the tracking interval. How often is the processing status printed  (in milliseconds).
 	 */
-	public void setTrackingInterval(int trackingInterval) {
-		this.trackingInterval = trackingInterval;
+	@Deprecated public void setTrackingInterval(int trackingInterval) {
+		// do nothing - obsolete
 	}
     
     
@@ -913,6 +910,25 @@ public final class TransformationGraph {
     public WatchDog getWatchDog() {
         return watchDog;
     }
+    
+    
+    public void setRuntimeParameters(GraphRuntimeParameters runtimeParameters){
+    	this.runtimeParameters=runtimeParameters;
+    	runtimeParameters.setGraph(this);
+    }
+    
+    public GraphRuntimeParameters getRuntimeParameters(){
+    	// if nothing set, then use defaults
+    	if (runtimeParameters==null){
+    		runtimeParameters=new GraphRuntimeParameters(this);
+    	}
+    	return runtimeParameters;
+    }
+
+	public Log getLogger() {
+		return TransformationGraph.logger;
+	}
+    
 }
 /*
  *  end class TransformationGraph
