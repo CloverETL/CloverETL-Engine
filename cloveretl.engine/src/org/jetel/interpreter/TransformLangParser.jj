@@ -183,7 +183,7 @@ public class TransformLangParser extends ExpParser/*@bgen(jjtree)*/implements Tr
     {
     }
     
-    public List getParseExceptions(){
+    public List<Throwable> getParseExceptions(){
     	return parseExceptions;
     }
       
@@ -667,18 +667,18 @@ void Expression()       : {}
   
 }
 
-void Assignment()                :
-{/*@bgen(jjtree) #Assignment( 2) */
+void Assignment()             :
+{/*@bgen(jjtree) Assignment */
   CLVFAssignment jjtn000 = new CLVFAssignment(this, JJTASSIGNMENT);
   boolean jjtc000 = true;
   jjtree.openNodeScope(jjtn000);
   jjtreeOpenNodeScope(jjtn000);
 /*@egen*/}
-{/*@bgen(jjtree) #Assignment( 2) */
+{/*@bgen(jjtree) Assignment */
         try {
 /*@egen*/
  // PrimaryExpression() "=" Expression()
- 	VarExp() "=" Expression()/*@bgen(jjtree)*/
+ 	VarExp() "=" ConditionalOrExpression()/*@bgen(jjtree)*/
         } catch (Throwable jjte000) {
           if (jjtc000) {
             jjtree.clearNodeScope(jjtn000);
@@ -695,7 +695,7 @@ void Assignment()                :
           throw (Error)jjte000;
         } finally {
           if (jjtc000) {
-            jjtree.closeNodeScope(jjtn000,  2);
+            jjtree.closeNodeScope(jjtn000, true);
             jjtreeCloseNodeScope(jjtn000);
           }
         }
@@ -1618,7 +1618,7 @@ void VarExp()                  :
 	Token t,u;
 	int varSlot;
 	int varType;
-	boolean indexSet=false;
+	//boolean indexSet=false;
 }
 {/*@bgen(jjtree) VariableLiteral */
         try {
@@ -1646,7 +1646,7 @@ void VarExp()                  :
   	} 
   	
   	 // it may be element of LIST or MAP
-	 [  "[" [AdditiveExpression() {jjtn000.indexSet=true;} ] "]" ]
+	 [  "[" [AdditiveExpression() {jjtn000.indexSet=true;} ] "]" {jjtn000.usedIndex=true;} ]
   	
 //  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
 //  	}
@@ -1857,8 +1857,8 @@ void StatementExpression()       :
 	
    (
  	
-	LOOKAHEAD( 2 )  IncrDecrStatement()
-	| LOOKAHEAD( 2 ) Assignment() 
+    LOOKAHEAD( VarExp() "=" ) Assignment() 
+	| LOOKAHEAD( 2 )  IncrDecrStatement()
 	|FunctionCall()
 	
    ) ";"
