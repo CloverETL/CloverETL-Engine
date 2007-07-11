@@ -16,6 +16,7 @@ public class CLVFVariableLiteral extends SimpleNode {
     public int arrayIndex=-1;
     public String mapKey;
     public boolean indexSet=false;
+    public boolean usedIndex=false;
     
   public CLVFVariableLiteral(int id) {
     super(id);
@@ -51,6 +52,7 @@ public class CLVFVariableLiteral extends SimpleNode {
       return super.toString()+" name \""+varName+"\" type \""+varType+"\" slot "+varSlot+" local "+localVar;
   }
 
+  
 /**
  * @param arrayIndex the arrayIndex to set
  * @since 21.3.2007
