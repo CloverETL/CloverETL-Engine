@@ -37,6 +37,7 @@ import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
+import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.plugin.Plugins;
 import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
@@ -105,6 +106,8 @@ public class runGraph {
     public final static String LOAD_FROM_STDIN_SWITCH = "-stdin";
     public final static String LOG_HOST_SWITCH = "-loghost";
     public final static String CHECK_CONFIG_SWITCH = "-checkconfig";
+    public final static String NO_JMX = "-noJMX";
+    public final static String MBEAN_NAME = "-mbean";
 	
     
     /**
@@ -166,6 +169,8 @@ public class runGraph {
         String logHost = null;
         boolean onlyCheckConfig = false;
         String graphFileName = null;
+        String mbeanName=null;
+        boolean noJMX=false;
         
         System.out
                 .println("***  CloverETL framework/transformation graph runner ver "
@@ -227,6 +232,11 @@ public class runGraph {
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
+            }else if (args[i].startsWith(MBEAN_NAME)){
+            	i++;
+            	mbeanName=args[i];
+            }else if (args[i].startsWith(NO_JMX)){
+            	noJMX=true;
             } else {
                 graphFileName = args[i];
             }
@@ -325,11 +335,12 @@ public class runGraph {
             System.exit(-1);
         }
 
-        // set tracking interval
-        if (trackingInterval != -1) {
-            graph.setTrackingInterval(trackingInterval * 1000);
-        }
-
+        // set graph runtime parameters
+        GraphRuntimeParameters runtimePar=new GraphRuntimeParameters();
+        if (trackingInterval != -1) runtimePar.setTrackingInterval(trackingInterval * 1000);
+        runtimePar.setGraphFileURL(graphFileName);
+        graph.setRuntimeParameters(runtimePar);
+        
         // start all Nodes (each node is one thread)
         Result result = Result.N_A;
         try {
@@ -375,6 +386,9 @@ public class runGraph {
         System.out.println("-stdin\t\tload graph definition from STDIN");
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println("-checkconfig\t\tonly check graph configuration");
+       // System.out.println("-mbean <name>\t\tname under which register Clover's JMXBean");
+       // System.out.println("-noJMX\t\tdon't register Clover JMXBean");
+        
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");
         
