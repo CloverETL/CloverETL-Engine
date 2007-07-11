@@ -49,7 +49,7 @@ public class MetadataFactory {
 	 * @see	org.jetel.metadata.DataRecordMetadata
 	 */
 	public static DataRecordMetadata fromFile(TransformationGraph graph, String fileURL) throws IOException {
-		URL url = FileUtils.getFileURL(graph.getProjectURL(), fileURL);
+		URL url = FileUtils.getFileURL(graph.getRuntimeParameters().getProjectURL(), fileURL);
         
 		DataRecordMetadata recordMetadata;
 		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter(graph);
