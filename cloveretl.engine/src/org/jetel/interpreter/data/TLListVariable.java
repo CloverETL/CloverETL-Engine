@@ -108,8 +108,12 @@ public class TLListVariable extends TLVariable {
         return value.getList();
     }
     
-    public void fill(TLValue val,int count) {
+    public void fill(TLValue from,int count) {
         List<TLValue> list=value.getList();
-        for (int i=0;i<count;i++) list.add(val);
+        if (from.type==TLValueType.LIST){
+        	list.addAll(from.getList());
+        }else{
+        	for (int i=0;i<count;i++) list.add(from);
+        }
     }
 }
