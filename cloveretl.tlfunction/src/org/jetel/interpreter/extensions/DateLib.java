@@ -25,9 +25,7 @@ package org.jetel.interpreter.extensions;
 
 import java.util.Calendar;
 
-import org.jetel.data.primitive.CloverLong;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
-import org.jetel.interpreter.ASTnode.CLVFTruncNode;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 
