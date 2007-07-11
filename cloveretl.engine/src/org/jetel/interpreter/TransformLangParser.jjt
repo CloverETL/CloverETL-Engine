@@ -187,7 +187,7 @@ public class TransformLangParser extends ExpParser {
     {
     }
     
-    public List getParseExceptions(){
+    public List<Throwable> getParseExceptions(){
     	return parseExceptions;
     }
       
@@ -521,11 +521,11 @@ void Expression() #void : {}
   
 }
 
-void Assignment() #Assignment(2) :
+void Assignment() #Assignment :
 {}
 {
  // PrimaryExpression() "=" Expression()
- 	VarExp() "=" Expression()
+ 	VarExp() "=" ConditionalOrExpression()
 }
 
 
@@ -713,7 +713,7 @@ void VarExp() #VariableLiteral :
 	Token t,u;
 	int varSlot;
 	int varType;
-	boolean indexSet=false;
+	//boolean indexSet=false;
 }
 {
 	try{
@@ -739,7 +739,7 @@ void VarExp() #VariableLiteral :
   	} 
   	
   	 // it may be element of LIST or MAP
-	 [  "[" [AdditiveExpression() {jjtThis.indexSet=true;} ] "]" ]
+	 [  "[" [AdditiveExpression() {jjtThis.indexSet=true;} ] "]" {jjtThis.usedIndex=true;} ]
   	
 //  	{//  	if (!indexset){//  		if (varType==LIST_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a list and requires index to be specified");//	  	else if (varType==MAP_VAR)//	  		throw new ParseException(t,"variable ["+t.image+"] is a map and requires key to be specified");//  	}
 //  	}
@@ -860,8 +860,8 @@ void StatementExpression() #void :
 	
    (
  	
-	LOOKAHEAD( 2 )  IncrDecrStatement()
-	| LOOKAHEAD( 2 ) Assignment() 
+    LOOKAHEAD( VarExp() "=" ) Assignment() 
+	| LOOKAHEAD( 2 )  IncrDecrStatement()
 	|FunctionCall()
 	
    ) ";"

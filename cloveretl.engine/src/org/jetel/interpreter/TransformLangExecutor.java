@@ -74,7 +74,6 @@ import org.jetel.interpreter.ASTnode.CLVFRaiseErrorNode;
 import org.jetel.interpreter.ASTnode.CLVFRegexLiteral;
 import org.jetel.interpreter.ASTnode.CLVFReturnStatement;
 import org.jetel.interpreter.ASTnode.CLVFSequenceNode;
-import org.jetel.interpreter.ASTnode.CLVFSizeNode;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
 import org.jetel.interpreter.ASTnode.CLVFStatementExpression;
@@ -621,25 +620,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    /*
-    public Object visit(CLVFNegation node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue value = stack.pop();
-
-        
-        if (value.type==TLValueType.BOOLEAN) {
-            stack.push(value.getBoolean() ? Stack.FALSE_VAL
-                    : Stack.TRUE_VAL);
-        } else {
-            throw new TransformLangExecutorRuntimeException(node, new Object[] { value },
-                    "logical condition does not evaluate to BOOLEAN value");
-        }
-
-        return data;
-    }
-
-*/
-    public Object visit(CLVFIsNullNode node, Object data) {
+     public Object visit(CLVFIsNullNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
 
@@ -679,20 +660,26 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     }
 
     public Object visit(CLVFInputFieldLiteral node, Object data) {
-        DataRecord record = inputRecords[node.recordNo];
+    	DataRecord record = inputRecords[node.recordNo];
 		if (record == null) {
 			stack.push(Stack.NULL_VAL);
-		} else {
-			DataField field = record.getField(node.fieldNo);
-            if (field.isNull())
+			return null;
+		}
+		
+		node.field = record.getField(node.fieldNo);
+        if (node.field.isNull()){
                 stack.push(Stack.NULL_VAL);
-            else
-                stack.push(new TLValue(field));
+        		return null;
+        }
+        
+        if (node.value==null){
+        	node.value=new TLValue(node.field);
+		}else{
+			node.value.setValue(node.field);
 		}
         
-        // old
-		// stack.push(inputRecords[node.recordNo].getField(node.fieldNo).getValue());
-        
+        stack.push(node.value);
+
         // we return reference to DataField so we can
         // perform extra checking in special cases
         return node.field;
@@ -711,125 +698,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         stack.push(new TLValue(TLValueType.OBJECT,node.matcher));
         return data;
     }
-
-    /*
-    public Object visit(CLVFDateAddNode node, Object data) {
-        int shiftAmount;
-
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue date = stack.pop();
-        node.jjtGetChild(1).jjtAccept(this, data);
-        TLValue amount = stack.pop();
-
-        if (amount.type.isNumeric()) {
-            shiftAmount = amount.getInt();
-        } else {
-            Object arguments[] = { amount };
-            throw new TransformLangExecutorRuntimeException(node,arguments, "dateadd - amount is not a Numeric value");
-        }
-        
-        if (date.type!=TLValueType.DATE) {
-            Object arguments[] = { date };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "dateadd - no Date expression");
-        }
-        
-        if (node.nodeVal==null) {
-            node.nodeVal=date.duplicate();
-        }
-        
-            node.calendar.setTime(date.getDate());
-            node.calendar.add(node.calendarField, shiftAmount);
-            node.nodeVal.getDate().setTime(node.calendar.getTimeInMillis());
-            stack.push(node.nodeVal);
-
-            return data;
-    }
-
-*/
-
-    /*
-    public Object visit(CLVFDate2NumNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue date = stack.pop();
-
-        if (date.type==TLValueType.DATE) {
-            node.calendar.setTime(date.getDate());
-            stack.push(new TLValue(TLValueType.INTEGER,new CloverInteger(node.calendar.get(node.calendarField))));
-        } else {
-            Object arguments[] = { date };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "date2num - no Date expression");
-        }
-
-        return data;
-    }
-*/
-    
-    /*
-    
-    public Object visit(CLVFDateDiffNode node, Object data) {
-        TLValue date1, date2;
-
-        node.jjtGetChild(0).jjtAccept(this, data);
-        date1 = stack.pop();
-        node.jjtGetChild(1).jjtAccept(this, data);
-        date2 = stack.pop();
-
-        if (date1.type==TLValueType.DATE && date1.type==date2.type) {
-            long diffSec = (date1.getDate().getTime() - date2.getDate().getTime()) / 1000;
-            int diff = 0;
-            switch (node.calendarField) {
-            case Calendar.SECOND:
-                // we have the difference in seconds
-                diff = (int) diffSec;
-                break;
-            case Calendar.MINUTE:
-                // how many minutes'
-                diff = (int) diffSec / 60;
-                break;
-            case Calendar.HOUR_OF_DAY:
-                diff = (int) diffSec / 3600;
-                break;
-            case Calendar.DAY_OF_MONTH:
-                // how many days is the difference
-                diff = (int) diffSec / 86400;
-                break;
-            case Calendar.WEEK_OF_YEAR:
-                // how many weeks
-                diff = (int) diffSec / 604800;
-                break;
-            case Calendar.MONTH:
-                node.start.setTime(date1.getDate());
-                node.end.setTime(date2.getDate());
-                diff = (node.start.get(Calendar.MONTH) + node.start
-                        .get(Calendar.YEAR) * 12)
-                        - (node.end.get(Calendar.MONTH) + node.end
-                                .get(Calendar.YEAR) * 12);
-                break;
-            case Calendar.YEAR:
-                node.start.setTime(date1.getDate());
-                node.end.setTime(date2.getDate());
-                diff = node.start.get(node.calendarField)
-                        - node.end.get(node.calendarField);
-                break;
-            default:
-                Object arguments[] = { new Integer(node.calendarField) };
-                throw new TransformLangExecutorRuntimeException(node,arguments,
-                        "datediff - wrong difference unit");
-            }
-            stack.push(new TLValue(TLValueType.INTEGER,new CloverInteger(diff)));
-        } else {
-            Object arguments[] = { date1, date2 };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "datediff - no Date expression");
-        }
-
-        return data;
-    }
-    
-    */
-
+   
+ 
     public Object visit(CLVFMinusNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
         TLValue value = stack.pop();
@@ -847,64 +717,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
 
-    
-    /*
-    public Object visit(CLVFStr2NumNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type==TLValueType.STRING) {
-            try {
-                TLValue value = null;
-                switch (node.numType) {
-                case INT_VAR:
-                    value = new TLValue(TLValueType.INTEGER,new CloverInteger(Integer.parseInt(
-                            a.getString(), node.radix)));
-                    break;
-                case LONG_VAR:
-                    value = new TLValue(TLValueType.LONG,new CloverLong(Long.parseLong(a.getString(), node.radix)));
-                    break;
-                case DECIMAL_VAR:
-                    if (node.radix == 10) {
-                        value = new TLValue(TLValueType.LONG,DecimalFactory.getDecimal(a.getString()));
-                    } else {
-                        Object[] arguments = { a, new Integer(node.radix) };
-                        throw new TransformLangExecutorRuntimeException(node,
-                                arguments,
-                                "str2num - can't convert string to decimal number using specified radix");
-                    }
-                    break;
-                default:
-                    // get double/number type
-                    switch (node.radix) {
-                    case 10:
-                    case 16:
-                        value = new TLValue(TLValueType.DOUBLE,new CloverDouble(Double
-                                .parseDouble(a.getString())));
-                        break;
-                    default:
-                        Object[] arguments = { a, new Integer(node.radix) };
-                        throw new TransformLangExecutorRuntimeException(node,
-                                arguments,
-                                "str2num - can't convert string to number/double number using specified radix");
-                    }
-                }
-                stack.push(value);
-            } catch (NumberFormatException ex) {
-                Object[] arguments = { a };
-                throw new TransformLangExecutorRuntimeException(node,
-                        arguments, "str2num - can't convert \"" + a + "\"");
-            }
-        } else {
-            Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node, arguments,
-                    "str2num - wrong type of literal");
-        }
-
-        return data;
-    }
-    
-    */
     
     public Object visit(CLVFIffNode node, Object data) {
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -1397,37 +1209,68 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                             + "\" to variable \"" + varNode.varName+"\"");
         }
         
+        
         TLValue index = null;
         switch (varNode.varType) {
         case LIST_VAR:
-            try {
-                if (varNode.indexSet) {
-                    varNode.jjtGetChild(0).jjtAccept(this, data);
-                    index = stack.pop();
-                    variableToAssign.setValue(index.getInt(), valueToAssign);
-                }else {
-                    variableToAssign.setValue(-1,valueToAssign);
-                }
-            } catch (IndexOutOfBoundsException ex) {
-                throw new TransformLangExecutorRuntimeException(node,
-                        "index \""+index+"\" is outside current limits of list/array \"" 
-                        + varNode.varName+"\"", ex);
-            } catch (Exception ex) {
-                throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of \"" + valueToAssign
-                                + "\" to variable \"" + varNode.varName+"\"", ex);
-            }
-            break;
+			if (varNode.usedIndex) {
+				try {
+					// scalar context
+					// we always assign duplicate object to list variable
+					if (!valueToAssign.isNull())
+						valueToAssign = valueToAssign.duplicate();
+
+					if (varNode.indexSet) {
+						varNode.jjtGetChild(0).jjtAccept(this, data);
+						index = stack.pop();
+						variableToAssign
+								.setValue(index.getInt(), valueToAssign);
+					} else {
+						variableToAssign.setValue(-1, valueToAssign);
+					}
+				} catch (IndexOutOfBoundsException ex) {
+					throw new TransformLangExecutorRuntimeException(
+							node,
+							"index \""
+									+ index
+									+ "\" is outside current limits of list/array \""
+									+ varNode.varName + "\"", ex);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
+			} else {
+				// list context
+				if (valueToAssign.type == variableToAssign.getType()) {
+					((TLListVariable) variableToAssign).fill(valueToAssign, -1);
+				} else {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of scalar value to list/array \""
+									+ varNode.varName + "\"");
+				}
+			}
+
+			break;
         case MAP_VAR:
-            try {
-                varNode.jjtGetChild(0).jjtAccept(this, data);
-                index = stack.pop();
-                variableToAssign.setValue(index.getString(), valueToAssign);
-            } catch (Exception ex) {
-                throw new TransformLangExecutorRuntimeException(node,
-                        "invalid assignment of \"" + valueToAssign
-                                + "\" to variable \"" + varNode.varName+"\"", ex);
-            }
+        	if (varNode.usedIndex) {
+				// we always assign duplicate object to map variable
+				if (!valueToAssign.isNull())
+					valueToAssign = valueToAssign.duplicate();
+				try {
+					varNode.jjtGetChild(0).jjtAccept(this, data);
+					index = stack.pop();
+					variableToAssign.setValue(index.getString(), valueToAssign);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
+			} else {
+				variableToAssign.setValue(valueToAssign);
+			}
             break;
         default:
             TLValueType type=variableToAssign.getType();
@@ -1590,159 +1433,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return data;
     }
     
-    /*
-     * MATH functions log,log10,exp,pow,sqrt,round
-     */
-   /*
-    public Object visit(CLVFSqrtNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.sqrt(((Numeric)a).getDouble()) )));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing SQRT function",ex);
-            }
-        }else {
-            Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "sqrt - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFLogNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.log(((Numeric)a).getDouble()) )));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG function",ex);
-            }
-        }else {
-            Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "log - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFLog10Node node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverDouble( Math.log10(((Numeric)a).getDouble()))));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing LOG10 function",ex);
-            }
-        }else {
-            Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "log10 - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFExpNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverDouble( Math.exp(((Numeric)a).getDouble()))));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing EXP function",ex);
-            }
-        }else {
-            Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "exp - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFRoundNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-
-        if (a.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverLong(Math.round(((Numeric)a).getDouble()))));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing ROUND function",ex);
-            }
-        }else {
-            Object[] arguments = { a};
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "round - wrong type of literal(s)");
-        }
-
-
-        return data;
-    }
-    
-    public Object visit(CLVFPowNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-        node.jjtGetChild(1).jjtAccept(this, data);
-        TLValue b = stack.pop();
-
-        if (a.type.isNumeric() && b.type.isNumeric()) {
-            try{
-                stack.push(new TLValue(TLValueType.DOUBLE,new CloverDouble(Math.pow(a.getDouble(),
-                    b.getDouble()))));
-            }catch(Exception ex){
-                throw new TransformLangExecutorRuntimeException(node,"Error when executing POW function",ex);
-            }
-        }else {
-            Object[] arguments = { a, b };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "pow - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    
-    public Object visit(CLVFPINode node, Object data) {
-        stack.push(Stack.NUM_PI);
-        return data;
-    }
-    
-    */
-    
-    /*
-    
-    public Object visit(CLVFTruncNode node, Object data) {
-        node.jjtGetChild(0).jjtAccept(this, data);
-        TLValue a = stack.pop();
-        
-        if (a.type==TLValueType.DATE ) {
-            stack.calendar.setTime(a.getDate());
-            stack.calendar.set(Calendar.HOUR_OF_DAY, 0);
-            stack.calendar.set(Calendar.MINUTE , 0);
-            stack.calendar.set(Calendar.SECOND , 0);
-            stack.calendar.set(Calendar.MILLISECOND , 0);
-            stack.push( new TLValue(TLValueType.DATE,stack.calendar.getTime() ));
-        }else if (a.type.isNumeric()){
-            stack.push(new TLValue(TLValueType.LONG,new CloverLong(a.getLong())));
-        }else {
-            Object[] arguments = { a };
-            throw new TransformLangExecutorRuntimeException(node,arguments,
-                    "trunc - wrong type of literal(s)");
-        }
-
-        return data;
-    }
-    */
     
     public Object visit(CLVFRaiseErrorNode node,Object data){
         node.jjtGetChild(0).jjtAccept(this, data);
@@ -1891,13 +1581,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         }
         return data;
     }
-    
-    public Object visit(CLVFSizeNode node, Object data) {
-        CLVFVariableLiteral varNode=(CLVFVariableLiteral) node.jjtGetChild(0);
-        TLVariable var=stack.getVar(varNode.localVar, varNode.varSlot);
-        stack.push(new TLValue(TLValueType.INTEGER,new CloverInteger(var.getLength())));
-        return data;
-    }
+
 
     public Object visit(CLVFImportSource node,Object data) {
         node.childrenAccept(this, data);
