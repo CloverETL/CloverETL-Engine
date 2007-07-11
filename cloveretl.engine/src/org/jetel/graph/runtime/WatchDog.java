@@ -207,7 +207,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         // shall we really registre our MBEAN ?
         if (!register) return mbean;
         
-        String namePart= (mbeanName!=null) ? mbeanName : MBEAN_NAME_PREFIX+graph.getName(); 
+        String namePart = createMBeanName(mbeanName, graph.getName()); 
         
         // Construct the ObjectName for the MBean we will register
         try {
@@ -228,6 +228,17 @@ public class WatchDog extends Thread implements CloverRuntime {
         return mbean;
     }
 
+    /**
+     * Creates identifier for shared JMX mbean.
+     * 
+     * @param defaultMBeanName
+     * @param graphName
+     * @return
+     */
+    public static String createMBeanName(String defaultMBeanName, String graphName) {
+        return defaultMBeanName != null ? defaultMBeanName : MBEAN_NAME_PREFIX;// + graphName;
+    }
+    
     public void runPhase(int phaseNo){
         watchDogStatus = Result.RUNNING;
         logger.info("Thread started.");
