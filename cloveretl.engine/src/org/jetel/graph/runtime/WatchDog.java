@@ -286,78 +286,91 @@ public class WatchDog extends Thread implements CloverRuntime {
 	public Result watch(Phase phase) throws InterruptedException {
 		long phaseMemUtilizationMax;
 		Iterator leafNodesIterator;
-        Message message;
+		Message message;
 		int ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
 		long lastTimestamp;
 		long currentTimestamp;
 		long startTimestamp;
-        long startTimeNano;
-        Map<String,TrackingDetail> tracking=new LinkedHashMap<String,TrackingDetail>(phase.getNodes().size());
-        List<Node> leafNodes;
-        
-        // let's create a copy of leaf nodes - we will watch them
-        leafNodes=new LinkedList<Node>(phase.getLeafNodes());
-        // assign tracking info
-        phase.setTracking(tracking);
-            
-		//get current memory utilization
-		phaseMemUtilizationMax=memMXB.getHeapMemoryUsage().getUsed();
-		//let's take timestamp so we can measure processing
+		long startTimeNano;
+		Map<String, TrackingDetail> tracking = new LinkedHashMap<String, TrackingDetail>(
+				phase.getNodes().size());
+		List<Node> leafNodes;
+
+		// let's create a copy of leaf nodes - we will watch them
+		leafNodes = new LinkedList<Node>(phase.getLeafNodes());
+		// assign tracking info
+		phase.setTracking(tracking);
+
+		// get current memory utilization
+		phaseMemUtilizationMax = memMXB.getHeapMemoryUsage().getUsed();
+		// let's take timestamp so we can measure processing
 		startTimestamp = lastTimestamp = System.currentTimeMillis();
-        // also let's take nanotime to measure how much CPU we spend processing
-        startTimeNano=System.nanoTime();
-        
-        printTracking.setTrackingInfo(tracking, phase.getPhaseNum());
-        mbean.setRuningPhase(phase.getPhaseNum());
-        mbean.setTrackingMap(tracking);
-        mbean.updated();
-	
-        // entering the loop awaiting completion of work by all leaf nodes
-		while (runIt) {
-            // wait on error message queue
-            message=inMsgQueue.poll(Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL, TimeUnit.MILLISECONDS);
-            if (message != null) {
-                if (message.getType() == Message.Type.ERROR) {
-                    causeException=((ErrorMsgBody)message.getBody()).getSourceException();
-                    causeNodeID=message.getSenderID();
-                    logger
-                            .fatal("!!! Fatal Error !!! - graph execution is aborting");
-                    logger.error("Node " + message.getSenderID()
-                            + " finished with status: " +
-                            ((ErrorMsgBody)message.getBody()).getErrorMessage()+
-                            " caused by: "+ causeException.getMessage());
-                    logger.debug("Node "+ message.getSenderID()+" error details:", causeException);
-                    abort();
-                    // printProcessingStatus(phase.getNodes().iterator(),
-                    // phase.getPhaseNum());
-                    printTracking.execute(true); // print tracking
-                    return Result.ERROR;
-                } else {
-                    synchronized (_MSG_LOCK) {
-                        outMsgMap.put(message.getRecipientID(), message);
-                    }
-                }
-            }
-            
-            
-            // is there any node running ?
+		// also let's take nanotime to measure how much CPU we spend processing
+		startTimeNano = System.nanoTime();
+
+		printTracking.setTrackingInfo(tracking, phase.getPhaseNum());
+		mbean.setRuningPhase(phase.getPhaseNum());
+		mbean.setTrackingMap(tracking);
+		mbean.updated();
+
+		// entering the loop awaiting completion of work by all leaf nodes
+		while (true) {
+			// wait on error message queue
+			message = inMsgQueue.poll(
+					Defaults.WatchDog.WATCHDOG_SLEEP_INTERVAL,
+					TimeUnit.MILLISECONDS);
+			if (message != null) {
+				if (message.getType() == Message.Type.ERROR) {
+					causeException = ((ErrorMsgBody) message.getBody())
+							.getSourceException();
+					causeNodeID = message.getSenderID();
+					logger
+							.fatal("!!! Fatal Error !!! - graph execution is aborting");
+					logger.error("Node "
+							+ message.getSenderID()
+							+ " finished with status: "
+							+ ((ErrorMsgBody) message.getBody())
+									.getErrorMessage() + " caused by: "
+							+ causeException.getMessage());
+					logger.debug("Node " + message.getSenderID()
+							+ " error details:", causeException);
+					abort();
+					// printProcessingStatus(phase.getNodes().iterator(),
+					// phase.getPhaseNum());
+					printTracking.execute(true); // print tracking
+					return Result.ERROR;
+				} else {
+					synchronized (_MSG_LOCK) {
+						outMsgMap.put(message.getRecipientID(), message);
+					}
+				}
+			}
+
+			// is there any node running ?
 			if (leafNodes.isEmpty()) {
-                PhaseTrackingDetail phaseTracking = 
-                    new PhaseTrackingDetail(phase.getPhaseNum(), (int) (System.currentTimeMillis() - startTimestamp) ,phaseMemUtilizationMax);
+				// gather tracking at nodes level
+				phaseMemUtilizationMax = gatherNodeLevelTracking(phase,
+						phaseMemUtilizationMax, startTimeNano, tracking);
+
+				PhaseTrackingDetail phaseTracking = new PhaseTrackingDetail(
+						phase.getPhaseNum(),
+						(int) (System.currentTimeMillis() - startTimestamp),
+						phaseMemUtilizationMax);
 				phase.setPhaseTracking(phaseTracking);
-                logger.info("Execution of phase [" + phase.getPhaseNum() + "] successfully finished - elapsed time(sec): "
+				logger.info("Execution of phase [" + phase.getPhaseNum()
+						+ "] successfully finished - elapsed time(sec): "
 						+ phaseTracking.getExecTime() / 1000);
-				//printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
-                printTracking.execute(true);// print tracking
+				// printProcessingStatus(phase.getNodes().iterator(),
+				// phase.getPhaseNum());
+				printTracking.execute(true);// print tracking
 				return Result.FINISHED_OK;
 				// nothing else to do in this phase
 			}
-            
-            
-            // ------------------------------------
-            // Check that we still have some nodes running
-            // ------------------------------------
-            
+
+			// ------------------------------------
+			// Check that we still have some nodes running
+			// ------------------------------------
+
 			leafNodesIterator = leafNodes.iterator();
 			while (leafNodesIterator.hasNext()) {
 				Node node = (Node) leafNodesIterator.next();
@@ -366,85 +379,96 @@ public class WatchDog extends Thread implements CloverRuntime {
 					leafNodesIterator.remove();
 				}
 			}
-            
-            //  -----------------------------------
-			//  from time to time perform some task
-            //  -----------------------------------
-            if ((ticker--) == 0) {
-                // reinitialize ticker
-                ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
-                // get memory usage mark
-                phaseMemUtilizationMax = Math.max(
-                        phaseMemUtilizationMax, memMXB.getHeapMemoryUsage().getUsed() );
-                }
-            
-                long elapsedNano=System.nanoTime()-startTimeNano;
-                // gather tracking information
-                for (Node node : phase.getNodes()){
-                    String nodeId=node.getId();
-                    NodeTrackingDetail trackingDetail=(NodeTrackingDetail)tracking.get(nodeId);
-                    int inPortsNum=node.getInPorts().size();
-                    int outPortsNum=node.getOutPorts().size();
-                    if (trackingDetail==null){
-                        trackingDetail=new NodeTrackingDetail(nodeId,node.getName(),phase.getPhaseNum(),inPortsNum,outPortsNum);
-                        tracking.put(nodeId, trackingDetail);
-                    }
-                    trackingDetail.timestamp();
-                    trackingDetail.setResult(node.getResultCode());
-                    //
-                    long threadId=node.getNodeThread().getId();
-                   // ThreadInfo tInfo=threadMXB.getThreadInfo(threadId);
-                    if (threadCpuTimeIsSupported) {
-                        trackingDetail.updateRunTime(threadMXB.getThreadCpuTime(threadId),
-                                threadMXB.getThreadUserTime(threadId),
-                                elapsedNano);
-                    } else {
-                        trackingDetail.updateRunTime(-1, -1, elapsedNano);
-                    }
-                    
-                    int i=0;
-                    for (InputPort port : node.getInPorts()){
-                        trackingDetail.updateRows(PortType.IN_PORT, i, port.getInputRecordCounter());
-                        trackingDetail.updateBytes(PortType.IN_PORT, i, port.getInputByteCounter());
-                        i++;    
-                    }
-                    i=0;
-                    for (OutputPort port : node.getOutPorts()){
-                        trackingDetail.updateRows(PortType.OUT_PORT, i, port.getOutputRecordCounter());
-                        trackingDetail.updateBytes(PortType.OUT_PORT, i, port.getOutputByteCounter());
-                        
-                       if (port instanceof Edge){
-                            trackingDetail.updateWaitingRows(i, ((Edge)port).getBufferedRecords());
-                       }
-                       i++;
-                    }
-                    
-                }
-                
-                // Display processing status, if it is time
-                currentTimestamp = System.currentTimeMillis();
-                if (trackingInterval>=0 && (currentTimestamp - lastTimestamp) >= trackingInterval) {
-                    //printProcessingStatus(phase.getNodes().iterator(), phase.getPhaseNum());
-                    printTracking.execute(false); // print tracking
-                    lastTimestamp = currentTimestamp;
-                    
-                    // update mbean & signal that it was updated
-                    mbean.setRunningNodes(leafNodes.size());
-                    mbean.setRunTime(currentTimestamp-startTimestamp);
-                    mbean.updated();
-                }
-            }
-        if (!runIt){
-            // we were forced to stop execution, stop all Nodes
-            logger.error("User has interrupted graph execution !!!");
-            abort();
-            causeNodeID=null;
-            causeException=null;
-            return Result.ABORTED;
-        }else{
-            return Result.FINISHED_OK;
-        }
-			
+
+			// -----------------------------------
+			// from time to time perform some task
+			// -----------------------------------
+			if ((ticker--) == 0) {
+				// reinitialize ticker
+				ticker = Defaults.WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS;
+
+				// gather tracking at nodes level
+				phaseMemUtilizationMax = gatherNodeLevelTracking(phase,
+						phaseMemUtilizationMax, startTimeNano, tracking);
+
+				// Display processing status, if it is time
+				currentTimestamp = System.currentTimeMillis();
+				if (trackingInterval >= 0
+						&& (currentTimestamp - lastTimestamp) >= trackingInterval) {
+					// printProcessingStatus(phase.getNodes().iterator(),
+					// phase.getPhaseNum());
+					printTracking.execute(false); // print tracking
+					lastTimestamp = currentTimestamp;
+
+					// update mbean & signal that it was updated
+					mbean.setRunningNodes(leafNodes.size());
+					mbean.setRunTime(currentTimestamp - startTimestamp);
+					mbean.updated();
+				}
+			}
+
+			if (!runIt) {
+				// we were forced to stop execution, stop all Nodes
+				logger.error("User has interrupted graph execution !!!");
+				abort();
+				causeNodeID = null;
+				causeException = null;
+				return Result.ABORTED;
+			}
+		}
+
+	}
+
+
+	private long gatherNodeLevelTracking(Phase phase, long phaseMemUtilizationMax, long startTimeNano, Map<String, TrackingDetail> tracking) {
+		// get memory usage mark
+		phaseMemUtilizationMax = Math.max(
+		        phaseMemUtilizationMax, memMXB.getHeapMemoryUsage().getUsed() );
+		
+         
+		long elapsedNano=System.nanoTime()-startTimeNano;
+		// gather tracking information
+		for (Node node : phase.getNodes()){
+		    String nodeId=node.getId();
+		    NodeTrackingDetail trackingDetail=(NodeTrackingDetail)tracking.get(nodeId);
+		    int inPortsNum=node.getInPorts().size();
+		    int outPortsNum=node.getOutPorts().size();
+		    if (trackingDetail==null){
+		        trackingDetail=new NodeTrackingDetail(nodeId,node.getName(),phase.getPhaseNum(),inPortsNum,outPortsNum);
+		        tracking.put(nodeId, trackingDetail);
+		    }
+		    trackingDetail.timestamp();
+		    trackingDetail.setResult(node.getResultCode());
+		    //
+		    long threadId=node.getNodeThread().getId();
+		   // ThreadInfo tInfo=threadMXB.getThreadInfo(threadId);
+		    if (threadCpuTimeIsSupported) {
+		        trackingDetail.updateRunTime(threadMXB.getThreadCpuTime(threadId),
+		                threadMXB.getThreadUserTime(threadId),
+		                elapsedNano);
+		    } else {
+		        trackingDetail.updateRunTime(-1, -1, elapsedNano);
+		    }
+		    
+		    int i=0;
+		    for (InputPort port : node.getInPorts()){
+		        trackingDetail.updateRows(PortType.IN_PORT, i, port.getInputRecordCounter());
+		        trackingDetail.updateBytes(PortType.IN_PORT, i, port.getInputByteCounter());
+		        i++;    
+		    }
+		    i=0;
+		    for (OutputPort port : node.getOutPorts()){
+		        trackingDetail.updateRows(PortType.OUT_PORT, i, port.getOutputRecordCounter());
+		        trackingDetail.updateBytes(PortType.OUT_PORT, i, port.getOutputByteCounter());
+		        
+		       if (port instanceof Edge){
+		            trackingDetail.updateWaitingRows(i, ((Edge)port).getBufferedRecords());
+		       }
+		       i++;
+		    }
+		    
+		}
+		return phaseMemUtilizationMax;
 	}
 
 
