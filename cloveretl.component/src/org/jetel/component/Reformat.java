@@ -197,9 +197,9 @@ public class Reformat extends Node {
 					for (outPort = 0; outPort < numOutputPorts; outPort++) {
 						writeRecord(outPort, outRecord[outPort]);
 					}
-				}else{
-					logger.warn(transformation.getMessage());
-				}
+				} else { // skip record and log message if transformation returned false
+                    logger.warn(transformation.getMessage());
+                }
 			}
 			SynchronizeUtils.cloverYield();
 		}
