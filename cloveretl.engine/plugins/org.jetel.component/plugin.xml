@@ -266,4 +266,10 @@
 		<parameter id="type" value="XML_XPATH_READER"/>
 		<parameter id="className" value="org.jetel.component.XmlXPathReader"/>
 	</extension>
+
+	<extension point-id="component">
+	    <parameter id="className" value="org.jetel.component.Pacemaker"/>
+	    <parameter id="type" value="PACEMAKER"/>
+	</extension>
+
 </plugin>
