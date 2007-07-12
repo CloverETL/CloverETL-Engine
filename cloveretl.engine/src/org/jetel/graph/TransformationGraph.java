@@ -765,7 +765,7 @@ public final class TransformationGraph {
 		}
         URL url;
         try {
-            url = FileUtils.getFileURL(runtimeParameters.getProjectURL(), fileURL);
+            url = FileUtils.getFileURL(getRuntimeParameters().getProjectURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
@@ -786,7 +786,7 @@ public final class TransformationGraph {
         }
         URL url; 
         try {
-            url = FileUtils.getFileURL(runtimeParameters.getProjectURL(), fileURL);
+            url = FileUtils.getFileURL(getRuntimeParameters().getProjectURL(), fileURL);
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
