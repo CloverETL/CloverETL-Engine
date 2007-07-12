@@ -170,7 +170,7 @@ public class Trash extends Node {
         		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(
-							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getProjectURL() : null, debugFilename, false)
+							FileUtils.getWritableChannel(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, debugFilename, false)
 					));
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -246,7 +246,7 @@ public class Trash extends Node {
     		if (debugPrint && debugFilename != null) {
                 try {
                 	FileUtils.canWrite(getGraph() != null ? 
-                			getGraph().getProjectURL() : null, debugFilename);
+                			getGraph().getRuntimeParameters().getProjectURL() : null, debugFilename);
                 } catch (ComponentNotReadyException e) {
 	                status.add(e, ConfigurationStatus.Severity.ERROR, this, 
 	                		ConfigurationStatus.Priority.NORMAL, XML_DEBUGFILENAME_ATTRIBUTE);

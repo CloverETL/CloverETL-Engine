@@ -351,7 +351,7 @@ public class DBExecute extends Node {
                 query = xattribs.getString(XML_DBSQL_ATTRIBUTE);
             } else if (xattribs.exists(XML_URL_ATTRIBUTE)) {
                 query = xattribs.resolveReferences(FileUtils.getStringFromURL(
-						graph.getProjectURL(), xattribs.getString(XML_URL_ATTRIBUTE), 
+						graph.getRuntimeParameters().getProjectURL(), xattribs.getString(XML_URL_ATTRIBUTE), 
 						xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
             } else if (xattribs.exists(XML_SQLCODE_ELEMENT)) {
                 query = xattribs.getString(XML_SQLCODE_ELEMENT);

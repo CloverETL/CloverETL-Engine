@@ -193,7 +193,7 @@ public class XLSWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() 
         			: null, fileURL);
         } catch (ComponentNotReadyException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
@@ -213,7 +213,7 @@ public class XLSWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
