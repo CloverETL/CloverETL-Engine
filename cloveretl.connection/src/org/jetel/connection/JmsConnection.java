@@ -221,7 +221,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 		JmsConnection con;
 		try {
 			if (xattribs.exists(XML_CONFIG_ATTRIBUTE)) {
-				Properties config = readConfig(graph.getProjectURL(), xattribs.getString(XML_CONFIG_ATTRIBUTE));
+				Properties config = readConfig(graph.getRuntimeParameters().getProjectURL(), xattribs.getString(XML_CONFIG_ATTRIBUTE));
 				con = new JmsConnection(xattribs.getString(XML_ID_ATTRIBUTE),
 						config.getProperty(XML_INICTX_FACTORY_ATTRIBUTE, null),
 						config.getProperty(XML_PROVIDER_URL_ATTRIBUTE, null),

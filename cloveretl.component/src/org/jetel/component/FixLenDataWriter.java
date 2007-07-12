@@ -174,7 +174,7 @@ public class FixLenDataWriter extends Node {
 		super.init();
         // initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
@@ -303,7 +303,7 @@ public class FixLenDataWriter extends Node {
         checkOutputPorts(status, 0, 0);
 
         try {
-        	FileUtils.canWrite(getGraph() != null ? getGraph().getProjectURL() 
+        	FileUtils.canWrite(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() 
         			: null, fileURL);
         } catch (ComponentNotReadyException e) {
             status.add(e,ConfigurationStatus.Severity.ERROR,this,

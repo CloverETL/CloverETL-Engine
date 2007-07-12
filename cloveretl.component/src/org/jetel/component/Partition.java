@@ -376,7 +376,7 @@ public class Partition extends Node {
 		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
 		    }else if (xattribs.exists(XML_PARTITIONURL_ATTRIBUTE)){
 		    	partition.setPartitionFunction(FileUtils.getStringFromURL(
-		    			partition.getGraph().getProjectURL(), 
+		    			partition.getGraph().getRuntimeParameters().getProjectURL(), 
 		    			xattribs.getString(XML_PARTITIONURL_ATTRIBUTE),
 		    			xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
 		    }else{//set proper standard partition function

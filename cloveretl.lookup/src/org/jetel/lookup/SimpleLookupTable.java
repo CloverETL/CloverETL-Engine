@@ -238,7 +238,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             try {
 				if (fileURL != null) {
 					dataParser.setDataSource(FileUtils.getReadableChannel(
-							getGraph() != null ? getGraph().getProjectURL() : null,
+							getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null,
 							fileURL));
 				}               
 				while (dataParser.getNext(record) != null) {

@@ -204,7 +204,7 @@ public class DBConnection extends GraphElement implements IConnection {
         if(!StringUtils.isEmpty(configFileName)) {
             try {
                 InputStream stream = null;
-                URL url = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, configFileName);
+                URL url = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, configFileName);
                 stream = url.openStream();
 
 //old code - last usage in 2.0                 
@@ -265,7 +265,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	                    for(int i=0;i<libraryPaths.length;i++){
 	                    	try {
                                 // valid url
-                                myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getProjectURL() : null, libraryPaths[i]);
+                                myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, libraryPaths[i]);
 	                    	} catch (MalformedURLException ex1) {
 	                    	    throw new RuntimeException("Malformed URL: " + ex1.getMessage());
 	                    	}
