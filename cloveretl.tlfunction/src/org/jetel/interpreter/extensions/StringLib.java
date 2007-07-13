@@ -375,7 +375,7 @@ public class StringLib extends TLFunctionLibrary {
     class LengthFunction extends TLFunctionPrototype {
 
         public LengthFunction() {
-            super("string", "length", new TLValueType[] { TLValueType.STRING },
+            super("string", "length", new TLValueType[] { TLValueType.OBJECT },
                     TLValueType.INTEGER);
         }
 
@@ -384,11 +384,20 @@ public class StringLib extends TLFunctionLibrary {
             TLValue val = (TLValue)context.getContext();
             Numeric intBuf = val.getNumeric();
             
-            if (params[0].type != TLValueType.STRING) {
+            switch(params[0].type){
+            case STRING:
+            	intBuf.setValue(params[0].getCharSequence().length());
+            	break;
+            case LIST:
+            	intBuf.setValue(params[0].getList().size());
+            	break;
+            case MAP:
+            	intBuf.setValue(params[0].getMap().size());
+            	break;
+            	default:
                 throw new TransformLangExecutorRuntimeException(params,
                         "length - wrong type of literal");
             }
-            intBuf.setValue(params[0].getCharSequence().length());
 
             return val;
 
@@ -534,6 +543,7 @@ public class StringLib extends TLFunctionLibrary {
             
             String replacement=params[2].toString();
             StringBuffer sb=(StringBuffer)regex.result.getValue();
+            sb.setLength(0);
             while ( regex.matcher.find()) {
                 regex.matcher.appendReplacement(sb, replacement);
             }
