@@ -209,7 +209,7 @@ public class WatchDog extends Thread implements CloverRuntime {
         // Construct the ObjectName for the MBean we will register
         try {
             ObjectName name = new ObjectName(
-                    "org.jetel.graph.runtime:type="+ createMBeanName(mbeanName, graph.getName())
+                    createMBeanName(mbeanName != null ? mbeanName : graph.getName())
             );
             // Register the  MBean
             mbs.registerMBean(mbean, name);
@@ -230,11 +230,10 @@ public class WatchDog extends Thread implements CloverRuntime {
      * Creates identifier for shared JMX mbean.
      * 
      * @param defaultMBeanName
-     * @param graphName
      * @return
      */
-    public static String createMBeanName(String mbeanName, String defaultName) {
-        return MBEAN_NAME_PREFIX + (mbeanName != null ? mbeanName : defaultName);
+    public static String createMBeanName(String mbeanIdentifier) {
+        return "org.jetel.graph.runtime:type=" + MBEAN_NAME_PREFIX + (mbeanIdentifier != null ? mbeanIdentifier : "");
     }
     
     public void runPhase(int phaseNo){
