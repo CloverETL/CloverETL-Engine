@@ -167,8 +167,8 @@ public class AggregateMappingParser {
 					throw new AggregationException("Invalid mapping format");
 				}
 			} catch (AggregationException e) {
-				throw new AggregationException("Invalid aggregation mapping " + expr2 
-						+ " :\n" + e.getMessage(), e);
+				throw new AggregationException("Invalid mapping '" + expr2 
+						+ "' :\n" + e.getMessage(), e);
 			}
 		}
 	}
