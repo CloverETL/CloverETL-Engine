@@ -1215,11 +1215,10 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case LIST_VAR:
 			if (varNode.usedIndex) {
 				try {
-					// scalar context
-					// we always assign duplicate object to list variable
-					if (!valueToAssign.isNull())
+					//	we always assign duplicate object to list variable
+					if (!valueToAssign.isNull() && valueToAssign.getType().isPrimitive())
 						valueToAssign = valueToAssign.duplicate();
-
+					// scalar context
 					if (varNode.indexSet) {
 						varNode.jjtGetChild(0).jjtAccept(this, data);
 						index = stack.pop();
@@ -1244,7 +1243,7 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			} else {
 				// list context
 				if (valueToAssign.type == variableToAssign.getType()) {
-					((TLListVariable) variableToAssign).fill(valueToAssign, -1);
+					((TLListVariable) variableToAssign).setValue(valueToAssign);
 				} else {
 					throw new TransformLangExecutorRuntimeException(node,
 							"invalid assignment of scalar value to list/array \""
@@ -1255,23 +1254,30 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			break;
         case MAP_VAR:
         	if (varNode.usedIndex) {
-				// we always assign duplicate object to map variable
-				if (!valueToAssign.isNull())
+				// scalar context
+        		// we always assign duplicate object to list variable
+				if (!valueToAssign.isNull() && valueToAssign.getType().isPrimitive())
 					valueToAssign = valueToAssign.duplicate();
-				try {
-					varNode.jjtGetChild(0).jjtAccept(this, data);
-					index = stack.pop();
-					variableToAssign.setValue(index.getString(), valueToAssign);
-				} catch (Exception ex) {
-					throw new TransformLangExecutorRuntimeException(node,
-							"invalid assignment of \"" + valueToAssign
-									+ "\" to variable \"" + varNode.varName
-									+ "\"", ex);
+				if (varNode.indexSet) {
+					try {
+						varNode.jjtGetChild(0).jjtAccept(this, data);
+						index = stack.pop();
+						variableToAssign.setValue(index.getString(),
+								valueToAssign);
+					} catch (Exception ex) {
+						throw new TransformLangExecutorRuntimeException(node,
+								"invalid assignment of \"" + valueToAssign
+										+ "\" to variable \"" + varNode.varName
+										+ "\"", ex);
+					}
+				} else {
+					// no key specified, we add values from map
+					variableToAssign.setValue(null, valueToAssign);
 				}
 			} else {
 				variableToAssign.setValue(valueToAssign);
 			}
-            break;
+			break;
         default:
             TLValueType type=variableToAssign.getType();
             if (type.isCompatible(valueToAssign.type)) {

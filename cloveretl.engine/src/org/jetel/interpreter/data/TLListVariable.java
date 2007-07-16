@@ -54,12 +54,24 @@ public class TLListVariable extends TLVariable {
     
     public void setValue(TLValue value) {
         if (value.type==this.value.type) {
-            this.value.getList().addAll(value.getList());
+            //this.value.getList().addAll(value.getList());
+        	// copy reference to list
+        	this.value.value=value.value;
         }else {
             throw new RuntimeException("incompatible value type: "+value.type);
         }
     }
     
+    /* (non-Javadoc)
+     * Following operation is performed based on value type and index value
+     * 
+     * Type=List, index = -1 -> append all values from list into this list
+     * Type=anyother, index = -1 -> append value at the end of the list
+     * Type=any, index >= 0 -> save the value at specified index of the list
+     * Value is null, index = -1 -> remove last item from the list
+     * 
+     * @see org.jetel.interpreter.data.TLVariable#setValue(int, org.jetel.interpreter.data.TLValue)
+     */
     public void setValue(int index, TLValue value) {
         if (value.isNull()) {
             if (index < 0)
@@ -67,12 +79,23 @@ public class TLListVariable extends TLVariable {
             this.value.getList().remove(index);
         } else {
             if (index < 0) {
-                this.value.getList().add(value);
+            	if (value.type==this.value.type)
+            		addAll(value.getList());
+            	else
+            		this.value.getList().add(value);
             } else {
                 this.value.getList().set(index, value);
             }
         }
     }
+    
+    private void addAll(List<TLValue> values){
+    	List<TLValue> thisList=getList();
+    	for(TLValue val:values){
+    		thisList.add(val.duplicate());
+    	}
+    }
+    
     
     public void setValue(String key,TLValue value) {
         throw new UnsupportedOperationException();

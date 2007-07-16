@@ -23,7 +23,6 @@
  */
 package org.jetel.interpreter.data;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,7 +56,9 @@ public class TLMapVariable extends TLVariable {
     
     public void setValue(TLValue value) {
         if (value.type==this.value.type) {
-            this.value.getMap().putAll(value.getMap());
+            //this.value.getMap().putAll(value.getMap());
+        	// copy reference to map
+        	this.value.value=value.value;
         }else {
             throw new RuntimeException("incompatible value type: "+value.type);
         }
@@ -70,9 +71,24 @@ public class TLMapVariable extends TLVariable {
     public void setValue(String key,TLValue value) {
         if (value.isNull()) {
             this.value.getMap().remove(key);
-        }else {
-            this.value.getMap().put(key, value);
+        }else{
+        	if (key==null){
+        		if (this.value.type==value.type)
+        			putAll(value.getMap());
+        		else
+        			throw new RuntimeException("can't store data in map variable \""+name+" \"under NULL key !");
+        	}else{
+        		this.value.getMap().put(key, value);
+        	}
         }
+    }
+    
+    private void putAll(Map<String,TLValue> pairs){
+    	Map<String,TLValue> thisMap=value.getMap();
+    	for (Map.Entry<String,TLValue> entry: pairs.entrySet()){
+    		thisMap.put(entry.getKey(), entry.getValue().duplicate());
+    	}
+    	
     }
     
     public void setValue(DataField fieldValue) {

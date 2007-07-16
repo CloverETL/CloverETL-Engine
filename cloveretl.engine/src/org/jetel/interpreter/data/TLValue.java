@@ -163,7 +163,7 @@ public class TLValue implements Comparable<TLValue>{
     
     
     public final boolean isNull() {
-        return value==null;
+        return (value==null || (type==TLValueType.STRING && ((CharSequence)value).length()==0 )) ;
     }
     
     public final TLValueType getType() {
