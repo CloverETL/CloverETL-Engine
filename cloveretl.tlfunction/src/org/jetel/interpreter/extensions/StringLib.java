@@ -119,10 +119,7 @@ public class StringLib extends TLFunctionLibrary {
                     } else {
                         StringUtils.strBuffAppend(strBuf, params[i].toString());
                     }
-                } else {
-                    throw new TransformLangExecutorRuntimeException(params,
-                            "concat - wrong type of literal(s)");
-                }
+                } 
             }
             return val;
         }
