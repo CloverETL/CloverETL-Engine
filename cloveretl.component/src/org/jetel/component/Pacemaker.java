@@ -62,7 +62,7 @@ import org.w3c.dom.Element;
  * <h4><i>Description:</i></h4>
  * </td>
  * <td>All records from input port 0 are copied to all output ports with speed
- * limited by arguments "period" or "delay".</td>
+ * limited by attributes "rate" (and "period") or "delay".</td>
  * </tr>
  * <tr>
  * <td>
@@ -80,7 +80,7 @@ import org.w3c.dom.Element;
  * <td>
  * <h4><i>Comment:</i></h4>
  * </td>
- * <td> </td>
+ * <td>&nbsp;</td>
  * </tr>
  * </table> <br>
  * <table border="1">
@@ -96,16 +96,22 @@ import org.w3c.dom.Element;
  * <td>component identification</td>
  * </tr>
  * <tr>
+ * <td><b>rate</b></td>
+ * <td>Number of rows to be processed in a time "period". 
+ * Rows are processed at once and if processing finishes sooner, 
+ * component sleeps until next period start.
+ * <br>Default value = 0 (ignored).</td>
+ * </tr>
+ * <tr>
  * <td><b>period</b></td>
- * <td>Time in milliseconds for one row processing (from start to start), ie.
- * 250 means 4 rows per second. Default value = 0 (ignored). <br>This time is
- * minimum processing time - real row processing might take longer.</td>
+ * <td>Optional supplement to "rate" attribute - specifies length of period in milliseconds. 
+ * <br>Default value = 1000 (1 second).</td>
  * </tr>
  * <tr>
  * <td><b>delay</b></td>
- * <td>Time in milliseconds to be delayed between two rows are processed (from
- * end to start). Default value = 0 (ignored). If specified, argument "period"
- * is ignored.</td>
+ * <td>Time in milliseconds to be delayed after each row processing. 
+ * <br>Default value = 0 (ignored). 
+ * <br>If specified (>0), attribute "rate" is ignored.</td>
  * </tr>
  * </table>
  * 
@@ -118,13 +124,17 @@ public class Pacemaker extends Node {
 
 	private static final String XML_PERIOD_ATTRIBUTE = "period";
 
+	private static final String XML_RATE_ATTRIBUTE = "rate";
+
 	private static final String XML_DELAY_ATTRIBUTE = "delay";
 
 	private final static int READ_FROM_PORT = 0;
 
 	private ByteBuffer recordBuffer;
 
-	private int period = 0;
+	private int period = 1000; // default = 1 second
+
+	private int rate = 0;
 
 	private int delay = 0;
 
@@ -139,19 +149,28 @@ public class Pacemaker extends Node {
 	public Result execute() throws Exception {
 		InputPortDirect inPort = (InputPortDirect) getInputPort(READ_FROM_PORT);
 		boolean isData = true;
-		long nextReadingTime = System.currentTimeMillis();
+		long nextPeriodStart = System.currentTimeMillis() + period;
+		int processedInThisPeriod = 0;
 		while (isData && runIt) {
-			if (delay > 0) {
-				Thread.sleep(delay);
-			} else if (period > 0) {
-				while (nextReadingTime > System.currentTimeMillis()) {
-					Thread.sleep(50);
-				}
-				nextReadingTime += period;
-			}
 			isData = inPort.readRecordDirect(recordBuffer);
 			if (isData) {
 				writeRecordBroadcastDirect(recordBuffer);
+			}
+			if (delay > 0) {  
+				// delay mode
+				Thread.sleep(delay);
+			} else if (rate > 0) {
+				// rate mode			
+				processedInThisPeriod += 1;
+				if (processedInThisPeriod >= rate) {
+					// sleep if there is time for it
+				    if (nextPeriodStart > System.currentTimeMillis()) {
+					  Thread.sleep(nextPeriodStart - System.currentTimeMillis());
+				    }
+				    //	start new period
+					nextPeriodStart += period; 
+					processedInThisPeriod = 0; 
+				}
 			}
 			SynchronizeUtils.cloverYield();
 		}
@@ -178,6 +197,10 @@ public class Pacemaker extends Node {
 			xmlElement.setAttribute(XML_PERIOD_ATTRIBUTE,
 					String.valueOf(period));
 		}
+		if (rate != 0) {
+			xmlElement.setAttribute(XML_RATE_ATTRIBUTE,
+					String.valueOf(rate));
+		}
 		if (delay != 0) {
 			xmlElement.setAttribute(XML_DELAY_ATTRIBUTE, String.valueOf(delay));
 		}
@@ -192,6 +215,9 @@ public class Pacemaker extends Node {
 			pacemaker = new Pacemaker(xattribs.getString(XML_ID_ATTRIBUTE));
 			if (xattribs.exists(XML_PERIOD_ATTRIBUTE)) {
 				pacemaker.period = xattribs.getInteger(XML_PERIOD_ATTRIBUTE);
+			}
+			if (xattribs.exists(XML_RATE_ATTRIBUTE)) {
+				pacemaker.rate = xattribs.getInteger(XML_RATE_ATTRIBUTE);
 			}
 			if (xattribs.exists(XML_DELAY_ATTRIBUTE)) {
 				pacemaker.delay = xattribs.getInteger(XML_DELAY_ATTRIBUTE);
