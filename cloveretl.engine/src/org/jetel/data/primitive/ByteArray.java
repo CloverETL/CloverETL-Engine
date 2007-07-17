@@ -33,7 +33,8 @@ import org.jetel.util.ZipUtils;
 /**
  * A class that represents dynamic array of bytes.<br>
  * 
- * @author J.Ausperger (OpenTech s.r.o)
+ * @author Jan Ausperger (jan.ausperger@javlinconsulting.cz)
+ *         (c) Javlin Consulting (www.javlinconsulting.cz)
  * @created May 30, 2007
  */
 public class ByteArray implements Comparable, Iterable {
@@ -51,7 +52,7 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * The value is/isn't in packed form.
 	 */
-	private boolean dataCompressed = false;
+	protected boolean dataCompressed = false;
 
 	/**
 	 * Initial value size.
@@ -61,25 +62,40 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * For packed decimal.
 	 */
-	private static final char[] digits = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
+	private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
 		'9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 	/**
-	 * Constructors empty|capacity|byte[]|CharSequence.
+	 * Creates byte array with default value size.
 	 */
 	public ByteArray() {
 		this(INITIAL_BYTE_ARRAY_CAPACITY);
 	}
 	
+	/**
+	 * Creates byte array with user defined value size.
+	 * 
+	 * @param capacity   defines the size of value
+	 */
 	public ByteArray(int capacity) {
 		value = new byte[capacity];
 	}
 	
+	/**
+	 * Creates byte array from value, makes copy of value. 
+	 * 
+	 * @param value   byte array to be copied
+	 */
 	public ByteArray(byte[] value) {
 		this.value = new byte[value.length];
 		fromByte(value);
 	}
 	
+	/**
+	 * Creates byte array from CharSequence.
+	 * 
+	 * @param value   CharSequence to be copied
+	 */
 	public ByteArray(CharSequence value) {
 		byte[] bValue = value.toString().getBytes();
 		this.value = new byte[bValue.length];
@@ -89,6 +105,8 @@ public class ByteArray implements Comparable, Iterable {
     /**
      * This implements the expansion semantics of ensureCapacity with no
      * size check or synchronization.
+     * 
+     * @param minimumCapacity   the minimum desired capacity.
      */
     private void expandCapacity(int minimumCapacity) {
     	int newCapacity = (value.length + 1) * 2;
@@ -101,7 +119,7 @@ public class ByteArray implements Comparable, Iterable {
         System.arraycopy(value, 0, newValue, 0, count);
         value = newValue;
     }
-
+    
     /**
      * Ensures that the capacity is at least equal to the specified minimum.
      * If the current capacity is less than the argument, then a new internal
@@ -133,14 +151,22 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * FromXxx methods writes the value at the beginning of the byte array and 
-	 * sets length of array to the size of data. 
+	 * FromByte method writes the value at the beginning of the byte array and 
+	 * sets length of array to 1.
+	 * 
+	 * @param data   byte to be copied
 	 */
 	public void fromByte(byte data) {
 		value[0] = data;
 		count = 1;
 	}
 	
+	/**
+	 * FromByte method writes the value at the beginning of the byte array and 
+	 * sets length of array to the size of data.
+	 * 
+	 * @param data   byte array to be copied
+	 */
 	public void fromByte(byte[] data) {
 		if (this.value.length < data.length) {
 			ensureCapacity(data.length);
@@ -149,10 +175,23 @@ public class ByteArray implements Comparable, Iterable {
         count = data.length;
 	}
 	
+	/**
+	 * FromString method writes the value at the beginning of the byte array and 
+	 * sets length of array to the size of sequence.
+	 * 
+	 * @param seq   character sequence to be copied
+	 */
 	public void fromString(CharSequence seq) {
 		fromByte(seq.toString().getBytes());
 	}
 	
+	/**
+	 * FromString method writes the value at the beginning of the byte array and 
+	 * sets length of array to the size of sequence.
+	 * 
+	 * @param seq   character sequence to be copied
+	 * @param charset   encoding used for char sequence
+	 */
 	public void fromString(CharSequence seq, String charset) {
         try {
     		fromByte(seq.toString().getBytes(charset));
@@ -161,26 +200,22 @@ public class ByteArray implements Comparable, Iterable {
         }
 	}
 	
+	/**
+	 * FromByteBuffer method writes the value at the beginning of the byte array, 
+	 * value is read from byte buffer position to byte buffer limit and the method 
+	 * sets length of array to byte buffer limit minus byte buffer position.
+	 * 
+	 * @param dataBuffer   byte buffer to be copied
+	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer) {
-		int len = dataBuffer.capacity();
-		if (value.length < len) {
-			ensureCapacity(len);
-		}
-		System.arraycopy(dataBuffer.array(), 0, value, 0, len);
-		count = len;
-	}
-
-	public void fromByteBufferFromPos2Lim(ByteBuffer dataBuffer) {
 		int len = dataBuffer.limit() - dataBuffer.position();
 		if (value.length < len) {
 			ensureCapacity(len);
 		}
-		byte[] tmpValue = new byte[len];
-		dataBuffer.get(tmpValue);
-		System.arraycopy(tmpValue, 0, value, 0, len);
+		dataBuffer.get(value);
 		count = len;
 	}
-	
+
 	/**
 	 * Gets byte at the position.
 	 * 
@@ -188,16 +223,25 @@ public class ByteArray implements Comparable, Iterable {
 	 * @return
 	 */
 	public byte getByte(int position) {
+		if (position >= count) throw new ArrayIndexOutOfBoundsException(position);
 		return value[position];
 	}
 	
 	/**
-	 * ToXxx methods return part or whole array.
+	 * ToString method returns whole array.
+	 * 
+	 * @return   string value to be returned
 	 */
 	public String toString() {
 		return new String(value, 0, count);
 	}
 	
+	/**
+	 * ToString method returns whole array.
+	 * 
+	 * @param charset   encoding used for byte array
+	 * @return   string value to be returned
+	 */
 	public String toString(String charset) {
         try{
             return new String(value, 0, count, charset);
@@ -206,10 +250,25 @@ public class ByteArray implements Comparable, Iterable {
         }
 	}
 	
+	/**
+	 * ToString method returns part of array from offset to length+offset.
+	 * 
+	 * @param offset   index to the byte array
+	 * @param length   count of byte to be read
+	 * @return   string value to be returned
+	 */
 	public String toString(int offset, int length) {
 		return new String(value, offset, length);
 	}
 	
+	/**
+	 * ToString method returns part of array from offset to length+offset.
+	 * 
+	 * @param offset   index to the byte array
+	 * @param length   count of byte to be read
+	 * @param charset   encoding used for byte array
+	 * @return   string value to be returned
+	 */
 	public String toString(int offset, int length, String charset) {
         try{
             return new String(value, offset, length, charset);
@@ -218,6 +277,11 @@ public class ByteArray implements Comparable, Iterable {
         }
 	}
 	
+	/**
+	 * Puts byte array to the data buffer.
+	 * 
+	 * @param dataBuffer   byte array as written to the data buffer 
+	 */
 	public void toByteBuffer(ByteBuffer dataBuffer) {
 		try {
 			dataBuffer.put(value, 0, count);
@@ -226,6 +290,13 @@ public class ByteArray implements Comparable, Iterable {
 		}
 	}
 	
+	/**
+	 * Puts byte array to the data buffer from offset to length+offset.
+	 * 
+	 * @param dataBuffer   byte array as written to the data buffer
+	 * @param offset   index to the byte array
+	 * @param length   count of byte to be read
+	 */
 	public void toByteBuffer(ByteBuffer dataBuffer, int offset, int length) {
 		try {
 			dataBuffer.put(value, offset, length);
@@ -237,16 +308,28 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * Returns internal byte array value.
 	 * 
-	 * @return
+	 * @return   internal byte array.
 	 */
 	public byte[] getValue() {
 		return value;
 	}
 	
 	/**
+	 * Returns duplicated byte array value.
+	 * 
+	 * @param data   internal value is copied to the data 
+	 * @return   data value from param
+	 */
+	public byte[] getValue(byte[] data) {
+		if (data.length < count) throw new ArrayIndexOutOfBoundsException(data.length);
+		System.arraycopy(value, 0, data, 0, count);
+		return data;
+	}
+
+	/**
 	 * Duplicates and returns internal byte array value.
 	 * 
-	 * @return
+	 * @return   internal byte array
 	 */
 	public byte[] getValueDuplicate() {
         byte[] ret = new byte[count];
@@ -257,7 +340,7 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * Duplicates instance of this class.
 	 * 
-	 * @return
+	 * @return   duplicated ByteArray 
 	 */
 	public ByteArray duplicate() {
 		ByteArray byteArray = new ByteArray(value);
@@ -266,10 +349,9 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Sets all bytes in byte array to 0.
+	 * Sets count index to 0.
 	 */
 	public void reset() {
-		setValue((byte)0);
 		count = 0;
 	}
 
@@ -333,16 +415,26 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Append methods appends data to the end of byte array.
+	 * Appends data to the end of byte array.
+	 * 
+	 * @param data   byte to be appended
+	 * @return   ByteArray
 	 */
-	public void append(byte data) {
+	public ByteArray append(byte data) {
 		if (count + 1 > value.length) {
 			expandCapacity(count + 1);
 		}
 		value[count] = data;
 		++count;
+		return this;
 	}
 	
+	/**
+	 * Appends data to the end of byte array.
+	 * 
+	 * @param data   byte array to be appended
+	 * @return   ByteArray
+	 */
 	public ByteArray append(byte[] data) {
 		int len = count + data.length;
 		if (len > value.length) {
@@ -353,6 +445,14 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Appends data to the end of byte array from offset to len+offset.
+	 * 
+	 * @param data   byte array to be appended
+	 * @param offset   index to the internal byte array
+	 * @param len   count of bytes to be appended
+	 * @return   ByteArray
+	 */
 	public ByteArray append(byte[] data, int offset, int len) {
         int newCount = count + len;
     	if (newCount > value.length)
@@ -362,10 +462,23 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Appends data to the end of byte array.
+	 * 
+	 * @param data   character sequence to be appended
+	 * @return   ByteArray
+	 */
 	public ByteArray append(CharSequence data) {
 		return append(data.toString().getBytes());
 	}
 	
+	/**
+	 * Appends data to the end of byte array.
+	 * 
+	 * @param data   character sequence to be appended
+	 * @param charset   encoding used for byte array
+	 * @return   ByteArray
+	 */
 	public ByteArray append(CharSequence data, String charset) {
 		try {
 			return append(data.toString().getBytes(charset));
@@ -374,34 +487,28 @@ public class ByteArray implements Comparable, Iterable {
 	    }
 	}
 	
+	/**
+	 * Appends data to the end of byte array.
+	 * 
+	 * @param dataBuffer   data buffer to be appended
+	 * @return   ByteArray
+	 */
 	public ByteArray append(ByteBuffer dataBuffer) {
-		int len = dataBuffer.capacity();
-		if (value.length < len + count) {
-			ensureCapacity(len + count);
-		}
-		System.arraycopy(dataBuffer.array(), 0, value, count, len);
-		count += len;
-		return this;
-	}
-	
-	public ByteArray appendFromPos2Lim(ByteBuffer dataBuffer) {
 		int len = dataBuffer.limit() - dataBuffer.position();
 		if (value.length < len + count) {
 			ensureCapacity(len + count);
 		}
-		byte[] tmpValue = new byte[len];
-		dataBuffer.get(tmpValue);
-		System.arraycopy(tmpValue, 0, value, count, len);
+		dataBuffer.get(value, count, len);
 		count += len;
 		return this;
 	}
-
+	
 	/**
 	 * The method removes bytes from index start to end.
 	 * 
-	 * @param start
-	 * @param end
-	 * @return
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @return   ByteArray
 	 */
 	public ByteArray delete(int start, int end) {
 		if (start < 0)
@@ -421,7 +528,7 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * The method removes byte at the position index. 
 	 * 
-	 * @param index
+	 * @param index   index to the byte array
 	 * @return
 	 */
 	public ByteArray deleteByteAt(int index) {
@@ -433,7 +540,11 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Replace methods replaces data. 
+	 * Replaces data in byte array at the offset. 
+	 * 
+	 * @param offset   index to the byte array
+	 * @param data   byte to be replaced
+	 * @return   ByteArray
 	 */
 	public ByteArray replace(int offset, byte data) {
         if (offset < 0)
@@ -445,6 +556,14 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Replaces data in internal byte array from start to end position.
+	 * 
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @param data   byte array to be replaced
+	 * @return   ByteArray
+	 */
 	public ByteArray replace(int start, int end, byte[] data) {
         if (start < 0)
     	    throw new ArrayIndexOutOfBoundsException(start);
@@ -464,26 +583,27 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Replaces data in byte array from start to end position.
+	 * 
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @param data   character sequence to be replaced
+	 * @return   ByteArray
+	 */
 	public ByteArray replace(int start, int end, CharSequence data) {
-        if (start < 0)
-    	    throw new ArrayIndexOutOfBoundsException(start);
-    	if (end > count)
-    	    end = count;
-    	if (start > end)
-    	    throw new ArrayIndexOutOfBoundsException("start > end");
-
-    	byte[] bData = data.toString().getBytes();
-    	int len = bData.length;
-    	int newCount = count + len - (end - start);
-    	if (newCount > value.length)
-    	    expandCapacity(newCount);
-
-            System.arraycopy(value, end, value, start + len, count - end);
-            System.arraycopy(bData, 0, value, start, len);
-            count = newCount;
-		return this;
+		return replace(start, end, data, null);
 	}
 	
+	/**
+	 * Replaces data in byte array from start to end position.
+	 * 
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @param data   character sequence to be replaced
+	 * @param charset   an encoding used for byte array
+	 * @return   ByteArray
+	 */
 	public ByteArray replace(int start, int end, CharSequence data, String charset) {
         if (start < 0)
     	    throw new ArrayIndexOutOfBoundsException(start);
@@ -493,22 +613,34 @@ public class ByteArray implements Comparable, Iterable {
     	    throw new ArrayIndexOutOfBoundsException("start > end");
 
     	byte[] bData = null;
-		try {
-			bData = data.toString().getBytes(charset);
-		} catch (UnsupportedEncodingException e) {
-	        throw new RuntimeException(e);
-		}
+    	if (charset == null) {
+        	bData = data.toString().getBytes();
+    	} else {
+    		try {
+    			bData = data.toString().getBytes(charset);
+    		} catch (UnsupportedEncodingException e) {
+    	        throw new RuntimeException(e);
+    		}
+    	}
     	int len = bData.length;
     	int newCount = count + len - (end - start);
     	if (newCount > value.length)
     	    expandCapacity(newCount);
 
-            System.arraycopy(value, end, value, start + len, count - end);
-            System.arraycopy(bData, 0, value, start, len);
-            count = newCount;
+        System.arraycopy(value, end, value, start + len, count - end);
+        System.arraycopy(bData, 0, value, start, len);
+        count = newCount;
 		return this;
 	}
 	
+	/**
+	 * Replaces data in byte array from start to end position.
+	 * 
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @param dataBuffer   data buffer to be replaced
+	 * @return   ByteArray
+	 */
 	public ByteArray replace(int start, int end, ByteBuffer dataBuffer) {
         if (start < 0)
     	    throw new ArrayIndexOutOfBoundsException(start);
@@ -517,21 +649,23 @@ public class ByteArray implements Comparable, Iterable {
     	if (start > end)
     	    throw new ArrayIndexOutOfBoundsException("start > end");
 
-    	byte[] bData = new byte[dataBuffer.limit() - dataBuffer.position()];
-    	dataBuffer.get(bData);
-    	int len = bData.length;
+    	int len = dataBuffer.limit() - dataBuffer.position();
     	int newCount = count + len - (end - start);
     	if (newCount > value.length)
     	    expandCapacity(newCount);
 
             System.arraycopy(value, end, value, start + len, count - end);
-            System.arraycopy(bData, 0, value, start, len);
+        	dataBuffer.get(value, start, len);
             count = newCount;
 		return this;
 	}
 
 	/**
-	 * Insert methods inserts data to the offset.
+	 * Inserts data to the offset.
+	 * 
+	 * @param offset   index to the byte array
+	 * @param data   byte to be inserted
+	 * @return
 	 */
 	public ByteArray insert(int offset, byte data) {
 		int newCount = count + 1;
@@ -543,6 +677,15 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Inserts data to the internal byte array.
+	 * 
+	 * @param index   index to the internal byte array
+	 * @param data  byte array to be inserted
+	 * @param offset   index to the data byte array
+	 * @param len   count of bytes to be inserted
+	 * @return   ByteArray
+	 */
 	public ByteArray insert(int index, byte data[], int offset, int len) {
         if ((index < 0) || (index > length()))
     	    throw new ArrayIndexOutOfBoundsException(index);
@@ -558,36 +701,43 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Inserts data to the byte array.
+	 * 
+	 * @param dstOffset   index to the internal byte array
+	 * @param s  character sequence to be inserted
+	 * @param start   index to the CharSequence
+	 * @param end   index to the CharSequence
+	 * @return   ByteArray
+	 */
 	public ByteArray insert(int dstOffset, CharSequence s, int start, int end) {
-        if (s == null)
-            s = "null";
-    	if ((dstOffset < 0) || (dstOffset > count))
-    	    throw new IndexOutOfBoundsException("dstOffset "+dstOffset);
-    	byte[] sByte = s.toString().getBytes();
-    	if ((start < 0) || (end < 0) || (start > end) || (end > sByte.length))
-                throw new IndexOutOfBoundsException("start " + start + ", end " + end + ", s.length() " + sByte.length);
-    	int len = end - start;
-        if (len == 0) return this;
-    	int newCount = count + len;
-    	if (newCount > value.length)
-    	    expandCapacity(newCount);
-    	System.arraycopy(value, dstOffset, value, dstOffset + len, count - dstOffset);
-    	System.arraycopy(sByte, start, value, dstOffset, end - start);
-    	count = newCount;
-		return this;
+		return insert(dstOffset, s, start, end, null);
 	}
 	
+	/**
+	 * Inserts data to the byte array.
+	 * 
+	 * @param dstOffset   index to the internal byte array
+	 * @param s   character sequence to be inserted
+	 * @param start   index to the CharSequence
+	 * @param end   index to the CharSequence
+	 * @param charset   an encoding used for byte array
+	 * @return   ByteArray
+	 */
 	public ByteArray insert(int dstOffset, CharSequence s, int start, int end, String charset) {
-        if (s == null)
-            s = "null";
+        if (s == null) throw new IllegalArgumentException("CharSequence is null");
     	if ((dstOffset < 0) || (dstOffset > count))
     	    throw new IndexOutOfBoundsException("dstOffset "+dstOffset);
     	byte[] sByte = null;
-		try {
-			sByte = s.toString().getBytes(charset);
-		} catch (UnsupportedEncodingException e) {
-	        throw new RuntimeException(e);
-		}
+    	if (charset == null) {
+    		sByte = s.toString().getBytes();
+    	} else {
+    		try {
+    			sByte = s.toString().getBytes(charset);
+    		} catch (UnsupportedEncodingException e) {
+    	        throw new RuntimeException(e);
+    		}
+    	}
     	if ((start < 0) || (end < 0) || (start > end) || (end > sByte.length))
                 throw new IndexOutOfBoundsException("start " + start + ", end " + end + ", s.length() " + sByte.length);
     	int len = end - start;
@@ -601,26 +751,36 @@ public class ByteArray implements Comparable, Iterable {
 		return this;
 	}
 	
+	/**
+	 * Inserts data to the byte array.
+	 * 
+	 * @param dstOffset   index to the internal byte array
+	 * @param data   byte buffer to be inserted
+	 * @param length   count of byte to be inserted
+	 * @return   ByteArray
+	 */
 	public ByteArray insert(int dstOffset, ByteBuffer data, int length) {
         if (data == null)
     		return this;
     	if ((dstOffset < 0) || (dstOffset > count))
     	    throw new IndexOutOfBoundsException("dstOffset "+dstOffset);
-    	byte[] sByte = new byte[length];
-    	data.get(sByte, 0, length);
     	if (length < 0)
                 throw new IndexOutOfBoundsException("length " + length);
     	int newCount = count + length;
     	if (newCount > value.length)
     	    expandCapacity(newCount);
     	System.arraycopy(value, dstOffset, value, dstOffset + length, count - dstOffset);
-    	System.arraycopy(sByte, 0, value, dstOffset, length);
+    	data.get(value, dstOffset, length);
     	count = newCount;
 		return this;
 	}
 	
 	/**
-	 * Duplicates and returns part of internal byte array. 
+	 * Duplicates and returns a part of internal byte array.
+	 *  
+	 * @param start   index to the byte array
+	 * @param end   index to the byte array
+	 * @return   a part of internal byte array
 	 */
 	public byte[] subArray(int start, int end) {
     	if ((start < 0) || (end < 0) || (start > end) || (end > count))
@@ -631,7 +791,9 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Returns length of byte array.
+	 * Returns length of byte array value.
+	 * 
+	 * @return length of byte array
 	 */
 	public int length() {
 		return count;
@@ -639,6 +801,8 @@ public class ByteArray implements Comparable, Iterable {
 	
 	/**
 	 * Sets length of byte array.
+	 * 
+	 * @param count   changes size of byte array
 	 */
     public void setLength(int count) {
     	if (count > this.count) throw new IndexOutOfBoundsException("count " + count);
@@ -647,6 +811,8 @@ public class ByteArray implements Comparable, Iterable {
 
     /**
      * Gets bit from byte array at the position.
+	 * 
+	 * @param position   bit index to byte array
      */
     public boolean getBit(int position) {
 		return (value[position >> 3] & ((byte) (1 << (position % 8)))) != 0;
@@ -654,6 +820,8 @@ public class ByteArray implements Comparable, Iterable {
 	
     /**
      * Sets bit to 1 at the position.
+	 * 
+	 * @param position   bit index to byte array
      */
 	public void setBit(int position) {
 		value[position >> 3] |= ((byte) (1 << (position % 8)));
@@ -661,13 +829,17 @@ public class ByteArray implements Comparable, Iterable {
 	
 	/**
      * Sets bit to 0 at the position.
+	 * 
+	 * @param position   bit index to byte array
 	 */
 	public void resetBit(int position) {
 		value[position >> 3] &= (~((byte) (1 << (position % 8))));
 	}
 	
 	/**
-	 * Make the 'bit and' over two byte array.
+	 * Makes the 'bit and' over two byte array.
+	 * 
+	 * @param data   byte array used for 'bit and'
 	 */
 	public void  bitAND(byte[] data) {
 		for (int i=0; i<data.length; i++) {
@@ -677,7 +849,9 @@ public class ByteArray implements Comparable, Iterable {
 	}
 	
 	/**
-	 * Make the 'bit or' over two byte array.
+	 * Makes the 'bit or' over two byte array.
+	 * 
+	 * @param data   byte array used for 'bit or'
 	 */
 	public void bitOR(byte[] data) {
 		for (int i=0; i<data.length; i++) {
@@ -687,7 +861,9 @@ public class ByteArray implements Comparable, Iterable {
 	} 
 	
 	/**
-	 * Make the 'bit xor' over two byte array.
+	 * Makes the 'bit xor' over internal byte array and data array.
+	 * 
+	 * @param data   byte array used for 'bit xor'
 	 */
 	public void bitXOR(byte[] data) {
 		for (int i=0; i<data.length; i++) {
@@ -696,20 +872,30 @@ public class ByteArray implements Comparable, Iterable {
 		}
 	}
 
+	/**
+	 * Decodes byte array from base64 and gets its value
+	 * 
+	 * @return   decoded byte array
+	 */
 	public byte[] decodeBase64() {
 		return Base64.decode(value, 0, count);
 	}
 
+	/**
+	 * The 'data' byte array is encoded to base64 and putted to internal byte array.
+	 * 
+	 * @param data   byte array to be encoded
+	 */
 	public void encodeBase64(byte[] data) {
 		fromString(Base64.encodeBytes(data));
 	}
 
 	/**
-	 * Stores bit sequence like string "010011" into byte array.
+	 * Appends bit sequence like string "010011" into byte array.
 	 * 
-	 * @param seq
-	 * @param bitChar
-	 * @param bitCharValue
+	 * @param seq   character sequence that is converted to the internal byte array.
+	 * @param bitChar   represents true or false value
+	 * @param bitValue   tells what bitChar value is (true or false)
 	 */
 	public void encodeBitStringAppend(CharSequence seq, char bitChar, boolean bitValue) {
         if(seq == null || seq.length() == 0) {
@@ -744,9 +930,9 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * Stores bit sequence like string "010011" into byte array.
 	 * 
-	 * @param seq
-	 * @param bitChar
-	 * @param bitCharValue
+	 * @param seq   character sequence that is converted to the internal byte array.
+	 * @param bitChar   represents true or false value
+	 * @param bitValue   tells what bitChar value is (true or false)
 	 */
 	public void encodeBitString(CharSequence seq, char bitChar, boolean bitValue) {
         if(seq == null || seq.length() == 0) {
@@ -781,11 +967,11 @@ public class ByteArray implements Comparable, Iterable {
 	/**
 	 * Returns bit sequence from byte array.
 	 * 
-	 * @param trueValue
-	 * @param falseValue
-	 * @param start
-	 * @param end
-	 * @return
+	 * @param trueValue   the value that represents 'true' character
+	 * @param falseValue   the value that represents 'false' character
+	 * @param start   bit index to the internal byte array
+	 * @param end   bit index to the internal byte array
+	 * @return   CharSequence
 	 */
 	public CharSequence decodeBitString(char trueValue, char falseValue, int start, int end) {
 		if ((start < 0) || (end < 0) || (start >= end)) 
@@ -799,7 +985,7 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Convert a byte array containing a packed dicimal number to "long"
+	 * Converts a byte array containing a packed dicimal number to "long"
 	 * 
 	 * @return long number
 	 * @exception BadDataFormatException
@@ -847,10 +1033,10 @@ public class ByteArray implements Comparable, Iterable {
 	}
 
 	/**
-	 * Convert "long" to byte array of packed decimal number
+	 * Converts "long" to byte array of packed decimal number
 	 * 
 	 * @param lnum
-	 *            long number to convert
+	 *            long number to be converted
 	 * @return byte array
 	 */
 	public void encodePackLong(long lnum) {
@@ -878,10 +1064,9 @@ public class ByteArray implements Comparable, Iterable {
 	}
 	
 	/**
-	 * Convert "Decimal" to byte array. 
+	 * Converts "Decimal" to byte array. 
 	 * 
-	 * @param decimal
-	 *            Decimal number to convert
+	 * @param decimal    Decimal number to be converted
 	 */
 	public void encodePackDecimal(Decimal decimal) {
 		char[] decValue = decimal.getBigDecimal().unscaledValue().toString().toCharArray();
@@ -936,7 +1121,7 @@ public class ByteArray implements Comparable, Iterable {
 	}
 	
 	/**
-	 * Convert a byte array containing a packed decimal number to Decimal value
+	 * Converts a byte array containing a packed decimal number to Decimal value
 	 * 
 	 * @return Decimal number
 	 * @exception BadDataFormatException
@@ -952,17 +1137,17 @@ public class ByteArray implements Comparable, Iterable {
 			nibble = (value[i] & 0xf0) >>> 4;
 			if (nibble > 9)
 				throw new BadDataFormatException("Invalid decimal digit: " + nibble);
-			strbuf.append(digits[nibble]);
+			strbuf.append(DIGITS[nibble]);
 			nibble = (value[i] & 0x0f);
 			if (nibble > 9)
 				throw new BadDataFormatException("Invalid decimal digit: " + nibble);
-			strbuf.append(digits[nibble]);
+			strbuf.append(DIGITS[nibble]);
 		}
 		// Last byte contains sign
 		nibble = (value[i] & 0xf0) >>> 4;
 		if (nibble > 9)
 			throw new BadDataFormatException("Invalid decimal digit: " + nibble);
-		strbuf.append(digits[nibble]);
+		strbuf.append(DIGITS[nibble]);
 		nibble = (value[i] & 0x0f);
 		if (nibble < 10)
 			throw new BadDataFormatException("Invalid deciaml sign:  ");
@@ -974,18 +1159,19 @@ public class ByteArray implements Comparable, Iterable {
 	}
 	
 	/**
-	 * Compress/Uncompress byte array. 
-	 * 
-	 * @param compressData
+	 * CompressData method compresses internal byte array. 
 	 */
 	public void compressData() {
 		if (dataCompressed) return;
 		byte[] compValue = new byte[count];
-		for (int i=0; i<count; i++) compValue[i] = value[i];
+		System.arraycopy(value, 0, compValue, 0, count);
 		fromByte(ZipUtils.compress(compValue));
 		dataCompressed = true;
 	}
 	
+	/**
+	 * DeCompressData method decompresses internal byte array.
+	 */
 	public void deCompressData() {
 		if (!dataCompressed) return;
 		fromByte(ZipUtils.decompress(value));
@@ -1006,6 +1192,11 @@ public class ByteArray implements Comparable, Iterable {
 		return new ByteIterator(this);
 	}
 	
+	/**
+	 * Internal byte iterator class.
+	 * 
+	 * @author ausperger
+	 */
 	private class ByteIterator implements Iterator<Byte> {
 		private ByteArray byteArray;
 		private int index = 0;

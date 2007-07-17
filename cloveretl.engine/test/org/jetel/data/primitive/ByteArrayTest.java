@@ -80,22 +80,11 @@ public class ByteArrayTest extends TestCase {
 	}
 	
 	public void test_fromByteBuffer() {
-		byteArrayEmpty.fromByteBuffer(dataBuffer);
-		byteArrayZero.fromByteBuffer(dataBuffer);
-		assertEquals(bytes.length, byteArrayEmpty.count);
-		assertEquals(bytes.length, byteArrayZero.count);
-		for (int i=0; i<byteArrayEmpty.count; i++) {
-			assertEquals(bytes[i], byteArrayEmpty.value[i]);
-			assertEquals(bytes[i], byteArrayZero.value[i]);
-		}
-	}
-	
-	public void test_fromByteBufferFromPos2Lim() {
 		int ofs = 2;
 		int lim = 10;
 		dataBuffer.position(ofs);
 		dataBuffer.limit(lim);
-		byteArrayEmpty.fromByteBufferFromPos2Lim(dataBuffer);
+		byteArrayEmpty.fromByteBuffer(dataBuffer);
 		assertEquals(lim-ofs, byteArrayEmpty.count);
 		for (int i=ofs; i<byteArrayEmpty.count+ofs; i++) {
 			assertEquals(bytes[i], byteArrayEmpty.value[i-ofs]);
@@ -104,6 +93,12 @@ public class ByteArrayTest extends TestCase {
 
 	public void test_getByte() {
 		assertEquals(byteArrayBytes.getByte(6), bytes[6]);
+		assertEquals(byteArrayBytes.getByte(byteArrayBytes.count-1), bytes[byteArrayBytes.count-1]);
+		try {
+			byteArrayBytes.getByte(byteArrayBytes.count);
+			assertNotNull(null);
+		} catch (ArrayIndexOutOfBoundsException e) {
+		}
 	}
 
 	public void test_toString() {
