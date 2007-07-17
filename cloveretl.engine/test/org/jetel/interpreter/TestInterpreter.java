@@ -25,26 +25,19 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
 
 import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
-import org.jetel.data.RecordKey;
 import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.Parser;
-import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
-import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
-import org.jetel.data.primitive.Numeric;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
@@ -243,11 +236,11 @@ public class TestInterpreter extends TestCase {
 		System.out.println("\ndecimal test:");
 		String expStr = "decimal i; i=0; print_err(i); \n"+
 						"decimal j; j=-1.0; print_err(j);\n"+
-						"decimal(18,3) minLong; minLong=999999.999; print_err(minLong);\n"+
+						"decimal(18,3) minLong; minLong=999999.999d; print_err(minLong);\n"+
 						"decimal maxLong; maxLong=0000000.0000000; print_err(maxLong);\n"+
 						"decimal fieldValue; fieldValue=$Value; print_err(fieldValue);\n"+
 						"decimal fieldAge; fieldAge=$Age; print_err(fieldAge);\n"+
-						"decimal(400,350) minDouble; minDouble="+Double.MIN_VALUE+"; print_err(minDouble);\n" +
+						"decimal(400,350) minDouble; minDouble="+Double.MIN_VALUE+"d; print_err(minDouble);\n" +
 						"decimal def;print_err(def);\n" +
 						"print_err('the end');\n";
 	      print_code(expStr);
@@ -580,7 +573,7 @@ public class TestInterpreter extends TestCase {
 						"number nplusm1; nplusm1=n-m1;print_err(\"minus number:\"+nplusm1);\n" +
 						"number nplusj;nplusj=n-j;print_err(\"number minus int:\"+nplusj);\n"+
 						"decimal d; d=0.1;print_err(d);\n" +
-						"decimal(10,4) d1; d1=0.0001;print_err(d1);\n" +
+						"decimal(10,4) d1; d1=0.0001d;print_err(d1);\n" +
 						"decimal(10,4) dplusd1; dplusd1=d-d1;print_err(\"minus decimal:\"+dplusd1);\n" +
 						"decimal dplusj;dplusj=d-j;print_err(\"decimal minus int:\"+dplusj);\n" +
 						"decimal(10,4) dplusn;dplusn=d-m1;print_err(\"decimal minus number:\"+dplusn);\n" +
@@ -637,8 +630,8 @@ public class TestInterpreter extends TestCase {
 						"number m1; m1=-0.01;print_err(m1);\n" +
 						"number nplusm1; nplusm1=n*m1;print_err(\"multiply number:\"+nplusm1);\n" +
 						"number m1plusj;m1plusj=m1*j;print_err(\"number multiply int:\"+m1plusj);\n"+
-						"decimal d; d=-0.1;print_err(d);\n" +
-						"decimal(10,4) d1; d1=10.01;print_err(d1);\n" +
+						"decimal(8,4) d; d=0.1; print_err(d);\n" +
+						"decimal(10,4) d1; d1=10.01d;print_err(d1);\n" +
 						"decimal(10,4) dplusd1; dplusd1=d*d1;print_err(\"multiply decimal:\"+dplusd1);\n" +
 						"decimal(10,4) dplusj;dplusj=d*j;print_err(\"decimal multiply int:\"+dplusj);\n"+
 						"decimal(10,4) dplusn;dplusn=d*n;print_err(\"decimal multiply number:\"+dplusn);\n";
@@ -664,9 +657,9 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("l*m",(long)Integer.MAX_VALUE+10,executor.getGlobalVariable(parser.getGlobalVariableSlot("lplusm")).getValue().getLong());
 		      assertEquals("n*m1",new Double(-0.001),executor.getGlobalVariable(parser.getGlobalVariableSlot("nplusm1")).getValue().getDouble());
 		      assertEquals("m1*j",new Double(-1),executor.getGlobalVariable(parser.getGlobalVariableSlot("m1plusj")).getValue().getDouble());
-		      assertEquals("d*d1",DecimalFactory.getDecimal(-1.001,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
-		      assertEquals("d*j",DecimalFactory.getDecimal(-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
-		      assertEquals("d*n",DecimalFactory.getDecimal(-0.0100),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
+		      assertEquals("d*d1",DecimalFactory.getDecimal(1.001,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusd1")).getValue().getNumeric());
+		      assertEquals("d*j",DecimalFactory.getDecimal(10,10,4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusj")).getValue().getNumeric());
+		      assertEquals("d*n",DecimalFactory.getDecimal(0.01, 10, 4),executor.getGlobalVariable(parser.getGlobalVariableSlot("dplusn")).getValue().getNumeric());
 
 		} catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -785,14 +778,14 @@ public class TestInterpreter extends TestCase {
 	public void test_increment_decrement(){
 		System.out.println("\nincrement-decrement test:");
 		String expStr = "int i; i=10;print_err(++i);\n" +
-						"--i;" +
+						"i--;" +
 						"print_err(--i);\n"+
-						"long j;j="+(Long.MAX_VALUE-10)+";print_err(++j);\n" +
+						"long j;j="+(Long.MAX_VALUE-10)+"l;print_err(++j);\n" +
 						"print_err(--j);\n"+
-						"decimal d;d=2;++d;\n" +
+						"decimal d;d=2;d++;\n" +
 						"print_err(--d);\n;" +
 						"number n;n=3.5;print_err(++n);\n" +
-						"--n;\n" +
+						"n--;\n" +
 						"{print_err(++n);}\n" +
 						"print_err(++n);\n";
 
@@ -822,7 +815,7 @@ public class TestInterpreter extends TestCase {
 		      }
 		      
 		      assertEquals(9,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
-		      assertEquals(new CloverLong(Long.MAX_VALUE-10),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
+		      assertEquals(new CloverLong(Long.MAX_VALUE-10).getLong(),executor.getGlobalVariable(parser.getGlobalVariableSlot("j")).getValue().getLong());
 		      assertEquals(DecimalFactory.getDecimal(2),executor.getGlobalVariable(parser.getGlobalVariableSlot("d")).getValue().getNumeric());
 		      assertEquals(new Double(5.5),executor.getGlobalVariable(parser.getGlobalVariableSlot("n")).getValue().getDouble());
 
@@ -1087,12 +1080,14 @@ public class TestInterpreter extends TestCase {
 		
 	public void test_3_expression() {
 		String expStr="not (trim($Name) .ne. \"HELLO\") || replace($Name,\".\" ,\"a\")=='aaaaaaa'";
+//		String expStr="print_err(trim($Name)); print_err(replace('xyyxyyxzz',\"x\" ,\"ab\")); print_err('aaaaaaa'); print_err(split('abcdef','c'));";
 	      print_code(expStr);
 		try {
 			System.out.println("in Test3expression");
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));           
             
+//            CLVFStart parseTree = parser.Start();
             CLVFStartExpression parseTree = parser.StartExpression();
 
             parseTree.dump("ccc");
@@ -1113,7 +1108,7 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
 		      
-              assertEquals(true, executor.getResult().getBoolean());
+              assertEquals(false, executor.getResult().getBoolean());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1348,7 +1343,7 @@ public class TestInterpreter extends TestCase {
 		String expStr = "date born; born=$Born;print_err(born);\n" +
 						"date now;now=today();\n" +
 						"int yer;yer=0;\n" +
-						"for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
+						"for (born;born<now;born=dateadd(born,1,year)) yer++;\n" +
 						"print_err('years on the end:'+yer);\n" +
 						"boolean b;\n" +
 						"for (born;!b;++yer) \n" +
@@ -1405,7 +1400,7 @@ public class TestInterpreter extends TestCase {
 		String expStr ="int i;int yer;yer=0;\n" +
 						"for (i=0;i.le.10;++i) ;\n" +
 						"print_err('on the end i='+i);\n" +
-						"int j=1;long l=12345678901234567890l;\n" +
+						"int j=1;long l=123456789012345678L;\n" +
 						"for (j=5;j<i;++j){\n" +
 						"	l=l-i;}";
 		GregorianCalendar born = new GregorianCalendar(1973,03,23);
@@ -1439,7 +1434,7 @@ public class TestInterpreter extends TestCase {
               int iVarSlot=parser.getGlobalVariableSlot("i");
               int jVarSlot=parser.getGlobalVariableSlot("j");
 		      TLVariable[] result = executor.stack.globalVarSlot;
-		      assertEquals(10,result[jVarSlot].getValue().getInt());
+		      assertEquals(11,result[jVarSlot].getValue().getInt());
 		      assertEquals(11,result[iVarSlot].getValue().getInt());
 		      
 		} catch (ParseException e) {
@@ -1456,7 +1451,7 @@ public class TestInterpreter extends TestCase {
 						"int yer;yer=0;\n" +
 						"int i;\n" +
 						"while (born<now) {\n" +
-						"	++yer;\n" +
+						"	yer++;\n" +
 						"	born=dateadd(born,1,year);\n" +
 						"	for (i=0;i<20;++i) \n" +
 						"		if (i==10) break;\n" +
@@ -1483,7 +1478,8 @@ public class TestInterpreter extends TestCase {
 		      executor.visit(parseTree,null);
 		      System.out.println("Finished interpreting.");
 		      
-		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
+		      assertEquals(new GregorianCalendar().get(Calendar.YEAR) - born.get(Calendar.YEAR) + 1,
+		    		  (executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1496,11 +1492,11 @@ public class TestInterpreter extends TestCase {
 	public void test_break2(){
 		System.out.println("\nBreak test:");
 		String expStr = "date born; born=$Born;print_err(born);\n" +
-						"date now;now=today();\n" +
+						"date now; now=today(); print_err(now);\n" +
 						"int yer;yer=0;\n" +
 						"int i;\n" +
-						"while (yer<now) {\n" +
-						"	++yer;\n" +
+						"while (yer<date2num(now,year)) {\n" +
+						"	yer++;\n" +
 						"	for (i=0;i<20;++i) \n" +
 						"		if (i==10) break;\n" +
 						"}\n" +
@@ -1548,8 +1544,10 @@ public class TestInterpreter extends TestCase {
 						"	print_err('After if');" +
 						"}\n" +
 						"print_err('new loop starting');\n" +
+						"print_err('born '+born+' now '+now);\n"+
 						"while (born<now) {\n" +
 						"	print_err('i='+i);i=0;\n" +
+						"	print_err(yer);\n" +
 						"	yer=yer+1;\n" +
 						"	born=dateadd(born,1,year);\n" +
 						"	if (yer>30) continue\n" +
@@ -1578,7 +1576,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      parseTree.dump("");
 		      
-		      assertEquals(34,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
+		      assertEquals(35,(executor.getGlobalVariable(parser.getGlobalVariableSlot("yer")).getValue().getInt()));
 		      assertEquals(0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 		      
 		} catch (ParseException e) {
@@ -1638,7 +1636,7 @@ public class TestInterpreter extends TestCase {
 						"function age(born){\n" +
 						"	date now;int yer;\n" +
 						"	now=today();yer=0;\n" +
-						"	for (born;born<now;born=dateadd(born,1,year)) ++yer;\n" +
+						"	for (born;born<now;born=dateadd(born,1,year)) yer++;\n" +
 						"	if (yer>0) return yer else return -1;" +
 						"}\n" +
 						"print_err('years born'+age(born));\n" +
@@ -1681,6 +1679,56 @@ public class TestInterpreter extends TestCase {
 	    }
 	}
 
+	public void test_list_map(){
+        System.out.println("\nList/Map test:");
+        String expStr = "list seznam; list seznam2; list fields;\n"+
+        				 "map mapa; mapa['f1']=10; mapa['f2']='hello'; map mapa2; mapa2[]=mapa; map mapa3; \n"+
+        				 "int i; for(i=0;i<20;i++) { seznam[]=i; if (i==10) seznam2[]=seznam;  }\n"+
+        				 "seznam[1]=999; seznam2[3]='hello'; \n"+
+        				 "fields=split('a,b,c,d,e,f,g,h',','); fields[]=null;"+
+        				 "int length=length(seznam); print_err('length: '+length);\n print_err(seznam);\n print_err(seznam2); print_err(fields);\n"+
+        				 "list novy; novy[]=mapa; mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; print_err(novy); print_err(novy[1]); mapa3=novy[1]; print_err(mapa2['f2']);";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       TransformLangParser parser=null;
+        
+        try {
+              parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+              assertEquals("lengh",20,executor.getGlobalVariable(parser.getGlobalVariableSlot("length")).getValue().getInt());
+              assertEquals("lengh",20,executor.getGlobalVariable(parser.getGlobalVariableSlot("length")).getValue().getInt());
+              
+              
+        } catch (ParseException e) {
+                System.err.println(e.getMessage());
+                e.printStackTrace();
+             
+                Iterator it=parser.getParseExceptions().iterator();
+                while(it.hasNext()){
+                	System.err.println(((Throwable)it.next()).getMessage());
+                }
+                throw new RuntimeException("Parse exception",e);
+        }
+    }
+    
+	
+	
 	public void test_buildInFunctions(){
 		System.out.println("\nBuild-in functions test:");
 		String expStr = "string s;s='hello world';\n" +
@@ -1705,6 +1753,7 @@ public class TestInterpreter extends TestCase {
 						"long ddiff;date otherdate;otherdate=today();\n" +
 						"ddiff=datediff(born,otherdate,year);\n" +
 						"print_err('date diffrence:'+ddiff );\n" +
+						"print_err('born: '+born+' otherdate: '+otherdate);\n" +
 						"boolean isn;isn=isnull(ddiff);\n" +
 						"print_err(isn );\n" +
 						"number s1;s1=nvl(l+1,1);\n" +
@@ -1762,10 +1811,10 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("l(=length)",5,executor.getGlobalVariable(parser.getGlobalVariableSlot("l")).getValue().getInt());
 		      assertEquals("c(=concat)","ello hi   ELLO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("c")).getValue().getString());
 //		      assertEquals("datum",record.getField("Born").getValue(),executor.getGlobalVariable(parser.getGlobalVariableSlot("datum")).getValue().getDate());
-		      assertEquals("ddiff",-2,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getValue().getLong());
+		      assertEquals("ddiff",-1,executor.getGlobalVariable(parser.getGlobalVariableSlot("ddiff")).getValue().getLong());
 		      assertEquals("isn",false,executor.getGlobalVariable(parser.getGlobalVariableSlot("isn")).getValue().getBoolean());
 		      assertEquals("s1",new Double(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getValue().getDouble());
-		      assertEquals("rep","etto hi   EttO 2,today is "+new Date(),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getValue().getString());
+		      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getValue().getString());
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getValue().getDouble());
 		      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getValue().getString());
 		      assertEquals("dtn",11.0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dtn")).getValue().getDouble());
@@ -1806,7 +1855,7 @@ public class TestInterpreter extends TestCase {
 						"date date1;date1=2004-01-02 17:13:20;\n" +
 						"date tdate1; tdate1=trunc(date1);\n" +
 						"print_err('truncation of '+date1+'='+tdate1);\n" +
-						"prit_err('Random number: '+random());\n";
+						"print_err('Random number: '+random());\n";
 
 	      print_code(expStr);
 		try {
@@ -2030,6 +2079,7 @@ public class TestInterpreter extends TestCase {
                         "string val=lookup(LKP,key).Name;\n"+
                         "print_err(lookup(LKP,'  HELLO ').Age); \n"+
                         "print_err(lookup_found(LKP));\n"+
+                        "print_err(lookup_next(LKP).Age);\n"+
                         "print_err(lookup(LKP,'two').Name); \n"+
                         "/*print_err(lookup(LKP,'two').Name);\n"+
                         "print_err(lookup(LKP,'xxx').Name);\n*/";
