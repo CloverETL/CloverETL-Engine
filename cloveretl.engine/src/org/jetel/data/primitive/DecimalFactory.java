@@ -20,7 +20,6 @@
 package org.jetel.data.primitive;
 
 import java.math.BigDecimal;
-import java.text.ParsePosition;
 
 import org.jetel.data.Defaults;
 
@@ -91,7 +90,7 @@ public class DecimalFactory {
     	if (format == null){
     		return getDecimal(value);
     	}
-		BigDecimal bd = (BigDecimal)format.parse(value, new ParsePosition(0));
+		BigDecimal bd = (BigDecimal)format.parse((CharSequence)value);
 		return getDecimal(bd);
 	}
     
