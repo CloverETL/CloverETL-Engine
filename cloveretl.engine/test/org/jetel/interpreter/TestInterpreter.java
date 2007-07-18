@@ -1762,6 +1762,7 @@ public class TestInterpreter extends TestCase {
 						"print_err(rep );\n" +
 						"decimal(10,5) stn;stn=str2num('2.5125e-1',decimal);\n" +
 						"print_err(stn );\n" +
+						"int i = str2num('1234');\n" +
 						"string nts;nts=num2str(10,4);\n" +
 						"print_err(nts );\n" +
 						"date newdate;newdate=2001-12-20 16:30:04;\n" +
@@ -1816,6 +1817,7 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("s1",new Double(6),executor.getGlobalVariable(parser.getGlobalVariableSlot("s1")).getValue().getDouble());
 		      assertEquals("rep",("etto hi   EttO 2,today is "+new Date()).replaceAll("[lL]", "t"),executor.getGlobalVariable(parser.getGlobalVariableSlot("rep")).getValue().getString());
 		      assertEquals("stn",0.25125,executor.getGlobalVariable(parser.getGlobalVariableSlot("stn")).getValue().getDouble());
+		      assertEquals("i",1234,executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt());
 		      assertEquals("nts","22",executor.getGlobalVariable(parser.getGlobalVariableSlot("nts")).getValue().getString());
 		      assertEquals("dtn",11.0,executor.getGlobalVariable(parser.getGlobalVariableSlot("dtn")).getValue().getDouble());
 		      assertEquals("ii",21,executor.getGlobalVariable(parser.getGlobalVariableSlot("ii")).getValue().getInt());
