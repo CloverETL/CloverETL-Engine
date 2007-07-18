@@ -64,6 +64,11 @@ public class ByteArray implements Comparable, Iterable {
 	 */
 	private static final char[] DIGITS = { '0', '1', '2', '3', '4', '5', '6', '7', '8',
 		'9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	
+	protected static int INT_SIZE_BYTES = Integer.SIZE >> 3;
+	protected static int LONG_SIZE_BYTES = Long.SIZE >> 3;
+	protected static int FLOAT_SIZE_BYTES = Float.SIZE >> 3;
+	protected static int DOUBLE_SIZE_BYTES = Double.SIZE >> 3;
 
 	/**
 	 * Creates byte array with default value size.
@@ -108,7 +113,7 @@ public class ByteArray implements Comparable, Iterable {
      * 
      * @param minimumCapacity   the minimum desired capacity.
      */
-    private void expandCapacity(int minimumCapacity) {
+    private final void expandCapacity(int minimumCapacity) {
     	int newCapacity = (value.length + 1) * 2;
         if (newCapacity < 0) {
             newCapacity = Integer.MAX_VALUE;
@@ -134,7 +139,7 @@ public class ByteArray implements Comparable, Iterable {
      *
      * @param   minimumCapacity   the minimum desired capacity.
      */
-    public void ensureCapacity(int minimumCapacity) {
+    public final void ensureCapacity(int minimumCapacity) {
     	if (minimumCapacity > value.length) {
     		expandCapacity(minimumCapacity);
     	}
@@ -149,18 +154,19 @@ public class ByteArray implements Comparable, Iterable {
 	    Arrays.fill(this.value, number);
 		count = this.value.length;
 	}
-
-	/**
-	 * FromByte method writes the value at the beginning of the byte array and 
-	 * sets length of array to 1.
-	 * 
-	 * @param data   byte to be copied
-	 */
-	public void fromByte(byte data) {
-		value[0] = data;
-		count = 1;
+	
+	public void setValue(byte value, int position){
+		if (position >= count) throw new ArrayIndexOutOfBoundsException(position);
+		this.value[position]=value;
 	}
 	
+	
+	public void setValue(ByteArray fromVal){
+		ensureCapacity(fromVal.length());
+		System.arraycopy(fromVal,0, value, 0, fromVal.length());
+		count=fromVal.length();
+	}
+
 	/**
 	 * FromByte method writes the value at the beginning of the byte array and 
 	 * sets length of array to the size of data.
@@ -168,9 +174,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * @param data   byte array to be copied
 	 */
 	public void fromByte(byte[] data) {
-		if (this.value.length < data.length) {
-			ensureCapacity(data.length);
-		}
+		ensureCapacity(data.length);
         System.arraycopy(data, 0, value, 0, data.length);
         count = data.length;
 	}
@@ -209,9 +213,7 @@ public class ByteArray implements Comparable, Iterable {
 	 */
 	public void fromByteBuffer(ByteBuffer dataBuffer) {
 		int len = dataBuffer.limit() - dataBuffer.position();
-		if (value.length < len) {
-			ensureCapacity(len);
-		}
+		ensureCapacity(len);
 		dataBuffer.get(value);
 		count = len;
 	}
@@ -421,9 +423,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * @return   ByteArray
 	 */
 	public ByteArray append(byte data) {
-		if (count + 1 > value.length) {
-			expandCapacity(count + 1);
-		}
+		ensureCapacity(count+1);
 		value[count] = data;
 		++count;
 		return this;
@@ -437,9 +437,7 @@ public class ByteArray implements Comparable, Iterable {
 	 */
 	public ByteArray append(byte[] data) {
 		int len = count + data.length;
-		if (len > value.length) {
-			expandCapacity(len);
-		}
+		ensureCapacity(len);
 		System.arraycopy(data, 0, value, count, data.length);
 		count = len;
 		return this;
@@ -455,8 +453,7 @@ public class ByteArray implements Comparable, Iterable {
 	 */
 	public ByteArray append(byte[] data, int offset, int len) {
         int newCount = count + len;
-    	if (newCount > value.length)
-    	    expandCapacity(newCount);
+		ensureCapacity(newCount);
     	System.arraycopy(data, offset, value, count, len);
     	count = newCount;
 		return this;
@@ -494,13 +491,50 @@ public class ByteArray implements Comparable, Iterable {
 	 * @return   ByteArray
 	 */
 	public ByteArray append(ByteBuffer dataBuffer) {
-		int len = dataBuffer.limit() - dataBuffer.position();
-		if (value.length < len + count) {
-			ensureCapacity(len + count);
-		}
+		int len = dataBuffer.remaining();
+		ensureCapacity(len+count);
 		dataBuffer.get(value, count, len);
 		count += len;
 		return this;
+	}
+	
+	public ByteArray append(int value){
+		int newlen = INT_SIZE_BYTES + count;
+		ensureCapacity(newlen);
+		ByteBuffer buf=ByteBuffer.wrap(this.value,count,INT_SIZE_BYTES);
+		buf.putInt(value);
+		count=newlen;
+		return this;
+	}
+	
+	public ByteArray append(long value){
+		int newlen = LONG_SIZE_BYTES + count;
+		ensureCapacity(newlen);
+		ByteBuffer buf=ByteBuffer.wrap(this.value,count,LONG_SIZE_BYTES);
+		buf.putLong(value);
+		count=newlen;
+		return this;
+
+	}
+	
+	public ByteArray append(float value){
+		int newlen = FLOAT_SIZE_BYTES + count;
+		ensureCapacity(newlen);
+		ByteBuffer buf=ByteBuffer.wrap(this.value,count,FLOAT_SIZE_BYTES);
+		buf.putFloat(value);
+		count=newlen;
+		return this;
+
+	}
+	
+	public ByteArray append(double value){
+		int newlen = DOUBLE_SIZE_BYTES + count;
+		ensureCapacity(newlen);
+		ByteBuffer buf=ByteBuffer.wrap(this.value,count,DOUBLE_SIZE_BYTES);
+		buf.putDouble(value);
+		count=newlen;
+		return this;
+		
 	}
 	
 	/**
@@ -887,7 +921,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * @param data   byte array to be encoded
 	 */
 	public void encodeBase64(byte[] data) {
-		fromByte(Base64.encode2Bytes(data));
+		fromString(Base64.encodeBytes(data));
 	}
 
 	/**
