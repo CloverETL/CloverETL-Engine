@@ -51,12 +51,6 @@ public class ByteArrayTest extends TestCase {
 		}
 	}
 	
-	public void test_fromByte() {
-		byteArrayBytes.fromByte((byte)98);
-		assertEquals(1, byteArrayBytes.count);
-		assertEquals((byte)98, byteArrayBytes.value[0]);
-	}
-	
 	public void test_fromByteArray() {
 		byteArrayEmpty.fromByte(bytes);
 		byteArrayZero.fromByte(bytes);
