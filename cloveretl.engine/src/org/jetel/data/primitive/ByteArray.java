@@ -887,7 +887,7 @@ public class ByteArray implements Comparable, Iterable {
 	 * @param data   byte array to be encoded
 	 */
 	public void encodeBase64(byte[] data) {
-		fromString(Base64.encodeBytes(data));
+		fromByte(Base64.encode2Bytes(data));
 	}
 
 	/**

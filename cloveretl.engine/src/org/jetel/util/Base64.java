@@ -537,9 +537,120 @@ public class Base64
         
     }   // end encodeBytes
     
+    /**
+     * Encodes a byte array into Base64 notation.
+     * Does not GZip-compress data.
+     *
+     * @param source The data to convert
+     * @since 1.4
+     */
+    public static byte[] encode2Bytes( byte[] source )
+    {
+        return encode2Bytes( source, 0, source.length, NO_OPTIONS );
+    }   // end encodeBytes
 
     
+    /**
+     * Encodes a byte array into Base64 notation.
+     * <p>
+     * Valid options:<pre>
+     *   GZIP: gzip-compresses object before encoding it.
+     *   DONT_BREAK_LINES: don't break lines at 76 characters
+     *     <i>Note: Technically, this makes your encoding non-compliant.</i>
+     * </pre>
+     * <p>
+     * Example: <code>encodeBytes( myData, Base64.GZIP )</code> or
+     * <p>
+     * Example: <code>encodeBytes( myData, Base64.GZIP | Base64.DONT_BREAK_LINES )</code>
+     *
+     *
+     * @param source The data to convert
+     * @param off Offset in array where conversion should begin
+     * @param len Length of data to convert
+     * @param options Specified options
+     * @see Base64#GZIP
+     * @see Base64#DONT_BREAK_LINES
+     * @since 2.0
+     */
+    public static byte[] encode2Bytes( byte[] source, int off, int len, int options )
+    {
+        // Isolate options
+        int dontBreakLines = ( options & DONT_BREAK_LINES );
+        int gzip           = ( options & GZIP   );
+        
+        // Compress?
+        if( gzip == GZIP )
+        {
+            java.io.ByteArrayOutputStream  baos  = null;
+            java.util.zip.GZIPOutputStream gzos  = null;
+            Base64.OutputStream            b64os = null;
+            
     
+            try
+            {
+                // GZip -> Base64 -> ByteArray
+                baos = new java.io.ByteArrayOutputStream();
+                b64os = new Base64.OutputStream( baos, ENCODE | dontBreakLines );
+                gzos  = new java.util.zip.GZIPOutputStream( b64os ); 
+            
+                gzos.write( source, off, len );
+                gzos.close();
+            }   // end try
+            catch( java.io.IOException e )
+            {
+                e.printStackTrace();
+                return null;
+            }   // end catch
+            finally
+            {
+                try{ gzos.close();  } catch( Exception e ){}
+                try{ b64os.close(); } catch( Exception e ){}
+                try{ baos.close();  } catch( Exception e ){}
+            }   // end finally
+
+            return baos.toByteArray();
+        }   // end if: compress
+        
+        // Else, don't compress. Better not to use streams at all then.
+        else
+        {
+            // Convert option to boolean in way that code likes it.
+            boolean breakLines = dontBreakLines == 0;
+            
+            int    len43   = len * 4 / 3;
+            byte[] outBuff = new byte[   ( len43 )                      // Main 4:3
+                                       + ( (len % 3) > 0 ? 4 : 0 )      // Account for padding
+                                       + (breakLines ? ( len43 / MAX_LINE_LENGTH ) : 0) ]; // New lines      
+            int d = 0;
+            int e = 0;
+            int len2 = len - 2;
+            int lineLength = 0;
+            for( ; d < len2; d+=3, e+=4 )
+            {
+                encode3to4( source, d+off, 3, outBuff, e );
+
+                lineLength += 4;
+                if( breakLines && lineLength == MAX_LINE_LENGTH )
+                {   
+                    outBuff[e+4] = NEW_LINE;
+                    e++;
+                    lineLength = 0;
+                }   // end if: end of line
+            }   // en dfor: each piece of array
+
+            if( d < len )
+            {
+                encode3to4( source, d+off, len - d, outBuff, e );
+                e += 4;
+            }   // end if: some padding needed
+
+            byte[] ret = new byte[e];
+            System.arraycopy(outBuff, 0, ret, 0, e);
+            return outBuff;
+        }   // end else: don't compress
+        
+    }   // end encodeBytes
+
     
 /* ********  D E C O D I N G   M E T H O D S  ******** */
     

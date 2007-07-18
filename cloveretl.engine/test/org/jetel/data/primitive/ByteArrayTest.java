@@ -119,6 +119,11 @@ public class ByteArrayTest extends TestCase {
 		assertEquals(new String(dataBufferRefOfs.array()), new String(dataBuffer.array(), ofs, len));
 	}
 	
+	public void test_getValue() {
+		byte[] comp = new byte[bytes.length]; 
+		assertEquals(new String(byteArrayBytes.getValue(comp)), new String(bytes));
+	}
+	
 	public void test_getValueDuplicate() {
 		assertEquals(new String(byteArrayBytes.getValueDuplicate()), new String(bytes));
 	}
