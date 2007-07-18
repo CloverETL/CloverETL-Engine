@@ -315,7 +315,7 @@ TOKEN : /* variable Types */
  |  <DECIMAL_VAR: "decimal" >
  |  <BOOLEAN_VAR: "boolean" >
  |  <STRING_VAR: "string" >
- |  <BYTE_VAR: "byte" >
+ |  <BYTE_VAR: "bytearray" >
  |  <LIST_VAR: "list" >
  |  <MAP_VAR: "map" >
  |  <RECORD_VAR: "record" >
@@ -615,11 +615,7 @@ void VarDeclaration():
   try {
 /*@egen*/  try {
   	
-    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR>
-	/* //TODO:
-    | <RECORD_VAR>{
-      jjtThis.setType(MAP_VAR);
-    }*/    ) 
+    (<INT_VAR> |  <LONG_VAR> | <DOUBLE_VAR> | <DECIMAL_VAR> | <STRING_VAR>		| <DATE_VAR> | <BYTE_VAR> | <BOOLEAN_VAR> | <LIST_VAR> | <MAP_VAR> | <OBJECT_VAR> | <RECORD_VAR>    ) 
     
     {
     	jjtn000.setType(getToken(0).kind);
