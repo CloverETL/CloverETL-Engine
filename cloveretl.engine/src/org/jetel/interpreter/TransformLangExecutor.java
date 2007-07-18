@@ -1123,6 +1123,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         case BOOLEAN_VAR:
             value = Stack.FALSE_VAL;
             break;
+        case BYTE_VAR:
+        	value = TLValue.create(TLValueType.BYTE);
+        	break;
         case LIST_VAR:
             if (node.length>0) {
                 variable = new TLListVariable(node.name,node.length);
@@ -1278,6 +1281,42 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 				variableToAssign.setValue(valueToAssign);
 			}
 			break;
+        case BYTE_VAR:
+        	if (varNode.usedIndex) {
+				try {
+					// scalar context
+					if (varNode.indexSet) {
+						varNode.jjtGetChild(0).jjtAccept(this, data);
+						index = stack.pop();
+						variableToAssign
+								.setValue(index.getInt(), valueToAssign);
+					} else {
+						variableToAssign.setValue(-1, valueToAssign);
+					}
+				} catch (IndexOutOfBoundsException ex) {
+					throw new TransformLangExecutorRuntimeException(
+							node,
+							"index \""
+									+ index
+									+ "\" is outside current limits byte array \""
+									+ varNode.varName + "\"", ex);
+				} catch (Exception ex) {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of \"" + valueToAssign
+									+ "\" to variable \"" + varNode.varName
+									+ "\"", ex);
+				}
+			} else {
+				// list context
+				if (valueToAssign.type == variableToAssign.getType()) {
+					((TLListVariable) variableToAssign).setValue(valueToAssign);
+				} else {
+					throw new TransformLangExecutorRuntimeException(node,
+							"invalid assignment of scalar value byte array \""
+									+ varNode.varName + "\"");
+				}
+			}
+        	break;
         default:
             TLValueType type=variableToAssign.getType();
             if (type.isCompatible(valueToAssign.type)) {
@@ -1285,8 +1324,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
             } else {
                 throw new TransformLangExecutorRuntimeException(node,
                         "invalid assignment of \"" + valueToAssign
-                                + "[" + valueToAssign.type
-                                + "] \" to variable \""
+                                + "\" [" + valueToAssign.type
+                                + "] to variable \""
                                 + variableToAssign.getName() + "\" ["
                                 + variableToAssign.getType()
                                 + "] \" - incompatible data types");
