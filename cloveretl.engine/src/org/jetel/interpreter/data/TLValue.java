@@ -29,8 +29,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jetel.data.ByteDataField;
+import org.jetel.data.CompressedByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DateDataField;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.data.primitive.CloverDouble;
 import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
@@ -139,6 +142,13 @@ public class TLValue implements Comparable<TLValue>{
         throw new RuntimeException("not a "+TLValueType.STRING+" value");
     }
     
+    public final ByteArray getByte() {
+    	if (type==TLValueType.BYTE){
+    		return (ByteArray)value;
+    	}
+    	throw new RuntimeException("not a "+TLValueType.BYTE+" value");
+    }
+    
     public final Date getDate() {
         if (type==TLValueType.DATE) {
             return (Date)value;
@@ -183,6 +193,7 @@ public class TLValue implements Comparable<TLValue>{
         case DataFieldMetadata.DATE_FIELD:
            return new TLValue(TLValueType.DATE,field.getValueDuplicate());
         case DataFieldMetadata.BYTE_FIELD:
+        	return new TLValue(TLValueType.BYTE,field.getValue());
         case DataFieldMetadata.STRING_FIELD:
             return new TLValue(TLValueType.STRING,field.getValueDuplicate());
         default:
@@ -192,27 +203,35 @@ public class TLValue implements Comparable<TLValue>{
     }
     
     public final void copyToDataField(DataField field) {
-        if (value == null) {
-            field.setNull(true);
-        } else {
-            switch (field.getMetadata().getType()) {
-            case DataFieldMetadata.INTEGER_FIELD:
-            case DataFieldMetadata.LONG_FIELD:
-            case DataFieldMetadata.NUMERIC_FIELD:
-            case DataFieldMetadata.DECIMAL_FIELD:
-                if (type.isNumeric()) {
-                    ((Numeric) field).setValue(getNumeric());
-                    return;
-                }
-            case DataFieldMetadata.DATE_FIELD:
-                if (type == TLValueType.DATE) {
-                    ((DateDataField) field).setValue(getDate().getTime());
-                    return;
-                }
-            }
-        field.fromString(getCharSequence());
-        }
-    }
+		if (value == null) {
+			field.setNull(true);
+		} else {
+			switch (field.getMetadata().getType()) {
+			case DataFieldMetadata.INTEGER_FIELD:
+			case DataFieldMetadata.LONG_FIELD:
+			case DataFieldMetadata.NUMERIC_FIELD:
+			case DataFieldMetadata.DECIMAL_FIELD:
+				if (type.isNumeric()) {
+					((Numeric) field).setValue(getNumeric());
+					return;
+				}
+			case DataFieldMetadata.DATE_FIELD:
+				if (type == TLValueType.DATE) {
+					((DateDataField) field).setValue(getDate().getTime());
+					return;
+				}
+			case DataFieldMetadata.BYTE_FIELD:
+				((CompressedByteDataField) field).setValue(getByte()
+						.getValueDuplicate());
+				break;
+			case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+				((ByteDataField) field).setValue(getByte().getValueDuplicate());
+				break;
+
+			}
+			field.fromString(getCharSequence());
+		}
+	}
     
     @Override public String toString() {
         return value!=null ? value.toString() : "null";
@@ -233,6 +252,9 @@ public class TLValue implements Comparable<TLValue>{
         case STRING:
             newVal.value = new StringBuilder((CharSequence)value);
             break;
+        case BYTE:
+        	newVal.value = getByte().duplicate();
+        	break;
         case BOOLEAN:
             newVal.value = value;
             break;
@@ -279,6 +301,8 @@ public class TLValue implements Comparable<TLValue>{
             return getDate().compareTo(o.getDate());
         case STRING:
             return Compare.compare(getCharSequence(), o.getCharSequence());
+        case BYTE:
+        	return getByte().compareTo(o.getByte());
         case BOOLEAN:
             return getBoolean()==o.getBoolean() ? 0 : -1;
         case LIST:
@@ -305,6 +329,8 @@ public class TLValue implements Comparable<TLValue>{
             return new TLValue(type,new Date(0));
         case STRING:
             return new TLValue(type,new StringBuilder());
+        case BYTE:
+        	return new TLValue(type, new ByteArray());
         case BOOLEAN:
             return TLValue.FALSE_VAL;
         case LIST:

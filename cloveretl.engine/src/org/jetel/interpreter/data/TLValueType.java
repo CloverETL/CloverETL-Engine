@@ -77,6 +77,9 @@ public enum TLValueType {
             return true;
         case OBJECT:
             return true;
+        case BYTE:
+        	if (_type.isNumeric() || _type==TLValueType.STRING)
+        		return true;
         }
         if (_type==NULL) return true;
         return false;
