@@ -25,6 +25,7 @@ package org.jetel.interpreter.extensions;
 
 import java.text.SimpleDateFormat;
 
+import org.jetel.data.primitive.Decimal;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLValue;
@@ -286,7 +287,7 @@ public class ConvertLib extends TLFunctionLibrary {
         	}
         	TLValueType valType = (params.length>1 ? TLFunctionUtils.astToken2ValueType(params[1]) : TLValueType.INTEGER);
         	TLValue value=(TLValue)context.getContext();
-        	if (value==null){
+        	if (value==null && !(valType == TLValueType.DECIMAL)){
         		// initialize
         		value=TLValue.create(valType);
         		context.setContext(value);
@@ -306,7 +307,14 @@ public class ConvertLib extends TLFunctionLibrary {
                     break;
                 case DECIMAL:
                     if (radix == 10) {
-                    	value.getNumeric().setValue (DecimalFactory.getDecimal(params[0].getString()));
+                    	Decimal d = DecimalFactory.getDecimal(params[0].getString());
+                    	if (value != null) {
+                    		value.getNumeric().setValue(d);
+                    	}else{
+                    		value = new TLValue(TLValueType.DECIMAL,d);
+                    		context.setContext(value);                    		
+                    	}
+//                    	value.getNumeric().setValue (DecimalFactory.getDecimal(params[0].getString()));
                     } else {
                         throw new TransformLangExecutorRuntimeException(params,
                                 "str2num - can't convert string to decimal number using specified radix");
