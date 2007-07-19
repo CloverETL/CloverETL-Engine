@@ -1687,7 +1687,10 @@ public class TestInterpreter extends TestCase {
         				 "seznam[1]=999; seznam2[3]='hello'; \n"+
         				 "fields=split('a,b,c,d,e,f,g,h',','); fields[]=null;"+
         				 "int length=length(seznam); print_err('length: '+length);\n print_err(seznam);\n print_err(seznam2); print_err(fields);\n"+
-        				 "list novy; novy[]=mapa; mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; print_err(novy); print_err(novy[1]); mapa3=novy[1]; print_err(mapa2['f2']);";
+        				 "list novy; novy[]=mapa; mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
+        				 "print_err('novy='+novy); print_err(novy[1]); \n" +
+        				 "mapa3=novy[1]; print_err(mapa2['f2']);\n" +
+        				 "fields=seznam2; print_err(fields);";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1711,7 +1714,6 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
               
-              assertEquals("lengh",20,executor.getGlobalVariable(parser.getGlobalVariableSlot("length")).getValue().getInt());
               assertEquals("lengh",20,executor.getGlobalVariable(parser.getGlobalVariableSlot("length")).getValue().getInt());
               
               
@@ -2044,8 +2046,13 @@ public class TestInterpreter extends TestCase {
         String expStr = "print_err(sequence(test).next);\n"+
                         "print_err(sequence(test).next);\n"+
                         "int i; for(i=0;i<10;++i) print_err(sequence(test).next);\n"+
-                        "i=sequence(test).current; print_err(i,true); i=sequence(test).reset; \n"+
-                        "for(i=0;i<50;++i) { print_err(sequence(test).current); print_err(sequence(test).next); }\n";
+                        "i=sequence(test).current; print_err(i,true); i=sequence(test).reset; \n" +
+                        "print_err('i after reset='+i);\n" +
+                        "int current;string next;"+
+                        "for(i=0;i<50;++i) { current=sequence(test).current;\n" +
+                        "print_err('current='+current);\n" +
+                        "next=sequence(test).next;\n" +
+                        " print_err('next='+next); }\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -2147,6 +2154,46 @@ public class TestInterpreter extends TestCase {
               executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
               executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
     
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Parse exception",e);
+        }
+              
+    }
+
+    public void test_import(){
+        System.out.println("\nImport test:");
+        String expStr = "import('../../../../data/tlExample.ctl');";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+              CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
+              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
+              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
+    
+		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
+
         } catch (ParseException e) {
             System.err.println(e.getMessage());
             e.printStackTrace();
