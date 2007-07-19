@@ -1,0 +1,21 @@
+<plugin id="org.jetel.bulkloader" version="2.2.0">
+	<runtime>
+		<library path="cloveretl.bulkloader.jar"/>
+	</runtime>
+	
+	<requires engine-version="2.2.0">
+		<import plugin-id="org.jetel.connection"/>
+		<import plugin-id="org.jetel.component"/>
+	</requires>
+	
+	<extension point-id="component">
+		<parameter id="type" value="ORACLE_DATA_READER"/>
+		<parameter id="className" value="org.jetel.component.OracleDataReader"/>
+	</extension>
+
+	<extension point-id="component">
+		<parameter id="type" value="ORACLE_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.OracleDataWriter"/>
+	</extension>
+	
+</plugin>
