@@ -498,7 +498,8 @@ public class WatchDog extends Thread implements CloverRuntime {
 		logger.info("Phase#            Finished Status         RunTime(sec)    MemoryAllocation(KB)");
 		for (Phase phase : phases) {
 			Object nodeInfo[] = {new Integer(phase.getPhaseNum()), phase.getResult().message(),
-					new Integer(phase.getPhaseTracking().getExecTimeSec()), new Integer(phase.getPhaseTracking().getMemUtilizationKB())};
+                    phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getExecTimeSec()) : "",
+                    phase.getPhaseTracking() != null ? new Integer(phase.getPhaseTracking().getMemUtilizationKB()) : ""};
 			int nodeSizes[] = {-18, -24, 12, 18};
 			logger.info(StringUtils.formatString(nodeInfo, nodeSizes));
 		}
