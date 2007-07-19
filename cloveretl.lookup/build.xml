@@ -30,11 +30,11 @@
 			</not>
 		</condition>
 
-		<copy todir="${dist.src}/cloveretl.lookup/src">
+		<copy todir="${dist.src}/${plugin.name}/src">
 			<fileset dir="${dir.src}" />
 		</copy>
 		
-		<copy todir="${dist.src}/cloveretl.lookup">
+		<copy todir="${dist.src}/${plugin.name}">
 			<fileset file="build.xml" />
 			<fileset file="plugin.xml" />
 		</copy>
