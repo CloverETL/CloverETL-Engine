@@ -10,13 +10,19 @@
 	<property name="dir.engine" value="${basedir}/../cloveretl.engine"/>
 	<property name="dir.src" value="${basedir}/src"/>
 	<property name="dir.src.tmp" value="${basedir}/src_tmp"/>
+	<property name="dir.lib" value="${basedir}/lib"/>
 	<property name="engine.dir.lib" value="${basedir}/../cloveretl.engine/lib"/>
 
 	<!--load external properties-->
 	<property file="../cloveretl.engine/build.properties"/>
 
 	<!-- =========================== LIBRARIES ============================= -->
-	<fileset id="engine-libs" dir="${engine.dir.lib}">
+	<fileset id="bulkloader-libs" dir="${dir.lib}">
+		<include name="**/*.jar"/>
+		<include name="**/*.zip"/>
+	</fileset>
+
+		<fileset id="engine-libs" dir="${engine.dir.lib}">
 		<include name="**/*.jar"/>
 		<include name="**/*.zip"/>
 	</fileset>
@@ -35,6 +41,10 @@
 			<fileset dir="${dir.src}" />
 		</copy>
 		
+		<copy todir="${dist.src}/${plugin.name}/lib">
+			<fileset dir="${dir.lib}" />
+		</copy>
+
 		<copy todir="${dist.src}/${plugin.name}">
 			<fileset file="build.xml" />
 			<fileset file="plugin.xml" />
@@ -92,6 +102,7 @@
 			classpath="${dir.dist}${engine.dist};${dir.dist}${connection.dist};${dir.dist}${component.dist}">
 			<classpath>
 				<fileset refid="engine-libs"/>			
+				<fileset refid="bulkloader-libs"/>			
 			</classpath>
 			<src path="${dir.src.tmp}"/>
 			<exclude name="test/**/*"/>
@@ -120,6 +131,12 @@
 		</jar>
 		<!-- copy plugin manifest -->
 		<copy todir="${dir.dist}/plugins/${plugin.dir.name}" file="plugin.xml"/>
+		<!-- copy all libraries from lib directory -->
+		<copy todir="${dir.dist}/plugins/${plugin.dir.name}/lib">
+			<fileset dir="${dir.lib}">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
 	</target>
 	
 	<!-- ask user for MAJOR and MINOR release number -->
