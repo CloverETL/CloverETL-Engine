@@ -49,6 +49,7 @@
 			<value>soundex</value>
 			<value>replace</value>
 			<value>split</value>
+			<value>char_at</value>
 		</parameter>
 	</extension>
 	
