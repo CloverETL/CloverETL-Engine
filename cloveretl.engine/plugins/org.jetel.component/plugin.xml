@@ -198,16 +198,6 @@
 	</extension>
 	
 	<extension point-id="component">
-		<parameter id="type" value="MYSQL_DATA_READER"/>
-		<parameter id="className" value="org.jetel.component.MysqlDataReader"/>
-	</extension>
-
-	<extension point-id="component">
-		<parameter id="type" value="MYSQL_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
-	</extension>
-
-	<extension point-id="component">
 		<parameter id="type" value="STRUCTURE_WRITER"/>
 		<parameter id="className" value="org.jetel.component.StructureWriter"/>
 	</extension>
