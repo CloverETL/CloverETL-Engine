@@ -1489,7 +1489,6 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public Object visit(CLVFSequenceNode node,Object data){
         Object seqVal=null;
-        TLValueType type=null;
         if (node.sequence==null){
             if (graph!=null){
                 node.sequence=graph.getSequence(node.sequenceName);
@@ -1504,39 +1503,51 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
                         "\" from graph \""+graph.getName()+"\"");
             }
         }
+        if (node.value==null){
+        	switch(node.retType){
+        	case LONG_VAR:
+        		node.value=TLValue.create(TLValueType.LONG);
+        		break;
+        	case STRING_VAR:
+        		node.value=TLValue.create(TLValueType.STRING);
+        		break;
+        	default:
+        		node.value=TLValue.create(TLValueType.INTEGER);
+        	}
+        	
+        }
+        TLValue retVal=node.value;
+        
         switch(node.opType){
         case CLVFSequenceNode.OP_RESET:
             node.sequence.reset();
-            seqVal=Stack.NUM_ZERO;
-            type=TLValueType.INTEGER;
+            retVal=Stack.NUM_ZERO;
             break;
         case CLVFSequenceNode.OP_CURRENT:
             switch(node.retType){
             case LONG_VAR:
-                seqVal=new CloverLong(node.sequence.currentValueLong());
-                type=TLValueType.LONG;
+            	retVal.getNumeric().setValue(node.sequence.currentValueLong());
                 break;
             case STRING_VAR:
-                seqVal=node.sequence.currentValueString();
-                type=TLValueType.STRING;
+                retVal.setValue(node.sequence.currentValueString());
+                break;
             default:
-                seqVal=new CloverInteger(node.sequence.currentValueInt());
-                type=TLValueType.INTEGER;
+                retVal.getNumeric().setValue(node.sequence.currentValueInt());
             }
+            break;
             default: // default is next value from sequence
                 switch(node.retType){
                 case LONG_VAR:
-                    seqVal=new CloverLong(node.sequence.nextValueLong());
-                    type=TLValueType.LONG;
+                    retVal.getNumeric().setValue(node.sequence.nextValueLong());
                     break;
                 case STRING_VAR:
-                    seqVal=node.sequence.nextValueString();
-                    type=TLValueType.STRING;
+                    retVal.setValue(node.sequence.nextValueString());
+                    break;
                 default:
-                    seqVal=new CloverInteger(node.sequence.nextValueInt());
+                    retVal.getNumeric().setValue(node.sequence.nextValueInt());
                 }
         }
-        stack.push(new TLValue(type,seqVal));
+        stack.push(retVal);
         return data;
     }
     
@@ -1585,8 +1596,9 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 			}
 			record = node.lookup.get(keys);
 			break;
-		case CLVFLookupNode.OP_NEXT:
+		default: // CLVFLookupNode.OP_NEXT:
 			record = node.lookup.getNext();
+
 		}
 
 		if (record != null) {
