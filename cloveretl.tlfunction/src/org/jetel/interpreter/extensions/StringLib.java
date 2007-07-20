@@ -43,7 +43,7 @@ public class StringLib extends TLFunctionLibrary {
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
-                "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT("charat") ;
+                "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT("char_at") ;
 
         public String name;
 
