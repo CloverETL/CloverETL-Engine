@@ -39,8 +39,6 @@
 <Field delimiter="\n" name="FULL_NAME" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Connection dbConfig="koule_postgre.cfg" id="DBConnection0" type="JDBC"/>
-<Connection dbConfig="mysql.cfg" id="DBConnection2" type="JDBC"/>
 <Connection dbConfig="oracle2.cfg" id="DBConnection1" type="JDBC"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
