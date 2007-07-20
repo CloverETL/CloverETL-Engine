@@ -2,7 +2,7 @@
 <Graph created="Tue Oct 24 10:36:22 CEST 2006" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Thu May 24 18:27:39 CEST 2007" name="graphCLOVERData" revision="1.57">
 <Global>
 <Metadata id="Metadata0">
-<Record name="customer" recordSize="256" type="fixed">
+<Record name="dataRecord" recordSize="256" type="fixed">
 <Field name="Data" nullable="true" shift="0" size="256" type="byte"/>
 </Record>
 </Metadata>
@@ -15,7 +15,7 @@
 <attr name="transform">import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
-public class reformatOrders extends DataRecordTransform{
+public class ShowAndResendData extends DataRecordTransform{
 	public boolean transform(DataRecord[] source, DataRecord[] target){
        	int i;
 		DataField dataField = source[0].getField(0);
@@ -44,7 +44,7 @@ public class reformatOrders extends DataRecordTransform{
 <attr name="transform">import org.jetel.component.DataRecordTransform;
 import org.jetel.data.*;
 
-public class reformatOrders extends DataRecordTransform{
+public class ShowAndResendData extends DataRecordTransform{
 	public boolean transform(DataRecord[] source, DataRecord[] target){
        	int i;
 		DataField dataField = source[0].getField(0);
