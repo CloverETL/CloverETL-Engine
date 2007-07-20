@@ -58,6 +58,8 @@ import org.jetel.metadata.DataRecordMetadata;
  * Window - Preferences - Java - Code Generation - Code and Comments
  */
 public class TestInterpreter extends TestCase {
+	
+	private static final String CLOVER_PATH="/home/avackova/workspace/cloveretl.engine";
 
 	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
 	DataRecord record,record1,out,out1;
@@ -1079,16 +1081,16 @@ public class TestInterpreter extends TestCase {
 	}
 		
 	public void test_3_expression() {
-		String expStr="not (trim($Name) .ne. \"HELLO\") || replace($Name,\".\" ,\"a\")=='aaaaaaa'";
-//		String expStr="print_err(trim($Name)); print_err(replace('xyyxyyxzz',\"x\" ,\"ab\")); print_err('aaaaaaa'); print_err(split('abcdef','c'));";
+//		String expStr="not (trim($Name) .ne. \"HELLO\") || replace($Name,\".\" ,\"a\")=='aaaaaaa'";
+		String expStr="print_err(trim($Name)); print_err(replace('xyyxyyxzz',\"x\" ,\"ab\")); print_err('aaaaaaa'); print_err(split('abcdef','c'));";
 	      print_code(expStr);
 		try {
 			System.out.println("in Test3expression");
             TransformLangParser parser = new TransformLangParser(record.getMetadata(),
                     new ByteArrayInputStream(expStr.getBytes()));           
             
-//            CLVFStart parseTree = parser.Start();
-            CLVFStartExpression parseTree = parser.StartExpression();
+            CLVFStart parseTree = parser.Start();
+//            CLVFStartExpression parseTree = parser.StartExpression();
 
             parseTree.dump("ccc");
               
@@ -1108,7 +1110,7 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
 		      
-              assertEquals(false, executor.getResult().getBoolean());
+//              assertEquals(false, executor.getResult().getBoolean());
 		      
 		    } catch (ParseException e) {
 		    	System.err.println(e.getMessage());
@@ -1744,7 +1746,8 @@ public class TestInterpreter extends TestCase {
 						"print_err('to lower case:'+lower );\n"+
 						"string t;t=trim('\t  im  '+lower);\n" +
 						"print_err('after trim:'+t );\n" +
-						"breakpoint();\n"+
+						"breakpoint();\n" +
+						"//print_stack();\n"+
 						"decimal l;l=length(upper);\n" +
 						"print_err('length of '+upper+':'+l );\n"+
 						"string c;c=concat(lower,upper,2,',today is ',today());\n" +
@@ -1779,7 +1782,9 @@ public class TestInterpreter extends TestCase {
 						"print_err(str2date(dts,'yy.MM.dd'));\n" +
 						"string lef=left(dts,5);\n" +
 						"string righ=right(dts,5);\n" +
-						"string sound=soundex(s);\n" ;
+						"print_err('s=word, soundex='+soundex('word'));\n" +
+						"print_err('s=world, soundex='+soundex('world'));\n" +
+						"int j;for (j=0;j<length(s);j++){print_err(char_at(s,j));};\n" ;
 
 	      print_code(expStr);
 		try {
@@ -2012,7 +2017,8 @@ public class TestInterpreter extends TestCase {
     
     public void test_logger(){
         System.out.println("\nLogger test:");
-        String expStr = "/*raise_error(\"my testing error\") */; print_log(debug,10 * 15);";
+        String expStr = "/*raise_error(\"my testing error\") ;*/ " +
+        				"print_log(fatal,10 * 15);";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -2126,7 +2132,9 @@ public class TestInterpreter extends TestCase {
     public void test_function(){
         System.out.println("\nFunction test:");
         String expStr = "function myFunction(idx){\n" +
-        		"if (idx==1) print_err('idx equals 1'); else print_err('idx does not equal 1');}\n";
+        		"if (idx==1) print_err('idx equals 1'); else print_err('idx does not equal 1');}\n" +
+        		"myFunction(1);\n" +
+        		"myFunction1(1);\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -2150,9 +2158,9 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
               
-              CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
-              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
-              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
+//              CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
+//              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
+//              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
     
         } catch (ParseException e) {
             System.err.println(e.getMessage());
@@ -2164,7 +2172,7 @@ public class TestInterpreter extends TestCase {
 
     public void test_import(){
         System.out.println("\nImport test:");
-        String expStr = "import('../../../../data/tlExample.ctl');";
+        String expStr = "import '" + CLOVER_PATH + "/data/tlExample.ctl';";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -2188,10 +2196,6 @@ public class TestInterpreter extends TestCase {
               executor.visit(parseTree,null);
               System.out.println("Finished interpreting.");
               
-              CLVFFunctionDeclaration function = (CLVFFunctionDeclaration)parser.getFunctions().get("myFunction");
-              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(1))});
-              executor.executeFunction(function, new TLValue[]{new TLValue(TLValueType.INTEGER,new CloverInteger(10))});
-    
 		      assertEquals(10,(executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getInt()));
 
         } catch (ParseException e) {
