@@ -270,7 +270,8 @@ public class CloverDataWriter extends Node {
 					zipData.close();
 				}
 			}else{//compressData = false
-				String dir = new File(fileURL).getParent() + CloverDataFormatter.FILE_SEPARATOR;
+				String parentDir = new File(fileURL).getParent();
+				String dir = parentDir != null ? parentDir + CloverDataFormatter.FILE_SEPARATOR : "";
 				out = new FileOutputStream(dir + fileName, append);
 			}
 		}catch(IOException ex){
