@@ -59,8 +59,6 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class TestInterpreter extends TestCase {
 	
-	private static final String CLOVER_PATH="/home/avackova/workspace/cloveretl.engine";
-
 	DataRecordMetadata metadata,metadata1,metaOut,metaOut1;
 	DataRecord record,record1,out,out1;
     TransformationGraph graph;
@@ -2172,7 +2170,7 @@ public class TestInterpreter extends TestCase {
 
     public void test_import(){
         System.out.println("\nImport test:");
-        String expStr = "import '" + CLOVER_PATH + "/data/tlExample.ctl';";
+        String expStr = "import 'data/tlExample.ctl';";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
