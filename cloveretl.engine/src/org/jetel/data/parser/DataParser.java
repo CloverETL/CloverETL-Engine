@@ -21,6 +21,7 @@ package org.jetel.data.parser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.channels.Channels;
@@ -359,10 +360,9 @@ public class DataParser implements Parser {
 						if(!Character.isWhitespace(character)) {
 							mark = i;
 						} 
-
 						fieldBuffer.append((char) character);
 					}
-					if(fieldBuffer.length() > 0) {
+					if(character != -1 && fieldBuffer.length() > 0) {
 						fieldBuffer.setLength(fieldBuffer.length() - 
 								(fieldLengths[fieldCounter] - mark - 1));
 					}
@@ -444,7 +444,11 @@ public class DataParser implements Parser {
 		}
 		
 		character = charBuffer.get();
-		recordBuffer.put(character);
+		try {
+			recordBuffer.put(character);
+		} catch (BufferOverflowException e) {
+			throw new RuntimeException("The size of data buffer is only " + recordBuffer.limit() + ". Set appropriate parameter in defautProperties file.", e);
+		}
 
 		return character;
 	}
