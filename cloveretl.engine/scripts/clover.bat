@@ -3,7 +3,7 @@
 REM this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
 REM usage 
-REM run.bat <engine_arguments> <graph_name.grf>
+REM clover.bat <engine_arguments> <graph_name.grf>
 
 
 REM prepare CLOVER_HOME environmental variable
