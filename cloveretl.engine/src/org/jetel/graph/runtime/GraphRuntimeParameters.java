@@ -25,8 +25,6 @@ package org.jetel.graph.runtime;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.FileUtils;
@@ -43,11 +41,8 @@ public class GraphRuntimeParameters {
 	private String graphFileURL;
 	private boolean textTracking;
 	private String tmpDir = System.getProperty("java.io.tmpdir");
-	
-	public GraphRuntimeParameters(){
-		
-	}
-	
+	private boolean useJMX = true;
+    
 	public GraphRuntimeParameters(TransformationGraph graph){
 		this.graph=graph;
 	}
@@ -133,7 +128,13 @@ public class GraphRuntimeParameters {
 	public void setTmpDir(String tmpDir) {
 		this.tmpDir = tmpDir;
 	}
-	
-	
+
+    public boolean isUseJMX() {
+        return useJMX;
+    }
+
+    public void setUseJMX(boolean useJMX) {
+        this.useJMX = useJMX;
+    }
 	
 }
