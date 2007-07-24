@@ -236,6 +236,10 @@ public class CloverDataParser implements Parser {
 				throw new JetelException(ex.getLocalizedMessage());
 			}
 		}
+		if (recordBuffer.remaining() < recordSize) {
+			throw new RuntimeException("The size of data buffer is only " + recordBuffer.limit() + 
+					", but record size is " + recordSize + ". Set appropriate parameter in defautProperties file.");
+		}
 		record.deserialize(recordBuffer);
 		return record;
 	}
