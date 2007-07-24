@@ -119,6 +119,9 @@ public class WatchDog extends Thread implements CloverRuntime {
         inMsgQueue=new PriorityBlockingQueue<Message>();
         outMsgMap=new DuplicateKeyMap(Collections.synchronizedMap(new HashMap()));
         trackingInterval=graph.getRuntimeParameters().getTrackingInterval();
+        
+        //is JMX turned on?
+        provideJMX = graph.getRuntimeParameters().isUseJMX();
 	}
 
 

@@ -336,10 +336,10 @@ public class runGraph {
         }
 
         // set graph runtime parameters
-        GraphRuntimeParameters runtimePar=new GraphRuntimeParameters();
+        GraphRuntimeParameters runtimePar = graph.getRuntimeParameters();
         if (trackingInterval != -1) runtimePar.setTrackingInterval(trackingInterval * 1000);
         runtimePar.setGraphFileURL(graphFileName);
-        graph.setRuntimeParameters(runtimePar);
+        runtimePar.setUseJMX(!noJMX);
         
         // start all Nodes (each node is one thread)
         Result result = Result.N_A;
