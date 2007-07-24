@@ -274,6 +274,10 @@ public class CloverDataFormatter implements Formatter {
 		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
 			flush();
 		}
+		if (buffer.remaining() < recordSize + LEN_SIZE_SPECIFIER){
+			throw new RuntimeException("The size of data buffer is only " + buffer.limit() + 
+					", but record size is " + recordSize + ". Set appropriate parameter in defautProperties file.");
+		}
 		buffer.putInt(recordSize);
 		record.serialize(buffer);
         
