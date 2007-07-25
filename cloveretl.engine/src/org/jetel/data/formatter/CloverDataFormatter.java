@@ -156,9 +156,9 @@ public class CloverDataFormatter implements Formatter {
 				idxReader = new FileInputStream(idxTmpFile).getChannel();
 				if (idxTmpFile.length() > 0){//if some indexes were saved to tmp file, save the rest of indexes
 					ByteBufferUtils.flush(idxBuffer,idxWriter);
-					idxWriter.close();
 					ByteBufferUtils.reload(idxBuffer,idxReader);
 				}
+				idxWriter.close();
 				idxBuffer.flip();
 				long startValue = 0;//first index
 				int position;
@@ -193,6 +193,7 @@ public class CloverDataFormatter implements Formatter {
 						flush();
 					}while (position == buffer.limit());
 					//clear up
+					idxReader.close();
 					idxTmpFile.delete();
 					if (idxTmpFile.getParentFile() != null) {
 						idxTmpFile.getParentFile().delete();
@@ -215,6 +216,7 @@ public class CloverDataFormatter implements Formatter {
 						ByteBufferUtils.flush(buffer,idxWriter);
 					}while (position == buffer.limit());
 					//clear up
+					idxReader.close();
 					idxTmpFile.delete();
 					idxWriter.close();
 				}
