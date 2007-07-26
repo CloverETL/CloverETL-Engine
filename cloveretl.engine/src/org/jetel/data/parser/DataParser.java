@@ -283,6 +283,11 @@ public class DataParser implements Parser {
 				fieldBuffer.setLength(0);
 				inQuote = false;
 				try {
+					if (followFieldDelimiter(fieldCounter)) {
+						populateField(record, fieldCounter, fieldBuffer);
+						continue;
+					}
+					
 					while ((character = readChar()) != -1) {
 						//end of file
 						if (character == -1) {
