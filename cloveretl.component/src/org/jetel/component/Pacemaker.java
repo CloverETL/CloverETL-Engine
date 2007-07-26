@@ -161,7 +161,7 @@ public class Pacemaker extends Node {
 				Thread.sleep(delay);
 			} else if (rate > 0) {
 				// rate mode			
-				processedInThisPeriod += 1;
+				processedInThisPeriod++;
 				if (processedInThisPeriod >= rate) {
 					// sleep if there is time for it
 				    if (nextPeriodStart > System.currentTimeMillis()) {
