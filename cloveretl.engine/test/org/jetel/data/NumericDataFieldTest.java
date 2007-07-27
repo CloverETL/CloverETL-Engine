@@ -171,6 +171,12 @@ public void test_1_NumericDataField() {
 			System.out.println(aNumericDataField1.getDouble());
 			fail("Should raise an BadDataFormatException");
 		} catch (BadDataFormatException e){	}
+
+		try {
+			aNumericDataField1.fromString("123.45.67");
+			System.out.println(aNumericDataField1.getDouble());
+			fail("Should raise an BadDataFormatException");
+		} catch (BadDataFormatException e){	}
 	}
 	
 	
