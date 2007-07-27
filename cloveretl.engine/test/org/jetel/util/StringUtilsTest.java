@@ -234,6 +234,43 @@ public class StringUtilsTest extends TestCase {
 
 	}
 
+	public void test_isNumber(){
+		String str = "123456789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+		
+		str = "1234.56789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+
+		assertFalse(StringUtils.isNumber("123,456789"));
+		assertFalse(StringUtils.isNumber("123.45678.9"));
+		
+		str = "1234e56789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+
+		str = "1234E+56789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+
+		str = "1234e-56789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+
+		str = "-1234E+56789";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+
+		assertFalse(StringUtils.isNumber("123456789e"));
+		assertFalse(StringUtils.isNumber("123456789e-"));
+		assertFalse(StringUtils.isNumber("123456dj789e"));
+		assertFalse(StringUtils.isNumber("d123456789"));	
+		
+		str = "1234E+56";
+		assertTrue(StringUtils.isNumber(str));
+		System.out.println("Oryginal: " + str + ", parsed: " + Double.parseDouble(str));
+	}
 }
 
 /*
