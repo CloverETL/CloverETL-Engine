@@ -39,7 +39,11 @@ public class StringUtils {
     //  quoting characters
 	public final static char QUOTE_CHAR='\'';
 	public final static char DOUBLE_QUOTE_CHAR='"';
-    
+	
+	public final static char DECIMAL_POINT='.';
+	public final static char EXPONENT_SYMBOL = 'e';
+	public final static char EXPONENT_SYMBOL_C = 'E';
+	    
 	/**
 	 *  Converts control characters into textual representation<br>
 	 *  Note: This code handles only \n, \r ,\t ,\f, \b, \\ special chars
@@ -617,7 +621,49 @@ public class StringUtils {
     	return 3;
     }
     
-
+    /**
+     * This method checks if given string can be parse to double number with 10 radix
+     * 
+     * @param str
+     * @return
+     */
+    public static boolean isNumber(CharSequence str){
+    	int start = 0;
+    	if (str.charAt(0) == '-') {
+    		start = 1;
+    	}
+    	boolean decimalPiontIndex = false;
+    	boolean wasE = false;
+    	char c;
+      	for (int index =  start; index<str.length();index++) {
+      		c = str.charAt(index);
+    		if (!Character.isDigit(c)) {
+    			switch (c) {
+				case DECIMAL_POINT:
+					if (decimalPiontIndex) return false; //second decimal point
+					decimalPiontIndex = true;
+					break;
+				case EXPONENT_SYMBOL:
+				case EXPONENT_SYMBOL_C:
+					if (wasE) return false; //second E
+					if (++index == str.length()) {
+						return false;//last char is 'e'
+					}else{
+						c = str.charAt(index);
+					}
+					if (!(Character.isDigit(c)))
+							if (!(c == '+' || c == '-')) return false;//char after 'e' has to be digit or '+' or '-'
+							else if (index + 1 == str.length()) return false;//last char is '+' or '-'
+					decimalPiontIndex = true;
+					wasE = true;
+					break;
+				default:
+					return false; //not digit, '.', 'e' nor 'E'
+				}
+     		}
+    	}
+      	return true;
+    }
 
     /**
      * This method copies substring of source to target.
