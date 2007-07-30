@@ -152,6 +152,19 @@ public class SimpleCache {
     		return keyMap.getNumFound();
     	}
     }
+    
+    /**
+     * Returns <tt>true</tt> if this map contains a mapping for the
+     * specified key.
+     *
+     * @param   key   The key whose presence in this map is to be tested
+     * @return <tt>true</tt> if this map contains a mapping for the specified
+     * key.
+     */
+    public boolean containsKey(Object key){
+    	return map.containsKey(key);
+    }
+    
     /**
      * Class for storing limited numbers of entries
      * 
