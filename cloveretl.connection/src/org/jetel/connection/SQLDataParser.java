@@ -35,8 +35,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
-
 /**
  * @author David Pavlis
  *
@@ -75,7 +73,6 @@ public class SQLDataParser implements Parser {
 	 */
 	public SQLDataParser(String sqlQuery) {
 		this.sqlQuery = sqlQuery;
-		this.recordCounter = 1;
 	}
 	
 
@@ -220,7 +217,9 @@ public class SQLDataParser implements Parser {
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
-        //outRecord.init();
+		if (dbConnection != null) close();
+		
+		//outRecord.init();
         // get dbConnection from graph
         if (! (inputDataSource instanceof DBConnection)){
             throw new RuntimeException("Need DBConnection object !");
@@ -269,6 +268,7 @@ public class SQLDataParser implements Parser {
             // do nothing - just attempt
             logger.warn("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
         }
+		this.recordCounter = 1;
 	}
 
 	/* (non-Javadoc)
