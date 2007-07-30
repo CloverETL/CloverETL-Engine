@@ -77,6 +77,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     private static final String XML_SQL_QUERY = "sqlQuery";
     private static final String XML_DBCONNECTION = "dbConnection";
     private static final String XML_LOOKUP_MAX_CACHE_SIZE = "maxCached";
+    private static final String XML_STORE_NULL_RESPOND = "storeNulls";
     
     protected String metadataId;
     protected String connectionId;
@@ -95,8 +96,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	protected DataRecord keyDataRecord = null;
 	protected SimpleCache resultCache;
 	
-	protected int maxCached;
+	protected int maxCached = 0;
 	protected HashKey cacheKey;
+	protected boolean storeNulls = true;
 	
 	protected int cacheNumber = 0;
 	protected int totalNumber = 0;
@@ -121,7 +123,6 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		this.dbConnection = dbConnection;
 		this.dbMetadata = dbRecordMetadata;
 		this.sqlQuery = sqlQuery;
-		this.maxCached = 0;
 	}
 
   /**
@@ -160,8 +161,9 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 
 	/**
 	 *  Looks-up data based on speficied key.<br>
-	 *  The key value is taken from passed-in data record. If caching is enabled, the
-	 * internal cache is searched first, then the DB is queried.
+	 *  The key value is taken from passed-in data record (each call of this method takes data
+	 *  from the same object, so for new call new data have to be upon this object). 
+	 *  If caching is enabled, the internal cache is searched first, then the DB is queried.
 	 *
 	 *@return                     found DataRecord or NULL
 	 *@since                      May 2, 2002
@@ -171,11 +173,11 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
 	        cacheKey.setDataRecord(keyRecord);
-	        DataRecord data=(DataRecord)resultCache.get(cacheKey);
-	        if (data!=null){
-	        	cacheNumber++;
-	            return data;
-	        }
+			if (resultCache.containsKey(cacheKey)) {
+				DataRecord data = (DataRecord) resultCache.get(cacheKey);
+				cacheNumber++;
+				return data;
+			}	        
 	    }
 	    
 	    try {
@@ -216,9 +218,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    //put found records to cache
 	    if (resultCache!=null){
 		    HashKey hashKey = new HashKey(lookupKey, keyRecord.duplicate());
-		    while (fetch()) {
-		    	DataRecord storeRecord=dbDataRecord.duplicate();
-			    resultCache.put(hashKey, storeRecord);
+		    if (fetch()) {
+				do {
+					DataRecord storeRecord = dbDataRecord.duplicate();
+					resultCache.put(hashKey, storeRecord);
+				} while (fetch());		    	
+		    }else{
+				if (storeNulls) {
+					resultCache.put(hashKey, (DataRecord) null);
+				}		    	
 		    }
 	    }else {
 	    	return getNext();
@@ -239,7 +247,16 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 */
 	public DataRecord get(Object keys[]) {
 		totalNumber++;
-		try {
+	    // if cached, then try to query cache first
+	    if (resultCache!=null){
+			if (resultCache.containsKey(keys)) {
+				DataRecord data = (DataRecord) resultCache.get(cacheKey);
+				cacheNumber++;
+				return data;
+			}	        
+	    }
+
+	    try {
 			// set up parameters for query
 			// statement uses indexing from 1
 			pStatement.clearParameters();
@@ -248,14 +265,26 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			}
 			//execute query
 			resultSet = pStatement.executeQuery();
-			if (!fetch()) {
-				return null;
-			}
+		    //put found records to cache
+		    if (resultCache!=null){
+			    if (fetch()) {
+					do {
+						DataRecord storeRecord = dbDataRecord.duplicate();
+						resultCache.put(keys, storeRecord);
+					} while (fetch());		    	
+			    }else{
+					if (storeNulls) {
+						resultCache.put(keys, (DataRecord) null);
+					}			    	
+			    }
+		    }else {
+		    	return getNext();
+		    }
     }
     catch (SQLException ex) {
 			throw new RuntimeException(ex.getMessage());
 		}
-		return dbDataRecord;
+    return (DataRecord)resultCache.get(cacheKey) ;
 	}
 
 	/**
@@ -271,13 +300,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		totalNumber++;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
-	        DataRecord data=(DataRecord)resultCache.get(keyStr);
-	        if (data!=null){
-	        	cacheNumber++;
-	            return data;
-	        }
+			if (resultCache.containsKey(keyStr)) {
+				DataRecord data = (DataRecord) resultCache.get(cacheKey);
+				cacheNumber++;
+				return data;
+			}	        
 	    }
-	    
+
 	    try {
 	        // set up parameters for query
 	        // statement uses indexing from 1
@@ -287,9 +316,15 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	        resultSet = pStatement.executeQuery();
 		    //put found records to cache
 		    if (resultCache!=null){
-			    while (fetch()) {
-			    	DataRecord storeRecord=dbDataRecord.duplicate();
-				    resultCache.put(keyStr, storeRecord);
+			    if (fetch()) {
+					do {
+						DataRecord storeRecord = dbDataRecord.duplicate();
+						resultCache.put(keyStr, storeRecord);
+					} while (fetch());		    	
+			    }else{
+					if (storeNulls) {
+						resultCache.put(keyStr, (DataRecord) null);
+					}			    	
 			    }
 		    }else {
 		    	return getNext();
@@ -438,6 +473,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
         } catch (SQLException ex) {
             throw new ComponentNotReadyException("Can't create SQL statement: " + ex.getMessage());
         }
+        totalNumber = 0;
+        cacheNumber = 0;
     }
     
     /**
@@ -502,7 +539,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
                     xattribs.getString(XML_METADATA_ID), xattribs.getString(XML_SQL_QUERY));
             
             if(xattribs.exists(XML_LOOKUP_MAX_CACHE_SIZE)) {
-                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE));
+                lookupTable.setNumCached(xattribs.getInteger(XML_LOOKUP_MAX_CACHE_SIZE), 
+                		xattribs.getBoolean(XML_STORE_NULL_RESPOND, true));
             }
             
             return lookupTable;
@@ -530,13 +568,33 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     }
 	
 	
+	/**
+	 * Set max number of records stored in cache
+	 * 
+	 * @param numCached
+	 */
 	public void setNumCached(int numCached){
 	    if (numCached>0){
 	          this.resultCache= new SimpleCache(numCached);
 	          this.maxCached=numCached;
+	          resultCache.enableDuplicity();
 	      }
 	}
 
+	/**
+	 * Set max number of records stored in cache
+	 * 
+	 * @param numCached max number of stored records
+	 * @param storeNulls inicates if store key for which there aren't records in db
+	 */
+	public void setNumCached(int numCached, boolean storeNulls){
+		this.storeNulls = storeNulls;
+	    if (numCached>0){
+	          this.resultCache= new SimpleCache(numCached);
+	          this.maxCached=numCached;
+	          resultCache.enableDuplicity();
+	      }
+	}
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#checkConfig()
      */
