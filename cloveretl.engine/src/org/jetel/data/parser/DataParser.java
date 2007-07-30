@@ -283,11 +283,6 @@ public class DataParser implements Parser {
 				fieldBuffer.setLength(0);
 				inQuote = false;
 				try {
-					if (followFieldDelimiter(fieldCounter)) {
-						populateField(record, fieldCounter, fieldBuffer);
-						continue;
-					}
-					
 					while ((character = readChar()) != -1) {
 						//end of file
 						if (character == -1) {
@@ -297,9 +292,9 @@ public class DataParser implements Parser {
 						delimiterSearcher.update((char) character);
 						
 						//skip leading blanks
-						if (skipBlanks) 
-							if(Character.isWhitespace(character)) continue; 
-							else skipBlanks = false;
+						if (skipBlanks && !Character.isWhitespace(character)) {
+							skipBlanks = false;
+                        }
 
 						//quotedStrings
 						if (quotedStrings 
@@ -326,17 +321,19 @@ public class DataParser implements Parser {
 							}
 						}
 						//fieldDelimiter update
-						fieldBuffer.append((char) character);
+						if(!skipBlanks) {
+						    fieldBuffer.append((char) character);
+                        }
 
 						//test field delimiter
 						if (!inQuote) {
 							if(delimiterSearcher.isPattern(fieldCounter)) {
-									fieldBuffer.setLength(fieldBuffer.length()
-										- delimiterSearcher.getMatchLength());
-									if ((trim == Boolean.TRUE || (trim == null 
-											&& metadata.getField(fieldCounter).isTrim()))) {
-										StringUtils.trimTrailing(fieldBuffer);
-									}
+								if(!skipBlanks) {
+								    fieldBuffer.setLength(fieldBuffer.length() - delimiterSearcher.getMatchLength());
+                                }
+								if ((trim == Boolean.TRUE || (trim == null && metadata.getField(fieldCounter).isTrim()))) {
+									StringUtils.trimTrailing(fieldBuffer);
+								}
 								if(treatMultipleDelimitersAsOne)
 									while(followFieldDelimiter(fieldCounter));
 								break;
