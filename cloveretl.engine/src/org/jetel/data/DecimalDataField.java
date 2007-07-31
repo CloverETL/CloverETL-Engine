@@ -158,6 +158,7 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
     
 	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DecimalDataField){
@@ -198,7 +199,26 @@ public class DecimalDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
-
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
+	 */
+	@Override
+	public void setValue(DataField fromField) {
+        if (fromField instanceof DecimalDataField){
+            if (!fromField.isNull) {
+                this.value.setValue(((DecimalDataField) fromField).value);
+            }
+            setNull(fromField.isNull);
+        } else if (fromField instanceof Numeric){
+            if (!fromField.isNull) {
+                this.value.setValue(((Numeric) fromField).getDecimal());
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.setValue(fromField);
+        }
+	}
+    
 	/**
 	 *  Sets the value of the field. If the passed in value is Double.NaN, then
 	 * the value of the field is set to NULL.

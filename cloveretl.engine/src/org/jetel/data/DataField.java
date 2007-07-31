@@ -90,13 +90,16 @@ public abstract class DataField implements Serializable, Comparable {
 	/**
 	 * Sets current field's value from DataField passed as argument
 	 * @param fieldFrom DataField from which to get the value
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fieldFrom) {
-	    setValue(fieldFrom.getValueDuplicate());   
+	    setValue(fieldFrom.getValue());   
     }
 	
 	/**
 	 *  An operation that sets value of the data field.
+     *  The given object is never persisted in this data field.
+     *  The method implementation should do deep copy of the given object everytime.
 	 *
 	 * @param  _value  The new Value value
 	 * @since
@@ -108,9 +111,9 @@ public abstract class DataField implements Serializable, Comparable {
 	 * 
 	 * @param _value data field for getting value
 	 */
-	public void setValue(DataField _value){
-		if (_value != null) {
-			setValue(((DataField) _value).getValue());
+	public void setValue(DataField fromField){
+		if (fromField != null) {
+            setValue(fromField.getValue());   
 		}else{
 			setNull(true);
 		}

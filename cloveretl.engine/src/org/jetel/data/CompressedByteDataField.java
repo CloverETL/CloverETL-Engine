@@ -78,8 +78,9 @@ public class CompressedByteDataField extends ByteDataField {
 	    return compressedByteDataField;
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof CompressedByteDataField){
@@ -121,6 +122,26 @@ public class CompressedByteDataField extends ByteDataField {
 		setNull(false);
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.ByteDataField#setValue(org.jetel.data.DataField)
+     */
+    @Override
+    public void setValue(DataField fromField) {
+        if (fromField instanceof CompressedByteDataField){
+            if (!fromField.isNull){
+                int length = ((CompressedByteDataField) fromField).value.length;
+                if (this.value == null || this.value.length != length){
+                    this.value = new byte[length];
+                }
+                System.arraycopy(((CompressedByteDataField) fromField).value, 0, this.value, 0, length);
+            }
+            setNull(fromField.isNull);
+            dataLen = ((CompressedByteDataField) fromField).dataLen;
+        } else {
+            super.setValue(fromField);
+        }
+    }
+    
 	/* (non-Javadoc)
 	 * @see org.jetel.data.ByteDataField#getType()
 	 */
