@@ -165,8 +165,9 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 	    return new CloverDouble(value);
 	}
     
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof NumericDataField){
@@ -182,7 +183,6 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
         } else {
             super.copyFrom(fromField);
         }
-
 	}
 	
 	/**
@@ -208,6 +208,25 @@ public class NumericDataField extends DataField implements Numeric, Comparable {
 		}
 	}
 
+    /* (non-Javadoc)
+     * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
+     */
+    @Override
+    public void setValue(DataField fromField) {
+        if (fromField instanceof NumericDataField){
+            if (!fromField.isNull){
+                this.value=((NumericDataField)fromField).value;
+            }
+            setNull(fromField.isNull);
+        } else if (fromField instanceof Numeric){
+            if (!fromField.isNull){
+                this.value = ((Numeric) fromField).getDouble();
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.setValue(fromField);
+        }
+    }
 
 	/**
 	 *  Sets the value of the field. If the passed in value is Double.NaN, then

@@ -163,8 +163,9 @@ public class DateDataField extends DataField implements Comparable{
 	}
 	
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof DateDataField){
@@ -212,6 +213,25 @@ public class DateDataField extends DataField implements Comparable{
 		}
 	}
 	
+    /* (non-Javadoc)
+     * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
+     */
+    @Override
+    public void setValue(DataField fromField) {
+        if (fromField instanceof DateDataField){
+            if (!fromField.isNull){
+                if (this.value == null) {
+                    this.value = new Date(((DateDataField)fromField).value.getTime());
+                } else {
+                    this.value.setTime(((DateDataField)fromField).value.getTime());
+                }
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.setValue(fromField);
+        }
+    }
+    
 	/**
 	 * Sets the date represented by DateDataField object
 	 * 	

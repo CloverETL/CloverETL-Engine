@@ -128,8 +128,9 @@ public class StringDataField extends DataField implements CharSequence{
 	    return newField;
 	}
 	
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fieldFrom){
 	    if (fieldFrom instanceof StringDataField ){
@@ -161,13 +162,20 @@ public class StringDataField extends DataField implements CharSequence{
         }
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
+	 */
 	@Override
-	public void setValue(DataField _value) {
-		if (_value != null) {
-			setValue(_value.toString());
-		}else{
-			setNull(true);
-		}
+	public void setValue(DataField fieldFrom) {
+        if (fieldFrom instanceof StringDataField ){
+            if (!fieldFrom.isNull){
+                this.value.setLength(0);
+                this.value.append(((StringDataField)fieldFrom).value);
+            }
+            setNull(fieldFrom.isNull);
+        } else {
+            super.setValue(fieldFrom);
+        }
 	}
 	
 	/**

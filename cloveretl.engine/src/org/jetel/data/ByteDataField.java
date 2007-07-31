@@ -50,7 +50,8 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since    October 29, 2002
 	 */
 	protected byte[] value;
-	private static final int ARRAY_LENGTH_INDICATOR_SIZE = Integer.SIZE / 8;
+
+    //private static final int ARRAY_LENGTH_INDICATOR_SIZE = Integer.SIZE / 8;
 	
 	protected final static int INITIAL_BYTE_ARRAY_CAPACITY = 8;
 	
@@ -105,8 +106,9 @@ public class ByteDataField extends DataField implements Comparable{
 	    return new ByteDataField(metadata, value);
 	}
 
-	/* (non-Javadoc)
+	/**
 	 * @see org.jetel.data.DataField#copyField(org.jetel.data.DataField)
+     * @deprecated use setValue(DataField) instead
 	 */
 	public void copyFrom(DataField fromField){
 	    if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
@@ -160,9 +162,24 @@ public class ByteDataField extends DataField implements Comparable{
 	}
 
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.DataField#setValue(org.jetel.data.DataField)
+	 */
 	@Override
-	public void setValue(DataField _value) {
-		fromString(_value == null ? null : _value.toString());
+	public void setValue(DataField fromField) {
+        if (fromField instanceof ByteDataField && !(fromField instanceof CompressedByteDataField) && !(this instanceof CompressedByteDataField)){
+            if (!fromField.isNull){
+                int length = ((ByteDataField) fromField).value.length;
+                if (this.value == null || this.value.length != length){
+                    this.value = new byte[length];
+                }
+                System.arraycopy(((ByteDataField) fromField).value,
+                        0, this.value, 0, length);
+            }
+            setNull(fromField.isNull);
+        } else {
+            super.setValue(fromField);
+        }
 	}
 
 	/**
@@ -173,8 +190,13 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@since         October 29, 2002
 	 */
 	public void setValue(byte[] value) {
-	    this.value = value;
-		setNull(value == null);
+        if(value != null) {
+            this.value = new byte[value.length];
+            System.arraycopy(value, 0, this.value, 0, value.length);
+            setNull(false);
+        } else {
+            setNull(true);
+        }
 	}
 
 
