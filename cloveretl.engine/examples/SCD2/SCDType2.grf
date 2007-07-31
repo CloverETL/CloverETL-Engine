@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed May 02 10:25:31 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Tue Jul 31 09:36:27 CEST 2007" name="SCDDataIntersection" revision="1.193">
+<Global>
+<Metadata fileURL="SCD2/metadata/exchange_rate_DIM.fmt" id="Metadata0"/>
+<Metadata fileURL="SCD2/metadata/exchange_rate.fmt" id="Metadata1"/>
+<Property id="GraphParameter0" name="today" value="07-30-2007"/>
+<Property fileURL="workspace.prm" id="GraphParameter1"/>
+<Sequence cached="0" fileURL="${WORKSPACE}/SCD2/sequences/exchange_rates_ID.seq" id="Sequence0" name="exchange_rates_ID" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="341" guiY="187" id="DATA_INTERSECTION0" joinKey="Code;Country;Currency;Amount;Rate" type="DATA_INTERSECTION">
+<attr name="transform"><![CDATA[${out.0.Country} = ${in.0.Country};
+${out.0.Currency} = ${in.0.Currency};
+${out.0.Amount} = ${in.0.Amount};
+${out.0.Code} = ${in.0.Code};
+${out.0.Rate} = ${in.0.Rate};
+${out.0.exchange_right_id} = ${in.1.exchange_right_id};
+${out.0.Valid_to} = ${in.1.Valid_to};
+${out.0.Valid_from} = ${in.1.Valid_from};
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Data Intersection" guiWidth="0" guiX="570" guiY="240" id="DATA_INTERSECTION1" joinKey="Code" type="DATA_INTERSECTION">
+<attr name="transform"><![CDATA[${out.0.exchange_right_id} = ${in.1.exchange_right_id};
+${out.0.Country} = ${in.0.Country};
+${out.0.Currency} = ${in.0.Currency};
+${out.0.Amount} = ${in.0.Amount};
+${out.0.Code} = ${in.0.Code};
+${out.0.Rate} = ${in.0.Rate};
+${out.0.Valid_to} = ${in.0.Valid_to};
+${out.0.Valid_from} = ${in.1.Valid_from};
+]]></attr>
+</Node>
+<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/input/daily.txt" guiHeight="0" guiName="Exchange rate source" guiWidth="0" guiX="13" guiY="40" id="DATA_READER0" skipFirstLine="false" skipRows="1" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/input/exchange_rates_DIM.txt" guiHeight="0" guiName="Exchange rate DIM" guiWidth="0" guiX="25" guiY="397" id="DATA_READER1" skipFirstLine="false" type="DATA_READER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_matched.txt" guiHeight="0" guiName="Matched records" guiWidth="0" guiX="587" guiY="31" id="DATA_WRITER0" outputFieldNames="true" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_DIM_insert.txt" guiHeight="0" guiName="Insert" guiWidth="0" guiX="1187" guiY="143" id="DATA_WRITER1" type="DATA_WRITER"/>
+<Node enabled="enabled" fileURL="${WORKSPACE}/SCD2/output/exchange_rates_DIM_update.txt" guiHeight="0" guiName="Update" guiWidth="0" guiX="1188" guiY="350" id="DATA_WRITER2" type="DATA_WRITER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="340" guiY="34" id="REFORMAT0" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+function transform() {
+	$Country := $Country;
+	$Currency := $Currency;
+	$Amount := $Amount;
+	$Code := $Code;
+	$Rate := $Rate;
+	$exchange_right_id := sequence(Sequence0).next;
+	$Valid_from := str2date('${today}','MM-dd-yyyy');
+	}]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Reformat" guiWidth="0" guiX="1012" guiY="350" id="REFORMAT1" type="REFORMAT">
+<attr name="transform"><![CDATA[//#TL
+
+function transform() {
+		$exchange_right_id := $exchange_right_id;
+		$Country := $Country;
+		$Currency := $Currency;
+		$Amount := $Amount;
+		$Code := $Code;
+		$Rate := $Rate;
+		$Valid_to := str2date('${today}','MM-dd-yyyy');
+		$Valid_from := $Valid_from;
+	}
+
+]]></attr>
+</Node>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Copy" guiWidth="0" guiX="817" guiY="352" id="SIMPLE_COPY0" type="SIMPLE_COPY"/>
+<Node enabled="enabled" guiHeight="0" guiName="Simple Gather" guiWidth="0" guiX="814" guiY="145" id="SIMPLE_GATHER0" type="SIMPLE_GATHER"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="174" guiY="34" id="SORT0" passThroughInputPort="0" sortKey="Code;Country;Currency;Amount;Rate" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Sort" guiWidth="0" guiX="200" guiY="399" id="SORT1" passThroughInputPort="0" sortKey="Code;Country;Currency;Amount;Rate" type="SORT"/>
+<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="720" guiY="482" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="503" guiY="415" id="TRASH1" type="TRASH"/>
+<Edge debugMode="false" fromNode="DATA_INTERSECTION0:0" guiBendpoints="" id="Edge12" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="DATA_INTERSECTION1:0"/>
+<Edge fromNode="DATA_INTERSECTION0:1" guiBendpoints="" id="Edge11" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" toNode="DATA_WRITER0:0"/>
+<Edge fromNode="DATA_INTERSECTION0:2" guiBendpoints="" id="Edge14" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="TRASH1:0"/>
+<Edge fromNode="DATA_INTERSECTION1:0" guiBendpoints="" id="Edge40" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (only in A)" toNode="SIMPLE_GATHER0:0"/>
+<Edge fromNode="DATA_INTERSECTION1:1" guiBendpoints="" id="Edge46" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (in A &amp; B)" toNode="SIMPLE_COPY0:0"/>
+<Edge fromNode="DATA_INTERSECTION1:2" guiBendpoints="" id="Edge15" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 2 (only in B)" toNode="TRASH0:0"/>
+<Edge debugMode="false" fromNode="DATA_READER0:0" guiBendpoints="" id="Edge9" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (output)" toNode="SORT0:0"/>
+<Edge fromNode="DATA_READER1:0" guiBendpoints="" id="Edge7" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (output)" toNode="SORT1:0"/>
+<Edge debugMode="false" fromNode="REFORMAT0:0" guiBendpoints="" id="Edge48" inPort="Port 0 (set A)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:0"/>
+<Edge fromNode="REFORMAT1:0" guiBendpoints="" id="Edge45" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER2:0"/>
+<Edge fromNode="SIMPLE_COPY0:0" guiBendpoints="" id="Edge43" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="REFORMAT1:0"/>
+<Edge fromNode="SIMPLE_COPY0:1" guiBendpoints="" id="Edge44" inPort="Port 1 (in)" metadata="Metadata0" outPort="Port 1 (out)" toNode="SIMPLE_GATHER0:1"/>
+<Edge debugMode="false" fromNode="SIMPLE_GATHER0:0" guiBendpoints="" id="Edge49" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_WRITER1:0"/>
+<Edge fromNode="SORT0:0" guiBendpoints="" id="Edge47" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="REFORMAT0:0"/>
+<Edge fromNode="SORT1:0" guiBendpoints="" id="Edge8" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 0 (out)" toNode="DATA_INTERSECTION0:1"/>
+<Edge fromNode="SORT1:1" guiBendpoints="" id="Edge19" inPort="Port 1 (set B)" metadata="Metadata0" outPort="Port 1 (out)" toNode="DATA_INTERSECTION1:1"/>
+</Phase>
+</Graph>
