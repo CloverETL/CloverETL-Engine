@@ -407,15 +407,15 @@ public class DBJoin extends Node {
 	/**
 	 * @param dbMetadata The dbMetadata to set.
 	 */
-	private void setDbMetadata(String dbMetadata) {
+	public void setDbMetadata(String dbMetadata) {
 		this.metadataName = dbMetadata;
 	}
 
-	private void setMaxCached(int maxCached) {
+	public void setMaxCached(int maxCached) {
 		this.maxCached = maxCached;
 	}
 
-	private void setLeftOuterJoin(boolean leftOuterJoin) {
+	public void setLeftOuterJoin(boolean leftOuterJoin) {
 		this.leftOuterJoin = leftOuterJoin;
 	}
 
