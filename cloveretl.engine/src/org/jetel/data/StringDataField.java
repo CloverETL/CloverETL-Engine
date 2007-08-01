@@ -167,14 +167,18 @@ public class StringDataField extends DataField implements CharSequence{
 	 */
 	@Override
 	public void setValue(DataField fieldFrom) {
-        if (fieldFrom instanceof StringDataField ){
+        if (fieldFrom instanceof StringDataField) {
             if (!fieldFrom.isNull){
                 this.value.setLength(0);
                 this.value.append(((StringDataField)fieldFrom).value);
             }
             setNull(fieldFrom.isNull);
         } else {
-            super.setValue(fieldFrom);
+            if (fieldFrom != null) {
+                setValue(fieldFrom.toString());
+            } else {
+                setNull(true);
+            }
         }
 	}
 	
