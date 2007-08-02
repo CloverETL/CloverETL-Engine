@@ -66,6 +66,8 @@ public class AggregateMappingParser {
 	// regexp  matching a correct datetime constant mapping
 	// @see Defaults#DEFAULT_DATETIME_FORMAT
 	private static final String MAPPING_DATETIME_REGEX = "[\\d]{4}-[\\d]{2}-[\\d]{2} [\\d]{2}:[\\d]{2}:[\\d]{2}";
+	// regexp  matching a mapping with a graph parameter
+	private static final String MAPPING_PARAM_REGEX = "[\\w ]*\\$\\{[\\w ]*\\}[\\w ]*";
 
 	private static final Pattern functionPattern = 
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_FUNCTION_REGEX + "$");
@@ -81,6 +83,8 @@ public class AggregateMappingParser {
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATE_REGEX + "$");
 	private static final Pattern datetimePattern = 
 		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_DATETIME_REGEX + "$");
+	private static final Pattern paramPattern = 
+		Pattern.compile(MAPPING_LEFT_SIDE_REGEX + MAPPING_PARAM_REGEX + "$");
 	
 	// set of already used output fields, used to detect multiple uses of the same output field
 	private Set<String> usedOutputFields = new HashSet<String>(); 
@@ -91,6 +95,8 @@ public class AggregateMappingParser {
 
 	private DataRecordMetadata inMetadata;
 	private DataRecordMetadata outMetadata;
+	
+	private boolean paramsAllowed = false;
 	
 	private List<FunctionMapping> functionMapping = new ArrayList<FunctionMapping>();
 	private List<FieldMapping> fieldMapping = new ArrayList<FieldMapping>();
@@ -104,19 +110,21 @@ public class AggregateMappingParser {
 	 * Allocates a new <tt>AggregateMappingParser</tt> object.
 	 *
 	 * @param mapping aggregation mapping.
+	 * @param paramsAllowed specifies whether graph parameters can be used in the mapping.
 	 * @param recordKey aggregation key.
 	 * @param registry aggregation function registry.
 	 * @param inMetadata input metadata.
 	 * @param outMetadata output metadata.
 	 * @throws AggregationException
 	 */
-	public AggregateMappingParser(String mapping, 
+	public AggregateMappingParser(String mapping, boolean paramsAllowed,
 			RecordKey recordKey, FunctionRegistry registry, 
 			DataRecordMetadata inMetadata, DataRecordMetadata outMetadata) 
 	throws AggregationException {
 		this.inMetadata = inMetadata;
 		this.outMetadata = outMetadata;
 		this.registry = registry;
+		this.paramsAllowed = paramsAllowed;
 		
 		keyFields = new HashSet<String>();
 		recordKey.init();
@@ -147,6 +155,7 @@ public class AggregateMappingParser {
 			Matcher dateMatcher = datePattern.matcher(expr2);
 			Matcher datetimeMatcher = datetimePattern.matcher(expr2);
 			Matcher doubleMatcher = doublePattern.matcher(expr2);
+			Matcher paramMatcher = paramPattern.matcher(expr2);
 
 			try {
 				if (functionMatcher.matches()) {
@@ -163,6 +172,8 @@ public class AggregateMappingParser {
 					parseDateTimeConstantMapping(expr2);
 				} else if (doubleMatcher.matches()) {
 					parseDoubleConstantMapping(expr2);
+				} else if (paramsAllowed && paramMatcher.matches()) {
+					parseParamMapping(expr2);
 				} else {
 					throw new AggregationException("Invalid mapping format");
 				}
@@ -290,7 +301,7 @@ public class AggregateMappingParser {
 		Integer value = Integer.valueOf(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, constant, outputField));
+		constantMapping.add(ConstantMapping.createIntConstantMapping(value, constant, outputField));
 	}
 
 	/**
@@ -307,7 +318,7 @@ public class AggregateMappingParser {
 		Double value = Double.valueOf(constant);
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, constant, outputField));
+		constantMapping.add(ConstantMapping.createDoubleConstantMapping(value, constant, outputField));
 	}
 
 	/**
@@ -326,7 +337,7 @@ public class AggregateMappingParser {
 		
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(constant, outputField));
+		constantMapping.add(ConstantMapping.createStringConstantMapping(constant, outputField));
 	}
 
 	/**
@@ -348,7 +359,7 @@ public class AggregateMappingParser {
 		}
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, constant, outputField));
+		constantMapping.add(ConstantMapping.createDateConstantMapping(value, constant, outputField));
 	}
 
 	/**
@@ -370,7 +381,26 @@ public class AggregateMappingParser {
 		}
 		checkFieldExistence(outputField);
 		registerOutputFieldUsage(outputField);
-		constantMapping.add(new ConstantMapping(value, constant, outputField));
+		constantMapping.add(ConstantMapping.createDateConstantMapping(value, constant, outputField));
+	}
+
+	/**
+	 * Parses a mapping containing a graph parameter.
+	 * 
+	 * @param expression
+	 * @throws AggregationException
+	 */
+	private void parseParamMapping(String expression) throws AggregationException {
+		String[] parsedExpression = expression.split(ASSIGN_SIGN);
+		// remove the leading and trailing quotation marks
+		String constant = parsedExpression[1].trim();
+		// replace \" with " 
+		constant = constant.replaceAll("\\\\\"", "\""); 
+		String outputField = parseOutputField(parsedExpression[0]);
+		
+		checkFieldExistence(outputField);
+		registerOutputFieldUsage(outputField);
+		constantMapping.add(ConstantMapping.createParamConstantMapping(constant, outputField));
 	}
 
 	/**
@@ -576,58 +606,95 @@ public class AggregateMappingParser {
 		 * 
 		 * Allocates a new <tt>ConstantMapping</tt> object.
 		 *
-		 * @param value integer constant value.
-		 * @param stringValue string representation of the value before parsing.
-		 * @param outputField name of the output field.
 		 */
-		public ConstantMapping(int value, String stringValue, String outputField) {
-			this.value = new Integer(value);
-			this.stringValue = stringValue;
-			this.outputField = outputField;
-		}
-
-		/**
-		 * 
-		 * Allocates a new <tt>ConstantMapping</tt> object.
-		 *
-		 * @param value double constant value.
-		 * @param stringValue string representation of the value before parsing.
-		 * @param outputField name of the output field.
-		 */
-		public ConstantMapping(double value, String stringValue, String outputField) {
-			this.value = new Double(value);
-			this.stringValue = stringValue;
-			this.outputField = outputField;
-		}
-
-		/**
-		 * 
-		 * Allocates a new <tt>ConstantMapping</tt> object.
-		 *
-		 * @param value string constant value.
-		 * @param outputField name of the output field.
-		 */
-		public ConstantMapping(String value, String outputField) {
-			this.value = value;
-			// the replace adds a backslash in front of '"'
-			this.stringValue = "\"" + value.replaceAll("\"", "\\\\\"") + "\"";
-			this.outputField = outputField;
+		private ConstantMapping() {
+			// forces usage of factories
 		}
 		
 		/**
 		 * 
-		 * Allocates a new <tt>ConstantMapping</tt> object.
+		 * Creates a new <tt>ConstantMapping</tt> object.
 		 *
-		 * @param value
+		 * @param value integer constant value.
 		 * @param stringValue string representation of the value before parsing.
 		 * @param outputField name of the output field.
+		 * @return integer constant mapping.
 		 */
-		public ConstantMapping(Date value, String stringValue, String outputField) {
-			this.value = value;
-			this.stringValue = stringValue;
-			this.outputField = outputField;
+		public static ConstantMapping createIntConstantMapping(int value, String stringValue, String outputField) {
+			ConstantMapping result = new ConstantMapping();
+			result.value = new Integer(value);
+			result.stringValue = stringValue;
+			result.outputField = outputField;
+			return result;
 		}
-
+		
+		/**
+		 * 
+		 * Creates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value double constant value.
+		 * @param stringValue string representation of the value before parsing.
+		 * @param outputField name of the output field.
+		 * @return double constant mapping.
+		 */
+		public static ConstantMapping createDoubleConstantMapping(double value, String stringValue, String outputField) {
+			ConstantMapping result = new ConstantMapping();
+			result.value = new Double(value);
+			result.stringValue = stringValue;
+			result.outputField = outputField;
+			return result;
+		}
+		
+		/**
+		 * 
+		 * Creates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value string constant value.
+		 * @param outputField name of the output field.
+		 * @return string constant mapping.
+		 */
+		public static ConstantMapping createStringConstantMapping(String value, String outputField) {
+			ConstantMapping result = new ConstantMapping();
+			result.value = value;
+			// the replace adds a backslash in front of '"'
+			result.stringValue = "\"" + value.replaceAll("\"", "\\\\\"") + "\"";
+			result.outputField = outputField;
+			return result;
+		}
+		
+		/**
+		 * 
+		 * Creates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value date constant value.
+		 * @param stringValue string representation of the value before parsing.
+		 * @param outputField name of the output field.
+		 * @return date constant mapping.
+		 */
+		public static ConstantMapping createDateConstantMapping(Date value, String stringValue, String outputField) {
+			ConstantMapping result = new ConstantMapping();
+			result.value = value;
+			result.stringValue = stringValue;
+			result.outputField = outputField;
+			return result;
+		}
+		
+		/**
+		 * 
+		 * Creates a new <tt>ConstantMapping</tt> object.
+		 *
+		 * @param value constant value containing a graph parameter.
+		 * @param outputField name of the output field.
+		 * @return constant mapping containing a parameter.
+		 */
+		public static ConstantMapping createParamConstantMapping(String value, String outputField) {
+			ConstantMapping result = new ConstantMapping();
+			result.value = value;
+			result.stringValue = value;
+			result.outputField = outputField;
+			return result;
+		}
+		
 		/**
 		 * 
 		 * @return name of the output field where the constant will be stored.
