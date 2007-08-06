@@ -28,4 +28,9 @@
 		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="type" value="DB2_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.Db2DataWriter"/>
+	</extension>
+	
 </plugin>
