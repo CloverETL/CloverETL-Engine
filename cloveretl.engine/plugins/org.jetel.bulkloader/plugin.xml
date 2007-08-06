@@ -1,6 +1,6 @@
 <plugin id="org.jetel.bulkloader" version="2.2.0">
 	<runtime>
-		<library path="../../../cloveretl.engine.oracle/bin"/>
+		<library path="../../../cloveretl.bulkloader/bin"/>
 	</runtime>
 	
 	<requires engine-version="2.2.0">
@@ -26,6 +26,11 @@
 	<extension point-id="component">
 		<parameter id="type" value="MYSQL_DATA_WRITER"/>
 		<parameter id="className" value="org.jetel.component.MysqlDataWriter"/>
+	</extension>
+	
+	<extension point-id="component">
+		<parameter id="type" value="DB2_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.Db2DataWriter"/>
 	</extension>
 	
 </plugin>
