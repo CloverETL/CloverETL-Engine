@@ -89,6 +89,10 @@ public class RecordKey {
 	
 	// end init
 
+    public DataRecordMetadata getMetadata() {
+        return metadata;
+    }
+    
 	/**
 	 *  Assembles string representation of the key based on current record's value.
 	 *
