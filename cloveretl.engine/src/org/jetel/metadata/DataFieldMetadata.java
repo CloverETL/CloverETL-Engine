@@ -509,6 +509,10 @@ public class DataFieldMetadata implements Serializable {
 		return autoFilling;
 	}
 
+    public boolean isAutoFilled() {
+        return !StringUtils.isEmpty(autoFilling);
+    }
+    
 	/**
 	 * Sets the codeStr attribute of the DataFieldMetadata object
 	 *
