@@ -766,7 +766,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
 		while (iterator.hasNext()) {
 			port = (OutputPort) iterator.next();
-			port.close();
+			port.eof();
 		}
 	}
 
