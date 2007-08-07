@@ -73,6 +73,7 @@ public class Db2DataWriter extends Node {
     private static final String XML_FILEMETYADATA_ATTRIBUTE = "fileMetadata";
     private static final String XML_USEPIPE_ATTRIBUTE = "usePipe";
     private static final String XML_COLUMNDELIMITER_ATTRIBUTE = "columnDelimiter";
+	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
 	
     private static final String DEFAULT_COLUMN_DELIMITER = ",";
     
@@ -97,6 +98,7 @@ public class Db2DataWriter extends Node {
 	private boolean usePipe = false;
 	private boolean delimitedData;
 	private char columnDelimiter = 0;
+	private String interpreter;
 	
 	private Formatter formatter;
 	private DataRecordMetadata fileMetadata;
@@ -170,13 +172,21 @@ public class Db2DataWriter extends Node {
 		}
 		
 		try {
-//			command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : System.getenv("SHELL") + " ") + 
-//					prepareBatch();
-			command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "sh ") + 
-			prepareBatch();
-		} catch (Exception e) {
+			if (interpreter!=null){
+				if (interpreter.contains("${}")){
+					command = interpreter.replace("${}",prepareBatch());
+				}else {
+					throw new ComponentNotReadyException("Incorect form of "+
+							XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
+							"\nUse form:\"interpreter [parameters] ${} [parameters]\"");
+				}
+			}else{
+				command = System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "" +
+						"db2 -f " + prepareBatch();
+			}
+		} catch (IOException e) {
 			throw new ComponentNotReadyException(this, e);
-		} 
+		}
 	}
 	
 	private DataRecordMetadata convertToDb2Delimited(DataRecordMetadata metadata){
@@ -238,11 +248,11 @@ public class Db2DataWriter extends Node {
 		}
 	}
 	
-	private String prepareBatch() throws FileNotFoundException, IOException{
+	private String prepareBatch() throws IOException{
 		batch =  File.createTempFile("tmp",".bat");
 		FileWriter batchWriter = new FileWriter(batch);
 
-		StringBuilder command = new StringBuilder("db2 connect to ");
+		StringBuilder command = new StringBuilder("connect to ");
 		command.append(database);
 		command.append(" user ");
 		command.append(user);
@@ -252,7 +262,7 @@ public class Db2DataWriter extends Node {
 		batchWriter.write(command.toString());
 		
 		command.setLength(0);
-		command.append("db2 load client from '");
+		command.append("load client from '");
 		command.append(fileName);
 		command.append("' of ");
 		command.append(delimitedData ? DELIMITED_DATA : FIXLEN_DATA);
@@ -264,7 +274,7 @@ public class Db2DataWriter extends Node {
 		batchWriter.write(command.toString());
 		
 		command.setLength(0);
-		command.append("db2 disconnect ");
+		command.append("disconnect ");
 		command.append(database);
 		command.append("\n");
 		batchWriter.write(command.toString());
@@ -395,6 +405,9 @@ public class Db2DataWriter extends Node {
             if(xattribs.exists(XML_COLUMNDELIMITER_ATTRIBUTE)) {
                 writer.setColumnDelimiter((xattribs.getString(XML_COLUMNDELIMITER_ATTRIBUTE).charAt(0)));
             }
+            if(xattribs.exists(XML_INTERPRETER_ATTRIBUTE)) {
+                writer.setInterpreter((xattribs.getString(XML_INTERPRETER_ATTRIBUTE)));
+            }
             return writer;
         } catch (Exception ex) {
                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -424,6 +437,14 @@ public class Db2DataWriter extends Node {
 
 	public void setUsePipe(boolean usePipe) {
 		this.usePipe = usePipe;
+	}
+
+	public String getInterpreter() {
+		return interpreter;
+	}
+
+	public void setInterpreter(String interpreter) {
+		this.interpreter = interpreter;
 	}
 
 }
