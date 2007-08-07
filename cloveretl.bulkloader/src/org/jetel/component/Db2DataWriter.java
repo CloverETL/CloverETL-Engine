@@ -21,13 +21,18 @@
 
 package org.jetel.component;
 
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
@@ -35,6 +40,8 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.ProcBox;
 import org.w3c.dom.Element;
 
 /**
@@ -66,6 +73,8 @@ public class Db2DataWriter extends Node {
 	
 	public final static String COMPONENT_TYPE = "DB2_DATA_WRITER";
 
+	static Log logger = LogFactory.getLog(Db2DataWriter.class);
+
 	private final String FIXLEN_DATA = "asc";
 	private final String DELIMITED_DATA = "del";
 
@@ -89,6 +98,11 @@ public class Db2DataWriter extends Node {
 	private DataRecordMetadata fileMetadata;
 	private Process proc;
 	private DataRecordMetadata inMetadata;
+	private LoggerDataConsumer consumer;
+	private LoggerDataConsumer errConsumer;
+	private ProcBox box;
+	private InputPort inPort;
+	private DataRecord inRecord;
 
 	public Db2DataWriter(String id, String database, String user, String psw, String table, 
 			LoadeMode mode,	String fileName, String fileMetadataId) {
@@ -207,8 +221,20 @@ public class Db2DataWriter extends Node {
 		return command.toString();
 	}
 	
-	private void runWithPipe() {
-		//TODO
+	private int runWithPipe() throws IOException, InterruptedException, JetelException{
+		proc = Runtime.getRuntime().exec(command);
+		box = new ProcBox(proc, null, consumer, errConsumer);
+		try {
+			while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+				formatter.write(inRecord);
+			}
+		} catch (Exception e) {
+			throw new JetelException("Problem with reading input", e);
+		}finally {
+			formatter.close();
+		}
+		
+		return box.join();
 	}
 	
 	/* (non-Javadoc)
@@ -216,32 +242,110 @@ public class Db2DataWriter extends Node {
 	 */
 	@Override
 	public Result execute() throws Exception {
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord inRecord =null;
+		inPort = getInputPort(READ_FROM_PORT);
+		inRecord =null;
+		int exitValue = 0;
 		
-		proc = Runtime.getRuntime().exec("db2 connect to " + database + " user " + user + " using " + psw);
-		proc.waitFor();
+		if (!getInPorts().isEmpty() && usePipe) {//TODO for Windows
+			try {
+				proc = Runtime.getRuntime().exec("mkfifo " + fileName);
+				box = new ProcBox(proc, null, consumer, errConsumer);
+				exitValue = box.join();
+			} catch (Exception e) {
+				proc.destroy();
+				proc = Runtime.getRuntime().exec("rm " + fileName);
+				if (proc.waitFor() != 0) {
+					logger.warn("Pipe was not deleted.");
+				}
+				throw e;
+			}
+		}
+		
+		try {
+			proc = Runtime.getRuntime().exec("db2 connect to " + database + " user " + user + " using " + psw);
+			exitValue = proc.waitFor();
+		} catch (Exception e){
+			proc.destroy();
+			throw e;
+		}
 
+		if (exitValue != 0) {
+			logger.error("Connection to database failed");
+			logger.error("db2 connect exited with value: " + exitValue);
+			throw new JetelException("Process exit value is not 0");
+		}
+		
 		if (inMetadata != null) {
 			inRecord = new DataRecord(inMetadata);
 			inRecord.init();
 		}
 		
-		if (!getInPorts().isEmpty() && usePipe) {//TODO for Windows
-			proc = Runtime.getRuntime().exec("mkfifo " + fileName);
-			runWithPipe();
-		}else {
-			if (!getInPorts().isEmpty()) {
-				while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
-					formatter.write(inRecord);
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+
+		try {
+			if (!getInPorts().isEmpty() && usePipe) {//TODO for Windows
+				exitValue = runWithPipe();
+				File pipe = new File(fileName);
+				if (!pipe.delete()){
+					logger.warn("Pipe was not deleted.");
 				}
-				formatter.close();
+			}else {
+				if (!getInPorts().isEmpty()) {
+					try {
+						while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
+							formatter.write(inRecord);
+						}
+					} catch (Exception e) {
+						throw e;
+					}finally {
+						formatter.close();
+					}
+				}
+				if (runIt) {
+					proc = Runtime.getRuntime().exec(command);
+					box = new ProcBox(proc, null, consumer, errConsumer);
+					exitValue = box.join();
+				}						
+				if (!getInPorts().isEmpty()) {
+					File tmpFile = new File(fileName);
+					if (!tmpFile.delete()){
+						logger.warn("Tmp file was not deleted.");
+					}
+				}
 			}
-			proc = Runtime.getRuntime().exec(command);
-			proc.waitFor();			
+		} catch (Exception e) {
+			proc.destroy();
+			throw e;
+		}finally{
+			try {
+				proc = Runtime.getRuntime().exec("db2 disconnect " + database);
+			} catch (Exception e) {
+				proc.destroy();
+				throw e;
+			}
 		}
-		proc = Runtime.getRuntime().exec("db2 terminate");
-		return proc.waitFor() == 0 ? Result.FINISHED_OK : Result.ERROR;
+
+		boolean error = false;
+		
+		if (exitValue != 0) {
+			logger.error("Loading to database failed");
+			logger.error("db2 load exited with value: " + exitValue);
+			error = true;
+		}
+		
+		exitValue = proc.waitFor();
+
+		if (exitValue != 0) {
+			logger.error("Disconnecting to database failed");
+			logger.error("db2 disconnect exited with value: " + exitValue);
+		}
+		
+		if (error || exitValue != 0) {
+			throw new JetelException("Process exit value is not 0");
+		}
+		
+		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
     public static Node fromXML(TransformationGraph graph, Element xmlElement) throws XMLConfigurationException {
