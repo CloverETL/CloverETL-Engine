@@ -45,7 +45,7 @@ import org.jetel.util.TypedProperties;
  * @see         org.jetel.data.DataRecord
  * @see         org.jetel.data.DataField
  */
-public class DataRecordMetadata implements Serializable {
+public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetadata> {
 
 	private static final long serialVersionUID = 7032218607804024730L;
 
@@ -666,6 +666,32 @@ public class DataRecordMetadata implements Serializable {
      */
     public short getNumNullableFields() {
         return numNullableFields;
+    }
+    
+    /**
+     * Finds field with a given autoFilling function.
+     * 
+     * @param autoFilling
+     * @return if field exists, returns index of the field, else -1 
+     */
+    public int findAutoFilledField(String autoFilling) {
+        int i = 0;
+        for(DataFieldMetadata field : this) {
+            if(autoFilling.equals(field.getAutoFilling())) {
+                return i;
+            }
+            i++;
+        }
+        return -1;
+    }
+
+
+    /**
+     * Iterator for contained field metadata.
+     * @see java.lang.Iterable#iterator()
+     */
+    public Iterator<DataFieldMetadata> iterator() {
+        return fields.iterator();
     }
     
 }
