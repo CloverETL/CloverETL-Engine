@@ -23,6 +23,8 @@ package org.jetel.data;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
@@ -41,7 +43,7 @@ import org.jetel.util.BitArray;
  * @created     May 18, 2003
  * @see         org.jetel.metadata.DataRecordMetadata
  */
-public class DataRecord implements Serializable, Comparable {
+public class DataRecord implements Serializable, Comparable, Iterable<DataField> {
 
     private static final long serialVersionUID = 2497808992091497225L;
 
@@ -51,7 +53,7 @@ public class DataRecord implements Serializable, Comparable {
      * 
 	 * @since
 	 */
-	private DataField fields[];
+	private DataField[] fields;
 
 	/**
      * Reference to metadata object describing this record 
@@ -129,7 +131,7 @@ public class DataRecord implements Serializable, Comparable {
         int length = Math.min(fields.length, fromRecord.fields.length);
         
 	    for (int i = 0; i < length; i++){
-	        this.fields[i].copyFrom(fromRecord.fields[i]);
+	        this.fields[i].setValue(fromRecord.fields[i]);
 	    } 
 	}
 	
@@ -190,7 +192,7 @@ public class DataRecord implements Serializable, Comparable {
                 sourceField = sourceRecord.getField(srcFieldPos);
                 result[i] = true;
                 if (targetField.getMetadata().isSubtype(sourceField.getMetadata())) {
-                    targetField.copyFrom(sourceField);
+                    targetField.setValue(sourceField);
                 } else {
                     targetField.setToDefaultValue();
                 }
@@ -610,6 +612,31 @@ public class DataRecord implements Serializable, Comparable {
             if (!fields[i].isNull()) return false;
         }
         return true;
+    }
+
+    /**
+     * Returns iterator over all contained data fields.
+     * @see java.lang.Iterable#iterator()
+     */
+    public Iterator<DataField> iterator() {
+        return new Iterator<DataField>() {
+            private int idx = 0;
+            public boolean hasNext() {
+                return fields.length < idx;
+            }
+
+            public DataField next() {
+                try {
+                    return fields[idx++];
+                } catch(ArrayIndexOutOfBoundsException e) {
+                    throw new NoSuchElementException();
+                }
+            }
+
+            public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
     }
 }
 /*
