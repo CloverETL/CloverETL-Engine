@@ -74,6 +74,16 @@ public class MultiFileReader {
     private Map<DataRecordMetadata, AutoFillingData> autoFillingMap;
     private AutoFillingData autoFillingData;
     
+    private static final String GLOBAL_ROW_COUNT = "global_row_count";
+    private static final String SOURCE_ROW_COUNT = "source_row_count";
+    private static final String METADATA_ROW_COUNT = "metadata_row_count";
+    private static final String METADATA_SOURCE_ROW_COUNT = "metadata_source_row_count";
+    private static final String SOURCE_NAME = "source_name";
+    private static final String SOURCE_TIMESTAMP = "source_timestamp";
+    
+    public static final String[] AUTOFILLING = new String[] {GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
+    	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP};
+    
     /**
 	 * Sole ctor.
 	 * @param parser Parser to be used to obtain records from input files.
@@ -351,12 +361,12 @@ public class MultiFileReader {
 	    int metadataSourceRowCountLen = 0;
         for (int i=0; i<numFields; i++) {
         	if (metadata.getField(i).getAutoFilling() != null) {
-        		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("global_row_count")) globalRowCountTmp[globalRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_row_count")) sourceRowCountTmp[sourceRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_row_count")) metadataRowCountTmp[metadataRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("metadata_source_row_count")) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_name")) sourceNameTmp[sourceNameLen++] = i;
-        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase("source_timestamp")) sourceTimestampTmp[sourceTimestampLen++] = i;
+        		if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(GLOBAL_ROW_COUNT)) globalRowCountTmp[globalRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_ROW_COUNT)) sourceRowCountTmp[sourceRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(METADATA_ROW_COUNT)) metadataRowCountTmp[metadataRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(METADATA_SOURCE_ROW_COUNT)) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_NAME)) sourceNameTmp[sourceNameLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_TIMESTAMP)) sourceTimestampTmp[sourceTimestampLen++] = i;
         	}
         }
         data.globalRowCount = new int[globalRowCountLen];
