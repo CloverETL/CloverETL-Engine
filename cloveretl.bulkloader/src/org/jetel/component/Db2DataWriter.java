@@ -22,7 +22,9 @@
 package org.jetel.component;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 
 import org.apache.commons.logging.Log;
@@ -38,6 +40,7 @@ import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -71,6 +74,8 @@ public class Db2DataWriter extends Node {
     private static final String XML_USEPIPE_ATTRIBUTE = "usePipe";
     private static final String XML_COLUMNDELIMITER_ATTRIBUTE = "columnDelimiter";
 	
+    private static final String DEFAULT_COLUMN_DELIMITER = ",";
+    
 	public final static String COMPONENT_TYPE = "DB2_DATA_WRITER";
 
 	static Log logger = LogFactory.getLog(Db2DataWriter.class);
@@ -93,7 +98,6 @@ public class Db2DataWriter extends Node {
 	private boolean delimitedData;
 	private char columnDelimiter = 0;
 	
-	private String command;
 	private Formatter formatter;
 	private DataRecordMetadata fileMetadata;
 	private Process proc;
@@ -103,6 +107,8 @@ public class Db2DataWriter extends Node {
 	private ProcBox box;
 	private InputPort inPort;
 	private DataRecord inRecord;
+	private File batch;
+	private String command;
 
 	public Db2DataWriter(String id, String database, String user, String psw, String table, 
 			LoadeMode mode,	String fileName, String fileMetadataId) {
@@ -124,33 +130,28 @@ public class Db2DataWriter extends Node {
 			fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName);
 		}
 		if (!getInPorts().isEmpty()) {
-			if (usePipe) {//TODO for Windows
+			if (usePipe) {
 				fileName = getGraph().getRuntimeParameters().getTmpDir() + '/' + PIPE_NAME;
 			}else{
 				fileName = getGraph().getRuntimeParameters().getTmpDir() + '/' + PIPE_NAME + ".txt";
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 			delimitedData = inMetadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD;
-			if (columnDelimiter == 0) {
-				columnDelimiter = getColumnDelimiter(inMetadata);
-			}
 			if (fileMetadata == null) {
 				switch (inMetadata.getRecType()) {
-				case DataRecordMetadata.DELIMITED_RECORD:
-					fileMetadata = inMetadata.duplicate();
-					for(int i = 0; i<fileMetadata.getNumFields();i++) {
-						fileMetadata.getField(i).setDelimiter(String.valueOf(columnDelimiter));
-					}
-					break;
 				case DataRecordMetadata.FIXEDLEN_RECORD:
 					fileMetadata = inMetadata;
 					break;
+				case DataRecordMetadata.DELIMITED_RECORD:
 				case DataRecordMetadata.MIXED_RECORD:
-					fileMetadata = convertToDelimited(inMetadata);
+					fileMetadata = convertToDb2Delimited(inMetadata);
 					break;
 				default:
-					throw new ComponentNotReadyException("Unknown record type: " + inMetadata.getRecType());
+					throw new ComponentNotReadyException(
+							"Unknown record type: " + inMetadata.getRecType());
 				}
+			}else{
+				delimitedData = checkMetadata(fileMetadata) == DataRecordMetadata.DELIMITED_RECORD;
 			}
 			if (delimitedData) {
 				formatter = new DelimitedDataFormatter();//TODO code page
@@ -168,17 +169,45 @@ public class Db2DataWriter extends Node {
 			delimitedData = checkMetadata(fileMetadata) == DataRecordMetadata.DELIMITED_RECORD;
 		}
 		
-		command = prepareCommand();
+		try {
+//			command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : System.getenv("SHELL") + " ") + 
+//					prepareBatch();
+			command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "sh ") + 
+			prepareBatch();
+		} catch (Exception e) {
+			throw new ComponentNotReadyException(this, e);
+		} 
 	}
 	
-	private DataRecordMetadata convertToDelimited(DataRecordMetadata metadata){
-		//TODO
-		return metadata;
-	}
-	
-	private char getColumnDelimiter(DataRecordMetadata metadata){
-		//TODO delimiter z pierwszego pola, ktore jest delimited, maksymalnie 1 znak
-		return ',';
+	private DataRecordMetadata convertToDb2Delimited(DataRecordMetadata metadata){
+		DataRecordMetadata fMetadata = new DataRecordMetadata(metadata.getName() + "_fixlen", DataRecordMetadata.DELIMITED_RECORD);
+		boolean delimiterFound = columnDelimiter != 0;
+		int delimiterFieldIndex = -1;
+		DataFieldMetadata field;
+		for (int i=0; i < metadata.getNumFields(); i++){
+			field = metadata.getField(i);
+			if (!field.isDelimited()) {
+				fMetadata.addField(new DataFieldMetadata(field.getName(), field.getType(), delimiterFound ? String.valueOf(columnDelimiter) : DEFAULT_COLUMN_DELIMITER));
+			}else{
+				if (delimiterFound) {
+					fMetadata.addField(new DataFieldMetadata(field.getName(), field.getType(), String.valueOf(columnDelimiter)));
+				}else{
+					String delimiter = field.getDelimiter();
+					if (delimiter.length() == 1) {
+						delimiterFound = true;
+						columnDelimiter = delimiter.charAt(0);
+						delimiterFieldIndex = i;
+						fMetadata.addField(field.duplicate());
+					}else{
+						fMetadata.addField(new DataFieldMetadata(field.getName(), field.getType(), DEFAULT_COLUMN_DELIMITER));
+					}
+				}
+			}
+		}
+		for (int i=0; i< delimiterFieldIndex; i++){
+			fMetadata.getField(i).setDelimiter(String.valueOf(columnDelimiter));
+		}
+		return fMetadata;
 	}
 	
 	private char checkMetadata(DataRecordMetadata metadata) throws ComponentNotReadyException{
@@ -209,8 +238,21 @@ public class Db2DataWriter extends Node {
 		}
 	}
 	
-	private String prepareCommand() {
-		StringBuilder command = new StringBuilder("db2 load client from '");
+	private String prepareBatch() throws FileNotFoundException, IOException{
+		batch =  File.createTempFile("tmp",".bat");
+		FileWriter batchWriter = new FileWriter(batch);
+
+		StringBuilder command = new StringBuilder("db2 connect to ");
+		command.append(database);
+		command.append(" user ");
+		command.append(user);
+		command.append(" using ");
+		command.append(psw);
+		command.append("\n");
+		batchWriter.write(command.toString());
+		
+		command.setLength(0);
+		command.append("db2 load client from '");
 		command.append(fileName);
 		command.append("' of ");
 		command.append(delimitedData ? DELIMITED_DATA : FIXLEN_DATA);
@@ -218,7 +260,24 @@ public class Db2DataWriter extends Node {
 		command.append(loadMode);
 		command.append(" into ");
 		command.append(table);
-		return command.toString();
+		command.append("\n");
+		batchWriter.write(command.toString());
+		
+		command.setLength(0);
+		command.append("db2 disconnect ");
+		command.append(database);
+		command.append("\n");
+		batchWriter.write(command.toString());
+
+		if ((System.getProperty("os.name").startsWith("Windows"))) {
+			command.setLength(0);
+			command.append("exit");
+			command.append("\n");
+			batchWriter.write(command.toString());
+		}
+		
+		batchWriter.close();
+		return batch.getCanonicalPath();
 	}
 	
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
@@ -244,15 +303,25 @@ public class Db2DataWriter extends Node {
 	public Result execute() throws Exception {
 		inPort = getInputPort(READ_FROM_PORT);
 		inRecord =null;
+		if (inMetadata != null) {
+			inRecord = new DataRecord(inMetadata);
+			inRecord.init();
+		}
+		
+		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+
 		int exitValue = 0;
 		
-		if (!getInPorts().isEmpty() && usePipe) {//TODO for Windows
+		if (!getInPorts().isEmpty() && usePipe) {
 			try {
 				proc = Runtime.getRuntime().exec("mkfifo " + fileName);
 				box = new ProcBox(proc, null, consumer, errConsumer);
 				exitValue = box.join();
 			} catch (Exception e) {
-				proc.destroy();
+				if (proc != null) {
+					proc.destroy();
+				}				
 				proc = Runtime.getRuntime().exec("rm " + fileName);
 				if (proc.waitFor() != 0) {
 					logger.warn("Pipe was not deleted.");
@@ -262,29 +331,7 @@ public class Db2DataWriter extends Node {
 		}
 		
 		try {
-			proc = Runtime.getRuntime().exec("db2 connect to " + database + " user " + user + " using " + psw);
-			exitValue = proc.waitFor();
-		} catch (Exception e){
-			proc.destroy();
-			throw e;
-		}
-
-		if (exitValue != 0) {
-			logger.error("Connection to database failed");
-			logger.error("db2 connect exited with value: " + exitValue);
-			throw new JetelException("Process exit value is not 0");
-		}
-		
-		if (inMetadata != null) {
-			inRecord = new DataRecord(inMetadata);
-			inRecord.init();
-		}
-		
-		consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
-		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
-
-		try {
-			if (!getInPorts().isEmpty() && usePipe) {//TODO for Windows
+			if (!getInPorts().isEmpty() && usePipe) {
 				exitValue = runWithPipe();
 				File pipe = new File(fileName);
 				if (!pipe.delete()){
@@ -315,33 +362,15 @@ public class Db2DataWriter extends Node {
 				}
 			}
 		} catch (Exception e) {
-			proc.destroy();
-			throw e;
-		}finally{
-			try {
-				proc = Runtime.getRuntime().exec("db2 disconnect " + database);
-			} catch (Exception e) {
+			if (proc != null) {
 				proc.destroy();
-				throw e;
-			}
+			}			
+			throw e;
 		}
 
-		boolean error = false;
-		
 		if (exitValue != 0) {
 			logger.error("Loading to database failed");
 			logger.error("db2 load exited with value: " + exitValue);
-			error = true;
-		}
-		
-		exitValue = proc.waitFor();
-
-		if (exitValue != 0) {
-			logger.error("Disconnecting to database failed");
-			logger.error("db2 disconnect exited with value: " + exitValue);
-		}
-		
-		if (error || exitValue != 0) {
 			throw new JetelException("Process exit value is not 0");
 		}
 		
