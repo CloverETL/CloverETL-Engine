@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Tue Jul 31 09:29:05 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Tue Aug 07 11:38:46 CEST 2007" name="test" revision="1.60">
+<Global>
+<Metadata id="Metadata3">
+<Record name="forDb2" type="delimited">
+<Field delimiter="," name="Field1" nullable="false" shift="0" type="string"/>
+<Field delimiter="\n" name="Field2" nullable="true" shift="0" type="integer"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata1">
+<Record name="fromDB" type="delimited">
+<Field delimiter="," name="Employee_ID" nullable="true" shift="0" type="long"/>
+<Field delimiter="," name="account_num" nullable="true" shift="0" type="long"/>
+<Field delimiter="," name="first_name" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="last_name" nullable="true" shift="0" type="string"/>
+<Field delimiter="," name="department_ID" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\n" name="menagement_role" nullable="true" shift="0" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata0">
+<Record name="fromFile" type="delimited">
+<Field delimiter=";" name="customer_ID" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="ID" nullable="true" shift="0" type="long"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata2">
+<Record name="joined" type="delimited">
+<Field delimiter=";" name="customer_ID" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="employee_id" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" name="last_name" nullable="true" shift="0" type="string"/>
+<Field delimiter=";" name="first_name" nullable="true" shift="0" type="string"/>
+<Field delimiter="\n" name="Id" nullable="true" shift="0" type="long"/>
+</Record>
+</Metadata>
+<Connection dbConfig="db2.cfg" id="Connection1" type="JDBC"/>
+<Connection dbConfig="koule_postgre.cfg" id="Connection0" type="JDBC"/>
+<Sequence cached="0" fileURL="seq.seq" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
+</Global>
+<Phase number="0">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="126" guiY="91" id="DATA_GENERATOR0" randomFields="Field1=random(1,5)" recordsNumber="4" sequenceFields="Field2=Sequence0" type="DATA_GENERATOR"/>
+<Node database="mydb" enabled="enabled" fileMetadata="Metadata3" fileURL="/home/avackova/home/temp/data.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="398" guiY="92" id="DB2_DATA_WRITER0" loadMode="insert" password="clover" table="mytab" type="DB2_DATA_WRITER" usePipe="false" userName="db2inst1"/>
+<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER0:0"/>
+</Phase>
+<Phase number="1">
+<Node dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="111" guiY="230" id="DB_INPUT_TABLE0" sqlQuery="select * from MYTAB" type="DB_INPUT_TABLE"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="398" guiY="235" id="TRASH0" type="TRASH"/>
+<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+</Phase>
+</Graph>
