@@ -22,7 +22,6 @@
 package org.jetel.component;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -174,13 +173,18 @@ public class Db2DataWriter extends Node {
 		try {
 			if (interpreter!=null){
 				if (interpreter.contains("${}")){
-					command = interpreter.replace("${}",prepareBatch());
+					command = new String(interpreter.replace("${}",prepareBatch()));
 				}else {
 					throw new ComponentNotReadyException("Incorect form of "+
 							XML_INTERPRETER_ATTRIBUTE + " attribute:" + interpreter +
 							"\nUse form:\"interpreter [parameters] ${} [parameters]\"");
 				}
 			}else{
+//				if (System.getProperty("os.name").startsWith("Windows")) {
+//					command = new String[]{"db2cmd", "/c", "db2 -f " + prepareBatch()};
+//				}else{
+//					command = new String[]{"db2", "-f" + prepareBatch()};
+//				}
 				command = System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "" +
 						"db2 -f " + prepareBatch();
 			}
@@ -249,7 +253,7 @@ public class Db2DataWriter extends Node {
 	}
 	
 	private String prepareBatch() throws IOException{
-		batch =  File.createTempFile("tmp",".bat");
+		batch =  File.createTempFile("tmp",".bat",new File("."));
 		FileWriter batchWriter = new FileWriter(batch);
 
 		StringBuilder command = new StringBuilder("connect to ");
@@ -287,7 +291,7 @@ public class Db2DataWriter extends Node {
 		}
 		
 		batchWriter.close();
-		return batch.getCanonicalPath();
+		return batch.getName();
 	}
 	
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
@@ -332,8 +336,8 @@ public class Db2DataWriter extends Node {
 				if (proc != null) {
 					proc.destroy();
 				}				
-				proc = Runtime.getRuntime().exec("rm " + fileName);
-				if (proc.waitFor() != 0) {
+				File pipe = new File(fileName);
+				if (!pipe.delete()){
 					logger.warn("Pipe was not deleted.");
 				}
 				throw e;
