@@ -185,7 +185,7 @@ public class Db2DataWriter extends Node {
 //				}else{
 //					command = new String[]{"db2", "-f" + prepareBatch()};
 //				}
-				command = System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "" +
+				command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd " : "") +
 						"db2 -f " + prepareBatch();
 			}
 		} catch (IOException e) {
@@ -339,6 +339,9 @@ public class Db2DataWriter extends Node {
 				File pipe = new File(fileName);
 				if (!pipe.delete()){
 					logger.warn("Pipe was not deleted.");
+				}
+				if (!batch.delete()){
+					logger.warn("Tmp batch was not deleted.");
 				}
 				throw e;
 			}
