@@ -131,10 +131,20 @@ public class Db2DataWriter extends Node {
 			fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName);
 		}
 		if (!getInPorts().isEmpty()) {
+			String tmpDir = getGraph().getRuntimeParameters().getTmpDir();
+			if (tmpDir.endsWith(File.separator)) {
+				tmpDir = tmpDir.concat(File.separator);
+			}
 			if (usePipe) {
-				fileName = getGraph().getRuntimeParameters().getTmpDir() + '/' + PIPE_NAME;
+				if (System.getProperty("os.name").startsWith("Windows")) {
+					logger.warn("Pipe transfer not supported on Windows - switching it off");
+					usePipe = false;
+					fileName = tmpDir + PIPE_NAME + ".txt";
+				}else{
+					fileName =  tmpDir + PIPE_NAME;
+				}
 			}else{
-				fileName = getGraph().getRuntimeParameters().getTmpDir() + '/' + PIPE_NAME + ".txt";
+				fileName = tmpDir + PIPE_NAME + ".txt";
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 			delimitedData = inMetadata.getRecType() != DataRecordMetadata.FIXEDLEN_RECORD;
