@@ -132,7 +132,7 @@ public class Db2DataWriter extends Node {
 		}
 		if (!getInPorts().isEmpty()) {
 			String tmpDir = getGraph().getRuntimeParameters().getTmpDir();
-			if (tmpDir.endsWith(File.separator)) {
+			if (!tmpDir.endsWith(File.separator)) {
 				tmpDir = tmpDir.concat(File.separator);
 			}
 			if (usePipe) {
