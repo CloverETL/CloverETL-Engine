@@ -80,8 +80,9 @@ public class MultiFileReader {
     private static final String METADATA_SOURCE_ROW_COUNT = "metadata_source_row_count";
     private static final String SOURCE_NAME = "source_name";
     private static final String SOURCE_TIMESTAMP = "source_timestamp";
+    private static final String DEFAULT_VALUE = "default_value";
     
-    public static final String[] AUTOFILLING = new String[] {GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
+    public static final String[] AUTOFILLING = new String[] {DEFAULT_VALUE, GLOBAL_ROW_COUNT, SOURCE_ROW_COUNT, METADATA_ROW_COUNT, 
     	METADATA_SOURCE_ROW_COUNT, SOURCE_NAME, SOURCE_TIMESTAMP};
     
     /**
@@ -252,6 +253,9 @@ public class MultiFileReader {
            	for (int i : autoFillingData.sourceTimestamp) {
            		rec.getField(i).setValue(fileTimestamp);
            	}
+           	for (int i : autoFillingData.defaultValue) {
+           		rec.getField(i).setToDefaultValue();
+           	}
             globalCounter++;
             sourceCounter++;
             autoFillingData.counter++;
@@ -315,6 +319,9 @@ public class MultiFileReader {
            	for (int i : autoFillingData.sourceTimestamp) {
            		rec.getField(i).setValue(fileTimestamp);
            	}
+           	for (int i : autoFillingData.defaultValue) {
+           		rec.getField(i).setToDefaultValue();
+           	}
             globalCounter++;
             sourceCounter++;
             autoFillingData.counter++;
@@ -336,6 +343,7 @@ public class MultiFileReader {
 	    private int[] sourceRowCount;
 	    private int[] sourceName;
 	    private int[] sourceTimestamp;
+	    private int[] defaultValue;
 
 	    private int counter; // number of returned records for one metadata
 	    private int[] metadataRowCount;
@@ -352,10 +360,12 @@ public class MultiFileReader {
         int[] metadataSourceRowCountTmp = new int[numFields];
         int[] sourceNameTmp = new int[numFields];
         int[] sourceTimestampTmp = new int[numFields];
+        int[] defaultValueTmp = new int[numFields];
         AutoFillingData data = new AutoFillingData();
         int globalRowCountLen = 0;
         int sourceNameLen = 0;
         int sourceTimestampLen = 0;
+        int defaultLen = 0;
 	    int sourceRowCountLen = 0;
 	    int metadataRowCountLen = 0;
 	    int metadataSourceRowCountLen = 0;
@@ -367,6 +377,7 @@ public class MultiFileReader {
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(METADATA_SOURCE_ROW_COUNT)) metadataSourceRowCountTmp[metadataSourceRowCountLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_NAME)) sourceNameTmp[sourceNameLen++] = i;
         		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(SOURCE_TIMESTAMP)) sourceTimestampTmp[sourceTimestampLen++] = i;
+        		else if (metadata.getField(i).getAutoFilling().equalsIgnoreCase(DEFAULT_VALUE)) defaultValueTmp[defaultLen++] = i;
         	}
         }
         data.globalRowCount = new int[globalRowCountLen];
@@ -375,6 +386,7 @@ public class MultiFileReader {
         data.metadataSourceRowCount = new int[metadataSourceRowCountLen];
         data.sourceName = new int[sourceNameLen];
         data.sourceTimestamp = new int[sourceTimestampLen];
+        data.defaultValue = new int[defaultLen];
         // reduce arrays' sizes
         System.arraycopy(globalRowCountTmp, 0, data.globalRowCount, 0, globalRowCountLen);
         System.arraycopy(sourceRowCountTmp, 0, data.sourceRowCount, 0, sourceRowCountLen);
@@ -382,6 +394,7 @@ public class MultiFileReader {
         System.arraycopy(metadataSourceRowCountTmp, 0, data.metadataSourceRowCount, 0, metadataSourceRowCountLen);
         System.arraycopy(sourceNameTmp, 0, data.sourceName, 0, sourceNameLen);
         System.arraycopy(sourceTimestampTmp, 0, data.sourceTimestamp, 0, sourceTimestampLen);
+        System.arraycopy(defaultValueTmp, 0, data.defaultValue, 0, defaultLen);
         
         autoFillingMap.put(metadata, data);
         return data;
