@@ -304,7 +304,7 @@ public class DBJoin extends Node {
 		DataRecordMetadata inMetadata[]={ getInputPort(READ_FROM_PORT).getMetadata(),dbMetadata};
 		DataRecordMetadata outMetadata[]={getOutputPort(WRITE_TO_PORT).getMetadata()};
         lookupTable = new DBLookupTable("LOOKUP_TABLE_FROM_"+this.getId(),(DBConnection) conn,dbMetadata,query,maxCached);
-//        lookupTable.checkConfig(null);
+        lookupTable.checkConfig(null);
 		lookupTable.init();
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
