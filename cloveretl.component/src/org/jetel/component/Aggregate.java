@@ -229,7 +229,7 @@ public class Aggregate extends Node {
 	 */
 	public static Node fromXML(TransformationGraph graph, Element xmlElement)throws XMLConfigurationException {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
-		String[] aggregateKey = null;
+		String[] aggregateKey = new String[0];
 		String mapping = null;
 		boolean oldMapping = false;
         boolean sorted = true;
@@ -238,9 +238,7 @@ public class Aggregate extends Node {
             if(xattribs.exists(XML_AGGREGATE_KEY_ATTRIBUTE)) {
                 aggregateKey = xattribs.getString(XML_AGGREGATE_KEY_ATTRIBUTE).split(
                 		Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);                
-            } else {
-            	throw new XMLConfigurationException("Attribute is missing: " + XML_AGGREGATE_KEY_ATTRIBUTE);
-            }
+            } 
             
             //read mapping attribute
             if (xattribs.exists(XML_MAPPING_ATTRIBUTE)) {
