@@ -95,7 +95,7 @@ public class runGraph {
     private static Log logger = LogFactory.getLog(runGraph.class);
 
     //TODO change run graph version
-	private final static String RUN_GRAPH_VERSION = "2.2";
+	private final static String RUN_GRAPH_VERSION = JetelVersion.MAJOR_VERSION+"."+JetelVersion.MINOR_VERSION;
 	public final static String VERBOSE_SWITCH = "-v";
 	public final static String PROPERTY_FILE_SWITCH = "-cfg";
 	public final static String PROPERTY_DEFINITION_SWITCH = "-P:";
