@@ -19,7 +19,6 @@
 */
 package org.jetel.data;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -336,7 +335,7 @@ public final class Defaults {
 		 *
 		 * @since    July 30, 2002
 		 */
-		public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 30000;
+		public static int DEFAULT_WATCHDOG_TRACKING_INTERVAL;// = 2000;
 
 		/**
 		 *  One tick is one awakening of watch dog. Sleep interval * number_of_ticks
