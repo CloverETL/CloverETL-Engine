@@ -468,7 +468,12 @@ public class DataFieldMetadata implements Serializable {
 	 * @since     October 30, 2002
 	 */
 	public String getDefaultValueStr() {
-		return defaultValueStr;
+		if (defaultValueStr != null) {
+			return defaultValueStr;
+		} else if (defaultValue != null) {
+			return defaultValue.toString();
+		}
+		return null;
 	}
 
     public Object getDefaultValue() {
