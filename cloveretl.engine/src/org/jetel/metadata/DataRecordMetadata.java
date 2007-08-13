@@ -34,7 +34,6 @@ import org.jetel.util.BitArray;
 import org.jetel.util.StringUtils;
 import org.jetel.util.TypedProperties;
 
-
 /**
  *  A class that represents metadata describing DataRecord
  *
@@ -58,6 +57,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
     
 	private Map fieldNames;
 	private Map fieldTypes;
+	private Map<String, Integer> fieldOffset;
 
 	private String name;
 	private char recType;
@@ -106,6 +106,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		this.fields = new ArrayList<DataFieldMetadata>();
 		fieldNames = new HashMap();
 		fieldTypes = new HashMap();
+		fieldOffset = new HashMap<String, Integer>();
 		recordProperties = new TypedProperties();
 		localeStr=null;
         numNullableFields=0;
@@ -247,6 +248,19 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		}
 	}
 
+	public int getFieldOffset(String fieldName){
+		if (getRecType() != FIXEDLEN_RECORD ) return -1;
+		
+		if (fieldOffset.isEmpty()) {
+			updateFieldOffsetMap();
+		}
+		Integer offset = fieldOffset.get(fieldName);
+		if (offset != null) {
+			return offset.intValue();
+		} else {
+			return -1;
+		}
+	}
 
 	/**
 	 *  Gets the fieldType attribute of the DataFieldMetadata identified by fieldName
@@ -343,6 +357,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private void structureChanged() {
 	    fieldNames.clear();
 	    fieldTypes.clear();
+	    fieldOffset.clear();
         numNullableFields=0;
         fieldNullSwitch.resize(fields.size());
         int count=0;
@@ -375,6 +390,16 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		for (int i = 0; i < fields.size(); i++) {
 			field = (DataFieldMetadata) fields.get(i);
 			fieldNames.put(field.getName(), new Integer(i));
+		}
+	}
+	
+	private void updateFieldOffsetMap(){
+		if (getRecType() != FIXEDLEN_RECORD) return;
+		
+		int offset = 0;
+		for (DataFieldMetadata field : fields) {
+			fieldOffset.put(field.getName(), offset + field.getShift());
+			offset += field.getSize();
 		}
 	}
 
