@@ -19,6 +19,7 @@
 */
 package org.jetel.lookup;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
@@ -35,6 +36,7 @@ import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
 import org.jetel.data.parser.FixLenCharDataParser;
 import org.jetel.data.parser.Parser;
+import org.jetel.data.primitive.ByteArray;
 import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
@@ -50,6 +52,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
+import org.omg.CORBA.DATA_CONVERSION;
 import org.w3c.dom.Element;
 
 /**
@@ -82,7 +85,8 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
     public static final String XML_DATA_TYPE_FIXED ="fixed";
     private static final String XML_CHARSET = "charset";
 	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
-    
+	private static final String XML_DATA_ATTRIBUTE = "data";
+	
     protected String metadataName;
 	protected DataRecordMetadata metadata;
 	protected String fileURL;
@@ -97,6 +101,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	protected int numFound;
 	protected DataRecord lookupData;
 	protected int tableInitialSize=DEFAULT_INITIAL_CAPACITY;
+	
+	// data of the lookup table, can be used instead of an input file
+	protected String data;
 	
 	/**
 	* Default capacity of HashMap when standard constructor is used.
@@ -218,7 +225,7 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	    if (charset == null) {
 	    	charset = Defaults.DataParser.DEFAULT_CHARSET_DECODER;
 	    }
-	    if (dataParser == null && fileURL != null) {
+	    if (dataParser == null && (fileURL != null || data!= null)) {
 	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
 	    		dataParser = new DelimitedDataParser(charset);
 	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
@@ -240,7 +247,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 					dataParser.setDataSource(FileUtils.getReadableChannel(
 							getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null,
 							fileURL));
-				}               
+				} else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
+				}
 				while (dataParser.getNext(record) != null) {
 	                    DataRecord storeRecord = record.duplicate();
 	                    lookupTable.put(new HashKey(indexKey, storeRecord), storeRecord);
@@ -292,6 +301,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
             }
             if (xattribs.exists(XML_BYTEMODE_ATTRIBUTE)){
             	lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
+            	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
             }
             
             return lookupTable;
@@ -459,5 +471,12 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 		this.byteMode = byteMode;
 	}
 
+	public String getData() {
+		return data;
+	}
+	
+	public void setData(String data) {
+		this.data = data;
+	}
 }
 
