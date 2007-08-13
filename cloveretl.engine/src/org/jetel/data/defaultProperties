@@ -8,7 +8,7 @@
 #Clover at runtime allocates several internal buffers of MAX_RECORD_SIZE, thus increasing this value increases also 
 #memory utilization. 
 
-Record.MAX_RECORD_SIZE = 8192
+Record.MAX_RECORD_SIZE = 32768
 
 #Compression level for compressed data fields (cbyte).
 Record.DEFAULT_COMPRESSION_LEVEL=5
@@ -18,13 +18,13 @@ Record.DEFAULT_COMPRESSION_LEVEL=5
 #If you have data containing long text strings, increase this value. Could be 1024,2048 or even higher.
 #The impact on memory utilization is low as each parser your graph uses allocates only one such buffer. 
 
-DataParser.FIELD_BUFFER_LENGTH = 512
+DataParser.FIELD_BUFFER_LENGTH = 32768
 
 
 #the same as above, but for formatting data to text representation
 #should be set to the same value as above
 
-DataFormatter.FIELD_BUFFER_LENGTH = 512
+DataFormatter.FIELD_BUFFER_LENGTH = 32768
 
 
 #This constant determines the internal buffer clover components allocate for I/O operations. 
@@ -90,7 +90,7 @@ Component.KEY_FIELDS_DELIMITER_REGEX = \\s*[:;|]\\s*
 Component.KEY_FIELDS_DELIMITER = ;
 					
 WatchDog.WATCHDOG_SLEEP_INTERVAL = 500
-WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 30000
+WatchDog.DEFAULT_WATCHDOG_TRACKING_INTERVAL = 2000
 WatchDog.NUMBER_OF_TICKS_BETWEEN_STATUS_CHECKS = 5
 			
 GraphProperties.PROPERTY_PLACEHOLDER_REGEX = \\$\\{(\\w+)\\}
