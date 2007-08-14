@@ -156,4 +156,12 @@ public interface LookupTable extends IGraphElement,Iterable<DataRecord> {
 	 */
 	public void free();
 	
+	/**
+	 * Creates an iterator over the lookup table. The iterator finds values based on a key.
+	 * 
+	 * @param lookupKey lookup key. 
+	 * 
+	 * @return the iterator.
+	 */
+	public LookupTableIterator getLookupTableIterator(Object lookupKey);
 }

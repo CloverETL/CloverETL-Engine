@@ -14,7 +14,9 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordComparator;
 import org.jetel.data.RecordKey;
 import org.jetel.data.StringDataField;
+import org.jetel.data.lookup.BaseLookupTableIterator;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.data.parser.DataParser;
 import org.jetel.data.parser.DelimitedDataParser;
 import org.jetel.data.parser.FixLenByteDataParser;
@@ -575,6 +577,13 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		this.fileURL = fileURL;
 	}
 	
+    /* (non-Javadoc)
+     * @see org.jetel.data.lookup.LookupTable#getLookupTableIterator(java.lang.Object)
+     */
+    public LookupTableIterator getLookupTableIterator(Object lookupKey) {
+    	return new BaseLookupTableIterator(lookupKey, this);
+    }
+
 	/**
 	 * Comparator for special records (defining range lookup table). 
 	 * It compares odd and even fields of two records using RecordComparator class.

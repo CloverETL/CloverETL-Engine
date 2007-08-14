@@ -29,6 +29,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.data.lookup.LookupTableIterator;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -272,18 +273,19 @@ public class LookupJoin extends Node {
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] { inRecord, null };
+		LookupTableIterator iterator = lookupTable.getLookupTableIterator(recordKey);
 		while (inRecord != null && runIt) {
 			inRecord = inPort.readRecord(inRecord);
 			if (inRecord != null) {
 				// find slave record in database
-				inRecords[1] = lookupTable.get(inRecord);
+				inRecords[1] = iterator.get(inRecord);
 				do {
 					if ((inRecords[1] != null || leftOuterJoin)
 							&& transformation.transform(inRecords, outRecord)) {
 						writeRecord(WRITE_TO_PORT, outRecord[0]);
 					}
 					// get next record from database with the same key
-					inRecords[1] = lookupTable.getNext();
+					inRecords[1] = iterator.getNext();
 				} while (inRecords[1] != null);
 			}
 		}
@@ -349,7 +351,6 @@ public class LookupJoin extends Node {
 		try {
 			recordKey = new RecordKey(joinKey, inMetadata[0]);
 			recordKey.init();
-			lookupTable.setLookupKey(recordKey);
 			if (transformation != null){
 				transformation.init(transformationParameters, inMetadata, outMetadata);
 			}else{
