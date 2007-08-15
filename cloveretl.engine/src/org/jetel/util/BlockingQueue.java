@@ -22,7 +22,7 @@ package org.jetel.util;
 /**
  * Implementation of simple queue (First In First Out - FIFO), bounded and blocking queue.
  * 
- * @author Martin Zatopek (OpenTech s.r.o)
+ * @author Martin Zatopek (Javlin Consulting s.r.o)
  * @since  December 5, 2005
  */
 public class BlockingQueue extends Queue {

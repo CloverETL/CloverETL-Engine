@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2005 OpenTech s.r.o. All rights reserved.
+ * Copyright (c) 2004-2005 Javlin Consulting s.r.o. All rights reserved.
  * 
  * $Header$
  */

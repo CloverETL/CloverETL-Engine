@@ -40,7 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
 /**
  * Outputs common data record. Handles encoding of characters. Uses WriteableChannel.
  *
- * @author     Martin Zatopek, OpenTech s.r.o (www.opentech.cz)
+ * @author     Martin Zatopek, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since      26. 9. 2005
  * @see        Formatter
  */
