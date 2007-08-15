@@ -21,7 +21,7 @@ package org.jetel.util;
 
 /**
  * Synchronize utils
- * @author Martin Zatopek (OpenTech s.r.o)
+ * @author Martin Zatopek (Javlin Consulting s.r.o)
  */
 public class SynchronizeUtils {
 
