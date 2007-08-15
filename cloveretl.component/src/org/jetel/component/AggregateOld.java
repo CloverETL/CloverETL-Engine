@@ -79,7 +79,7 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node id="AGGREGATE_NODE" type="AGGREGATE" aggregateKey="FirstName" aggregateFunctions="count(); min(Age); avg(Salery); min(HireDate)" sorted="false" /&gt;</pre>
  *
- * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
+ * @author      Martin Zatopek, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       June 27, 2005
  * @revision    $Revision$
  */
