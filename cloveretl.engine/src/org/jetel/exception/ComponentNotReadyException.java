@@ -61,7 +61,13 @@ public class ComponentNotReadyException extends Exception {
       super(message);
       this.graphElement=element;
   }
-  
+
+  public ComponentNotReadyException(IGraphElement element, String attributeName, String message) {
+      super(message);
+      this.graphElement = element;
+      this.attributeName = attributeName;
+  }
+
   public IGraphElement getGraphElement(){
       return graphElement;
   }
