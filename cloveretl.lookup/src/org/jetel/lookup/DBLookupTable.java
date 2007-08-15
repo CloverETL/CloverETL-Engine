@@ -66,6 +66,7 @@ import org.w3c.dom.Element;
  *              sqlQuery CDATA #REQUIRED
  *              dbConnection CDATA #REQUIRED
  *              maxCached CDATA #IMPLIED&gt;
+ *              storeNulls CDATA #IMPLIED&gt;
  * 
  *
  *@author     dpavlis
@@ -100,7 +101,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	protected int maxCached = 0;
 	protected HashKey cacheKey;
-	protected boolean storeNulls = true;
+	protected boolean storeNulls = false;
 	
 	protected int cacheNumber = 0;
 	protected int totalNumber = 0;
