@@ -349,7 +349,9 @@ public class SimpleLookupTable extends GraphElement implements LookupTable {
 	        
 	    }else if (key instanceof RecordKey){
 	        // reference to DataRecord (lookupData] will be added later in get(DataRecord ) method
-	        this.lookupKey=new HashKey((RecordKey)key,null);
+	    	if ((this.lookupKey == null) || (key != this.lookupKey.getRecordKey())) {
+	    		this.lookupKey=new HashKey((RecordKey)key,null);
+	    	}
 	    }else{
 	        throw new RuntimeException("Incompatible Object type specified as lookup key: "+key.getClass().getName());
 	    }
