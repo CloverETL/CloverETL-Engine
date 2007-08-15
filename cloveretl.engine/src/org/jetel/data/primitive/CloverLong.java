@@ -27,7 +27,7 @@ import java.math.BigDecimal;
  *  It is anologous java.lang.Long class but is mutable.
  *  You can change value during all live cycle of this object.
  * 
- *@author     Martin Zatopek (OpenTech s.r.o)
+ *@author     Martin Zatopek, Javlin Consulting. (www.javlinconsulting.cz)
  *@since      December 2, 2005
  *@see        org.jetel.data.primitive.CloverInteger
  *@see        org.jetel.data.primitive.CloverDouble
