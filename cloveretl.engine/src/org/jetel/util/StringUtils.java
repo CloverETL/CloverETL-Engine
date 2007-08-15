@@ -20,8 +20,10 @@
 package org.jetel.util;
 
 import java.nio.CharBuffer;
+import java.util.ArrayList;
+import java.util.regex.Pattern;
 
-import org.jetel.data.DataField;
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 
 import sun.text.Normalizer;
@@ -482,7 +484,51 @@ public class StringUtils {
 		return stringArraytoString(strings,' ');
 	} 
   
-    public static boolean isEmpty(CharSequence s) {
+	/**
+	 * Splits the given string into mapping items. It's compatible with double quoted
+	 * strings, so a delimiter in a double quoted string doesn't cause a split.
+	 *  
+	 * @param str
+	 * @return mapping items.
+	 */
+	public static String[] split(String str) {
+		Pattern delimiterPattern = Pattern.compile(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		ArrayList<String> result = new ArrayList<String>();
+		
+		StringBuilder item = new StringBuilder();
+		boolean insideQuotes = false;
+		char prevChar = '\0';
+		for (int i = 0; i < str.length(); i++) {
+			char c = str.charAt(i);
+			if (insideQuotes) {
+				if ((c == '"') && (prevChar != '\\')) {
+					insideQuotes = false;
+				} 
+				item.append(c);
+			} else {
+				if (c == '"') {
+					insideQuotes = true;
+					item.append(c);
+				} else if (delimiterPattern.matcher(Character.toString(c)).matches()) {
+					result.add(item.toString());
+					item = new StringBuilder();
+				} else {
+					item.append(c);
+				}
+			}
+
+			prevChar = c;
+		}
+		String lastString = item.toString();
+		if (!lastString.equals("")) {	// if the ";" is the last char of the mapping, 
+										// then an empty last item is created
+			result.add(item.toString());
+		}
+		
+		return (String[]) result.toArray(new String[result.size()]);
+	}
+
+	public static boolean isEmpty(CharSequence s) {
         return s == null || s.length() == 0;
     }
 
@@ -664,7 +710,7 @@ public class StringUtils {
     	}
       	return true;
     }
-
+    
     /**
      * This method copies substring of source to target.
      * 
