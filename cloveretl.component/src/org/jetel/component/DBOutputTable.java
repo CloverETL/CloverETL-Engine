@@ -584,7 +584,10 @@ public class DBOutputTable extends Node {
 	    int i;
 	    int batchCount=0;
 	    int recCount = 0;
-	    DataRecordMetadata rejectedMetadata = rejectedPort.getMetadata();
+	    DataRecordMetadata rejectedMetadata = null;
+	    if (rejectedPort != null) {
+	    	rejectedMetadata = rejectedPort.getMetadata();
+	    }
 	    DataRecord[] dataRecordHolder;
 	    int holderCount=0;
 	    ResultSet generatedKeys;
@@ -635,44 +638,46 @@ public class DBOutputTable extends Node {
                     throw new SQLException("Maximum # of errors exceeded when inserting record: "+ex.getMessage());
                 }
             }
-        }
-        // shall we commit ?
-        if (++batchCount % batchSize == 0) {
-            try {
-                preparedStatement.executeBatch();
-                preparedStatement.clearBatch();
-            } catch (BatchUpdateException ex) {
-                preparedStatement.clearBatch();
-				if (dataRecordHolder != null) {
-					flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
-				}
-				if (countError>maxErrors && maxErrors!=-1){
-                    throw new SQLException("Maximum # of errors exceeded when executing batch:"+ex.getMessage());
-                }
-            }
-            batchCount = 0;
-            holderCount=0;
-        }
-        if (++recCount % recordsInCommit == 0) {
-            if (batchCount!=0){
-                try {
-                    preparedStatement.executeBatch();
-                    preparedStatement.clearBatch();
-                } catch (BatchUpdateException ex) {
-                    preparedStatement.clearBatch();
+
+            // shall we commit ?
+	        if (++batchCount % batchSize == 0) {
+	            try {
+	                preparedStatement.executeBatch();
+	                preparedStatement.clearBatch();
+	            } catch (BatchUpdateException ex) {
+	                preparedStatement.clearBatch();
 					if (dataRecordHolder != null) {
 						flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
 					}
-                    if (countError>maxErrors && maxErrors!=-1){
-                        throw new SQLException("Maximum # of errors exceeded when executing batch:"+ex.getMessage());
-                    }
-                }
-                batchCount = 0;
-                holderCount=0;
-            }
-            dbConnection.getConnection().commit();
-        SynchronizeUtils.cloverYield();
+					if (countError>maxErrors && maxErrors!=-1){
+	                    throw new SQLException("Maximum # of errors exceeded when executing batch:"+ex.getMessage());
+	                }
+	            }
+	            batchCount = 0;
+	            holderCount=0;
+	        }
+	        if (++recCount % recordsInCommit == 0) {
+	            if (batchCount!=0){
+	                try {
+	                    preparedStatement.executeBatch();
+	                    preparedStatement.clearBatch();
+	                } catch (BatchUpdateException ex) {
+	                    preparedStatement.clearBatch();
+						if (dataRecordHolder != null) {
+							flushErrorRecords(dataRecordHolder, holderCount, ex, rejectedPort);
+						}
+	                    if (countError>maxErrors && maxErrors!=-1){
+	                        throw new SQLException("Maximum # of errors exceeded when executing batch:"+ex.getMessage());
+	                    }
+	                }
+	                batchCount = 0;
+	                holderCount=0;
+	            }
+	            dbConnection.getConnection().commit();
+	        SynchronizeUtils.cloverYield();
+		    }
 	    }
+	    
 	    // final commit (if anything is left in batch
 	    try{
 	        preparedStatement.executeBatch();
