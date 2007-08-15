@@ -43,6 +43,7 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.CommandBuilder;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.exec.LoggerDataConsumer;
@@ -80,6 +81,7 @@ public class Db2DataWriter extends Node {
 	private static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
 	private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
 	private static final String XML_PARAMETERS_ATTRIBUTE = "parameters";
+	private static final String XML_BATCHURL_ATTRIBUTE = "batchURL";
 	private static final String XML_REJECTEDRECORDSURL_ATTRIBUTE = "rejectedURL";//on server
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
@@ -122,7 +124,7 @@ public class Db2DataWriter extends Node {
 	public static final String COL_DEL_PARAM = "coldel";
 	public static final String DATES_ISO_PARAM = "datesiso";
 	public static final String DEC_PLUS_BLANK_PARAM = "decplusblank";
-	public static final String DECPT_PARAM = "decpt";
+	public static final String DECIMAL_POINT_PARAM = "decpt";
 	public static final String DEL_PRIORYTY_CHAR_PARAM = "delprioritychar";
 	public static final String DL_DEL_PARAM = "dldel";
 	public static final String KEEP_BLANKS_PARAM = "keepblanks";
@@ -158,9 +160,9 @@ public class Db2DataWriter extends Node {
 	public static final String LOCK_WITH_FORCE_PARAM = "lockwithforce";
 	public static final String PARTITIONED_CONFIG_PARAM = "partitionedConfig";// @see http://publib.boulder.ibm.com/infocenter/db2luw/v8/topic/com.ibm.db2.udb.doc/admin/r0004613.htm
 	
-    private static final String DEFAULT_COLUMN_DELIMITER = ",";
+    private static final char DEFAULT_COLUMN_DELIMITER = ',';
     private static final char EQUAL_CHAR = '=';
-
+    private static final String TRUE = "true";
     public static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 	public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
@@ -208,6 +210,7 @@ public class Db2DataWriter extends Node {
 	private Properties properties = new Properties();
 	private String[] cloverFields;
 	private String[] dbFields;
+	private String batchURL;
 
 	public Db2DataWriter(String id, String database, String user, String psw, String table, 
 			LoadeMode mode,	String fileName, String fileMetadataId) {
@@ -226,12 +229,13 @@ public class Db2DataWriter extends Node {
 		super.init();
 		
 		if (parameters != null){
-			String[] param = parameters.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+			String[] param = StringUtils.split(parameters);
 			int index;
 			for (String string : param) {
 				index = string.indexOf(EQUAL_CHAR);
 				if (index > -1) {
-					properties.setProperty(string.substring(0, index).toLowerCase(), string.substring(index + 1).toLowerCase());
+					properties.setProperty(string.substring(0, index).toLowerCase(), 
+							StringUtils.unquote(string.substring(index + 1).toLowerCase()));
 				}else{
 					properties.setProperty(string.toLowerCase(), String.valueOf(true));
 				}
@@ -239,7 +243,7 @@ public class Db2DataWriter extends Node {
 		}
 		
 		if (columnDelimiter != 0) {
-			properties.put(COL_DEL_PARAM, columnDelimiter);
+			properties.setProperty(COL_DEL_PARAM, String.valueOf(columnDelimiter));
 		}else if (properties.contains(COL_DEL_PARAM)) {
 			columnDelimiter = properties.getProperty(COL_DEL_PARAM).charAt(0);
 		}
@@ -287,11 +291,11 @@ public class Db2DataWriter extends Node {
 				formatter = new DelimitedDataFormatter("UTF-8");
 			}else{
 				formatter = new FixLenDataFormatter("UTF-8");
+				properties.setProperty(STRIP_BLANKS_PARAM, TRUE);
 			}
-			properties.put(CODE_PAGE_PARAM, "1208");
+			properties.setProperty(CODE_PAGE_PARAM, "1208");
 			formatter.init(fileMetadata);
 		}else{
-			//TODO nie musza byc dane metadata
 			if (fileMetadata == null) throw new ComponentNotReadyException(this,"File metadata have to be defined");
 			delimitedData = checkMetadata(fileMetadata) == DataRecordMetadata.DELIMITED_RECORD;
 		}
@@ -380,6 +384,13 @@ public class Db2DataWriter extends Node {
 			}
 			fMetadata.addField(newField);
 		}
+		if (!delimiterFound) {
+			columnDelimiter = DEFAULT_COLUMN_DELIMITER;
+			delimiterFieldIndex = fMetadata.getNumFields() - 1;
+		}
+		if (!properties.containsKey(COL_DEL_PARAM)) {
+			properties.setProperty(COL_DEL_PARAM, String.valueOf(columnDelimiter));
+		}
 		for (int i=0; i< delimiterFieldIndex; i++){
 			fMetadata.getField(i).setDelimiter(String.valueOf(columnDelimiter));
 		}
@@ -430,425 +441,121 @@ public class Db2DataWriter extends Node {
 	}
 	
 	private String prepareLoadCommand() throws ComponentNotReadyException{
-		String tmp;
-		String MODIFIED = "modified by ";
-		StringBuilder command = new StringBuilder("load client from '");
+		String MODIFIED = "modified by";
+		CommandBuilder command = new CommandBuilder("load client from '");
+		command.setParams(properties);
+		
 		command.append(fileName);
 		command.append("' of ");
 		command.append(delimitedData ? DELIMITED_DATA : FIXLEN_DATA);
-		command.append(' ');
-//		command.append('\n');
 		
-		if (properties.containsKey(LOBS_URL_PARAM)) {
-			command.append("lobs from ");
-			command.append(properties.getProperty(LOBS_URL_PARAM));
-			command.append(' ');
-		}
+		command.addParameterWithPrefix("lobs from ", LOBS_URL_PARAM);
 		
-		boolean modifiedWritten =false;
-		if (properties.containsKey(ANY_ORDER_PARAM) && properties.getProperty(ANY_ORDER_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(ANY_ORDER_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(GENERATED_IGNORE_PARAM) && properties.getProperty(GENERATED_IGNORE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(GENERATED_IGNORE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(GENERATED_MISSING_PARAM) && properties.getProperty(GENERATED_MISSING_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(GENERATED_MISSING_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(GENERATED_OVERRIDE_PARAM) && properties.getProperty(GENERATED_OVERRIDE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(GENERATED_OVERRIDE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(IDENTITY_IGNORE_PARAM) && properties.getProperty(IDENTITY_IGNORE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(IDENTITY_IGNORE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(IDENTITY_MISSING_PARAM) && properties.getProperty(IDENTITY_MISSING_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(IDENTITY_MISSING_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(IDENTITY_OVERRIDE_PARAM) && properties.getProperty(IDENTITY_OVERRIDE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(IDENTITY_OVERRIDE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(INDEX_FREE_SPACE_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(INDEX_FREE_SPACE_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(INDEX_FREE_SPACE_PARAM));
-			command.append(' ');
-		}
+		boolean writeModified = true;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, ANY_ORDER_PARAM);
+		//if modified was written writeModiefien should be false to the end 
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, GENERATED_IGNORE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, GENERATED_MISSING_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, GENERATED_OVERRIDE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, IDENTITY_IGNORE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, IDENTITY_MISSING_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, IDENTITY_OVERRIDE_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, INDEX_FREE_SPACE_PARAM) && writeModified;
 		if (properties.containsKey(LOBS_URL_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append("lobsinfile ");
+			command.append(" lobsinfile");
+			writeModified = false;
 		}
-		if (properties.containsKey(NO_HEADER_PARAM) && properties.getProperty(NO_HEADER_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_HEADER_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(NO_ROW_WARNINGS_PARAM) && properties.getProperty(NO_ROW_WARNINGS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_ROW_WARNINGS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(PAGE_FREE_SPACE_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(PAGE_FREE_SPACE_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(PAGE_FREE_SPACE_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(SUBTABLE_CONVERT_PARAM) && properties.getProperty(SUBTABLE_CONVERT_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(SUBTABLE_CONVERT_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(TOTAL_FREE_SPACE_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(TOTAL_FREE_SPACE_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(TOTAL_FREE_SPACE_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(USE_DEFAULTS_PARAM) && properties.getProperty(USE_DEFAULTS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(USE_DEFAULTS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(CODE_PAGE_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(CODE_PAGE_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(CODE_PAGE_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(DATE_FORMAT_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DATE_FORMAT_PARAM);
-			command.append('=');
-			tmp = properties.getProperty(DATE_FORMAT_PARAM);
-			if (!tmp.startsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(tmp);
-			if (!tmp.endsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(' ');
-		}
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_HEADER_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_ROW_WARNINGS_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, PAGE_FREE_SPACE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, SUBTABLE_CONVERT_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, TOTAL_FREE_SPACE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, USE_DEFAULTS_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, CODE_PAGE_PARAM) && writeModified;
+		writeModified = !command.addAndQuoteParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DATE_FORMAT_PARAM) && writeModified;
 		if (rejectedURL != null || properties.containsKey(DUMP_FILE_PARAM)) {
-			if (!modifiedWritten) {
+			if (writeModified) {
 				command.append(MODIFIED);
-				modifiedWritten = true;
+				writeModified = false;
 			}
-			command.append(DUMP_FILE_PARAM);
-			command.append('=');
+			command.append(" " + DUMP_FILE_PARAM + "=");
 			if (rejectedURL != null) {
 				command.append(rejectedURL);
 			}else{
 				command.append(properties.getProperty(DUMP_FILE_PARAM));
 			}
-			command.append(' ');
 		}
-		if (properties.containsKey(DUMP_FILE_ACCESS_ALL_PARAM) && properties.getProperty(DUMP_FILE_ACCESS_ALL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DUMP_FILE_ACCESS_ALL_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(FAST_PARSE_PARAM) && properties.getProperty(FAST_PARSE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(FAST_PARSE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(IMPLIED_DECIMAL_PARAM) && properties.getProperty(IMPLIED_DECIMAL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(IMPLIED_DECIMAL_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(TIME_FORMAT_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(TIME_FORMAT_PARAM);
-			command.append('=');
-			tmp = properties.getProperty(TIME_FORMAT_PARAM);
-			if (!tmp.startsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(tmp);
-			if (!tmp.endsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(' ');
-		}
-		if (properties.containsKey(TIME_STAMP_FORMAT_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(TIME_STAMP_FORMAT_PARAM);
-			command.append('=');
-			tmp = properties.getProperty(TIME_STAMP_FORMAT_PARAM);
-			if (!tmp.startsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(tmp);
-			if (!tmp.endsWith("\"")) {
-				command.append('"');
-			}			
-			command.append(' ');
-		}
-		if (properties.containsKey(NO_EOF_CHAR_PARAM) && properties.getProperty(NO_EOF_CHAR_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_EOF_CHAR_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(USER_GRAPHIC_CODE_PAGE_PARAM) && properties.getProperty(USER_GRAPHIC_CODE_PAGE_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(USER_GRAPHIC_CODE_PAGE_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(BINARY_NUMERICS_PARAM) && properties.getProperty(BINARY_NUMERICS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(BINARY_NUMERICS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(NO_CHECK_LENGTHS_PARAM) && properties.getProperty(NO_CHECK_LENGTHS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_CHECK_LENGTHS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(NULL_IND_CHAR_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NULL_IND_CHAR_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(NULL_IND_CHAR_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(PACKED_DECIMAL_PARAM) && properties.getProperty(PACKED_DECIMAL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(PACKED_DECIMAL_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(REC_LEN_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(REC_LEN_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(REC_LEN_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(STRIP_BLANKS_PARAM) && properties.getProperty(STRIP_BLANKS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(STRIP_BLANKS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(STRIP_NULLS_PARAM) && properties.getProperty(STRIP_NULLS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(STRIP_NULLS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(ZONED_DECIMAL_PARAM) && properties.getProperty(ZONED_DECIMAL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(ZONED_DECIMAL_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(CHAR_DEL_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(CHAR_DEL_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(CHAR_DEL_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(COL_DEL_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(COL_DEL_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(COL_DEL_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(DATES_ISO_PARAM) && properties.getProperty(DATES_ISO_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DATES_ISO_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(DEC_PLUS_BLANK_PARAM) && properties.getProperty(DEC_PLUS_BLANK_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DEC_PLUS_BLANK_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(DECPT_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DECPT_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(DECPT_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(DEL_PRIORYTY_CHAR_PARAM) && properties.getProperty(DEL_PRIORYTY_CHAR_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DEL_PRIORYTY_CHAR_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(DL_DEL_PARAM)) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(DL_DEL_PARAM);
-			command.append('=');
-			command.append(properties.getProperty(DL_DEL_PARAM));
-			command.append(' ');
-		}
-		if (properties.containsKey(KEEP_BLANKS_PARAM) && properties.getProperty(KEEP_BLANKS_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(KEEP_BLANKS_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(NO_CHAR_DEL_PARAM) && properties.getProperty(NO_CHAR_DEL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_CHAR_DEL_PARAM);
-			command.append(' ');
-		}
-		if (properties.containsKey(NO_DOUBLE_DEL_PARAM) && properties.getProperty(NO_DOUBLE_DEL_PARAM).equals("true")) {
-			if (!modifiedWritten) {
-				command.append(MODIFIED);
-				modifiedWritten = true;
-			}
-			command.append(NO_DOUBLE_DEL_PARAM);
-			command.append(' ');
-		}
-		if (modifiedWritten) {
-//			command.append("\n");
-		}		
+		//FIXME sprawdzic, czy to boolean czy z wartoscia (dump..=x)
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DUMP_FILE_ACCESS_ALL_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, FAST_PARSE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, IMPLIED_DECIMAL_PARAM) && writeModified;
+		writeModified = !command.addAndQuoteParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, TIME_FORMAT_PARAM) && writeModified;
+		writeModified = !command.addAndQuoteParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, TIME_STAMP_FORMAT_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_EOF_CHAR_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, USER_GRAPHIC_CODE_PAGE_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, BINARY_NUMERICS_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_CHECK_LENGTHS_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NULL_IND_CHAR_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, PACKED_DECIMAL_PARAM) && writeModified;
+		writeModified = !command.addParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, REC_LEN_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, STRIP_BLANKS_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, STRIP_NULLS_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, ZONED_DECIMAL_PARAM) && writeModified;
+		writeModified = !command.addParameterSpecialWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, CHAR_DEL_PARAM, "") && writeModified;
+		writeModified = !command.addParameterSpecialWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, COL_DEL_PARAM, "") && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DATES_ISO_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DEC_PLUS_BLANK_PARAM) && writeModified;
+		writeModified = !command.addParameterSpecialWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DECIMAL_POINT_PARAM, "") && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DEL_PRIORYTY_CHAR_PARAM) && writeModified;
+		writeModified = !command.addParameterSpecialWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, DL_DEL_PARAM, "") && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, KEEP_BLANKS_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_CHAR_DEL_PARAM) && writeModified;
+		writeModified = !command.addBooleanParameterWithPrefixClauseConditionaly(
+				MODIFIED, writeModified, NO_DOUBLE_DEL_PARAM);
 		
 		if (cloverFields != null) {
-			command.append("method ");
-			command.append(delimitedData ? 'P' : 'L');
+			command.append(" method ");
+			command.append(delimitedData ? "P" : "L");
 			command.append(" (");
 			int value;
 			if (delimitedData) {
@@ -859,11 +566,12 @@ public class Db2DataWriter extends Node {
 								StringUtils.quote(cloverFields[i]) + " does not exist in metadata " + 
 								StringUtils.quote(fileMetadata.getName()));
 					}
-					command.append(value + 1);
-					command.append(',');
+					command.append(String.valueOf(value + 1));
+					if (i < cloverFields.length - 1) {
+						command.append(",");
+					}					
 				}
-				command.setLength(command.length() - 1);
-				command.append(") ");
+				command.append(")");
 			}else{
 				for (int i=0; i<cloverFields.length; i++){
 					DataFieldMetadata field = fileMetadata.getField(cloverFields[i]);
@@ -873,56 +581,35 @@ public class Db2DataWriter extends Node {
 								StringUtils.quote(cloverFields[i]) + " does not exist in metadata " + 
 								StringUtils.quote(fileMetadata.getName()) + " or metadata are not fixlength.");
 					}
-					command.append(value + 1);
-					command.append(' ');
-					command.append(value + field.getSize());
-					command.append(',');
+					command.append(String.valueOf(value + 1));
+					command.append(" ");
+					command.append(String.valueOf(value + field.getSize()));
+					if (i < cloverFields.length - 1) {
+						command.append(",");
+					}					
 				}
-				command.setLength(command.length() - 1);
-				command.append(") ");
+				command.append(")");
+				command.addParameterWithPrefix("null indicators (", NULL_INDICATORS_PARAM);
 				if (properties.containsKey(NULL_INDICATORS_PARAM)) {
-					command.append("null indicators (");
-					command.append(properties.getProperty(NULL_INDICATORS_PARAM));
-					command.append(") ");
+					command.append(")");
 				}
 				
 			}
 		}
 		
-		if (properties.containsKey(SAVE_COUNT_PARAM)) {
-			command.append(' ');
-			command.append(SAVE_COUNT_PARAM);
-			command.append(properties.getProperty(SAVE_COUNT_PARAM));
-			command.append(' ');
-		}
-		
-		if (properties.containsKey(ROW_COUNT_PARAM)) {
-			command.append(ROW_COUNT_PARAM);
-			command.append(' ');
-			command.append(properties.getProperty(ROW_COUNT_PARAM));
-			command.append(' ');
-		}
-		
-		if (properties.containsKey(WARNING_COUNT_PARAM)) {
-			command.append(WARNING_COUNT_PARAM);
-			command.append(' ');
-			command.append(properties.getProperty(WARNING_COUNT_PARAM));
-			command.append(' ');
-		}
-		
+		command.addParameterSpecial(SAVE_COUNT_PARAM, " ");
+		command.addParameterSpecial(ROW_COUNT_PARAM, " ");
+		command.addParameterSpecial(WARNING_COUNT_PARAM, " ");
+		command.addParameterWithPrefix("messages '", MESSAGES_URL_PARAM);
 		if (properties.containsKey(MESSAGES_URL_PARAM)) {
-			command.append("messages '");
-			command.append(properties.getProperty(MESSAGES_URL_PARAM));
-			command.append("' ");
+			command.append("'");
 		}
-		
+		command.addParameterWithPrefix("tempfiles path '", TMP_URL_PARAM);
 		if (properties.containsKey(TMP_URL_PARAM)) {
-			command.append("tempfiles path '");
-			command.append(properties.getProperty(TMP_URL_PARAM));
-			command.append("' ");
+			command.append("'");
 		}
 		
-		command.append(loadMode);
+		command.append(" " + String.valueOf(loadMode));
 		command.append(" into ");
 		command.append(table);
 		if (dbFields != null) {
@@ -931,48 +618,43 @@ public class Db2DataWriter extends Node {
 			command.append(") ");
 		}
 
-		if (properties.containsKey(EXCEPTION_TABLE_PARAM)) {
-			command.append("for exception ");
-			command.append(properties.getProperty(EXCEPTION_TABLE_PARAM));
-			command.append(" ");
-		}
+		command.addParameterWithPrefix("for exception ", TMP_URL_PARAM);
 		
 		if (properties.containsKey(STATISTIC_PARAM)) {
-			command.append("statistics ");
-			if (properties.getProperty(STATISTIC_PARAM).equalsIgnoreCase("true")) {
+			command.append(" statistics ");
+			if (properties.getProperty(STATISTIC_PARAM).equalsIgnoreCase(TRUE)) {
 				command.append("use profile");
 			}else{
 				command.append("no");
 			}
-			command.append(" ");
 		}
 		
-		if (properties.containsKey(NONRECOVERABLE_PARAM) && (properties.getProperty(STATISTIC_PARAM).equalsIgnoreCase("true"))) {
-			command.append("nonrecoverable ");
+		if (properties.containsKey(NONRECOVERABLE_PARAM) && (properties.getProperty(NONRECOVERABLE_PARAM).equalsIgnoreCase(TRUE))) {
+			command.append(" nonrecoverable ");
 		}else if (properties.containsKey(COPY_PARAM)) {
-			if (!properties.getProperty(COPY_PARAM).equalsIgnoreCase("true")) {
-				command.append("copy no ");
+			if (!properties.getProperty(COPY_PARAM).equalsIgnoreCase(TRUE)) {
+				command.append(" copy no ");
 			}else{
-				command.append("copy yes ");
+				command.append(" copy yes ");
 				if (properties.containsKey(USE_TSM_PARAM)) {
 					command.append("use tsm ");
 					if (properties.containsKey(NUM_SESSIONS_PARAM)) {
-						command.append("open ");
+						command.append(" open ");
 						command.append(properties.getProperty(NUM_SESSIONS_PARAM));
 						command.append(" sessions ");
 					}
 				}
 				if (properties.containsKey(COPY_URL_PARAM)) {
-					command.append("to '");
+					command.append(" to '");
 					command.append(properties.getProperty(COPY_URL_PARAM));
 					command.append("' ");
 				}
 				if (properties.containsKey(RECOVERY_LIBRARY_PARAM)) {
-					command.append("load '");
+					command.append(" load '");
 					command.append(properties.getProperty(RECOVERY_LIBRARY_PARAM));
 					command.append("' ");
 					if (properties.containsKey(NUM_SESSIONS_PARAM)) {
-						command.append("open ");
+						command.append(" open ");
 						command.append(properties.getProperty(NUM_SESSIONS_PARAM));
 						command.append(" sessions ");
 					}
@@ -980,142 +662,51 @@ public class Db2DataWriter extends Node {
 			}
 		}
 		
-		if (properties.containsKey(WITHOUT_PROMPTING_PARAM) && properties.getProperty(EXCEPTION_TABLE_PARAM).equalsIgnoreCase("true")) {
-			command.append("without prompting ");
+		if (properties.containsKey(WITHOUT_PROMPTING_PARAM) && properties.getProperty(WITHOUT_PROMPTING_PARAM).equalsIgnoreCase(TRUE)) {
+			command.append(" without prompting ");
 		}
 		
-		if (properties.containsKey(BUFFER_SIZE_PARAM)) {
-			command.append("data buffer ");
-			command.append(properties.getProperty(BUFFER_SIZE_PARAM));
-			command.append(" ");
-		}
-
-		if (properties.containsKey(SORT_BUFFER_SIZE_PARAM)) {
-			command.append("sort buffer ");
-			command.append(properties.getProperty(SORT_BUFFER_SIZE_PARAM));
-			command.append(" ");
-		}
-
-		if (properties.containsKey(CPU_NUM_PARAM)) {
-			command.append("cpu_parallelism ");
-			command.append(properties.getProperty(CPU_NUM_PARAM));
-			command.append(" ");
-		}
-
-		if (properties.containsKey(DISK_NUM_PARAM)) {
-			command.append("disk_parallelism ");
-			command.append(properties.getProperty(DISK_NUM_PARAM));
-			command.append(" ");
-		}
-
-		if (properties.containsKey(INDEXING_MODE_PARAM)) {
-			command.append("indexing mode ");
-			command.append(properties.getProperty(INDEXING_MODE_PARAM));
-			command.append(" ");
-		}
+		command.addParameterWithPrefix("data buffer ", BUFFER_SIZE_PARAM);
+		command.addParameterWithPrefix("sort buffer ", SORT_BUFFER_SIZE_PARAM);
+		command.addParameterWithPrefix("cpu_parallelism ", CPU_NUM_PARAM);
+		command.addParameterWithPrefix("disk_parallelism ", DISK_NUM_PARAM);
+		command.addParameterWithPrefix("indexing mode ", INDEXING_MODE_PARAM);
 
 		if (properties.containsKey(ALLOW_READ_ACCESS_PARAM)) {
-			if (properties.getProperty(ALLOW_READ_ACCESS_PARAM).equalsIgnoreCase("true")) {
-				command.append("allow read access ");
+			if (properties.getProperty(ALLOW_READ_ACCESS_PARAM).equalsIgnoreCase(TRUE)) {
+				command.append(" allow read access ");
 				if (properties.containsKey(INDEX_COPY_TABLE_PARAM)) {
-					command.append("use ");
+					command.append(" use ");
 					command.append(properties
 							.getProperty(INDEX_COPY_TABLE_PARAM));
-					command.append(" ");
 				}
 			}else{
-				command.append("allow no access ");
+				command.append(" allow no access ");
 			}
 		}
 
-		if (properties.containsKey(CHECK_PENDING_CASCADE_PARAM)) {
-			command.append("check pending cascade ");
-			command.append(properties.getProperty(CHECK_PENDING_CASCADE_PARAM));
-			command.append(" ");
-		}
+		command.addParameterWithPrefix("check pending cascade ", CHECK_PENDING_CASCADE_PARAM);
 
-		if (properties.containsKey(LOCK_WITH_FORCE_PARAM) && properties.getProperty(LOCK_WITH_FORCE_PARAM).equalsIgnoreCase("true")) {
-			command.append("lock with force ");
+		if (properties.containsKey(LOCK_WITH_FORCE_PARAM) && properties.getProperty(LOCK_WITH_FORCE_PARAM).equalsIgnoreCase(TRUE)) {
+			command.append(" lock with force");
 		}
 		
-		if (properties.containsKey(PARTITIONED_CONFIG_PARAM)) {
-			command.append("partitioned db config ");
-			command.append(properties.getProperty(PARTITIONED_CONFIG_PARAM));
-			command.append(" ");
-		}
+		command.addParameterWithPrefix("partitioned db config ", PARTITIONED_CONFIG_PARAM);
 		
-//		if (properties.containsKey(DL_LINK_TYPE_PARAM) || properties.containsKey(DL_URL_DEFAULT_PREFIX_PARAM) ||
-//				properties.containsKey(DL_URL_REPLACE_PREFIX_PARAM) || properties.containsKey(DL_URL_SUFFIX_PARAM)) {
-//			command.append("datalink specification ");
-//			modifiedWritten = false;
-//			if (properties.containsKey(DL_LINK_TYPE_PARAM)) {
-//				command.append("(");
-//				command.append(DL_LINK_TYPE_PARAM);
-//				command.append(" url) ");
-//				modifiedWritten = true;
-//			}
-//			if (properties.containsKey(DL_URL_DEFAULT_PREFIX_PARAM)) {
-//				if (modifiedWritten) {
-//					command.append(", ");
-//				}
-//				command.append("(");
-//				command.append(DL_URL_DEFAULT_PREFIX_PARAM);
-//				command.append(' ');
-//				tmp = properties.getProperty(DL_URL_DEFAULT_PREFIX_PARAM);
-//				if (!tmp.startsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(tmp);
-//				if (!tmp.endsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(") ");
-//				modifiedWritten = true;
-//			}
-//			if (properties.containsKey(DL_URL_REPLACE_PREFIX_PARAM)) {
-//				if (modifiedWritten) {
-//					command.append(", ");
-//				}
-//				command.append("(");
-//				command.append(DL_URL_REPLACE_PREFIX_PARAM);
-//				command.append(' ');
-//				tmp = properties.getProperty(DL_URL_REPLACE_PREFIX_PARAM);
-//				if (!tmp.startsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(tmp);
-//				if (!tmp.endsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(") ");
-//				modifiedWritten = true;
-//			}
-//			if (properties.containsKey(DL_URL_SUFFIX_PARAM)) {
-//				if (modifiedWritten) {
-//					command.append(", ");
-//				}
-//				command.append("(");
-//				command.append(DL_URL_SUFFIX_PARAM);
-//				command.append(' ');
-//				tmp = properties.getProperty(DL_URL_SUFFIX_PARAM);
-//				if (!tmp.startsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(tmp);
-//				if (!tmp.endsWith("\"")) {
-//					command.append('"');
-//				}
-//				command.append(") ");
-//			}
-//		}
-		
-		command.append("\n");
-		
-		return command.toString();
+		return command.getCommand();
 	}
 	
 	private String prepareBatch() throws IOException, ComponentNotReadyException{
-		batch =  File.createTempFile("tmp",".bat",new File("."));
+		if (batchURL != null) {
+			batch = new File(batchURL);
+			if (batch.length() > 0) {
+				logger.info("Batch file exist. New batch file will not be created.");
+				return batch.getCanonicalPath();
+			}
+		}
+		if (batch == null) {
+			batch = File.createTempFile("tmp", ".bat", new File("."));
+		}		
 		FileWriter batchWriter = new FileWriter(batch);
 
 		batchWriter.write(prepareConnectCommand());
@@ -1123,7 +714,7 @@ public class Db2DataWriter extends Node {
 		batchWriter.write(prepareDisconnectCommand());
 
 		batchWriter.close();
-		return batch.getName();
+		return batchURL != null ? batch.getCanonicalPath() : batch.getName();
 	}
 	
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
@@ -1177,7 +768,7 @@ public class Db2DataWriter extends Node {
 				if (!pipe.delete()){
 					logger.warn("Pipe was not deleted.");
 				}
-				if (!batch.delete()){
+				if (batchURL == null && !batch.delete()){
 					logger.warn("Tmp batch was not deleted.");
 				}
 				throw e;
@@ -1224,13 +815,24 @@ public class Db2DataWriter extends Node {
 			if (proc != null) {
 				proc.destroy();
 			}			
+			if (batchURL == null && !batch.delete()){
+				logger.warn("Tmp batch was not deleted.");
+			}
 			throw e;
 		}
 
-		if (exitValue != 0) {
+		if (batchURL == null && !batch.delete()){
+			logger.warn("Tmp batch was not deleted.");
+		}
+
+		if (exitValue != 0 && exitValue != 2) {
 			logger.error("Loading to database failed");
 			logger.error("db2 load exited with value: " + exitValue);
 			throw new JetelException("Process exit value is not 0");
+		}
+		
+		if (exitValue == 2) {
+			logger.warn("There is at least one warning message in the message file.");
 		}
 		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -1296,6 +898,9 @@ public class Db2DataWriter extends Node {
             }
             if (xattribs.exists(XML_RECORD_SKIP_ATTRIBUTE)) {
             	writer.setRecordSkip(xattribs.getInteger(XML_RECORD_SKIP_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
+            	writer.setBatchURL(xattribs.getString(XML_BATCHURL_ATTRIBUTE));
             }
            return writer;
         } catch (Exception ex) {
@@ -1379,4 +984,23 @@ public class Db2DataWriter extends Node {
 	public void setRecordSkip(int recordSkip) {
 		this.recordSkip = recordSkip;
 	}
+
+	public String getBatchURL() {
+		return batchURL;
+	}
+
+	public void setBatchURL(String batchURL) {
+		this.batchURL = batchURL;
+	}
+
+}
+
+class Db2LoggerDataConsumer extends LoggerDataConsumer {
+
+	public Db2LoggerDataConsumer(int level, int maxLines) {
+		super(level, maxLines);
+	}
+	
+	
+	
 }
