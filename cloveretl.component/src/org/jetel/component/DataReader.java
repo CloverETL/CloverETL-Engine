@@ -91,7 +91,7 @@ import org.w3c.dom.Element;
  *  <h4>Example:</h4>
  *  <pre>&lt;Node type="DATA_READER" id="InputFile" fileURL="zip:http://www.store.com/data.zip#data.txt" charset="ISO-8859-15"/&gt;</pre>
  *
- * @author      Martin Zatopek, David Pavlis, OpenTech, s.r.o (www.opentech.cz)
+ * @author      Martin Zatopek, David Pavlis, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
  * @since       April 4, 2002
  * @revision    $Revision: 1.11 $
  * @see         org.jetel.data.parser.DelimitedDataParser

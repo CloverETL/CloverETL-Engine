@@ -42,7 +42,8 @@ import org.jetel.util.Base64;
 /**
  *  Represent aggregate function of agregate component.
  *
- * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
+ * @author      Martin Zatopek, Javlin Consulting s.r.o. (www.javlinconsulting.cz)
+ * 
  * @since       June 27, 2005
  * @revision    $Revision$
  */
@@ -370,7 +371,7 @@ public class AggregateFunctionOld implements Iterator {
 	/**
 	 *  Represent one aggregate function.
 	 *
-	 * @author      Martin Zatopek, OpenTech, s.r.o (www.opentech.cz)
+	 * @author      Martin Zatopek, Javlin Consulting. (www.javlinconsulting.cz)
 	 * @since
 	 * @revision    $Revision$
 	 */
