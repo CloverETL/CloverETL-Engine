@@ -584,7 +584,7 @@ public class DataGenerator extends Node {
 	 * @param randomFields the randomFields to set in form fieldName=random(min,max)
 	 */
 	public void setRandomFields(String randomFields) {
-		String[] fields = randomFields.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+		String[] fields = StringUtils.split(randomFields);
 		this.randomFields = new String[fields.length];
 		this.randomRanges = new String[fields.length][2];//0 - number, 1 - min, 2 - max
 		String[] param;
@@ -599,14 +599,14 @@ public class DataGenerator extends Node {
 				commaIndex = param[1].indexOf(',');
 				rightParantesisIndex = param[1].indexOf(')');
 				if (commaIndex == -1) {
-					randomRanges[i][MIN] = param[1].substring(leftParenthesisIndex +1,
-							rightParantesisIndex);
+					randomRanges[i][MIN] = StringUtils.unquote(param[1].substring(
+							leftParenthesisIndex +1, rightParantesisIndex));
 					randomRanges[i][MAX] = "";
 				}else{
-					randomRanges[i][MIN] = param[1].substring(leftParenthesisIndex +1,
-							commaIndex);
-					randomRanges[i][MAX] = param[1].substring(commaIndex+1,
-							rightParantesisIndex);
+					randomRanges[i][MIN] = StringUtils.unquote(param[1].substring(
+							leftParenthesisIndex +1, commaIndex));
+					randomRanges[i][MAX] = StringUtils.unquote(param[1].substring(
+							commaIndex+1, rightParantesisIndex));
 				}
 				randomRanges[i][MIN] = randomRanges[i][MIN].trim();
 				randomRanges[i][MAX] = randomRanges[i][MAX].trim();
