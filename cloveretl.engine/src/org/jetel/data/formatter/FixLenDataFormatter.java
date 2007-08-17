@@ -184,7 +184,7 @@ public class FixLenDataFormatter implements Formatter {
                 throw new ComponentNotReadyException(e);
             }
         }
-		recordLength = metadata.getRecordSize();
+		recordLength = metadata.getRecordSize() > 0 ? metadata.getRecordSize() : metadata.getRecordSizeStripAutoFilling(); 
 
 		if (dataBuffer.capacity() < recordLength + (isRecordDelimiter ? recordDelimiter.length : 0)) {
 			throw new RuntimeException("Output buffer too small to hold data record " + metadata.getName());			
