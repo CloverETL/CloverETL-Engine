@@ -62,7 +62,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	private String name;
 	private char recType;
 	private String[] recordDelimiters;
-	private short recordSize;
+	private int recordSize=-1;
 	private String localeStr;
     private short numNullableFields;
 
@@ -355,6 +355,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 	 * Call if structure of metedata changes (add or remove some field).
 	 */
 	private void structureChanged() {
+		recordSize = -1;
 	    fieldNames.clear();
 	    fieldTypes.clear();
 	    fieldOffset.clear();
@@ -424,12 +425,20 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		return recType;
 	}
 
-	public void setRecordSize(short recSize) {
+	public void setRecordSize(int recSize) {
 		this.recordSize = recSize;
 	}
 	
-	public short getRecordSize() {
-	    return recordSize;
+	public int getRecordSize() {
+		if (recType != FIXEDLEN_RECORD) {
+			return -1;	// unknown size
+		}
+
+		if (recordSize > -1) {
+			return recordSize;
+		}		
+		
+		return getRecordSizeStripAutoFilling();
 	}
 
 	public int getRecordSizeStripAutoFilling() {
@@ -439,8 +448,7 @@ public class DataRecordMetadata implements Serializable, Iterable<DataFieldMetad
 		// compute size of fixed record (without trailing filler)
 		int recSize = 0;
 		int prevEnd = 0;
-		for (Object obj: fields) {
-			DataFieldMetadata field = (DataFieldMetadata)obj;
+		for (DataFieldMetadata field : fields) {
 			if (field.getAutoFilling() == null) {
 				prevEnd += field.getSize() + field.getShift();
 				recSize = Math.max(recSize, prevEnd);
