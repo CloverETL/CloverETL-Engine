@@ -24,6 +24,8 @@ package org.jetel.util;
 import java.util.Properties;
 
 /**
+ * Class for creating command from string pieces and parameters
+ * 
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -43,30 +45,59 @@ public class CommandBuilder {
 	char endCharacter;
 	Properties params;
 	
+	/**
+	 * Creates command object
+	 * 
+	 * @param command input command as string
+	 * @param parameterDelimiter char, which will be used as parameter delimiter
+	 * @param endCharacter char, which will be used as last char
+	 */
 	public CommandBuilder(String command, char parameterDelimiter, char endCharacter){
 		this.command = new StringBuilder(command);
 		this.parameterDelimiter = parameterDelimiter;
 		this.endCharacter = endCharacter;
 	}
 
+	/**
+	 * Creates command object with default parameter delimiter (' ') and end char ('\n')
+	 * 
+	 * @param command char, which will be used as
+	 */
 	public CommandBuilder(String command){
 		this.command = new StringBuilder(command);
 		this.parameterDelimiter = DEFAULT_PARAMETER_DELIMITER;
 		this.endCharacter = DEFAULT_END_CHARACTER;
 	}
 
+	/**
+	 * @return parameters
+	 */
 	public Properties getParams() {
 		return params;
 	}
 
+	/**
+	 * Sets parameters
+	 * 
+	 * @param params
+	 */
 	public void setParams(Properties params) {
 		this.params = params;
 	}
 	
+	/**
+	 * @return complete command 
+	 */
 	public String getCommand(){
 		return command.toString() + endCharacter;
 	}
 	
+	/**
+	 * if paramName is in properties adds to the end of command:
+	 * 	" paramName=paramValue"
+	 * 
+	 * @param paramName
+	 */
 	public void addParameter(String paramName) {
 		if (params.containsKey(paramName)) {
 			command.append(parameterDelimiter);
@@ -76,6 +107,15 @@ public class CommandBuilder {
 		}
 	}
 	
+	/**
+	 * if paramName is in properties adds to the end of command:
+	 * 	" paramName=paramValue"
+	 * if doesn't exist:
+	 * 	" paramName=defaultValue"
+	 * 
+	 * @param paramName
+	 * @param defaultValue
+	 */
 	public void addParameter(String paramName, String defaultValue){
 		command.append(parameterDelimiter);
 		command.append(paramName);
@@ -84,13 +124,15 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * adds: [prefix] paramName=paramValue
+	 * if paramName is in properties adds to the end of command: 
+	 * 	"[ prefix] paramName=paramValue"
 	 * 
-	 * @param prefix
-	 * @param addPrefix
-	 * @param paramName
+	 * @param prefix string to write before paramName
+	 * @param addPrefix indicates if write prefix or not
+	 * @param paramName 
+	 * @return true if prefix was written (parmName is among parameters)
 	 */
-	public boolean addParameterWithPrefixClauseConditionaly(String prefix, boolean addPrefix, 
+	public boolean addParameterWithPrefixClauseConditionally(String prefix, boolean addPrefix, 
 			String paramName){
 		if (params.containsKey(paramName)) {
 			if (addPrefix) {
@@ -108,14 +150,16 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * adds: [prefix] paramNameparamValue	 
+	 * if paramName is in properties adds to the end of command: 
+	 *	"[ prefix] paramName<i>equalChar</i>paramValue"	 
 	 *
-	 * @param prefix
-	 * @param addPrefix
+	 * @param prefix string to write before paramName
+	 * @param addPrefix indicates if write prefix or not
 	 * @param paramName
-	 * @return
+	 * @param equalChar string, which will be written between paramName and paramValue
+	 * @return true if prefix was written (parmName is among parameters)
 	 */
-	public boolean addParameterSpecialWithPrefixClauseConditionaly(String prefix, boolean addPrefix, 
+	public boolean addParameterSpecialWithPrefixClauseConditionally(String prefix, boolean addPrefix, 
 			String paramName, String equalChar){
 		if (params.containsKey(paramName)) {
 			if (addPrefix) {
@@ -133,14 +177,15 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * adds: [prefix] paramName="paramValue"
+	 *  if paramName is in properties adds to the end of command: 
+	 *   "[ prefix] paramName="paramValue""
 	 * 
-	 * @param prefix
-	 * @param addPrefix
+	 * @param prefix  string to write before paramName
+	 * @param addPrefix indicates if write prefix or not
 	 * @param paramName
-	 * @return
+	 * @return true if prefix was written (parmName is among parameters)
 	 */
-	public boolean addAndQuoteParameterWithPrefixClauseConditionaly(String prefix, boolean addPrefix, 
+	public boolean addAndQuoteParameterWithPrefixClauseConditionally(String prefix, boolean addPrefix, 
 			String paramName){
 		if (params.containsKey(paramName)) {
 			if (addPrefix) {
@@ -163,14 +208,15 @@ public class CommandBuilder {
 	}
 
 	/**
-	 * adds: [prefix] paramName
+	 * if paramName is in properties and has TRUE value adds to the end of command: 
+	 *  "[ prefix] paramName"
 	 * 
-	 * @param prefix
-	 * @param addPrefix
+	 * @param prefix string to write before paramName
+	 * @param addPrefix indicates if write prefix or not
 	 * @param paramName
 	 * @return true if prefix was written (= paramName found and has "true" value)
 	 */
-	public boolean addBooleanParameterWithPrefixClauseConditionaly(String prefix, boolean addPrefix, 
+	public boolean addBooleanParameterWithPrefixClauseConditionally(String prefix, boolean addPrefix, 
 			String paramName){
 		if (params.containsKey(paramName) && params.getProperty(paramName).equalsIgnoreCase(TRUE)) {
 			if (addPrefix) {
@@ -186,7 +232,8 @@ public class CommandBuilder {
 	}
 	
 	/**
-	 * adds: prefixparamValue
+	 *  if paramName is in properties adds to the end of command: 
+	 *   " prefix<i>paramValue</i>
 	 * 
 	 * @param prefix
 	 * @param paramName
@@ -199,6 +246,12 @@ public class CommandBuilder {
 		}
 	}
 	
+	/**
+	 * if paramName is in properties and has TRUE value adds to the end of command: 
+	 *  " paramName"
+	 * 
+	 * @param paramName
+	 */
 	public void addBooleanParameter(String paramName){
 		if (params.containsKey(paramName) && params.getProperty(paramName).equalsIgnoreCase(TRUE)) {
 			command.append(parameterDelimiter);
@@ -206,6 +259,13 @@ public class CommandBuilder {
 		}
 	}
 	
+	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " paramName<i>equalChar</i>paramValue"
+	 * 
+	 * @param paramName
+	 * @param equalChar
+	 */
 	public void addParameterSpecial(String paramName, String equalChar){
 		if (params.containsKey(paramName)) {
 			command.append(parameterDelimiter);
@@ -215,6 +275,11 @@ public class CommandBuilder {
 		}
 	}
 	
+	/**
+	 * appends given string to the end of command
+	 * 
+	 * @param str
+	 */
 	public void append(String str){
 		command.append(str);
 	}
