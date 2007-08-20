@@ -28,9 +28,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -44,6 +45,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -94,6 +96,7 @@ public class Db2DataWriter extends Node {
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_MAXERRORS_ATRIBUTE = "maxErrors";
+	private static final String XML_WARNING_LINES_ATTRIBUTE = "capturedWarningLines";
 	
 	/**
 	 * available additional parameters
@@ -146,7 +149,7 @@ public class Db2DataWriter extends Node {
 	public static final String ROW_COUNT_PARAM = "rowcount";
 	public static final String WARNING_COUNT_PARAM = "warningcount";
 	public static final String MESSAGES_URL_PARAM = "messagesurl";
-	public static final String TMP_URL_PARAM = "tmpURL";
+	public static final String TMP_URL_PARAM = "tmpurl";
 	public static final String DL_LINK_TYPE_PARAM = "dl_link_type";
 	public static final String DL_URL_DEFAULT_PREFIX_PARAM = "dl_url_default_prefix";
 	public static final String DL_URL_REPLACE_PREFIX_PARAM = "dl_url_replace_prefix";
@@ -188,6 +191,7 @@ public class Db2DataWriter extends Node {
 	private final String PIPE_NAME = "dataPipe";
 	
 	private final int READ_FROM_PORT = 0;
+	private final int ERROR_PORT = 0;
 	
 	private String database;
 	private String user;
@@ -204,6 +208,7 @@ public class Db2DataWriter extends Node {
 	private String rejectedURL;
 	private int recordSkip = -1;
 	private int skipped = 0;
+	private int warningNumber = 0;
 	
 	private Formatter formatter;
 	private DataRecordMetadata fileMetadata;
@@ -277,6 +282,11 @@ public class Db2DataWriter extends Node {
 			columnDelimiter = properties.getProperty(COL_DEL_PARAM).charAt(0);
 		}
 		
+		//prepare metadata for formatting input data
+		if (fileMetadataName != null) {
+			fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName);
+		}
+
 		if (!getInPorts().isEmpty()) {
 			//prepare name for temporary data file/pipe
 			String tmpDir = getGraph().getRuntimeParameters().getTmpDir();
@@ -293,10 +303,6 @@ public class Db2DataWriter extends Node {
 				}
 			}else{
 				fileName = tmpDir + PIPE_NAME + ".txt";
-			}
-			//prepare metadata for formatting input data
-			if (fileMetadataName != null) {
-				fileMetadata = getGraph().getDataRecordMetadata(fileMetadataName);
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 			delimitedData = fileMetadata != null ? 
@@ -426,7 +432,7 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)timeDateFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.warn("Time stamp format set to " + StringUtils.quote(formatString));
+						logger.info("Time stamp format set to " + StringUtils.quote(formatString));
 						timeDateFormat = formatString;
 						properties.setProperty(TIME_STAMP_FORMAT_PARAM, timeDateFormat);
 					}else{
@@ -439,7 +445,7 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)dateFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.warn("Date format set to " + StringUtils.quote(formatString));
+						logger.info("Date format set to " + StringUtils.quote(formatString));
 						dateFormat = formatString;
 						properties.setProperty(DATE_FORMAT_PARAM, dateFormat);
 					}else{
@@ -452,7 +458,7 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)timeFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.warn("Time format set to " + StringUtils.quote(formatString));
+						logger.info("Time format set to " + StringUtils.quote(formatString));
 						timeFormat = formatString;
 						properties.setProperty(TIME_FORMAT_PARAM, timeFormat);
 					}else{
@@ -464,17 +470,17 @@ public class Db2DataWriter extends Node {
 		//if there are some date/time fields without format, set it
 		if (!fieldsWithNullFormat.isEmpty()) {
 			if (timeDateFormat == null) {
-				logger.warn("Time stamp format set to " + StringUtils.quote(DEFAULT_DATETIME_FORMAT));
+				logger.info("Time stamp format set to " + StringUtils.quote(DEFAULT_DATETIME_FORMAT));
 				timeDateFormat = DEFAULT_DATETIME_FORMAT;
 				properties.setProperty(TIME_STAMP_FORMAT_PARAM, dateFormat);
 			}
 			if (dateFormat == null) {
-				logger.warn("Date format set to " + StringUtils.quote(DEFAULT_DATE_FORMAT));
+				logger.info("Date format set to " + StringUtils.quote(DEFAULT_DATE_FORMAT));
 				dateFormat = DEFAULT_DATE_FORMAT;
 				properties.setProperty(DATE_FORMAT_PARAM, dateFormat);
 			}
 			if (timeFormat == null){
-				logger.warn("Time format set to " + StringUtils.quote(DEFAULT_TIME_FORMAT));
+				logger.info("Time format set to " + StringUtils.quote(DEFAULT_TIME_FORMAT));
 				timeFormat = DEFAULT_TIME_FORMAT;
 				properties.setProperty(TIME_FORMAT_PARAM, dateFormat);
 			}
@@ -500,9 +506,11 @@ public class Db2DataWriter extends Node {
 				}
 			}
 		}
-//		set propper parameter when using FixLenDataFormatter
-		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD && !inPorts.isEmpty()) {
-			properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSizeStripAutoFilling()));
+//		set propper parameter for fixed length metadata
+		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
+			if (!getInPorts().isEmpty() || out.getRecordDelimiter() == null) {
+				properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSize()));
+			}			
 		}
 		return out;
 	}
@@ -903,8 +911,8 @@ public class Db2DataWriter extends Node {
 			inRecord.init();
 		}
 		
-		consumer = new Db2LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
-		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
+		consumer = new Db2LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
+		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, warningNumber);
 
 		int exitValue = 0;
 		//create named pipe
@@ -969,9 +977,12 @@ public class Db2DataWriter extends Node {
 				logger.info("Number of rows loaded = " + consumer.getLoaded());
 				logger.info("Number of rows rejected = " + consumer.getRejected());
 			}
+			int count = 0;
 			for (String message : consumer.getErrors()) {
+				if (warningNumber > 0 && count++ > warningNumber) break; 
 				logger.warn(message);
 			}
+			getOutputPort(ERROR_PORT).eof();
 		}
 		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -1067,12 +1078,88 @@ public class Db2DataWriter extends Node {
             if (xattribs.exists(XML_BATCHURL_ATTRIBUTE)) {
             	writer.setBatchURL(xattribs.getString(XML_BATCHURL_ATTRIBUTE));
             }
+            if (xattribs.exists(XML_WARNING_LINES_ATTRIBUTE)) {
+            	writer.setWarningNumber(xattribs.getInteger(XML_WARNING_LINES_ATTRIBUTE));
+            }
            return writer;
         } catch (Exception ex) {
                throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
         }
     }
 	
+    @Override
+    public void toXML(Element xmlElement) {
+		super.toXML(xmlElement);
+		if (batchURL != null) {
+			xmlElement.setAttribute(XML_BATCHURL_ATTRIBUTE, batchURL);
+		}		
+		if (cloverFields != null && dbFields != null) {
+			StringBuilder map = new StringBuilder(cloverFields[0] + "=" + dbFields[0] + ";");
+			for (int i=1 ; i<cloverFields.length ; i++){
+				map.append(cloverFields[i]);
+				map.append('=');
+				map.append(dbFields[i]);
+				map.append(';');
+			}
+			xmlElement.setAttribute(XML_FIELDMAP_ATTRIBUTE, map.toString());
+		}else if (cloverFields != null){
+			xmlElement.setAttribute(XML_CLOVERFIELDS_ATTRIBUTE, StringUtils
+					.stringArraytoString(cloverFields, ';'));
+		}else if (dbFields != null) {
+			xmlElement.setAttribute(XML_DBFIELDS_ATTRIBUTE, StringUtils
+					.stringArraytoString(dbFields, ';'));
+		}	
+		if (columnDelimiter != 0) {
+			xmlElement.setAttribute(XML_COLUMNDELIMITER_ATTRIBUTE, String
+					.valueOf(columnDelimiter));
+		}		
+		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
+		if (fileMetadataName != null) {
+			xmlElement.setAttribute(XML_FILEMETADATA_ATTRIBUTE,
+					fileMetadataName);
+		}		
+		if (fileName != null) {
+			xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, fileName);
+		}		
+		if (interpreter != null) {
+			xmlElement.setAttribute(XML_INTERPRETER_ATTRIBUTE, interpreter);
+		}		
+		xmlElement.setAttribute(XML_MODE_ATTRIBUTE, String.valueOf(loadMode));
+		xmlElement.setAttribute(XML_PASSWORD_ATTRIBUTE, psw);
+		if (properties.containsKey(ROW_COUNT_PARAM)) {
+			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE, properties
+					.getProperty(ROW_COUNT_PARAM));
+		}		
+		if (recordSkip > 0) {
+			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String
+					.valueOf(recordSkip));
+		}		
+		if (rejectedURL != null) {
+			xmlElement.setAttribute(XML_REJECTEDRECORDSURL_ATTRIBUTE,
+					rejectedURL);
+		}		
+		xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
+		xmlElement.setAttribute(XML_USEPIPE_ATTRIBUTE, String.valueOf(usePipe));
+		xmlElement.setAttribute(XML_USERNAME_ATTRIBUTE, user);
+		if (warningNumber > 0) {
+			xmlElement.setAttribute(XML_WARNING_LINES_ATTRIBUTE, String
+					.valueOf(warningNumber));
+		}		
+		if (parameters != null){
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, parameters);
+		}else if (!properties.isEmpty()) {
+			StringBuilder props = new StringBuilder();
+			for (Iterator iter = properties.entrySet().iterator(); iter.hasNext();) {
+				Entry<String, String> element = (Entry<String, String>) iter.next();
+				props.append(element.getKey());
+				props.append('=');
+				props.append(StringUtils.isQuoted(element.getValue()) ? element.getValue() : 
+					StringUtils.quote(element.getValue()));
+				props.append(';');
+			} 
+			xmlElement.setAttribute(XML_PARAMETERS_ATTRIBUTE, props.toString());
+		}
+   }
 	
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#getType()
@@ -1158,6 +1245,14 @@ public class Db2DataWriter extends Node {
 		this.batchURL = batchURL;
 	}
 
+	public int getWarningNumber() {
+		return warningNumber;
+	}
+
+	public void setWarningNumber(int warningNumber) {
+		this.warningNumber = warningNumber;
+	}
+
 }
 
 /**
@@ -1182,6 +1277,17 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 	List<String> errors;
 	private String errorMessage;
 	private boolean partRead = false;
+	private OutputPort errPort;
+	private DataRecord errRecord;
+	private Pattern rowPattern = Pattern.compile("\"F\\p{Digit}*-\\p{Digit}*\"");
+	private String row;
+	private String tmp; 
+	private int quotationIndex;
+	private Matcher matcher;
+	
+	private final static int ERR_ROW_FIELD = 0;
+	private final static int ERR_COLUMN_FIELD = 1;
+	private final static int ERR_MESSAGE_FIELD = 2;
 	
 	/**
 	 * Constructor from superclass
@@ -1189,9 +1295,14 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 	 * @param level
 	 * @param maxLines
 	 */
-	public Db2LoggerDataConsumer(int level, int maxLines) {
+	public Db2LoggerDataConsumer(int level, int maxLines, OutputPort port) {
 		super(level, maxLines);
 		errors = new ArrayList<String>();
+		errPort = port;
+		if (errPort != null) {
+			errRecord = new DataRecord(errPort.getMetadata());
+			errRecord.init();
+		}
 	}
 	
 	/* (non-Javadoc)
@@ -1243,19 +1354,42 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 				line.startsWith("SQL3191") || line.startsWith("SQL3330") || 
 				line.startsWith("SQL3411") || line.startsWith("SQL3412") || 
 				line.startsWith("SQL3413") || line.startsWith("SQL3415") || 
-				line.startsWith("SQL3416") || line.startsWith("SQL3506") || 
-				line.startsWith("SQL3511") || line.startsWith("SQL3512") || 
-				line.startsWith("SQL3550") || line.startsWith("SQL3602") || 
-				line.startsWith("SQL3603") || line.startsWith("SQL8100") || 
-				line.startsWith("SQL27972")) {
+				line.startsWith("SQL3416") || line.startsWith("SQL3501") || 
+				line.startsWith("SQL3506") || line.startsWith("SQL3511") || 
+				line.startsWith("SQL3512") || line.startsWith("SQL3550") || 
+				line.startsWith("SQL3602") || line.startsWith("SQL3603") || 
+				line.startsWith("SQL8100") || line.startsWith("SQL27972")) {
+			//remember first line of error message
 			errorMessage = line;
 			partRead  = true;
 		}else if (partRead) {
+			//if line is not blank it is continuation of error message
 			partRead = !StringUtils.isBlank(line);
 			if (partRead) {
 				errorMessage = errorMessage.concat(line);
-			}else{
+			}else{//whole error message read
 				errors.add(errorMessage);
+				if (errPort != null) {
+					//find out if error message is about rejected record
+					matcher = rowPattern.matcher(errorMessage);
+					if (matcher.find()) {
+						//parse info about rejected record for three parts
+						row = matcher.group();
+						errRecord.getField(ERR_ROW_FIELD).setValue(Integer.parseInt(
+								row.substring(row.indexOf('-') + 1, row.length() - 1)));
+						//Example error message;SQL3191N  The field in row "F0-3", column "2" which begins with "test1" does not match....
+						tmp = errorMessage.substring(errorMessage.indexOf("column"));//tmp = column "2" which begins...
+						quotationIndex = tmp.indexOf('"');
+						errRecord.getField(ERR_COLUMN_FIELD).setValue(Integer.parseInt(
+								tmp.substring(quotationIndex + 1, tmp.indexOf('"', quotationIndex + 1))));
+						errRecord.getField(ERR_MESSAGE_FIELD).setValue(errorMessage);
+						try {
+							errPort.writeRecord(errRecord);
+						} catch (Exception e) {
+							throw new JetelException(e.getMessage(), e);
+						}
+					}				 
+				}
 			}
 		}
 		
