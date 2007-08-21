@@ -22,6 +22,7 @@
 
 package org.jetel.exception;
 
+import org.jetel.graph.GraphElement;
 import org.jetel.graph.IGraphElement;
 import org.jetel.util.StringUtils;
 
@@ -32,7 +33,9 @@ import org.jetel.util.StringUtils;
  */
 public class ComponentNotReadyException extends Exception {
   
-  // Attributes
+    private static final long serialVersionUID = 1L;
+
+// Attributes
   IGraphElement graphElement;
   
   String attributeName;
@@ -45,6 +48,10 @@ public class ComponentNotReadyException extends Exception {
   
   public ComponentNotReadyException(Exception ex){
       super(ex);
+  }
+
+  public ComponentNotReadyException(String message, Exception ex){
+      super(message, ex);
   }
 
   public ComponentNotReadyException(IGraphElement element,Exception ex){
@@ -70,6 +77,10 @@ public class ComponentNotReadyException extends Exception {
 
   public IGraphElement getGraphElement(){
       return graphElement;
+  }
+  
+  public void setGraphElement(GraphElement graphElement) {
+      this.graphElement = graphElement;
   }
 
   public String getAttributeName() {
