@@ -21,10 +21,13 @@
 
 package org.jetel.component;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +44,8 @@ import org.jetel.data.formatter.DelimitedDataFormatter;
 import org.jetel.data.formatter.FixLenDataFormatter;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.exception.ConfigurationProblem;
+import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
@@ -53,6 +58,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.CommandBuilder;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
+import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.w3c.dom.Element;
@@ -214,7 +220,7 @@ public class Db2DataWriter extends Node {
 	private DataRecordMetadata fileMetadata;
 	private Process proc;
 	private DataRecordMetadata inMetadata;
-	private Db2LoggerDataConsumer consumer;
+	private Db2DataConsumer consumer;
 	private LoggerDataConsumer errConsumer;
 	private ProcBox box;
 	private InputPort inPort;
@@ -249,6 +255,27 @@ public class Db2DataWriter extends Node {
 		this.table = table;
 		this.loadMode = mode;
 	}
+	
+	@Override
+	public ConfigurationStatus checkConfig(ConfigurationStatus status) {
+        super.checkConfig(status);
+        
+        checkInputPorts(status, 0, 1);
+        checkOutputPorts(status, 0, 1);
+        
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
+        
+        return status;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.Node#init()
@@ -273,14 +300,14 @@ public class Db2DataWriter extends Node {
 		//set field columnDelimiter and proper property to the same value 
 		//(columnDelimiter attribute has the higher priority then delimiter set in parameters
 		if (columnDelimiter != 0) {
-			if (Character.isWhitespace(columnDelimiter)) 
-				throw new ComponentNotReadyException(this, XML_COLUMNDELIMITER_ATTRIBUTE, 
-						StringUtils.quote(String.valueOf(columnDelimiter)) + 
-						" is not allowed as column delimiter");
 			properties.setProperty(COL_DEL_PARAM, String.valueOf(columnDelimiter));
 		}else if (properties.contains(COL_DEL_PARAM)) {
 			columnDelimiter = properties.getProperty(COL_DEL_PARAM).charAt(0);
 		}
+		if (Character.isWhitespace(columnDelimiter)) 
+			throw new ComponentNotReadyException(this, XML_COLUMNDELIMITER_ATTRIBUTE, 
+					StringUtils.quote(String.valueOf(columnDelimiter)) + 
+					" is not allowed as column delimiter");
 		
 		//prepare metadata for formatting input data
 		if (fileMetadataName != null) {
@@ -295,7 +322,8 @@ public class Db2DataWriter extends Node {
 			}
 			if (usePipe) {
 				if (System.getProperty("os.name").startsWith("Windows")) {
-					logger.warn("Pipe transfer not supported on Windows - switching it off");
+					logger.warn("Node " + this.getId() + " warning: Pipe transfer " +
+							"not supported on Windows - switching it off");
 					usePipe = false;
 					fileName = tmpDir + PIPE_NAME + ".txt";
 				}else{
@@ -432,7 +460,8 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)timeDateFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.info("Time stamp format set to " + StringUtils.quote(formatString));
+						logger.info("Node " + this.getId() + " info: Time stamp " +
+								"format set to " + StringUtils.quote(formatString));
 						timeDateFormat = formatString;
 						properties.setProperty(TIME_STAMP_FORMAT_PARAM, timeDateFormat);
 					}else{
@@ -445,7 +474,8 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)dateFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.info("Date format set to " + StringUtils.quote(formatString));
+						logger.info("Node " + this.getId() + " info: Date format " +
+								"set to " + StringUtils.quote(formatString));
 						dateFormat = formatString;
 						properties.setProperty(DATE_FORMAT_PARAM, dateFormat);
 					}else{
@@ -458,7 +488,8 @@ public class Db2DataWriter extends Node {
 							field.setSize((short)timeFormat.length());
 						}
 					}else if (formatString != null) {
-						logger.info("Time format set to " + StringUtils.quote(formatString));
+						logger.info("Node " + this.getId() + " info: Time format " +
+								"set to " + StringUtils.quote(formatString));
 						timeFormat = formatString;
 						properties.setProperty(TIME_FORMAT_PARAM, timeFormat);
 					}else{
@@ -470,17 +501,20 @@ public class Db2DataWriter extends Node {
 		//if there are some date/time fields without format, set it
 		if (!fieldsWithNullFormat.isEmpty()) {
 			if (timeDateFormat == null) {
-				logger.info("Time stamp format set to " + StringUtils.quote(DEFAULT_DATETIME_FORMAT));
+				logger.info("Node " + this.getId() + " info: Time stamp format set " +
+						"to " + StringUtils.quote(DEFAULT_DATETIME_FORMAT));
 				timeDateFormat = DEFAULT_DATETIME_FORMAT;
 				properties.setProperty(TIME_STAMP_FORMAT_PARAM, dateFormat);
 			}
 			if (dateFormat == null) {
-				logger.info("Date format set to " + StringUtils.quote(DEFAULT_DATE_FORMAT));
+				logger.info("Node " + this.getId() + " info: Date format set to " + 
+						StringUtils.quote(DEFAULT_DATE_FORMAT));
 				dateFormat = DEFAULT_DATE_FORMAT;
 				properties.setProperty(DATE_FORMAT_PARAM, dateFormat);
 			}
 			if (timeFormat == null){
-				logger.info("Time format set to " + StringUtils.quote(DEFAULT_TIME_FORMAT));
+				logger.info("Node " + this.getId() + " info: Time format set to " + 
+						StringUtils.quote(DEFAULT_TIME_FORMAT));
 				timeFormat = DEFAULT_TIME_FORMAT;
 				properties.setProperty(TIME_FORMAT_PARAM, dateFormat);
 			}
@@ -551,7 +585,9 @@ public class Db2DataWriter extends Node {
 			delimiterFieldIndex = fMetadata.getNumFields() - 1;
 		}
 		if (!properties.containsKey(COL_DEL_PARAM)) {
-			logger.info(StringUtils.quote(String.valueOf(columnDelimiter)) + " set as column delimiter.");
+			logger.info("Node " + this.getId() + " info: " + 
+					StringUtils.quote(String.valueOf(columnDelimiter)) + " set as " +
+					"column delimiter.");
 			properties.setProperty(COL_DEL_PARAM, String.valueOf(columnDelimiter));
 		}
 		for (int i=0; i< delimiterFieldIndex; i++){
@@ -852,7 +888,8 @@ public class Db2DataWriter extends Node {
 		if (batchURL != null) {
 			batch = new File(batchURL);
 			if (batch.length() > 0) {
-				logger.info("Batch file exist. New batch file will not be created.");
+				logger.info("Node " + this.getId() + " info: Batch file exist. " +
+						"New batch file will not be created.");
 				return batch.getCanonicalPath();
 			}
 		}
@@ -911,7 +948,7 @@ public class Db2DataWriter extends Node {
 			inRecord.init();
 		}
 		
-		consumer = new Db2LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
+		consumer = new Db2DataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, warningNumber);
 
 		int exitValue = 0;
@@ -1266,7 +1303,7 @@ public class Db2DataWriter extends Node {
  * @since Aug 17, 2007
  *
  */
-class Db2LoggerDataConsumer extends LoggerDataConsumer {
+class Db2DataConsumer implements DataConsumer {
 	
 	int read;
 	int skipped;
@@ -1290,13 +1327,43 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 	private final static int ERR_MESSAGE_FIELD = 2;
 	
 	/**
+	 * Debug log level.
+	 */
+	public static final int LVL_DEBUG = 0;
+	/**
+	 * Warning log level.
+	 */
+	public static final int LVL_WARN = 1;
+	/**
+	 * Error log level.
+	 */
+	public static final int LVL_ERROR = 2;
+	
+	private int level;
+	private int maxLines;
+	private int linesRead;
+	private BufferedReader reader;
+
+	static Log logger = LogFactory.getLog(Db2DataConsumer.class);
+
+	/**
 	 * Constructor from superclass
 	 * 
 	 * @param level
 	 * @param maxLines
 	 */
-	public Db2LoggerDataConsumer(int level, int maxLines, OutputPort port) {
-		super(level, maxLines);
+	public Db2DataConsumer(int level, int maxLines, OutputPort port) {
+		switch (level) {
+		case LVL_DEBUG:
+		case LVL_WARN:
+		case LVL_ERROR:
+			this.level = level;
+			break;
+		default:
+			this.level = LVL_ERROR;
+		}
+		this.maxLines = maxLines;
+		linesRead = 0;
 		errors = new ArrayList<String>();
 		errPort = port;
 		if (errPort != null) {
@@ -1308,7 +1375,6 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 	/* (non-Javadoc)
 	 * @see org.jetel.util.exec.LoggerDataConsumer#consume()
 	 */
-	@Override
 	public boolean consume() throws JetelException {
 		String line;
 		try {
@@ -1426,6 +1492,13 @@ class Db2LoggerDataConsumer extends LoggerDataConsumer {
 
 	public int getRead() {
 		return read;
+	}
+
+	public void setInput(InputStream stream) {
+		reader = new BufferedReader(new InputStreamReader(stream));
+	}
+
+	public void close() {
 	}
 
 	public int getRejected() {
