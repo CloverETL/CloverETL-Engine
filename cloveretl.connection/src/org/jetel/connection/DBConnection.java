@@ -147,8 +147,13 @@ public class DBConnection extends GraphElement implements IConnection {
 	public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
 	public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted"; 
 	
+	private static final String EMBEDDED_UNLOCK_CLASS =  "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
+	
 	// not yet used by component
 	public static final String XML_NAME_ATTRIBUTE = "name";
+
+	private URLClassLoader classLoader;
+	
 	/**
 	 *  Constructor for the DBConnection object
 	 *
@@ -248,7 +253,8 @@ public class DBConnection extends GraphElement implements IConnection {
         if(!isInitialized()) {
             throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
         }
-	    String dbDriverName;
+
+        String dbDriverName;
 	    if (dbDriver==null){
 	        dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
 	        try {
@@ -272,7 +278,7 @@ public class DBConnection extends GraphElement implements IConnection {
 	                }
 	                
 	                try {
-	                    URLClassLoader classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
+	                    classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
 	                    dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
 	                } catch (ClassNotFoundException ex1) {
 	                    throw new RuntimeException("Can not find class: " + ex1);
@@ -296,6 +302,24 @@ public class DBConnection extends GraphElement implements IConnection {
 		        isPasswordEncrypted=false;
 		    }
 			dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), this.config);
+
+			// unlock initiatesystems driver
+			try {
+				Class embeddedConClass;
+				if (classLoader == null) {
+					embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
+				} else {
+					embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
+				}
+				if (embeddedConClass != null) {
+					if(embeddedConClass.isInstance(dbConnection)) {
+							java.lang.reflect.Method unlockMethod = 
+								embeddedConClass.getMethod("unlock", new Class[] { String.class});
+							unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
+					}
+				}
+			} catch (Exception ex) {
+			}
 		} catch (SQLException ex) {
 			throw new RuntimeException("Can't connect to DB :"
 					+ ex.getMessage());
