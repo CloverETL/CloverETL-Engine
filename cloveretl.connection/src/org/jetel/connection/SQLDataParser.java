@@ -266,7 +266,7 @@ public class SQLDataParser implements Parser {
             resultSet.setFetchSize(fetchSize);
         }catch (SQLException e){
             // do nothing - just attempt
-            logger.warn("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
+            logger.debug("unable to set FetchDirection & FetchSize for DB connection ["+dbConnection.getId()+"]");
         }
 		this.recordCounter = 1;
 	}

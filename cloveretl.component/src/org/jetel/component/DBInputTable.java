@@ -128,7 +128,7 @@ public class DBInputTable extends Node {
 	public final static String COMPONENT_TYPE = "DB_INPUT_TABLE";
 	private final static int WRITE_TO_PORT = 0;
 	private String url = null;
-
+	private IConnection connection; 
 
 	/**
 	 *Constructor for the DBInputTable object
@@ -158,13 +158,12 @@ public class DBInputTable extends Node {
 		//set fetch size (if defined)
 		if (fetchSize!=0) parser.setFetchSize(fetchSize);
 		// try to open file & initialize data parser
-        IConnection connection=getGraph().getConnection(dbConnectionName);
+        connection = getGraph().getConnection(dbConnectionName);
         if (connection==null){
             throw new ComponentNotReadyException("Can't obtain DBConnection object: \""+dbConnectionName+"\"");
         }
         connection.init();
 		parser.init(getOutputPort(WRITE_TO_PORT).getMetadata());
-		parser.setDataSource(connection);
 	}
 
 
@@ -175,6 +174,7 @@ public class DBInputTable extends Node {
 		record.init();
 		record.reset();
 		try {
+			parser.setDataSource(connection);
 			parser.initSQLDataMap(record);
 
 			// till it reaches end of data or it is stopped from outside

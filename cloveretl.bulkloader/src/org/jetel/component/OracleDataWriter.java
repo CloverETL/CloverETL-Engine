@@ -221,12 +221,12 @@ public class OracleDataWriter extends Node {
     private String[] createCommandlineForSqlldr() {
         String[] ret = new String[] {
                 sqlldrPath, 
-                "control=" + controlFileName, 
+                "control='" + controlFileName + "'", 
                 "userid=" + userId,
                 (System.getProperty("os.name").startsWith("Windows") ? "data=\\\"-\\\"" : "data='-'"), 
-                "log=\"" + logFileName + "\"",
-                "bad=\"" + badFileName + "\"",
-                "discard=\"" + discardFileName + "\"",
+                "log='" + logFileName + "'",
+                "bad='" + badFileName + "'",
+                "discard='" + discardFileName + "'",
 //                "silent=all"
         };
         

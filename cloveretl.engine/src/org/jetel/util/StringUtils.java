@@ -289,21 +289,6 @@ public class StringUtils {
 		return "\"".concat(str.toString()).concat("\"");
 	}
 	
-	/**
-	 * Modifies buffer scope so that the leading whitespace is ignored.
-	 * @param buf
-	 * @return
-	 */
-	public static CharBuffer trimLeading(CharBuffer buf) {
-		int pos = buf.position();
-		int lim = buf.limit();
-		while (pos < lim && Character.isWhitespace(buf.get(pos))) {
-			pos++;
-		}
-		buf.position(pos);
-		return buf;
-	}
-	
 	public static StringBuilder trimLeading(StringBuilder str){
 		int pos = 0;
 		int length = str.length();
@@ -329,6 +314,21 @@ public class StringUtils {
 		return buf;
 	}
 	
+	/**
+	 * Modifies buffer scope so that the leading whitespace is ignored.
+	 * @param buf
+	 * @return
+	 */
+	public static CharBuffer trimLeading(CharBuffer buf) {
+		int pos = buf.position();
+		int lim = buf.limit();
+		while (pos < lim && Character.isWhitespace(buf.get(pos))) {
+			pos++;
+		}
+		buf.position(pos);
+		return buf;
+	}
+
 	public static StringBuilder trimTrailing(StringBuilder str){
 		int pos = str.length() - 1;
 		while (pos > 0 && Character.isWhitespace(str.charAt(pos))) {
