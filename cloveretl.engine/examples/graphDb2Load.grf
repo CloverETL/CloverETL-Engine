@@ -1,55 +1,70 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Jul 31 09:29:05 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Tue Aug 07 11:38:46 CEST 2007" name="test" revision="1.60">
+<Graph created="Tue Jul 31 09:29:05 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Thu Aug 23 09:01:03 CEST 2007" name="test" revision="1.402">
 <Global>
-<Metadata id="Metadata3">
-<Record name="forDb2" type="delimited">
-<Field delimiter="," name="Field1" nullable="false" shift="0" type="string"/>
-<Field delimiter="\n" name="Field2" nullable="true" shift="0" type="integer"/>
-</Record>
-</Metadata>
-<Metadata id="Metadata1">
-<Record name="fromDB" type="delimited">
-<Field delimiter="," name="Employee_ID" nullable="true" shift="0" type="long"/>
-<Field delimiter="," name="account_num" nullable="true" shift="0" type="long"/>
-<Field delimiter="," name="first_name" nullable="true" shift="0" type="string"/>
-<Field delimiter="," name="last_name" nullable="true" shift="0" type="string"/>
-<Field delimiter="," name="department_ID" nullable="true" shift="0" type="integer"/>
-<Field delimiter="\n" name="menagement_role" nullable="true" shift="0" type="string"/>
+<Metadata id="Metadata2">
+<Record name="errors" recordSize="-1" type="delimited">
+<Field delimiter=";" name="err_record" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="err_column" nullable="true" shift="0" type="integer"/>
+<Field delimiter="\n" name="err_message" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
 <Metadata id="Metadata0">
-<Record name="fromFile" type="delimited">
-<Field delimiter=";" name="customer_ID" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
-<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
-<Field delimiter="\n" name="ID" nullable="true" shift="0" type="long"/>
+<Record name="MYTAB" recordSize="-1" type="delimited">
+<Field delimiter=";" name="LONG_COL" nullable="true" shift="0" type="long"/>
+<Field delimiter=";" format="dd.MM.yyyy" name="DATE_COL" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" type="decimal"/>
+<Field delimiter=";" name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" name="INT_COL_NOT_NULL" nullable="true" shift="0" type="integer"/>
+<Field delimiter=";" name="REAL_COL" nullable="true" shift="0" type="numeric"/>
+<Field delimiter=";" format="HH:mm" name="TIME_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" type="date"/>
+<Field delimiter=";" format="dd-MM-yyyy HH:mm" name="TIMESTAMP_COLL_NOT_NULL" nullable="true" shift="0" type="date"/>
+<Field delimiter="\n" name="STRING_COL" nullable="true" shift="0" type="string"/>
 </Record>
 </Metadata>
-<Metadata id="Metadata2">
-<Record name="joined" type="delimited">
-<Field delimiter=";" name="customer_ID" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
-<Field delimiter=";" name="fname" nullable="true" shift="0" type="string"/>
-<Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" name="employee_id" nullable="true" shift="0" type="long"/>
-<Field delimiter=";" name="last_name" nullable="true" shift="0" type="string"/>
-<Field delimiter=";" name="first_name" nullable="true" shift="0" type="string"/>
-<Field delimiter="\n" name="Id" nullable="true" shift="0" type="long"/>
+<Metadata id="Metadata1">
+<Record name="MYTAB_fixed" recordSize="97" type="fixed">
+<Field name="LONG_COL" nullable="true" shift="0" size="10" type="long"/>
+<Field format="dd.MM.yyyy" name="DATE_COL" nullable="true" shift="0" size="10" type="date"/>
+<Field length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" size="10" type="decimal"/>
+<Field name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="10" type="numeric"/>
+<Field name="INT_COL_NOT_NULL" nullable="true" shift="0" size="6" type="integer"/>
+<Field name="REAL_COL" nullable="true" shift="0" size="10" type="numeric"/>
+<Field format="HH:mm" name="TIME_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="5" type="date"/>
+<Field format="dd-MM-yyyy HH:mm" name="TIMESTAMP_COLL_NOT_NULL" nullable="true" shift="0" size="16" type="date"/>
+<Field name="STRING_COL" nullable="true" shift="0" size="20" type="string"/>
+</Record>
+</Metadata>
+<Metadata id="Metadata3">
+<Record name="MYTAB_fixed2" recordDelimiter="" recordSize="97" type="fixed">
+<Field name="LONG_COL" nullable="true" shift="0" size="10" type="long"/>
+<Field format="dd MMM yyyy" name="DATE_COL" nullable="true" shift="0" size="10" type="date"/>
+<Field length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" size="10" type="decimal"/>
+<Field name="DOUBLE_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="10" type="numeric"/>
+<Field name="INT_COL_NOT_NULL" nullable="true" shift="0" size="6" type="integer"/>
+<Field name="REAL_COL" nullable="true" shift="0" size="10" type="numeric"/>
+<Field format="hh:mm aa" name="TIME_COL_NOT_NULL_DEFAULT" nullable="true" shift="0" size="5" type="date"/>
+<Field format="yyyy hh" name="TIMESTAMP_COLL_NOT_NULL" nullable="true" shift="0" size="16" type="date"/>
+<Field name="STRING_COL" nullable="true" shift="0" size="20" type="string"/>
 </Record>
 </Metadata>
 <Connection dbConfig="db2.cfg" id="Connection1" type="JDBC"/>
-<Connection dbConfig="koule_postgre.cfg" id="Connection0" type="JDBC"/>
+<Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Sequence cached="0" fileURL="seq.seq" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="126" guiY="91" id="DATA_GENERATOR0" randomFields="Field1=random(1,5)" recordsNumber="4" sequenceFields="Field2=Sequence0" type="DATA_GENERATOR"/>
-<Node database="mydb" enabled="enabled" fileMetadata="Metadata3" fileURL="/home/avackova/home/temp/data.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="398" guiY="92" id="DB2_DATA_WRITER0" loadMode="insert" password="clover" table="mytab" type="DB2_DATA_WRITER" usePipe="false" userName="db2inst1"/>
-<Edge fromNode="DATA_GENERATOR0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER0:0"/>
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="12" guiY="29" id="DATA_GENERATOR1" pattern="70.0      11:3217-08-2007 00:01fixlen metadata     " randomFields="LONG_COL=random(&quot;-100&quot;,&quot;100&quot;);DATE_COL=random(&quot;01.08.2007&quot;,&quot;31.08.2007&quot;);DECIMAL_COL_NOT_NULL=random(&quot;0&quot;,&quot;1&quot;);REAL_COL=random(&quot;-1&quot;,&quot;1&quot;)" recordsNumber="2000" sequenceFields="INT_COL_NOT_NULL=Sequence0" type="DATA_GENERATOR">
+<attr name="parameters"><![CDATA[dateformat=dd-mm-yyyy]]></attr>
+</Node>
+<Node database="mydb" enabled="enabled" fileURL="${WORKSPACE}/output/mytab_fix.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="184" guiY="30" id="DB2_DATA_WRITER1" loadMode="insert" password="clover" recordCount="20" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
+<attr name="transferMode"><![CDATA[file]]></attr>
+</Node>
+<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER1:0"/>
 </Phase>
-<Phase number="1">
-<Node dbConnection="Connection1" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="111" guiY="230" id="DB_INPUT_TABLE0" sqlQuery="select * from MYTAB" type="DB_INPUT_TABLE"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="398" guiY="235" id="TRASH0" type="TRASH"/>
-<Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata3" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Phase number="2">
+<Node batchURL="${WORKSPACE}/output/sql.tmp" database="mydb" enabled="enabled" fileMetadata="Metadata0" fileURL="${WORKSPACE}/data/delimited/mytab_del.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="185" guiY="132" id="DB2_DATA_WRITER0" loadMode="replace" parameters="dumpfileaccessall" password="clover" rejectedURL="/home/db2inst1/rejected.txt" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
+<attr name="transferMode"><![CDATA[file]]></attr>
+</Node>
+<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="371" guiY="132" id="TRASH0" type="TRASH"/>
+<Edge debugMode="true" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
