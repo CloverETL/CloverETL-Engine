@@ -3,7 +3,9 @@
 REM this script was inspired by practices gained from ant run scripts (http://ant.apache.org/)
 
 REM usage 
-REM clover.bat <engine_arguments> <graph_name.grf>
+REM clover.bat <engine_arguments> <graph_name.grf> [ - <java_arguments> ]
+REM example:
+REM clover.bat -noJMX myGraph.grf - -server -classpath c:\myTransformation
 
 
 REM prepare CLOVER_HOME environmental variable
@@ -16,14 +18,41 @@ set DEFAULT_CLOVER_HOME=
 
 REM Prepare the command line arguments. This loop allows for an unlimited number
 REM of arguments (up to the command line limit, anyway).
+REM all arguments before "-" are stored in CLOVER_CMD_LINE_ARGS
+REM and the others are stored in JAVA_CMD_LINE_ARGS
 set CLOVER_CMD_LINE_ARGS=%1
 if ""%1""=="""" goto doneStart
+if ""%1""==""-"" goto javaArgs
 shift
 :setupArgs
 if ""%1""=="""" goto doneStart
+if ""%1""==""-"" goto javaArgs
 set CLOVER_CMD_LINE_ARGS=%CLOVER_CMD_LINE_ARGS% %1
 shift
 goto setupArgs
+
+:javaArgs
+shift
+if ""%1""==""-classpath"" (
+	set WAS_CLASSPATH=yes
+	goto nextJavaArgs
+)
+set JAVA_CMD_LINE_ARGS=%1
+if ""%1""=="""" goto doneStart
+:nextJavaArgs
+shift
+if ""%1""=="""" goto doneStart
+if ""%1""==""-classpath"" (
+	set WAS_CLASSPATH=yes
+	goto nextJavaArgs
+)
+if ""%WAS_CLASSPATH%""==""yes"" (
+	set USER_CLASSPATH=%1
+	set WAS_CLASSPATH=
+	goto nextJavaArgs
+)
+set JAVA_CMD_LINE_ARGS=%JAVA_CMD_LINE_ARGS% %1
+goto nextJavaArgs
 
 :doneStart
 REM find CLOVER_HOME if it does not exist due to either an invalid value passed
@@ -74,9 +103,15 @@ set JXL_JAR=%CLOVER_HOME%\lib\jxl.jar
 set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.12.zip
 set POI_JAR=%CLOVER_HOME%\lib\poi-2.5.1.jar
 
-"%_JAVACMD%" %CLOVER_OPTS% -classpath "%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%POI_JAR%;%TOOLS_JAR%;" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
 
+echo "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%USER_CLASSPATH%;%TRANSFORM_PATH%;%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%POI_JAR%;%TOOLS_JAR%;" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
+"%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%USER_CLASSPATH%;%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%POI_JAR%;%TOOLS_JAR%;" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
+
+set CLOVER_OPTS=
 set CLOVER_CMD_LINE_ARGS=
+set JAVA_CMD_LINE_ARGS=
+set USER_CLASSPATH=
+set WAS_CLASSPATH=
 set _JAVACMD=
 set TOOLS_JAR=
 set TRANSFORM_PATH=
