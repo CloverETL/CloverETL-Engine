@@ -73,7 +73,7 @@ import org.w3c.dom.Element;
  */
 public class DB2DataWriter extends Node {
 	
-	private enum LoadeMode{
+	private enum LoadMode{
 		insert,
 		replace,
 		restart,
@@ -186,18 +186,22 @@ public class DB2DataWriter extends Node {
     public static final String DEFAULT_DATETIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
 	public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
 	public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
-
+	private static final String DEFAULT_TABLE_LOAD_MODE = "insert";
+	
 	public final static String COMPONENT_TYPE = "DB2_DATA_WRITER";
 
 	static Log logger = LogFactory.getLog(DB2DataWriter.class);
 
-	private final String FIXLEN_DATA = "asc";
-	private final String DELIMITED_DATA = "del";
+	private static final String FIXLEN_DATA = "asc";
+	private static final String DELIMITED_DATA = "del";
 
 	private final String PIPE_NAME = "dataPipe";
 	
-	private final int READ_FROM_PORT = 0;
-	private final int ERROR_PORT = 0;
+	private final static int READ_FROM_PORT = 0;
+	private final static int ERROR_PORT = 0;
+	
+	private final static String FILE_ENCODING="UTF-8";
+	private final static String DB2_UTF_8_CODEPAGE="1208";
 	
 	private String database;
 	private String user;
@@ -205,7 +209,7 @@ public class DB2DataWriter extends Node {
 	private String fileName;
 	private String fileMetadataName;
 	private String table;
-	private LoadeMode loadMode;
+	private LoadMode loadMode;
 	private boolean usePipe = false;
 	private boolean delimitedData;
 	private char columnDelimiter = 0;
@@ -245,7 +249,7 @@ public class DB2DataWriter extends Node {
 	 * @param fileMetadataId  	 specifies data structure in external file.
 	 */
 	public DB2DataWriter(String id, String database, String user, String psw, String table, 
-			LoadeMode mode,	String fileName, String fileMetadataId) {
+			LoadMode mode,	String fileName, String fileMetadataId) {
 		super(id);
 		this.database = database;
 		this.user = user;
@@ -340,11 +344,11 @@ public class DB2DataWriter extends Node {
 				//create metadata for formatting from input metadata
 				switch (inMetadata.getRecType()) {
 				case DataRecordMetadata.FIXEDLEN_RECORD:
-					fileMetadata = setDb2DateFormat(inMetadata);
+					fileMetadata = setDB2DateFormat(inMetadata);
 					break;
 				case DataRecordMetadata.DELIMITED_RECORD:
 				case DataRecordMetadata.MIXED_RECORD:
-					fileMetadata = setDb2DateFormat(convertToDb2Delimited(inMetadata));
+					fileMetadata = setDB2DateFormat(convertToDB2Delimited(inMetadata));
 					break;
 				default:
 					throw new ComponentNotReadyException(
@@ -353,10 +357,10 @@ public class DB2DataWriter extends Node {
 			}else{//create metadata for formatting from selected metadata
 				switch (fileMetadata.getRecType()) {
 				case DataRecordMetadata.DELIMITED_RECORD:
-					fileMetadata = setDb2DateFormat(convertToDb2Delimited(fileMetadata));
+					fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
 					break;
 				case DataRecordMetadata.FIXEDLEN_RECORD:
-					fileMetadata = setDb2DateFormat(fileMetadata);
+					fileMetadata = setDB2DateFormat(fileMetadata);
 					break;
 				default:
 					throw new ComponentNotReadyException(this, XML_FILEMETADATA_ATTRIBUTE, 
@@ -365,12 +369,12 @@ public class DB2DataWriter extends Node {
 			}
 			//create and init formatter
 			if (delimitedData) {
-				formatter = new DelimitedDataFormatter("UTF-8");
+				formatter = new DelimitedDataFormatter(FILE_ENCODING);
 			}else{
-				formatter = new FixLenDataFormatter("UTF-8");
+				formatter = new FixLenDataFormatter(FILE_ENCODING);
 				properties.setProperty(STRIP_BLANKS_PARAM, TRUE);
 			}
-			properties.setProperty(CODE_PAGE_PARAM, "1208");
+			properties.setProperty(CODE_PAGE_PARAM, DB2_UTF_8_CODEPAGE);
 			formatter.init(fileMetadata);
 		}else{//there is not input port connected, data are read from existing file
 			if (fileMetadata == null) throw new ComponentNotReadyException(this,
@@ -378,11 +382,11 @@ public class DB2DataWriter extends Node {
 			switch (fileMetadata.getRecType()) {
 			case DataRecordMetadata.DELIMITED_RECORD:
 				delimitedData = true;
-				fileMetadata = setDb2DateFormat(convertToDb2Delimited(fileMetadata));
+				fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
 				break;
 			case DataRecordMetadata.FIXEDLEN_RECORD:
 				delimitedData = false;
-				fileMetadata = setDb2DateFormat(fileMetadata);
+				fileMetadata = setDB2DateFormat(fileMetadata);
 				break;
 			default:
 				throw new ComponentNotReadyException(this, XML_FILEMETADATA_ATTRIBUTE, 
@@ -424,7 +428,7 @@ public class DB2DataWriter extends Node {
 	 * @param metadata pattern metadata
 	 * @return new metadata
 	 */
-	private DataRecordMetadata setDb2DateFormat(DataRecordMetadata metadata){
+	private DataRecordMetadata setDB2DateFormat(DataRecordMetadata metadata){
 		//get formats from parameters
 		String dateFormat = properties.getProperty(DATE_FORMAT_PARAM);
 		String timeFormat = properties.getProperty(TIME_FORMAT_PARAM);
@@ -555,7 +559,7 @@ public class DB2DataWriter extends Node {
 	 * @param metadata input metadata
 	 * @return new metadata
 	 */
-	private DataRecordMetadata convertToDb2Delimited(DataRecordMetadata metadata){
+	private DataRecordMetadata convertToDB2Delimited(DataRecordMetadata metadata){
 		DataRecordMetadata fMetadata = new DataRecordMetadata(metadata.getName() + "_delimited", DataRecordMetadata.DELIMITED_RECORD);
 		boolean delimiterFound = columnDelimiter != 0;
 		int delimiterFieldIndex = -1;
@@ -877,7 +881,7 @@ public class DB2DataWriter extends Node {
 	}
 	
 	/**
-	 * If script file doesn't exist cretes it
+	 * If script file doesn't exist creates it
 	 * 
 	 * @return path to the script file
 	 * @throws IOException
@@ -1060,7 +1064,7 @@ public class DB2DataWriter extends Node {
                     xattribs.getString(XML_USERNAME_ATTRIBUTE),
                     xattribs.getString(XML_PASSWORD_ATTRIBUTE),
                     xattribs.getString(XML_TABLE_ATTRIBUTE),
-                    LoadeMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, "insert")),
+                    LoadMode.valueOf(xattribs.getString(XML_MODE_ATTRIBUTE, DEFAULT_TABLE_LOAD_MODE).toLowerCase()),
                     xattribs.getString(XML_FILEURL_ATTRIBUTE, null),
                     xattribs.getString(XML_FILEMETADATA_ATTRIBUTE, null));
 			if (xattribs.exists(XML_FIELDMAP_ATTRIBUTE)){
@@ -1405,6 +1409,7 @@ class Db2DataConsumer implements DataConsumer {
 			committed = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
 		}
 		//remember errors
+		/*
 		if (line.startsWith("SQL053") || line.startsWith("SQL053")
 				|| line.startsWith("SQL0545") || line.startsWith("SQL0659")
 				|| line.startsWith("SQL0670") || line.startsWith("SQL0798")
@@ -1426,6 +1431,8 @@ class Db2DataConsumer implements DataConsumer {
 				|| line.startsWith("SQL3512") || line.startsWith("SQL3550")
 				|| line.startsWith("SQL3602") || line.startsWith("SQL3603")
 				|| line.startsWith("SQL8100") || line.startsWith("SQL27972")) {
+				*/
+		if (line.matches("^SQL\\d+.*")){
 			// remember first line of error message
 			errorMessage = line;
 			partRead = true;
