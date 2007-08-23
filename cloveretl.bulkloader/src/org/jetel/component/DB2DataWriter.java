@@ -71,7 +71,7 @@ import org.w3c.dom.Element;
  * @since Aug 3, 2007
  *
  */
-public class Db2DataWriter extends Node {
+public class DB2DataWriter extends Node {
 	
 	private enum LoadeMode{
 		insert,
@@ -189,7 +189,7 @@ public class Db2DataWriter extends Node {
 
 	public final static String COMPONENT_TYPE = "DB2_DATA_WRITER";
 
-	static Log logger = LogFactory.getLog(Db2DataWriter.class);
+	static Log logger = LogFactory.getLog(DB2DataWriter.class);
 
 	private final String FIXLEN_DATA = "asc";
 	private final String DELIMITED_DATA = "del";
@@ -244,7 +244,7 @@ public class Db2DataWriter extends Node {
 	 * @param fileName URL to file with extern data
 	 * @param fileMetadataId  	 specifies data structure in external file.
 	 */
-	public Db2DataWriter(String id, String database, String user, String psw, String table, 
+	public DB2DataWriter(String id, String database, String user, String psw, String table, 
 			LoadeMode mode,	String fileName, String fileMetadataId) {
 		super(id);
 		this.database = database;
@@ -291,7 +291,7 @@ public class Db2DataWriter extends Node {
 				index = string.indexOf(EQUAL_CHAR);
 				if (index > -1) {
 					properties.setProperty(string.substring(0, index).toLowerCase(), 
-							StringUtils.unquote(string.substring(index + 1).toLowerCase()));
+							StringUtils.unquote(string.substring(index + 1)));
 				}else{
 					properties.setProperty(string.toLowerCase(), String.valueOf(true));
 				}
@@ -542,7 +542,7 @@ public class Db2DataWriter extends Node {
 		}
 //		set propper parameter for fixed length metadata
 		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
-			if (!getInPorts().isEmpty() || out.getRecordDelimiter() == null) {
+			if (!getInPorts().isEmpty() || StringUtils.isEmpty(out.getRecordDelimiter())) {
 				properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSize()));
 			}			
 		}
@@ -682,7 +682,6 @@ public class Db2DataWriter extends Node {
 				command.append(properties.getProperty(DUMP_FILE_PARAM));
 			}
 		}
-		//FIXME sprawdzic, czy to boolean czy z wartoscia (dump..=x)
 		writeModified = !command.addBooleanParameterWithPrefixClauseConditionally(
 				MODIFIED, writeModified, DUMP_FILE_ACCESS_ALL_PARAM) && writeModified;
 		writeModified = !command.addBooleanParameterWithPrefixClauseConditionally(
@@ -943,7 +942,6 @@ public class Db2DataWriter extends Node {
 		inPort = getInputPort(READ_FROM_PORT);
 		inRecord =null;
 		if (inMetadata != null) {
-			//FIXME check me if fileMetadata varies from inMetadata
 			inRecord = new DataRecord(fileMetadata);
 			inRecord.init();
 		}
@@ -1016,10 +1014,12 @@ public class Db2DataWriter extends Node {
 			}
 			int count = 0;
 			for (String message : consumer.getErrors()) {
-				if (warningNumber > 0 && count++ > warningNumber) break; 
+				if (warningNumber > 0 && ++count > warningNumber) break; 
 				logger.warn(message);
 			}
-			getOutputPort(ERROR_PORT).eof();
+			if (getOutputPort(ERROR_PORT) != null) {
+				getOutputPort(ERROR_PORT).eof();
+			}			
 		}
 		
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -1055,7 +1055,7 @@ public class Db2DataWriter extends Node {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 
         try {
-            Db2DataWriter writer = new Db2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
+            DB2DataWriter writer = new DB2DataWriter(xattribs.getString(XML_ID_ATTRIBUTE),
                     xattribs.getString(XML_DATABASE_ATTRIBUTE),
                     xattribs.getString(XML_USERNAME_ATTRIBUTE),
                     xattribs.getString(XML_PASSWORD_ATTRIBUTE),
@@ -1405,29 +1405,30 @@ class Db2DataConsumer implements DataConsumer {
 			committed = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
 		}
 		//remember errors
-		if (line.startsWith("SQL053") || line.startsWith("SQL053") || line.startsWith("SQL0545") || 
-				line.startsWith("SQL0659") || line.startsWith("SQL0670") || 
-				line.startsWith("SQL0798")  || line.startsWith("SQL1194") || 
-				line.startsWith("SQL3101") || line.startsWith("SQL3114") || 
-				line.startsWith("SQL3115") || line.startsWith("SQL3116") || 
-				line.startsWith("SQL3117") || line.startsWith("SQL3118") || 
-				line.startsWith("SQL3119") || line.startsWith("SQL312") || 
-				line.startsWith("SQL3130") || line.startsWith("SQL3131") || 
-				line.startsWith("SQL3132") || line.startsWith("SQL3137") || 
-				line.startsWith("SQL3138") || line.startsWith("SQL3146") || 
-				line.startsWith("SQL3148") || line.startsWith("SQL3175") || 
-				line.startsWith("SQL3179") || line.startsWith("SQL3186") || 
-				line.startsWith("SQL3191") || line.startsWith("SQL3330") || 
-				line.startsWith("SQL3411") || line.startsWith("SQL3412") || 
-				line.startsWith("SQL3413") || line.startsWith("SQL3415") || 
-				line.startsWith("SQL3416") || line.startsWith("SQL3501") || 
-				line.startsWith("SQL3506") || line.startsWith("SQL3511") || 
-				line.startsWith("SQL3512") || line.startsWith("SQL3550") || 
-				line.startsWith("SQL3602") || line.startsWith("SQL3603") || 
-				line.startsWith("SQL8100") || line.startsWith("SQL27972")) {
-			//remember first line of error message
+		if (line.startsWith("SQL053") || line.startsWith("SQL053")
+				|| line.startsWith("SQL0545") || line.startsWith("SQL0659")
+				|| line.startsWith("SQL0670") || line.startsWith("SQL0798")
+				|| line.startsWith("SQL1194") || line.startsWith("SQL2036")
+				|| line.startsWith("SQL3101") || line.startsWith("SQL3114")
+				|| line.startsWith("SQL3115") || line.startsWith("SQL3116")
+				|| line.startsWith("SQL3117") || line.startsWith("SQL3118")
+				|| line.startsWith("SQL3119") || line.startsWith("SQL312")
+				|| line.startsWith("SQL3130") || line.startsWith("SQL3131")
+				|| line.startsWith("SQL3132") || line.startsWith("SQL3137")
+				|| line.startsWith("SQL3138") || line.startsWith("SQL3146")
+				|| line.startsWith("SQL3148") || line.startsWith("SQL3175")
+				|| line.startsWith("SQL3179") || line.startsWith("SQL3186")
+				|| line.startsWith("SQL3191") || line.startsWith("SQL3330")
+				|| line.startsWith("SQL3411") || line.startsWith("SQL3412")
+				|| line.startsWith("SQL3413") || line.startsWith("SQL3415")
+				|| line.startsWith("SQL3416") || line.startsWith("SQL3501")
+				|| line.startsWith("SQL3506") || line.startsWith("SQL3511")
+				|| line.startsWith("SQL3512") || line.startsWith("SQL3550")
+				|| line.startsWith("SQL3602") || line.startsWith("SQL3603")
+				|| line.startsWith("SQL8100") || line.startsWith("SQL27972")) {
+			// remember first line of error message
 			errorMessage = line;
-			partRead  = true;
+			partRead = true;
 		}else if (partRead) {
 			//if line is not blank it is continuation of error message
 			partRead = !StringUtils.isBlank(line);
