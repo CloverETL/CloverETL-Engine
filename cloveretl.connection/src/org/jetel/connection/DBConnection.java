@@ -18,10 +18,6 @@
 *
 */
 package org.jetel.connection;
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +30,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -128,77 +125,78 @@ public class DBConnection extends GraphElement implements IConnection {
     private static Log logger = LogFactory.getLog(DBConnection.class);
 
     String configFileName;
-	Driver dbDriver;
-	Connection dbConnection;
-	Properties config;
-	boolean threadSafeConnections;
-	boolean isPasswordEncrypted;
-	private Map openedConnections;
+    Driver dbDriver;
+    Connection dbConnection;
+    Properties config;
+    boolean threadSafeConnections;
+    boolean isPasswordEncrypted;
+    private Map openedConnections;
 
-	public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
-	public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
-	public final static String SQL_QUERY_PROPERTY = "sqlQuery";
+    public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
+    public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
+    public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
-	public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
-	public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
-	public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
-	public static final String XML_PASSWORD_ATTRIBUTE = "password";
-	public static final String XML_USER_ATTRIBUTE = "user";
-	public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
-	public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted"; 
-	
-	private static final String EMBEDDED_UNLOCK_CLASS =  "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
-	
-	// not yet used by component
-	public static final String XML_NAME_ATTRIBUTE = "name";
-
-	private URLClassLoader classLoader;
-	
-	/**
-	 *  Constructor for the DBConnection object
-	 *
-	 * @param  dbDriver  Description of the Parameter
-	 * @param  dbURL     Description of the Parameter
-	 * @param  user      Description of the Parameter
-	 * @param  password  Description of the Parameter
-	 */
-	public DBConnection(String id, String dbDriver, String dbURL, String user, String password) {
+    public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
+    public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
+    public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
+    public static final String XML_PASSWORD_ATTRIBUTE = "password";
+    public static final String XML_USER_ATTRIBUTE = "user";
+    public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
+    public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
+    
+    public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
+    
+    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
+    
+    private ClassLoader classLoader;
+    
+    // not yet used by component
+    public static final String XML_NAME_ATTRIBUTE = "name";
+    /**
+     *  Constructor for the DBConnection object
+     *
+     * @param  dbDriver  Description of the Parameter
+     * @param  dbURL     Description of the Parameter
+     * @param  user      Description of the Parameter
+     * @param  password  Description of the Parameter
+     */
+    public DBConnection(String id, String dbDriver, String dbURL, String user, String password) {
         super(id);
-	    this.openedConnections=new HashMap();
-	    this.config = new Properties();
-		try{
-		    config.setProperty(XML_USER_ATTRIBUTE, user);
-		    config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
-		    config.setProperty(XML_DBDRIVER_ATTRIBUTE, dbDriver);
-		    config.setProperty(XML_DBURL_ATTRIBUTE, dbURL);
-		    }catch(NullPointerException ex){
-		        // do nothing in constructor - will probably fail later
-		    }
-		this.threadSafeConnections=true;
-		this.isPasswordEncrypted=false;
-	}
+        this.openedConnections=new HashMap();
+        this.config = new Properties();
+        try{
+            config.setProperty(XML_USER_ATTRIBUTE, user);
+            config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
+            config.setProperty(XML_DBDRIVER_ATTRIBUTE, dbDriver);
+            config.setProperty(XML_DBURL_ATTRIBUTE, dbURL);
+            }catch(NullPointerException ex){
+                // do nothing in constructor - will probably fail later
+            }
+        this.threadSafeConnections=true;
+        this.isPasswordEncrypted=false;
+    }
 
 
-	/**
-	 *  Constructor for the DBConnection object (not used in engine yet)
-	 *
-	 * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
-	 */
-	public DBConnection(String id, String configFilename) {
+    /**
+     *  Constructor for the DBConnection object (not used in engine yet)
+     *
+     * @param  configFilename  properties filename containing definition of driver, dbURL, username, password
+     */
+    public DBConnection(String id, String configFilename) {
         super(id);
-	    this.openedConnections=new HashMap();
-	    this.config = new Properties();
-	    this.configFileName = configFilename;
-	}
+        this.openedConnections=new HashMap();
+        this.config = new Properties();
+        this.configFileName = configFilename;
+    }
 
-	public DBConnection(String id, Properties configProperties) {
+    public DBConnection(String id, Properties configProperties) {
         super(id);
-	    this.openedConnections=new HashMap();
-		this.config = configProperties;
-		this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
-		this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
-	}
-	
+        this.openedConnections=new HashMap();
+        this.config = configProperties;
+        this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
+        this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
+    }
+    
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#init()
      */
@@ -233,139 +231,162 @@ public class DBConnection extends GraphElement implements IConnection {
                 throw new ComponentNotReadyException(ex);
             }
         }
-        connect();
+        prepareDbDriver();
     }
 
-	/**
-	 * Method which connects to database and if successful, sets various
-	 * connection parameters. If as a property "transactionIsolation" is defined, then
-	 * following options are allowed:<br>
-	 * <ul>
-	 * <li>READ_UNCOMMITTED</li>
-	 * <li>READ_COMMITTED</li>
-	 * <li>REPEATABLE_READ</li>
-	 * <li>SERIALIZABLE</li>
-	 * </ul>
-	 * 
-	 * @see java.sql.Connection#setTransactionIsolation(int)
-	 */
-	private void connect() {
+    /**
+     * Method which connects to database and if successful, sets various
+     * connection parameters. If as a property "transactionIsolation" is defined, then
+     * following options are allowed:<br>
+     * <ul>
+     * <li>READ_UNCOMMITTED</li>
+     * <li>READ_COMMITTED</li>
+     * <li>REPEATABLE_READ</li>
+     * <li>SERIALIZABLE</li>
+     * </ul>
+     * 
+     * @see java.sql.Connection#setTransactionIsolation(int)
+     */
+    private void connect() {
+        logger.debug("DBConenction (" + getId() +"), component ["+Thread.currentThread().getName() +"] attempts to connect to the database");
+
         if(!isInitialized()) {
             throw new RuntimeException("DBConnection (" + getId() +") is not initialized.");
         }
+        if (dbDriver == null){
+            try {
+                prepareDbDriver();
+            } catch (ComponentNotReadyException e) {
+                throw new RuntimeException(e); 
+            }
+        }
+        try {
+            // handle encrypted password
+            if (isPasswordEncrypted){
+                decryptPassword(this.config);
+                isPasswordEncrypted=false;
+            }
+            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), this.config);
 
+
+            // unlock initiatesystems driver
+            try {
+                Class embeddedConClass;
+                if (classLoader == null) {
+                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
+                } else {
+                    embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
+                }
+                if (embeddedConClass != null) {
+                    if(embeddedConClass.isInstance(dbConnection)) {
+                            java.lang.reflect.Method unlockMethod = 
+                                embeddedConClass.getMethod("unlock", new Class[] { String.class});
+                            unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
+                    }
+                }
+            } catch (Exception ex) {
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException("Can't connect to DB :"
+                    + ex.getMessage());
+        }
+        if (dbConnection == null) {
+            throw new RuntimeException(
+                    "Not suitable driver for specified DB URL : " + dbDriver
+                            + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
+        }
+        // try to set Transaction isolation level, it it was specified
+        if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
+            int trLevel;
+            String isolationLevel = config
+                    .getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
+            if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
+                trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
+            } else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
+                trLevel = Connection.TRANSACTION_READ_COMMITTED;
+            } else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
+                trLevel = Connection.TRANSACTION_REPEATABLE_READ;
+            } else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
+                trLevel = Connection.TRANSACTION_SERIALIZABLE;
+            } else {
+                trLevel = Connection.TRANSACTION_NONE;
+            }
+            try {
+                dbConnection.setTransactionIsolation(trLevel);
+            } catch (SQLException ex) {
+                // we do nothing, if anything goes wrong, we just
+                // leave whatever was the default
+            }
+        }
+        // DEBUG logger.debug("DBConenction (" + getId() +") finishes connect function to the database at " + simpleDateFormat.format(new Date()));
+    }
+
+    /**
+     * Loads DB driver and verifies whether an url into databaze is valid.
+     * @throws ComponentNotReadyException 
+     */
+    private void prepareDbDriver() throws ComponentNotReadyException {
         String dbDriverName;
-	    if (dbDriver==null){
-	        dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-	        try {
-	            dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
-	        } catch (ClassNotFoundException ex) {
-	            // let's try to load in any additional .jar library (if specified) (one or more)
+        if (dbDriver==null){
+            dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
+            try {
+                dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
+            } catch (ClassNotFoundException ex) {
+                // let's try to load in any additional .jar library (if specified) (one or more)
                 // separator of individual libraries depends on platform - UNIX - ":" Win - ";"
-	            String jdbcDriverLibrary = config
-	            .getProperty(JDBC_DRIVER_LIBRARY_NAME);
-	            if (jdbcDriverLibrary != null) {
-	                String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-	                URL[] myURLs= new URL[libraryPaths.length];
-	                	// try to create URL directly, if failed probably the protocol is missing, so use File.toURL
-	                    for(int i=0;i<libraryPaths.length;i++){
-	                    	try {
+                String jdbcDriverLibrary = config
+                .getProperty(JDBC_DRIVER_LIBRARY_NAME);
+                if (jdbcDriverLibrary != null) {
+                    String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+                    URL[] myURLs= new URL[libraryPaths.length];
+                        // try to create URL directly, if failed probably the protocol is missing, so use File.toURL
+                        for(int i=0;i<libraryPaths.length;i++){
+                            try {
                                 // valid url
                                 myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, libraryPaths[i]);
-	                    	} catch (MalformedURLException ex1) {
-	                    	    throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-	                    	}
-	                }
-	                
-	                try {
-	                    classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
-	                    dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
-	                } catch (ClassNotFoundException ex1) {
-	                    throw new RuntimeException("Can not find class: " + ex1);
-	                } catch (Exception ex1) {
-	                    throw new RuntimeException("General exception: "
-	                            + ex1.getMessage());
-	                }
-	            } else {
-	                    throw new RuntimeException("Can't load DB driver :"
-	                            + ex.getMessage());
-	                }
-	            } catch (Exception ex) {
-	                throw new RuntimeException("Can't load DB driver :"
-	                        + ex.getMessage());
-	            }
-	    }
-		try {
-		    // handle encrypted password
-		    if (isPasswordEncrypted){
-		        decryptPassword(this.config);
-		        isPasswordEncrypted=false;
-		    }
-			dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), this.config);
+                            } catch (MalformedURLException ex1) {
+                                throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+                            }
+                    }
+                    
+                    try {
+                        classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
+                        dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
+                    } catch (ClassNotFoundException ex1) {
+                        throw new RuntimeException("Can not find class: " + ex1);
+                    } catch (Exception ex1) {
+                        throw new RuntimeException("General exception: "
+                                + ex1.getMessage());
+                    }
+                } else {
+                        throw new RuntimeException("Can't load DB driver :"
+                                + ex.getMessage());
+                }
+            } catch (Exception ex) {
+                throw new RuntimeException("Can't load DB driver :"
+                        + ex.getMessage());
+            }
+            try {
+                if (!dbDriver.acceptsURL(config.getProperty(XML_DBURL_ATTRIBUTE))) {
+                    throw new ComponentNotReadyException("Unacceptable connection url: " + config.getProperty(XML_DBURL_ATTRIBUTE));
+                }
+            } catch (SQLException e) {
+                throw new ComponentNotReadyException(e);
+            } 
+        }
+    }
 
-			// unlock initiatesystems driver
-			try {
-				Class embeddedConClass;
-				if (classLoader == null) {
-					embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS);
-				} else {
-					embeddedConClass = Class.forName(EMBEDDED_UNLOCK_CLASS, true, classLoader);
-				}
-				if (embeddedConClass != null) {
-					if(embeddedConClass.isInstance(dbConnection)) {
-							java.lang.reflect.Method unlockMethod = 
-								embeddedConClass.getMethod("unlock", new Class[] { String.class});
-							unlockMethod.invoke(dbConnection, new Object[] { "INITIATESYSTEMSINCJDBCPW" });
-					}
-				}
-			} catch (Exception ex) {
-			}
-		} catch (SQLException ex) {
-			throw new RuntimeException("Can't connect to DB :"
-					+ ex.getMessage());
-		}
-		if (dbConnection == null) {
-			throw new RuntimeException(
-					"Not suitable driver for specified DB URL : " + dbDriver
-							+ " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
-		}
-		// try to set Transaction isolation level, it it was specified
-		if (config.containsKey(TRANSACTION_ISOLATION_PROPERTY_NAME)) {
-			int trLevel;
-			String isolationLevel = config
-					.getProperty(TRANSACTION_ISOLATION_PROPERTY_NAME);
-			if (isolationLevel.equalsIgnoreCase("READ_UNCOMMITTED")) {
-				trLevel = Connection.TRANSACTION_READ_UNCOMMITTED;
-			} else if (isolationLevel.equalsIgnoreCase("READ_COMMITTED")) {
-				trLevel = Connection.TRANSACTION_READ_COMMITTED;
-			} else if (isolationLevel.equalsIgnoreCase("REPEATABLE_READ")) {
-				trLevel = Connection.TRANSACTION_REPEATABLE_READ;
-			} else if (isolationLevel.equalsIgnoreCase("SERIALIZABLE")) {
-				trLevel = Connection.TRANSACTION_SERIALIZABLE;
-			} else {
-				trLevel = Connection.TRANSACTION_NONE;
-			}
-			try {
-				dbConnection.setTransactionIsolation(trLevel);
-			} catch (SQLException ex) {
-				// we do nothing, if anything goes wrong, we just
-				// leave whatever was the default
-			}
-		}
-	}
-
-
-	/**
-	 *  Description of the Method
-	 *
-	 * @exception  SQLException  Description of the Exception
-	 */
-	synchronized public void free() {
+    /**
+     *  Description of the Method
+     *
+     * @exception  SQLException  Description of the Exception
+     */
+    synchronized public void free() {
         super.free();
 
         if(threadSafeConnections) {
-    	    for(Iterator i = openedConnections.values().iterator(); i.hasNext();) {
-    	        try {
+            for(Iterator i = openedConnections.values().iterator(); i.hasNext();) {
+                try {
                     Connection c = ((Connection)i.next());
                     if(!c.getAutoCommit()) {
                         c.commit();
@@ -374,7 +395,7 @@ public class DBConnection extends GraphElement implements IConnection {
                 } catch (SQLException e) {
                     logger.warn(getId() + " - close operation failed.");
                 }
-    	    }
+            }
         } else {
             try {
                 if (!dbConnection.isClosed()) {
@@ -387,212 +408,212 @@ public class DBConnection extends GraphElement implements IConnection {
                 logger.warn(getId() + " - close operation failed.");
             }            
         }
-	}
+    }
 
 
-	/**
-	 *  Gets the connection attribute of the DBConnection object. If threadSafe option
-	 * is set, then each call will result in new connection being created.
-	 *
-	 * @return    The database connection (JDBC)
-	 */
-	public synchronized Connection getConnection() {
-	    Connection con=null;
-	    if (threadSafeConnections){
-	        con=(Connection)openedConnections.get(Thread.currentThread());
-	        if(con==null){
-	            connect();
-	            con=dbConnection;
-	            openedConnections.put(Thread.currentThread(),con);
-	        }
-		}else{
-		    try{
-	            if (dbConnection == null || dbConnection.isClosed()){
-	                connect();
-	            }
-	        }catch(SQLException ex){
-	            throw new RuntimeException(
-						"Can't establish or reuse existing connection : " + dbDriver
-								+ " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
-	        }
-		    con=dbConnection;
-		}
-	    return con;
-	}
+    /**
+     *  Gets the connection attribute of the DBConnection object. If threadSafe option
+     * is set, then each call will result in new connection being created.
+     *
+     * @return    The database connection (JDBC)
+     */
+    public synchronized Connection getConnection() {
+        Connection con=null;
+        if (threadSafeConnections){
+            con=(Connection)openedConnections.get(Thread.currentThread());
+            if(con==null){
+                connect();
+                con=dbConnection;
+                openedConnections.put(Thread.currentThread(),con);
+            }
+        }else{
+            try{
+                if (dbConnection == null || dbConnection.isClosed()){
+                    connect();
+                }
+            }catch(SQLException ex){
+                throw new RuntimeException(
+                        "Can't establish or reuse existing connection : " + dbDriver
+                                + " ; " + config.getProperty(XML_DBURL_ATTRIBUTE));
+            }
+            con=dbConnection;
+        }
+        return con;
+    }
 
 
-	/**
-	 *  Creates new statement with default parameters and returns it
-	 *
-	 * @return                   The new statement 
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public Statement getStatement() throws SQLException {
-		return getConnection().createStatement();
-	}
+    /**
+     *  Creates new statement with default parameters and returns it
+     *
+     * @return                   The new statement 
+     * @exception  SQLException  Description of the Exception
+     */
+    public Statement getStatement() throws SQLException {
+        return getConnection().createStatement();
+    }
 
-	/**
-	 * Creates new statement with specified parameters
-	 * 
-	 * @param type			one of the following ResultSet constants: ResultSet.TYPE_FORWARD_ONLY, 
-	 * 						ResultSet.TYPE_SCROLL_INSENSITIVE, or ResultSet.TYPE_SCROLL_SENSITIVE
-	 * @param concurrency	one of the following ResultSet constants: ResultSet.CONCUR_READ_ONLY or 
-	 * 						ResultSet.CONCUR_UPDATABLE
-	 * @param holdability	one of the following ResultSet constants: ResultSet.HOLD_CURSORS_OVER_COMMIT 
-	 * 						or ResultSet.CLOSE_CURSORS_AT_COMMIT
-	 * @return				The new statement
-	 * @throws SQLException
-	 */
-	public Statement getStatement(int type,int concurrency,int holdability) throws SQLException {
-	    return getConnection().createStatement(type,concurrency,holdability);
-	}
+    /**
+     * Creates new statement with specified parameters
+     * 
+     * @param type          one of the following ResultSet constants: ResultSet.TYPE_FORWARD_ONLY, 
+     *                      ResultSet.TYPE_SCROLL_INSENSITIVE, or ResultSet.TYPE_SCROLL_SENSITIVE
+     * @param concurrency   one of the following ResultSet constants: ResultSet.CONCUR_READ_ONLY or 
+     *                      ResultSet.CONCUR_UPDATABLE
+     * @param holdability   one of the following ResultSet constants: ResultSet.HOLD_CURSORS_OVER_COMMIT 
+     *                      or ResultSet.CLOSE_CURSORS_AT_COMMIT
+     * @return              The new statement
+     * @throws SQLException
+     */
+    public Statement getStatement(int type,int concurrency,int holdability) throws SQLException {
+        return getConnection().createStatement(type,concurrency,holdability);
+    }
 
-	/**
-	 *  Creates new prepared statement with default parameters
-	 *
-	 * @param  sql               SQL/DML query
-	 * @return                   Description of the Return Value
-	 * @exception  SQLException  Description of the Exception
-	 */
-	public PreparedStatement prepareStatement(String sql) throws SQLException {
-		return getConnection().prepareStatement(sql);
-	}
+    /**
+     *  Creates new prepared statement with default parameters
+     *
+     * @param  sql               SQL/DML query
+     * @return                   Description of the Return Value
+     * @exception  SQLException  Description of the Exception
+     */
+    public PreparedStatement prepareStatement(String sql) throws SQLException {
+        return getConnection().prepareStatement(sql);
+    }
 
-	public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)  throws SQLException{
-		return getConnection().prepareStatement(sql, autoGeneratedKeys);
-	}
-	
-	public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException{
-		return getConnection().prepareStatement(sql, columnIndexes);
-	}
-	
-	/**
-	 * Creates new prepared statement with specified parameters
-	 * 
-	 * @param sql			SQL/DML query
-	 * @param resultSetType
-	 * @param resultSetConcurrency
-	 * @param resultSetHoldability
-	 * @return
-	 * @throws SQLException
-	 */
-	public PreparedStatement prepareStatement(String sql, int resultSetType,
+    public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys)  throws SQLException{
+        return getConnection().prepareStatement(sql, autoGeneratedKeys);
+    }
+    
+    public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException{
+        return getConnection().prepareStatement(sql, columnIndexes);
+    }
+    
+    /**
+     * Creates new prepared statement with specified parameters
+     * 
+     * @param sql           SQL/DML query
+     * @param resultSetType
+     * @param resultSetConcurrency
+     * @param resultSetHoldability
+     * @return
+     * @throws SQLException
+     */
+    public PreparedStatement prepareStatement(String sql, int resultSetType,
             int resultSetConcurrency,
             int resultSetHoldability) throws SQLException {
-		return getConnection().prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
-	}
+        return getConnection().prepareStatement(sql,resultSetType,resultSetConcurrency,resultSetHoldability);
+    }
 
-	/**
-	 *  Sets the property attribute of the DBConnection object
-	 *
-	 * @param  name   The new property value
-	 * @param  value  The new property value
-	 */
-	public void setProperty(String name, String value) {
-		config.setProperty(name, value);
-	}
-
-
-	/**
-	 *  Sets the property attribute of the DBConnection object
-	 *
-	 * @param  properties  The new property value
-	 */
-	public void setProperty(Properties properties) {
-		config.putAll(properties);
-		this.decryptPassword(this.config);
-	}
+    /**
+     *  Sets the property attribute of the DBConnection object
+     *
+     * @param  name   The new property value
+     * @param  value  The new property value
+     */
+    public void setProperty(String name, String value) {
+        config.setProperty(name, value);
+    }
 
 
-	/**
-	 *  Gets the property attribute of the DBConnection object
-	 *
-	 * @param  name  Description of the Parameter
-	 * @return       The property value
-	 */
-	public String getProperty(String name) {
-		return config.getProperty(name);
-	}
+    /**
+     *  Sets the property attribute of the DBConnection object
+     *
+     * @param  properties  The new property value
+     */
+    public void setProperty(Properties properties) {
+        config.putAll(properties);
+        this.decryptPassword(this.config);
+    }
 
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @param  nodeXML  Description of the Parameter
-	 * @return          Description of the Return Value
-	 */
-	public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) {
-		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-		NamedNodeMap attributes = nodeXML.getAttributes();
-		DBConnection con;
-		// for resolving reference in additional parameters
-		// this should be changed in the future when ComponentXMLAttributes
-		// is enhanced to support iterating through attributes
-		PropertyRefResolver refResolver=new PropertyRefResolver(graph);
+    /**
+     *  Gets the property attribute of the DBConnection object
+     *
+     * @param  name  Description of the Parameter
+     * @return       The property value
+     */
+    public String getProperty(String name) {
+        return config.getProperty(name);
+    }
 
-		try {
+
+    /**
+     *  Description of the Method
+     *
+     * @param  nodeXML  Description of the Parameter
+     * @return          Description of the Return Value
+     */
+    public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) {
+        ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
+        NamedNodeMap attributes = nodeXML.getAttributes();
+        DBConnection con;
+        // for resolving reference in additional parameters
+        // this should be changed in the future when ComponentXMLAttributes
+        // is enhanced to support iterating through attributes
+        PropertyRefResolver refResolver=new PropertyRefResolver(graph);
+
+        try {
             String id = xattribs.getString(XML_ID_ATTRIBUTE);
-			// do we have dbConfig parameter specified ??
-			if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
-				return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
-			} else {
+            // do we have dbConfig parameter specified ??
+            if (xattribs.exists(XML_DBCONFIG_ATTRIBUTE)) {
+                return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
+            } else {
 
-				String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE);
-				String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE);
-				String user = "";
-				String password = "";
+                String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE);
+                String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE);
+                String user = "";
+                String password = "";
 
-				con = new DBConnection(id, dbDriver, dbURL, user, password);
+                con = new DBConnection(id, dbDriver, dbURL, user, password);
 
-				//check thread safe option
-				if (xattribs.exists(XML_THREAD_SAFE_CONNECTIONS)){
-				    con.setThreadSafeConnections(xattribs.getBoolean(XML_THREAD_SAFE_CONNECTIONS));
-				}
-				
-				//check passwordEncrypted option
-				if (xattribs.exists(XML_IS_PASSWORD_ENCRYPTED)){
-				    con.setPasswordEncrypted(xattribs.getBoolean(XML_IS_PASSWORD_ENCRYPTED));
-				}
-				
-				// assign rest of attributes/parameters to connection properties so
-				// it can be retrieved by DB JDBC driver
-				for (int i = 0; i < attributes.getLength(); i++) {
-					con.setProperty(attributes.item(i).getNodeName(), refResolver.resolveRef(attributes.item(i).getNodeValue()));
-				}
-				con.decryptPassword(con.config);
+                //check thread safe option
+                if (xattribs.exists(XML_THREAD_SAFE_CONNECTIONS)){
+                    con.setThreadSafeConnections(xattribs.getBoolean(XML_THREAD_SAFE_CONNECTIONS));
+                }
+                
+                //check passwordEncrypted option
+                if (xattribs.exists(XML_IS_PASSWORD_ENCRYPTED)){
+                    con.setPasswordEncrypted(xattribs.getBoolean(XML_IS_PASSWORD_ENCRYPTED));
+                }
+                
+                // assign rest of attributes/parameters to connection properties so
+                // it can be retrieved by DB JDBC driver
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    con.setProperty(attributes.item(i).getNodeName(), refResolver.resolveRef(attributes.item(i).getNodeValue()));
+                }
+                con.decryptPassword(con.config);
 
-				return con;
-			}
+                return con;
+            }
 
-		} catch (Exception ex) {
-			System.err.println(ex.getMessage());
-			return null;
-		}
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+            return null;
+        }
 
-	}
+    }
 
-	public void saveConfiguration(OutputStream outStream) throws IOException {
-		Properties propsToStore = new Properties();
-		propsToStore.putAll(config);
-		propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,Boolean.toString(this.threadSafeConnections));
-		propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,Boolean.toString(this.isPasswordEncrypted));
-		propsToStore.store(outStream,null);
-	}
-	
+    public void saveConfiguration(OutputStream outStream) throws IOException {
+        Properties propsToStore = new Properties();
+        propsToStore.putAll(config);
+        propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,Boolean.toString(this.threadSafeConnections));
+        propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,Boolean.toString(this.isPasswordEncrypted));
+        propsToStore.store(outStream,null);
+    }
+    
 
-	/**
-	 *  Description of the Method
-	 *
-	 * @return    Description of the Return Value
-	 */
-	public String toString() {
-	    StringBuffer strBuf=new StringBuffer(255);
-	    strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
-	    strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
-	    strBuf.append("]:user[").append(config.getProperty(XML_USER_ATTRIBUTE)).append("]");
-		return strBuf.toString();
-	}
-	
+    /**
+     *  Description of the Method
+     *
+     * @return    Description of the Return Value
+     */
+    public String toString() {
+        StringBuffer strBuf=new StringBuffer(255);
+        strBuf.append("DBConnection driver[").append(config.getProperty(XML_DBDRIVER_ATTRIBUTE));
+        strBuf.append("]:url[").append(config.getProperty(XML_DBURL_ATTRIBUTE));
+        strBuf.append("]:user[").append(config.getProperty(XML_USER_ATTRIBUTE)).append("]");
+        return strBuf.toString();
+    }
+    
     /**
      * @return Returns the threadSafeConnections.
      */
