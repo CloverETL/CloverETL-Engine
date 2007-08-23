@@ -36,7 +36,6 @@ import java.util.Properties;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
@@ -453,9 +452,6 @@ public final class TransformationGraph {
         // initialize phases array (it is sorted according to phase number)
         phasesArray = getPhases();
         
-        //remove disabled components and their edges
-        TransformationGraphAnalyzer.disableNodesInPhases(phasesArray);
-       
         // assemble new list of all Nodes (after disabling some)
         nodesList = new ArrayList<Node> (nodes.size());
         for(int i=0;i<phasesArray.length;i++){

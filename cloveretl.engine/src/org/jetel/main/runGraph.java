@@ -36,6 +36,7 @@ import org.jetel.exception.GraphConfigurationException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.TransformationGraphAnalyzer;
 import org.jetel.graph.TransformationGraphXMLReaderWriter;
 import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.plugin.Plugins;
@@ -151,6 +152,9 @@ public class runGraph {
 
         graphReader.read(inStream);
         
+        //remove disabled components and their edges
+        TransformationGraphAnalyzer.disableNodesInPhases(graph);
+
         return graph;
     }
     
@@ -229,14 +233,14 @@ public class runGraph {
                 logHost = args[i];
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
+            } else if (args[i].startsWith(MBEAN_NAME)){
+                i++;
+                mbeanName = args[i];
+            } else if (args[i].startsWith(NO_JMX)){
+                noJMX = true;
             } else if (args[i].startsWith("-")) {
                 System.err.println("Unknown option: " + args[i]);
                 System.exit(-1);
-            }else if (args[i].startsWith(MBEAN_NAME)){
-            	i++;
-            	mbeanName=args[i];
-            }else if (args[i].startsWith(NO_JMX)){
-            	noJMX=true;
             } else {
                 graphFileName = args[i];
             }

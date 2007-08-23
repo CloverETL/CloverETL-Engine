@@ -392,8 +392,9 @@ public class TransformationGraphAnalyzer {
     /**
      * Apply disabled property of node to graph. Called in graph inital phase. 
      */
-    public static void disableNodesInPhases(Phase[] phases) {
+    public static void disableNodesInPhases(TransformationGraph graph) {
         Set nodesToRemove = new HashSet();
+        Phase[] phases = graph.getPhases();
         
         for (int i = 0; i < phases.length; i++) {
             nodesToRemove.clear();
