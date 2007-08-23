@@ -9,7 +9,7 @@
 	
 	<!-- =========================== VERSIONs =========================== -->
 	<property name="major_version" value="2"/>
-	<property name="minor_version" value="2"/>
+	<property name="minor_version" value="3"/>
 	<property name="revision_version" value="0"/>
 	
 	
@@ -87,10 +87,20 @@
 			<fileset dir="test" />
 		</copy>
 
+		<copy todir="${src.distribution.dir.engine}/data">
+			<fileset dir="data" />
+		</copy>
+
+		<copy todir="${src.distribution.dir.engine}/scripts">
+			<fileset dir="scripts" />
+		</copy>
+
 		<copy todir="${src.distribution.dir.engine}">
 			<fileset file="ant-contrib.jar" />
 			<fileset file="build.xml" />
 			<fileset file="build.properties" />
+			<fileset file="readme.src.txt" />
+			<fileset file="readme.bin.txt" />
 		</copy>
 
 		<copy todir="${src.distribution.dir.engine}/..">

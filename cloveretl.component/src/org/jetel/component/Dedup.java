@@ -19,6 +19,8 @@
 */
 package org.jetel.component;
 
+import java.io.IOException;
+
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
@@ -52,7 +54,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td>At least one connected output port.</td></tr>
+ * <td>[0]- result of deduplication</td></tr>
+ * <td>[0]- all rejected records</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -61,7 +64,7 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"DEDUP"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td>
- *  <tr><td><b>dedupKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe}</td>
+ *  <tr><td><b>dedupKey</b></td><td>field names separated by :;|  {colon, semicolon, pipe} or can be empty, then all records belong to one group</td>
  *  <tr><td><b>keep</b></td><td>one of "First|Last|Unique" {the fist letter is sufficient, if not defined, then First}</td></tr>
  *  <tr><td><b>equalNULL</b><br><i>optional</i></td><td>specifies whether two fields containing NULL values are considered equal. Default is TRUE.</td></tr>
  *  </table>
@@ -82,9 +85,11 @@ public class Dedup extends Node {
 	/**  Description of the Field */
 	public final static String COMPONENT_TYPE = "DEDUP";
 
-	private final static int WRITE_TO_PORT = 0;
 	private final static int READ_FROM_PORT = 0;
-	
+
+    private final static int WRITE_TO_PORT = 0;
+    private final static int REJECTED_PORT = 1;
+
 	private final static int KEEP_FIRST = 1;
 	private final static int KEEP_LAST = -1;
 	private final static int KEEP_UNIQUE = 0;
@@ -94,8 +99,16 @@ public class Dedup extends Node {
 	private String[] dedupKeys;
 	private RecordKey recordKey;
 	private boolean equalNULLs = true;
+	private boolean hasRejectedPort;
 
+    //runtime variables
+    int current;
+    int previous;
+    boolean isFirst;
+    InputPort inPort;
+    DataRecord[] records;
 
+    
 	/**
 	 *Constructor for the Dedup object
 	 *
@@ -118,69 +131,156 @@ public class Dedup extends Node {
 	 * @return    The change value
 	 */
 	private final boolean isChange(DataRecord a, DataRecord b) {
-		if (recordKey.compare(a, b) != 0) {
-			return true;
+        if(recordKey != null) {
+            return (recordKey.compare(a, b) != 0);
 		} else {
-			return false;
-		}
+            return false;
+        }
 	}
 
+    
 	@Override
 	public Result execute() throws Exception {
-		int current;
-		int previous;
-		int groupItems;
-		boolean isFirst = true; // special treatment for 1st record
-		InputPort inPort = getInputPort(READ_FROM_PORT);
-		DataRecord[] records = {new DataRecord(inPort.getMetadata()), new DataRecord(inPort.getMetadata())};
-		records[0].init();
-		records[1].init();
-		current = 1;
-		previous = 0;
-		groupItems=0;
-		while (records[current] != null && runIt) {
-			records[current] = inPort.readRecord(records[current]);
-			if (records[current] != null) {
-				if (isFirst) {
-					if (keep == KEEP_FIRST) {
-						writeRecordBroadcast(records[current]);
-					}
-					isFirst = false;
-				} else {
-					if (isChange(records[current], records[previous])) {
-						switch (keep) {
-						case KEEP_FIRST:
-							writeRecordBroadcast(records[current]);
-							break;
-						case KEEP_LAST:
-							writeRecordBroadcast(records[previous]);
-							break;
-						case KEEP_UNIQUE:
-							if (groupItems == 1) {
-								writeRecordBroadcast(records[previous]);
-							}
-							break;
-						}
-						groupItems = 0;
-					} else {
+        
+        isFirst = true; // special treatment for 1st record
+        inPort = getInputPort(READ_FROM_PORT);
+        records = new DataRecord[2]; 
+        records[0] = new DataRecord(inPort.getMetadata());
+        records[0].init();
+        records[1] = new DataRecord(inPort.getMetadata());
+        records[1].init();
+        current = 1;
+        previous = 0;
 
-					}
-				}
-				groupItems++;
-				// swap indexes
-				current = current ^ 1;
-				previous = previous ^ 1;
-			} else {
-				if (!isFirst
-						&& (keep == KEEP_LAST || (keep == KEEP_UNIQUE && groupItems == 1))) {
-					writeRecordBroadcast(records[previous]);
-				}
-			}
-		}
-		broadcastEOF();
+        switch(keep) {
+        case KEEP_FIRST:
+            executeFirst();
+            break;
+        case KEEP_LAST:
+            executeLast();
+            break;
+        case KEEP_UNIQUE:
+            executeUnique();
+            break;
+        }
+		
+        broadcastEOF();
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
+    /**
+     * Execution a de-duplication with first function.
+     * 
+     * @throws IOException
+     * @throws InterruptedException
+     */
+	private void executeFirst() throws IOException, InterruptedException {
+        while (records[current] != null && runIt) {
+            records[current] = inPort.readRecord(records[current]);
+            if (records[current] != null) {
+                if (isFirst) {
+                    writeRecord(WRITE_TO_PORT, records[current]);
+                    isFirst = false;
+                } else {
+                    if (isChange(records[current], records[previous])) {
+                        writeRecord(WRITE_TO_PORT, records[current]);
+                    } else {
+                        writeRejectedRecord(records[current]);
+                    }
+                }
+                // swap indexes
+                current = current ^ 1;
+                previous = previous ^ 1;
+            }
+        }
+    }
+
+    /**
+     * Execution a de-duplication with last function.
+     * 
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void executeLast() throws IOException, InterruptedException {
+        while (records[current] != null && runIt) {
+            records[current] = inPort.readRecord(records[current]);
+            if (records[current] != null) {
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    if (isChange(records[current], records[previous])) {
+                        writeRecord(WRITE_TO_PORT, records[previous]);
+                    } else {
+                        writeRejectedRecord(records[previous]);
+                    }
+                }
+
+                // swap indexes
+                current = current ^ 1;
+                previous = previous ^ 1;
+            } else {
+                if (!isFirst) {
+                    writeRecord(WRITE_TO_PORT, records[previous]);
+                }
+            }
+        }
+    }
+
+    /**
+     * Execution a de-duplication with unique function.
+     * 
+     * @throws IOException
+     * @throws InterruptedException
+     */
+    public void executeUnique() throws IOException, InterruptedException {
+        int groupItems = 0;
+
+        while (records[current] != null && runIt) {
+            records[current] = inPort.readRecord(records[current]);
+            if (records[current] != null) {
+                if (isFirst) {
+                    isFirst = false;
+                } else {
+                    if (isChange(records[current], records[previous])) {
+                        if (groupItems == 1) {
+                            writeRecord(WRITE_TO_PORT, records[previous]);
+                        } else {
+                            writeRejectedRecord(records[previous]);
+                        }
+                        groupItems = 0;
+                    } else {
+                        writeRejectedRecord(records[previous]);
+                    }
+                }
+                groupItems++;
+                // swap indexes
+                current = current ^ 1;
+                previous = previous ^ 1;
+            } else {
+                if (!isFirst) {
+                    if(groupItems == 1) {
+                        writeRecord(WRITE_TO_PORT, records[previous]);
+                    } else {
+                        writeRejectedRecord(records[previous]);
+                    }
+                }
+            }
+        }
+    }
+
+    
+    /**
+     * Tries to write given record to the rejected port, if is connected.
+     * @param record
+     * @throws InterruptedException 
+     * @throws IOException 
+     */
+    private void writeRejectedRecord(DataRecord record) throws IOException, InterruptedException {
+        if(hasRejectedPort) {
+            writeRecord(REJECTED_PORT, record);
+        }
+    }
+    
 	/**
 	 * Description of the Method
 	 * 
@@ -190,12 +290,16 @@ public class Dedup extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		// test that we have at least one input port and one output
-		recordKey = new RecordKey(dedupKeys, getInputPort(READ_FROM_PORT).getMetadata());
-		recordKey.init();
-		// for DEDUP component, specify whether two fields with NULL value indicator set
-		// are considered equal
-		recordKey.setEqualNULLs(equalNULLs);
+
+        if(dedupKeys != null) {
+            recordKey = new RecordKey(dedupKeys, getInputPort(READ_FROM_PORT).getMetadata());
+            recordKey.init();
+            // for DEDUP component, specify whether two fields with NULL value indicator set
+            // are considered equal
+            recordKey.setEqualNULLs(equalNULLs);
+        }
+        
+        hasRejectedPort = (getOutPorts().size() == 2);
 	}
 
 
@@ -242,8 +346,10 @@ public class Dedup extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Dedup dedup;
 		try {
+            String dedupKey = xattribs.getString(XML_DEDUPKEY_ATTRIBUTE, null);
+            
 			dedup=new Dedup(xattribs.getString(XML_ID_ATTRIBUTE),
-					xattribs.getString(XML_DEDUPKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX),
+					dedupKey != null ? dedupKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX) : null,
 					xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ff].*") ? KEEP_FIRST :
 					    xattribs.getString(XML_KEEP_ATTRIBUTE).matches("^[Ll].*") ? KEEP_LAST : KEEP_UNIQUE);
 			if (xattribs.exists(XML_EQUAL_NULL_ATTRIBUTE)){
@@ -263,7 +369,7 @@ public class Dedup extends Node {
          super.checkConfig(status);
          
          checkInputPorts(status, 1, 1);
-         checkOutputPorts(status, 1, Integer.MAX_VALUE);
+         checkOutputPorts(status, 1, 2);
          checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), getOutMetadata());
 
          try {
