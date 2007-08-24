@@ -160,21 +160,21 @@ public class WatchDog extends Thread implements CloverRuntime {
 //        trackingThread.setPriority(Thread.MIN_PRIORITY);
 //        trackingThread.start();
         
-		for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
-			switch( (result=executePhase(phases[currentPhaseNum])) ){
-            case ABORTED:
+        for (currentPhaseNum = 0; currentPhaseNum < phases.length; currentPhaseNum++) {
+            result=executePhase(phases[currentPhaseNum]);
+            if(result == Result.ABORTED)      { 
                 logger.error("!!! Phase execution aborted !!!");
                 break;
-            case ERROR:
-				logger.error("!!! Phase finished with error - stopping graph run !!!");
-				break;
+            } else if(result == Result.ERROR) {
+                logger.error("!!! Phase finished with error - stopping graph run !!!");
+                break;
             }
             
-			// force running of garbage collector
-			logger.info("Forcing garbage collection ...");
-			javaRuntime.runFinalization();
-			javaRuntime.gc();
-		}
+            // force running of garbage collector
+            logger.info("Forcing garbage collection ...");
+            javaRuntime.runFinalization();
+            javaRuntime.gc();
+        }
         mbean.graphFinished(result);
      
         // wait to get JMX chance to propagate the message
