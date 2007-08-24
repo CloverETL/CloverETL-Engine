@@ -188,18 +188,18 @@ public class OracleDataWriter extends Node {
         
         //reading incoming data and sending them into sqlldr process
         try {
-			while (record != null && runIt) {
-			    record = inPort.readRecord(record);
-			    if (record != null) {
-			        formatter.write(record);
-			    }
-			}
-		} catch (Exception e) {
-			throw e;
-		}finally{
-	        //close data stream
-	        formatter.close();
-		}
+            while (record != null && runIt) {
+                record = inPort.readRecord(record);
+                if (record != null) {
+                    formatter.write(record);
+                }
+            }
+        } catch (Exception e) {
+            throw e;
+        }finally{
+            //close data stream
+            formatter.close();
+        }
         
         //waiting for sqlldr process termination
         if(process.waitFor() != 0) {
@@ -224,9 +224,9 @@ public class OracleDataWriter extends Node {
                 "control='" + controlFileName + "'", 
                 "userid=" + userId,
                 (System.getProperty("os.name").startsWith("Windows") ? "data=\\\"-\\\"" : "data='-'"), 
-                "log='" + logFileName + "'",
-                "bad='" + badFileName + "'",
-                "discard='" + discardFileName + "'",
+                logFileName != null ? "log='" + logFileName + "'" : "",
+                badFileName != null ? "bad='" + badFileName + "'" : "",
+                discardFileName != null ? "discard='" + discardFileName + "'" : "",
 //                "silent=all"
         };
         
@@ -241,17 +241,17 @@ public class OracleDataWriter extends Node {
      * @since                                  April 4, 2002
      */
     public void init() throws ComponentNotReadyException {
-		super.init();
+        super.init();
   
-		try {
+        try {
             controlFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
             
-            if(logFileName == null)
-                logFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, LOG_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-            if(badFileName == null) 
-                badFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, BAD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
-            if(discardFileName == null)
-                discardFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, DISCARD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+//            if(logFileName == null)
+//                logFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, LOG_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+//            if(badFileName == null) 
+//                badFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, BAD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+//            if(discardFileName == null)
+//                discardFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, DISCARD_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
         } catch(IOException e) {
             throw new ComponentNotReadyException(this, "Some of the log files cannot be created.");
         }
@@ -376,21 +376,21 @@ public class OracleDataWriter extends Node {
     /**  Description of the Method */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
-		super.checkConfig(status);
-		 
-		checkInputPorts(status, 1, 1);
+        super.checkConfig(status);
+         
+        checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 0, 0);
 
-        try {
-            init();
-            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+//        try {
+//            init();
+//            free();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
     }
