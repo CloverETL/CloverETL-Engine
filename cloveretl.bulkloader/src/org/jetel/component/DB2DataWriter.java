@@ -788,7 +788,7 @@ public class DB2DataWriter extends Node {
 			} catch (Exception e) {
 				throw new ComponentNotReadyException(this, "Can't create emprary data file", e);
 			}			
-			if (usePipe && System.getProperty("os.name").startsWith("Windows")) {
+			if (usePipe && ProcBox.isWindowsPlatform()) {
 				logger.warn("Node " + this.getId() + " warning: Pipe transfer not " +
 						"supported on Windows - switching it off");
 				usePipe = false;
@@ -1002,10 +1002,8 @@ public class DB2DataWriter extends Node {
 			}
 		}
 //		set propper parameter for fixed length metadata
-		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD) {
-			if (!getInPorts().isEmpty() || StringUtils.isEmpty(out.getRecordDelimiter())) {
-				properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSize()));
-			}			
+		if (out.getRecType() == DataRecordMetadata.FIXEDLEN_RECORD && !out.isSpecifiedRecordDelimiter()) {
+			properties.put(REC_LEN_PARAM, String.valueOf(out.getRecordSize()));
 		}
 		return out;
 	}
