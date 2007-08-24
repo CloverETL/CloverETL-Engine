@@ -857,14 +857,32 @@ public class DataFieldMetadata implements Serializable {
 	}
 
 	/**
+	 * This method checks if type of field is date or datetime 
+	 * and if formatString isn't null or empty.
+	 * @return true if type of field is date or datetime and if formatString isn't null or empty.
+	 * @since     24.8.2007
+     * @see       org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
+	 */
+	private boolean isDateOrTimeFieldWithFormatStr() {
+		if (getType() != DATE_FIELD && fieldType != DATETIME_FIELD) {
+			return false;
+		}
+		if (StringUtils.isEmpty(getFormatStr())) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
 	 * This method checks if formatString has a format of date.
+	 * If formatString is null or empty then formatString hasn't a format of date.
 	 * Note: formatString can has a format of date and format of time at the same time.
 	 * @return true if formatString has a format of date.
 	 * @since     24.8.2007
      * @see       org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
 	 */
 	public boolean isDateFormat() {
-		if (fieldType != DATE_FIELD && fieldType != DATETIME_FIELD) {
+		if (!isDateOrTimeFieldWithFormatStr()) {
 			return false;
 		}
 		return DATE_ONLY_PATTERN.matcher(getFormatStr()).find();
@@ -872,13 +890,14 @@ public class DataFieldMetadata implements Serializable {
 
 	/**
 	 * This method checks if formatString has a format of time.
+	 * If formatString is null or empty then formatString hasn't a format of time.
 	 * Note: formatString can has a format of date and format of time at the same time.
 	 * @return true if formatString has a format of time.
 	 * @since     24.8.2007
      * @see       org.jetel.component.DataFieldmetadata.isDateFormat(CharSequence)
 	 */
 	public boolean isTimeFormat() {
-		if (fieldType != DATE_FIELD && fieldType != DATETIME_FIELD) {
+		if (!isDateOrTimeFieldWithFormatStr()) {
 			return false;
 		}
 		return TIME_ONLY_PATTERN.matcher(getFormatStr()).find();
