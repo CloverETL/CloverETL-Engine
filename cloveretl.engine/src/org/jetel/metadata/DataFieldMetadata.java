@@ -50,16 +50,6 @@ public class DataFieldMetadata implements Serializable {
 	public static int DOUBLE_LENGTH = DOUBLE_SCALE + 615;
 
 	/**
-	 *  Characters that can be contained in format of date
-	 */
-	private final static Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
-	
-	/**
-	 *  Characters that can be contained in format of time
-	 */
-	private final static Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
-	
-	/**
 	 *  Name of the field
 	 */
 	private String name;
@@ -163,6 +153,16 @@ public class DataFieldMetadata implements Serializable {
 	
 	public final static String SCALE_ATTR = "scale";
 
+	/**
+	 *  Characters that can be contained in format of date
+	 */
+	private final static Pattern DATE_ONLY_PATTERN = Pattern.compile("[GyMwWDdFE]");
+	
+	/**
+	 *  Characters that can be contained in format of time
+	 */
+	private final static Pattern TIME_ONLY_PATTERN = Pattern.compile("[aHhKkmsSzZ]");
+	
 	/**
 	 *  Constructor for delimited type of field
 	 *
@@ -859,25 +859,29 @@ public class DataFieldMetadata implements Serializable {
 	/**
 	 * This method checks if formatString has a format of date.
 	 * Note: formatString can has a format of date and format of time at the same time.
-	 * @param formatString
 	 * @return true if formatString has a format of date.
 	 * @since     24.8.2007
      * @see       org.jetel.component.DataFieldmetadata.isTimeFormat(CharSequence)
 	 */
-	public boolean isDateFormat(CharSequence formatString) {
-		return DATE_ONLY_PATTERN.matcher(formatString).find();
+	public boolean isDateFormat() {
+		if (fieldType != DATE_FIELD && fieldType != DATETIME_FIELD) {
+			return false;
+		}
+		return DATE_ONLY_PATTERN.matcher(getFormatStr()).find();
 	}
 
 	/**
 	 * This method checks if formatString has a format of time.
 	 * Note: formatString can has a format of date and format of time at the same time.
-	 * @param formatString
 	 * @return true if formatString has a format of time.
 	 * @since     24.8.2007
      * @see       org.jetel.component.DataFieldmetadata.isDateFormat(CharSequence)
 	 */
-	public boolean isTimeFormat(CharSequence formatString) {
-		return TIME_ONLY_PATTERN.matcher(formatString).find();
+	public boolean isTimeFormat() {
+		if (fieldType != DATE_FIELD && fieldType != DATETIME_FIELD) {
+			return false;
+		}
+		return TIME_ONLY_PATTERN.matcher(getFormatStr()).find();
 	}
 	
 }
