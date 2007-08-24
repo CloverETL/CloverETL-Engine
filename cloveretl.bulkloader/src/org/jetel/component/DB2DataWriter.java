@@ -64,6 +64,465 @@ import org.jetel.util.exec.ProcBox;
 import org.w3c.dom.Element;
 
 /**
+ *  <h3>DB2 data writer</h3>
+ *
+ * <table border="1">
+ *  <th>Component:</th>
+ * <tr><td><h4><i>Name:</i></h4></td>
+ * <td>DB2 data writer</td></tr>
+ * <tr><td><h4><i>Category:</i></h4></td>
+ * <td></td></tr>
+ * <tr><td><h4><i>Description:</i></h4></td>
+ * <td> This component loads data to DB2 database using db2 load utility. There is created 
+ * temporary file with db2 commands depending on input parameters. Data are read from given 
+ * input file or from input port and loaded to database. On Linux/Unix system data transfer 
+ * can be processed by named pipe.<br>Any generated scripts/commands can be optionally 
+ * logged to help diagnose problems.<br>To use this component DB2 client must be installed 
+ * and configured on the local host. Server and database have to be cataloged 
+ * (see <a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/index.jsp?topic=/com.ibm.db2.udb.doc/opt/t0010791.htm">
+ * Configuring a client to Query Patroller server connection using the command line processor</a>).<br>
+ * <i>Note: In CloverETL date data field stores date as well as time or time stamp 
+ * (date & time). In DB2 thees are three different types. The component recognizes them 
+ * due to the format set on metadata, so be positive that formats on metadata are set 
+ * correctly.</i>  </td></tr>
+ * <tr><td><h4><i>Inputs:</i></h4></td>
+ * <td>[0] - input records</td></tr>
+ * <tr><td><h4><i>Outputs:</i></h4></td>
+ * <td>[0] - optionally one output port defined/connected - information about rejected 
+ * records. Metadata on this port must have two numeric and one string field 
+ * (eg. err_record - integer, err_column - integer, err_message - string). Rejected record 
+ * number is recorded to first numeric field, and field number (for delimited metadata) or 
+ * offset of offending value (for fix length metadata) is recorded to second numeric field. 
+ * String field is fulfilled by error message.</td></tr>
+ * <tr><td><h4><i>Comment:</i></h4></td>
+ * <td></td></tr>
+ * </table>
+ *  <br>
+ *  <table border="1">
+ *  <th>XML attributes:</th>
+ *  <tr><td><b>type</b></td><td>"DB2_DATA_WRITER"</td></tr>
+ *  <tr><td><b>id</b></td><td>component identification</td></tr>
+ *  <tr><td><b>database</b></td><td> name of the database</td></tr>
+ *  <tr><td><b>username</b></td><td>user name for DB2 database connection</td></tr>
+ *  <tr><td><b>password</b></td><td>password for DB2 database connection</td></tr>
+ *  <tr><td><b>table</b></td><td>DB2 table to store the records</td></tr>
+ *  <tr><td><b>loadMode</b></td><td>one of: insert, replace, restart, terminate.<br>
+ * <i>insert</i> - adds the loaded data to the table without changing the existing table 
+ * data<br><i>replace</i> - deletes all existing data from the table, and inserts the 
+ * loaded data. The table definition and index definitions are not changed.<br><i>restart</i>
+ *  - restarts a previously interrupted load operation. The load operation will 
+ *  automatically continue from the last consistency point in the load, build, or delete 
+ *  phase.<br><i>terminate</i> - terminates a previously interrupted load operation, and 
+ *  rolls back the operation to the point in time at which it started, even if consistency 
+ *  points were passed.</td></tr>
+ *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>path to the data input file. If there is not connected 
+ *  input port data have to be in external file. If there is connected input port this 
+ *  attribute is ignored.</td></tr>
+ *  <tr><td><b>fileMetadata</b><br><i>optional</i></td><td>Specifies data structure in external 
+ *  file. This metadata has to satisfy db2 load data structure, that means: fixed metadata are 
+ *  not allowed, each column, except last has the same one char delimiter, last column has the 
+ *  "\n" as delimiter</td></tr>
+ *  <tr><td><b>columnDelimiter</b><br><i>optional</i></td><td> Defines character, which will be 
+ *  used as column delimiter in data file. This attribute has higher priority then "coldel" 
+ *  property in "parameters" attribute.</td></tr>
+ *  <tr><td><b>fieldMap</b><br><i>optional</i></td><td>pairs of clover fields and db fields 
+ *  (cloverField=dbField) separated by :;| {colon, semicolon, pipe}. It specifies mapping from 
+ *  source (Clover's) fields to DB table fields. It should be used instead of <i>cloverFields</i> 
+ *  and <i>dbFields</i> attributes, because it provides more clear mapping. If <i>fieldMap</i>
+ *   attribute is found <i>cloverFields</i> and <i>dbFields<i> attributes are ignored.</td></tr>
+ *  <tr><td><b>dbFields</b><br><i>optional</i></td><td>delimited list of target table's fields 
+ *  to be populated. Input fields are mapped onto target fields (listed) in the order they are 
+ *  present in Clover's record.</td></tr>
+ *  <tr><td><b>cloverFields</b><br><i>optional</i></td><td>delimited list of input record's 
+ *  fields.Only listed fields (in the order they appear in the list) will be considered for 
+ *  mapping onto target table's fields. Combined with <i>dbFields</i> option you can specify 
+ *  mapping from source (Clover's) fields to DB table fields. If no <i>dbFields</i> are 
+ *  specified, then number of <i>cloverFields</i> must correspond to number of target DB 
+ *  table fields.</td></tr>
+ *  <tr><td><b>useNamedPipe</b><br><i>optional</i></td><td>On Linux/Unix data read from input 
+ *  port can be sent to pipe instead of temporary file</td></tr>
+ *  <tr><td><b>sqlInterpreter</b><br><i>optional</i></td><td>Defines process and its parameters 
+ *  to execute script with db2 commands (connect, load, disconnect). It has to have form:
+ *  "interpreter name [parameters] ${} [parameters]", where in place of ${} will be put the 
+ *  name of script file. Default values are: <i>db2 -f scriptFileName</i> - for Linux/Unix and 
+ *  <i>db2cmd /c /i /w -f scriptFileName</i> - for Windows</td></tr>
+ *  <tr><td><b>rejectedURL</b><br><i>optional</i></td><td> File (on db2 server) where rejected 
+ *  records will be saved. <b>This file has to be in directory owned by database user</b>.</td></tr>
+ *  <tr><td><b>batchURL</b><br><i>optional</i></td><td>Url of the file where connect, load and 
+ *  disconnect commands are stored. Use this parameter if you want use commands from existing 
+ *  file or you want to store automatically created file. <b>Path can't contain white space 
+ *  characters.</b></td></tr>
+ *  <tr><td><b>recordCount</b><br><i>optional</i></td><td>specifies how many records/rows should 
+ *  be written to the output file. If <i>rowcount</> is set in <i>parameters</i> attribute, 
+ *  value from <i>parameters</i> attribute will be used.</td></tr>
+ *  <tr><td><b>recordSkip</b><br><i>optional</i></td><td>specifies how many records/rows should 
+ *  be skipped before of writing the first record to the output file. <i>It can be used only in 
+ *  case data is read from input port, not a flat file.</i></td></tr>
+ *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td> Stops the load operation after n 
+ *  warnings. If n is zero, or this option is not specified, the load operation will continue 
+ *  regardless of the number of warnings issued. If the load operation is stopped because the 
+ *  threshold of warnings was encountered, another load operation can be started in RESTART mode. 
+ *  The load operation will automatically continue from the last consistency point. Alternatively, 
+ *  another load operation can be initiated in REPLACE mode, starting at the beginning of the 
+ *  input file. If <i>warningcount,/i> is set in <i>parameters</i> attribute, value from 
+ *  <i>parameters</i> attribute will be used.</b></td></tr>
+ *  <tr><td><b>capturedWarningLines</b><br><i>optional</i></td><td>Maximal number of printed out 
+ *  error messages or warnings.</td></tr>
+ *  <tr><td><b>parameters</b><br><i>optional</i></td><td>All possible additional parameters 
+ *  which can be passed on to load method (See  <a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/index.jsp?topic=/com.ibm.db2.udb.doc/core/r0008305.htm">
+ * LOAD Command</a>  and <a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/topic/com.ibm.db2.udb.doc/core/r0011044.htm">
+ * File type modifiers for load</a>). Parameters, in form <i>key=value</i> (or <i>key</i> - 
+ * interpreted as <i>key=true</i>, if possible value are only "true" or "false") has to be 
+ * separated by :;| {colon, semicolon, pipe}. If in parameter value occurs one of :;|, value 
+ * has to be double quoted.<br><b>Load parameters</b><table>
+ * <tr><td>lobsurl</td><td>The path to the data files containing LOB values to be loaded. 
+ * The path must end with a slash (/). The names of the LOB data files are stored in the 
+ * main data file, in the column that will be loaded into the LOB column.</td></tr>
+ * <tr><td>anyorder</td><td>This modifier is used in conjunction with the <i>cpunum</i> 
+ * parameter. Specifies that the preservation of source data order is not required, yielding 
+ * significant additional performance benefit on SMP systems. If the value of <i>cpunum</i> 
+ * is 1, this option is ignored. This option is not supported if <i>savecount</i>> 0, since 
+ * crash recovery after a consistency point requires that data be loaded in sequence.</td></tr>
+ * <tr><td>generatedignore</td><td>This modifier informs the load utility that data for all 
+ * generated columns is present in the data file but should be ignored. This results in all 
+ * generated column values being generated by the utility. This modifier cannot be used with 
+ * either the <i>generatedmissing</i> or the <i>generatedoverride</i> modifier.</td></tr>
+ * <tr><td>generatedmissing</td><td>If this modifier is specified, the utility assumes that 
+ * the input data file contains no data for the generated column (not even NULLs). This 
+ * results in all generated column values being generated by the utility. This modifier cannot 
+ * be used with either the <i>generatedignore</i> or the <i>generatedoverride</i> modifier.</td></tr>
+ * <tr><td>generatedoverride</td><td>This modifier instructs the load utility to accept 
+ * user-supplied data for all generated columns in the table (contrary to the normal rules for 
+ * these types of columns). When this modifier is used, any rows with no data or NULL data for 
+ * a non-nullable generated column will be rejected (SQL3116W). This modifier cannot be used 
+ * with either the <i>generatedmissing</i> or the <i>generatedignore</i> modifier.</td></tr>
+ * <tr><td>identityignore</td><td>This modifier informs the load utility that data for the 
+ * identity column is present in the data file but should be ignored. This results in all 
+ * identity values being generated by the utility. The behavior will be the same for both 
+ * GENERATED ALWAYS and GENERATED BY DEFAULT identity columns. This means that for 
+ * GENERATED ALWAYS columns, no rows will be rejected. This modifier cannot be used with either 
+ * the <i>identitymissing</i> or the <i>identityoverride</i> modifier.</td></tr>
+ * <tr><td>identitymissing</td><td>If this modifier is specified, the utility assumes that the 
+ * input data file contains no data for the identity column (not even NULLs), and will 
+ * therefore generate a value for each row. The behavior will be the same for both 
+ * GENERATED ALWAYS and GENERATED BY DEFAULT identity columns. This modifier cannot be used 
+ * with either the <i>identityignore</i> or the <i>identityoverride</i> modifier.</td></tr>
+ * <tr><td>identityoverride</td><td>This modifier should be used only when an identity column 
+ * defined as GENERATED ALWAYS is present in the table to be loaded. It instructs the utility 
+ * to accept explicit, non-NULL data for such a column (contrary to the normal rules for these 
+ * types of identity columns). When this modifier is used, any rows with no data or NULL data 
+ * for the identity column will be rejected (SQL3116W). This modifier cannot be used with 
+ * either the <i>identitymissing</i> or the <i>identityignore</i> modifier.</td></tr>
+ * <tr><td>indexfreespace</td><td>an integer between 0 and 99 inclusive. The value is 
+ * interpreted as the percentage of each index page that is to be left as free space when 
+ * load rebuilds the index. Load with <i>indexingmode=incremental</i> ignores this option. The 
+ * first entry in a page is added without restriction; subsequent entries are added the percent 
+ * free space threshold can be maintained. The default value is the one used at CREATE INDEX 
+ * time.</td></tr>
+ * <tr><td>norowwarnings</td><td>Suppresses all warnings about rejected rows.</td></tr>
+ * <tr><td>pagefreespace</td><td>integer between 0 and 100 inclusive. The value is interpreted 
+ * as the percentage of each data page that is to be left as free space. If the specified value 
+ * is invalid because of the minimum row size, (for example, a row that is at least 3 000 bytes 
+ * long, and an x value of 50), the row will be placed on a new page. If a value of 100 is 
+ * specified, each row will reside on a new page.</td></tr>
+ * <tr><td>subtableconvert</td><td>Valid only when loading into a single sub-table. Typical 
+ * usage is to export data from a regular table, and then to invoke a load operation (using 
+ * this modifier) to convert the data into a single sub-table.</td></tr>
+ * <tr><td>totalfreespace</td><td>an integer greater than or equal to 0 . The value is 
+ * interpreted as the percentage of the total pages in the table that is to be appended to the 
+ * end of the table as free space. For example, if x is 20, and the table has 100 data pages 
+ * after the data has been loaded, 20 additional empty pages will be appended. The total number 
+ * of data pages for the table will be 120. The data pages total does not factor in the number 
+ * of index pages in the table. This option does not affect the index object.</td></tr>
+ * <tr><td>usedefaults</td><td>If a source column for a target table column has been specified, 
+ * but it contains no data for one or more row instances, default values are loaded.</td></tr>
+ * <tr><td>codepage</td><td>an ASCII character string. The value is interpreted as the code 
+ * page of the data in the input data set. Converts character data (and numeric data specified 
+ * in characters) from this code page to the database code page during the load operation. Use 
+ * this parameter only when loading from extern file. Data loaded from the input port are 
+ * properly coded by component (<i>codepage=1208</i>). See also <a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/index.jsp?topic=/com.ibm.db2.udb.doc/admin/r0004565.htm">
+ * Supported territory codes and code pages</a>.</td></tr>
+ * <tr><td>dateformat</td><td>format of the date in the source file. You needn't set this 
+ * parameter if date format is specified by metada or data is read from input port (used 
+ * default formatting).</td></tr>
+ * <tr><td>timeformat</td><td>the format of the time in the source file. You needn't set this 
+ * parameter if date format is specified by metada or data is read from input port (used 
+ * default formatting).</td></tr>
+ * <tr><td>timestampformat</td><td>the format of the time stamp in the source file. You needn't 
+ * set this parameter if date format is specified by metada or data is read from input port 
+ * (used default formatting).</td></tr>
+ * <tr><td>dumpfile</td><td>the fully qualified (according to the server database partition) 
+ * name of an exception file to which rejected rows are written. A maximum of 32 KB of data is 
+ * written per record. This parameter is equivalent to <i>rejectedURL</i> attribute.</td></tr>
+ * <tr><td>dumpfileaccessall</td><td>Grants read access to 'OTHERS' when a dump file is created. 
+ * This file type modifier is only valid when: <ol><li>it is used in conjunction with 
+ * dumpfile file type modifier</li><li>the user has SELECT privilege on the load target 
+ * table</li><li>it is issued on a DB2 server database partition that resides on a 
+ * UNIX-based operating system.</li></ol></td></tr>
+ * <tr><td>fastparse</td><td>Reduced syntax checking is done on user-supplied column values, 
+ * and performance is enhanced. Tables loaded under this option are guaranteed to be 
+ * architecturally correct, and the utility is guaranteed to perform sufficient data checking 
+ * to prevent a segmentation violation or trap. Data that is in correct form will be loaded 
+ * correctly.</td></tr>
+ * <tr><td>implieddecimal</td><td>The location of an implied decimal point is determined by 
+ * the column definition. It is no longer assumed to be at the end of the value. For example, 
+ * the value 12345 is loaded into a DECIMAL(8,2) column as 123.45, not 12345.00. This modifier 
+ * cannot be used with the <i>packeddecimal</i> modifier.</td></tr>
+ * <tr><td>noeofchar</td><td>The optional end-of-file character x'1A' is not recognized as the 
+ * end of file. Processing continues as if it were a normal character.</td></tr>
+ * <tr><td>usegraphiccodepage</td><td>If <i>usegraphiccodepage</i> is given, the assumption 
+ * is made that data being loaded into graphic or double-byte character large object 
+ * (DBCLOB) data field(s) is in the graphic code page. The rest of the data is assumed to be 
+ * in the character code page. The graphic codepage is associated with the character code 
+ * page. LOAD determines the character code page through either the <i>codepage</i> modifier, 
+ * if it is specified, or through the code page of the database if the <i>codepage</i> 
+ * modifier is not specified.</td></tr>
+ * <tr><td>binarynumerics</td><td>Numeric (but not DECIMAL) data must be in binary form, not 
+ * the character representation. This avoids costly conversions.This option is supported only 
+ * with fixed length records specified by the <i>reclen</i> option. The <i>noeofchar</i> option 
+ * is assumed.The following rules apply: <ul><li>No conversion between data types is performed, 
+ * with the exception of BIGINT, INTEGER, and SMALLINT.</li><li>Data lengths must match their 
+ * target column definitions.</li><li>FLOATs must be in IEEE Floating Point format.</li><li>
+ * Binary data in the load source file is assumed to be big-endian, regardless of the platform 
+ * on which the load operation is running.</li></ul> <i>Note: NULLs cannot be present in the 
+ * data for columns affected by this modifier. Blanks (normally interpreted as NULL) are 
+ * interpreted as a binary value when this modifier is used.</i></td></tr>
+ * <tr><td>nochecklengths</td><td>If <i>nochecklengths</i> is specified, an attempt is made to 
+ * load each row, even if the source data has a column definition that exceeds the size of the 
+ * target table column. Such rows can be successfully loaded if code page conversion causes the 
+ * source data to shrink; for example, 4-byte EUC data in the source could shrink to 2-byte 
+ * DBCS data in the target, and require half the space. This option is particularly useful if 
+ * it is known that the source data will fit in all cases despite mismatched column definitions.</td></tr>
+ * <tr><td>nullindchar</td><td>single character. Changes the character denoting a NULL value to 
+ * given character. The default value of is Y. This modifier is case sensitive for EBCDIC 
+ * data files, except when the character is an English letter. For example, if the NULL 
+ * indicator character is specified to be the letter N, then n is also recognized as a NULL 
+ * indicator.</td></tr>
+ * <tr><td>packeddecimal</td><td>Loads packed-decimal data directly, since the 
+ * <i>binarynumerics</i> modifier does not include the DECIMAL field type. This option is 
+ * supported only with fixed length records specified by the <i>reclen</i> option. The 
+ * <i>noeofchar</i> option is assumed. Supported values for the sign nibble are:<br>
+ * + = 0xC 0xA 0xE 0xF<br> - = 0xD 0xB<br>NULLs cannot be present in the data for columns 
+ * affected by this modifier. Blanks (normally interpreted as NULL) are interpreted as a 
+ * binary value when this modifier is used. Regardless of the server platform, the byte 
+ * order of binary data in the load source file is assumed to be big-endian; that is, when 
+ * using this modifier on Windows operating systems, the byte order must not be reversed.
+ * This modifier cannot be used with the <i>implieddecimal</i> modifier.</td></tr>
+ * <tr><td>reclen</td><td>an integer with a maximum value of 32 767. <i>reclen</i> characters 
+ * are read for each row, and a new-line character is not used to indicate the end of the row.</td></tr>
+ * <tr><td>striptblanks</td><td>Truncates any trailing blank spaces when loading data into a 
+ * variable-length field. This option cannot be specified together with <i>striptnulls.</i></td></tr>
+ * <tr><td>striptnulls</td><td>Truncates any trailing NULLs (0×00 characters) when loading data 
+ * into a variable-length field. This option cannot be specified together with <i>striptblanks</i>.</td></tr>
+ * <tr><td>zoneddecimal</td><td>Loads zoned decimal data, since the binarynumerics modifier 
+ * does not include the DECIMAL field type. This option is supported only with fixed length 
+ * records specified by the <i>reclen</i> option. The <i>noeofchar</i> option is assumed. 
+ * Half-byte sign values can be one of the following:<br>+ = 0xC 0xA 0xE 0xF<br>- = 0xD 0xB<br>
+ * Supported values for digits are 0×0 to 0×9. Supported values for zones are 0×3 and 0xF. </td></tr>
+ * <tr><td>chardel</td><td>single character string delimiter. The default value is a double 
+ * quotation mark ("). The specified character is used in place of double quotation marks to 
+ * enclose a character string.</td></tr>
+ * <tr><td>coldel</td><td>single character column delimiter. The default value is a comma (,). 
+ * The specified character is used in place of a comma to signal the end of a column. This 
+ * parameter has lower prioryty then <i>columnDelimiter</i> attribute.</td></tr>
+ * <tr><td>datesiso</td><td>Date format. Causes all date data values to be loaded in ISO format.</td></tr>
+ * <tr><td>decplusblank</td><td>Plus sign character. Causes positive decimal values to be 
+ * prefixed with a blank space instead of a plus sign (+). The default action is to prefix 
+ * positive decimal values with a plus sign.</td></tr>
+ * <tr><td>decpt</td><td>single character substitute for the period as a decimal point 
+ * character. The default value is a period (.). The specified character is used in place of a 
+ * period as a decimal point character.</td></tr>
+ * <tr><td>delprioritychar</td><td>The current default priority for delimiters is: record 
+ * delimiter, character delimiter, column delimiter. This modifier protects existing 
+ * applications that depend on the older priority by reverting the delimiter priorities to: 
+ * character delimiter, record delimiter, column delimiter.</td></tr>
+ * <tr><td>keepblanks</td><td>Preserves the leading and trailing blanks in each field of type 
+ * CHAR, VARCHAR, LONG VARCHAR, or CLOB. Without this option, all leading and tailing blanks 
+ * that are not inside character delimiters are removed, and a NULL is inserted into the table 
+ * for all blank fields.</td></tr>
+ * <tr><td>nochardel</td><td>The load utility will assume all bytes found between the column 
+ * delimiters to be part of the column's data. Character delimiters will be parsed as part of 
+ * column data.</td></tr>
+ * <tr><td>nodoubledel</td><td>Suppresses recognition of double character delimiters.</td></tr>
+ * <tr><td>nullindicators</td><td>comma-separated list of positive integers specifying the 
+ * column number of each null indicator field. The column number is the byte offset of the 
+ * null indicator field from the beginning of a row of data. A column number of zero indicates 
+ * that the corresponding data field always contains data. A value of Y in the NULL indicator 
+ * column specifies that the column data is NULL. Any character other than Y in the NULL 
+ * indicator column specifies that the column data is not NULL. The NULL indicator character 
+ * can be changed using the <i>nullindchar</i> option. For example <i>nullinicators=0,0,23,32</i>
+ *  means that positions 23 and 32 are used to indicate whether third and fourth columns 
+ *  will be loaded NULL for a given row. If there is a Y in the column's null indicator 
+ *  position for a given record, the column will be NULL.</td></tr>
+ * <tr><td>savecount</td><td>Specifies that the load utility is to establish consistency points 
+ * after every given number of rows. This value is converted to a page count, and rounded up to 
+ * intervals of the extent size. The default value is zero, meaning that no consistency points 
+ * will be established, unless necessary.</td></tr>
+ * <tr><td>rowcount</td><td>Specifies the number of physical records in the file to be loaded. 
+ * Allows a user to load only the first n rows in a file. It is the same as <i>recordCount</i> 
+ * attribute.</td></tr>
+ * <tr><td>warningcount</td><td>Stops the load operation after n warnings. It is the same as 
+ * <i>maxErrors,/i> attribute</td></tr>
+ * <tr><td>messagesurl</td><td>Specifies the destination for warning and error messages that occur 
+ * during the load operation.</td></tr>
+ * <tr><td>tmpurl</td><td>Specifies the name of the path to be used when creating temporary 
+ * files during a load operation, and should be fully qualified according to the server 
+ * database partition.</td></tr>
+ * <tr><td>exceptiontable</td><td>Specifies the exception table into which rows in error will 
+ * be copied. Any row that is in violation of a unique index or a primary key index is copied. 
+ * Information that is written to the exception table is not written to the dump file. In a 
+ * partitioned database environment, an exception table must be defined for those partitions 
+ * on which the loading table is defined. The dump file, on the other hand, contains rows that 
+ * cannot be loaded because they are invalid or have syntax errors.</td></tr>
+ * <tr><td>statistics</td><td>Instructs load to collect statistics during the load according to 
+ * the profile defined for this table. This profile must be created before load is executed. If 
+ * the profile does not exist and load is instructed to collect statistics, a warning is 
+ * returned and no statistics are collected.</tr>
+ * <tr><td>copy</td><td>Specifies that a copy of the loaded data will be saved.</td></tr>
+ * <tr><td>usetsm</td><td>Specifies that the copy will be stored using Tivoli Storage Manager (TSM).</td></tr>
+ * <tr><td>numsesions</td><td>The number of I/O sessions to be used with TSM or the vendor product. 
+ * The default value is 1.</td></tr>
+ * <tr><td>recoverylib</td><td>The name of the shared library (DLL on Windows operating systems) 
+ * containing the vendor backup and restore I/O functions to be used. It can contain the full 
+ * path. If the full path is not given, it will default to the path where the user exit 
+ * programs reside.</td></tr>
+ * <tr><td>copyurl</td><td>Specifies the device or directory on which the copy image will be created.</i></td></tr>
+ * <tr><td>nonrecoverable</td><td>Specifies that the load transaction is to be marked as 
+ * non-recoverable and that it will not be possible to recover it by a subsequent roll forward 
+ * action. The roll forward utility will skip the transaction and will mark the table into 
+ * which data was being loaded as "invalid". The utility will also ignore any subsequent 
+ * transactions against that table. After the roll forward operation is completed, such a table 
+ * can only be dropped or restored from a backup (full or table space) taken after a commit 
+ * point following the completion of the non-recoverable load operation.</td></tr>
+ * <tr><td>withoutprompting</td><td>Specifies that the list of data files contains all the 
+ * files that are to be loaded, and that the devices or directories listed are sufficient for 
+ * the entire load operation. If a continuation input file is not found, or the copy targets 
+ * are filled before the load operation finishes, the load operation will fail, and the table 
+ * will remain in load pending state.</td></tr>
+ * <tr><td>buffersize</td><td>Specifies the number of 4KB pages (regardless of the degree of 
+ * parallelism) to use as buffered space for transferring data within the utility. If the value 
+ * specified is less than the algorithmic minimum, the minimum required resource is used, and 
+ * no warning is returned. This memory is allocated directly from the utility heap, whose size 
+ * can be modified through the util_heap_sz database configuration parameter. If a value is not 
+ * specified, an intelligent default is calculated by the utility at run time. The default is 
+ * based on a percentage of the free space available in the utility heap at the instantiation 
+ * time of the loader, as well as some characteristics of the table.</td></tr>
+ * <tr><td>sortbuffersize</td><td>This option specifies a value that overrides the SORTHEAP 
+ * database configuration parameter during a load operation. It is relevant only when loading 
+ * tables with indexes and only when the <i>indexingmode</i> parameter is not specified as 
+ * <i>deferred</i>. The value that is specified cannot exceed the value of SORTHEAP. This 
+ * parameter is useful for throttling the sort memory that is used when loading tables with 
+ * many indexes without changing the value of SORTHEAP, which would also affect general 
+ * query processing.</td></tr>
+ * <tr><td>cpunum</td><td>Specifies the number of processes or threads that the load utility 
+ * will spawn for parsing, converting, and formatting records when building table objects. This 
+ * parameter is designed to exploit intra-partition parallelism. It is particularly useful when 
+ * loading presorted data, because record order in the source data is preserved. If the value 
+ * of this parameter is zero, or has not been specified, the load utility uses an intelligent 
+ * default value (usually based on the number of CPUs available) at run time.</i></td></tr>
+ * <tr><td>disknum</td><td>Specifies the number of processes or threads that the load utility 
+ * will spawn for writing data to the table space containers. If a value is not specified, the 
+ * utility selects an intelligent default based on the number of table space containers and the 
+ * characteristics of the table.</td></tr>
+ * <tr><td>indexingmode</td><td>Specifies whether the load utility is to rebuild indexes or 
+ * to extend them incrementally. Valid values are:<ul><li>autoselect - The load utility will 
+ * automatically decide between rebuild or incremental mode. The decision is based on the 
+ * amount of data being loaded and the depth of the index tree. Information relating to the 
+ * depth of the index tree is stored in the index object. <i>autoselect</i> is the default 
+ * indexing mode.</li><li>rebuild - All indexes will be rebuilt. The utility must have 
+ * sufficient resources to sort all index key parts for both old and appended table data. 
+ * </li><li>incremental - Indexes will be extended with new data. This approach consumes 
+ * index free space. It only requires enough sort space to append index keys for the 
+ * inserted records. This method is only supported in cases where the index object is valid 
+ * and accessible at the start of a load operation (it is, for example, not valid 
+ * immediately following a load operation in which the deferred mode was specified). If this 
+ * mode is specified, but not supported due to the state of the index, a warning is returned, 
+ * and the load operation continues in <i>rebuild</i> mode. Similarly, if a load restart 
+ * operation is begun in the load build phase, <i>incremental</I> mode is not supported. 
+ * <i>Incremental</i> indexing is not supported when all of the following conditions are 
+ * true: <ul><li>The LOAD COPY option is specified (logretain or userexit is enabled).</li><li>
+ * The table resides in a DMS table space.</li><li>The index object resides in a table space 
+ * that is shared by other table objects belonging to the table being loaded. To bypass this 
+ * restriction, it is recommended that indexes be placed in a separate table space.</li></ul><li>
+ * deferred - The load utility will not attempt index creation if this mode is specified. 
+ * Indexes will be marked as needing a refresh. The first access to such indexes that is 
+ * unrelated to a load operation might force a rebuild, or indexes might be rebuilt when 
+ * the database is restarted. This approach requires enough sort space for all key parts 
+ * for the largest index. The total time subsequently taken for index construction is longer 
+ * than that required in <i>rebuild</i> mode. Therefore, when performing multiple load 
+ * operations with deferred indexing, it is advisable (from a performance viewpoint) to let 
+ * the last load operation in the sequence perform an index <i>rebuild</i>, rather than 
+ * allow indexes to be rebuilt at first non-load access. <i>Deferred</i> indexing is only 
+ * supported for tables with non-unique indexes, so that duplicate keys inserted during the 
+ * load phase are not persistent after the load operation.</td></tr>
+ * <tr><td>allowreadaccess</td><td>Load will lock the target table in a share mode. The table 
+ * state will be set to both LOAD IN PROGRESS and READ ACCESS. Readers can access the non-delta 
+ * portion of the data while the table is being load.</td></tr>
+ * <tr><td>indexcopytable</td><td>If the indexes are being rebuilt, a shadow copy of the index 
+ * is built in table space tablespace-name and copied over to the original table space at the 
+ * end of the load during an INDEX COPY PHASE. Only system temporary table spaces can be used 
+ * with this option. If not specified then the shadow index will be created in the same table 
+ * space as the index object. If the shadow copy is created in the same table space as the 
+ * index object, the copy of the shadow index object over the old index object is instantaneous. 
+ * If the shadow copy is in a different table space from the index object a physical copy is 
+ * performed. This could involve considerable I/O and time. The copy happens while the table 
+ * is offline at the end of a load during the INDEX COPY PHASE. Without this option the shadow 
+ * index is built in the same table space as the original. Since both the original index and 
+ * shadow index by default reside in the same table space simultaneously, there might be 
+ * insufficient space to hold both indexes within one table space. Using this option ensures 
+ * that you retain enough table space for the indexes. This option is ignored if the user does 
+ * not specify <i>indexingmode=rebuild</i> or <i>indexingmode=autoselect</i>. This option 
+ * will also be ignored if <i>indexingmode=autoselect</i> and load chooses to incrementally 
+ * update the index.</td></tr>
+ * <tr><td>checkpendingcascade</td><td>this option allows the user to specify whether or not 
+ * the check pending state of the loaded table is immediately cascaded to all descendents 
+ * (including descendent foreign key tables, descendent immediate materialized query tables 
+ * and descendent immediate staging tables). Possible values:<ul><li>immediate - Indicates 
+ * that the check pending state (read or no access mode) for foreign key constraints is 
+ * immediately extended to all descendent foreign key tables. If the table has descendent 
+ * immediate materialized query tables or descendent immediate staging tables, the check 
+ * pending state is extended immediately to the materialized query tables and the staging 
+ * tables. Note that for a LOAD INSERT operation, the check pending state is not extended 
+ * to descendent foreign key tables even if the <i>checkpendingcascade=immediate</i> option 
+ * is specified. When the loaded table is later checked for constraint violations, 
+ * descendent foreign key tables that were placed in check pending read state will be put 
+ * into check pending no access state.</li><li>deferred - Indicates that only the loaded 
+ * table will be placed in the check pending state (read or no access mode). The states of 
+ * the descendent foreign key tables, descendent immediate materialized query tables and 
+ * descendent immediate staging tables will remain unchanged. Descendent foreign key tables 
+ * might later be implicitly placed in the check pending no access state when their parent 
+ * tables are checked for constraint violations. Descendent immediate materialized query 
+ * tables and descendent immediate staging tables will be implicitly placed in the check 
+ * pending no access state when one of its underlying tables is checked for integrity 
+ * violations. A warning (SQLSTATE 01586) will be issued to indicate that dependent tables 
+ * have been placed in the check pending state. See the Notes section of the SET INTEGRITY 
+ * statement in the SQL Reference for when these descendent tables will be put into the 
+ * check pending state.</li></ul></td></tr>
+ * <tr><td>lockwithforce</td><td>The utility acquires various locks including table locks in 
+ * the process of loading. Rather than wait, and possibly timeout, when acquiring a lock, this 
+ * option allows load to force off other applications that hold conflicting locks on the target 
+ * table. Applications holding conflicting locks on the system catalog tables will not be 
+ * forced off by the load utility. Forced applications will roll back and release the locks the 
+ * load utility needs. The load utility can then proceed.</td></tr>
+ * <tr><td>partitionedConfig</td><td>Allows you to execute a load into a partitioned table. 
+ * The <i>partitionedConfig</i> parameter allows you to specify partitioned database-specific 
+ * configuration options. (<a href="http://publib.boulder.ibm.com/infocenter/db2luw/v8/topic/com.ibm.db2.udb.doc/admin/r0004613.htm">
+ * Partitioned database load configuration options</a>)</td></tr>
+ * </table></i></td></tr>
+ *  </table>
+ *  
+ *  <h4>Example:</h4>
+ *  Reading data from input port:
+ *  <pre>&lt;Node database="mydb" userName="db2inst1" password="clover" table="mytab" 
+ *  loadMode="insert" recordCount="20" id="DB2_DATA_WRITER1" type="DB2_DATA_WRITER"/&gt;
+ *  </pre>
+ *  Reading data from flat file:
+ *  <pre>&lt;Node database="mydb" fileMetadata="Metadata0"  userName="db2inst1"  
+ *  password="clover" table="mytab" loadMode="insert" 
+ *  batchURL="${WORKSPACE}/output/sql.tmp" 
+ *  fileURL="${WORKSPACE}/data/delimited/mytab_del.txt" parameters="dumpfileaccessall" 
+ *  rejectedURL="/home/db2inst1/rejected.txt" id="DB2_DATA_WRITER0" type="DB2_DATA_WRITER"/&gt;
+ *  
  * @author avackova (agata.vackova@javlinconsulting.cz) ; 
  * (c) JavlinConsulting s.r.o.
  *  www.javlinconsulting.cz
@@ -81,7 +540,7 @@ public class DB2DataWriter extends Node {
 	}
 	
 	/**
-	 * xml attributes for Db2DataWriterComponent
+	 * xml attributes for DB2DataWriterComponent
 	 */
 	private static final String XML_DATABASE_ATTRIBUTE = "database";
 	private static final String XML_USERNAME_ATTRIBUTE = "userName";
@@ -92,7 +551,7 @@ public class DB2DataWriter extends Node {
     private static final String XML_FILEMETADATA_ATTRIBUTE = "fileMetadata";
     private static final String XML_USEPIPE_ATTRIBUTE = "useNamedPipe";
     private static final String XML_COLUMNDELIMITER_ATTRIBUTE = "columnDelimiter";
-	private static final String XML_INTERPRETER_ATTRIBUTE = "interpreter";
+	private static final String XML_INTERPRETER_ATTRIBUTE = "sqlInterpreter";
 	private static final String XML_FIELDMAP_ATTRIBUTE = "fieldMap";
 	private static final String XML_CLOVERFIELDS_ATTRIBUTE = "cloverFields";
 	private static final String XML_DBFIELDS_ATTRIBUTE = "dbFields";
@@ -195,8 +654,6 @@ public class DB2DataWriter extends Node {
 	private static final String FIXLEN_DATA = "asc";
 	private static final String DELIMITED_DATA = "del";
 
-	private final String PIPE_NAME = "dataPipe";
-	
 	private final static int READ_FROM_PORT = 0;
 	private final static int ERROR_PORT = 0;
 	
@@ -218,13 +675,13 @@ public class DB2DataWriter extends Node {
 	private String rejectedURL;
 	private int recordSkip = -1;
 	private int skipped = 0;
-	private int warningNumber = 0;
+	private int warningNumber = 999;
 	
 	private Formatter formatter;
 	private DataRecordMetadata fileMetadata;
 	private Process proc;
 	private DataRecordMetadata inMetadata;
-	private Db2DataConsumer consumer;
+	private DB2DataConsumer consumer;
 	private LoggerDataConsumer errConsumer;
 	private ProcBox box;
 	private InputPort inPort;
@@ -237,7 +694,7 @@ public class DB2DataWriter extends Node {
 	private String batchURL;
 
 	/**
-	 * Constructor for Db2DataWriterComponent
+	 * Constructor for DB2DataWriterComponent
 	 * 
 	 * @param id component identification
 	 * @param database name of the database
@@ -324,17 +781,17 @@ public class DB2DataWriter extends Node {
 			if (!tmpDir.endsWith(File.separator)) {
 				tmpDir = tmpDir.concat(File.separator);
 			}
-			if (usePipe) {
-				if (System.getProperty("os.name").startsWith("Windows")) {
-					logger.warn("Node " + this.getId() + " warning: Pipe transfer " +
-							"not supported on Windows - switching it off");
-					usePipe = false;
-					fileName = tmpDir + PIPE_NAME + ".txt";
-				}else{
-					fileName =  tmpDir + PIPE_NAME;
-				}
-			}else{
-				fileName = tmpDir + PIPE_NAME + ".txt";
+			try {
+				File dataFile = File.createTempFile("data", "tmp");
+				fileName = dataFile.getCanonicalPath();
+				dataFile.delete();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(this, "Can't create emprary data file", e);
+			}			
+			if (usePipe && System.getProperty("os.name").startsWith("Windows")) {
+				logger.warn("Node " + this.getId() + " warning: Pipe transfer not " +
+						"supported on Windows - switching it off");
+				usePipe = false;
 			}
 			inMetadata = getInputPort(READ_FROM_PORT).getMetadata();
 			delimitedData = fileMetadata != null ? 
@@ -950,7 +1407,7 @@ public class DB2DataWriter extends Node {
 			inRecord.init();
 		}
 		
-		consumer = new Db2DataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
+		consumer = new DB2DataConsumer(LoggerDataConsumer.LVL_DEBUG, warningNumber, getOutputPort(ERROR_PORT));
 		errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, warningNumber);
 
 		int exitValue = 0;
@@ -987,6 +1444,7 @@ public class DB2DataWriter extends Node {
 						formatter.close();
 					}
 				}
+				//read data from file
 				if (runIt) {
 					proc = Runtime.getRuntime().exec(command);
 					box = new ProcBox(proc, null, consumer, errConsumer);
@@ -1005,21 +1463,15 @@ public class DB2DataWriter extends Node {
 			logger.error("db2 load exited with value: " + exitValue);
 			throw new JetelException("Process exit value is not 0");
 		}
-		
-		if (exitValue == 2 || consumer.getLoaded() != consumer.getRead()) {
-			if (exitValue == 2) {
-				logger.warn("There is at least one warning message in the message file.");
-			}
-			if (consumer.getLoaded() != consumer.getRead()) {
+		//exitValue=2:     DB2 command or SQL statement warning 
+		if (exitValue == 2 || consumer.getLoaded() != consumer.getRead() || 
+				consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter()) {
+			if (consumer.getLoaded() != consumer.getRead() || 
+					consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter()) {
 				logger.warn("Not all records were loaded to database:");
 				logger.info("Number of rows read = " + consumer.getRead());
 				logger.info("Number of rows loaded = " + consumer.getLoaded());
 				logger.info("Number of rows rejected = " + consumer.getRejected());
-			}
-			int count = 0;
-			for (String message : consumer.getErrors()) {
-				if (warningNumber > 0 && ++count > warningNumber) break; 
-				logger.warn(message);
 			}
 			if (getOutputPort(ERROR_PORT) != null) {
 				getOutputPort(ERROR_PORT).eof();
@@ -1307,7 +1759,7 @@ public class DB2DataWriter extends Node {
  * @since Aug 17, 2007
  *
  */
-class Db2DataConsumer implements DataConsumer {
+class DB2DataConsumer implements DataConsumer {
 	
 	int read;
 	int skipped;
@@ -1315,7 +1767,6 @@ class Db2DataConsumer implements DataConsumer {
 	int rejected;
 	int deleted;
 	int committed;
-	List<String> errors;
 	private String errorMessage;
 	private boolean partRead = false;
 	private OutputPort errPort;
@@ -1343,12 +1794,11 @@ class Db2DataConsumer implements DataConsumer {
 	 */
 	public static final int LVL_ERROR = 2;
 	
-	private int level;
 	private int maxLines;
 	private int linesRead;
 	private BufferedReader reader;
 
-	static Log logger = LogFactory.getLog(Db2DataConsumer.class);
+	static Log logger = LogFactory.getLog(DB2DataConsumer.class);
 
 	/**
 	 * Constructor from superclass
@@ -1356,19 +1806,9 @@ class Db2DataConsumer implements DataConsumer {
 	 * @param level
 	 * @param maxLines
 	 */
-	public Db2DataConsumer(int level, int maxLines, OutputPort port) {
-		switch (level) {
-		case LVL_DEBUG:
-		case LVL_WARN:
-		case LVL_ERROR:
-			this.level = level;
-			break;
-		default:
-			this.level = LVL_ERROR;
-		}
+	public DB2DataConsumer(int level, int maxLines, OutputPort port) {
 		this.maxLines = maxLines;
 		linesRead = 0;
-		errors = new ArrayList<String>();
 		errPort = port;
 		if (errPort != null) {
 			errRecord = new DataRecord(errPort.getMetadata());
@@ -1408,30 +1848,6 @@ class Db2DataConsumer implements DataConsumer {
 		if (line.contains("rows committed")) {
 			committed = Integer.parseInt(line.substring(line.indexOf('=') + 1).trim());
 		}
-		//remember errors
-		/*
-		if (line.startsWith("SQL053") || line.startsWith("SQL053")
-				|| line.startsWith("SQL0545") || line.startsWith("SQL0659")
-				|| line.startsWith("SQL0670") || line.startsWith("SQL0798")
-				|| line.startsWith("SQL1194") || line.startsWith("SQL2036")
-				|| line.startsWith("SQL3101") || line.startsWith("SQL3114")
-				|| line.startsWith("SQL3115") || line.startsWith("SQL3116")
-				|| line.startsWith("SQL3117") || line.startsWith("SQL3118")
-				|| line.startsWith("SQL3119") || line.startsWith("SQL312")
-				|| line.startsWith("SQL3130") || line.startsWith("SQL3131")
-				|| line.startsWith("SQL3132") || line.startsWith("SQL3137")
-				|| line.startsWith("SQL3138") || line.startsWith("SQL3146")
-				|| line.startsWith("SQL3148") || line.startsWith("SQL3175")
-				|| line.startsWith("SQL3179") || line.startsWith("SQL3186")
-				|| line.startsWith("SQL3191") || line.startsWith("SQL3330")
-				|| line.startsWith("SQL3411") || line.startsWith("SQL3412")
-				|| line.startsWith("SQL3413") || line.startsWith("SQL3415")
-				|| line.startsWith("SQL3416") || line.startsWith("SQL3501")
-				|| line.startsWith("SQL3506") || line.startsWith("SQL3511")
-				|| line.startsWith("SQL3512") || line.startsWith("SQL3550")
-				|| line.startsWith("SQL3602") || line.startsWith("SQL3603")
-				|| line.startsWith("SQL8100") || line.startsWith("SQL27972")) {
-				*/
 		if (line.matches("^SQL\\d+.*")){
 			// remember first line of error message
 			errorMessage = line;
@@ -1442,8 +1858,7 @@ class Db2DataConsumer implements DataConsumer {
 			if (partRead) {
 				errorMessage = errorMessage.concat(line);
 			}else{//whole error message read
-				errors.add(errorMessage);
-				if (errPort != null) {
+				if (errPort != null && errorMessage.contains("row") && errorMessage.contains("column")) {
 					//find out if error message is about rejected record
 					matcher = rowPattern.matcher(errorMessage);
 					if (matcher.find()) {
@@ -1464,24 +1879,14 @@ class Db2DataConsumer implements DataConsumer {
 						}
 					}				 
 				}
+				if (maxLines == 0 || linesRead++ < maxLines) {
+					logger.debug(errorMessage);
+				}
 			}
-		}
-		
-		linesRead++;
-		if (maxLines != 0 && linesRead > maxLines) {
-			return true;
-		}
-
-		switch (level) {
-		case LVL_DEBUG:
-			logger.debug(line);
-			break;
-		case LVL_WARN:
-			logger.warn(line);
-			break;
-		case LVL_ERROR:
-			logger.error(line);
-			break;
+		}else if (!StringUtils.isEmpty(line)){
+			if (maxLines == 0 || linesRead++ < maxLines) {
+				logger.debug(line);
+			}
 		}
 		return true;
 	}
@@ -1517,8 +1922,5 @@ class Db2DataConsumer implements DataConsumer {
 		return skipped;
 	}
 
-	public List<String> getErrors() {
-		return errors;
-	}
 	
 }
