@@ -33,4 +33,9 @@
 		<parameter id="className" value="org.jetel.component.Db2DataWriter"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="type" value="INFORMIX_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.InformixDataWriter"/>
+	</extension>
+	
 </plugin>
