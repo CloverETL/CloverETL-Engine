@@ -903,7 +903,7 @@ public abstract class Node extends GraphElement implements Runnable {
     
     protected ConfigurationStatus checkInputPorts(ConfigurationStatus status, int min, int max) {
         if(getInPorts().size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " input port can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            status.add(new ConfigurationProblem("At least " + min + " input port must be defined!", Severity.ERROR, this, Priority.NORMAL));
         }
         if(getInPorts().size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " input ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
@@ -914,7 +914,7 @@ public abstract class Node extends GraphElement implements Runnable {
 
     protected ConfigurationStatus checkOutputPorts(ConfigurationStatus status, int min, int max) {
         if(getOutPorts().size() < min) {
-            status.add(new ConfigurationProblem("At least " + min + " output port can be defined!", Severity.ERROR, this, Priority.NORMAL));
+            status.add(new ConfigurationProblem("At least " + min + " output port must be defined!", Severity.ERROR, this, Priority.NORMAL));
         }
         if(getOutPorts().size() > max) {
             status.add(new ConfigurationProblem("At most " + max + " output ports can be defined!", Severity.ERROR, this, Priority.NORMAL));
