@@ -724,16 +724,16 @@ public class DB2DataWriter extends Node {
         checkInputPorts(status, 0, 1);
         checkOutputPorts(status, 0, 1);
         
-        try {
-            init();
-            free();
-        } catch (ComponentNotReadyException e) {
-            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-            if(!StringUtils.isEmpty(e.getAttributeName())) {
-                problem.setAttributeName(e.getAttributeName());
-            }
-            status.add(problem);
-        }
+//        try {
+//            init();
+//            free();
+//        } catch (ComponentNotReadyException e) {
+//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+//            if(!StringUtils.isEmpty(e.getAttributeName())) {
+//                problem.setAttributeName(e.getAttributeName());
+//            }
+//            status.add(problem);
+//        }
         
         return status;
 	}
@@ -869,7 +869,7 @@ public class DB2DataWriter extends Node {
 							"\nUse form:\"interpreter [parameters] ${} [parameters]\"");
 				}
 			}else{
-				command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd /c /i /w" : "") +
+				command = (System.getProperty("os.name").startsWith("Windows") ? "db2cmd /c /i /w " : "") +
 						"db2 -f " + prepareBatch();
 			}
 		} catch (IOException e) {
