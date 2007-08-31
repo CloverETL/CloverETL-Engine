@@ -1,9 +1,9 @@
-<plugin id="org.jetel.bulkloader" version="2.2.0">
+<plugin id="org.jetel.bulkloader" version="2.3.0">
 	<runtime>
 		<library path="cloveretl.bulkloader.jar"/>
 	</runtime>
 	
-	<requires engine-version="2.2.0">
+	<requires engine-version="2.3.0">
 		<import plugin-id="org.jetel.connection"/>
 		<import plugin-id="org.jetel.component"/>
 	</requires>
