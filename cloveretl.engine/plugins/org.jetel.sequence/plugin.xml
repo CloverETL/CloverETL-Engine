@@ -1,6 +1,6 @@
 <plugin
    id="org.jetel.sequence"
-   version="2.2.0"
+   version="2.3.0"
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
