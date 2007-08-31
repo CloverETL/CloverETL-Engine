@@ -22,7 +22,7 @@
 		<include name="**/*.zip"/>
 	</fileset>
 
-		<fileset id="engine-libs" dir="${engine.dir.lib}">
+	<fileset id="engine-libs" dir="${engine.dir.lib}">
 		<include name="**/*.jar"/>
 		<include name="**/*.zip"/>
 	</fileset>
