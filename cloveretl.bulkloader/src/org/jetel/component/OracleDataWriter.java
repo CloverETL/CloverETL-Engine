@@ -223,7 +223,7 @@ public class OracleDataWriter extends Node {
                 sqlldrPath, 
                 "control='" + controlFileName + "'", 
                 "userid=" + userId,
-                (System.getProperty("os.name").startsWith("Windows") ? "data=\\\"-\\\"" : "data='-'"), 
+                (System.getProperty("os.name").contains("Windows") ? "data=\\\"-\\\"" : "data='-'"), 
                 logFileName != null ? "log='" + logFileName + "'" : "",
                 badFileName != null ? "bad='" + badFileName + "'" : "",
                 discardFileName != null ? "discard='" + discardFileName + "'" : "",
