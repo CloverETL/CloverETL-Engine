@@ -50,7 +50,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Dedup (remove duplicate records) from sorted incoming records based on specified key.<br>
  *  The key is name (or combination of names) of field(s) from input record.
- *  It keeps either First or Last record from the group based on the parameter <emp>{keep}</emp> specified.</td></tr>
+ *  It keeps either First or Last record from the group based on the parameter <emp>{keep}</emp> specified.
+ *  All duplicated records are rejected to the second optional port.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0]- input records</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
