@@ -67,11 +67,11 @@ import org.w3c.dom.Element;
  *  <h3>DB2 data writer</h3>
  *
  * <table border="1">
- *  <th>Component:</th>
+ *  <th>Component:</th><td>&nbsp;</td>
  * <tr><td><h4><i>Name:</i></h4></td>
  * <td>DB2 data writer</td></tr>
  * <tr><td><h4><i>Category:</i></h4></td>
- * <td></td></tr>
+ * <td>&nbsp;</td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td> This component loads data to DB2 database using db2 load utility. There is created 
  * temporary file with db2 commands depending on input parameters. Data are read from given 
@@ -86,7 +86,8 @@ import org.w3c.dom.Element;
  * due to the format set on metadata, so be positive that formats on metadata are set 
  * correctly.</i>  </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0] - input records</td></tr>
+ * <td>[0] - input records. It can be omited (mostly for debugging reasons). 
+ * Then <b>file URL</b> has to be provided.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] - optionally one output port defined/connected - information about rejected 
  * records. Metadata on this port must have two numeric and one string field 
@@ -95,11 +96,11 @@ import org.w3c.dom.Element;
  * offset of offending value (for fix length metadata) is recorded to second numeric field. 
  * String field is fulfilled by error message.</td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
- * <td></td></tr>
+ * <td>&nbsp;</td></tr>
  * </table>
- *  <br>
- *  <table border="1">
- *  <th>XML attributes:</th>
+ * <br>
+ * <table border="1">
+ * <th>XML attributes:</th><td>&nbsp;</td>
  *  <tr><td><b>type</b></td><td>"DB2_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>database</b></td><td> name of the database</td></tr>
@@ -107,17 +108,26 @@ import org.w3c.dom.Element;
  *  <tr><td><b>password</b></td><td>password for DB2 database connection</td></tr>
  *  <tr><td><b>table</b></td><td>DB2 table to store the records</td></tr>
  *  <tr><td><b>loadMode</b></td><td>one of: insert, replace, restart, terminate.<br>
- * <i>insert</i> - adds the loaded data to the table without changing the existing table 
- * data<br><i>replace</i> - deletes all existing data from the table, and inserts the 
- * loaded data. The table definition and index definitions are not changed.<br><i>restart</i>
+ *  <i>insert</i> - adds the loaded data to the table without changing the existing table 
+ *  data<br><i>replace</i> - deletes all existing data from the table, and inserts the 
+ *  loaded data. The table definition and index definitions are not changed.<br><i>restart</i>
  *  - restarts a previously interrupted load operation. The load operation will 
  *  automatically continue from the last consistency point in the load, build, or delete 
  *  phase.<br><i>terminate</i> - terminates a previously interrupted load operation, and 
  *  rolls back the operation to the point in time at which it started, even if consistency 
  *  points were passed.</td></tr>
- *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>path to the data input file. If there is not connected 
- *  input port data have to be in external file. If there is connected input port this 
- *  attribute is ignored.</td></tr>
+ *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>Path to data file to be loaded. 
+ *  <br>Normally this file is a temporary storage for data to be passed to db2 load utility 
+ *  (if named pipe isn't used instead). If file URL is not specified, the file is created 
+ *  in Clover or OS temporary directory and deleted after load finishes. 
+ *  <br>
+ *  If file URL is specified, temporary file is created within given path and name and not 
+ *  deleted after being loaded. Next graph run overwrites it. 
+ *  <br>
+ *  There is one more meaning of this parameter. If input port is not specified, this file 
+ *  is used only for reading by db2 load utility and must already contain data in format expected by 
+ *  load. The file is neither deleted nor overwritten. 
+ *  </td></tr>
  *  <tr><td><b>fileMetadata</b><br><i>optional</i></td><td>Specifies data structure in external 
  *  file. This metadata has to satisfy db2 load data structure, that means: fixed metadata are 
  *  not allowed, each column, except last has the same one char delimiter, last column has the 
@@ -139,7 +149,8 @@ import org.w3c.dom.Element;
  *  mapping from source (Clover's) fields to DB table fields. If no <i>dbFields</i> are 
  *  specified, then number of <i>cloverFields</i> must correspond to number of target DB 
  *  table fields.</td></tr>
- *  <tr><td><b>useNamedPipe</b><br><i>optional</i></td><td>On Linux/Unix data read from input 
+ *  <tr><td><b>useNamedPipe</b><br><i>optional</i></td><td>On Linux/Unix OS a named pipe 
+ *  can be used (instead of temporary file) to pass data to db2 load utility  
  *  port can be sent to pipe instead of temporary file</td></tr>
  *  <tr><td><b>sqlInterpreter</b><br><i>optional</i></td><td>Defines process and its parameters 
  *  to execute script with db2 commands (connect, load, disconnect). It has to have form:
@@ -149,9 +160,14 @@ import org.w3c.dom.Element;
  *  <tr><td><b>rejectedURL</b><br><i>optional</i></td><td> File (on db2 server) where rejected 
  *  records will be saved. <b>This file has to be in directory owned by database user</b>.</td></tr>
  *  <tr><td><b>batchURL</b><br><i>optional</i></td><td>Url of the file where connect, load and 
- *  disconnect commands are stored. Use this parameter if you want use commands from existing 
- *  file or you want to store automatically created file. <b>Path can't contain white space 
- *  characters.</b></td></tr>
+ *  disconnect commands for db2 load utility are stored. 
+ *  <br>Normally the batch file is automatically generated, stored in current directory and deleted
+ *  after load finishes. 
+ *  If the file URL is specified, DataWriter tries to use it as is (generates it only if it doesn't 
+ *  exist or its length is 0) and doesn't delete it after load finishes. 
+ *  (It is reasonable to use this parameter in connection with <b>fileURL</b>, because batch file 
+ *  contains name of temporary data file, which is randomly generated, if not provided explicitly).
+ *  <br><b>Path can't contain white space characters.</b></td></tr>
  *  <tr><td><b>recordCount</b><br><i>optional</i></td><td>specifies how many records/rows should 
  *  be written to the output file. If <i>rowcount</> is set in <i>parameters</i> attribute, 
  *  value from <i>parameters</i> attribute will be used.</td></tr>
@@ -663,7 +679,7 @@ public class DB2DataWriter extends Node {
 	private String database;
 	private String user;
 	private String psw;
-	private String fileName;
+	//private String fileName;
 	private String fileMetadataName;
 	private String table;
 	private LoadMode loadMode;
@@ -686,12 +702,14 @@ public class DB2DataWriter extends Node {
 	private ProcBox box;
 	private InputPort inPort;
 	private DataRecord inRecord;
-	private File batch;
 	private String command;
 	private Properties properties = new Properties();
 	private String[] cloverFields;
 	private String[] dbFields;
 	private String batchURL;
+	private File batchFile;
+	private String dataURL;
+	private File dataFile;
 
 	/**
 	 * Constructor for DB2DataWriterComponent
@@ -702,16 +720,16 @@ public class DB2DataWriter extends Node {
 	 * @param psw 	 password for database user.
 	 * @param table name of table to load data
 	 * @param mode load mode 
-	 * @param fileName URL to file with extern data
+	 * @param dataURL URL to file with extern data
 	 * @param fileMetadataId  	 specifies data structure in external file.
 	 */
 	public DB2DataWriter(String id, String database, String user, String psw, String table, 
-			LoadMode mode,	String fileName, String fileMetadataId) {
+			LoadMode mode,	String dataURL, String fileMetadataId) {
 		super(id);
 		this.database = database;
 		this.user = user;
 		this.psw = psw;
-		this.fileName = fileName;
+		this.dataURL = dataURL;
 		this.fileMetadataName = fileMetadataId;
 		this.table = table;
 		this.loadMode = mode;
@@ -724,16 +742,16 @@ public class DB2DataWriter extends Node {
         checkInputPorts(status, 0, 1);
         checkOutputPorts(status, 0, 1);
         
-//        try {
-//            init();
-//            free();
-//        } catch (ComponentNotReadyException e) {
-//            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
-//            if(!StringUtils.isEmpty(e.getAttributeName())) {
-//                problem.setAttributeName(e.getAttributeName());
-//            }
-//            status.add(problem);
-//        }
+        try {
+            init();
+            free();
+        } catch (ComponentNotReadyException e) {
+            ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
+            if(!StringUtils.isEmpty(e.getAttributeName())) {
+                problem.setAttributeName(e.getAttributeName());
+            }
+            status.add(problem);
+        }
         
         return status;
 	}
@@ -781,12 +799,16 @@ public class DB2DataWriter extends Node {
 			if (!tmpDir.endsWith(File.separator)) {
 				tmpDir = tmpDir.concat(File.separator);
 			}
+			if (dataURL != null) {
+				dataFile = new File(dataURL);
+			}
 			try {
-				File dataFile = File.createTempFile("data", "tmp");
-				fileName = dataFile.getCanonicalPath();
+				if (dataFile == null) {
+					dataFile = File.createTempFile("data", ".tmp");
+				}		
 				dataFile.delete();
 			} catch (Exception e) {
-				throw new ComponentNotReadyException(this, "Can't create emprary data file", e);
+				throw new ComponentNotReadyException(this, "Can't create temporary data file", e);
 			}			
 			if (usePipe && ProcBox.isWindowsPlatform()) {
 				logger.warn("Node " + this.getId() + " warning: Pipe transfer not " +
@@ -833,22 +855,30 @@ public class DB2DataWriter extends Node {
 			}
 			properties.setProperty(CODE_PAGE_PARAM, DB2_UTF_8_CODEPAGE);
 			formatter.init(fileMetadata);
-		}else{//there is not input port connected, data are read from existing file
-			if (fileMetadata == null) throw new ComponentNotReadyException(this,
-					XML_FILEMETADATA_ATTRIBUTE, "File metadata have to be defined");
-			switch (fileMetadata.getRecType()) {
-			case DataRecordMetadata.DELIMITED_RECORD:
-				delimitedData = true;
-				fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
-				break;
-			case DataRecordMetadata.FIXEDLEN_RECORD:
-				delimitedData = false;
-				fileMetadata = setDB2DateFormat(fileMetadata);
-				break;
-			default:
-				throw new ComponentNotReadyException(this, XML_FILEMETADATA_ATTRIBUTE, 
-						"Only fixlen or delimited metadata allowed");
+		}else{//there is not input port connected, data is read from existing file
+			if (dataURL != null) {
+				dataFile = new File(dataURL);
+
+				if (fileMetadata == null) throw new ComponentNotReadyException(this,
+						XML_FILEMETADATA_ATTRIBUTE, "File metadata have to be defined");
+				switch (fileMetadata.getRecType()) {
+				case DataRecordMetadata.DELIMITED_RECORD:
+					delimitedData = true;
+					fileMetadata = setDB2DateFormat(convertToDB2Delimited(fileMetadata));
+					break;
+				case DataRecordMetadata.FIXEDLEN_RECORD:
+					delimitedData = false;
+					fileMetadata = setDB2DateFormat(fileMetadata);
+					break;
+				default:
+					throw new ComponentNotReadyException(this, XML_FILEMETADATA_ATTRIBUTE, 
+							"Only fixlen or delimited metadata allowed");
+				}
+			}else{
+				throw new ComponentNotReadyException(this, 
+						"There is neither input port nor data file URL specified.");
 			}
+				
 		}
 		//if data are not delimited method L must be specified and all fields listed
 		if (cloverFields == null && !delimitedData) {
@@ -1084,7 +1114,10 @@ public class DB2DataWriter extends Node {
 		CommandBuilder command = new CommandBuilder("load client from '");
 		command.setParams(properties);
 		
-		command.append(fileName);
+		try {
+			command.append(dataFile.getCanonicalPath());
+		} catch (IOException e) {
+		}
 		command.append("' of ");
 		command.append(delimitedData ? DELIMITED_DATA : FIXLEN_DATA);
 		
@@ -1344,24 +1377,24 @@ public class DB2DataWriter extends Node {
 	 */
 	private String prepareBatch() throws IOException, ComponentNotReadyException{
 		if (batchURL != null) {
-			batch = new File(batchURL);
-			if (batch.length() > 0) {
+			batchFile = new File(batchURL);
+			if (batchFile.length() > 0) {
 				logger.info("Node " + this.getId() + " info: Batch file exist. " +
 						"New batch file will not be created.");
-				return batch.getCanonicalPath();
+				return batchFile.getCanonicalPath();
 			}
 		}
-		if (batch == null) {
-			batch = File.createTempFile("tmp", ".bat", new File("."));
+		if (batchFile == null) {
+			batchFile = File.createTempFile("tmp", ".bat", new File("."));
 		}		
-		FileWriter batchWriter = new FileWriter(batch);
+		FileWriter batchWriter = new FileWriter(batchFile);
 
 		batchWriter.write(prepareConnectCommand());
 		batchWriter.write(prepareLoadCommand());
 		batchWriter.write(prepareDisconnectCommand());
 
 		batchWriter.close();
-		return batchURL != null ? batch.getCanonicalPath() : batch.getName();
+		return batchURL != null ? batchFile.getCanonicalPath() : batchFile.getName();
 	}
 	
 	/**
@@ -1374,7 +1407,7 @@ public class DB2DataWriter extends Node {
 	 */
 	private int runWithPipe() throws IOException, InterruptedException, JetelException{
 		proc = Runtime.getRuntime().exec(command);
-		formatter.setDataTarget(new FileOutputStream(fileName));
+		formatter.setDataTarget(new FileOutputStream(dataFile));
 		box = new ProcBox(proc, null, consumer, errConsumer);
 		try {
 			while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
@@ -1412,7 +1445,7 @@ public class DB2DataWriter extends Node {
 		//create named pipe
 		if (!getInPorts().isEmpty() && usePipe) {
 			try {
-				proc = Runtime.getRuntime().exec("mkfifo " + fileName);
+				proc = Runtime.getRuntime().exec("mkfifo " + dataFile.getCanonicalPath());
 				box = new ProcBox(proc, null, consumer, errConsumer);
 				exitValue = box.join();
 			} catch (Exception e) {
@@ -1427,7 +1460,7 @@ public class DB2DataWriter extends Node {
 			}else {
 				if (!getInPorts().isEmpty()) {
 					//save data in temporary file
-					formatter.setDataTarget(new FileOutputStream(fileName));
+					formatter.setDataTarget(new FileOutputStream(dataFile));
 					try {
 						while (runIt && ((inRecord = inPort.readRecord(inRecord)) != null)) {
 							if (skipped >= recordSkip) {
@@ -1463,7 +1496,7 @@ public class DB2DataWriter extends Node {
 		}
 		//exitValue=2:     DB2 command or SQL statement warning 
 		if (exitValue == 2 || consumer.getLoaded() != consumer.getRead() || 
-				consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter()) {
+				!getInPorts().isEmpty() && (consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter())) {
 			if (consumer.getLoaded() != consumer.getRead() || 
 					consumer.getRead() != getInputPort(READ_FROM_PORT).getInputRecordCounter()) {
 				logger.warn("Not all records were loaded to database:");
@@ -1486,14 +1519,11 @@ public class DB2DataWriter extends Node {
 		if (proc != null) {
 			proc.destroy();
 		}			
-		if (!getInPorts().isEmpty()) {
-			File tmpFile = new File(fileName);
-			if (!tmpFile.delete()){
-				logger.warn("Tmp file was not deleted.");
-			}
+		if (!getInPorts().isEmpty() && dataURL==null && !dataFile.delete()) {
+			logger.warn("Tmp data file was not deleted.");
 		}
-		if (batchURL == null && !batch.delete()){
-			logger.warn("Tmp batch was not deleted.");
+		if (batchURL == null && !batchFile.delete()){
+			logger.warn("Tmp batch file was not deleted.");
 		}
 	}
 	
@@ -1609,8 +1639,8 @@ public class DB2DataWriter extends Node {
 			xmlElement.setAttribute(XML_FILEMETADATA_ATTRIBUTE,
 					fileMetadataName);
 		}		
-		if (fileName != null) {
-			xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, fileName);
+		if (dataURL != null) {
+			xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, dataURL);
 		}		
 		if (interpreter != null) {
 			xmlElement.setAttribute(XML_INTERPRETER_ATTRIBUTE, interpreter);
