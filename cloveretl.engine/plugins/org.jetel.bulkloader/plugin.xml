@@ -30,7 +30,7 @@
 	
 	<extension point-id="component">
 		<parameter id="type" value="DB2_DATA_WRITER"/>
-		<parameter id="className" value="org.jetel.component.Db2DataWriter"/>
+		<parameter id="className" value="org.jetel.component.DB2DataWriter"/>
 	</extension>
 	
 	<extension point-id="component">
