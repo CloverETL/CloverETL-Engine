@@ -103,11 +103,13 @@ import org.w3c.dom.Element;
  *  <tr><td><b>dbLoaderPath</b></td><td>path to loadDb utility</td></tr>
  *  <tr><td><b>database</b></td><td>the name of the database to receive the data<br/>
  *  example: //server_name/directory_on_server/database_name</td></tr>
- *  <tr><td><b>table</b></td><td>table name, where data are loaded<br/>if command attribute is used then table attribute is ignored</td></tr>
+ *  <tr><td><b>table</b><i>optional</i></td><td>table name, where data are loaded<br/>
+ *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>command</b><br><i>optional</i></td><td>a control script for the dbload utility;
- *  	if this parameter is empty default control script is used</td></tr>
+ *  	if this parameter is empty default control script is used<br/>
+ *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>the filename or pathname of an error log file
- *  	if this parameter is empty default errorLog name is used (default = ./error.log)</td></tr</td></tr>
+ *  	if this parameter is empty default errorLog name is used (default = ./errorNNNN.log)</td></tr</td></tr>
  *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td>the number of bad rows that dbload reads before terminating.
  *   	if this parameter is empty default value is used (default = 10).</td></tr>
  *  <tr><td><b>ignoreRows</b><br><i>optional</i></td><td>the number of rows to ignore in the input file;<br/>
@@ -116,7 +118,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>commitInterval</b><br><i>optional</i></td><td>commit interval in number of rows;
  *   	if this parameter is empty default value is used (default = 100)</td></tr>
  *  <tr><td><b>columnDelimiter</b><br><i>optional</i></td><td>char delimiter used for each column in data (default = '|')</br>
- *  Delimiter has length one and this delimiter mustn't be contained in data.</td></tr>
+ *  Delimiter has length one and value of the delimiter mustn't be contained in data.</td></tr>
  *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>path to the data input file. If there is not connected 
  *  input port data have to be in external file. If there is connected input port this attribute is ignored.</td></tr>
  *  </table>
@@ -139,6 +141,10 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Node
  * @see         org.jetel.graph.Edge
  * @since 		20.8.2007
+ */
+/**
+ * @author Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
+ *		   (c) Javlin Consulting (www.javlinconsulting.cz)
  */
 public class InformixDataWriter extends Node {
 
@@ -171,6 +177,7 @@ public class InformixDataWriter extends Node {
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
+    private final static String ERROR_FILE_NAME_PREFIX = "error";
     private final static String ERROR_FILE_NAME_SUFFIX = ".log";
     private final static File TMP_DIR = new File(".");
     private final static int UNUSED_INT = -1;
@@ -357,6 +364,8 @@ public class InformixDataWriter extends Node {
 		if (columnDelimiter.length() != 1) {
 			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
 		}
+
+		checkAttributes();
 		
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
 		isDataWrittenToPort = !getOutPorts().isEmpty();
@@ -373,7 +382,7 @@ public class InformixDataWriter extends Node {
 		// check if each of mandatory attributes is set
 		if (StringUtils.isEmpty(dbLoaderPath) || StringUtils.isEmpty(database) || 
 				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
-			throw new ComponentNotReadyException(this, "dbLoaderPath, database or table argument isn't fill.");
+			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
 		}
 
 		// prepare name for temporary data file
@@ -382,7 +391,7 @@ public class InformixDataWriter extends Node {
             		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
             
             if (errorLog == null) {
-            	errorLog = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
+            	errorLog = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
             			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
             }
             
@@ -466,6 +475,18 @@ public class InformixDataWriter extends Node {
 			}
 		}
 	}
+    
+    private void checkAttributes() throws ComponentNotReadyException {
+    	if (maxErrors != UNUSED_INT && maxErrors < 0) {
+    		throw new ComponentNotReadyException(this, XML_MAX_ERRORS_ATTRIBUTE + " mustn't be less than 0.");
+    	}
+    	if (ignoreRows != UNUSED_INT && ignoreRows < 0) {
+    		throw new ComponentNotReadyException(this, XML_IGNORE_ROWS_ATTRIBUTE + " mustn't be less than 0.");
+    	}
+		if (commitInterval != UNUSED_INT && commitInterval < 0) {
+    		throw new ComponentNotReadyException(this, XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.");
+		}
+    }
     
     @Override
 	public synchronized void free() {
@@ -938,7 +959,7 @@ public class InformixDataWriter extends Node {
 			for (DataFieldMetadata dbFieldMetadata: dbMetadata){
 				if (!dbFieldMetadata.equals(errMetadata.getField(count++))) {
 					throw new ComponentNotReadyException("Field "
-							+ StringUtils.quote(errMetadata.getField(count - NUMBER_OF_ADDED_FIELDS).getName()) + " in " 
+							+ StringUtils.quote(errMetadata.getField(count - 1).getName()) + " in " 
 							+ StringUtils.quote(errMetadata.getName()) + " has different type from field " 
 							+ StringUtils.quote(dbFieldMetadata.getName()) + " in " + StringUtils.quote(dbMetadata.getName()) + ".");
 				}
