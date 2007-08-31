@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Tue Jul 31 09:29:05 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Thu Aug 23 09:01:03 CEST 2007" name="test" revision="1.402">
+<Graph created="Tue Jul 31 09:29:05 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Fri Aug 31 09:12:15 CEST 2007" name="test" revision="1.431">
 <Global>
 <Metadata id="Metadata2">
 <Record name="errors" recordSize="-1" type="delimited">
@@ -22,7 +22,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata1">
-<Record name="MYTAB_fixed" recordSize="97" type="fixed">
+<Record name="MYTAB_fixed" recordDelimiter="" recordSize="97" type="fixed">
 <Field name="LONG_COL" nullable="true" shift="0" size="10" type="long"/>
 <Field format="dd.MM.yyyy" name="DATE_COL" nullable="true" shift="0" size="10" type="date"/>
 <Field length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" size="10" type="decimal"/>
@@ -35,7 +35,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata3">
-<Record name="MYTAB_fixed2" recordDelimiter="" recordSize="97" type="fixed">
+<Record name="MYTAB_fixed2" recordSize="97" type="fixed">
 <Field name="LONG_COL" nullable="true" shift="0" size="10" type="long"/>
 <Field format="dd MMM yyyy" name="DATE_COL" nullable="true" shift="0" size="10" type="date"/>
 <Field length="8" name="DECIMAL_COL_NOT_NULL" nullable="true" scale="2" shift="0" size="10" type="decimal"/>
@@ -52,19 +52,12 @@
 <Sequence cached="0" fileURL="seq.seq" id="Sequence0" name="seq" start="0" step="1" type="SIMPLE_SEQUENCE"/>
 </Global>
 <Phase number="0">
-<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="12" guiY="29" id="DATA_GENERATOR1" pattern="70.0      11:3217-08-2007 00:01fixlen metadata     " randomFields="LONG_COL=random(&quot;-100&quot;,&quot;100&quot;);DATE_COL=random(&quot;01.08.2007&quot;,&quot;31.08.2007&quot;);DECIMAL_COL_NOT_NULL=random(&quot;0&quot;,&quot;1&quot;);REAL_COL=random(&quot;-1&quot;,&quot;1&quot;)" recordsNumber="2000" sequenceFields="INT_COL_NOT_NULL=Sequence0" type="DATA_GENERATOR">
+<Node enabled="enabled" guiHeight="0" guiName="Data Generator" guiWidth="0" guiX="12" guiY="29" id="DATA_GENERATOR1" pattern="70.0      11:3217-08-2007 00:01fixlen metadata     " randomFields="LONG_COL=random(&quot;-100&quot;,&quot;100&quot;);DATE_COL=random(&quot;01.08.2007&quot;,&quot;31.08.2007&quot;);DECIMAL_COL_NOT_NULL=random(&quot;0&quot;,&quot;1&quot;);REAL_COL=random(&quot;-1&quot;,&quot;1&quot;)" recordsNumber="20000" sequenceFields="INT_COL_NOT_NULL=Sequence0" type="DATA_GENERATOR">
 <attr name="parameters"><![CDATA[dateformat=dd-mm-yyyy]]></attr>
 </Node>
-<Node database="mydb" enabled="enabled" fileURL="${WORKSPACE}/output/mytab_fix.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="184" guiY="30" id="DB2_DATA_WRITER1" loadMode="insert" password="clover" recordCount="20" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
+<Node batchURL="${WORKSPACE}\load.bat" database="mydb" enabled="enabled" fileMetadata="Metadata1" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="284" guiY="31" id="DB2_DATA_WRITER1" loadMode="insert" passThroughInputPort="0" password="clover" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
 <attr name="transferMode"><![CDATA[file]]></attr>
 </Node>
-<Edge debugMode="true" fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge2" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER1:0"/>
-</Phase>
-<Phase number="2">
-<Node batchURL="${WORKSPACE}/output/sql.tmp" database="mydb" enabled="enabled" fileMetadata="Metadata0" fileURL="${WORKSPACE}/data/delimited/mytab_del.txt" guiHeight="0" guiName="DB2 Data Writer" guiWidth="0" guiX="185" guiY="132" id="DB2_DATA_WRITER0" loadMode="replace" parameters="dumpfileaccessall" password="clover" rejectedURL="/home/db2inst1/rejected.txt" table="mytab" type="DB2_DATA_WRITER" userName="db2inst1">
-<attr name="transferMode"><![CDATA[file]]></attr>
-</Node>
-<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="371" guiY="132" id="TRASH0" type="TRASH"/>
-<Edge debugMode="true" fromNode="DB2_DATA_WRITER0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="Metadata2" outPort="Port 0 (out)" toNode="TRASH0:0"/>
+<Edge fromNode="DATA_GENERATOR1:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata1" outPort="Port 0 (out)" toNode="DB2_DATA_WRITER1:0"/>
 </Phase>
 </Graph>
