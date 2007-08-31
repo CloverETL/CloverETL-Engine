@@ -55,6 +55,8 @@ public class XPathParser implements Parser {
     private static final String XML_SEQUENCEFIELD = "sequenceField";
     private static final String XML_SEQUENCEID = "sequenceId";
 
+    private static final String PRIMITIVE_SEQUENCE = "PRIMITIVE_SEQUENCE";
+    
     private TransformationGraph graph;
     private XPathContext xpathContext;
 	private Document xpathDocument;
@@ -142,7 +144,7 @@ public class XPathParser implements Parser {
         	xpathContext.setSequence(
         			SequenceFactory.createSequence(
                 			graph, 
-                			"org.jetel.sequence.PrimitiveSequence", 
+                			PRIMITIVE_SEQUENCE, 
                 			new Object[] {aSeqField.getNodeValue(), graph, aSeqField.getNodeValue()},
                 			new Class[] {String.class, TransformationGraph.class, String.class}));
         }
