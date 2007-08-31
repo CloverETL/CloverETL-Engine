@@ -63,6 +63,7 @@ public class JExcelXLSDataParser extends XLSParser {
 	private Cell cell;
 	private String charset = null;
 	private short sheetCounter;
+	private boolean releaseInputSource = true;
 	
 	/**
 	 * Default constructor
@@ -227,10 +228,17 @@ public class JExcelXLSDataParser extends XLSParser {
 		return record;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+		this.releaseInputSource = releaseInputSource;
+	}
+
 	@Override
 	public void setDataSource(Object inputDataSource)
 			throws ComponentNotReadyException {
-		if (wb != null) {
+		if (releaseInputSource && wb != null) {
 			wb.close();
 		}
         WorkbookSettings settings = new WorkbookSettings();

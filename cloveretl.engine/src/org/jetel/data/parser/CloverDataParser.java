@@ -42,7 +42,6 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.PolicyType;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ByteBufferUtils;
-import org.jetel.util.StringUtils;
 
 /**
  * Class for reading data saved in Clover internal format
@@ -96,6 +95,12 @@ public class CloverDataParser implements Parser {
 	public void init(DataRecordMetadata _metadata)
 			throws ComponentNotReadyException {
 		this.metadata = _metadata;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
 	}
 
     /* (non-Javadoc)

@@ -79,6 +79,8 @@ public class DBFDataParser implements Parser {
     
 	private boolean[] isAutoFilling;
 
+	private boolean releaseInputSource = true;
+	
     public DBFDataParser() {
     }
 
@@ -245,11 +247,18 @@ public class DBFDataParser implements Parser {
 		}
     }
 
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+		this.releaseInputSource = releaseInputSource;
+	}
+
     /* (non-Javadoc)
      * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
      */
     public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
-        close();
+        if (releaseInputSource) close();
         
         if (inputDataSource instanceof FileInputStream){
             dbfFile = ((FileInputStream)inputDataSource).getChannel();

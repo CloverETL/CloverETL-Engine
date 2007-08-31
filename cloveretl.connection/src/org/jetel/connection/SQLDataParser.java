@@ -216,6 +216,12 @@ public class SQLDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
 	public void setDataSource(Object inputDataSource) throws ComponentNotReadyException {
 		if (dbConnection != null) close();
 		
