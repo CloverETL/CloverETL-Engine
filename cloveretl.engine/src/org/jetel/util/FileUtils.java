@@ -158,6 +158,10 @@ public class FileUtils {
 		boolean isZip = false;
 		boolean isGzip = false;
         
+		if (input.equals("-")) {
+			return Channels.newChannel(System.in);
+		}
+		
         //resolve url format for zip files
         if(input.startsWith("zip:")) {
         	isZip = true;

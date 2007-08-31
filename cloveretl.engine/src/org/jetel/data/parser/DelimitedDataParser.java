@@ -86,6 +86,7 @@ public class DelimitedDataParser implements Parser {
 	
 	private QuotingDecoder qdecoder;
 	
+	private boolean releaseInputSource = true;
 	
 	public DelimitedDataParser() {
 		this(Defaults.DataParser.DEFAULT_CHARSET_DECODER, new QuotingDecoder());		
@@ -205,8 +206,15 @@ public class DelimitedDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+		this.releaseInputSource = releaseInputSource;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
 	public void setDataSource(Object inputDataSource) {
-		releaseDataSource();
+		if (releaseInputSource)	releaseDataSource();
 
 		decoder.reset();// reset CharsetDecoder
 		dataBuffer.clear();

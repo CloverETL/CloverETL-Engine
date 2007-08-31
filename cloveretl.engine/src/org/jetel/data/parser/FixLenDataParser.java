@@ -76,6 +76,8 @@ public abstract class FixLenDataParser implements Parser {
 	protected int fieldIdx;
 	protected int recordIdx;
 
+	private boolean releaseInputSource = true;
+	
 	FixLenDataParser(String charset) {
 		// initialize charset decoder
 		if (charset == null) {  
@@ -123,8 +125,15 @@ public abstract class FixLenDataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+		this.releaseInputSource = releaseInputSource;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
 	public void setDataSource(Object inputDataSource) {
-		releaseDataSource();
+		if (releaseInputSource) releaseDataSource();
 		byteBuffer.clear();
 		byteBuffer.flip();
 		decoder.reset();

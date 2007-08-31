@@ -68,10 +68,19 @@ public interface Parser {
 
     /**
      * Sets input data source. Some of parsers allow to call this method repeatedly.
+     * 
      * @param inputDataSource
      * @throws ComponentNotReadyException
      */
     public void setDataSource(Object inputDataSource) throws ComponentNotReadyException;
+
+    /**
+     * If releaseInputSource is false, the previous input data source is not released (input stream is not closed).
+     * The input data source release is performing into the method 'setDataSource'. Default value is true.
+     * 
+     * @param releaseInputSource
+     */
+    public void setReleaseDataSource(boolean releaseInputSource);
 
 	/**
 	 *  Closing/deinitialization of parser

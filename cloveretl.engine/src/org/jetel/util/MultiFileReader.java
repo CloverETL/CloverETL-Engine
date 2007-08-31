@@ -165,6 +165,7 @@ public class MultiFileReader {
 				long timestamp = new File(fileURL).lastModified();
 				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);				
 				logger.debug("Reading input file " + filename);
+				parser.setReleaseDataSource(filename.equals('-'));
 				parser.setDataSource(stream);
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;

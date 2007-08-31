@@ -93,6 +93,8 @@ public class DataParser implements Parser {
 	
 	private boolean[] isAutoFilling;
 	
+	private boolean releaseInputSource = true;
+	
 	public DataParser() {
 		decoder = Charset.forName(Defaults.DataParser.DEFAULT_CHARSET_DECODER).newDecoder();
 		reader = null;
@@ -197,8 +199,15 @@ public class DataParser implements Parser {
 	/* (non-Javadoc)
 	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
 	 */
+	public void setReleaseDataSource(boolean releaseInputSource)  {
+		this.releaseInputSource = releaseInputSource;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.jetel.data.parser.Parser#setDataSource(java.lang.Object)
+	 */
 	public void setDataSource(Object inputDataSource) {
-		releaseDataSource();
+		if (releaseInputSource) releaseDataSource();
 
 		fieldBuffer = new StringBuilder(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
 		recordBuffer = CharBuffer.allocate(Defaults.DEFAULT_INTERNAL_IO_BUFFER_SIZE);
