@@ -261,7 +261,7 @@ public class InformixDataWriter extends Node {
         }
         
         if (processExitValue != 0) {
-        	throw new JetelException("dbload utility has failed. See log file (" + errorLog + ") for details.");
+        	throw new JetelException("Dbload utility has failed.");
 		}
         
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
@@ -428,6 +428,8 @@ public class InformixDataWriter extends Node {
             	free();
             	throw new ComponentNotReadyException(this, "Error during initialization of InformixPortDataConsumer.", cnre);
             }
+        } else {
+        	consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
         }
     }
     
