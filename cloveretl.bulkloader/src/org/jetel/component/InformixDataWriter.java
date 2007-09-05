@@ -142,10 +142,6 @@ import org.w3c.dom.Element;
  * @see         org.jetel.graph.Edge
  * @since 		20.8.2007
  */
-/**
- * @author Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
- *		   (c) Javlin Consulting (www.javlinconsulting.cz)
- */
 public class InformixDataWriter extends Node {
 
 	private static Log logger = LogFactory.getLog(InformixDataWriter.class);
@@ -773,9 +769,6 @@ public class InformixDataWriter extends Node {
     	private String strBadRowPattern = "Row number (\\d+) is bad";
     	private Matcher badRowMatcher;
     	
-    	private String strConclusionPattern = "Table (\\S+) had (\\d+) row\\(s\\) loaded into it.";
-    	private Matcher conclusionMatcher;
-    	
     	private final static int ROW_NUBMER_FIELD_NO = 0;
     	private final static int ERR_MSG_FIELD_NO = 1;
     	private final static int NUMBER_OF_ADDED_FIELDS = 2; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
@@ -804,9 +797,6 @@ public class InformixDataWriter extends Node {
     		
     		Pattern badRowPattern = Pattern.compile(strBadRowPattern);
 			badRowMatcher = badRowPattern.matcher("");
-			
-			Pattern conclusionPattern = Pattern.compile(strConclusionPattern);
-			conclusionMatcher = conclusionPattern.matcher("");
 			
    			dbParser.init(dbOutMetadata);
     	}
@@ -850,7 +840,7 @@ public class InformixDataWriter extends Node {
     	public boolean consume() throws JetelException {
     		try {
 				String line;
-				if ((line = reader.readLine()) == null) {
+				if ((line = readLine()) == null) {
 					return false;
 				}
 
@@ -864,12 +854,12 @@ public class InformixDataWriter extends Node {
 
         			// read empty line(s) and error message, first not empty line is errMsg
         			String errMsg;
-        			errMsg = reader.readLine();
+        			errMsg = readLine();
         			while (StringUtils.isEmpty(errMsg) || StringUtils.isBlank(errMsg)) {
         				if (errMsg == null) {
         					return false;
         				}
-        				errMsg = reader.readLine();
+        				errMsg = readLine();
         			}
         			
 					try {
@@ -881,17 +871,23 @@ public class InformixDataWriter extends Node {
 						logger.warn("Bad row - it couldn't be parsed and sent to out port. Line: " + line);
 					}
         		}
-
-				conclusionMatcher.reset(line);
-				if (conclusionMatcher.find()) {
-        			logger.info(line);
-        		}
     		} catch (Exception e) {
 				throw new JetelException("Error while writing output record", e);
 			}
     		
     		SynchronizeUtils.cloverYield();
     		return true;
+    	}
+    	
+    	/**
+    	 * Read line by reader and write it by logger and return it.
+    	 * @return read line
+    	 * @throws IOException
+    	 */
+    	private String readLine() throws IOException {
+    		String line = reader.readLine();
+    		logger.info(line);
+    		return line;
     	}
     	
     	/**
