@@ -276,6 +276,37 @@ public class CommandBuilder {
 	}
 	
 	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " <i>-switchChar</i>paramValue"
+	 * 
+	 * @param paramName
+	 * @param switchChar
+	 */
+	public void addParameterSwitch(String paramName, char switchChar){
+		if (params.containsKey(paramName)) {
+			command.append(parameterDelimiter);
+			command.append('-');
+			command.append(switchChar);
+			command.append(StringUtils.quote(params.getProperty(paramName)));
+		}
+	}
+	
+	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " <i>-switchChar</i>"
+	 * 
+	 * @param paramName
+	 * @param switchChar
+	 */
+	public void addParameterBooleanSwitch(String paramName, char switchChar){
+		if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
+			command.append(parameterDelimiter);
+			command.append('-');
+			command.append(switchChar);
+		}
+	}
+	
+	/**
 	 * appends given string to the end of command
 	 * 
 	 * @param str
