@@ -102,8 +102,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>dbLoaderPath</b></td><td>path to loadDb utility</td></tr>
  *  <tr><td><b>database</b></td><td>the name of the database to receive the data<br/>
- *  example: //server_name/directory_on_server/database_name</td></tr>
- *  <tr><td><b>table</b><i>optional</i></td><td>table name, where data are loaded<br/>
+ *  example 1: //server_name/directory_on_server/database_name<br/>
+ *  example 2: //server_name/database_name</td></tr>
+ *  <tr><td><b>table</b><br><i>optional</i></td><td>table name, where data are loaded<br/>
  *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>command</b><br><i>optional</i></td><td>a control script for the dbload utility;
  *  	if this parameter is empty default control script is used<br/>
@@ -384,17 +385,17 @@ public class InformixDataWriter extends Node {
 		// prepare name for temporary data file
 		try {
             commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
-            		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+            		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
             
             if (errorLog == null) {
             	errorLog = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
-            			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+            			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
             }
             
             if (isDataReadFromPort) {
 	        	if (ProcBox.isWindowsPlatform()) {
 	        		tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-	            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+	            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
 	            } else {
 	            	tmpDataFileName = UNIX_STDIN;
 	            }
@@ -886,7 +887,7 @@ public class InformixDataWriter extends Node {
     	 */
     	private String readLine() throws IOException {
     		String line = reader.readLine();
-    		logger.info(line);
+    		logger.debug(line);
     		return line;
     	}
     	
