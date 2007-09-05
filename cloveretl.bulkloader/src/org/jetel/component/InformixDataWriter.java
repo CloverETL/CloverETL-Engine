@@ -578,7 +578,7 @@ public class InformixDataWriter extends Node {
      * @return control script
      */
     private String getDefaultControlFileContent(String tableName, int numFields, String delimiter, String fileName) throws ComponentNotReadyException {
-        return "FILE " + fileName + " DELIMITER '" + delimiter + "' " +
+        return "FILE " + StringUtils.quote(fileName) + " DELIMITER '" + delimiter + "' " +
         	numFields + ";" + LINE_SEPARATOR +
         	"INSERT INTO " + tableName + ";";
     }
