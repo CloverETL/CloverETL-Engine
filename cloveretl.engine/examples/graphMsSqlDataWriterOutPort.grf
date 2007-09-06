@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Fri Aug 31 14:31:54 CEST 2007" name="MsSqlDataWriter" revision="1.37">
+
+<Global>
+	<Metadata id="Metadata0">
+	<Record name="OutEmployee" recordSize="-1" type="delimited">
+	<Field delimiter=";" name="First" nullable="true" shift="0" type="string"/>
+	<Field delimiter=";" name="Last" nullable="true" shift="0" type="string"/>
+	<Field delimiter=";" name="SomeNumber" nullable="true" shift="0" type="string"/>
+	<Field delimiter=";" name="Decimal" nullable="true" shift="0" type="decimal" precision="12" scale="6"/>
+	<Field delimiter=";" name="DateTime" format="yyyy-MM-dd HH:mm:ss.SSS" nullable="true" shift="0" type="date"/>
+	<Field delimiter="\n" name="Text" nullable="true" shift="0" type="string"/>
+	</Record>
+	</Metadata>
+</Global>
+
+<Global>
+	<Metadata id="MetadataOut">
+	<Record name="OutEmployee" recordSize="-1" type="delimited">
+	<Field delimiter="**" name="First" nullable="true" shift="0" type="string"/>
+	<Field delimiter="**" name="Last" nullable="true" shift="0" type="string"/>
+	<Field delimiter="**" name="SomeNumber" nullable="true" shift="0" type="string"/>
+	<Field delimiter="**" name="Decimal" nullable="true" shift="0" type="decimal" precision="12" scale="6"/>
+	<Field delimiter="**" name="DateTime" format="HH:mm:ss.SSS" nullable="true" shift="0" type="date"/>
+	<Field delimiter="**" name="Text" nullable="true" shift="0" type="string"/>
+	<Field delimiter="**" name="RowNumber" nullable="true" shift="0" type="integer"/>
+	<Field delimiter="**" name="ColumnNumber" nullable="true" shift="0" type="integer"/>
+	<Field delimiter="\r\n" name="ErrorMsg" nullable="true" shift="0" type="string"/>
+	</Record>
+	</Metadata>
+</Global>
+
+<Phase number="0">
+<Node 
+	 bcpUtilityPath="bcp" 
+	 database="test"
+	 owner="dbo" 
+	 table="test" 
+	 parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=&quot;C:\Documents and Settings\dpavlis\Dokumenty\MSSQL_data\graph\err.bcp&quot;|fieldTerminator=&quot;|&quot;"
+	 enabled="enabled" 
+	 id="MS_SQL_DATA_WRITER0"
+	 type="MS_SQL_DATA_WRITER"
+	 fileURL="C:\Documents and Settings\dpavlis\Dokumenty\MSSQL_data\graph\exchange.bcp" 
+/>
+ 
+<Node enabled="enabled" fileURL="C:\Documents and Settings\dpavlis\Dokumenty\MSSQL_data\graph\in1uprava.bcp"
+	id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+
+<Node append="false" enabled="enabled" fileURL="C:\Documents and Settings\dpavlis\Dokumenty\MSSQL_data\graph\out.txt"
+	id="DELIMITED_DATA_WRITER0" type="DELIMITED_DATA_WRITER" charset="UTF-8"/>
+
+<Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" id="Edge1" inPort="Port 0 (in)" 
+	metadata="Metadata0" outPort="Port 0 (out)" toNode="MS_SQL_DATA_WRITER0:0"/>
+
+<Edge debugMode="true" fromNode="MS_SQL_DATA_WRITER0:0" id="Edge2" inPort="Port 0 (in)" 
+	metadata="MetadataOut" outPort="Port 0 (out)" toNode="DELIMITED_DATA_WRITER0:0"/>
+</Phase>
+
+</Graph>
