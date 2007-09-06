@@ -37,6 +37,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
@@ -87,8 +88,9 @@ import org.w3c.dom.Element;
  * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] - optionally one output port defined/connected - rejected records.
- * Metadata on this port must have the same type of field as input metadata, except otput metadata has a additional fields with row number, column number and error message.
- * First field is row number (integer), second is column number (integer); third is error message (string) and other field is shift.
+ * Metadata on this port must have the same type of field as input metadata. Output metadata 
+ * has a additional fields with row number (integer), column number (integer) and error message (string).
+ * These three fields are after data fields.
  * </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
@@ -241,7 +243,7 @@ import org.w3c.dom.Element;
  *	owner="dbo" 
  *	table="test" 
  *	fileURL="C:\MSSQL_data\graph\in1.bcp" 
- *	parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=C&quot;:&quot;\MSSQL_data\graph\err.bcp|fieldTerminator=&quot;;&quot;"
+ *	parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=&quot;C:\MSSQL_data\graph\err.bcp&quot;|fieldTerminator=&quot;;&quot;"
  *	id="MS_SQL_DATA_WRITER0"
  *	type="MS_SQL_DATA_WRITER"
  *  /&gt;
@@ -585,7 +587,6 @@ public class MsSqlDataWriter extends Node {
             
             if (isErrFileFromUser) {
             	errFileName = properties.getProperty(MS_SQL_ERR_FILE_PARAM);
-            	errFileName = errFileName.replace("\"", "");
             } else if (isDataWrittenToPort) {
             	errFileName = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
             			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
@@ -846,6 +847,8 @@ public class MsSqlDataWriter extends Node {
     	private BufferedReader reader;				// read from input stream (error file of bcp)
     	private DataRecord errRecord = null;
     	private OutputPort errPort = null;
+    	
+    	private DataRecordMetadata errMetadata;		// format as output port
 
     	// #@ dek 2, Sloupec 3: Neplatn hodnota znaku pro uren pevodu (CAST). @#
     	private String strBadRowPattern = "\\D+(\\d+)\\D+(\\d+): (.+)";
@@ -853,9 +856,9 @@ public class MsSqlDataWriter extends Node {
     	
     	private Log logger = LogFactory.getLog(PortDataConsumer.class);
     	
-    	private final static int ROW_NUBMER_FIELD_NO = 0;
-    	private final static int COLUMN_NUBMER_FIELD_NO = 1;
-    	private final static int ERR_MSG_FIELD_NO = 2;
+    	private int rowNumberFieldNo; // last field -2
+    	private int columnNumberFieldNo; // last field - 1
+    	private int errMsgFieldNo; // last field
     	private final static int NUMBER_OF_ADDED_FIELDS = 3; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
     	
     	
@@ -869,11 +872,18 @@ public class MsSqlDataWriter extends Node {
     		if (errPort == null) {
         		throw new ComponentNotReadyException("No output port was found.");
     		}
-
+    		
     		this.errPort = errPort;
+    		
+    		errMetadata = errPort.getMetadata();
+    		if (errMetadata == null) {
+        		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
+        	}
+
+    		getNumberOfAddedFields();
     		checkErrPortMetadata();
     		
-    		errRecord = new DataRecord(errPort.getMetadata());
+    		errRecord = new DataRecord(errMetadata);
 			errRecord.init();
 			
     		this.dbOutMetadata = createDbOutMetadata();
@@ -889,17 +899,28 @@ public class MsSqlDataWriter extends Node {
     	}
     	
     	/**
+    	 * Gets index of added fields (rowNumber, columnNumber and errMsg).
+    	 * @param errMetadata
+    	 */
+    	private void getNumberOfAddedFields() {
+    		int numFields = errMetadata.getNumFields();
+    		rowNumberFieldNo = numFields - 3;
+        	columnNumberFieldNo = numFields - 2;
+        	errMsgFieldNo = numFields - 1;
+    	}
+    	
+    	/**
          * Create metadata so that they correspond to format of bcp error file
          * 
          * @return modified metadata
     	 * @throws ComponentNotReadyException 
          */
         private DataRecordMetadata createDbOutMetadata() {
-        	DataRecordMetadata metadata = errPort.getMetadata().duplicate();
+        	DataRecordMetadata metadata = errMetadata.duplicate();
         	metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
-        	// delete first, second and third field
+        	// delete last three fields
         	for (int i = 0; i < NUMBER_OF_ADDED_FIELDS; i++) {
-        		metadata.delField(0);
+        		metadata.delField(metadata.getNumFields() - 1);
         	}
         	
         	for (DataFieldMetadata fieldMetadata: metadata) {
@@ -913,20 +934,18 @@ public class MsSqlDataWriter extends Node {
         	// re-set last delimiter
         	metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_ROW_DELIMITER);
         	
+        	logger.info(metadata);
+        	
         	return metadata;
         }
     	
     	/**
     	 * check metadata at error port against metadata at input port
     	 * if metadata isn't correct then throws ComponentNotReadyException
+    	 * @param errMetadata
     	 * @throws ComponentNotReadyException when metadata isn't correct
     	 */
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
-    		DataRecordMetadata errMetadata = errPort.getMetadata();
-    		if (errMetadata == null) {
-        		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
-        	}
-   		
     		if (dbMetadata == null) {
     			return;
     		}
@@ -937,26 +956,26 @@ public class MsSqlDataWriter extends Node {
 						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
 			}
 
-			// check if first field of errMetadata is integer - rowNumber
-			if (errMetadata.getFieldType(ROW_NUBMER_FIELD_NO) != DataFieldMetadata.INTEGER_FIELD) {
+			// check if last - 2 field of errMetadata is integer - rowNumber
+			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
-			// check if second field of errMetadata is integer - columnNumber
-			if (errMetadata.getFieldType(COLUMN_NUBMER_FIELD_NO) != DataFieldMetadata.INTEGER_FIELD) {
+			// check if last - 1 field of errMetadata is integer - columnNumber
+			if (errMetadata.getFieldType(columnNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
-			// check if third field of errMetadata is string - errMsg
-			if (errMetadata.getFieldType(ERR_MSG_FIELD_NO) != DataFieldMetadata.STRING_FIELD) {
+			// check if last field of errMetadata is string - errMsg
+			if (errMetadata.getFieldType(errMsgFieldNo) != DataFieldMetadata.STRING_FIELD) {
 				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
 			
 			// check if other fields' type of errMetadata are equals as dbMetadata
-			int count = NUMBER_OF_ADDED_FIELDS;
+			int count = 0;
 			for (DataFieldMetadata dbFieldMetadata: dbMetadata){
 				if (!dbFieldMetadata.equals(errMetadata.getField(count++))) {
 					throw new ComponentNotReadyException("Field "
@@ -997,6 +1016,7 @@ public class MsSqlDataWriter extends Node {
 									errPort.writeRecord(errRecord);
 		    					}
 							} catch (BadDataFormatException e) {
+								e.printStackTrace();
 								logger.warn("Bad row - it couldn't be parsed and sent to out port. Line: " + line);
 							}
 	        			}
@@ -1021,11 +1041,12 @@ public class MsSqlDataWriter extends Node {
     	private DataRecord setErrRecord(DataRecord dbRecord, DataRecord errRecord, 
     			int rowNumber, int columnNumber, String errMsg) {
     		errRecord.reset();
-    		errRecord.getField(ROW_NUBMER_FIELD_NO).setValue(rowNumber);
-    		errRecord.getField(COLUMN_NUBMER_FIELD_NO).setValue(columnNumber);
-    		errRecord.getField(ERR_MSG_FIELD_NO).setValue(errMsg);
+    		errRecord.getField(rowNumberFieldNo).setValue(rowNumber);
+    		errRecord.getField(columnNumberFieldNo).setValue(columnNumber);
+    		errRecord.getField(errMsgFieldNo).setValue(errMsg);
+
     		for (int dbFieldNum = 0; dbFieldNum < dbRecord.getNumFields(); dbFieldNum++) {
-    			errRecord.getField(dbFieldNum + NUMBER_OF_ADDED_FIELDS).setValue(dbRecord.getField(dbFieldNum));
+    			errRecord.getField(dbFieldNum).setValue(dbRecord.getField(dbFieldNum));
     		}
     		return errRecord;
     	}
