@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Fri Aug 31 14:31:54 CEST 2007" name="InformixDataWriterOutPortFromFile" revision="1.37">
+<Global>
+<Metadata id="MetadataOut">
+<Record name="OutEmployee" recordSize="-1" type="delimited">
+<Field delimiter="|" name="First" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="Last" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" name="SomeNumber" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" format="MM/dd/yyyy" name="Datum" nullable="true" shift="0" type="string"/>
+<Field delimiter="|" format="yyyy-MM-dd HH:mm:ss" name="Cas" nullable="true" shift="0" type="date"/>
+<Field delimiter="\n" length="8" name="Decimal" nullable="true" scale="5" shift="0" type="decimal"/>
+</Record>
+</Metadata>
+</Global>
+<Phase number="0">
+<Node columnDelimiter=";" database="//demo_on/test" dbLoaderPath="dbload" enabled="enabled" fileURL="/home/student/informix_data/inPlainSmall.txt" guiHeight="25" guiName="INFORMIX_DATA_WRITER0" guiWidth="50" guiX="144" guiY="83" id="INFORMIX_DATA_WRITER0" table="mira" type="INFORMIX_DATA_WRITER"/>
+</Phase>
+</Graph>
