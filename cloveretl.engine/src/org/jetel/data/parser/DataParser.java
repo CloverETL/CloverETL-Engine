@@ -568,6 +568,7 @@ public class DataParser implements Parser {
 		int character = 0;
 		try {
 			for(int i = fieldNum + 1; i < metadata.getNumFields(); i++) {
+				if (isAutoFilling[i]) continue;
 				while((character = readChar()) != -1) {
 					delimiterSearcher.update((char) character);
 					if(delimiterSearcher.isPattern(i)) {
