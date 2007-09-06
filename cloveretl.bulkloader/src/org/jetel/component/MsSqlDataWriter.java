@@ -19,18 +19,30 @@
 
 package org.jetel.component;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.channels.Channels;
 import java.util.Iterator;
 import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
+import org.jetel.data.parser.DelimitedDataParser;
+import org.jetel.data.parser.Parser;
+import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -38,6 +50,7 @@ import org.jetel.exception.JetelException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -47,6 +60,7 @@ import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.StringUtils;
 import org.jetel.util.exec.DataConsumer;
 import org.jetel.util.exec.LoggerDataConsumer;
+import org.jetel.util.exec.PortDataConsumer;
 import org.jetel.util.exec.ProcBox;
 import org.w3c.dom.Element;
 
@@ -71,7 +85,10 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records, optional</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
- * <td></td></tr>
+ * <td>[0] - optionally one output port defined/connected - rejected records.
+ * Metadata on this port must have the same type of field as input metadata, except otput metadata has a additional fields with row number, column number and error message.
+ * First field is row number (integer), second is column number (integer); third is error message (string) and other field is shift.
+ * </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
  * </table>
@@ -302,10 +319,13 @@ public class MsSqlDataWriter extends Node {
     
     public final static String COMPONENT_TYPE = "MS_SQL_DATA_WRITER";
     private final static int READ_FROM_PORT = 0;
+    private final static int WRITE_TO_PORT = 0;	//port for write bad record
     private final static char EQUAL_CHAR = '=';
     
     private final static String DATA_FILE_NAME_PREFIX = "data";
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
+    private final static String ERROR_FILE_NAME_PREFIX = "error";
+    private final static String ERROR_FILE_NAME_SUFFIX = ".log";
     private final static File TMP_DIR = new File(".");
     private final static String CHARSET_NAME = "UTF-8";
     private final static String DEFAULT_FIELD_DELIMITER = "\t"; // according bcp
@@ -323,14 +343,17 @@ public class MsSqlDataWriter extends Node {
     private String view;
     private String inDataFileName; // fileUrl from XML - data file that is used when no input port is connected
     private String parameters;
+    private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
+    private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
     
     private Properties properties = new Properties();
     private DataConsumer consumer; // consume data from out stream of bcp
     private DataConsumer errConsumer; // consume data from err stream of bcp - write them to by logger
+    private MsSqlBadRowReaderWriter badRowReaderWriter;
     
-    private String tmpDataFileName; // file that is used for exchange data between clover and dbload
-    private DataRecordMetadata dbMetadata; // it correspond to dbload input format
-    private DataFormatter formatter; // format data to dbload format and write them to dataFileName 
+    private String tmpDataFileName; // file that is used for exchange data between clover and bcp
+    private DataRecordMetadata dbMetadata; // it correspond to bcp input format
+    private DataFormatter formatter; // format data to bcp format and write them to dataFileName 
     private String commandLine; // command line of bcp 
   
     /**
@@ -338,6 +361,13 @@ public class MsSqlDataWriter extends Node {
      * false - data is read from file directly by bcp utility
      */
     private boolean isDataReadFromPort;
+    
+    /**
+     * true - bad rows is written to out port;
+     * false - bad rows isn't written to anywhere
+     */
+    private boolean isDataWrittenToPort;
+    
     
     /**
      * Constructor for the MsSqlDataWriter object
@@ -375,11 +405,15 @@ public class MsSqlDataWriter extends Node {
         	throw new JetelException("bcp utility has failed.");
 		}
         
+        if (isDataWrittenToPort) {
+        	badRowReaderWriter.run();
+        }
+        
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
     }
-
+    
     /**
-     * This method reads incoming data from port and sends them by formatter to dbload process.
+     * This method reads incoming data from port and sends them by formatter to bcp process.
      * 
 	 * @throws Exception
 	 */
@@ -400,7 +434,7 @@ public class MsSqlDataWriter extends Node {
 	}
 	
 	/**
-	 * Call dbload process with parameters - dbload process reads data directly from file.  
+	 * Call bcp process with parameters - bcp process reads data directly from file.  
 	 * @return value of finished process
 	 * @throws Exception
 	 */
@@ -454,7 +488,7 @@ public class MsSqlDataWriter extends Node {
 		command.addParameterSwitch(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
 	    command.addParameterSwitch(MS_SQL_FORMAT_FILE_PARAM, MS_SQL_FORMAT_FILE_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_GENERATE_XML_FORMAT_FILE_PARAM, MS_SQL_GENERATE_XML_FORMAT_FILE_SWITCH);
-	    command.addParameterSwitch(MS_SQL_ERR_FILE_PARAM, MS_SQL_ERR_FILE_SWITCH);
+	    command.addSwitch(MS_SQL_ERR_FILE_SWITCH, errFileName);
 	    command.addParameterSwitch(MS_SQL_FIRST_ROW_PARAM, MS_SQL_FIRST_ROW_SWITCH);
 	    command.addParameterSwitch(MS_SQL_LAST_ROW_PARAM, MS_SQL_LAST_ROW_SWITCH);
 	    command.addParameterSwitch(MS_SQL_BATCH_SIZE_PARAM, MS_SQL_BATCH_SIZE_SWITCH);
@@ -509,13 +543,26 @@ public class MsSqlDataWriter extends Node {
     public void init() throws ComponentNotReadyException {
 		super.init();
 
+		parseParameters();
+		checkParams();
+
 		isDataReadFromPort = !getInPorts().isEmpty();
+		isDataWrittenToPort = !getOutPorts().isEmpty();
+		isErrFileFromUser = properties.containsKey(MS_SQL_ERR_FILE_PARAM);
 		
 		// prepare name for temporary data file
 		try {
             if (isDataReadFromPort) {
         		tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getAbsolutePath();
+            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+            }
+            
+            if (isErrFileFromUser) {
+            	errFileName = properties.getProperty(MS_SQL_ERR_FILE_PARAM);
+            	errFileName = errFileName.replace("\"", "");
+            } else if (isDataWrittenToPort) {
+            	errFileName = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
+            			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
             }
             
         } catch(IOException e) {
@@ -523,8 +570,6 @@ public class MsSqlDataWriter extends Node {
             throw new ComponentNotReadyException(this, "Some of the log files cannot be created.");
         }
 		
-		parseParameters();
-		checkParams();
 		commandLine = createCommandLineForDbLoader();
 		logger.info("System command: " + commandLine);
 		
@@ -540,6 +585,10 @@ public class MsSqlDataWriter extends Node {
 
         errConsumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_ERROR, 0);
         consumer = new LoggerDataConsumer(LoggerDataConsumer.LVL_DEBUG, 0);
+        
+        if (isDataWrittenToPort) {
+        	badRowReaderWriter = new MsSqlBadRowReaderWriter(getOutputPort(WRITE_TO_PORT));
+        }
     }
     
     /**
@@ -562,7 +611,7 @@ public class MsSqlDataWriter extends Node {
     }
     
     /**
-     * Modify metadata so that they correspond to dbload input format. 
+     * Modify metadata so that they correspond to bcp input format. 
      * Each field is delimited and it has the same delimiter.
      * Only last field is delimited by '\n'.
      *
@@ -610,6 +659,7 @@ public class MsSqlDataWriter extends Node {
 	public synchronized void free() {
 		super.free();
 		deleteDataFile();
+		deleteErrFile();
 	}
 
     /**
@@ -621,6 +671,18 @@ public class MsSqlDataWriter extends Node {
     	}
     	
    		File dataFile = new File(tmpDataFileName);
+   		dataFile.delete();
+    }
+    
+    /**
+     * If errFile wasn't apply by user (it's tmp file) then deletes err file.
+     */
+    private void deleteErrFile() {
+    	if (StringUtils.isEmpty(errFileName) || isErrFileFromUser) {
+    		return;
+    	}
+    	
+   		File dataFile = new File(errFileName);
    		dataFile.delete();
     }
 
@@ -740,5 +802,235 @@ public class MsSqlDataWriter extends Node {
     
     private void setFileUrl(String dataFile) {
     	this.inDataFileName = dataFile;
+    }
+    
+    /**
+     * Class for reading and parsing data from input file,
+     * and sends them to specified output port.
+     * 
+     * @see 		org.jetel.util.exec.ProcBox
+     * @see 		org.jetel.util.exec.DataConsumer
+     * @author      Miroslav Haupt (Mirek.Haupt@javlinconsulting.cz)
+     * 				(c) Javlin Consulting (www.javlinconsulting.cz)
+     * @since 		20.8.2007
+     */
+    private class MsSqlBadRowReaderWriter {
+    	private DataRecord dbOutRecord;				// record from bcp error file
+    	private DataRecordMetadata dbOutMetadata;	// format as bcp error file
+    	private Parser dbParser;					// parse record from bcp error file
+    	private BufferedReader reader;				// read from input stream (error file of bcp)
+    	private DataRecord errRecord = null;
+    	private OutputPort errPort = null;
+
+    	// #@ dek 2, Sloupec 3: Neplatn hodnota znaku pro uren pevodu (CAST). @#
+    	private String strBadRowPattern = "\\D+(\\d+)\\D+(\\d+): (.+)";
+    	private Matcher badRowMatcher;
+    	
+    	private Log logger = LogFactory.getLog(PortDataConsumer.class);
+    	
+    	private final static int ROW_NUBMER_FIELD_NO = 0;
+    	private final static int COLUMN_NUBMER_FIELD_NO = 1;
+    	private final static int ERR_MSG_FIELD_NO = 2;
+    	private final static int NUMBER_OF_ADDED_FIELDS = 3; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
+    	
+    	MsSqlBadRowReaderWriter(OutputPort errPort) throws ComponentNotReadyException {
+    		if (errPort == null) {
+        		throw new ComponentNotReadyException("No output port was found.");
+    		}
+
+    		this.errPort = errPort;
+    		checkErrPortMetadata();
+    		
+    		errRecord = new DataRecord(errPort.getMetadata());
+			errRecord.init();
+			
+    		this.dbOutMetadata = createDbOutMetadata();
+    		
+    		dbOutRecord = new DataRecord(dbOutMetadata);
+    		dbOutRecord.init();
+    		
+    		dbParser = new DelimitedDataParser(Defaults.DataParser.DEFAULT_CHARSET_DECODER);
+			dbParser.init(dbOutMetadata);
+			
+			Pattern badRowPattern = Pattern.compile(strBadRowPattern);
+			badRowMatcher = badRowPattern.matcher("");
+    	}
+    	
+    	/**
+         * Create metadata so that they correspond to format of bcp error file
+         * 
+         * @return modified metadata
+    	 * @throws ComponentNotReadyException 
+         */
+        private DataRecordMetadata createDbOutMetadata() {
+        	DataRecordMetadata metadata = errPort.getMetadata().duplicate();
+        	metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
+        	// delete first, second and third field
+        	for (int i = 0; i < NUMBER_OF_ADDED_FIELDS; i++) {
+        		metadata.delField(0);
+        	}
+        	
+        	for (DataFieldMetadata fieldMetadata: metadata) {
+        		fieldMetadata.setDelimiter(DEFAULT_FIELD_DELIMITER);
+        		
+        		if (fieldMetadata.getType() == DataFieldMetadata.DATE_FIELD ||
+        				fieldMetadata.getType() == DataFieldMetadata.DATETIME_FIELD) {
+        			fieldMetadata.setFormatStr(DEFAULT_DATETIME_FORMAT);
+        		}
+        	}
+        	// re-set last delimiter
+        	metadata.getField(metadata.getNumFields() - 1).setDelimiter(DEFAULT_ROW_DELIMITER);
+        	
+        	return metadata;
+        }
+    	
+    	/**
+    	 * check metadata at error port against metadata at input port
+    	 * if metadata isn't correct then throws ComponentNotReadyException
+    	 * @throws ComponentNotReadyException when metadata isn't correct
+    	 */
+    	private void checkErrPortMetadata() throws ComponentNotReadyException {
+    		DataRecordMetadata errMetadata = errPort.getMetadata();
+    		if (errMetadata == null) {
+        		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
+        	}
+   		
+    		if (dbMetadata == null) {
+    			return;
+    		}
+    		
+    		// check number of fields; if inNumFields == outNumFields + NUMBER_OF_ADDED_FIELDS
+			if (errMetadata.getNumFields() != dbMetadata.getNumFields() + NUMBER_OF_ADDED_FIELDS) {
+				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(errMetadata.getName()) +  
+						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
+			}
+
+			// check if first field of errMetadata is integer - rowNumber
+			if (errMetadata.getFieldType(ROW_NUBMER_FIELD_NO) != DataFieldMetadata.INTEGER_FIELD) {
+				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
+						" has different type from integer.");
+			}
+			
+			// check if second field of errMetadata is integer - columnNumber
+			if (errMetadata.getFieldType(COLUMN_NUBMER_FIELD_NO) != DataFieldMetadata.INTEGER_FIELD) {
+				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
+						" has different type from integer.");
+			}
+			
+			// check if third field of errMetadata is string - errMsg
+			if (errMetadata.getFieldType(ERR_MSG_FIELD_NO) != DataFieldMetadata.STRING_FIELD) {
+				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
+						" has different type from string.");
+			}
+			
+			// check if other fields' type of errMetadata are equals as dbMetadata
+			int count = NUMBER_OF_ADDED_FIELDS;
+			for (DataFieldMetadata dbFieldMetadata: dbMetadata){
+				if (!dbFieldMetadata.equals(errMetadata.getField(count++))) {
+					throw new ComponentNotReadyException("Field "
+							+ StringUtils.quote(errMetadata.getField(count - 1).getName()) + " in " 
+							+ StringUtils.quote(errMetadata.getName()) + " has different type from field " 
+							+ StringUtils.quote(dbFieldMetadata.getName()) + " in " + StringUtils.quote(dbMetadata.getName()) + ".");
+				}
+			}
+    	}
+    	
+    	/**
+    	 * Example of bad row in stream:
+		 * #@ dek 2, Sloupec 3: Neplatn hodnota znaku pro uren pevodu (CAST). @#
+		 * a	s	32s	32.00	1970-01-01 12:34:45.000	fsd
+    	 * @throws JetelException 
+	     *
+    	 * @see org.jetel.util.exec.DataConsumer
+    	 */
+    	public void run() throws JetelException {
+    		try {
+	    		reader = getReader();
+
+	    		String line;
+    			while ((line = reader.readLine()) != null) {
+					badRowMatcher.reset(line);
+					if (badRowMatcher.find()) {
+	        			int rowNumber = Integer.valueOf(badRowMatcher.group(1));
+	        			int columnNumber = Integer.valueOf(badRowMatcher.group(2));
+	        			String errMsg = badRowMatcher.group(3);
+
+	        			// read bad row
+	        			if ((line = reader.readLine()) != null) {
+	        				line = line + DEFAULT_ROW_DELIMITER;
+		        			dbParser.setDataSource(getInputStream(line));
+		        			try {
+								if (dbParser.getNext(dbOutRecord) != null) {
+									setErrRecord(dbOutRecord, errRecord, rowNumber, columnNumber, errMsg);
+									errPort.writeRecord(errRecord);
+		    					}
+							} catch (BadDataFormatException e) {
+								logger.warn("Bad row - it couldn't be parsed and sent to out port. Line: " + line);
+							}
+	        			}
+					}
+				}
+			} catch (Exception e) {
+				throw new JetelException("Error while writing output record", e);
+			} finally {
+				close();
+			}
+    	}
+    	
+    	/**
+    	 * Set value in errRecord. In first field is set row number and other fields are copies from dbRecord
+    	 * @param dbRecord source record
+    	 * @param errRecord destination record
+    	 * @param rowNumber number of bad row
+    	 * @param columnNumber number of bad column
+    	 * @param errMsg errMsg
+    	 * @return destination record
+    	 */
+    	private DataRecord setErrRecord(DataRecord dbRecord, DataRecord errRecord, 
+    			int rowNumber, int columnNumber, String errMsg) {
+    		errRecord.reset();
+    		errRecord.getField(ROW_NUBMER_FIELD_NO).setValue(rowNumber);
+    		errRecord.getField(COLUMN_NUBMER_FIELD_NO).setValue(columnNumber);
+    		errRecord.getField(ERR_MSG_FIELD_NO).setValue(errMsg);
+    		for (int dbFieldNum = 0; dbFieldNum < dbRecord.getNumFields(); dbFieldNum++) {
+    			errRecord.getField(dbFieldNum + NUMBER_OF_ADDED_FIELDS).setValue(dbRecord.getField(dbFieldNum));
+    		}
+    		return errRecord;
+    	}
+    	
+    	/**
+    	 * It create and return InputStream from string
+    	 * @param str string, returned InputStream contains this string  
+    	 * @return InputStream created from string
+    	 */
+    	private InputStream getInputStream(String str) throws UnsupportedEncodingException {
+        	return new ByteArrayInputStream(str.getBytes(Defaults.DataParser.DEFAULT_CHARSET_DECODER));
+        }
+    	
+    	private BufferedReader getReader() throws FileNotFoundException {
+			return new BufferedReader(new FileReader(errFileName));
+    	}
+    	
+    	private void close() {
+    		if (dbParser != null) {
+    			dbParser.close();
+    		}
+    		
+    		try {
+				if (reader != null) {
+					reader.close();
+				}
+			} catch (IOException ioe) {
+				logger.warn("Reader wasn't closed.", ioe);
+			}
+			
+    		try {
+        		if (errPort != null) {
+        			errPort.eof();
+        		}
+    		} catch (InterruptedException ie) {
+    			logger.warn("Out port wasn't closed.", ie);
+    		}
+    	}
     }
 }
