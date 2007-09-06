@@ -23,28 +23,20 @@
  */
 package org.jetel.component;
 
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.ByteBuffer;
-import java.nio.channels.ReadableByteChannel;
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Properties;
 import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.Defaults;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.graph.Node;
 import org.jetel.metadata.DataRecordMetadata;
-import org.jetel.util.ByteBufferUtils;
 import org.jetel.util.CodeParser;
 import org.jetel.util.DynamicJavaCode;
 import org.jetel.util.FileUtils;
-import org.jetel.util.StringUtils;
 
 public class RecordTransformFactory {
 
