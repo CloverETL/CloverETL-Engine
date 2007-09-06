@@ -34,6 +34,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.RecordKey;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  * Parses the aggregation mapping.
@@ -134,6 +135,49 @@ public class AggregateMappingParser {
 		}
 
 		parseMapping(splitMapping(mapping));
+	}
+
+	/**
+	 * Checks if a text has a valid format for a mapping constant.
+	 * @param text
+	 * @return <code>true</code> if the text has a valid format for a mapping constant,
+	 * <code>false</code> otherwise.
+	 */
+	public static boolean isValidConstant(String text) {
+		String value = text.trim();
+		
+		// not constants
+		if (StringUtils.isBlank(value)) {
+			return false;
+		}
+		if (Pattern.compile("^" + MAPPING_FUNCTION_REGEX + "$").matcher(value).matches()) {
+			return false;
+		}
+		if (Pattern.compile("^" + MAPPING_FIELD_REGEX + "$").matcher(value).matches()) {
+			return false;
+		}
+		
+		// constants
+		if (Pattern.compile("^" + MAPPING_STRING_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		if (Pattern.compile("^" + MAPPING_INT_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		if (Pattern.compile("^" + MAPPING_DATE_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		if (Pattern.compile("^" + MAPPING_DATETIME_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		if (Pattern.compile("^" + MAPPING_DOUBLE_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		if (Pattern.compile("^" + MAPPING_PARAM_REGEX + "$").matcher(value).matches()) {
+			return true;
+		}
+		
+		return false;
 	}
 	
 	/**
