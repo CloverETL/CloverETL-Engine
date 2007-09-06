@@ -56,6 +56,7 @@ import org.jetel.metadata.DataRecordMetadata;
 public class MultiFileReader {
 	
     private static Log defaultLogger = LogFactory.getLog(MultiFileReader.class);
+    private static final String STD_IN = "-";
     private Log logger = defaultLogger;
 
 	private Parser parser;
@@ -165,7 +166,7 @@ public class MultiFileReader {
 				long timestamp = new File(fileURL).lastModified();
 				fileTimestamp = timestamp == 0 ? null : new Date(timestamp);				
 				logger.debug("Reading input file " + filename);
-				parser.setReleaseDataSource(filename.equals('-'));
+				parser.setReleaseDataSource(!filename.equals(STD_IN));
 				parser.setDataSource(stream);
 				if(fileSkip > 0) parser.skip(fileSkip);
 				return true;

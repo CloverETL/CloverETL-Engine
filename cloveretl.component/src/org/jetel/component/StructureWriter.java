@@ -218,7 +218,7 @@ public class StructureWriter extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		// based on file mask, create/open output file
-		if (fileURL != null) {
+		if (fileURL != null && !fileURL.equals(MultiFileWriter.STD_OUT)) {
 	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
