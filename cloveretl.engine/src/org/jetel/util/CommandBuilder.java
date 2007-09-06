@@ -292,6 +292,22 @@ public class CommandBuilder {
 	}
 	
 	/**
+	 * if value isn;t null adds to the end of command: 
+	 *  " <i>-switchChar</i>value"
+	 *  
+	 * @param paramName
+	 * @param switchChar
+	 */
+	public void addSwitch(char switchChar, String value) {
+		if (!StringUtils.isEmpty(value)) {
+			command.append(parameterDelimiter);
+			command.append('-');
+			command.append(switchChar);
+			command.append(StringUtils.quote(value));
+		}
+	}
+	
+	/**
 	 * if paramName is in properties adds to the end of command: 
 	 *  " <i>-switchChar</i>"
 	 * 
