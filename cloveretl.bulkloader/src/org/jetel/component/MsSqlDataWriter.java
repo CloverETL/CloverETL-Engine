@@ -79,11 +79,12 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>This component loads data to an MsSql database using the bcp utility. 
  * It creates a temporary file with bcp commands depending on input parameters. Data are read from given 
- * input file or from the input port and loaded to database.<br>
+ * input file or from input port and loaded to database.<br>
+ * Any generated temporary files can be optionally logged to help diagnose problems.<br>
  * To use this component MsSql client must be installed and configured on the local host.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0] - input records, optional</td></tr>
+ * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] - optionally one output port defined/connected - rejected records.
  * Metadata on this port must have the same type of field as input metadata, except otput metadata has a additional fields with row number, column number and error message.
@@ -97,10 +98,9 @@ import org.w3c.dom.Element;
  *  <th>XML attributes:</th>
  *  <tr><td><b>type</b></td><td>"MS_SQL_DATA_WRITER"</td></tr>
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
- *  <tr><td><b>dbLoaderPath</b></td><td>path to bcp utility</td></tr>
+ *  <tr><td><b>bcpUtilityPath</b></td><td>path to bcp utility</td></tr>
  *  <tr><td><b>database</b><br><i>optional</i></td><td>Is the name of the database in which the specified table or view resides. 
- *  If not specified, this is the default database for the user.<br/>
- *  example: //server_name/directory_on_server/database_name</td></tr>
+ *  If not specified, this is the default database for the user./td></tr>
  *  <tr><td><b>owner</b><br><i>optional</i></td><td>Is the name of the owner of the table or view. 
  *  owner is optional if the user performing the operation owns the specified table or view. 
  *  If owner is not specified and the user performing the operation does not own the specified table or view, 
@@ -109,8 +109,15 @@ import org.w3c.dom.Element;
  *  <tr><td><b>view</b><br><i>optional</i></td><td>Is the name of the destination view. 
  *  Only views in which all columns refer to the same table can be used as destination views. 
  *  </br>Note: table or view must be set</td></tr>
- *    <tr><td><b>fileURL</b><br><i>optional</i></td><td>path to the data input file. If there is not connected 
- *  input port data have to be in external file. If there is connected input port this attribute is ignored.</br>
+ *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>Path to data file to be loaded.<br>
+ *  Normally this file is a temporary storage for data to be passed to bcp utility. If file URL is not specified, 
+ *  the file is created in Clover or OS temporary directory and deleted after load finishes.<br>
+ *  If file URL is specified, temporary file is created within given path and name and not 
+ *  deleted after being loaded. Next graph run overwrites it. 
+ *  <br>
+ *  There is one more meaning of this parameter. If input port is not specified, this file 
+ *  is used only for reading by bcp utility and must already contain data in format expected by 
+ *  load. The file is neither deleted nor overwritten.</br>
  *  The path can have from 1 through 255 characters. The data file can contain a maximum of 2,147,483,647 rows.</td></tr>
  *  <tr><td><b>parameters</b><br><i>optional</i></td><td>All possible additional parameters 
  *  which can be passed on to bcp utility (See  <a href="http://technet.microsoft.com/en-us/library/ms162802.aspx">
@@ -227,14 +234,26 @@ import org.w3c.dom.Element;
  *  </table>
  *
  *	<h4>Example:</h4>
- *  Reading data from file:
+ *  Reading data from flat file:
  *  <pre>&lt;Node 
- *	dbLoaderPath="bcp" 
+ *	bcpUtilityPath="bcp" 
  *	database="test"
  *	owner="dbo" 
  *	table="test" 
  *	fileURL="C:\MSSQL_data\graph\in1.bcp" 
- *	parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=C&quot;:&quot;\MSSQL_data\graph\err.bcp"
+ *	parameters="characterType|trustedConnection|codePageSpecifier=ACP|errFile=C&quot;:&quot;\MSSQL_data\graph\err.bcp|fieldTerminator=&quot;;&quot;"
+ *	id="MS_SQL_DATA_WRITER0"
+ *	type="MS_SQL_DATA_WRITER"
+ *  /&gt;
+ *  </pre>
+ *  
+ *  Reading data from input port:
+ *  <pre>&lt;Node 
+ *	bcpUtilityPath="bcp" 
+ *	database="test"
+ *	owner="dbo" 
+ *	table="test" 
+ *	parameters="characterType|trustedConnection|codePageSpecifier=ACP|fieldTerminator=&quot;|&quot;"
  *	id="MS_SQL_DATA_WRITER0"
  *	type="MS_SQL_DATA_WRITER"
  *  /&gt;
@@ -252,7 +271,7 @@ public class MsSqlDataWriter extends Node {
 	private static Log logger = LogFactory.getLog(MsSqlDataWriter.class);
 
     /**  Description of the Field */
-	private final static String XML_DB_LOADER_PATH_ATTRIBUTE = "dbLoaderPath";
+	private final static String XML_BCP_UTILITY_PATH_ATTRIBUTE = "bcpUtilityPath";
     private final static String XML_DATABASE_ATTRIBUTE = "database";
     private final static String XML_OWNER_ATTRIBUTE = "owner";
     private final static String XML_TABLE_ATTRIBUTE = "table";
@@ -336,12 +355,12 @@ public class MsSqlDataWriter extends Node {
     private final static String DEFAULT_TIME_FORMAT = DEFAULT_DATETIME_FORMAT;
 
     // variables for bcp's command
-	private String dbLoaderPath;
+	private String bcpUtilityPath;
     private String database;
     private String owner;
     private String table;
     private String view;
-    private String inDataFileName; // fileUrl from XML - data file that is used when no input port is connected
+    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
     private String parameters;
     private String errFileName = null; // errFile insert by user or tmpErrFile for parsing bad rows
     private boolean isErrFileFromUser; // true if errFile was inserted by user; false when errFile is tmpErrFile
@@ -351,10 +370,10 @@ public class MsSqlDataWriter extends Node {
     private DataConsumer errConsumer; // consume data from err stream of bcp - write them to by logger
     private MsSqlBadRowReaderWriter badRowReaderWriter;
     
-    private String tmpDataFileName; // file that is used for exchange data between clover and bcp
     private DataRecordMetadata dbMetadata; // it correspond to bcp input format
     private DataFormatter formatter; // format data to bcp format and write them to dataFileName 
-    private String commandLine; // command line of bcp 
+    private String commandLine; // command line of bcp
+    private File dataFile; // file that is used for exchange data between clover and bcp - file from dataURL
   
     /**
      * true - data is read from port;
@@ -367,16 +386,15 @@ public class MsSqlDataWriter extends Node {
      * false - bad rows isn't written to anywhere
      */
     private boolean isDataWrittenToPort;
-    
-    
+        
     /**
      * Constructor for the MsSqlDataWriter object
      *
      * @param  id  Description of the Parameter
      */
-    public MsSqlDataWriter(String id, String dbLoaderPath, String database) { 
+    public MsSqlDataWriter(String id, String bcpUtilityPath, String database) { 
         super(id);
-        this.dbLoaderPath = dbLoaderPath;
+        this.bcpUtilityPath = bcpUtilityPath;
         this.database = database;
     }
     
@@ -391,10 +409,10 @@ public class MsSqlDataWriter extends Node {
 
         if (isDataReadFromPort) {
         	// temp file is used for exchange data
-        	formatter.setDataTarget(Channels.newChannel(new FileOutputStream(tmpDataFileName)));
+        	formatter.setDataTarget(Channels.newChannel(new FileOutputStream(dataFile)));
         	readFromPortAndWriteByFormatter();
         	
-            box = createProcBox(null);
+            box = createProcBox();
     		
     		processExitValue = box.join();
         } else {
@@ -439,20 +457,17 @@ public class MsSqlDataWriter extends Node {
 	 * @throws Exception
 	 */
 	private int readDataDirectlyFromFile() throws Exception {
-        ProcBox box = createProcBox(null);
+        ProcBox box = createProcBox();
         return box.join();
 	}
 
 	/**
 	 * Create instance of ProcBox.
-	 * @param process running process; when process is null, default process is created
 	 * @return instance of ProcBox
 	 * @throws IOException
 	 */
-	private ProcBox createProcBox(Process process) throws IOException {
-		if (process == null) {
-			process = Runtime.getRuntime().exec(commandLine);			
-		}
+	private ProcBox createProcBox() throws IOException {
+		Process process = Runtime.getRuntime().exec(commandLine);			
         ProcBox box = new ProcBox(process, null, consumer, errConsumer);
 		return box;
 	}
@@ -464,7 +479,7 @@ public class MsSqlDataWriter extends Node {
      * @throws ComponentNotReadyException 
      */
     private String createCommandLineForDbLoader() throws ComponentNotReadyException {
-    	CommandBuilder command = new CommandBuilder(dbLoaderPath + " ");
+    	CommandBuilder command = new CommandBuilder(bcpUtilityPath + " ");
 		command.setParams(properties);
     	
 		if (!StringUtils.isEmpty(database)) {
@@ -479,10 +494,10 @@ public class MsSqlDataWriter extends Node {
 			command.append(view);
 		}
 		command.append(" in ");
-		if (isDataReadFromPort) {
-			command.append(StringUtils.quote(tmpDataFileName));
-		} else {
-			command.append(StringUtils.quote(inDataFileName));
+		try {
+			command.append(StringUtils.quote(dataFile.getCanonicalPath()));
+		} catch (IOException ioe) {
+			throw new ComponentNotReadyException(this, ioe);
 		}
 
 		command.addParameterSwitch(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
@@ -522,8 +537,8 @@ public class MsSqlDataWriter extends Node {
      * @throws ComponentNotReadyException
      */
     private void checkParams() throws ComponentNotReadyException {
-    	if (StringUtils.isEmpty(dbLoaderPath)) {
-    		throw new ComponentNotReadyException(this, StringUtils.quote(XML_DB_LOADER_PATH_ATTRIBUTE) 
+    	if (StringUtils.isEmpty(bcpUtilityPath)) {
+    		throw new ComponentNotReadyException(this, StringUtils.quote(XML_BCP_UTILITY_PATH_ATTRIBUTE) 
     				+ " attribute must be set.");
 		}
     	
@@ -553,8 +568,19 @@ public class MsSqlDataWriter extends Node {
 		// prepare name for temporary data file
 		try {
             if (isDataReadFromPort) {
-        		tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+            	if (dataURL != null) {
+            		dataFile = new File(dataURL);
+            	} else {
+            		dataFile = File.createTempFile(DATA_FILE_NAME_PREFIX, 
+                			DATA_FILE_NAME_SUFFIX, TMP_DIR);
+            	}
+            	dataFile.delete();
+            } else {
+            	if (dataURL == null) {
+            		throw new ComponentNotReadyException(this, "There is neither input port nor " 
+            				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
+            	}
+            	dataFile = new File(dataURL);
             }
             
             if (isErrFileFromUser) {
@@ -567,7 +593,7 @@ public class MsSqlDataWriter extends Node {
             
         } catch(IOException e) {
         	free();
-            throw new ComponentNotReadyException(this, "Some of the log files cannot be created.");
+            throw new ComponentNotReadyException(this, "Some of the temp files cannot be created.");
         }
 		
 		commandLine = createCommandLineForDbLoader();
@@ -592,7 +618,7 @@ public class MsSqlDataWriter extends Node {
     }
     
     /**
-     * parse parameters from string and save them to properties
+     * parse parameters from string "parameteres" and save them to properties
      */
     private void parseParameters() {
     	if (parameters != null) {
@@ -666,12 +692,9 @@ public class MsSqlDataWriter extends Node {
      * Deletes data file which was used for exchange data.
      */
     private void deleteDataFile() {
-    	if (StringUtils.isEmpty(tmpDataFileName)) {
-    		return;
-    	}
-    	
-   		File dataFile = new File(tmpDataFileName);
-   		dataFile.delete();
+   		if (isDataReadFromPort && dataURL == null && !dataFile.delete()) {
+   			logger.warn("Temp data file was not deleted.");
+   		}
     }
     
     /**
@@ -683,7 +706,9 @@ public class MsSqlDataWriter extends Node {
     	}
     	
    		File dataFile = new File(errFileName);
-   		dataFile.delete();
+   		if (!dataFile.delete()) {
+   			logger.warn("Temp error file was not deleted.");
+   		}
     }
 
     /**
@@ -699,7 +724,7 @@ public class MsSqlDataWriter extends Node {
         try {
         	MsSqlDataWriter msSqlDataWriter = new MsSqlDataWriter(
         			xattribs.getString(XML_ID_ATTRIBUTE),
-                    xattribs.getString(XML_DB_LOADER_PATH_ATTRIBUTE),
+                    xattribs.getString(XML_BCP_UTILITY_PATH_ATTRIBUTE),
                     xattribs.getString(XML_DATABASE_ATTRIBUTE));
         	
         	if (xattribs.exists(XML_TABLE_ATTRIBUTE)) {
@@ -729,9 +754,9 @@ public class MsSqlDataWriter extends Node {
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
 		
-		xmlElement.setAttribute(XML_DB_LOADER_PATH_ATTRIBUTE, dbLoaderPath);
+		xmlElement.setAttribute(XML_BCP_UTILITY_PATH_ATTRIBUTE, bcpUtilityPath);
 		xmlElement.setAttribute(XML_DATABASE_ATTRIBUTE, database);
-		xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, inDataFileName);
+		xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
 
 		if (!StringUtils.isEmpty(table)) {
 			xmlElement.setAttribute(XML_TABLE_ATTRIBUTE, table);
@@ -800,8 +825,8 @@ public class MsSqlDataWriter extends Node {
     	this.parameters = parameters;
 	}
     
-    private void setFileUrl(String dataFile) {
-    	this.inDataFileName = dataFile;
+    private void setFileUrl(String dataURL) {
+    	this.dataURL = dataURL;
     }
     
     /**
@@ -833,7 +858,14 @@ public class MsSqlDataWriter extends Node {
     	private final static int ERR_MSG_FIELD_NO = 2;
     	private final static int NUMBER_OF_ADDED_FIELDS = 3; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
     	
-    	MsSqlBadRowReaderWriter(OutputPort errPort) throws ComponentNotReadyException {
+    	
+    	/**
+    	 * Constructor for the MsSqlBadRowReaderWriter object
+    	 * 
+    	 * @param errPort Output port receiving consumed data.
+    	 * @throws ComponentNotReadyException 
+    	 */
+    	private MsSqlBadRowReaderWriter(OutputPort errPort) throws ComponentNotReadyException {
     		if (errPort == null) {
         		throw new ComponentNotReadyException("No output port was found.");
     		}
@@ -943,7 +975,7 @@ public class MsSqlDataWriter extends Node {
 	     *
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
-    	public void run() throws JetelException {
+    	private void run() throws JetelException {
     		try {
 	    		reader = getReader();
 
