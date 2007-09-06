@@ -24,6 +24,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
@@ -32,6 +33,8 @@ import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import java.util.zip.GZIPInputStream;
@@ -53,6 +56,12 @@ import sun.misc.BASE64Encoder;
  */
 public class FileUtils {
 
+	// for embedded source
+	private final static Pattern INNER_SOURCE = Pattern.compile("([^(]*)\\((.*)\\)([^)]*)");
+
+	// standard input/output source
+	private final static String STD_SOURCE = "-";
+	
 	/**
 	 *  Translates fileURL into full path with all references to ENV variables resolved
 	 *
@@ -154,11 +163,21 @@ public class FileUtils {
      */
     public static ReadableByteChannel getReadableChannel(URL contextURL, String input) throws IOException {
         String zipAnchor = null;
-        URL url;
+        URL url = null;
+        InputStream innerStream = null;
 		boolean isZip = false;
 		boolean isGzip = false;
         
-		if (input.equals("-")) {
+		// get inner source
+		Matcher matcher = getInnerInput(input);
+		String innerSource;
+		if (matcher != null && (innerSource = matcher.group(2)) != null) {
+			innerStream = Channels.newInputStream(getReadableChannel(null, innerSource));
+			input = matcher.group(1) + matcher.group(3);
+		}
+		
+		// std input (console)
+		if (input.equals(STD_SOURCE)) {
 			return Channels.newChannel(System.in);
 		}
 		
@@ -179,11 +198,14 @@ public class FileUtils {
         }
         
         //open channel
-        url = FileUtils.getFileURL(contextURL, input); 
+        if (innerStream == null) {
+        	url = FileUtils.getFileURL(contextURL, input);
+        	innerStream = url.openStream();
+        }
 
         if (isZip) {
             //resolve url format for zip files
-            ZipInputStream zin = new ZipInputStream(url.openStream()) ;     
+            ZipInputStream zin = new ZipInputStream(innerStream) ;     
             ZipEntry entry;
             while((entry = zin.getNextEntry()) != null) {
                 if(zipAnchor == null) { //url is given without anchor; first entry in zip file is used
@@ -207,16 +229,25 @@ public class FileUtils {
         
         // gzip
         else if (isGzip) {
-            GZIPInputStream gzin = new GZIPInputStream(url.openStream(), Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
+            GZIPInputStream gzin = new GZIPInputStream(innerStream, Defaults.DEFAULT_IOSTREAM_CHANNEL_BUFFER_SIZE);
             return Channels.newChannel(gzin);
         }
         
+        // http or other connection
+        if (url != null) {
+            return Channels.newChannel(getAuthorizedStream(url));
+        } else {
+            return Channels.newChannel(innerStream);
+        }
+    }
+
+    private static InputStream getAuthorizedStream(URL url) throws IOException {
         URLConnection uc = url.openConnection();
         // check autorization
         if (url.getUserInfo() != null) {
             uc.setRequestProperty("Authorization", "Basic " + encode(url.getUserInfo()));
         }
-        return Channels.newChannel(uc.getInputStream());
+        return uc.getInputStream();
     }
 
     private static String encode (String source) {
@@ -243,6 +274,11 @@ public class FileUtils {
 		boolean isZip = false;
 		boolean isGzip = false;
 		boolean isFtp = false;
+		
+		// std input (console)
+		if (input.equals(STD_SOURCE)) {
+			return Channels.newChannel(System.out);
+		}
 		
 		// prepare string/path to output file
 		if(input.startsWith("zip:")) {
@@ -342,6 +378,23 @@ public class FileUtils {
 			throw new ComponentNotReadyException("Can't write to: " + fileURL);
 		}
 		return true;
+	}
+	
+	/**
+	 * Finds embedded source.
+	 * 
+	 * Example: 
+	 * 		source:      zip:(http://linuxweb/~jausperger/employees.dat.zip)#employees0.dat
+	 *      result: (g1) zip:
+	 *              (g2) http://linuxweb/~jausperger/employees.dat.zip
+	 *              (g3) #employees0.dat
+	 * 
+	 * @param source - input/output source
+	 * @return matcher or null
+	 */
+	private static Matcher getInnerInput(String source) {
+		Matcher matcher = INNER_SOURCE.matcher(source);
+		return matcher.find() ? matcher : null;
 	}
 	
 }
