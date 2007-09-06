@@ -166,7 +166,7 @@ public class Trash extends Node {
 	public void init() throws ComponentNotReadyException {
 		super.init();
 		if (debugPrint) {
-            if(debugFilename != null && !debugFilename.equals(MultiFileWriter.STD_OUT)) {
+            if(debugFilename != null) {
         		formatter = new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
        	        try {
 					writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(

@@ -52,7 +52,6 @@ import org.jetel.metadata.DataRecordMetadata;
 public class MultiFileWriter {
 
     private static Log defaultLogger = LogFactory.getLog(MultiFileWriter.class);
-	public final static String STD_OUT = "-";
     private Log logger = defaultLogger;
 
     private Formatter formatter;

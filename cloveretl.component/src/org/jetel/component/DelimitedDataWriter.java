@@ -183,7 +183,7 @@ public class DelimitedDataWriter extends Node {
 		}
         
         // initialize multifile writer based on prepared formatter
-		if (fileURL != null && !fileURL.equals(MultiFileWriter.STD_OUT)) {
+		if (fileURL != null) {
 	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
