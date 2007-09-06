@@ -83,6 +83,8 @@ import org.w3c.dom.Element;
  * input file or from input port and loaded to database.<br>
  * Any generated temporary files can be optionally logged to help diagnose problems.<br>
  * To use this component MsSql client must be installed and configured on the local host.
+ * Note: when data is read from input port, one of these values 
+ * (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile) in parameters attribute has to be used.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
