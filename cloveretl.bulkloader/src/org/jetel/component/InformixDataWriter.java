@@ -89,8 +89,9 @@ import org.w3c.dom.Element;
  * <td>[0] - input records, optional</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] - optionally one output port defined/connected - rejected records.
- * Metadata on this port must have the same type of field as input metadata, except otput metadata has a additional fields with row number and error message.
- * First field is row number (integer), second is error message (string) and other field is shift.</br>
+ * Metadata on this port must have the same type of field as input metadata. Output metadata 
+ * has a additional fields with row number (integer) and error message (string).
+ * These two fields are after data fields.
  * </td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * <td></td></tr>
@@ -120,8 +121,16 @@ import org.w3c.dom.Element;
  *   	if this parameter is empty default value is used (default = 100)</td></tr>
  *  <tr><td><b>columnDelimiter</b><br><i>optional</i></td><td>char delimiter used for each column in data (default = '|')</br>
  *  Delimiter has length one and value of the delimiter mustn't be contained in data.</td></tr>
- *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>path to the data input file. If there is not connected 
- *  input port data have to be in external file. If there is connected input port this attribute is ignored.</td></tr>
+ *  <tr><td><b>fileURL</b><br><i>optional</i></td><td>Path to data file to be loaded.<br>
+ *  Normally this file is a temporary storage for data to be passed to dbload utility 
+ *  (if stdio isn't used instead). If file URL is not specified, 
+ *  the file is created in Clover or OS temporary directory and deleted after load finishes.<br>
+ *  If file URL is specified, temporary file is created within given path and name and not 
+ *  deleted after being loaded. Next graph run overwrites it. 
+ *  <br>
+ *  There is one more meaning of this parameter. If input port is not specified, this file 
+ *  is used only for reading by dbload utility and must already contain data in format expected by 
+ *  load. The file is neither deleted nor overwritten.</td></tr>
  *  </table>
  *
  *	<h4>Example:</h4>
@@ -145,6 +154,9 @@ import org.w3c.dom.Element;
  */
 public class InformixDataWriter extends Node {
 
+	// TODO logovat tmp data file
+	// TODO odstranit errorFile, aby nebyl napevno
+	
 	private static Log logger = LogFactory.getLog(InformixDataWriter.class);
 
     /**  Description of the Field */
@@ -197,9 +209,8 @@ public class InformixDataWriter extends Node {
     private String table;
     private String columnDelimiter = DEFAULT_COLUMN_DELIMITER;
     private String commandFileName; //file where dbload command is saved
-    private String inDataFileName; // data file that is used when no input port is connected
+    private String dataURL; // fileUrl from XML - data file that is used when no input port is connected
 
-    
     private String tmpDataFileName; // file that is used for exchange data between clover and dbload
     private DataRecordMetadata dbMetadata; // it correspond to dbload input format
     private DataFormatter formatter; // format data to dbload format and write them to dataFileName 
@@ -369,7 +380,7 @@ public class InformixDataWriter extends Node {
 
 		// input port or inDataFileName or command have to be set
 		if (!isDataReadFromPort) {
-			if (StringUtils.isEmpty(inDataFileName) && StringUtils.isEmpty(command)) {
+			if (StringUtils.isEmpty(dataURL) && StringUtils.isEmpty(command)) {
 				throw new ComponentNotReadyException(this, "Input port or " + 
 						StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
 						StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " have to be set.");
@@ -512,10 +523,10 @@ public class InformixDataWriter extends Node {
         		} else if (isDataWrittenToPort) {
         			content = getDefaultControlFileContent(table, 
         					getOutputPort(READ_FROM_PORT).getMetadata().getNumFields() - InformixPortDataConsumer.NUMBER_OF_ADDED_FIELDS,
-        						columnDelimiter, inDataFileName);
+        						columnDelimiter, dataURL);
         		} else { // data is read from file and bad rows isn't written to any port
         			content = getDefaultControlFileContent(table, getNumFieldsFromInFile(),
-    						columnDelimiter, inDataFileName);
+    						columnDelimiter, dataURL);
         		}
         		logger.debug("Control file content: " + content);
         	} else {
@@ -537,7 +548,7 @@ public class InformixDataWriter extends Node {
 		BufferedReader reader = null;
 		String line = null;
 		try {
-			reader = new BufferedReader(new FileReader(new File(inDataFileName)));
+			reader = new BufferedReader(new FileReader(new File(dataURL)));
 			if (ignoreRows != UNUSED_INT) {
 				// skip ignore rows
 				for (int i = ignoreRows; i < ignoreRows; i++) {
@@ -547,20 +558,20 @@ public class InformixDataWriter extends Node {
 			line = reader.readLine();
 		} catch (IOException ioe) {
 			throw new ComponentNotReadyException(this, "Error during opening or reading file ." 
-					+ StringUtils.quote(inDataFileName), ioe);
+					+ StringUtils.quote(dataURL), ioe);
 		} finally {
 			if (reader != null) {
 				try {
 					reader.close();
 				} catch (IOException e) {
-					logger.warn("File" + StringUtils.quote(inDataFileName) + " wasn't closed.");
+					logger.warn("File" + StringUtils.quote(dataURL) + " wasn't closed.");
 				}
 			}
 		}
 
 		if (line == null) {
 			throw new ComponentNotReadyException(this, "Error during reading file ." 
-					+ StringUtils.quote(inDataFileName));
+					+ StringUtils.quote(dataURL));
 		}
 		return line.split(columnDelimiter).length;
     }
@@ -686,8 +697,8 @@ public class InformixDataWriter extends Node {
 		if (!DEFAULT_COLUMN_DELIMITER.equals(columnDelimiter)) {
 			xmlElement.setAttribute(XML_COLUMN_DELIMITER_ATTRIBUTE, columnDelimiter);
 		}
-		if (!StringUtils.isEmpty(inDataFileName)) {
-			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, inDataFileName);
+		if (!StringUtils.isEmpty(dataURL)) {
+			xmlElement.setAttribute(XML_FILE_URL_ATTRIBUTE, dataURL);
 		}
 	}
 
@@ -742,7 +753,7 @@ public class InformixDataWriter extends Node {
 	}
     
     private void setInDataFileName(String inDataFileName) {
-    	this.inDataFileName = inDataFileName;
+    	this.dataURL = inDataFileName;
 	}
     
     private void setTable(String table) {
@@ -751,7 +762,7 @@ public class InformixDataWriter extends Node {
     
     /**
      * Class for reading and parsing data from input stream, which is supposed to be connected to process' output,
-     * and sends them to specified output port. If no port is available it writes data by logger.
+     * and sends them to specified output port.
      * 
      * @see 		org.jetel.util.exec.ProcBox
      * @see 		org.jetel.util.exec.DataConsumer
@@ -767,26 +778,34 @@ public class InformixDataWriter extends Node {
     	private DataRecord errRecord = null;
     	private OutputPort errPort = null;
     	
+    	private DataRecordMetadata errMetadata;		// format as output port
+    	
     	private Log logger = LogFactory.getLog(PortDataConsumer.class);
     	
     	private String strBadRowPattern = "Row number (\\d+) is bad";
     	private Matcher badRowMatcher;
     	
-    	private final static int ROW_NUBMER_FIELD_NO = 0;
-    	private final static int ERR_MSG_FIELD_NO = 1;
+    	private int rowNumberFieldNo; // last field -2
+    	private int errMsgFieldNo; // last field
     	private final static int NUMBER_OF_ADDED_FIELDS = 2; // number of addded fields in errPortMetadata against dbIn(Out)Metadata
 
     	/**
     	 * @param port Output port receiving consumed data.
-    	 * @param metadata Metadata describing input data (ie process' output) format. 
     	 * @throws ComponentNotReadyException 
     	 */
     	public InformixPortDataConsumer(OutputPort errPort) throws ComponentNotReadyException {
     		if (errPort == null) {
-        		throw new ComponentNotReadyException("No output port was found.");
+        		throw new ComponentNotReadyException("Output port wasn't found.");
     		}
 
     		this.errPort = errPort;
+    		
+    		errMetadata = errPort.getMetadata();
+    		if (errMetadata == null) {
+        		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
+        	}
+    		
+    		getNumberOfAddedFields();
     		checkErrPortMetadata();
     		
     		dbParser = new DelimitedDataParser(CHARSET_NAME);
@@ -795,7 +814,7 @@ public class InformixDataWriter extends Node {
     		dbRecord = new DataRecord(dbOutMetadata);
     		dbRecord.init();
     		
-			errRecord = new DataRecord(errPort.getMetadata());
+			errRecord = new DataRecord(errMetadata);
 			errRecord.init();
     		
     		Pattern badRowPattern = Pattern.compile(strBadRowPattern);
@@ -805,19 +824,28 @@ public class InformixDataWriter extends Node {
     	}
     	
     	/**
+    	 * Gets index of added fields (rowNumber and errMsg).
+    	 */
+    	private void getNumberOfAddedFields() {
+    		int numFields = errMetadata.getNumFields();
+    		rowNumberFieldNo = numFields - 2;
+        	errMsgFieldNo = numFields - 1;
+    	}
+    	
+    	/**
          * Create metadata so that they correspond to format of informix db output
          * 
-         * @param oldMetadata original metadata
          * @return modified metadata
     	 * @throws ComponentNotReadyException 
          */
-        private DataRecordMetadata createDbOutMetadata() throws ComponentNotReadyException {
-        	DataRecordMetadata metadata = errPort.getMetadata().duplicate();
+        private DataRecordMetadata createDbOutMetadata() {
+        	DataRecordMetadata metadata = errMetadata.duplicate();
         	metadata.setRecType(DataRecordMetadata.DELIMITED_RECORD);
         	// delete first and second field
         	for (int i = 0; i < NUMBER_OF_ADDED_FIELDS; i++) {
-        		metadata.delField(0);
+        		metadata.delField(metadata.getNumFields() - 1);
         	}
+        	
         	for (DataFieldMetadata fieldMetadata: metadata) {
         		fieldMetadata.setDelimiter(columnDelimiter);
         	}
@@ -837,6 +865,7 @@ public class InformixDataWriter extends Node {
 		 * In INSERT statement number 1 of raw data file /home/informix_data/./data21672.dat.
 	     * Row number 2 is bad.
 	     * abc|def|ghi|
+	     * Invalid month in date
 	     *
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
@@ -898,14 +927,15 @@ public class InformixDataWriter extends Node {
     	 * @param dbRecord source record
     	 * @param errRecord destination record
     	 * @param rowNumber number of bad row
+    	 * @param errMsg errorMsg
     	 * @return destination record
     	 */
-    	private DataRecord setErrRecord(DataRecord dbRecord, DataRecord errRecord, int rowNumber, String errMsg) throws JetelException{
+    	private DataRecord setErrRecord(DataRecord dbRecord, DataRecord errRecord, int rowNumber, String errMsg) {
     		errRecord.reset();
-    		errRecord.getField(ROW_NUBMER_FIELD_NO).setValue(rowNumber);
-    		errRecord.getField(ERR_MSG_FIELD_NO).setValue(errMsg);
+    		errRecord.getField(rowNumberFieldNo).setValue(rowNumber);
+    		errRecord.getField(errMsgFieldNo).setValue(errMsg);
     		for (int dbFieldNum = 0; dbFieldNum < dbRecord.getNumFields(); dbFieldNum++) {
-    			errRecord.getField(dbFieldNum + NUMBER_OF_ADDED_FIELDS).setValue(dbRecord.getField(dbFieldNum));
+    			errRecord.getField(dbFieldNum).setValue(dbRecord.getField(dbFieldNum));
     		}
     		return errRecord;
     	}
@@ -926,7 +956,6 @@ public class InformixDataWriter extends Node {
     	 * @throws ComponentNotReadyException when metadata isn't correct
     	 */
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
-    		DataRecordMetadata errMetadata = errPort.getMetadata();
     		if (errMetadata == null) {
         		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
         	}
@@ -941,20 +970,20 @@ public class InformixDataWriter extends Node {
 						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
 			}
 
-			// check if first field of errMetadata is integer - rowNumber
-			if (errMetadata.getFieldType(ROW_NUBMER_FIELD_NO) != DataFieldMetadata.INTEGER_FIELD) {
+			// check if last - 1  field of errMetadata is integer - rowNumber
+			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
-			// check if second field of errMetadata is string - errMsg
-			if (errMetadata.getFieldType(ERR_MSG_FIELD_NO) != DataFieldMetadata.STRING_FIELD) {
+			// check if last field of errMetadata is string - errMsg
+			if (errMetadata.getFieldType(errMsgFieldNo) != DataFieldMetadata.STRING_FIELD) {
 				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
 			
 			// check if other fields' type of errMetadata are equals as dbMetadat
-			int count = NUMBER_OF_ADDED_FIELDS;
+			int count = 0;
 			for (DataFieldMetadata dbFieldMetadata: dbMetadata){
 				if (!dbFieldMetadata.equals(errMetadata.getField(count++))) {
 					throw new ComponentNotReadyException("Field "
@@ -969,7 +998,9 @@ public class InformixDataWriter extends Node {
     	 * @see org.jetel.util.exec.DataConsumer
     	 */
     	public void close() {
-    		dbParser.close();
+    		if (dbParser != null) {
+    			dbParser.close();
+    		}
     		
     		try {
 				if (reader != null) {
