@@ -251,7 +251,7 @@ public class ProcBox {
      * This method determine platform type.
      * 
      * @return          true if the platform is Windows else false
-     * @since 23..2007
+     * @since 23.8.2007
      */
 	public static boolean isWindowsPlatform() {
 		File file = new File("/dev/stdin");
