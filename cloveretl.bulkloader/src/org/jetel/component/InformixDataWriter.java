@@ -111,7 +111,7 @@ import org.w3c.dom.Element;
  *  	if this parameter is empty default control script is used<br/>
  *  Note: table attribute or command attribute must be defined</td></tr>
  *  <tr><td><b>errorLog</b><br><i>optional</i></td><td>the filename or pathname of an error log file
- *  	if this parameter is empty default errorLog name is used (default = ./errorNNNN.log)</td></tr</td></tr>
+ *  	if this parameter is empty default errorLog name is used (default = ./error.log)</td></tr</td></tr>
  *  <tr><td><b>maxErrors</b><br><i>optional</i></td><td>the number of bad rows that dbload reads before terminating.
  *   	if this parameter is empty default value is used (default = 10).</td></tr>
  *  <tr><td><b>ignoreRows</b><br><i>optional</i></td><td>the number of rows to ignore in the input file;<br/>
@@ -154,9 +154,6 @@ import org.w3c.dom.Element;
  */
 public class InformixDataWriter extends Node {
 
-	// TODO logovat tmp data file
-	// TODO odstranit errorFile, aby nebyl napevno
-	
 	private static Log logger = LogFactory.getLog(InformixDataWriter.class);
 
     /**  Description of the Field */
@@ -186,8 +183,7 @@ public class InformixDataWriter extends Node {
     private final static String DATA_FILE_NAME_SUFFIX = ".dat";
     private final static String LOADER_FILE_NAME_PREFIX = "loader";
     private final static String CONTROL_FILE_NAME_SUFFIX = ".ctl";
-    private final static String ERROR_FILE_NAME_PREFIX = "error";
-    private final static String ERROR_FILE_NAME_SUFFIX = ".log";
+    private final static String DEFAULT_ERROR_FILE = "error.log";
     private final static File TMP_DIR = new File(".");
     private final static int UNUSED_INT = -1;
     private final static String DEFAULT_COLUMN_DELIMITER = "|";
@@ -378,7 +374,7 @@ public class InformixDataWriter extends Node {
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
 		isDataWrittenToPort = !getOutPorts().isEmpty();
 
-		// input port or inDataFileName or command have to be set
+		// input port or dataURL or command have to be set
 		if (!isDataReadFromPort) {
 			if (StringUtils.isEmpty(dataURL) && StringUtils.isEmpty(command)) {
 				throw new ComponentNotReadyException(this, "Input port or " + 
@@ -399,17 +395,26 @@ public class InformixDataWriter extends Node {
             		CONTROL_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
             
             if (errorLog == null) {
-            	errorLog = File.createTempFile(ERROR_FILE_NAME_PREFIX, 
-            			ERROR_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+            	errorLog = new File(TMP_DIR, DEFAULT_ERROR_FILE).getCanonicalPath();
             }
             
             if (isDataReadFromPort) {
 	        	if (ProcBox.isWindowsPlatform()) {
-	        		tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
-	            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+	        		if (dataURL != null) {
+	        			tmpDataFileName = new File(dataURL).getCanonicalPath();
+	        		} else {
+	        			tmpDataFileName = File.createTempFile(DATA_FILE_NAME_PREFIX, 
+		            			DATA_FILE_NAME_SUFFIX, TMP_DIR).getCanonicalPath();
+	        		}
 	            } else {
 	            	tmpDataFileName = UNIX_STDIN;
 	            }
+            } else {
+            	if (dataURL == null) {
+            		throw new ComponentNotReadyException(this, "There is neither input port nor " 
+            				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
+            	}
+            	tmpDataFileName = new File(dataURL).getCanonicalPath();
             }
             
         } catch(IOException e) {
@@ -616,9 +621,11 @@ public class InformixDataWriter extends Node {
     		return;
     	}
     	
-    	if (!UNIX_STDIN.equals(tmpDataFileName)) {
+    	if (isDataReadFromPort && !UNIX_STDIN.equals(tmpDataFileName) && dataURL == null) {
     		File dataFile = new File(tmpDataFileName);
-    		dataFile.delete();
+    		if (!dataFile.delete()) {
+    			logger.warn("Temp data file was not deleted.");
+    		}
     	}
     }
 
