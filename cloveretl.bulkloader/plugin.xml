@@ -38,4 +38,9 @@
 		<parameter id="className" value="org.jetel.component.InformixDataWriter"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="type" value="MS_SQL_DATA_WRITER"/>
+		<parameter id="className" value="org.jetel.component.MsSqlDataWriter"/>
+	</extension>
+	
 </plugin>
