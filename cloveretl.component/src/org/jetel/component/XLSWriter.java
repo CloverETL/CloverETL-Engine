@@ -59,9 +59,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Description:</i></h4></td>
  * <td>Reads data from input port and writes them to given xls sheet in xls file. If 
  *  in one graph you want to write to the same file but to different sheets each XLSWriter
- *  has to have another phase<br>Because POI currently uses a lot of memory for
- *   large sheets, it is impossible to save large data (over ~1.8MB) to xls file.
- *   JExcel can handle with bigger files (up to ~5.7MB in flat file)</td></tr>
+ *  has to have another phase<br>JExcel can handle 
+ * with files up to ~5.7MB in flat file. For more data it is requested more memory.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>one input port defined/connected.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
