@@ -70,6 +70,7 @@ public final class Defaults {
 		
 		DEFAULT_INTERNAL_IO_BUFFER_SIZE = getIntProperties("DEFAULT_INTERNAL_IO_BUFFER_SIZE", 32768);
 		DEFAULT_DATE_FORMAT = getStringProperties("DEFAULT_DATE_FORMAT", "yyyy-MM-dd");
+		DEFAULT_TIME_FORMAT = getStringProperties("DEFAULT_TIME_FORMAT", "HH:mm:ss");
 		DEFAULT_DATETIME_FORMAT = getStringProperties("DEFAULT_DATETIME_FORMAT", "yyyy-MM-dd HH:mm:ss");
 		DEFAULT_LOCALE_STR_DELIMITER_REGEX = getStringProperties("DEFAULT_LOCALE_STR_DELIMITER_REGEX", "\\.");
 		DEFAULT_BINARY_PATH = getStringProperties("DEFAULT_BINARY_PATH", "./bin/");
@@ -117,6 +118,7 @@ public final class Defaults {
 	 */
 	
 	public static String DEFAULT_DATE_FORMAT;// = "yyyy-MM-dd";
+	public static String DEFAULT_TIME_FORMAT;// = "HH:mm:ss";
 	public static String DEFAULT_DATETIME_FORMAT;// = "yyyy-MM-dd HH:mm:ss";
 
 	public static String DEFAULT_LOCALE_STR_DELIMITER_REGEX;// = "\\.";
