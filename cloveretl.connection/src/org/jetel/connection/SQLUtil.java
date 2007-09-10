@@ -33,8 +33,10 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.data.Defaults;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  *  Various utilities for working with Databases
@@ -129,7 +131,8 @@ public class SQLUtil {
 		DataFieldMetadata fieldMetadata;
 		DataRecordMetadata jetelMetadata = new DataRecordMetadata(dbMetadata.getTableName(1),
 				DataRecordMetadata.DELIMITED_RECORD);
-
+		int type;
+	
 		for (int i = 1; i <= dbMetadata.getColumnCount(); i++) {
 			try {
 				fieldMetadata = new DataFieldMetadata(dbMetadata.getColumnName(i), DEFAULT_DELIMITER);
@@ -138,7 +141,20 @@ public class SQLUtil {
 				throw new RuntimeException(ex.getMessage() + " field name " + dbMetadata.getColumnName(i));
 			}
 			// set proper data type
-			fieldMetadata.setType(SQLUtil.sqlType2jetel(dbMetadata.getColumnType(i)));
+			type = dbMetadata.getColumnType(i);
+			fieldMetadata.setType(SQLUtil.sqlType2jetel(type));
+			//for Date Data Field set proper format
+			switch (type) {
+			case Types.DATE:
+				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATE_FORMAT);
+				break;
+			case Types.TIME:
+				fieldMetadata.setFormatStr(Defaults.DEFAULT_TIME_FORMAT);
+				break;
+			case Types.TIMESTAMP:
+				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
+				break;
+			}
 
 			if (i == dbMetadata.getColumnCount()) {
 				fieldMetadata.setDelimiter(END_RECORD_DELIMITER);
@@ -320,7 +336,7 @@ public class SQLUtil {
 		DataFieldMetadata fieldMeta;
 		for (int i = 0; i < cloverFields.length; i++) {
 			if ((fieldMeta = metadata.getField(cloverFields[i])) != null) {
-				fieldTypes.add(new Integer(jetelType2sql(fieldMeta.getType())));
+				fieldTypes.add(new Integer(jetelType2sql(fieldMeta)));
 			} else {
 				throw new RuntimeException("Field name [" + cloverFields[i] + "] not found in " + metadata.getName());
 			}
@@ -338,7 +354,7 @@ public class SQLUtil {
 	public static List getFieldTypes(DataRecordMetadata metadata)  {
 		List fieldTypes = new LinkedList();
 		for (int i = 0; i < metadata.getNumFields(); i++) {
-				fieldTypes.add(new Integer(jetelType2sql(metadata.getField(i).getType())));
+				fieldTypes.add(new Integer(jetelType2sql(metadata.getField(i))));
 		}
 		return fieldTypes;
 	}
@@ -375,9 +391,10 @@ public class SQLUtil {
 	 *  Converts Jetel data type into SQL data type
 	 *
 	 * @param  jetelType
-	 * @return            corresponding Jetel data type
+	 * @return            corresponding sql data type
 	 * @since             September 25, 2002
 	 */
+	@Deprecated
 	public static int jetelType2sql(char jetelType) {
 		switch (jetelType) {
 			case DataFieldMetadata.INTEGER_FIELD:
@@ -399,6 +416,43 @@ public class SQLUtil {
 				return -1;
 			// unknown or not possible to translate
 		}
+	}
+	
+	/**
+	 *  Converts Jetel data type into SQL data type
+	 *
+	 * @param field
+	 * @return  corresponding sql data type
+	 */
+	public static int jetelType2sql(DataFieldMetadata field){
+		switch (field.getType()) {
+		case DataFieldMetadata.INTEGER_FIELD:
+			return Types.INTEGER;
+		case DataFieldMetadata.NUMERIC_FIELD:
+			return Types.NUMERIC;
+		case DataFieldMetadata.STRING_FIELD:
+			return Types.VARCHAR;
+		case DataFieldMetadata.DATE_FIELD:
+			boolean isDate = field.isDateFormat();
+			boolean isTime = field.isTimeFormat();
+			if (isDate && isTime || StringUtils.isEmpty(field.getFormatStr())) 
+				return Types.TIMESTAMP;
+			if (isDate)
+				return Types.DATE;
+			if (isTime)
+				return Types.TIME;
+			return Types.TIMESTAMP;
+        case DataFieldMetadata.LONG_FIELD:
+            return Types.BIGINT;
+        case DataFieldMetadata.DECIMAL_FIELD:
+            return Types.DECIMAL;
+        case DataFieldMetadata.BYTE_FIELD:
+        case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+            return Types.BINARY;
+		default:
+			return -1;
+		// unknown or not possible to translate
+	}
 	}
 
     /**
@@ -478,7 +532,7 @@ public class SQLUtil {
 			case Types.TIME:
 			case Types.TIMESTAMP:
 				return DataFieldMetadata.DATE_FIELD;
-                //-----------------
+            //-----------------
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
