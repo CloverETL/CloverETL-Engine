@@ -59,10 +59,8 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td>Readers</td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>Parses data from xls file and send the records to output ports.<br>Because 
- * POI currently uses a lot of memory for large sheets, it is impossible to read 
- * large data (over ~4.3MB in xls file - 2.1MB in flat file). JExcel can handle 
- * with bigger files (up to ~8.1MB in xls file - ~4.9MB in flat file)</td></tr>
+ * <td>Parses data from xls file and send the records to output ports.<br> JExcel can handle 
+ * with files up to ~8.1MB in xls file - ~4.9MB in flat file. For more data it is requested more memory.</td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
@@ -95,14 +93,12 @@ import org.w3c.dom.Element;
  *  <tr><td><b>fieldMap</b></td><td>Pairs of clover fields and xls columns
  *   (cloverField=xlsColumn) separated by :;| {colon, semicolon, pipe}.
  *  Can be used for mapping clover fields and xls fields or for defining order 
- *  of reading columns from xls sheet. Xls columns can be written as names given 
+ *  of reading columnspoi from xls sheet. Xls columns can be written as names given 
  *  in row specified by metadataRow attribute or as column's codes preceded 
  *  by $. Xls fields may be missing, then columns are read in order they are 
  *  in xls sheet and are given to proper metadata fields</td>
  *  </tr>
- *  <tr><td><b>charset</b></td><td>character encoding of the input file. 
- *  Don't set it, if XSLReader uses POI library (it recognizes encoding automatically).
- *  When XLSReader uses JExcelAPI, default encoding is set to  ISO-8859-1 </td>
+ *  <tr><td><b>charset</b></td><td>character encoding of the input file, default encoding is set to  ISO-8859-1 </td>
  *  </table>
  *
  *  <h4>Example:</h4>
