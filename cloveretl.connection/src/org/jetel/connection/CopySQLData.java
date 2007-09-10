@@ -373,20 +373,20 @@ public abstract class CopySQLData {
         int fromIndex;
         int toIndex;
         int jdbcType;
-        char jetelFieldType;
+        DataFieldMetadata jetelField;
 
         CopySQLData[] transMap = new CopySQLData[cloverFields.length];
 
        for(int i=0;i<cloverFields.length;i++) {
-            jetelFieldType=record.getField(cloverFields[i]).getType();
-            jdbcType = SQLUtil.jetelType2sql(jetelFieldType);
+            jetelField=record.getField(cloverFields[i]).getMetadata();
+            jdbcType = SQLUtil.jetelType2sql(jetelField);
             
             // from index is index of specified cloverField in the Clover record
             fromIndex = cloverFields[i];
             toIndex=i;
             // we copy from Clover's field to JDBC - toIndex/fromIndex is
             // switched here
-            transMap[i] = createCopyObject(jdbcType, jetelFieldType, record,
+            transMap[i] = createCopyObject(jdbcType, jetelField.getType(), record,
                     toIndex, fromIndex);
         }
         return transMap;
@@ -431,8 +431,9 @@ public abstract class CopySQLData {
 					return new CopyDecimal(record, fromIndex, toIndex);
 				}
 			case Types.DATE:
-			case Types.TIME:
 				return new CopyDate(record, fromIndex, toIndex);
+			case Types.TIME:
+				return new CopyTime(record, fromIndex, toIndex);
 			case Types.TIMESTAMP:
 				return new CopyTimestamp(record, fromIndex, toIndex);
 			case Types.BOOLEAN:
@@ -452,73 +453,6 @@ public abstract class CopySQLData {
 				return new CopyString(record, fromIndex, toIndex);
 			//default:
 			//	throw new RuntimeException("SQL data type not supported: " + SQLType);
-		}
-	}
-
-
-	/**
-	 *  Description of the Class
-	 *
-	 * @author      dpavlis
-	 * @since       October 7, 2002
-	 * @revision    $Revision$
-	 * @created     8. �ervenec 2003
-	 */
-	static class CopyDate extends CopySQLData {
-
-		java.sql.Date dateValue;
-
-
-		/**
-		 *  Constructor for the CopyDate object
-		 *
-		 * @param  record      Description of Parameter
-		 * @param  fieldSQL    Description of Parameter
-		 * @param  fieldJetel  Description of Parameter
-		 * @since              October 7, 2002
-		 */
-		CopyDate(DataRecord record, int fieldSQL, int fieldJetel) {
-			super(record, fieldSQL, fieldJetel);
-			dateValue = new java.sql.Date(0);
-		}
-
-
-		/**
-		 *  Sets the Jetel attribute of the CopyDate object
-		 *
-		 * @param  resultSet         The new Jetel value
-		 * @exception  SQLException  Description of Exception
-		 * @since                    October 7, 2002
-		 */
-		void setJetel(ResultSet resultSet) throws SQLException {
-			Date date = resultSet.getDate(fieldSQL);
-			if (resultSet.wasNull()) {
-				((DateDataField) field).setValue((Object)null);
-			}else{
-				((DateDataField) field).setValue(date);
-			}
-			
-		}
-
-
-		/**
-		 *  Sets the SQL attribute of the CopyDate object
-		 *
-		 * @param  pStatement        The new SQL value
-		 * @exception  SQLException  Description of Exception
-		 * @since                    October 7, 2002
-		 */
-		void setSQL(PreparedStatement pStatement) throws SQLException {
-			if (!field.isNull()) {
-			    if (inBatchUpdate){
-                    pStatement.setDate(fieldSQL, new java.sql.Date(((DateDataField) field).getDate().getTime()));
-			    }else{
-			        dateValue.setTime(((DateDataField) field).getDate().getTime());
-			        pStatement.setDate(fieldSQL, dateValue);
-			    }
-			} else {
-				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
-			}
 		}
 	}
 
@@ -795,6 +729,140 @@ public abstract class CopySQLData {
 		}
 
 	}
+	/**
+	 *  Description of the Class
+	 *
+	 * @author      dpavlis
+	 * @since       October 7, 2002
+	 * @revision    $Revision$
+	 * @created     8. �ervenec 2003
+	 */
+	static class CopyDate extends CopySQLData {
+
+		java.sql.Date dateValue;
+
+
+		/**
+		 *  Constructor for the CopyDate object
+		 *
+		 * @param  record      Description of Parameter
+		 * @param  fieldSQL    Description of Parameter
+		 * @param  fieldJetel  Description of Parameter
+		 * @since              October 7, 2002
+		 */
+		CopyDate(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+			dateValue = new java.sql.Date(0);
+		}
+
+
+		/**
+		 *  Sets the Jetel attribute of the CopyDate object
+		 *
+		 * @param  resultSet         The new Jetel value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			Date date = resultSet.getDate(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(date);
+			}
+			
+		}
+
+
+		/**
+		 *  Sets the SQL attribute of the CopyDate object
+		 *
+		 * @param  pStatement        The new SQL value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+			    if (inBatchUpdate){
+                    pStatement.setDate(fieldSQL, new java.sql.Date(((DateDataField) field).getDate().getTime()));
+			    }else{
+			        dateValue.setTime(((DateDataField) field).getDate().getTime());
+			        pStatement.setDate(fieldSQL, dateValue);
+			    }
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
+			}
+		}
+	}
+
+
+	/**
+	 *  Description of the Class
+	 *
+	 * @author      dpavlis
+	 * @since       October 7, 2002
+	 * @revision    $Revision$
+	 * @created     8. �ervenec 2003
+	 */
+	static class CopyTime extends CopySQLData {
+
+		java.sql.Time timeValue;
+
+
+		/**
+		 *  Constructor for the CopyDate object
+		 *
+		 * @param  record      Description of Parameter
+		 * @param  fieldSQL    Description of Parameter
+		 * @param  fieldJetel  Description of Parameter
+		 * @since              October 7, 2002
+		 */
+		CopyTime(DataRecord record, int fieldSQL, int fieldJetel) {
+			super(record, fieldSQL, fieldJetel);
+			timeValue = new java.sql.Time(0);
+		}
+
+
+		/**
+		 *  Sets the Jetel attribute of the CopyDate object
+		 *
+		 * @param  resultSet         The new Jetel value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setJetel(ResultSet resultSet) throws SQLException {
+			Date time = resultSet.getTime(fieldSQL);
+			if (resultSet.wasNull()) {
+				((DateDataField) field).setValue((Object)null);
+			}else{
+				((DateDataField) field).setValue(time);
+			}
+			
+		}
+
+
+		/**
+		 *  Sets the SQL attribute of the CopyDate object
+		 *
+		 * @param  pStatement        The new SQL value
+		 * @exception  SQLException  Description of Exception
+		 * @since                    October 7, 2002
+		 */
+		void setSQL(PreparedStatement pStatement) throws SQLException {
+			if (!field.isNull()) {
+			    if (inBatchUpdate){
+                    pStatement.setTime(fieldSQL, new java.sql.Time(((DateDataField) field).getDate().getTime()));
+			    }else{
+			        timeValue.setTime(((DateDataField) field).getDate().getTime());
+			        pStatement.setTime(fieldSQL, timeValue);
+			    }
+			} else {
+				pStatement.setNull(fieldSQL, java.sql.Types.DATE);
+			}
+		}
+	}
+
+
 
 
 	/**
