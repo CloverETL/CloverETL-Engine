@@ -19,10 +19,6 @@
 */
 package org.jetel.exception;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 import org.jetel.data.DataRecord;
 
 /**
@@ -45,6 +41,7 @@ public abstract class AbstractParserExceptionHandler implements IParserException
     public void handleException() {
         exceptionThrowed = false;
         handle();
+        exception = null;
     }
     
     abstract protected void handle();

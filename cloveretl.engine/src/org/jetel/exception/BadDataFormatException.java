@@ -20,7 +20,6 @@
 
 package org.jetel.exception;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -138,4 +137,16 @@ public class BadDataFormatException extends RuntimeException implements Iterable
 		return exceptions.iterator();
 	}
     
+	public BadDataFormatException clone(){
+		BadDataFormatException ex = new BadDataFormatException(this.getMessage());
+		ex.fieldNumber = this.fieldNumber;
+		ex.offendingValue = this.offendingValue;
+		ex.recordNumber = this.recordNumber;
+		for (BadDataFormatException exception : this) {
+			if (exception != this) {
+				ex.setNextException(exception);
+			}
+		}
+		return ex;
+	}
 }
