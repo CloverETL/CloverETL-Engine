@@ -19,7 +19,6 @@
 */
 package org.jetel.exception;
 
-import java.util.Iterator;
 
 /**
  * Parser exception handler with type "strict". Handled exception is only re-throwed.
@@ -41,7 +40,9 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     
     @Override
     protected void handle() {
-         throw exception;
+    	BadDataFormatException ex = exception.clone();
+    	exception = null;
+        throw ex;
     }
 
     @Override
