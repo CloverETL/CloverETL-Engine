@@ -30,18 +30,14 @@ import org.jetel.data.HashKey;
 import org.jetel.data.RecordKey;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
-import org.jetel.exception.ConfigurationStatus.Priority;
-import org.jetel.exception.ConfigurationStatus.Severity;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -128,8 +124,8 @@ import org.w3c.dom.Element;
     	private final static int DEFAULT_HASH_TABLE_INITIAL_CAPACITY = Defaults.Lookup.LOOKUP_INITIAL_CAPACITY;
     
     	private final static int WRITE_TO_PORT = 0; // not really used - we broadcast
-        private final static int PRIMARY_ON_PORT = 0;
-        private final static int FOREIGN_ON_PORT = 1;
+        private final static int PRIMARY_ON_PORT = 1;
+        private final static int FOREIGN_ON_PORT = 0;
     
     
     	private String[] primaryKeys;
@@ -205,6 +201,7 @@ import org.w3c.dom.Element;
             }
             // get record consisting of key-fields only
             defaultRecord = new DataRecord(primaryKey.generateKeyRecordMetadata());
+            defaultRecord.init();
             for(int i=0;i<defaultForeignKeys.length;i++){
                 try{
                     defaultRecord.getField(i).fromString(defaultForeignKeys[i]);
@@ -247,7 +244,7 @@ import org.w3c.dom.Element;
    					// do we have to fill default values ?
    					if (foreignRecord == null) {
                            for (int i=0; i < numFields; i++) {
-                               foreignRecord.getField(keyFields[i]).copyFrom(defaultRecord.getField(i));
+                               primaryRecord.getField(keyFields[i]).copyFrom(defaultRecord.getField(i));
                            }
    					}
                     writeRecordBroadcast(primaryRecord);
@@ -339,7 +336,7 @@ import org.w3c.dom.Element;
 
     		checkInputPorts(status, 2, 2);
             checkOutputPorts(status, 1, Integer.MAX_VALUE);
-        	checkMetadata(status, foreignMetadata, getOutMetadata());
+        	checkMetadata(status, primaryMetadata, getOutMetadata());
 
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);
         	foreignKey = new RecordKey(foreignKeys,foreignMetadata);
