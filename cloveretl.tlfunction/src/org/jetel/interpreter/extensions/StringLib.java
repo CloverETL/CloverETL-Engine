@@ -23,6 +23,7 @@
  */
 package org.jetel.interpreter.extensions;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -34,6 +35,7 @@ import org.jetel.interpreter.TransformLangExecutorRuntimeException;
 import org.jetel.interpreter.data.TLValue;
 import org.jetel.interpreter.data.TLValueType;
 import org.jetel.util.Compare;
+import org.jetel.util.DateUtils;
 import org.jetel.util.StringUtils;
 
 public class StringLib extends TLFunctionLibrary {
@@ -43,7 +45,9 @@ public class StringLib extends TLFunctionLibrary {
     enum Function {
         CONCAT("concat"), UPPERCASE("uppercase"), LOWERCASE("lowercase"), LEFT(
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
-                "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT("char_at") ;
+                "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT(
+                "char_at"), IS_BLANK("is_blank"), IS_ASCII("is_ascii"), IS_NUMBER("is_number"),
+                IS_INTEGER("is_integer"), IS_DATE("is_date"), REMOVE_DIACRITICS("remove_diacritic");
 
         public String name;
 
@@ -93,6 +97,18 @@ public class StringLib extends TLFunctionLibrary {
             return new SplitFunction();
         case CHAR_AT:
         	return new CharAtFunction();
+        case IS_BLANK:
+        	return new IsBlankFunction();
+        case IS_ASCII:
+        	return new IsAsciiFunction();
+        case IS_NUMBER:
+        	return new IsNumberFunction();
+        case IS_INTEGER:
+        	return new IsIntegerFunction();
+        case IS_DATE:
+        	return new IsDateFunction();
+        case REMOVE_DIACRITICS:
+        	return new RemoveDiacriticsFunction();
         default:
             return null;
         }
@@ -641,8 +657,183 @@ public class StringLib extends TLFunctionLibrary {
         }
     }
 
+    //  IS BLANK
+    class IsBlankFunction extends TLFunctionPrototype {
+
+        public IsBlankFunction() {
+            super("string", "is_blank", new TLValueType[] { TLValueType.STRING }, 
+            		TLValueType.BOOLEAN);
+        }
+
+        @Override
+        public TLValue execute(TLValue[] params, TLContext context) {
+            TLValue val = (TLValue)context.getContext();
+            
+            if (params[0].isNull()) {
+            	val.setValue(true);
+            }else if (!(params[0].type == TLValueType.STRING)){
+                throw new TransformLangExecutorRuntimeException(params,
+                "is_blank - wrong type of literal");
+            }else{
+            	val.setValue(StringUtils.isBlank(params[0].getCharSequence()));
+            }
+         
+            return val;
+        }
+        
+        @Override
+        public TLContext createContext() {
+        	return TLContext.createBooleanContext();
+        }
+    }
+
+        //  IS ASCII
+     class IsAsciiFunction extends TLFunctionPrototype {
+
+            public IsAsciiFunction() {
+                super("string", "is_ascii", new TLValueType[] { TLValueType.STRING }, 
+                		TLValueType.BOOLEAN);
+            }
+
+            @Override
+            public TLValue execute(TLValue[] params, TLContext context) {
+                TLValue val = (TLValue)context.getContext();
+     
+                if (params[0].isNull() || !(params[0].type == TLValueType.STRING)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_ascii - wrong type of literal");
+                }else{
+                    val.setValue(Charset.forName("US-ASCII").newEncoder().canEncode(
+                    		params[0].getCharSequence()));
+                }
+                
+                return val;
+            }
+
+            @Override
+        public TLContext createContext() {
+            return TLContext.createBooleanContext();
+        }
+    }
     
-	class RegexStore{
+     //  IS NUMBER
+     class IsNumberFunction extends TLFunctionPrototype {
+
+            public IsNumberFunction() {
+                super("string", "is_number", new TLValueType[] { TLValueType.STRING }, 
+                		TLValueType.BOOLEAN);
+            }
+
+            @Override
+            public TLValue execute(TLValue[] params, TLContext context) {
+                TLValue val = (TLValue)context.getContext();
+     
+                if (params[0].isNull() || !(params[0].type == TLValueType.STRING)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_number - wrong type of literal");
+                }else{
+                    val.setValue(StringUtils.isNumber(params[0].getCharSequence()));
+                }
+                
+                return val;
+            }
+
+            @Override
+        public TLContext createContext() {
+            return TLContext.createBooleanContext();
+        }
+    }
+
+     //  IS INTEGER
+     class IsIntegerFunction extends TLFunctionPrototype {
+
+            public IsIntegerFunction() {
+                super("string", "is_integer", new TLValueType[] { TLValueType.STRING }, 
+                		TLValueType.BOOLEAN);
+            }
+
+            @Override
+            public TLValue execute(TLValue[] params, TLContext context) {
+                TLValue val = (TLValue)context.getContext();
+     
+                if (params[0].isNull() || !(params[0].type == TLValueType.STRING)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_integer - wrong type of literal");
+                }else{
+                    val.setValue(StringUtils.isInteger((params[0].getCharSequence())) == 1);
+                }
+                
+                return val;
+            }
+
+            @Override
+        public TLContext createContext() {
+            return TLContext.createBooleanContext();
+        }
+    }
+
+     //  IS DATE
+     class IsDateFunction extends TLFunctionPrototype {
+
+            public IsDateFunction() {
+                super("string", "is_date", new TLValueType[] { TLValueType.STRING, TLValueType.STRING }, 
+                		TLValueType.BOOLEAN);
+            }
+
+            @Override
+            public TLValue execute(TLValue[] params, TLContext context) {
+                TLValue val = (TLValue)context.getContext();
+     
+                if (params[0].isNull() || params[1].isNull()) {
+                    throw new TransformLangExecutorRuntimeException(params,
+                            Function.IS_DATE.name()+" - NULL value not allowed");
+                }
+                if (!(params[0].type == TLValueType.STRING && params[1].type == TLValueType.STRING)){
+                    throw new TransformLangExecutorRuntimeException(params,
+                    "is_integer - wrong type of literal");
+                }else{
+                    val.setValue(DateUtils.isDate(params[0].getCharSequence(), params[1].getString()));
+                }
+                
+                return val;
+            }
+
+            @Override
+        public TLContext createContext() {
+            return TLContext.createBooleanContext();
+        }
+    }
+
+     //  ROMOVE DIACRITIC
+     class RemoveDiacriticsFunction extends TLFunctionPrototype {
+
+         public RemoveDiacriticsFunction() {
+             super("string", "remove_diacritic", new TLValueType[] { TLValueType.STRING }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (!params[0].isNull()) {
+                 if (!(params[0].type == TLValueType.STRING)){
+                     throw new TransformLangExecutorRuntimeException(params,
+                     "remove_diacritic - wrong type of literal");
+                 }else{
+                     val.setValue(StringUtils.removeDiacritic(params[0].getString()));
+                 }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     class RegexStore{
 	    public Pattern pattern;
 	    public Matcher matcher;
 	    public String storedRegex;

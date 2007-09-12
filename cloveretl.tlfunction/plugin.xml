@@ -50,6 +50,12 @@
 			<value>replace</value>
 			<value>split</value>
 			<value>char_at</value>
+			<value>is_blank</value>
+			<value>is_ascii</value>
+			<value>is_number</value>
+			<value>is_integer</value>
+			<value>is_date</value>
+			<value>remove_diacritic</value>
 		</parameter>
 	</extension>
 	
