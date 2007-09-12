@@ -69,4 +69,10 @@ public class TLContext<T> {
 
     }
     
+    public static TLContext<TLValue> createBooleanContext(){
+        TLContext<TLValue> context = new TLContext<TLValue>();
+        context.setContext(new TLValue(TLValueType.BOOLEAN,true));
+        return context;
+    }
+    
 }
