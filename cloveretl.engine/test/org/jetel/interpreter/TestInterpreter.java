@@ -35,17 +35,13 @@ import org.jetel.data.SetVal;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.parser.Parser;
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.CloverLong;
 import org.jetel.data.primitive.DecimalFactory;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.graph.TransformationGraph;
-import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFStart;
 import org.jetel.interpreter.ASTnode.CLVFStartExpression;
-import org.jetel.interpreter.data.TLValue;
-import org.jetel.interpreter.data.TLValueType;
 import org.jetel.interpreter.data.TLVariable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
@@ -462,7 +458,9 @@ public class TestInterpreter extends TestCase {
 						"b2 = true; print_err(b2);\n" +
 						"int in;\n" +
 						"if (b2) {in=2;print_err('in');}\n"+
-						"print_err(b2);";
+						"print_err(b2);\n" +
+						"b4=null; print_err(b4);\n"+
+						"b4='hi'; print_err(b4);";
 	      print_code(expStr);
 		try {
 			  TransformLangParser parser = new TransformLangParser(record.getMetadata(),
@@ -1837,7 +1835,128 @@ public class TestInterpreter extends TestCase {
 	    }
 	}
 
-	public void test_math_functions(){
+    public void test_functions2(){
+        System.out.println("\nFunctions test:");
+        String expStr = "string test='test';\n" +
+        		"boolean isBlank=is_blank(test);\n" +
+        		"boolean isBlank1=is_blank('');\n" +
+        		"test=null; boolean isBlank2=is_blank(test);\n" +
+        		"boolean isAscii1=is_ascii('test');\n" +
+        		"boolean isAscii2=is_ascii('aęř');\n" +
+        		"boolean isNumber=is_number('t1');\n" +
+        		"boolean isNumber1=is_number('1g');\n" +
+        		"boolean isNumber2=is_number('1'); print_err(str2num('1'));\n" +
+        		"boolean isNumber3=is_number('-382.334'); print_err(str2num('-382.334',decimal));\n" +
+        		"boolean isNumber4=is_number('+332e2');\n" +
+        		"boolean isNumber5=is_number('8982.8992e-2');print_err(str2num('8982.8992e-2',double));\n" +
+        		"boolean isNumber6=is_number('-7888873.2E3');print_err(str2num('-7888873.2E3',number));\n" +
+        		"boolean isInteger=is_integer('h3');\n" +
+        		"boolean isInteger1=is_integer('78gd');\n" +
+        		"boolean isInteger2=is_integer('8982.8992');\n" +
+        		"boolean isInteger3=is_integer('-766542378');print_err(str2num('-766542378'));\n" +
+        		"boolean isInteger4=is_integer('78642325688990076654322234');\n" +
+        		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy');print_err(str2date('20Jul2000','ddMMMyyyy'));\n" +
+        		"boolean isDate6=is_date('20July2000','ddMMMMMMMMyyyy');print_err(str2date('20July    2000','ddMMMyyyy'));\n" +
+        		"boolean isDate3=is_date('4:42','HH:mm');print_err(str2date('4:42','HH:mm'));\n" +
+        		"boolean isDate=is_date('20.11.2007','dd.MM.yyyy');print_err(str2date('20.11.2007','dd.MM.yyyy'));\n" +
+        		"boolean isDate1=is_date('20.11.2007','dd-MM-yyyy');\n" +
+        		"boolean isDate2=is_date('24:00 20.11.2007','HH:mm dd.MM.yyyy');print_err(str2date('24:00 20.11.2007','HH:mm dd.MM.yyyy'));\n" +
+        		"boolean isDate4=is_date('test 20.11.2007','hhmm dd.MM.yyyy');\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank1")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isBlank2")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii1")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isAscii2")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber1")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber2")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber3")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber4")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber5")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber6")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger1")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger2")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger3")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger4")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate1")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate2")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate3")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate4")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate5")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate6")).getValue().getBoolean()));
+
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Parse exception",e);
+        }
+              
+    }
+
+    public void test_functions3(){
+        System.out.println("\nFunctions test:");
+        String expStr = "string test=remove_diacritic('teścik');\n" +
+        				"string test1=remove_diacritic('žabička');\n";
+        print_code(expStr);
+
+       Log logger = LogFactory.getLog(this.getClass());
+       
+        
+        try {
+              TransformLangParser parser = new TransformLangParser(record.getMetadata(),
+                    new ByteArrayInputStream(expStr.getBytes()));
+              CLVFStart parseTree = parser.Start();
+
+              System.out.println("Initializing parse tree..");
+              parseTree.init();
+		      System.out.println("Parse tree:");
+		      parseTree.dump("");
+		      
+              System.out.println("Interpreting parse tree..");
+              TransformLangExecutor executor=new TransformLangExecutor();
+              executor.setInputRecords(new DataRecord[] {record});
+              executor.setRuntimeLogger(logger);
+              executor.setGraph(graph);
+              executor.visit(parseTree,null);
+              System.out.println("Finished interpreting.");
+              
+		      assertEquals("tescik",(executor.getGlobalVariable(parser.getGlobalVariableSlot("test")).getValue().getString()));
+		      assertEquals("zabicka",(executor.getGlobalVariable(parser.getGlobalVariableSlot("test1")).getValue().getString()));
+
+        } catch (ParseException e) {
+            System.err.println(e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Parse exception",e);
+        }
+              
+    }
+
+    public void test_math_functions(){
 		System.out.println("\nMath functions test:");
 		String expStr = "number original;original=pi();\n" +
 						"print_err('pi='+original);\n" +
