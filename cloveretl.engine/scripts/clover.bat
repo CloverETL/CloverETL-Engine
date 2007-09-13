@@ -101,10 +101,9 @@ set JAVOLUTION_JAR=%CLOVER_HOME%\lib\javolution.jar
 set JMS_JAR=%CLOVER_HOME%\lib\jms.jar
 set JXL_JAR=%CLOVER_HOME%\lib\jxl.jar
 set LOG4J_JAR=%CLOVER_HOME%\lib\log4j-1.2.12.zip
-set POI_JAR=%CLOVER_HOME%\lib\poi-2.5.1.jar
+set COMMONS_CLI=%CLOVER_HOME%\lib\commons-cli-1.0.jar
 
-
-echo "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%USER_CLASSPATH%;%TRANSFORM_PATH%;%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%POI_JAR%;%TOOLS_JAR%;" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
+echo "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%USER_CLASSPATH%;%TRANSFORM_PATH%;%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%TOOLS_JAR%;%COMMONS_CLI%" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
 "%_JAVACMD%" %CLOVER_OPTS% %JAVA_CMD_LINE_ARGS% -classpath "%USER_CLASSPATH%;%CLOVER_HOME%\lib\cloveretl.engine.jar;%COMMONS_LOGGING_JAR%;%JAVOLUTION_JAR%;%JMS_JAR%;%JXL_JAR%;%LOG4J_JAR%;%POI_JAR%;%TOOLS_JAR%;" "-Dclover.home=%CLOVER_HOME%" org.jetel.main.runGraph -plugins "%CLOVER_HOME%\plugins" %CLOVER_CMD_LINE_ARGS%
 
 set CLOVER_OPTS=
