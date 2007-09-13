@@ -69,9 +69,9 @@ import org.w3c.dom.Element;
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
  *    <td>
- *        [0] - primary records<br>
- *    [1] - foreign records<br>
- *    </td></tr>
+  *    	[0] - foreign records<br>
+ *      [1] - primary records<br>
+*    </td></tr>
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
@@ -88,11 +88,11 @@ import org.w3c.dom.Element;
  *    <tr><td><b>type</b></td><td>"CHECK_FOREIGN_KEY"</td></tr>
  *    <tr><td><b>id</b></td><td>component identification</td></tr>
  *    <tr><td><b>primaryKey</b></td><td>
- *      Name(s) of column(s) in input [0] that contain the primary key(s) 
+ *      Name(s) of column(s) in input [1] that contain the primary key(s) 
  *      (field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
  *    </td></tr>
  *    <tr><td><b>foreignKey</b></td><td>
- *      Name(s) of column(s) in input [1] that contain the foreign key(s) 
+ *      Name(s) of column(s) in input [0] that contain the foreign key(s) 
  *      (field names separated by Defaults.Component.KEY_FIELDS_DELIMITER_REGEX).
  *    </td></tr>
  *    <tr><td><b>defaultForeignKey</b></td><td>
@@ -102,7 +102,8 @@ import org.w3c.dom.Element;
  *    </td></tr>
  *    <tr><td><b>hashSize</b><br><i>optional</i></td><td>should be larger than the number of unique primary keys.</td></tr>
  *    </table>
- *    <h4>Example:</h4> <pre>&lt;Node id="CHECKFOREIGN" type="CHECK_FOREIGN_KEY" primaryKey="CustomerID" foreignKey="CustomerID" defaultForeignKey="-1"/&gt;</pre>
+ *    <h4>Example:</h4> <pre>&lt;Node id="CHECKFOREIGN" type="CHECK_FOREIGN_KEY" primaryKey="CustomerID" 
+ *    foreignKey="CustomerID" defaultForeignKey="-1"/&gt;</pre>
  *
  *	  
  * @author      david pavlis
@@ -136,7 +137,7 @@ import org.w3c.dom.Element;
     	private RecordKey primaryKey;
     	private RecordKey foreignKey;
     
-    	private Map hashMap;
+    	private Map<HashKey, DataRecord> hashMap;
     	private int hashTableInitialCapacity;
     	
     
@@ -189,7 +190,7 @@ import org.w3c.dom.Element;
     
             // allocate HashMap
             try {
-                hashMap = new HashMap(hashTableInitialCapacity);
+                hashMap = new HashMap<HashKey, DataRecord>(hashTableInitialCapacity);
             } catch (OutOfMemoryError ex) {
                 logger.fatal(ex);
             } finally {
@@ -200,7 +201,7 @@ import org.w3c.dom.Element;
                 }
             }
             // get record consisting of key-fields only
-            defaultRecord = new DataRecord(primaryKey.generateKeyRecordMetadata());
+            defaultRecord = new DataRecord(foreignKey.generateKeyRecordMetadata());
             defaultRecord.init();
             for(int i=0;i<defaultForeignKeys.length;i++){
                 try{
@@ -221,33 +222,33 @@ import org.w3c.dom.Element;
     		DataRecord foreignRecord;
     		DataRecord storeRecord;
     
-    		foreignRecord=new DataRecord(inForeignPort.getMetadata());
-    		foreignRecord.init();
-    		while (foreignRecord!=null && runIt) {
-   				if ((foreignRecord=inForeignPort.readRecord(foreignRecord)) != null) {
-   				    storeRecord=foreignRecord.duplicate();
-   					hashMap.put(new HashKey(foreignKey, storeRecord), storeRecord);
+    		primaryRecord=new DataRecord(inPrimaryPort.getMetadata());
+    		primaryRecord.init();
+    		while (primaryRecord!=null && runIt) {
+   				if ((primaryRecord=inPrimaryPort.readRecord(primaryRecord)) != null) {
+   				    storeRecord=primaryRecord.duplicate();
+   					hashMap.put(new HashKey(primaryKey, storeRecord), storeRecord);
    				} 
    				SynchronizeUtils.cloverYield();
     		}
 
-    		primaryRecord = new DataRecord(inPrimaryPort.getMetadata());
-    		primaryRecord.init();
-    		HashKey primaryHashKey = new HashKey(primaryKey, primaryRecord);
+    		foreignRecord = new DataRecord(inForeignPort.getMetadata());
+    		foreignRecord.init();
+    		HashKey foreignHashKey = new HashKey(foreignKey, foreignRecord);
     		int numFields=defaultRecord.getNumFields();
-            int keyFields[]=primaryKey.getKeyFields();
-    		while (runIt && primaryRecord != null) {
-   				primaryRecord = inPrimaryPort.readRecord(primaryRecord);
-   				if (primaryRecord != null) {
+            int keyFields[]=foreignKey.getKeyFields();
+    		while (runIt && foreignRecord != null) {
+   				foreignRecord = inForeignPort.readRecord(foreignRecord);
+   				if (foreignRecord != null) {
    					// let's find slave record
-   					foreignRecord = (DataRecord) hashMap.get(primaryHashKey);
+   					primaryRecord = (DataRecord) hashMap.get(foreignHashKey);
    					// do we have to fill default values ?
-   					if (foreignRecord == null) {
+   					if (primaryRecord == null) {
                            for (int i=0; i < numFields; i++) {
-                               primaryRecord.getField(keyFields[i]).copyFrom(defaultRecord.getField(i));
+                               foreignRecord.getField(keyFields[i]).setValue(defaultRecord.getField(i));
                            }
    					}
-                    writeRecordBroadcast(primaryRecord);
+                    writeRecordBroadcast(foreignRecord);
    				}
    				SynchronizeUtils.cloverYield();
     		}
@@ -336,7 +337,7 @@ import org.w3c.dom.Element;
 
     		checkInputPorts(status, 2, 2);
             checkOutputPorts(status, 1, Integer.MAX_VALUE);
-        	checkMetadata(status, primaryMetadata, getOutMetadata());
+        	checkMetadata(status, foreignMetadata, getOutMetadata());
 
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);
         	foreignKey = new RecordKey(foreignKeys,foreignMetadata);
