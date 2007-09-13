@@ -1,5 +1,6 @@
 package org.jetel.lookup;
 
+import java.io.ByteArrayInputStream;
 import java.security.InvalidParameterException;
 import java.text.Collator;
 import java.text.RuleBasedCollator;
@@ -56,10 +57,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	
     private static final String XML_LOOKUP_TYPE_RANGE_LOOKUP = "rangeLookup";
     private static final String XML_METADATA_ID ="metadata";
-    private static final String XML_LOOKUP_DATA_TYPE = "dataType";
     private static final String XML_FILE_URL = "fileURL";
-    private static final String XML_DATA_TYPE_DELIMITED ="delimited";
-    public static final String XML_DATA_TYPE_FIXED ="fixed";
  	private static final String XML_BYTEMODE_ATTRIBUTE = "byteMode";
     private static final String XML_START_FIELDS = "startFields";
     private static final String XML_END_FIELDS = "endFields";
@@ -68,6 +66,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
     private static final String XML_LOCALE = "locale";
     private static final String XML_START_INCLUDE = "startInclude";
     private static final String XML_END_INCLUDE = "endInclude";
+	private static final String XML_DATA_ATTRIBUTE = "data";
 
     protected DataRecordMetadata metadata;//defines lookup table
     protected String metadataId;
@@ -91,10 +90,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected boolean[] endInclude;
 	protected boolean useI18N;
 	protected String locale;
-	protected String dataType;
 	protected boolean byteMode = false;
 	protected String charset;
 	protected String fileURL;
+	// data of the lookup table, can be used instead of an input file
+	protected String data;
 	
 	private DataRecord tmp;
 	private int startComparison;
@@ -251,14 +251,20 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	    tmpRecord=new DataRecord(metadata);
 	    tmpRecord.init();
 
-	    if (dataParser == null && fileURL != null) {
-	    	if (dataType.equalsIgnoreCase(XML_DATA_TYPE_DELIMITED)) {
-	    		dataParser = new DelimitedDataParser(charset);
-	    	}else if (dataType.equalsIgnoreCase(XML_DATA_TYPE_FIXED)){
-	    		dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
-	    	}else{
-	    		dataParser = new DataParser(charset);
-	    	}
+	    if (dataParser == null && (fileURL != null || data!= null)) {
+    		switch (metadata.getRecType()) {
+			case DataRecordMetadata.DELIMITED_RECORD:
+				dataParser = new DelimitedDataParser(charset);
+				break;
+			case DataRecordMetadata.FIXEDLEN_RECORD:
+				dataParser = byteMode ? new FixLenByteDataParser(charset) : new FixLenCharDataParser(charset);
+				break;
+			case DataRecordMetadata.MIXED_RECORD:
+				dataParser = new DataParser(charset);
+				break;
+			default:
+				throw new ComponentNotReadyException(this, XML_METADATA_ID, "Unknown metadata type: " + metadata.getRecType());
+			}
 	    }
 	    
 	    //read records from file
@@ -269,6 +275,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 					dataParser.setDataSource(FileUtils.getReadableChannel(
 							getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, 
 							fileURL));
+				}else if (data != null) {
+					dataParser.setDataSource(new ByteArrayInputStream(data.getBytes()));
 				}                
 				while (dataParser.getNext(tmpRecord) != null) {
                     lookupTable.add(tmpRecord.duplicate());
@@ -458,9 +466,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			if (xattribs.exists(XML_LOCALE)){
 				lookupTable.setLocale(XML_LOCALE);
 			}
-			if (xattribs.exists(XML_LOOKUP_DATA_TYPE)) {
-				lookupTable.setDataType(xattribs.getString(XML_LOOKUP_DATA_TYPE));
-			}
 			if (xattribs.exists(XML_FILE_URL)){
 				lookupTable.setFileURL(xattribs.getString(XML_FILE_URL));
 			}
@@ -497,7 +502,11 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			
 			lookupTable.setByteMode(xattribs.getBoolean(XML_BYTEMODE_ATTRIBUTE, false));
 			
-			return lookupTable;
+            if (xattribs.exists(XML_DATA_ATTRIBUTE)) {
+            	lookupTable.setData(xattribs.getString(XML_DATA_ATTRIBUTE));
+            }
+
+            return lookupTable;
 			
 		} catch (AttributeNotFoundException e) {
             throw new XMLConfigurationException("can't create simple lookup table",e);
@@ -559,14 +568,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	public void setCharset(String charset) {
 		this.charset = charset;
-	}
-
-	public String getDataType() {
-		return dataType;
-	}
-
-	public void setDataType(String dataType) {
-		this.dataType = dataType;
 	}
 
 	public String getFileURL() {
@@ -658,6 +659,14 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			return 0;
 		}
 
+	}
+
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
 	}
 
 
