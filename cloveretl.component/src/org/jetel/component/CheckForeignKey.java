@@ -115,7 +115,7 @@ import org.w3c.dom.Element;
     
     	private static final String XML_HASHTABLESIZE_ATTRIBUTE = "hashTableSize";
         
-        private static final String XML_FOREIGNKEY_ATTRIBUTE = "foreignKey";
+        public static final String XML_FOREIGNKEY_ATTRIBUTE = "foreignKey";
         private static final String XML_PRIMARYKEY_ATTRIBUTE = "primaryKey";
         private static final String XML_DEFAULTFOREIGNKEY_ATTRIBUTE = "defaultForeignKey";
     
