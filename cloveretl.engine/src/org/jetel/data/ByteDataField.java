@@ -295,12 +295,9 @@ public class ByteDataField extends DataField implements Comparable{
 	 *@return    String representation of byte array
 	 *@since     October 29, 2002
 	 */
-	public String toString() {
-		if (isNull()) {
-			return "";
-		}
-		return new String(getByteArray());
-	}
+    public String toString() {
+        return toString(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+    }
 
     
     
