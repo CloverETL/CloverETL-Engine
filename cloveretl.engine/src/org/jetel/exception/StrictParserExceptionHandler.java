@@ -40,7 +40,7 @@ public class StrictParserExceptionHandler extends AbstractParserExceptionHandler
     
     @Override
     protected void handle() {
-    	BadDataFormatException ex = exception.clone();
+    	BadDataFormatException ex = exception;
     	exception = null;
         throw ex;
     }
