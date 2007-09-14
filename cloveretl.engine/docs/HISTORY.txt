@@ -1,7 +1,22 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+REL 2-3
++ swaped primary/foreign ports in CheckForeignKey component
++ DateDataField corresponds with three database types (DATE,TIME,TIMESTAMP) depending on format string:
+	- format contains only date (GyMwWDdFE) symbols - DATE
+	- format contains only time (aHhKkmsSzZ) symbols - TIME
+	- format contains date and time symbols - TIMESTAMP
+	- format is empty - TIMESTAMP
++ DB2DataWriter - new component for loading data to Db2 database
++ new TL functions:
+	 - boolean is_blank(string );
+	 - boolean is_ascii(string );
+	 - boolean is_number(string );
+	 - boolean is_integer(string );
+	 - boolean is_date(string);
 
+string remove_diacritics()
 REL 2-2-0
 ---------
 Changes/bug fixes:
