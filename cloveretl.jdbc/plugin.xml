@@ -1,0 +1,12 @@
+<plugin
+	id="org.jetel.jdbc"
+	version="2.3.0"
+	provider-name="Javlin Consulting s.r.o.">
+
+	<extension point-id="jdbcDriver">
+		<parameter id="database" value="MYSQL"/>
+		<parameter id="dbDriver" value="org.gjt.mm.mysql.Driver"/>
+		<parameter id="driverLibrary" value="lib/mysql/mysql-connector-java-3.0.11-stable-bin.jar"/>
+	</extension>
+	
+</plugin>
