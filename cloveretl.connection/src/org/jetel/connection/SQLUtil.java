@@ -156,9 +156,6 @@ public class SQLUtil {
 			case Types.TIMESTAMP:
 				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
 				break;
-			case Types.BLOB:
-				fieldMetadata.setFormatStr(BLOB_FORMAT_STRING);
-				break;
 			}
 
 			if (i == dbMetadata.getColumnCount()) {

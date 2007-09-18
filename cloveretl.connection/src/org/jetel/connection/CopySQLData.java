@@ -411,7 +411,6 @@ public abstract class CopySQLData {
 	 * @return                 Description of the Return Value
 	 */
 	private static CopySQLData createCopyObject(int SQLType, char jetelFieldType, DataRecord record, int fromIndex, int toIndex) {
-		String format = record.getField(toIndex).getMetadata().getFormatStr();
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -453,6 +452,8 @@ public abstract class CopySQLData {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
+            case Types.BLOB:
+        		String format = record.getField(toIndex).getMetadata().getFormatStr();
             	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
                 	return new CopyBlob(record, fromIndex, toIndex);
             	}
@@ -460,14 +461,6 @@ public abstract class CopySQLData {
             		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
             	}
                 return new CopyByte(record, fromIndex, toIndex);
-            case Types.BLOB:
-            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)) {
-                	return new CopyByte(record, fromIndex, toIndex);
-            	}
-            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)){
-            		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyBlob object.");
-            	}
-            	return new CopyBlob(record, fromIndex, toIndex);
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
 			default:
