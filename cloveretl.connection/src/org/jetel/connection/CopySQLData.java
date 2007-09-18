@@ -19,6 +19,7 @@
 */
 package org.jetel.connection;
 import java.math.BigDecimal;
+import java.sql.Blob;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -28,6 +29,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.ListIterator;
 
+import javax.sql.rowset.serial.SerialBlob;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.jetel.data.ByteDataField;
 import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
@@ -42,6 +47,7 @@ import org.jetel.data.primitive.HugeDecimal;
 import org.jetel.exception.JetelException;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 
 /**
  *  Class for creating mappings between CloverETL's DataRecords and JDBC's
@@ -70,6 +76,8 @@ public abstract class CopySQLData {
 	protected DataField field;
 
     protected boolean inBatchUpdate = false; // indicates whether batchMode is used when populating target DB
+
+	static Log logger = LogFactory.getLog(CopySQLData.class);
 
 	/**
 	 *  Constructor for the CopySQLData object
@@ -403,6 +411,7 @@ public abstract class CopySQLData {
 	 * @return                 Description of the Return Value
 	 */
 	private static CopySQLData createCopyObject(int SQLType, char jetelFieldType, DataRecord record, int fromIndex, int toIndex) {
+		String format = record.getField(toIndex).getMetadata().getFormatStr();
 		switch (SQLType) {
 			case Types.CHAR:
 			case Types.LONGVARCHAR:
@@ -444,8 +453,21 @@ public abstract class CopySQLData {
             case Types.BINARY:
             case Types.VARBINARY:
             case Types.LONGVARBINARY:
-            case Types.BLOB:
+            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)) {
+                	return new CopyBlob(record, fromIndex, toIndex);
+            	}
+            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)){
+            		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyByte object.");
+            	}
                 return new CopyByte(record, fromIndex, toIndex);
+            case Types.BLOB:
+            	if (!StringUtils.isEmpty(format) && format.equalsIgnoreCase(SQLUtil.BINARY_FORMAT_STRING)) {
+                	return new CopyByte(record, fromIndex, toIndex);
+            	}
+            	if (!StringUtils.isEmpty(format) && !format.equalsIgnoreCase(SQLUtil.BLOB_FORMAT_STRING)){
+            		logger.warn("Unknown format " + StringUtils.quote(format) + " - using CopyBlob object.");
+            	}
+            	return new CopyBlob(record, fromIndex, toIndex);
 			// when Types.OTHER or unknown, try to copy it as STRING
 			// this works for most of the NCHAR/NVARCHAR types on Oracle, MSSQL, etc.
 			default:
@@ -1045,6 +1067,62 @@ public abstract class CopySQLData {
         }
     }
 
+    static class CopyBlob extends CopySQLData {
+    	    	
+    	Blob blob;
+    	
+        /**
+         *  Constructor for the CopyByte object
+         *
+         * @param  record      Description of Parameter
+         * @param  fieldSQL    Description of Parameter
+         * @param  fieldJetel  Description of Parameter
+         * @since              October 7, 2002
+         */
+        CopyBlob(DataRecord record, int fieldSQL, int fieldJetel) {
+            super(record, fieldSQL, fieldJetel);
+        }
+
+
+        /**
+         *  Sets the Jetel attribute of the CopyByte object
+         *
+         * @param  resultSet         The new Jetel value
+         * @exception  SQLException  Description of Exception
+         * @since                    October 7, 2002
+         */
+        void setJetel(ResultSet resultSet) throws SQLException {
+        	blob = resultSet.getBlob(fieldSQL);
+			if (blob != null) {
+				blob = new SerialBlob(blob);
+				if (blob.length() > Integer.MAX_VALUE) {
+					throw new SQLException("Blob value is too long: " + blob.length());
+				}
+			}            
+            if (resultSet.wasNull()) {
+                ((ByteDataField) field).setValue((Object)null);
+            } else {
+                ((ByteDataField) field).setValue(blob.getBytes(1, (int)blob.length()));
+            }
+        }
+
+
+        /**
+         *  Sets the SQL attribute of the CopyByte object
+         *
+         * @param  pStatement        The new SQL value
+         * @exception  SQLException  Description of Exception
+         * @since                    October 7, 2002
+         */
+        void setSQL(PreparedStatement pStatement) throws SQLException {
+            if (!field.isNull()) {
+                pStatement.setBlob(fieldSQL, new SerialBlob(((ByteDataField) field).getByteArray()));
+            } else {
+                pStatement.setNull(fieldSQL, java.sql.Types.BLOB);
+            }
+
+        }
+    }
 }
 
 
