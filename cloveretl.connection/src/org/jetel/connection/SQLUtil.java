@@ -50,6 +50,8 @@ public class SQLUtil {
 
 	private final static String DEFAULT_DELIMITER = ";";
 	private final static String END_RECORD_DELIMITER = "\n";
+	public final static String BLOB_FORMAT_STRING = "blob";
+	public final static String BINARY_FORMAT_STRING = "binary";
 
 	static Log logger = LogFactory.getLog(SQLUtil.class);
 
@@ -153,6 +155,9 @@ public class SQLUtil {
 				break;
 			case Types.TIMESTAMP:
 				fieldMetadata.setFormatStr(Defaults.DEFAULT_DATETIME_FORMAT);
+				break;
+			case Types.BLOB:
+				fieldMetadata.setFormatStr(BLOB_FORMAT_STRING);
 				break;
 			}
 
@@ -448,6 +453,10 @@ public class SQLUtil {
             return Types.DECIMAL;
         case DataFieldMetadata.BYTE_FIELD:
         case DataFieldMetadata.BYTE_FIELD_COMPRESSED:
+        	if (!StringUtils.isEmpty(field.getFormatStr())
+					&& field.getFormatStr().equalsIgnoreCase(BLOB_FORMAT_STRING)) {
+        		return Types.BLOB;
+        	}
             return Types.BINARY;
 		default:
 			return -1;
