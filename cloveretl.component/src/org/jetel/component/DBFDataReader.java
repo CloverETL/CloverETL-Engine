@@ -26,7 +26,6 @@ import org.jetel.data.DataRecord;
 import org.jetel.database.dbf.DBFDataParser;
 import org.jetel.exception.BadDataFormatException;
 import org.jetel.exception.ComponentNotReadyException;
-import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.IParserExceptionHandler;
 import org.jetel.exception.ParserExceptionHandlerFactory;
@@ -37,7 +36,6 @@ import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.MultiFileReader;
-import org.jetel.util.StringUtils;
 import org.jetel.util.SynchronizeUtils;
 import org.w3c.dom.Element;
 
@@ -288,7 +286,7 @@ public class DBFDataReader extends Node {
         checkOutputPorts(status, 1, Integer.MAX_VALUE);
         checkMetadata(status, getOutMetadata());
 
-        try {
+        /* try { // because of stdin
             init();
             free();
         } catch (ComponentNotReadyException e) {
@@ -297,7 +295,7 @@ public class DBFDataReader extends Node {
                 problem.setAttributeName(e.getAttributeName());
             }
             status.add(problem);
-        }
+        }*/
         
         return status;
     }

@@ -253,11 +253,11 @@ public class XLSReader extends Node {
 			}else{
 				parser.setSheetName(sheetName);
 			}
-	        try{//sheet number OK, check file name
+	        //because of stdin try{//sheet number OK, check file name
 	            reader = new MultiFileReader(parser, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
-	            reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
+	            //reader.init(getOutputPort(OUTPUT_PORT).getMetadata());
 	            reader.close();
-	        }catch(ComponentNotReadyException e){
+	        /*}catch(ComponentNotReadyException e){
 	            ConfigurationProblem problem = new ConfigurationProblem(
 						"Problem with file URL: " + fileURL + " or not valid "
 								+ "sheet number: \"" + sheetNumber
@@ -266,7 +266,7 @@ public class XLSReader extends Node {
 						ConfigurationStatus.Priority.NORMAL);
 	            problem.setAttributeName(XML_FILE_ATTRIBUTE);
 	            status.add(problem);
-	        }
+	        }*/
         } catch (IllegalArgumentException e) {
             ConfigurationProblem problem = new ConfigurationProblem(e.getMessage(), ConfigurationStatus.Severity.ERROR, this, ConfigurationStatus.Priority.NORMAL);
             problem.setAttributeName(XML_SHEETNUMBER_ATTRIBUTE);
