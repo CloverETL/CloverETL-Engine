@@ -66,7 +66,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td>
  *  <tr><td><b>aggregateKey</b></td><td>aggregation key, field names separated by :;|  {colon, semicolon, pipe}</td>
  *  <tr><td><b>mapping</b></td><td>aggregation function mappings separated by :;|  {colon, semicolon, pipe}. 
- *  Each mapping can be in the form of output_field=input_field or output_field=function(input_field).
+ *  Each mapping can be in the form of $output_field=$input_field or $output_field=function($input_field).
  *  The first form copies fields from input to output without applying any aggregation function 
  *  (the input field must be part of the key). The second form applies an aggregation function on all values
  *  of the input field (within an aggregation group implied by the aggregation key) and copies the result
