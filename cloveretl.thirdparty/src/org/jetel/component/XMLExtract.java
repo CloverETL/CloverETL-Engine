@@ -2,6 +2,7 @@ package org.jetel.component;
 
 import java.io.StringReader;
 import java.lang.ref.WeakReference;
+import java.nio.channels.Channels;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -31,6 +32,7 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.sequence.PrimitiveSequence;
 import org.jetel.util.ComponentXMLAttributes;
+import org.jetel.util.FileUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -205,6 +207,8 @@ public class XMLExtract extends Node {
     private static final String XML_CLOVERFIELDS = "cloverFields";
     private static final String XML_SEQUENCEFIELD = "sequenceField";
     private static final String XML_SEQUENCEID = "sequenceId";
+    private static final String XML_SKIP_ROWS_ATTRIBUTE = "skipRows";
+    private static final String XML_NUMRECORDS_ATTRIBUTE = "numRecords";
 
     public final static String COMPONENT_TYPE = "XML_EXTRACT";
 
@@ -216,6 +220,9 @@ public class XMLExtract extends Node {
     
     private boolean useNestedNodes = true;
     
+    private int skipRows=0; // do not skip rows by default
+    private int numRecords = -1;
+
     /**
      * SAX Handler that will dispatch the elements to the different ports.
      */
@@ -234,6 +241,8 @@ public class XMLExtract extends Node {
         
         // the active mapping
         private Mapping m_activeMapping = null;
+        
+        private int globalCounter;
         
         /**
          * @see org.xml.sax.ContentHandler#startElement(java.lang.String, java.lang.String, java.lang.String, org.xml.sax.Attributes)
@@ -442,8 +451,18 @@ public class XMLExtract extends Node {
                                 }
                             }
                         }
-                        //send off record
-                        outPort.writeRecord(outRecord);
+                        
+                    	if (skipRows > 0) {
+                        	skipRows--;
+                    	} else {
+                            //check for index of last returned record
+                            if(!(numRecords >= 0 && numRecords == globalCounter)) {
+                                //send off record
+                                outPort.writeRecord(outRecord);
+                                globalCounter++;
+                            }
+                    	}
+                    	
                         // reset record
                         outRecord.reset();
                         
@@ -665,7 +684,11 @@ public class XMLExtract extends Node {
             // }
             extract = new XMLExtract(xattribs.getString(XML_ID_ATTRIBUTE));
             
-            extract.setInputSource(new InputSource(xattribs.getString(XML_SOURCEURI_ATTRIBUTE)));
+            extract.setInputSource(
+            		new InputSource(
+            				Channels.newInputStream(
+            						FileUtils.getReadableChannel(null, xattribs.getString(XML_SOURCEURI_ATTRIBUTE)))
+            				));
             
             if(xattribs.exists(XML_USENESTEDNODES_ATTRIBUTE)) {
                 extract.setUseNestedNodes(xattribs.getBoolean(XML_USENESTEDNODES_ATTRIBUTE));
@@ -689,6 +712,12 @@ public class XMLExtract extends Node {
             for (int i = 0; i < nodes.getLength(); i++) {
                 org.w3c.dom.Node node = nodes.item(i);
                 processMappings(graph, extract, null, node);
+            }
+            if (xattribs.exists(XML_SKIP_ROWS_ATTRIBUTE)){
+            	extract.setSkipRows(xattribs.getInteger(XML_SKIP_ROWS_ATTRIBUTE));
+            }
+            if (xattribs.exists(XML_NUMRECORDS_ATTRIBUTE)){
+            	extract.setNumRecords(xattribs.getInteger(XML_NUMRECORDS_ATTRIBUTE));
             }
             
             return extract;
@@ -940,6 +969,17 @@ public class XMLExtract extends Node {
         return m_elementPortMap;
     }
     
+    /**
+     * @param skipRows The skipRows to set.
+     */
+    public void setSkipRows(int skipRows) {
+        this.skipRows = skipRows;
+    }
+    
+    public void setNumRecords(int numRecords) {
+        this.numRecords = Math.max(numRecords, 0);
+    }
+
 //    private void resetRecord(DataRecord record) {
 //        // reset the record setting the nullable fields to null and default
 //        // values. Unfortunately init() does not do this, so if you have a field
