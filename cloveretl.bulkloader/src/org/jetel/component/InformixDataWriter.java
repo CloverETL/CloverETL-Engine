@@ -79,14 +79,14 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>This component loads data to an Informix database using the dbload utility. 
- * It creates a temporary file with dbload commands depending on input parameters. Data are read from given 
- * input file or from the input port and loaded to database. 
- * On Linux/Unix systems, data is transfered to the dbload utility via stdin.<br>
+ * <td>This component loads data to Informix database using the dbload utility. 
+ * There is created temporary file with dbload commands depending on input parameters. Data are read from given input file or from the input port and loaded to database. 
+ * On Linux/Unix system data transfer can be processed by stdin.<br>
+ * Any generated scripts/commands can be optionally logged to help diagnose problems.<br>
  * To use this component Informix client must be installed and configured on the local host.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
- * <td>[0] - input records, optional</td></tr>
+ * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
  * <tr><td><h4><i>Outputs:</i></h4></td>
  * <td>[0] - optionally one output port defined/connected - rejected records.
  * Metadata on this port must have the same type of field as input metadata. Output metadata 
