@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
  */
 public class DateUtils {
 
-	private final static Pattern SYMBOLS_PATTERN = Pattern.compile("[GyMwWDdFEaHhKkmsSzZ]*");
+	private final static Pattern SYMBOLS_PATTERN = Pattern.compile("[GyMwWDdFEaHhKkmsSzZ]+");
 	private final static Pattern TEXT_SYMBOLS_PATTERN = Pattern.compile("[GEaZz]|M{3,}");
 	
 	private final static String ERA_INDICATOR = "G";
@@ -110,7 +110,7 @@ public class DateUtils {
     	}
     	
     	Matcher patternMatcher = SYMBOLS_PATTERN.matcher(pattern);
-    	if (!patternMatcher.find(0)) {
+    	if (!patternMatcher.find()) {
     		throw new IllegalArgumentException("Pattern " + StringUtils.quote(pattern) + " has no date/time symbols");
     	}
     	//set first group of date/time symbols
@@ -128,7 +128,7 @@ public class DateUtils {
     	do {
     		hasText = TEXT_SYMBOLS_PATTERN.matcher(symbolGroup).find();
     		//find next symbol's group
-           	if (index +1 < pattern.length() && patternMatcher.find(index +1)) {
+           	if (patternMatcher.find()) {
         		nextSymbolGroup = patternMatcher.group(); 
         		separator = pattern.subSequence(index, patternMatcher.start());
         	}else{//next symbols not found
