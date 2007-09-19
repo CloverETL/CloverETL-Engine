@@ -37,7 +37,6 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.DataFormatter;
@@ -84,7 +83,7 @@ import org.w3c.dom.Element;
  * Any generated temporary files can be optionally logged to help diagnose problems.<br>
  * To use this component MsSql client must be installed and configured on the local host.
  * Note: when data is read from input port, one of these values 
- * (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile) in parameters attribute has to be used.
+ * (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile, inputFile) in parameters attribute has to be used.
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
@@ -104,7 +103,7 @@ import org.w3c.dom.Element;
  *  <tr><td><b>id</b></td><td>component identification</td></tr>
  *  <tr><td><b>bcpUtilityPath</b></td><td>path to bcp utility</td></tr>
  *  <tr><td><b>database</b><br><i>optional</i></td><td>Is the name of the database in which the specified table or view resides. 
- *  If not specified, this is the default database for the user./td></tr>
+ *  If not specified, this is the default database for the user.</td></tr>
  *  <tr><td><b>owner</b><br><i>optional</i></td><td>Is the name of the owner of the table or view. 
  *  owner is optional if the user performing the operation owns the specified table or view. 
  *  If owner is not specified and the user performing the operation does not own the specified table or view, 
@@ -133,13 +132,7 @@ import org.w3c.dom.Element;
  * A syntax error implies a data conversion error to the target data type. 
  * The max_errors total excludes any errors that can be detected only at the server, such as constraint violations.
  * A row that cannot be copied by the bcp utility is ignored and is counted as one error. If this option is not included, the default is 10.</td></tr>
- * <tr><td>formatFile</td><td>Specifies the full path of a format file. The meaning of this option depends on the environment in which it is used, as follows:
-* If -f is used with the format option, the specified format_file is created for the specified table or view. 
-* To create an XML format file, also specify the -x option. 
-* For more information, see  <a href="http://technet.microsoft.com/en-us/library/ms191516.aspx"> Creating a Format File</a>.</td></tr>
- * <tr><td>generateXmlFormatFile</td><td>Used with the format and -f format_file options, generates an XML-based format file instead of the default non-XML format file. 
- * The -x does not work when importing or exporting data. 
- * It generates an error if used without both format and -f format_file.</td></tr>
+ * <tr><td>formatFile</td><td>Specifies the full path of a format file. <br> For more information, see  <a href="http://technet.microsoft.com/en-us/library/ms191516.aspx"> Creating a Format File</a>.</td></tr>
  * <tr><td>errFile</td><td>Specifies the full path of an error file used to store any rows that the bcp utility cannot transfer from the file to the database. 
  * Error messages from the bcp command go to the workstation of the user. 
  * If this option is not used, an error file is not created.</td></tr>
@@ -155,37 +148,37 @@ import org.w3c.dom.Element;
  * To distribute the rows among multiple batches, specify a batch_size that is smaller than the number of rows in the data file. 
  * If the transaction for any batch fails, only insertions from the current batch are rolled back. 
  * Batches already imported by committed transactions are unaffected by a later failure.</br>
- * Do not use this option in conjunction with the h"ROWS_PER_BATCH = bb" option.</br>
+ * Do not use this option in conjunction with the <i>hint</i>="ROWS_PER_BATCH = bb" option.</br>
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms188267.aspx"> Managing Batches for Bulk Import</a>.</td></tr>
  * <tr><td>nativeType</td><td>Performs the bulk-copy operation using the native (database) data types of the data. 
  * This option does not prompt for each field; it uses the native values.</br>
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191232.aspx">Using Native Format to Import or Export Data</a>.</td></tr>
  * <tr><td>characterType</td><td>Performs the operation using a character data type. 
- * This option does not prompt for each field; it uses char as the storage type, without prefixes and with \t (tab character) as the field separator and \r\n (newline character) as the row terminator.</br>
+ * This option does not prompt for each field; it uses char as the storage type, without prefixes and with <b>\t</b> (tab character) as the field separator and <b>\r\n</b> (newline character) as the row terminator.</br>
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms190919.aspx">Using Character Format to Import or Export Data</a>.</td></tr>
  * <tr><td>keepNonTextNative</td><td>Performs the bulk-copy operation using the native (database) data types of the data for noncharacter data, and Unicode characters for character data. 
- * This option offers a higher performance alternative to the -w option, and is intended for transferring data from one instance of SQL Server to another using a data file. 
+ * This option offers a higher performance alternative to the <i>wideCharacterType</i> option, and is intended for transferring data from one instance of SQL Server to another using a data file. 
  * It does not prompt for each field. Use this option when you are transferring data that contains ANSI extended characters and you want to take advantage of the performance of native mode. 
- * -N cannot be used with SQL Server 6.5 or earlier versions.</br>
+ * <i>keepNonTextNative</i> cannot be used with SQL Server 6.5 or earlier versions.</br>
  *  For more information, see <a href="http://technet.microsoft.com/en-us/library/ms189941.aspx">Using Unicode Native Format to Import or Export Data</a>.</td></tr>
  * <tr><td>wideCharacterType</td><td>Performs the bulk copy operation using Unicode characters. 
- * This option does not prompt for each field; it uses nchar as the storage type, no prefixes, \t (tab character) as the field separator, and \n (newline character) as the row terminator. 
+ * This option does not prompt for each field; it uses <b>nchar</b> as the storage type, no prefixes, <b>\t</b> (tab character) as the field separator, and <b>\n</b> (newline character) as the row terminator. 
  * This option cannot be used with SQL Server 6.5 or earlier versions.</br>
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms188289.aspx">Using Unicode Character Format to Import or Export Data</a>.</td></tr>
  * <tr><td>fileFormatVersion</td><td>Performs the bulk-copy operation using data types from an earlier version of SQL Server. 
  * This option does not prompt for each field; it uses the default values. 
- * For example, to bulk copy date formats supported by the bcp utility provided with SQL Server 6.5 (but no longer supported by ODBC) into SQL Server 2005, use the -V 65 parameter.</br>
- * Important:</br>
- * When data is bulk exported from SQL Server into a data file, the bcp utility does not generate SQL Server 6.0 or SQL Server 6.5 date formats for any datetime or smalldatetime data, even if -V is specified. 
- * Dates are always written in ODBC format. Additionally, null values in bit columns are written as the value 0 because SQL Server 6.5 and earlier versions do not support nullable bit data.</td></tr>
- * <tr><td>quotedIdentifier</td><td>Executes the SET QUOTED_IDENTIFIERS ON statement in the connection between the bcp utility and an instance of SQL Server. 
+ * For example, to bulk copy date formats supported by the <b>bcp</b> utility provided with SQL Server 6.5 (but no longer supported by ODBC) into SQL Server 2005, use the <i>fileFormatVersion</i> 65 parameter.</br>
+ * <b>Important:</b> 
+ * When data is bulk exported from SQL Server into a data file, the <b>bcp</b> utility does not generate SQL Server 6.0 or SQL Server 6.5 date formats for any <b>datetime</b> or <b>smalldatetime</b> data, even if <i>fileFormatVersion</i> is specified. 
+ * Dates are always written in ODBC format. Additionally, null values in bit columns are written as the value 0 because SQL Server 6.5 and earlier versions do not support nullable <b>bit</b> data.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191212.aspx">Importing Native and Character Format Data from Earlier Versions of SQL Server</a>.</td></tr>
+ * <tr><td>quotedIdentifier</td><td>Executes the SET QUOTED_IDENTIFIERS ON statement in the connection between the <b>bcp</b> utility and an instance of SQL Server. 
  * Use this option to specify a database, owner, table, or view name that contains a space or a single quotation mark. 
  * Enclose the entire three-part table or view name in quotation marks ("").</br>
- * To specify a database name that contains a space or single quotation mark, you must use the q option.</br>
- * For more information, see Remarks later in this topic.</td></tr>
+ * To specify a database name that contains a space or single quotation mark, you must use the <i>quotedIdentifier</i> option.</td></tr>
  * <tr><td>codePageSpecifier</td><td>Supported for compatibility with early versions of SQL Server. 
  * For SQL Server 7.0 and later, Microsoft recommends that you specify a collation name for each column in a format file.
- * Specifies the code page of the data in the data file. code_page is relevant only if the data contains char, varchar, or text columns with character values greater than 127 or less than 32.</br>
+ * Specifies the code page of the data in the data file. code_page is relevant only if the data contains <b>char</b>, <b>varchar</b>, or <b>text</b> columns with character values greater than 127 or less than 32.</br>
  * <table border="1"><tr><td><b>Code page value</b></td><td><b>description</b></td></tr>
  * <tr><td>ACP</td><td>ANSI/MicrosoftWindows (ISO 1252).</td></tr>
  * <tr><td>OEM</td><td>Default code page used by the client. This is the default code page used if -C is not specified.</td></tr>
@@ -193,47 +186,69 @@ import org.w3c.dom.Element;
  * <tr><td><i>code_page</i></td><td>Specific code page number; for example, 850.</td></tr>
  * </table>
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms190657.aspx">Copying Data Between Different Collations</a>.</td></tr>
- * <tr><td>fieldTerminator</td><td>Specifies the field terminator. The default is \t (tab character). 
+ * <tr><td>fieldTerminator</td><td>Specifies the field terminator. The default is <b>\t</b> (tab character). 
  * Use this parameter to override the default field terminator. 
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191485.aspx">Specifying Field and Row Terminators</a>.</td></tr>
- * <tr><td>rowTerminator</td><td>Specifies the row terminator. The default is \n (newline character). 
+ * <tr><td>rowTerminator</td><td>Specifies the row terminator. The default is <b>\n</b> (newline character). 
  * Use this parameter to override the default row terminator. 
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms191485.aspx">Specifying Field and Row Terminators</a>.</td></tr>
  * <tr><td>inputFile</td><td>Specifies the name of a response file, containing the responses to the command prompt questions for each data field when 
- * a bulk copy is being performed using interactive mode (-n, -c, -w, -6, or -N not specified).</td></tr>
+ * a bulk copy is being performed using interactive mode (<i>nativeType</i>, <i>characterType</i>, <i>wideCharacterType</i>, or <i>keepNonTextNative</i> not specified).</td></tr>
  * <tr><td>outputFile</td><td>Specifies the name of a file that receives output redirected from the command prompt.</td></tr>
  * <tr><td>packetSize</td><td>Specifies the number of bytes, per network packet, sent to and from the server. 
- * A server configuration option can be set by using SQL Server Management Studio (or the sp_configure system stored procedure). However, the server 
+ * A server configuration option can be set by using SQL Server Management Studio (or the <b>sp_configure</b> system stored procedure). However, the server 
  * configuration option can be overridden on an individual basis by using this option. packet_size can be from 4096 to 65535 bytes; the default is 4096.</br>
  * Increased packet size can enhance performance of bulk-copy operations. 
  * If a larger packet is requested but cannot be granted, the default is used. 
- * The performance statistics generated by the bcp utility show the packet size used.</td></tr>
- * <tr><td>serverName</td><td>Specifies the instance of SQL Server to which to connect. If no server is specified, the bcp utility connects to the default instance of SQL Server on the local computer. 
- * This option is required when a bcp command is run from a remote computer on the network or a local named instance. 
+ * The performance statistics generated by the <b>bcp</b> utility show the packet size used.</td></tr>
+ * <tr><td>serverName</td><td>Specifies the instance of SQL Server to which to connect. If no server is specified, the <b>bcp</b> utility connects to the default instance of SQL Server on the local computer. 
+ * This option is required when a <b>bcp</b> command is run from a remote computer on the network or a local named instance. 
  * To connect to the default instance of SQL Server on a server, specify only server_name. 
  * To connect to a named instance of SQL Server 2005, specify server_name\instance_name.</td></tr>
  * <tr><td>userName</td><td>Specifies the login ID used to connect to SQL Server.</br>
  * Security Note:</br>
- * When the bcp utility is connecting to SQL Server with a trusted connection using integrated security, use the -T option (trusted connection) instead of the user name and password combination.</td></tr>
- * <tr><td>password</td><td>Specifies the password for the login ID. If this option is not used, the bcp command prompts for a password. 
- * If this option is used at the end of the command prompt without a password, bcp uses the default password (NULL).</td></tr>
- * <tr><td>trustedConnection</td><td>Specifies that the bcp utility connects to SQL Server with a trusted connection using integrated security. 
- * The security credentials of the network user, login_id, and password are not required. If T is not specified, you need to specify U and P to successfully log in.</td></tr>
- * <tr><td>version</td><td>Reports the bcp utility version number and copyright.</td></tr>
+ * When the bcp utility is connecting to SQL Server with a trusted connection using integrated security, use the <i>trustedConnection</i> option (trusted connection) instead of the user name and password combination.</td></tr>
+ * <tr><td>password</td><td>Specifies the password for the login ID.</td></tr>
+ * <tr><td>trustedConnection</td><td>Specifies that the <b>bcp</b> utility connects to SQL Server with a trusted connection using integrated security. 
+ * The security credentials of the network user, <i>userName</i>, and <i>password</i> are not required. If <i>trustedConnection</i> is not specified, you need to specify <i>userName</i> and <i>password</i> to successfully log in.</td></tr>
  * <tr><td>regionalEnable</td><td>Specifies that currency, date, and time data is bulk copied into SQL Server using the regional format defined for the locale setting of the client computer. 
  * By default, regional settings are ignored.</td></tr>
  * <tr><td>keepNullValues</td><td>Specifies that empty columns should retain a null value during the operation, rather than have any default values for the columns inserted. 
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms187887.aspx">Keeping Nulls or Using Default Values During Bulk Import</a>.</td></tr>
  * <tr><td>keepIdentityValues</td><td>Specifies that identity value or values in the imported data file are to be used for the identity column. 
- * If -E is not given, the identity values for this column in the data file being imported are ignored, and SQL Server 2005 automatically 
+ * If <i>keepIdentityValues</i> is not given, the identity values for this column in the data file being imported are ignored, and SQL Server 2005 automatically 
  * assigns unique values based on the seed and increment values specified during table creation.</br>
  * If the data file does not contain values for the identity column in the table or view, use a format file to specify that the identity column in the table or view should be skipped when importing data; 
  * SQL Server 2005 automatically assigns unique values for the column. 
  * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms176057.aspx">DBCC CHECKIDENT (Transact-SQL)</a>.</br>
- * The -E option has a special permissions requirement. For more information, see "Remarks" later in this topic.</br>
+ * The <i>keepIdentityValues</i> option has a special permissions requirement. For more information, see "Remarks" later in this topic.</br>
  * For more information, see about keeping identify values see <a href="http://technet.microsoft.com/en-us/library/ms186335.aspx">Keeping Identity Values When Bulk Importing Data</a>.</td></tr>
  * <tr><td>hint</td><td>Specifies the hint or hints to be used during a bulk import of data into a table or view. 
- * This option cannot be used when bulk copying data into SQL Server 6.x or earlier.</td></tr>
+ * This option cannot be used when bulk copying data into SQL Server 6.x or earlier.<br>
+ * <b>ORDER</b>(column [ASC | DESC] [,...n])<br>
+ * The sort order of the data in the data file. Bulk import performance is improved if the data being imported is sorted according to the clustered index on the table, if any. If the data file is sorted in a different order, that is other than the order of a clustered index key, or if there is no clustered index on the table, the ORDER clause is ignored. The column names supplied must be valid column names in the destination table. By default, <b>bcp</b> assumes the data file is unordered. For optimized bulk import, SQL Server also validates that the imported data is sorted.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms177468.aspx">Controlling the Sort Order When Bulk Importing Data</a>.<br>
+ * <b>ROWS_PER_BATCH</b> = bb<br>
+ * Number of rows of data per batch (as bb). Used when <i>batchSize</i> is not specified, resulting in the entire data file being sent to the server as a single transaction. The server optimizes the bulk load according to the value bb. By default, ROWS_PER_BATCH is unknown.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms188267.aspx">Managing Batches for Bulk Import</a>.<br>
+ * <b>KILOBYTES_PER_BATCH</b> = cc<br>
+ * Approximate number of kilobytes of data per batch (as cc). By default, KILOBYTES_PER_BATCH is unknown.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms188267.aspx">Managing Batches for Bulk Import</a>.<br>
+ * <b>TABLOCK</b><br>
+ * Specifies that a bulk update table-level lock is acquired for the duration of the bulk load operation; otherwise, a row-level lock is acquired. This hint significantly improves performance because holding a lock for the duration of the bulk-copy operation reduces lock contention on the table. A table can be loaded concurrently by multiple clients if the table has no indexes and <b>TABLOCK</b> is specified. By default, locking behavior is determined by the table option <b>table lock on bulk load</b>.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms180876.aspx">Controlling the Locking Behavior for Bulk Import</a>.<br>
+ * <b>CHECK_CONSTRAINTS</b><br>
+ * Specifies that all constraints on the target table or view must be checked during the bulk-import operation. Without the CHECK_CONSTRAINTS hint, any CHECK and FOREIGN KEY constraints are ignored, and after the operation the constraint on the table is marked as not-trusted.<br>
+ * Note: UNIQUE, PRIMARY KEY, and NOT NULL constraints are always enforced.<br>
+ * At some point, you will need to check the constraints on the entire table. If the table was nonempty before the bulk import operation, the cost of revalidating the constraint may exceed the cost of applying CHECK constraints to the incremental data. Therefore, we recommend that normally you enable constraint checking during an incremental bulk import.<br>
+ * A situation in which you might want constraints disabled (the default behavior) is if the input data contains rows that violate constraints. With CHECK constraints disabled, you can import the data and then use Transact-SQL statements to remove data that is not valid.<br>
+ * Note: In SQL Server 2005, <b>bcp</b> enforces new data validation and data checks that might cause existing scripts to fail when they are executed on invalid data in a data file.<br>
+ * Note: The maxErrors switch does not apply to constraint checking.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms186247.aspx">Controlling Constraint Checking by Bulk Import Operations</a>.<br>
+ * <b>FIRE_TRIGGERS</b><br>
+ * Specified with the in argument, any insert triggers defined on the destination table will run during the bulk-copy operation. If FIRE_TRIGGERS is not specified, no insert triggers will run.<br>
+ * For more information, see <a href="http://technet.microsoft.com/en-us/library/ms187640.aspx">Controlling Trigger Execution When Bulk Importing Data</a>. 
+ * </td></tr>
  * </table></td></tr>
  *  </table>
  *
@@ -287,8 +302,6 @@ public class MsSqlDataWriter extends Node {
     private final static char MS_SQL_MAX_ERRORS_SWITCH = 'm';
     private final static String MS_SQL_FORMAT_FILE_PARAM = "formatFile";
     private final static char MS_SQL_FORMAT_FILE_SWITCH = 'f';
-    private final static String MS_SQL_GENERATE_XML_FORMAT_FILE_PARAM = "generateXmlFormatFile";
-    private final static char MS_SQL_GENERATE_XML_FORMAT_FILE_SWITCH = 'x';
     private final static String MS_SQL_ERR_FILE_PARAM = "errFile";
     private final static char MS_SQL_ERR_FILE_SWITCH = 'e';
     private final static String MS_SQL_FIRST_ROW_PARAM = "firstRow";
@@ -329,8 +342,6 @@ public class MsSqlDataWriter extends Node {
     private final static char MS_SQL_PASSWORD_SWITCH = 'P';
     private final static String MS_SQL_TRUSTED_CONNECTION_PARAM = "trustedConnection";
     private final static char MS_SQL_TRUSTED_CONNECTION_SWITCH = 'T';
-    private final static String MS_SQL_VERSION_PARAM = "version";
-    private final static char MS_SQL_VERSION_SWITCH = 'v';
     private final static String MS_SQL_REGIONAL_ENABLE_PARAM = "regionalEnable";
     private final static char MS_SQL_REGIONAL_ENABLE_SWITCH = 'R';
     private final static String MS_SQL_KEEP_NULL_VALUES_PARAM = "keepNullValues";
@@ -506,7 +517,6 @@ public class MsSqlDataWriter extends Node {
 
 		command.addParameterSwitch(MS_SQL_MAX_ERRORS_PARAM, MS_SQL_MAX_ERRORS_SWITCH);
 	    command.addParameterSwitch(MS_SQL_FORMAT_FILE_PARAM, MS_SQL_FORMAT_FILE_SWITCH);
-	    command.addParameterBooleanSwitch(MS_SQL_GENERATE_XML_FORMAT_FILE_PARAM, MS_SQL_GENERATE_XML_FORMAT_FILE_SWITCH);
 	    command.addSwitch(MS_SQL_ERR_FILE_SWITCH, errFileName);
 	    command.addParameterSwitch(MS_SQL_FIRST_ROW_PARAM, MS_SQL_FIRST_ROW_SWITCH);
 	    command.addParameterSwitch(MS_SQL_LAST_ROW_PARAM, MS_SQL_LAST_ROW_SWITCH);
@@ -527,7 +537,6 @@ public class MsSqlDataWriter extends Node {
 	    command.addParameterSwitch(MS_SQL_USER_NAME_PARAM, MS_SQL_USER_NAME_SWITCH);
 	    command.addParameterSwitch(MS_SQL_PASSWORD_PARAM, MS_SQL_PASSWORD_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_TRUSTED_CONNECTION_PARAM, MS_SQL_TRUSTED_CONNECTION_SWITCH);
-	    command.addParameterBooleanSwitch(MS_SQL_VERSION_PARAM, MS_SQL_VERSION_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_REGIONAL_ENABLE_PARAM, MS_SQL_REGIONAL_ENABLE_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_KEEP_NULL_VALUES_PARAM, MS_SQL_KEEP_NULL_VALUES_SWITCH);
 	    command.addParameterBooleanSwitch(MS_SQL_KEEP_IDENTITY_VALUES_PARAM, MS_SQL_KEEP_IDENTITY_VALUES_SWITCH);
@@ -902,7 +911,6 @@ public class MsSqlDataWriter extends Node {
     	
     	/**
     	 * Gets index of added fields (rowNumber, columnNumber and errMsg).
-    	 * @param errMetadata
     	 */
     	private void getNumberOfAddedFields() {
     		int numFields = errMetadata.getNumFields();
