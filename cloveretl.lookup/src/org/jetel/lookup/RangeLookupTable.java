@@ -50,7 +50,8 @@ import org.w3c.dom.Element;
  * with startFields = {1,3} and endFields = {2,4} 
  * has 4 intervals with 2 searching parameters: first from interval 0-20, and second from interval 0-100.<br>
  * Intervals can overlap. By default start point is included and end point is excluded.
- * It is possible to change this settings during construction or by by proper set method.
+ * It is possible to change this settings during construction or by by proper set method (call init() then).<br>
+ * To use 
  */
 public class RangeLookupTable extends GraphElement implements LookupTable {
 	
@@ -97,8 +98,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	protected String data;
 	
 	private DataRecord tmp;
-	private int startComparison;
-	private int endComparison;
+	private int[] comparison;
 	
 	/**
 	 * Constructor for most general range lookup table 
@@ -359,27 +359,41 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 		//if value is not in interval try next
 		for (int i=0;i<startField.length;i++){
-			if (collator != null){
-				if (tmpRecord.getField(startField[i]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
-					startComparison = ((StringDataField)tmpRecord.getField(startField[i])).compareTo(
-							tmp.getField(startField[i]), collator);
-					endComparison = ((StringDataField)tmpRecord.getField(endField[i])).compareTo(
-							tmp.getField(endField[i]),collator);
-				}else{
-					startComparison = tmpRecord.getField(startField[i]).compareTo(tmp.getField(startField[i]));
-					endComparison = tmpRecord.getField(endField[i]).compareTo(tmp.getField(endField[i]));
-				}
-			}else{
-				startComparison = tmpRecord.getField(startField[i]).compareTo(tmp.getField(startField[i]));
-				endComparison = tmpRecord.getField(endField[i]).compareTo(tmp.getField(endField[i]));
-			}
-			if ((startComparison < 0 || (startComparison == 0 && !startInclude[i])) ||
-				(endComparison > 0    || (endComparison == 0   && !endInclude[i])) ) {
+			comparison = compare(tmpRecord, tmp, i);
+			if ((comparison[0] < 0 || (comparison[0] == 0 && !startInclude[i])) ||
+				(comparison[1] > 0    || (comparison[1] == 0   && !endInclude[i])) ) {
 				return getNext();
 			}
 		}
 		numFound++;
 		return tmp;
+	}
+	
+	private int[] compare(DataRecord keyRecord, DataRecord lookupRecord, int keyFieldNo) {
+		int startComp = 0, endComp = 0;
+		if (lookupRecord.getField(startField[keyFieldNo]).isNull()) {
+			startComp = 1;
+		}
+		if (lookupRecord.getField(endField[keyFieldNo]).isNull()){
+			endComp = -1;
+		}
+		if (startComp != 1) {
+			if (collator != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+				startComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
+						lookupRecord.getField(startField[keyFieldNo]), collator);
+			}else{
+				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(lookupRecord.getField(startField[keyFieldNo]));
+			}
+		}
+		if (endComp != -1) {
+			if (collator != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
+				endComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
+						lookupRecord.getField(endField[keyFieldNo]), collator);
+			}else{
+				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(lookupRecord.getField(endField[keyFieldNo]));
+			}
+		}
+		return new int[]{startComp, endComp};
 	}
 
 	/* (non-Javadoc)
@@ -578,6 +592,15 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		this.fileURL = fileURL;
 	}
 	
+	public String getData() {
+		return data;
+	}
+
+	public void setData(String data) {
+		this.data = data;
+	}
+
+
     /* (non-Javadoc)
      * @see org.jetel.data.lookup.LookupTable#getLookupTableIterator(java.lang.Object)
      */
@@ -592,7 +615,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 	 * @see RecordComparator
 	 *
 	 */
-	private class IntervalRecordComparator implements Comparator<DataRecord>{
+	private static class IntervalRecordComparator implements Comparator<DataRecord>{
 		
 		RecordComparator[] startComparator;//comparators for odd fields
 		int[] startFields;
@@ -612,6 +635,8 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 			if (startFields.length != endFields.length) {
 				throw new IllegalArgumentException("Number of start fields is diffrent then number of and fields!!!");
 			}
+			this.startFields = startFields;
+			this.endFields = endFields;
 			startComparator = new RecordComparator[startFields.length];
 			endComparator = new RecordComparator[endFields.length];
 			for (int i=0;i<startComparator.length;i++){
@@ -645,8 +670,24 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		 */
 		public int compare(DataRecord o1, DataRecord o2) {
 			for (int i=0;i<startComparator.length;i++){
-				startComparison = startComparator[i].compare(o1, o2);
-				endComparison = endComparator[i].compare(o1, o2);
+				if (o1.getField(startFields[i]).isNull() && o2.getField(startFields[i]).isNull()) {
+					startComparison = 0;
+				}else if (o1.getField(startFields[i]).isNull()) {
+					startComparison = -1;
+				}else if (o2.getField(startFields[i]).isNull()) {
+					startComparison = 1;
+				}else{
+					startComparison = startComparator[i].compare(o1, o2);
+				}
+				if (o1.getField(endFields[i]).isNull() && o2.getField(endFields[i]).isNull()) {
+					endComparison = 0;
+				}else if (o1.getField(endFields[i]).isNull()) {
+					endComparison = 1;
+				}else if (o2.getField(endFields[i]).isNull()){
+					endComparison = -1;
+				}else{
+					endComparison = endComparator[i].compare(o1, o2);
+				}
 				if (endComparison < 0) return -1;
 				if (!(startComparison == 0 && endComparison == 0) ){
 					if (startComparison > 0 && endComparison == 0) {
@@ -660,15 +701,6 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		}
 
 	}
-
-	public String getData() {
-		return data;
-	}
-
-	public void setData(String data) {
-		this.data = data;
-	}
-
 
 
 }
