@@ -833,6 +833,75 @@ public class RangeLookupTest extends TestCase {
 
     }
     
+    public void test_nulls() throws ComponentNotReadyException{
+        lookupMetadata = new DataRecordMetadata("lookupTest",DataRecordMetadata.DELIMITED_RECORD);
+        lookupMetadata.addField(new DataFieldMetadata("name",DataFieldMetadata.STRING_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("start",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookupMetadata.addField(new DataFieldMetadata("end",DataFieldMetadata.INTEGER_FIELD,";"));
+        lookup = LookupTableFactory.createLookupTable(null, "rangeLookup", 
+        		new Object[]{"RangeLookup",lookupMetadata,new String[]{"start"}, new String[]{"end"}, null}, 
+        		new Class[]{String.class,DataRecordMetadata.class,String[].class, String[].class, Parser.class});
+        lookup.init();
+     	record = new DataRecord(lookupMetadata);
+    	record.init();
+      	record.getField("name").setValue("start is null");
+    	record.getField("start").setValue(null);
+       	record.getField("end").setValue(20);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("end is null");
+    	record.getField("start").setValue(20);
+       	record.getField("end").setValue(null);
+       	lookup.put(record, record.duplicate());
+      	record.getField("name").setValue("both are null");
+    	record.getField("start").setValue(null);
+       	record.getField("end").setValue(null);
+       	lookup.put(record, record.duplicate());
+    	
+    	for (Iterator iter = lookup.iterator(); iter.hasNext();) {
+			System.out.print(iter.next());
+			
+		}
+    	
+    	System.out.println();
+    	System.out.println("Looking for 10:");
+    	System.out.println(lookup.get("10"));
+    	System.out.println(lookup.getNext());
+    	assertEquals(2, lookup.getNumFound());
+    	
+    	System.out.println();
+    	System.out.println("Looking for 25:");
+    	System.out.println(lookup.get("25"));
+    	System.out.println(lookup.getNext());
+    	assertEquals(2, lookup.getNumFound());
+    	
+    	System.out.println();
+    	System.out.println("Looking for 20:");
+    	System.out.println(lookup.get("20"));
+    	System.out.println(lookup.getNext());
+    	assertEquals(2, lookup.getNumFound());
+
+    	((RangeLookupTable)lookup).setEndInclude(true);
+    	lookup.init();
+    	System.out.println();
+    	System.out.println("Looking for 10:");
+    	System.out.println(lookup.get("10"));
+    	System.out.println(lookup.getNext());
+    	assertEquals(2, lookup.getNumFound());
+    	
+    	System.out.println();
+    	System.out.println("Looking for 25:");
+    	System.out.println(lookup.get("25"));
+    	System.out.println(lookup.getNext());
+    	assertEquals(2, lookup.getNumFound());
+
+    	System.out.println();
+    	System.out.println("Looking for 20:");
+    	System.out.println(lookup.get("20"));
+    	System.out.println(lookup.getNext());
+    	System.out.println(lookup.getNext());
+    	assertEquals(3, lookup.getNumFound());
+    }
+    
     private boolean checkOrder(DataRecord previous,DataRecord following){
      	int startComparison;
     	int endComparison;
