@@ -1,3 +1,23 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
+
 package org.jetel.lookup;
 
 import java.io.ByteArrayInputStream;
@@ -51,7 +71,15 @@ import org.w3c.dom.Element;
  * has 4 intervals with 2 searching parameters: first from interval 0-20, and second from interval 0-100.<br>
  * Intervals can overlap. By default start point is included and end point is excluded.
  * It is possible to change this settings during construction or by by proper set method (call init() then).<br>
- * To use 
+ * It is possible to use "unlimited" intervals by setting <i>null</i> value to <i>start</i>
+ * or <i>end</i> field, eg. interval <i>null,0</i> "contains" elements smaller then 0.
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Sep 20, 2007
+ *
  */
 public class RangeLookupTable extends GraphElement implements LookupTable {
 	
@@ -369,28 +397,40 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		return tmp;
 	}
 	
+	/**
+	 * This method compares to lookup table records on given <i>start/end </i> position.  
+	 * 
+	 * @param keyRecord 
+	 * @param lookupRecord
+	 * @param keyFieldNo compared key field
+	 * @return [compare value on start field, compare value on end field] 
+	 */
 	private int[] compare(DataRecord keyRecord, DataRecord lookupRecord, int keyFieldNo) {
 		int startComp = 0, endComp = 0;
+		//if start field of lookup record is null, start field of key record is always greater
 		if (lookupRecord.getField(startField[keyFieldNo]).isNull()) {
 			startComp = 1;
 		}
+		//if end field of lookup record is null, end field of key record is always smaller
 		if (lookupRecord.getField(endField[keyFieldNo]).isNull()){
 			endComp = -1;
 		}
-		if (startComp != 1) {
+		if (startComp != 1) {//lookup record's start field is not null
 			if (collator != null && lookupRecord.getField(startField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
 				startComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
 						lookupRecord.getField(startField[keyFieldNo]), collator);
 			}else{
-				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(lookupRecord.getField(startField[keyFieldNo]));
+				startComp = keyRecord.getField(startField[keyFieldNo]).compareTo(
+						lookupRecord.getField(startField[keyFieldNo]));
 			}
 		}
-		if (endComp != -1) {
+		if (endComp != -1) {//lookup record's end field is not null
 			if (collator != null && lookupRecord.getField(endField[keyFieldNo]).getMetadata().getType() == DataFieldMetadata.STRING_FIELD){
 				endComp = ((StringDataField)keyRecord.getField(startField[keyFieldNo])).compareTo(
 						lookupRecord.getField(endField[keyFieldNo]), collator);
 			}else{
-				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(lookupRecord.getField(endField[keyFieldNo]));
+				endComp = keyRecord.getField(endField[keyFieldNo]).compareTo(
+						lookupRecord.getField(endField[keyFieldNo]));
 			}
 		}
 		return new int[]{startComp, endComp};
@@ -610,16 +650,16 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 
 	/**
 	 * Comparator for special records (defining range lookup table). 
-	 * It compares odd and even fields of two records using RecordComparator class.
+	 * It compares given start and end fields of two records using RecordComparator class.
 	 * 
 	 * @see RecordComparator
 	 *
 	 */
 	private static class IntervalRecordComparator implements Comparator<DataRecord>{
 		
-		RecordComparator[] startComparator;//comparators for odd fields
+		RecordComparator[] startComparator;//comparators for start fields
 		int[] startFields;
-		RecordComparator[] endComparator;//comparators for even fields
+		RecordComparator[] endComparator;//comparators for end fields
 		int[] endFields;
 		int startComparison;
 		int endComparison;
@@ -653,7 +693,7 @@ public class RangeLookupTable extends GraphElement implements LookupTable {
 		/* (non-Javadoc)
 		 * @see java.util.Comparator#compare(java.lang.Object, java.lang.Object)
 		 * 
-		 * Intervals are equal if their start and end points are equal.
+		 * Intervals are equal if their start and end points are equal. Null values are treated as "infinities".
 		 * Interval o2 is after interval o1 if o1 is subinterval of o2 or start of o2 is
 		 * after start of o1 and end of o2 is after end of o1:
 		 * startComparison				endComparison			intervalComparison
