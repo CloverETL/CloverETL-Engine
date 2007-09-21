@@ -334,7 +334,9 @@ public class SystemExecute extends Node{
 			if (ERROR_LINES<i) errmes.append(".......\n");
 			err.close();
 			process_err.close();
-			logger.error(errmes.toString());
+			if (errmes.length() > 0) {
+				logger.error(errmes.toString());
+			}			
 		}            
 		
 		// wait for executed process to finish
