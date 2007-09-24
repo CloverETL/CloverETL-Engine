@@ -1,72 +1,86 @@
+/*
+*    jETeL/Clover - Java based ETL application framework.
+*    Copyright (C) 2005-06  Javlin Consulting <info@javlinconsulting.cz>
+*    
+*    This library is free software; you can redistribute it and/or
+*    modify it under the terms of the GNU Lesser General Public
+*    License as published by the Free Software Foundation; either
+*    version 2.1 of the License, or (at your option) any later version.
+*    
+*    This library is distributed in the hope that it will be useful,
+*    but WITHOUT ANY WARRANTY; without even the implied warranty of
+*    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU    
+*    Lesser General Public License for more details.
+*    
+*    You should have received a copy of the GNU Lesser General Public
+*    License along with this library; if not, write to the Free Software
+*    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+*
+*/
 package org.jetel.component.partition;
 
-import java.util.Arrays;
-
-import org.jetel.data.DataField;
 import org.jetel.data.DataRecord;
 import org.jetel.data.RecordKey;
+import org.jetel.data.primitive.Numeric;
+import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.lookup.RangeLookupTable;
 
 /**
- * Partition algorithm which compares current key value with set of
- * intervals (defined as a set of interval upper limits - inclusive).
+ * This class uses range lookup table for data partition
  * 
- * @author david
- * @since  5.3.2005
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Sep 24, 2007
  *
  */
 public class RangePartition implements PartitionFunction{
-    int numPorts;
-    DataField[] boundaries;
-    int[] keyFields;
-    String[] boundariesStr;
+	
+	public final static int NONEXISTENT_REJECTED_PORT = -1; 
+	
+	RangeLookupTable lookup;
+	int portField;
+	DataRecord portRecord;
+	int rejectedPort;
+	
+    /**
+     * Creates new RangePartition object from given range lookup table
+     * 
+     * @param lookup range lookup table with interval's definition
+     * @param portField number of field with output port number
+     * @param rejectedPort number for records without pair in lookup table
+     */
+    public RangePartition(RangeLookupTable lookup, int portField, int rejectedPort){
+        this.lookup = lookup;
+        this.portField = portField;
+        this.rejectedPort = rejectedPort;
+    }
     
     /**
-     * @param boundariesStr array of strings containing definitions of ranges boundaries
-     * @param record	DataRecord with the same structure as the one which will be used
-     * for determining output port.
+     * Creates new RangePartition object with default rejectedPort = NONEXISTENT_REJECTED_PORT (-1)
+     * 
+     * @param lookup range lookup table with interval's definition
+     * @param portField number of field with output port number
      */
-    public RangePartition(String[] boundariesStr){
-        this.boundariesStr=boundariesStr;
+    public RangePartition(RangeLookupTable lookup, int portField){
+    	this(lookup, portField, NONEXISTENT_REJECTED_PORT);
     }
     
-    public void init(int numPartitions, RecordKey partitionKey){
-        this.numPorts=numPartitions;
-        keyFields=partitionKey.getKeyFields();
-
-    }
-    
-    public int getOutputPort(DataRecord record){
-        // create boundaries the first time this method is called
-        if (boundaries==null){
-            boundaries = new DataField[boundariesStr.length];
-	        for (int i=0;i<boundaries.length;i++){
-	            boundaries[i]=record.getField(keyFields[0]).duplicate();
-	            boundaries[i].fromString(boundariesStr[i]);
-	        }
-	        Arrays.sort(boundaries);
-        }
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#init(int, org.jetel.data.RecordKey)
+     */
+    public void init(int numPartitions, RecordKey partitionKey) throws ComponentNotReadyException{
+        lookup.init();
         
-        // use sequential search if number of boundries is small
-        if (boundaries.length <= 6) {
-            for (int i = 0; i < numPorts && i < boundaries.length; i++) {
-                // current boundary is upper limit inclusive
-                if (record.getField(keyFields[0]).compareTo(boundaries[i]) <= 0) {
-                    return i;
-                }
-            }
-            return numPorts - 1;
-        } else {
-            int index = Arrays.binarySearch(boundaries, record
-                    .getField(keyFields[0]));
-            // DEBUG
-            // System.out.println("Index partition: "+index+" value "+record
-            //         .getField(keyFields[0]).toString());
-            // DEBUG END
-            if (index>=0){
-                return index;
-            }else{
-                return (index*-1)-1;
-            }
-        }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jetel.component.partition.PartitionFunction#getOutputPort(org.jetel.data.DataRecord)
+     */
+    public int getOutputPort(DataRecord record){
+    	portRecord = lookup.get(record);
+    	return portRecord != null ? ((Numeric)portRecord.getField(portField)).getInt() :
+    		rejectedPort;
     }
 }
