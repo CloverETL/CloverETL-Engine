@@ -502,7 +502,8 @@ public class DelimitedDataParser implements Parser {
 	 *@return               String with quotes removed if specified
 	 */
 	private CharSequence buffer2String(CharBuffer buffer,int fieldNum) {
-		if (metadata.getField(fieldNum).getType()== DataFieldMetadata.STRING_FIELD) {
+		if (fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD &&
+			fieldTypes[fieldNum] != DataFieldMetadata.BYTE_FIELD_COMPRESSED	) {
 			return qdecoder.decode(buffer);
 		}
 	    return buffer;	    
