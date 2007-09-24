@@ -297,7 +297,11 @@ public class DateDataField extends DataField implements Comparable{
             }else if (metadata.isDefaultValue()){
                 setToDefaultValue();
             }else{
-                value.setTime(0);
+            	if (value == null) {
+            		value = new Date(0);
+            	}else{
+            		value.setTime(0);
+            	}
             }
         }
 
@@ -484,6 +488,7 @@ public class DateDataField extends DataField implements Comparable{
 
 	
 	public int hashCode(){
+		if (isNull) return 0;
 		return value.hashCode();
 	}
 	

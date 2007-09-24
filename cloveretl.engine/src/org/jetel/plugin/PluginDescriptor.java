@@ -22,6 +22,7 @@ package org.jetel.plugin;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,6 +35,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.exception.ComponentNotReadyException;
+import org.jetel.util.FileUtils;
 import org.jetel.util.StringUtils;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -199,15 +201,25 @@ public class PluginDescriptor {
         URL[] urls = new URL[libraries.size()];
         
         for(int i = 0; i < libraries.size(); i++) {
-            File f = new File(manifest.getParentFile().getAbsolutePath() + System.getProperty("file.separator") + libraries.get(i));
             try {
-                urls[i] = f.toURL();
+                urls[i] = getURL(libraries.get(i));
             } catch (MalformedURLException e) {
                 logger.error("Cannot create URL to plugin (" + getManifest() + ") library " + libraries.get(i) + ".");
+                urls[i] = null;
             }
         }
         
         return urls;
+    }
+    
+    /**
+     * Converts path relative to the plugin home directory.
+     * @param path
+     * @return
+     * @throws MalformedURLException
+     */
+    public URL getURL(String path) throws MalformedURLException {
+        return FileUtils.getFileURL(manifest.getParentFile().toURL(), path);
     }
     
     public Extension addExtension(String pointId) {

@@ -19,8 +19,11 @@
 */
 package org.jetel.plugin;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * This class represents extension point of engine.
@@ -46,7 +49,23 @@ public class Extension {
     }
     
     public Map<String, ExtensionParameter> getParameters() {
-        return parameters;
+        return new HashMap<String, ExtensionParameter>(parameters);
+    }
+
+    public Map<String, ExtensionParameter> getParameters(String[] excludeParameters) {
+        if(excludeParameters == null) {
+            return getParameters();
+        }
+        
+        List<String> excludeList = Arrays.asList(excludeParameters);
+        Map<String, ExtensionParameter> ret = new HashMap<String, ExtensionParameter>();
+        for(Entry<String, ExtensionParameter> entry : parameters.entrySet()) {
+            if(!excludeList.contains(entry.getKey())) {
+                ret.put(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        return ret;
     }
 
     public ExtensionParameter getParameter(String key) {
@@ -58,6 +77,10 @@ public class Extension {
         return ret != null ? ret : new ExtensionParameter(defaultValue);
     }
 
+    public boolean hasParameter(String key) {
+        return parameters.containsKey(key);
+    }
+    
     public PluginDescriptor getPlugin() {
         return plugin;
     }

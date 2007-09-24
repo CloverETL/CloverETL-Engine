@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.lookup/bin"/>
+		<library path="../../../cloveretl.lookup/bin/"/>
    	</runtime> 
 	
 	<requires engine-version="2.3.0">

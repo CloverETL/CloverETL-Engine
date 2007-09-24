@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.component/bin"/>
+		<library path="../../../cloveretl.component/bin/"/>
 		<library path="../../../cloveretl.component/lib/saxon8.jar"/>
    	</runtime> 
 

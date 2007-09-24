@@ -1,6 +1,6 @@
 <plugin id="org.jetel.bulkloader" version="2.3.0">
 	<runtime>
-		<library path="../../../cloveretl.bulkloader/bin"/>
+		<library path="../../../cloveretl.bulkloader/bin/"/>
 	</runtime>
 	
 	<requires engine-version="2.3.0">

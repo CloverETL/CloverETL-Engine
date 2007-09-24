@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.sequence/bin"/>
+		<library path="../../../cloveretl.sequence/bin/"/>
    	</runtime> 
 
 	<extension point-id="sequence">

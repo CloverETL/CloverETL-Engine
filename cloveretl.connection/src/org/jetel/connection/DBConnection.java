@@ -30,9 +30,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
@@ -40,6 +41,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.Defaults;
 import org.jetel.database.IConnection;
+import org.jetel.database.jdbc.JdbcDriver;
+import org.jetel.database.jdbc.JdbcDriverFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.JetelException;
@@ -136,6 +139,7 @@ public class DBConnection extends GraphElement implements IConnection {
     public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
+    public static final String XML_DATABASE_ATTRIBUTE = "database"; // database type - used to lookup in build-in JDBC drivers
     public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
     public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
     public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
@@ -145,8 +149,6 @@ public class DBConnection extends GraphElement implements IConnection {
     public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
     
     public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
-    
-    private static final SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
     
     private ClassLoader classLoader;
     
@@ -266,7 +268,17 @@ public class DBConnection extends GraphElement implements IConnection {
                 decryptPassword(this.config);
                 isPasswordEncrypted=false;
             }
-            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), this.config);
+            
+            //removes all needless parameters from the config properties - this issue shoud be reviewed in the future 
+            Properties properties = new Properties();
+            List<String> excludeList = Arrays.asList(JdbcDriver.EXCLUDE_PARAMETERS);
+            for (Object key : this.config.keySet()) {
+                if(!excludeList.contains((String)key)) {
+                    properties.setProperty((String)key, this.config.getProperty((String)key));
+                }
+            }
+
+            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), properties);
 
 
             // unlock initiatesystems driver
@@ -326,46 +338,65 @@ public class DBConnection extends GraphElement implements IConnection {
      * @throws ComponentNotReadyException 
      */
     private void prepareDbDriver() throws ComponentNotReadyException {
-        String dbDriverName;
         if (dbDriver==null){
-            dbDriverName=config.getProperty(XML_DBDRIVER_ATTRIBUTE);
-            try {
-                dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
-            } catch (ClassNotFoundException ex) {
-                // let's try to load in any additional .jar library (if specified) (one or more)
-                // separator of individual libraries depends on platform - UNIX - ":" Win - ";"
-                String jdbcDriverLibrary = config
-                .getProperty(JDBC_DRIVER_LIBRARY_NAME);
-                if (jdbcDriverLibrary != null) {
-                    String[] libraryPaths=jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
-                    URL[] myURLs= new URL[libraryPaths.length];
-                        // try to create URL directly, if failed probably the protocol is missing, so use File.toURL
-                        for(int i=0;i<libraryPaths.length;i++){
-                            try {
-                                // valid url
-                                myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, libraryPaths[i]);
-                            } catch (MalformedURLException ex1) {
-                                throw new RuntimeException("Malformed URL: " + ex1.getMessage());
-                            }
-                    }
-                    
-                    try {
-                        classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
-                        dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
-                    } catch (ClassNotFoundException ex1) {
-                        throw new RuntimeException("Can not find class: " + ex1);
-                    } catch (Exception ex1) {
-                        throw new RuntimeException("General exception: "
-                                + ex1.getMessage());
-                    }
-                } else {
-                        throw new RuntimeException("Can't load DB driver :"
-                                + ex.getMessage());
+            //database connection is parametrized by DB identifier to the list of build-in JDBC drivers
+            if(!StringUtils.isEmpty(config.getProperty(XML_DATABASE_ATTRIBUTE))) {
+                String database = config.getProperty(XML_DATABASE_ATTRIBUTE);
+                JdbcDriver jdbcDriver = JdbcDriverFactory.getJdbcDriver(database);
+                
+                if(jdbcDriver == null) {
+                    throw new RuntimeException("Can not create JDBC driver '" + database + "'. This type of JDBC driver does not exist.");
                 }
-            } catch (Exception ex) {
-                throw new RuntimeException("Can't load DB driver :"
-                        + ex.getMessage());
+                classLoader = jdbcDriver.getClassLoader();
+                dbDriver = jdbcDriver.getDriver();
+                
+//                //default properties from an extension point are used only if key is not engaged
+//                Properties defaultProperties = jdbcDriver.getProperties();
+//                for(Entry<Object, Object> entry : defaultProperties.entrySet()) {
+//                    if(!config.contains(entry.getKey())) {
+//                        config.put(entry.getKey(), entry.getValue());
+//                    }
+//                }
+            } else {
+            //database connection is full specified by dbDriver and driverLibrary attributes
+                String dbDriverName = config.getProperty(XML_DBDRIVER_ATTRIBUTE);
+                try {
+                    dbDriver = (Driver) Class.forName(dbDriverName).newInstance();
+                } catch (ClassNotFoundException ex) {
+                    // let's try to load in any additional .jar library (if specified) (one or more)
+                    // separator of individual libraries depends on platform - UNIX - ":" Win - ";"
+                    String jdbcDriverLibrary = config.getProperty(JDBC_DRIVER_LIBRARY_NAME);
+                    if (jdbcDriverLibrary != null) {
+                        String[] libraryPaths = jdbcDriverLibrary.split(Defaults.DEFAULT_PATH_SEPARATOR_REGEX);
+                        URL[] myURLs= new URL[libraryPaths.length];
+                            // try to create URL directly, if failed probably the protocol is missing, so use File.toURL
+                            for(int i=0;i<libraryPaths.length;i++){
+                                try {
+                                    // valid url
+                                    myURLs[i] = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, libraryPaths[i]);
+                                } catch (MalformedURLException ex1) {
+                                    throw new RuntimeException("Malformed URL: " + ex1.getMessage());
+                                }
+                        }
+                        
+                        try {
+                            classLoader = new URLClassLoader(myURLs,Thread.currentThread().getContextClassLoader());
+                            dbDriver = (Driver) Class.forName(dbDriverName,true,classLoader).newInstance();
+                        } catch (ClassNotFoundException ex1) {
+                            throw new RuntimeException("Can not find class: " + ex1);
+                        } catch (Exception ex1) {
+                            throw new RuntimeException("General exception: " + ex1.getMessage());
+                        }
+                    } else {
+                            throw new RuntimeException("Can't load DB driver :" + ex.getMessage());
+                    }
+                } catch (Exception ex) {
+                    throw new RuntimeException("Can't load DB driver :"
+                            + ex.getMessage());
+                }
             }
+            
+            //check validity of the given url
             try {
                 if (!dbDriver.acceptsURL(config.getProperty(XML_DBURL_ATTRIBUTE))) {
                     throw new ComponentNotReadyException("Unacceptable connection url: " + config.getProperty(XML_DBURL_ATTRIBUTE));
@@ -558,8 +589,8 @@ public class DBConnection extends GraphElement implements IConnection {
                 return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
 
-                String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE);
-                String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE);
+                String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE, null);
+                String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE, null);
                 String user = "";
                 String password = "";
 
