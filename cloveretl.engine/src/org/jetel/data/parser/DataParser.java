@@ -273,6 +273,7 @@ public class DataParser implements Parser {
 		long size = 0;
 		boolean inQuote;
 		boolean skipBlanks;
+		char type;
 		
 		recordCounter++;
 		recordBuffer.clear();
@@ -306,8 +307,9 @@ public class DataParser implements Parser {
                         }
 
 						//quotedStrings
-						if (quotedStrings 
-								&& metadata.getField(fieldCounter).getType() == DataFieldMetadata.STRING_FIELD) {
+						type = metadata.getField(fieldCounter).getType();
+						if (quotedStrings && type != DataFieldMetadata.BYTE_FIELD
+								&& type != DataFieldMetadata.BYTE_FIELD_COMPRESSED){
 							if (fieldBuffer.length() == 0) {
 								if (isCharacterQuote((char) character)) {
 									inQuote = true;
