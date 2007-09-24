@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.thirdparty/bin"/>
+		<library path="../../../cloveretl.thirdparty/bin/"/>
    	</runtime> 
 	
 	<requires engine-version="2.3.0">

@@ -509,13 +509,7 @@ public class ByteDataField extends DataField implements Comparable{
 	 * @see java.lang.Object#hashCode()
 	 */
 	public int hashCode(){
-		// return Arrays.hashCode(this.value); works since j2se 1.5
-	    /* changed by D.Pavlis 07-Aug-2005 */
-	    int hash=5381;
-		for (int i=0;i<value.length;i++){
-			hash = ((hash << 5) + hash) + value[i]; 
-		}
-		return (hash & 0x7FFFFFFF);
+		 return Arrays.hashCode(this.value);
 	}
 	
 	/**

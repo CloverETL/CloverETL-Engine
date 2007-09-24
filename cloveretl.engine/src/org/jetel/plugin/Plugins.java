@@ -33,6 +33,7 @@ import org.jetel.data.Defaults;
 import org.jetel.data.lookup.LookupTableFactory;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
+import org.jetel.database.jdbc.JdbcDriverFactory;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.interpreter.extensions.TLFunctionPluginRepository;
 
@@ -97,6 +98,7 @@ public class Plugins {
         LookupTableFactory.init();
         ConnectionFactory.init();
         TLFunctionPluginRepository.init();
+        JdbcDriverFactory.init();
     }
 
     public static List<Extension> getExtensions(String extensionName) {

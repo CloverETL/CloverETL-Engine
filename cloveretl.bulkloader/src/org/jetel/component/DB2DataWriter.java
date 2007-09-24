@@ -1504,11 +1504,11 @@ public class DB2DataWriter extends Node {
 				logger.info("Number of rows loaded = " + consumer.getLoaded());
 				logger.info("Number of rows rejected = " + consumer.getRejected());
 			}
-			if (getOutputPort(ERROR_PORT) != null) {
-				getOutputPort(ERROR_PORT).eof();
-			}			
 		}
 		
+		if (getOutputPort(ERROR_PORT) != null) {
+			getOutputPort(ERROR_PORT).eof();
+		}			
 		return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 

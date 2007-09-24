@@ -4,7 +4,7 @@
    provider-name="Javlin Consulting s.r.o.">
 
 	<runtime>
-		<library path="../../../cloveretl.tlfunction/bin"/>
+		<library path="../../../cloveretl.tlfunction/bin/"/>
    	</runtime> 
 
 	<extension point-id="tlfunction">
