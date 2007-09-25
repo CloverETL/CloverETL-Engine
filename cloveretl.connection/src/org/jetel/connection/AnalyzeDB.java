@@ -205,8 +205,7 @@ public class AnalyzeDB {
 			print = System.out;
 		}
 		// load in Database Driver & try to connect to database
-		connection=new DBConnection("", config.getProperty("dbDriver"), config.getProperty("dbURL"),"","");
-		connection.setProperty(config);
+		connection=new DBConnection("", config);
 		try {
             connection.init();
         } catch (ComponentNotReadyException e) {
