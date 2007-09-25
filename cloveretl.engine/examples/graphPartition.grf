@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several &#10;(based on number of connected output ports) output data flows according&#10;to specified key or range" guiVersion="1.6" licenseType="Unlicensed clover.GUI" modified="Wed Mar 07 10:56:31 CET 2007" name="Partition data" revision="1.0">
+<Graph created="Wed Mar 07 09:01:26 CET 2007" description="This graph demonstrates functionality of Partition component.&#10;This component can be used to split input data flow into several&#10;output data flows according to specified key or range" guiVersion="1.8" licenseType="Evaluation license." modified="Mon Sep 24 13:23:40 CEST 2007" name="Partition data" revision="1.26">
 <Global>
 <Metadata id="InMetadata">
-<Record name="Employees" recordSize="-1" type="delimited">
-<Field delimiter=";" name="EmployeeID" nullable="true" shift="0" type="string"/>
+<Record name="Employees" recordDelimiter="" recordSize="-1" type="delimited">
+<Field delimiter=";" name="EmployeeID" nullable="true" shift="0" type="integer"/>
 <Field delimiter=";" format="#" name="LastName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="FirstName" nullable="true" shift="0" type="string"/>
 <Field delimiter=";" name="Title" nullable="true" shift="0" type="string"/>
@@ -25,14 +25,18 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="20" guiY="20" id="INPUT1" type="DELIMITED_DATA_READER"/>
-<Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="195" guiY="20" id="PARTITION" partitionKey="EmployeeID" ranges="3;5" type="PARTITION"/>
-<Node enabled="enabled" guiHeight="25" guiName="TRASH1" guiWidth="50" guiX="370" guiY="20" id="TRASH1" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="TRASH2" guiWidth="50" guiX="370" guiY="107" id="TRASH2" type="TRASH"/>
-<Node enabled="enabled" guiHeight="25" guiName="TRASH3" guiWidth="50" guiX="370" guiY="194" id="TRASH3" type="TRASH"/>
-<Edge fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="0 (PARTITION)" metadata="InMetadata" outPort="0 (INPUT1)" toNode="PARTITION:0"/>
-<Edge fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="0 (TRASH1)" metadata="InMetadata" outPort="0 (PARTITION)" toNode="TRASH1:0"/>
-<Edge fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="0 (TRASH2)" metadata="InMetadata" outPort="1 (PARTITION)" toNode="TRASH2:0"/>
-<Edge fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="0 (TRASH3)" metadata="InMetadata" outPort="2 (PARTITION)" toNode="TRASH3:0"/>
+<Node dataPolicy="Strict" enabled="enabled" fileURL="${WORKSPACE}/data/delimited/employees.dat" guiHeight="25" guiName="INPUT1" guiWidth="50" guiX="7" guiY="169" id="INPUT1" type="DELIMITED_DATA_READER"/>
+<Node enabled="enabled" guiHeight="25" guiName="PARTITION" guiWidth="50" guiX="156" guiY="159" id="PARTITION" partitionKey="EmployeeID;BirthDate" ranges="&lt;1,9)(,31/12/1959&gt;;&lt;9,)(,31/12/1959&gt;;&lt;1,9)(31/12/1959,);&lt;9,)(31/12/1959,)" type="PARTITION"/>
+<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="big ID, younger" guiWidth="0" guiX="316" guiY="253" id="TRASH0" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="small ID, older" guiWidth="50" guiX="316" guiY="12" id="TRASH1" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="big ID, older" guiWidth="50" guiX="316" guiY="98" id="TRASH2" type="TRASH"/>
+<Node enabled="enabled" guiHeight="25" guiName="small ID, younger" guiWidth="50" guiX="316" guiY="169" id="TRASH3" type="TRASH"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="rejected Id" guiWidth="0" guiX="316" guiY="337" id="TRASH4" type="TRASH"/>
+<Edge debugMode="false" fromNode="INPUT1:0" guiBendpoints="" id="INEDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="PARTITION:0"/>
+<Edge debugMode="true" fromNode="PARTITION:0" guiBendpoints="" id="INNEREDGE1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 0 (out)" toNode="TRASH1:0"/>
+<Edge debugMode="true" fromNode="PARTITION:1" guiBendpoints="" id="INNEREDGE2" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 1 (out)" toNode="TRASH2:0"/>
+<Edge debugMode="true" fromNode="PARTITION:2" guiBendpoints="" id="INNEREDGE3" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 2 (out)" toNode="TRASH3:0"/>
+<Edge fromNode="PARTITION:4" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 4 (out)" toNode="TRASH4:0"/>
+<Edge debugMode="true" fromNode="PARTITION:3" guiBendpoints="" id="Edge0" inPort="Port 0 (in)" metadata="InMetadata" outPort="Port 3 (out)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
