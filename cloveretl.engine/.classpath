@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-logging.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jms.jar"/>
+	<classpathentry kind="lib" path="lib/javolution.jar"/>
+	<classpathentry kind="lib" path="lib/jxl.jar"/>
+	<classpathentry kind="lib" path="lib/log4j-1.2.12.zip"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
