@@ -7,6 +7,7 @@
 	<classpathentry kind="lib" path="lib/javolution.jar"/>
 	<classpathentry kind="lib" path="lib/jxl.jar"/>
 	<classpathentry kind="lib" path="lib/log4j-1.2.12.zip"/>
-	<classpathentry kind="lib" path="lib/commons-cli-1.0.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/commons-cli-1.0.jar"/>
+	<classpathentry kind="lib" path="C:/Program Files (x86)/Java/jdk1.5.0_07/lib/tools.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
