@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -130,23 +131,28 @@ public class DBConnection extends GraphElement implements IConnection {
     String configFileName;
     Driver dbDriver;
     Connection dbConnection;
-    Properties config;
+    // standard properties of a Clover DBConnection 
+    Properties config = new Properties();
+    // properties specific to the JDBC connection (not used by Clover)
+    Properties jdbcConfig = new Properties();
     boolean threadSafeConnections;
     boolean isPasswordEncrypted;
-    private Map openedConnections;
+    private Map openedConnections = new HashMap();
 
     public final static String JDBC_DRIVER_LIBRARY_NAME = "driverLibrary";
     public final static String TRANSACTION_ISOLATION_PROPERTY_NAME="transactionIsolation";
     public final static String SQL_QUERY_PROPERTY = "sqlQuery";
 
+    public static final String XML_DBURL_ATTRIBUTE = "dbURL";
+    public static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
+    public static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
     public static final String XML_DATABASE_ATTRIBUTE = "database"; // database type - used to lookup in build-in JDBC drivers
-    public  static final String XML_DBURL_ATTRIBUTE = "dbURL";
-    public  static final String XML_DBDRIVER_ATTRIBUTE = "dbDriver";
-    public  static final String XML_DBCONFIG_ATTRIBUTE = "dbConfig";
     public static final String XML_PASSWORD_ATTRIBUTE = "password";
     public static final String XML_USER_ATTRIBUTE = "user";
     public static final String XML_THREAD_SAFE_CONNECTIONS="threadSafeConnection";
     public static final String XML_IS_PASSWORD_ENCRYPTED = "passwordEncrypted";
+    
+    public static final String XML_JDBC_PROPERTIES_PREFIX = "jdbc.";
     
     public static final String EMBEDDED_UNLOCK_CLASS = "com.ddtek.jdbc.extensions.ExtEmbeddedConnection";
     
@@ -154,30 +160,6 @@ public class DBConnection extends GraphElement implements IConnection {
     
     // not yet used by component
     public static final String XML_NAME_ATTRIBUTE = "name";
-    /**
-     *  Constructor for the DBConnection object
-     *
-     * @param  dbDriver  Description of the Parameter
-     * @param  dbURL     Description of the Parameter
-     * @param  user      Description of the Parameter
-     * @param  password  Description of the Parameter
-     */
-    public DBConnection(String id, String dbDriver, String dbURL, String user, String password) {
-        super(id);
-        this.openedConnections=new HashMap();
-        this.config = new Properties();
-        try{
-            config.setProperty(XML_USER_ATTRIBUTE, user);
-            config.setProperty(XML_PASSWORD_ATTRIBUTE, password);
-            config.setProperty(XML_DBDRIVER_ATTRIBUTE, dbDriver);
-            config.setProperty(XML_DBURL_ATTRIBUTE, dbURL);
-            }catch(NullPointerException ex){
-                // do nothing in constructor - will probably fail later
-            }
-        this.threadSafeConnections=true;
-        this.isPasswordEncrypted=false;
-    }
-
 
     /**
      *  Constructor for the DBConnection object (not used in engine yet)
@@ -186,18 +168,37 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public DBConnection(String id, String configFilename) {
         super(id);
-        this.openedConnections=new HashMap();
-        this.config = new Properties();
         this.configFileName = configFilename;
     }
 
     public DBConnection(String id, Properties configProperties) {
         super(id);
-        this.openedConnections=new HashMap();
-        this.config = configProperties;
+        
+        loadProperties(configProperties);
+        
         this.threadSafeConnections=parseBoolean(configProperties.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
-        this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
+        this.isPasswordEncrypted=parseBoolean(configProperties.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
     }
+
+    /**
+     * Iterates over the properties and finds which are the standard DBConnection properties
+     * and which are the JDBC connection properties.
+     * 
+     * @param configProperties
+     */
+	private void loadProperties(Properties configProperties) {
+        Set<Object> keys = configProperties.keySet();
+        for (Object key : keys) {
+			String name = (String) key;
+			String value = configProperties.getProperty(name);
+			if (!name.startsWith(XML_JDBC_PROPERTIES_PREFIX)) {
+				config.setProperty(name, value);
+			} else {
+				name = name.substring(XML_JDBC_PROPERTIES_PREFIX.length());
+				jdbcConfig.setProperty(name, value);
+			}
+		}
+	}
     
     /* (non-Javadoc)
      * @see org.jetel.graph.GraphElement#init()
@@ -224,7 +225,9 @@ public class DBConnection extends GraphElement implements IConnection {
 //                    stream = new BufferedInputStream(new FileInputStream(configFileName));
 //                }
                 
-                this.config.load(stream);
+                Properties storedProperties = new Properties();
+                storedProperties.load(stream);
+                loadProperties(storedProperties);
                 stream.close();
                 this.threadSafeConnections=parseBoolean(config.getProperty(XML_THREAD_SAFE_CONNECTIONS,"true"));
                 this.isPasswordEncrypted=parseBoolean(config.getProperty(XML_IS_PASSWORD_ENCRYPTED,"false"));
@@ -269,17 +272,17 @@ public class DBConnection extends GraphElement implements IConnection {
                 isPasswordEncrypted=false;
             }
             
-            //removes all needless parameters from the config properties - this issue shoud be reviewed in the future 
-            Properties properties = new Properties();
-            List<String> excludeList = Arrays.asList(JdbcDriver.EXCLUDE_PARAMETERS);
-            for (Object key : this.config.keySet()) {
-                if(!excludeList.contains((String)key)) {
-                    properties.setProperty((String)key, this.config.getProperty((String)key));
-                }
+            Properties connectionProps = new Properties();
+            String user = config.getProperty(XML_USER_ATTRIBUTE);
+            if (user != null) {
+            	connectionProps.setProperty(XML_USER_ATTRIBUTE, user);
             }
-
-            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), properties);
-
+            String password = config.getProperty(XML_PASSWORD_ATTRIBUTE);
+            if (password != null) {
+            	connectionProps.setProperty(XML_PASSWORD_ATTRIBUTE, password);
+            }
+            connectionProps.putAll(jdbcConfig);
+            dbConnection = dbDriver.connect(config.getProperty(XML_DBURL_ATTRIBUTE), connectionProps);
 
             // unlock initiatesystems driver
             try {
@@ -541,7 +544,9 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param  value  The new property value
      */
     public void setProperty(String name, String value) {
-        config.setProperty(name, value);
+    	Properties p = new Properties();
+    	p.setProperty(name, value);
+    	loadProperties(p);
     }
 
 
@@ -551,7 +556,7 @@ public class DBConnection extends GraphElement implements IConnection {
      * @param  properties  The new property value
      */
     public void setProperty(Properties properties) {
-        config.putAll(properties);
+    	loadProperties(properties);
         this.decryptPassword(this.config);
     }
 
@@ -575,13 +580,6 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public static DBConnection fromXML(TransformationGraph graph, Element nodeXML) {
         ComponentXMLAttributes xattribs = new ComponentXMLAttributes(nodeXML, graph);
-        NamedNodeMap attributes = nodeXML.getAttributes();
-        DBConnection con;
-        // for resolving reference in additional parameters
-        // this should be changed in the future when ComponentXMLAttributes
-        // is enhanced to support iterating through attributes
-        PropertyRefResolver refResolver=new PropertyRefResolver(graph);
-
         try {
             String id = xattribs.getString(XML_ID_ATTRIBUTE);
             // do we have dbConfig parameter specified ??
@@ -589,28 +587,14 @@ public class DBConnection extends GraphElement implements IConnection {
                 return new DBConnection(id, xattribs.getString(XML_DBCONFIG_ATTRIBUTE));
             } else {
 
-                String dbDriver = xattribs.getString(XML_DBDRIVER_ATTRIBUTE, null);
-                String dbURL = xattribs.getString(XML_DBURL_ATTRIBUTE, null);
-                String user = "";
-                String password = "";
+            	// don't use the values, the method calls check their existence
+                xattribs.getString(XML_DBDRIVER_ATTRIBUTE, null);
+                xattribs.getString(XML_DBURL_ATTRIBUTE, null);
 
-                con = new DBConnection(id, dbDriver, dbURL, user, password);
+                Properties connectionProps  = xattribs.attributes2Properties(new String[] {XML_ID_ATTRIBUTE});
+                
+                DBConnection con = new DBConnection(id, connectionProps);
 
-                //check thread safe option
-                if (xattribs.exists(XML_THREAD_SAFE_CONNECTIONS)){
-                    con.setThreadSafeConnections(xattribs.getBoolean(XML_THREAD_SAFE_CONNECTIONS));
-                }
-                
-                //check passwordEncrypted option
-                if (xattribs.exists(XML_IS_PASSWORD_ENCRYPTED)){
-                    con.setPasswordEncrypted(xattribs.getBoolean(XML_IS_PASSWORD_ENCRYPTED));
-                }
-                
-                // assign rest of attributes/parameters to connection properties so
-                // it can be retrieved by DB JDBC driver
-                for (int i = 0; i < attributes.getLength(); i++) {
-                    con.setProperty(attributes.item(i).getNodeName(), refResolver.resolveRef(attributes.item(i).getNodeValue()));
-                }
                 con.decryptPassword(con.config);
 
                 return con;
@@ -622,12 +606,18 @@ public class DBConnection extends GraphElement implements IConnection {
         }
 
     }
-
+    
     public void saveConfiguration(OutputStream outStream) throws IOException {
         Properties propsToStore = new Properties();
         propsToStore.putAll(config);
-        propsToStore.put(XML_THREAD_SAFE_CONNECTIONS,Boolean.toString(this.threadSafeConnections));
-        propsToStore.put(XML_IS_PASSWORD_ENCRYPTED,Boolean.toString(this.isPasswordEncrypted));
+        
+        Set<Object> jdbcProps = jdbcConfig.keySet();
+        for (Object key : jdbcProps) {
+        	String propName = (String) key; 
+			propsToStore.setProperty(XML_JDBC_PROPERTIES_PREFIX + propName, 
+					jdbcConfig.getProperty(propName));
+		}
+        
         propsToStore.store(outStream,null);
     }
     
@@ -656,6 +646,8 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public void setThreadSafeConnections(boolean threadSafeConnections) {
         this.threadSafeConnections = threadSafeConnections;
+        // store in the connection props, so it can be saved in the future if required
+        this.config.setProperty(XML_THREAD_SAFE_CONNECTIONS, String.valueOf(threadSafeConnections));
     }
     
     private boolean parseBoolean(String s) {
@@ -697,6 +689,8 @@ public class DBConnection extends GraphElement implements IConnection {
      */
     public void setPasswordEncrypted(boolean isPasswordEncrypted) {
         this.isPasswordEncrypted = isPasswordEncrypted;
+        // store in the connection props, so it can be saved in the future if required
+        this.config.setProperty(XML_IS_PASSWORD_ENCRYPTED, String.valueOf(isPasswordEncrypted));
     }
 
     /* (non-Javadoc)
@@ -726,5 +720,9 @@ public class DBConnection extends GraphElement implements IConnection {
         return SQLUtil.dbMetadata2jetel(resultSet.getMetaData());
     }
 
+
+	public Properties getJdbcConfig() {
+		return jdbcConfig;
+	}
 }
 
