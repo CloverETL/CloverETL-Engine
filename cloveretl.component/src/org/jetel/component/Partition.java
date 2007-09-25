@@ -527,44 +527,6 @@ public class Partition extends Node {
 		ComponentXMLAttributes xattribs = new ComponentXMLAttributes(xmlElement, graph);
 		Partition partition;
 		try {
-<<<<<<< .mine
-		    partition = new Partition(xattribs.getString(XML_ID_ATTRIBUTE));
-		    if (xattribs.exists(XML_PARTITIONCLASS_ATTRIBUTE)) {//load class with partition function
-		        try {
-		        	//TODO move creating function to init method
-		        	partitionFce =  (PartitionFunction)Class.forName(xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE)).newInstance();
-		        }catch (InstantiationException ex){
-		            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
-		        }catch (IllegalAccessException ex){
-		            throw new ComponentNotReadyException("Can't instantiate partition function class: "+ex.getMessage());
-		        }catch (ClassNotFoundException ex) {
-		            throw new ComponentNotReadyException("Can't find specified partition function class: " + xattribs.getString(XML_ID_ATTRIBUTE));
-		        }
-		    }else if (xattribs.exists(XML_PARTIONSOURCE_ATTRIBUTE)){//set source for parttion function to load dynamic in init() method
-		    	partition.setPartitionFunction(xattribs.getString(XML_PARTIONSOURCE_ATTRIBUTE));
-		    }else if (xattribs.exists(XML_PARTITIONURL_ATTRIBUTE)){
-		    	partition.setPartitionFunction(FileUtils.getStringFromURL(
-		    			partition.getGraph().getRuntimeParameters().getProjectURL(), 
-		    			xattribs.getString(XML_PARTITIONURL_ATTRIBUTE),
-		    			xattribs.getString(XML_CHARSET_ATTRIBUTE, null)));
-		    }else{//set proper standard partition function
-			    if (xattribs.exists(XML_RANGES_ATTRIBUTE)) {
-			    	partitionFce = new RangePartition(xattribs.getString(XML_RANGES_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-			    }
-			    if (xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)){
-						partition.setPartitionKeyNames(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE).split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX));
-						if (partitionFce == null){
-							partitionFce = new HashPartition();
-						}
-			    }
-			    if (partitionFce == null){
-			    	partitionFce = new RoundRobinPartition();
-			    }
-		    }
-			if (partitionFce != null) {
-				partition.setPartitionFunction(partitionFce);
-			}	
-=======
 			String[] key = xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE) ? 
 					StringUtils.split(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE)) :
 					null;		
@@ -576,7 +538,6 @@ public class Partition extends Node {
 		    		xattribs.getString(XML_PARTITIONCLASS_ATTRIBUTE, null),
 		    		xattribs.getString(XML_PARTITIONURL_ATTRIBUTE, null), 
 		    		key, ranges);
->>>>>>> .r3312
 			partition.setFunctionParameters(xattribs.attributes2Properties(
 					new String[]{XML_ID_ATTRIBUTE,XML_PARTIONSOURCE_ATTRIBUTE,
 							XML_PARTITIONCLASS_ATTRIBUTE, XML_PARTITIONURL_ATTRIBUTE, 
