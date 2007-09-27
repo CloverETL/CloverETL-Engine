@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Graph created="Wed Nov 22 11:30:48 CET 2006" description="This graph ilustrates usage of JMS Reader/Writer Components. It reuires ACtiveMQ JMS server to be running on localhost!" guiVersion="1.5" licenseType="Evaluation license" modified="Wed Nov 22 12:11:27 CET 2006" name="graphSystemExecute" revision="1.1">
 <Global>
-<Metadata fileURL="metadata/employees.fmt" id="Metadata0"/>
+<Metadata fileURL="metadata/delimited/employees.fmt" id="Metadata0"/>
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 <Connection id="dest" type="JMS"
 iniCtxFactory="org.apache.activemq.jndi.ActiveMQInitialContextFactory"
@@ -12,7 +12,7 @@ destId="dynamicQueues/Clover"
 </Global>
 <Phase number="0">
 <Node enabled="enabled" id="Input" type="DELIMITED_DATA_READER"
-fileURL="${WORKSPACE}/data/employees.dat"
+fileURL="${WORKSPACE}/data/delimited/employees.dat"
  />
  
 <Node enabled="enabled" id="Output" type="DELIMITED_DATA_WRITER"
