@@ -148,7 +148,6 @@ public class FixLenDataFormatter implements Formatter {
     Character fieldFiller;
 	public void setFieldFiller(char filler) {
         this.fieldFiller = new Character(filler);
-	    initFieldFiller(filler);
 	}
 
     public Character getFieldFiller() {
@@ -158,7 +157,6 @@ public class FixLenDataFormatter implements Formatter {
     Character recordFiller;
 	public void setRecordFiller(char filler) {
         this.recordFiller = new Character(recordFiller);
-	    initRecordFiller(filler);
 	}
 
     public Character getRecordFiller() {
@@ -173,8 +171,8 @@ public class FixLenDataFormatter implements Formatter {
 		this.metadata = metadata;
         
 		encoder = Charset.forName(charSet).newEncoder();
-		initFieldFiller(DEFAULT_FIELDFILLER_CHAR);
-		initRecordFiller(DEFAULT_RECORDFILLER_CHAR);
+		initFieldFiller(fieldFiller == null ? DEFAULT_FIELDFILLER_CHAR : fieldFiller.charValue());
+		initRecordFiller(recordFiller == null ? DEFAULT_RECORDFILLER_CHAR : recordFiller.charValue());
 		encoder.reset();
         isRecordDelimiter = metadata.isSpecifiedRecordDelimiter();
         if(isRecordDelimiter) {
