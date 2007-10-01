@@ -56,6 +56,10 @@
 			<value>is_integer</value>
 			<value>is_date</value>
 			<value>remove_diacritic</value>
+			<value>remove_blank_space</value>
+			<value>get_alphanumeric_chars</value>
+			<value>translate</value>
+			<value>join</value>
 		</parameter>
 	</extension>
 	
