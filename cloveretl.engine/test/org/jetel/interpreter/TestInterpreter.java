@@ -46,6 +46,7 @@ import org.jetel.interpreter.data.TLVariable;
 import org.jetel.main.runGraph;
 import org.jetel.metadata.DataFieldMetadata;
 import org.jetel.metadata.DataRecordMetadata;
+import org.jetel.util.StringUtils;
 /**
  * @author dpavlis
  * @since  10.8.2004
@@ -332,7 +333,7 @@ public class TestInterpreter extends TestCase {
 			tmp.append(i%10);
 		}
 		String expStr = "string i; i=\"0\"; print_err(i); \n"+
-						"string hello; hello='hello'; print_err(hello);\n"+
+						"string hello; hello='hello\\nworld'; print_err(hello);\n"+
 						"string fieldName; fieldName=$Name; print_err(fieldName);\n"+
 						"string fieldCity; fieldCity=$City; print_err(fieldCity);\n"+
 						"string longString; longString=\""+tmp+"\"; print_err(longString);\n"+
@@ -359,7 +360,7 @@ public class TestInterpreter extends TestCase {
 		      System.out.println("Finished interpreting.");
 		      
 		      assertEquals("0",executor.getGlobalVariable(parser.getGlobalVariableSlot("i")).getValue().getString());
-		      assertEquals("hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getValue().getString());
+		      assertEquals("hello\nworld",executor.getGlobalVariable(parser.getGlobalVariableSlot("hello")).getValue().getString());
 		      assertEquals(record.getField("Name").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldName")).getValue().getString());
 		      assertEquals(record.getField("City").getValue().toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("fieldCity")).getValue().getString());
 		      assertEquals(tmp.toString(),executor.getGlobalVariable(parser.getGlobalVariableSlot("longString")).getValue().getString());
@@ -1688,7 +1689,8 @@ public class TestInterpreter extends TestCase {
         				 "list novy; novy[]=mapa; mapa2['f2']='xxx'; novy[]=mapa2; mapa['f1']=99; novy[]=mapa; \n" +
         				 "print_err('novy='+novy); print_err(novy[1]); \n" +
         				 "mapa3=novy[1]; print_err(mapa2['f2']);\n" +
-        				 "fields=seznam2; print_err(fields);";
+        				 "fields=seznam2; print_err(fields);\n" +
+        				 "print_err(join(':del:',seznam,mapa,novy[1]));\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1921,7 +1923,26 @@ public class TestInterpreter extends TestCase {
     public void test_functions3(){
         System.out.println("\nFunctions test:");
         String expStr = "string test=remove_diacritic('teścik');\n" +
-        				"string test1=remove_diacritic('žabička');\n";
+        				"string test1=remove_diacritic('žabička');\n" +
+        				"string r1=remove_blank_space('" + 
+        				StringUtils.specCharToString(" a	b\nc\rd   e \u000Cf\r\n") + 
+        				"');\n" +
+        				"string an1 = get_alphanumeric_chars('" +
+           				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
+        				"');\n" +
+           				"string an2 = get_alphanumeric_chars('" +
+           				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
+        				"',true,true);\n" +
+           				"string an3 = get_alphanumeric_chars('" +
+           				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
+        				"',true,false);\n" +
+           				"string an4 = get_alphanumeric_chars('" +
+           				StringUtils.specCharToString(" a	1b\nc\rd \b  e \u000C2f\r\n") + 
+        				"',false,true);\n" +
+        				"string t=translate('hello','leo','pii');\n" +
+        				"string t1=translate('hello','leo','pi');\n" +
+        				"string t2=translate('hello','leo','piims');\n" +
+        				"string t3=translate('hello','leo',null);\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1947,6 +1968,15 @@ public class TestInterpreter extends TestCase {
               
 		      assertEquals("tescik",(executor.getGlobalVariable(parser.getGlobalVariableSlot("test")).getValue().getString()));
 		      assertEquals("zabicka",(executor.getGlobalVariable(parser.getGlobalVariableSlot("test1")).getValue().getString()));
+		      assertEquals("abcdef",(executor.getGlobalVariable(parser.getGlobalVariableSlot("r1")).getValue().getString()));
+		      assertEquals("a1bcde2f",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an1")).getValue().getString()));
+		      assertEquals("a1bcde2f",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an2")).getValue().getString()));
+		      assertEquals("abcdef",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an3")).getValue().getString()));
+		      assertEquals("12",(executor.getGlobalVariable(parser.getGlobalVariableSlot("an4")).getValue().getString()));
+		      assertEquals("hippi",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t")).getValue().getString()));
+		      assertEquals("hipp",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t1")).getValue().getString()));
+		      assertEquals("hippi",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t2")).getValue().getString()));
+		      assertTrue((executor.getGlobalVariable(parser.getGlobalVariableSlot("t3")).isNULL()));
 
         } catch (ParseException e) {
             System.err.println(e.getMessage());
