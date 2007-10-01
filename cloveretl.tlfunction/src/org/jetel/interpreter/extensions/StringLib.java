@@ -25,6 +25,8 @@ package org.jetel.interpreter.extensions;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -47,7 +49,9 @@ public class StringLib extends TLFunctionLibrary {
                 "left"), SUBSTRING("substring"), RIGHT("right"), TRIM("trim"), LENGTH(
                 "length"), SOUNDEX("soundex"), REPLACE("replace"), SPLIT("split"),CHAR_AT(
                 "char_at"), IS_BLANK("is_blank"), IS_ASCII("is_ascii"), IS_NUMBER("is_number"),
-                IS_INTEGER("is_integer"), IS_DATE("is_date"), REMOVE_DIACRITICS("remove_diacritic");
+                IS_INTEGER("is_integer"), IS_DATE("is_date"), REMOVE_DIACRITICS("remove_diacritic"),
+                REMOVE_BLANK_SPACE("remove_blank_space"), GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"),
+                TRANSLATE("translate"), JOIN("join");
 
         public String name;
 
@@ -109,6 +113,14 @@ public class StringLib extends TLFunctionLibrary {
         	return new IsDateFunction();
         case REMOVE_DIACRITICS:
         	return new RemoveDiacriticsFunction();
+        case REMOVE_BLANK_SPACE:
+        	return new RemoveBlankSpaceFunction();
+        case GET_ALPHANUMERIC_CHARS:
+        	return new GetAlphanumericCharsFunction();
+        case TRANSLATE:
+        	return new TranslateFunction();
+        case JOIN:
+        	return new JoinFunction();
         default:
             return null;
         }
@@ -804,7 +816,7 @@ public class StringLib extends TLFunctionLibrary {
         }
     }
 
-     //  ROMOVE DIACRITIC
+     //  REMOVE DIACRITIC
      class RemoveDiacriticsFunction extends TLFunctionPrototype {
 
          public RemoveDiacriticsFunction() {
@@ -823,6 +835,147 @@ public class StringLib extends TLFunctionLibrary {
                  }else{
                      val.setValue(StringUtils.removeDiacritic(params[0].getString()));
                  }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     //  REMOVE BLANK SPACE
+     class RemoveBlankSpaceFunction extends TLFunctionPrototype {
+
+         public RemoveBlankSpaceFunction() {
+             super("string", "remove_blank_space", new TLValueType[] { TLValueType.STRING }, 
+            		 TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (!params[0].isNull()) {
+                 if (!(params[0].type == TLValueType.STRING)){
+                     throw new TransformLangExecutorRuntimeException(params,
+                     "remove_blank_space - wrong type of literal");
+                 }else{
+                     val.setValue(StringUtils.removeBlankSpace(params[0].getString()));
+                 }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     //  GET ALPHANUMERIC CHARS
+     class GetAlphanumericCharsFunction extends TLFunctionPrototype {
+
+         public GetAlphanumericCharsFunction() {
+             super("string", "get_alphanumeric_chars", new TLValueType[] { TLValueType.STRING,
+            		 TLValueType.BOOLEAN, TLValueType.BOOLEAN}, TLValueType.STRING, 3, 1);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (!params[0].isNull()) {
+                 if (!(params[0].type == TLValueType.STRING)){
+                     throw new TransformLangExecutorRuntimeException(params,
+                     "get_alphanumeric_chars - wrong type of literal(s)");
+                 }else{
+                	 if (params.length > 1) 
+                		 if (!(params[1].type == TLValueType.BOOLEAN && 
+                				 params[2].type == TLValueType.BOOLEAN)) 
+                			 throw new TransformLangExecutorRuntimeException(params,
+                                     "get_alphanumeric_chars - wrong type of literal(s)");
+                	 boolean alpha = params.length > 1 ? params[1].getBoolean() : true;
+                	 boolean numeric = params.length > 1 ? params[2].getBoolean() : true;
+                     val.setValue(StringUtils.getOnlyAlphaNumericChars(params[0].getString(), alpha, numeric));
+                 }
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     //  TRANSLATE
+     class TranslateFunction extends TLFunctionPrototype {
+
+         public TranslateFunction() {
+             super("string", "translate", new TLValueType[] { TLValueType.STRING, 
+            		 TLValueType.STRING, TLValueType.STRING}, TLValueType.STRING);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+
+             if (params[0].isNull() || params[1].isNull() || params[2].isNull()) {
+            	 val.setValue((String)null);
+             }else{
+                 val.setValue(StringUtils.translate(params[0].getCharSequence(), 
+                		 params[1].getCharSequence(), params[2].getCharSequence()));
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createStringContext();
+         }
+     }
+
+     // JOIN
+     class JoinFunction extends TLFunctionPrototype {
+    	 
+    	 Collection list;
+    	 CharSequence delimiter;
+
+         public JoinFunction() {
+             super("string", "join", new TLValueType[] { TLValueType.STRING },
+                     TLValueType.STRING,999,3);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+             StringBuilder strBuf = (StringBuilder)val.value;
+             strBuf.setLength(0);
+             
+             delimiter = params[0].isNull() ? "" : params[0].getCharSequence();
+             for (int i = 1; i < params.length; i++) {
+                 if (!params[i].isNull()) {
+                     if (params[i].type == TLValueType.STRING) {
+                         StringUtils.strBuffAppend(strBuf, params[i]
+                                 .getCharSequence());
+                     }else if (params[i].type == TLValueType.LIST || 
+                    		 params[i].type == TLValueType.MAP){
+                    	 list = params[i].type == TLValueType.LIST ? params[i].getList() : 
+                    		 params[i].getMap().entrySet();
+                    	 for (Iterator iter = list.iterator(); iter.hasNext();) {
+							strBuf.append(iter.next());
+							strBuf.append(delimiter);
+						}
+                         if (strBuf.length() > 0) {
+                        	 strBuf.setLength(strBuf.length() - delimiter.length());
+                         }
+                     }else {
+                         StringUtils.strBuffAppend(strBuf, params[i].toString());
+                     }
+						strBuf.append(delimiter);
+                 } 
              }
              return val;
          }
