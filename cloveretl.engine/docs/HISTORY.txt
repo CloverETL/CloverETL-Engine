@@ -1,8 +1,13 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
+REL 2-4
++ possibility of coping ByteDataField as BLOB
++ new implementation of "partition by range" feature with range lookup table usage 
++ field's unquoting before setting value by delimited and universal data parsers
+
 REL 2-3
-+ swaped primary/foreign ports in CheckForeignKey component
++ swapped primary/foreign ports in CheckForeignKey component
 + DateDataField corresponds with three database types (DATE,TIME,TIMESTAMP) depending on format string:
 	- format contains only date (GyMwWDdFE) symbols - DATE
 	- format contains only time (aHhKkmsSzZ) symbols - TIME
