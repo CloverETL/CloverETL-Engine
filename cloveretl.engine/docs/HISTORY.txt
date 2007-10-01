@@ -8,6 +8,11 @@ Changes/bug fixes:
 + possibility of coping ByteDataField as BLOB
 + new implementation of "partition by range" feature with range lookup table usage 
 + field's unquoting before setting value by delimited and universal data parsers
++ the set of available functions in the Clover transformation language was extended
+	 - string remove_blank_space(string );
+	 - string get_alphanumeric_chars(string,boolean,boolean);
+	 - string translate(string, string,string );
+	 - string join(anytype,....);
 
 
 REL 2-3-0 commercial purpose release
