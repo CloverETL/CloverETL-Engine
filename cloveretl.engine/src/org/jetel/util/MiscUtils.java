@@ -19,9 +19,16 @@
 */
 package org.jetel.util;
 
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.text.Format;
+import java.text.MessageFormat;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 import org.jetel.data.Defaults;
+import org.jetel.metadata.DataFieldMetadata;
 
 public final class MiscUtils {
 
@@ -54,6 +61,43 @@ public final class MiscUtils {
         }
         
         return locale;
+    }
+    
+    /**
+     * Creates Decimal/Date format depending on data field type
+     * 
+     * @param formatType field type; for <i>DateDataField</i> there is created DateFormat , 
+     * 	for all numeric fields there is created DecimalFormat, for other fields returns null
+     * @param locale locale in Clover internat format
+     * @param format format string
+     * @return DecimalFormat, DateFormat or null
+     */
+    public static Format createFormatter(char formatType,String locale, String format){
+		Locale loc = createLocale(locale);
+		if (format != null || locale != null) {
+			switch (formatType) {
+			case DataFieldMetadata.DATE_FIELD:
+			case DataFieldMetadata.DATETIME_FIELD:
+					return new SimpleDateFormat(format, loc);
+			case DataFieldMetadata.DECIMAL_FIELD:
+			case DataFieldMetadata.NUMERIC_FIELD:
+			case DataFieldMetadata.INTEGER_FIELD:
+			case DataFieldMetadata.LONG_FIELD:
+				return new DecimalFormat(format, new DecimalFormatSymbols(loc));
+			}
+		}else{
+			switch (formatType) {
+			case DataFieldMetadata.DATE_FIELD:
+			case DataFieldMetadata.DATETIME_FIELD:
+					return DateFormat.getDateInstance(DateFormat.DEFAULT,loc);
+			case DataFieldMetadata.DECIMAL_FIELD:
+			case DataFieldMetadata.NUMERIC_FIELD:
+			case DataFieldMetadata.INTEGER_FIELD:
+			case DataFieldMetadata.LONG_FIELD:
+				return DecimalFormat.getInstance(loc);
+			}
+		}
+		return null;
     }
 
 }
