@@ -152,11 +152,11 @@ public class Partition extends Node {
 
 	private final static int READ_FROM_PORT=0;
 	private final static char EQUAL = '=';
-	private final static char COMMA = ',';
-	private final static char START_OPENED = '(';
-	private final static char START_CLOSED = '<';
-	private final static char END_OPENED = ')';
-	private final static char END_CLOSED = '>';
+	public final static char COMMA = ',';
+	public final static char START_OPENED = '(';
+	public final static char START_CLOSED = '<';
+	public final static char END_OPENED = ')';
+	public final static char END_CLOSED = '>';
 	private static final String PORT_NO_FIELD_NAME = "portNo"; 
 	
 	private String[] partitionKeyNames = null;
@@ -177,7 +177,7 @@ public class Partition extends Node {
 	private PartitionFunction partitionFce;
 	private Properties parameters;
 
-	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	public static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_RANGES_ATTRIBUTE = "ranges";
 	private static final String XML_PARTITIONCLASS_ATTRIBUTE = "partitionClass";
 	private static final String XML_PARTIONSOURCE_ATTRIBUTE = "partitionSource";
