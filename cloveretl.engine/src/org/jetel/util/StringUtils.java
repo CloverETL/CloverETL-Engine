@@ -21,6 +21,8 @@ package org.jetel.util;
 
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -753,8 +755,44 @@ public class StringUtils {
         }
         return target;
     }
-
-
+    
+    /**
+     * Translates single characters in a string to different characters:
+     * replaces single characters at a time, translating the <i>n</i>th character in the match 
+     * set with the <i>n</i>th character in the replacement set
+     * 
+     * @param in input string
+     * @param searchSet character to replace
+     * @param replaceSet replacing characters
+     * @return original string with replaced requested characters
+     */
+    public static CharSequence translate(CharSequence in, CharSequence searchSet, 
+    		CharSequence replaceSet){
+    	StringBuilder result = new StringBuilder();
+    	char[] search =  searchSet.toString().toCharArray();
+    	char[] replace = replaceSet.toString().toCharArray();
+    	int length = replace.length;
+    	int index;
+    	char ch;
+    	for (int i=0; i < in.length(); i++) {
+    		ch = in.charAt(i);
+    		if ((index = contains(search, ch)) > -1) {
+    			if ( index < length) {
+    				result.append(replace[index]);
+    			}
+    		}else {
+    			result.append(ch);
+    		}
+    	}
+    	return result;
+    }
+   
+    private static int contains(char[] array, char ch){
+    	for (int i=0;i<array.length; i++) {
+			if (array[i] == ch) return i;
+		}
+    	return -1;
+    }
 /*
  *  End class StringUtils
  */
