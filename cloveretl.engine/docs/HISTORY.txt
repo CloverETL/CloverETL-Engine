@@ -1,27 +1,58 @@
 *******************************************************************************
                           CLOVER ETL - HISTORY of RELEASES
 *******************************************************************************
-REL 2-4
+
+REL 2-4-0
+---------
+Changes/bug fixes:
 + possibility of coping ByteDataField as BLOB
 + new implementation of "partition by range" feature with range lookup table usage 
 + field's unquoting before setting value by delimited and universal data parsers
 
-REL 2-3
-+ swapped primary/foreign ports in CheckForeignKey component
+
+REL 2-3-0 commercial purpose release
+---------
++ new extension point for build-in JDBC drivers - a JDBC connection now can be defined also via
+	identifier of a build-in JDBC driver instead direct parameters 'dbDriver' and 'driverLibrary'
++ new engine plugin - 'org.jetel.jdbc', which now contains only MySQL build-in JDBC driver
++ the Dedup compoment has new rejected port, where all duplicated records are resent
++ the set of available functions in the Clover transformation language was extended
+	- boolean is_blank(string)
+	- boolean is_ascii(string)
+	- boolean is_number(string)
+	- boolean is_integer(string)
+	- boolean is_date(string)
+	- boolean remove_diacritic(string)
++ the javolution library was updated to the version 5.1
++ the commons-logging library was updated to the version 1.1
++ the DBLookupTable has new parameter "storeNulls", which determines whether the internal cache will
+	store also a 'null' database response
++ method DataField.copyFrom() is now deprecated - developers should use setValue(DataField) instead
++ added new component "DB2 Data Writer" - DB2 bulk loader
++ added new component "Informix Data Writer" - Informix bulk loader
++ added new component "MSSQL Data Writer" - SQL Server bulk loader
++ most of the readers are able to read direct from STDIN - use '-' character in fileURL parameter for this purpose
++ most of the writers are able to write direct to STDOUT - use '-' character in fileURL parameter for this purpose
++ usage of the 'Check foreign key' component was slightly changed - check documentation
 + DateDataField corresponds with three database types (DATE,TIME,TIMESTAMP) depending on format string:
 	- format contains only date (GyMwWDdFE) symbols - DATE
 	- format contains only time (aHhKkmsSzZ) symbols - TIME
 	- format contains date and time symbols - TIMESTAMP
 	- format is empty - TIMESTAMP
-+ DB2DataWriter - new component for loading data to Db2 database
-+ new TL functions:
-	 - boolean is_blank(string );
-	 - boolean is_ascii(string );
-	 - boolean is_number(string );
-	 - boolean is_integer(string );
-	 - boolean is_date(string);
 
-string remove_diacritics()
+REL 2-2-1
+---------
+Release in particular repairing bugs from 2.2.0 version.
+
+Changes/bug fixes:
++ the running scripts were renamed from 'run[.bat]' to 'clover[.bat]'
++ the default tracking interval was shorted to two seconds
++ in the DataGenerator component randomFields attribute can have inside minimal and maximal values these characters :;|
+  a value has to be quated
++ the StringUtils class has new split method
++ the OracleDataWriter better handles a directory path with whitespaces
++ few other small fixes
+
 REL 2-2-0
 ---------
 Changes/bug fixes:
