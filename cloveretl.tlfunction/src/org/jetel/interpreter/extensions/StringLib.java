@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
@@ -761,7 +762,7 @@ public class StringLib extends TLFunctionLibrary {
 
             public IsIntegerFunction() {
                 super("string", "is_integer", new TLValueType[] { TLValueType.STRING }, 
-                		TLValueType.BOOLEAN);
+                		TLValueType.INTEGER);
             }
 
             @Override
@@ -772,7 +773,7 @@ public class StringLib extends TLFunctionLibrary {
                     throw new TransformLangExecutorRuntimeException(params,
                     "is_integer - wrong type of literal");
                 }else{
-                    val.setValue(StringUtils.isInteger((params[0].getCharSequence())) == 1);
+                    val.setValue(new CloverInteger(StringUtils.isInteger(params[0].getCharSequence())));
                 }
                 
                 return val;
@@ -780,7 +781,7 @@ public class StringLib extends TLFunctionLibrary {
 
             @Override
         public TLContext createContext() {
-            return TLContext.createBooleanContext();
+            return TLContext.createIntegerContext();
         }
     }
 
@@ -924,6 +925,11 @@ public class StringLib extends TLFunctionLibrary {
 
              if (params[0].isNull() || params[1].isNull() || params[2].isNull()) {
             	 val.setValue((String)null);
+             }else if (!(params[0].type == TLValueType.STRING && 
+            		 	 params[1].type == TLValueType.STRING &&
+            		 	 params[2].type == TLValueType.STRING)){
+                 throw new TransformLangExecutorRuntimeException(params,
+                         "translate - wrong type of literal(s)");
              }else{
                  val.setValue(StringUtils.translate(params[0].getCharSequence(), 
                 		 params[1].getCharSequence(), params[2].getCharSequence()));
