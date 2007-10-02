@@ -145,6 +145,8 @@ public class TargetFile {
      * @throws IOException
      */
     public void setNextOutput() throws IOException {
+    	checkOutput();
+    	
         //write footer to the previous destination if it is not first call of this method
         if(byteChannel != null) {
         	formatter.writeFooter();
@@ -177,8 +179,7 @@ public class TargetFile {
     private void initOutput() throws IOException, ComponentNotReadyException {
     	if (formatter == null) formatter = formatterGetter.getNewFormatter();
     	formatter.init(metadata);
-    	checkOutput();
-    	setOutput();
+    	setNextOutput();
     }
     
     private void checkOutput() {
