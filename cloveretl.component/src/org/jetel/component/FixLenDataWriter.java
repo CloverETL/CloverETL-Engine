@@ -25,7 +25,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.FixLenDataFormatter;
+import org.jetel.data.formatter.getter.FixLenDataFormatterGetter;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
@@ -100,12 +101,15 @@ public class FixLenDataWriter extends Node {
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_NUMBER_FILETAG_ATTRIBUTE = "numberFileTag";
 	
 	private static final boolean DEFAULT_APPEND=false;
 	
 	private String fileURL;
 	private boolean appendData;
-	private FixLenDataFormatter formatter;
+	private FixLenDataFormatterGetter formatterGetter;
     private MultiFileWriter writer;
 	private boolean outputFieldNames=false;
 	private int recordsPerFile;
@@ -114,6 +118,12 @@ public class FixLenDataWriter extends Node {
 	private int numRecords;
 	private WritableByteChannel writableByteChannel;
 
+	private String partition;
+	private String attrPartitionKey;
+	private String[] partitionKey;
+	private LookupTable lookupTable;
+	private boolean numberFileTag = true;
+	
 	static Log logger = LogFactory.getLog(FixLenDataWriter.class);
 
 	/**  Description of the Field */
@@ -133,13 +143,13 @@ public class FixLenDataWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterGetter = new FixLenDataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	public FixLenDataWriter(String id, WritableByteChannel writableByteChannel, String charset) {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
-		formatter = new FixLenDataFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterGetter = new FixLenDataFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
 	}
 
 	@Override
@@ -172,14 +182,16 @@ public class FixLenDataWriter extends Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		initLookupTable();
+		
         // initialize multifile writer based on prepared formatter
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -187,10 +199,32 @@ public class FixLenDataWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
+        writer.setLookupTable(lookupTable);
+        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        writer.setPartitionKeyNames(partitionKey);
+        writer.setNumberFileTag(numberFileTag);
         if(outputFieldNames) {
-        	formatter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
+        	formatterGetter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	}
+	
+	/**
+	 * Creates and initializes lookup table.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLookupTable() throws ComponentNotReadyException {
+		if (partition == null) return;
+		
+		// Initializing lookup table
+		lookupTable = getGraph().getLookupTable(partition);
+		if (lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
+		}
+		if (!lookupTable.isInitialized()) {
+			lookupTable.init();
+		}
 	}
 	
 	/**
@@ -201,22 +235,19 @@ public class FixLenDataWriter extends Node {
 	 */
 	public void toXML(Element xmlElement) {
 		super.toXML(xmlElement);
-		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE,
-				((FixLenDataFormatter)this.formatter).getCharSetName());
+		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE, fileURL);
+		xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, formatterGetter.getCharSetName());
 		if (this.appendData) {
 			xmlElement.setAttribute(XML_APPEND_ATTRIBUTE,String.valueOf(this.appendData));
 		}
-		
 		if (outputFieldNames){
 		    xmlElement.setAttribute(XML_OUTPUT_FIELD_NAMES, Boolean.toString(outputFieldNames));
 		}
-		
-		if (formatter.getFieldFiller() != null){
-		    xmlElement.setAttribute(XML_FIELD_FILLER, formatter.getFieldFiller().toString());
+		if (formatterGetter.getFieldFiller() != null){
+		    xmlElement.setAttribute(XML_FIELD_FILLER, formatterGetter.getFieldFiller().toString());
 		}
-		if (formatter.getRecordFiller() != null){
-		    xmlElement.setAttribute(XML_RECORD_FILLER, formatter.getRecordFiller().toString());
+		if (formatterGetter.getRecordFiller() != null){
+		    xmlElement.setAttribute(XML_RECORD_FILLER, formatterGetter.getRecordFiller().toString());
 		}
 		if (recordsPerFile > 0) {
 			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
@@ -230,7 +261,15 @@ public class FixLenDataWriter extends Node {
 		if (numRecords != 0){
 			xmlElement.setAttribute(XML_RECORD_COUNT_ATTRIBUTE,String.valueOf(numRecords));
 		}
-		
+		if (partition != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
+		} else if (lookupTable != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
+		}
+		if (attrPartitionKey != null) {
+			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		xmlElement.setAttribute(XML_NUMBER_FILETAG_ATTRIBUTE, Boolean.toString(numberFileTag));
 	}
 
 
@@ -275,6 +314,15 @@ public class FixLenDataWriter extends Node {
 			if (xattribs.exists(XML_RECORD_COUNT_ATTRIBUTE)){
 				aFixLenDataWriterNIO.setNumRecords(Integer.parseInt(xattribs.getString(XML_RECORD_COUNT_ATTRIBUTE)));
 			}
+			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+				aFixLenDataWriterNIO.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+				aFixLenDataWriterNIO.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_NUMBER_FILETAG_ATTRIBUTE)) {
+				aFixLenDataWriterNIO.setNumberFileTag(xattribs.getBoolean(XML_NUMBER_FILETAG_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
 		}
@@ -324,7 +372,7 @@ public class FixLenDataWriter extends Node {
      * @param filler The filler to set.
      */
     public void setFieldFiller(String filler) {
-        this.formatter.setFieldFiller(filler.charAt(0));
+        this.formatterGetter.setFieldFiller(filler.charAt(0));
     }
 
     /**
@@ -334,7 +382,7 @@ public class FixLenDataWriter extends Node {
      * @param filler The filler to be set.
      */
     public void setRecordFiller(String filler) {
-        this.formatter.setRecordFiller(filler.charAt(0));
+        this.formatterGetter.setRecordFiller(filler.charAt(0));
     }
 
     public void setBytesPerFile(int bytesPerFile) {
@@ -361,5 +409,76 @@ public class FixLenDataWriter extends Node {
         this.numRecords = numRecords;
     }
 
+    /**
+     * Sets lookup table for data partition.
+     * 
+     * @param lookupTable
+     */
+	public void setLookupTable(LookupTable lookupTable) {
+		this.lookupTable = lookupTable;
+	}
+
+	/**
+	 * Gets lookup table for data partition.
+	 * 
+	 * @return
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @param partition
+	 */
+	public void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartition() {
+		return partition;
+	}
+
+	/**
+	 * Sets partition key for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionKey(String partitionKey) {
+		this.attrPartitionKey = partitionKey;
+	}
+
+	/**
+	 * Gets partition key for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartitionKey() {
+		return attrPartitionKey;
+	}
+	
+	/**
+	 * Sets number file tag for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setNumberFileTag(boolean numberFileTag) {
+		this.numberFileTag = numberFileTag;
+	}
+
+	/**
+	 * Gets number file tag for data partition.
+	 * 
+	 * @return
+	 */
+	public boolean getNumberFileTag() {
+		return numberFileTag;
+	}
 }
 

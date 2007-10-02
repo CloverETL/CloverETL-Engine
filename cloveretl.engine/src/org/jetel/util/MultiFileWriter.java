@@ -19,17 +19,20 @@
 */
 package org.jetel.util;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.WritableByteChannel;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
+import org.jetel.data.formatter.getter.FormatterGetter;
+import org.jetel.data.lookup.LookupTable;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -37,6 +40,7 @@ import org.jetel.metadata.DataRecordMetadata;
  * Class for transparent writing into multifile or multistream. Underlying formatter is used for formatting
  * incoming data records and destination is a list of files defined in fileURL attribute
  * by org.jetel.util.MultiOutFile or iterator of writable channels.
+ * The MultiFileWriter can partition data according to lookup table and partition key or partition key only.
  * Usage: 
  * - first instantiate some suitable formatter, set all its parameters (don't call init method)
  * - optionally set appropriate logger
@@ -51,132 +55,256 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class MultiFileWriter {
 
-    private static Log defaultLogger = LogFactory.getLog(MultiFileWriter.class);
-    private Log logger = defaultLogger;
-
-    private Formatter formatter;
+    private Formatter currentFormatter;				// for former constructor
+    private FormatterGetter formatterGetter;		// creates new formatter
+    private Map<Object, TargetFile> multiTarget;	// <key, TargetFile> for file partition
+    private TargetFile currentTarget;				// actual output target
     private URL contextURL;
     private String fileURL;
     private int recordsPerFile;
     private int bytesPerFile;
-    private int records;
-    private int bytes;
     private boolean appendData;
-    private Iterator<String> fileNames;
     private Iterator<WritableByteChannel> channels;
-    private WritableByteChannel byteChannel;
     private int skip;
 	private int numRecords;
 	private int counter;
 	private boolean useChannel = true;
+	private DataRecordMetadata metadata;
     
+	private LookupTable lookupTable = null;
+	private String[] partitionKeyNames;
+	private RecordKey partitionKey;
+	
+	private boolean useNumberFileTag = true;
+	private int numberFileTag;
+	
     /**
      * Constructor.
      * @param formatter formatter is used for incoming records formatting
      * @param fileURL target file(s) definition
      */
     public MultiFileWriter(Formatter formatter, URL contextURL, String fileURL) {
-        this.formatter = formatter;
+        this.currentFormatter = formatter;
         this.contextURL = contextURL;
         this.fileURL = fileURL;
     }
 
     public MultiFileWriter(Formatter formatter, Iterator<WritableByteChannel> channels) {
-        this.formatter = formatter;
+        this.currentFormatter = formatter;
+        this.channels = channels;
+    }
+
+    public MultiFileWriter(FormatterGetter formatterGetter, URL contextURL, String fileURL) {
+        this.formatterGetter = formatterGetter;
+        this.contextURL = contextURL;
+        this.fileURL = fileURL;
+    }
+
+    public MultiFileWriter(FormatterGetter formatterGetter, Iterator<WritableByteChannel> channels) {
+        this.formatterGetter = formatterGetter;
         this.channels = channels;
     }
 
     /**
      * Initializes underlying formatter with a given metadata.
+     * 
      * @param metadata
      * @throws ComponentNotReadyException 
+     * @throws IOException 
      */
     public void init(DataRecordMetadata metadata) throws ComponentNotReadyException {
-    	if (fileURL != null) fileNames = new MultiOutFile(fileURL);
-        formatter.init(metadata);
-        try {
-            setNextOutput();
-        } catch(IOException e) {
-            throw new ComponentNotReadyException(e);
-        }
+    	this.metadata = metadata;
+    	preparePatitionKey();	// initialize partition key - if defined
+    	prepareTargets();		// prepare output targets
     }
     
     /**
-     * Switch output file for formatter.
-     * @throws IOException 
-     * @throws FileNotFoundException
+     * Creates target array or target map.
+     * 
+     * @throws ComponentNotReadyException
      */
-    private void setNextOutput() throws IOException {
-    	if (fileNames != null && !fileNames.hasNext()) {
-            logger.warn("Unable to open new output file. This may be caused by missing wildcard in filename specification. "
-                    + "Size of output file will exceed specified limit.");
-            return;
-    	}
-    	if (channels != null && !channels.hasNext()) {
-            logger.warn("Unable to open new output stream. Size of last output stream will exceed specified limit.");
-            return;
-        }
+    private void prepareTargets() throws ComponentNotReadyException {
+    	// prepare type of targets (single/lookpup/keyValue)
+		multiTarget = new HashMap<Object, TargetFile>();
+		if (partitionKey != null) {
+			if (lookupTable != null) {
+				lookupTable.setLookupKey(partitionKey);
+			}
+		} else {
+			if (currentFormatter == null) {
+				currentFormatter = formatterGetter.getNewFormatter();	
+			}
+    		currentFormatter.init(metadata);
+    		multiTarget.put(Integer.valueOf(0), currentTarget = createNewTarget(currentFormatter));
+    		try {
+				currentTarget.init();
+			} catch (IOException e) {
+				throw new ComponentNotReadyException(e);
+			}
+		}
+    }
+    
+    /**
+     * Creates new target according to fileURL or channels. 
+     * Sets append data and uses channel properties.
+     * 
+     * @return target
+     */
+    private TargetFile createNewTarget() {
+    	TargetFile targetFile;
+		if (fileURL != null) targetFile = new TargetFile(fileURL, contextURL, formatterGetter, metadata);
+		else targetFile = new TargetFile(channels, formatterGetter, metadata);
+		targetFile.setAppendData(appendData);
+		targetFile.setUseChannel(useChannel);
+		return targetFile;
+    }
+    
+    /**
+     * Creates new target according to fileURL or channels for the formatter. 
+     * Sets append data and uses channel properties.
+     * 
+     * @return target
+     */
+    private TargetFile createNewTarget(Formatter formatter) {
+    	TargetFile targetFile;
+		if (fileURL != null) targetFile = new TargetFile(fileURL, contextURL, formatter, metadata);
+		else targetFile = new TargetFile(channels, formatter, metadata);
+		targetFile.setAppendData(appendData);
+		targetFile.setUseChannel(useChannel);
+		return targetFile;
+    }
 
-        //write footer to the previous destination if it is not first call of this method
-        if(byteChannel != null) {
-        	formatter.writeFooter();
-        }
-        if (fileNames != null) {
-            String fName = fileNames.next();
-        	byteChannel = FileUtils.getWritableChannel(contextURL, fName, appendData);
-        	if (useChannel) {
-                formatter.setDataTarget(byteChannel);
-        	} else {
-                formatter.setDataTarget(new File(FileUtils.getFileURL(contextURL, fName).getFile()));
-        	}
-        } else {
-        	byteChannel = channels.next();
-            formatter.setDataTarget(byteChannel);
-        }
-        //write header
-        formatter.writeHeader();
+    
+    /**
+     * Checks and prepares partition key. 
+     * 
+     * @param metadata
+     * @throws ComponentNotReadyException
+     */
+    private void preparePatitionKey() throws ComponentNotReadyException {
+    	if (partitionKeyNames == null && partitionKey == null && lookupTable != null) {
+    		throw new ComponentNotReadyException("Lookup table is not properly defined. The partition key is missing.");
+    	}
+	    if (partitionKeyNames != null) {
+			partitionKey = new RecordKey(partitionKeyNames, metadata);
+		}
+	    if (partitionKey != null) {
+			try {
+				partitionKey.init();
+			} catch (Exception e) {
+				throw new ComponentNotReadyException(e.getMessage());
+			}
+	    }
     }
 
     /**
      * Writes given record via formatter into destination file(s).
      * @param record
      * @throws IOException
+     * @throws ComponentNotReadyException 
      */
-    public void write(DataRecord record) throws IOException {
-        //check for index of last returned record
+    public void write(DataRecord record) throws IOException, ComponentNotReadyException {
+        // check for index of last returned record
         if(numRecords > 0 && numRecords == counter) {
             return;
         }
         
-        //shall i skip some records?
+        // shall i skip some records?
         if(skip > 0) {
             skip--;
             return;
         }
-    	
-    	if ((recordsPerFile > 0 && records >= recordsPerFile)
-                || (bytesPerFile > 0 && bytes >= bytesPerFile)) {
-            setNextOutput();
-            records = 0;
-            bytes = 0;
+        checkAndSetNextOutput();
+        
+        // write the record according to value partition
+        if (partitionKey == null) {
+            // single formatter/getter
+        	writeRecord2CurrentTarget(record);
+        } else {
+        	if (lookupTable != null) {
+                // write the record according to lookup table
+            	writeRecord4LookupTable(record);
+            } else {
+            	// just partition key without lookup table
+            	writeRecord2MultiTarget(record, record);
+            }
         }
-        bytes += formatter.write(record);
-        records++;
-        counter++;
     }
 
+    /**
+     * Writes the data record according to value partition.
+     * 
+     * @param record
+     * @throws IOException
+     * @throws ComponentNotReadyException
+     */
+    private final void writeRecord2MultiTarget(DataRecord keyRecord, DataRecord record) throws IOException, ComponentNotReadyException {
+    	String keyString = partitionKey.getKeyString(keyRecord);
+    	if ((currentTarget = multiTarget.get(keyString)) == null) {
+    		currentTarget = createNewTarget();
+    		currentTarget.setFileTag(useNumberFileTag ? numberFileTag++ : keyString);
+    		currentTarget.init();
+    		multiTarget.put(keyString, currentTarget);
+    	}
+		currentFormatter = currentTarget.getFormatter();
+		writeRecord2CurrentTarget(record);
+    }
+    
+    
+    /**
+     * Writes the data record according to lookup table.
+     * 
+     * @param record
+     * @throws IOException
+     * @throws ComponentNotReadyException
+     */
+    private final void writeRecord4LookupTable(DataRecord record) throws IOException, ComponentNotReadyException {
+    	DataRecord keyRecord = lookupTable.get(record);
+    	
+		// data filtering
+    	while (keyRecord != null) {
+			writeRecord2MultiTarget(keyRecord, record);
+			
+			// get next record from database with the same key
+			if ((keyRecord = lookupTable.getNext()) != null) {
+		        checkAndSetNextOutput();
+			}
+    	}
+    }
+    
+    /**
+     * Sets next output if records or bytes for the output are exceeded. 
+     * 
+     * @throws IOException
+     */
+    private final void checkAndSetNextOutput() throws IOException {
+        if ((recordsPerFile > 0 && currentTarget.getRecords() >= recordsPerFile)
+                || (bytesPerFile > 0 && currentTarget.getBytes() >= bytesPerFile)) {
+        	currentTarget.setNextOutput();
+        }
+    }
+    
+    /**
+     * Writes data into formatter and sets byte and record counters.
+     * 
+     * @param record
+     * @throws IOException
+     */
+    private final void writeRecord2CurrentTarget(DataRecord record) throws IOException {
+    	currentTarget.setBytes(currentTarget.getBytes()+currentFormatter.write(record));
+    	currentTarget.setRecords(currentTarget.getRecords()+1);
+        counter++;
+    }
+    
     /**
      * Closes underlying formatter.
      */
     public void close() {
-    	try {
-			formatter.writeFooter();
-		} catch (IOException e) {
-			logger.error(e);
-		}
-        formatter.close();
+    	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+    		entry.getValue().close();
+    	}
     }
-    
+
     /**
      * Sets number of bytes written into separate file.
      * @param bytesPerFile
@@ -193,8 +321,9 @@ public class MultiFileWriter {
         this.recordsPerFile = recordsPerFile;
     }
     
+    
     public void setLogger(Log logger) {
-        this.logger = logger;
+    	TargetFile.setLogger(logger);
     }
 
     public void setAppendData(boolean appendData) {
@@ -223,6 +352,78 @@ public class MultiFileWriter {
 
 	public void setUseChannel(boolean useChannel) {
 		this.useChannel = useChannel;
+	}
+
+	/**
+	 * 
+	 * 
+	 * @param partitionKeyNames
+	 */
+	public void setPartitionKeyNames(String[] partitionKeyNames) {
+		this.partitionKeyNames = partitionKeyNames;
+	}
+
+	/**
+	 * Gets partition key names used for partition key.
+	 * 
+	 * @return partitionKeyNames
+	 */
+	public String[] getPartitionKeyNames() {
+		return partitionKeyNames;
+	}
+
+	/**
+	 * Sets record key used for partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionKey(RecordKey partitionKey) {
+		this.partitionKey = partitionKey;
+	}
+
+	/**
+	 * Gets record key used for partition.
+	 * 
+	 * @return RecordKey
+	 */
+	public RecordKey getPartitionKey() {
+		return partitionKey;
+	}
+	
+	/**
+	 * Sets lookup table.
+	 * 
+	 * @param lookupTable - LookupTable
+	 */
+	public void setLookupTable(LookupTable lookupTable) {
+		this.lookupTable = lookupTable;
+	}
+
+	/**
+	 * Gets lookup table.
+	 * 
+	 * @return LookupTable
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+	
+	/**
+	 * Gets NumberFileTag
+	 * 
+	 * @return int
+	 */
+	public boolean getNumberFileTag() {
+		return useNumberFileTag;
+	}
+
+	/**
+	 * Gets NumberFileTag
+	 * 
+	 * @return int
+	 */
+	public void setNumberFileTag(boolean useNumberFileTag) {
+		this.useNumberFileTag = useNumberFileTag;
 	}
 
 }
