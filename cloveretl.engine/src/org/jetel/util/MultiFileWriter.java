@@ -127,18 +127,20 @@ public class MultiFileWriter {
      * @throws ComponentNotReadyException
      */
     private void prepareTargets() throws ComponentNotReadyException {
-    	// prepare type of targets (single/lookpup/keyValue)
-		multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
+    	// prepare type of targets: lookpup/keyValue
 		if (partitionKey != null) {
+			multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 			if (lookupTable != null) {
 				lookupTable.setLookupKey(partitionKey);
 			}
+			
+		// prepare type of targets: single
 		} else {
 			if (currentFormatter == null) {
 				currentFormatter = formatterGetter.getNewFormatter();	
 			}
     		currentFormatter.init(metadata);
-    		multiTarget.put(Integer.valueOf(0), currentTarget = createNewTarget(currentFormatter));
+    		currentTarget = createNewTarget(currentFormatter);
     		try {
 				currentTarget.init();
 			} catch (IOException e) {
@@ -303,8 +305,12 @@ public class MultiFileWriter {
      * Closes underlying formatter.
      */
     public void close() {
-    	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
-    		entry.getValue().close();
+    	if (multiTarget != null) {
+        	for (Entry<Object, TargetFile> entry: multiTarget.entrySet()) {
+        		entry.getValue().close();
+        	}
+    	} else {
+    		currentTarget.close();
     	}
     }
 
