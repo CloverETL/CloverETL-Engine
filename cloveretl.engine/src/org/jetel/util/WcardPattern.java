@@ -22,6 +22,7 @@ package org.jetel.util;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -186,6 +187,7 @@ public class WcardPattern {
 				if (dir.exists()) {
 					FilenameFilter filter = new wcardFilter(filePat.toString());
 					String[] curMatch = dir.list(filter);
+					Arrays.sort(curMatch);
 					for (int fnIdx = 0; fnIdx < curMatch.length; fnIdx++) {
 						File f = new File(dirName.toString(), curMatch[fnIdx]);
 						mfiles.add(f.getAbsolutePath());
