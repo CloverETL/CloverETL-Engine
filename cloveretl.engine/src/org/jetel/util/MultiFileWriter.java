@@ -55,6 +55,9 @@ import org.jetel.metadata.DataRecordMetadata;
  */
 public class MultiFileWriter {
 
+	// Default capacity of HashMap
+	private final static int tableInitialSize = 512;
+
     private Formatter currentFormatter;				// for former constructor
     private FormatterGetter formatterGetter;		// creates new formatter
     private Map<Object, TargetFile> multiTarget;	// <key, TargetFile> for file partition
@@ -125,7 +128,7 @@ public class MultiFileWriter {
      */
     private void prepareTargets() throws ComponentNotReadyException {
     	// prepare type of targets (single/lookpup/keyValue)
-		multiTarget = new HashMap<Object, TargetFile>();
+		multiTarget = new HashMap<Object, TargetFile>(tableInitialSize);
 		if (partitionKey != null) {
 			if (lookupTable != null) {
 				lookupTable.setLookupKey(partitionKey);
