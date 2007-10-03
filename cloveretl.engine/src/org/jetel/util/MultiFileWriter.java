@@ -219,7 +219,9 @@ public class MultiFileWriter {
             skip--;
             return;
         }
-        checkAndSetNextOutput();
+        if (currentTarget != null) {
+        	checkAndSetNextOutput();
+        }
         
         // write the record according to value partition
         if (partitionKey == null) {
