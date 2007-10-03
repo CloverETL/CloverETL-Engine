@@ -28,7 +28,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.TextTableFormatter;
+import org.jetel.data.formatter.getter.TextTableFormatterGetter;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
@@ -103,10 +105,13 @@ public class TextTableWriter extends Node {
 	private static final String XML_OUTPUT_FIELD_NAMES = "outputFieldNames";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 
 	private String fileURL;
 	private boolean appendData;
-	private TextTableFormatter formatter;
+	private TextTableFormatterGetter formatterGetter;
 	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
@@ -115,6 +120,12 @@ public class TextTableWriter extends Node {
 	private int recordsPerFile;
 	private int bytesPerFile;
 	
+	private String partition;
+	private String attrPartitionKey;
+	private String[] partitionKey;
+	private LookupTable lookupTable;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
+
 	public final static String COMPONENT_TYPE = "TEXT_TABLE_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
@@ -134,8 +145,8 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatter = charset == null ? new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatter(charset);
-		formatter.setMask(fields);
+		formatterGetter = charset == null ? new TextTableFormatterGetter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterGetter(charset);
+		formatterGetter.setMask(fields);
 	}
 	
 	/**
@@ -152,8 +163,8 @@ public class TextTableWriter extends Node {
 		super(id);
 		this.writableByteChannel = writableByteChannel;
 		this.appendData = appendData;
-		formatter = charset == null ? new TextTableFormatter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatter(charset);
-		formatter.setMask(fields);
+		formatterGetter = charset == null ? new TextTableFormatterGetter(Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER) : new TextTableFormatterGetter(charset);
+		formatterGetter.setMask(fields);
 	}
 
 	/* (non-Javadoc)
@@ -185,18 +196,13 @@ public class TextTableWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	@Override
-	public void free() {
-		super.free();
-		formatter.close();
-	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
     @Override
     public ConfigurationStatus checkConfig(ConfigurationStatus status) {
 		super.checkConfig(status);
-		 
+		
 		checkInputPorts(status, 1, 1);
         checkOutputPorts(status, 0, 0);
 
@@ -217,14 +223,16 @@ public class TextTableWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		initLookupTable();
+
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -232,8 +240,30 @@ public class TextTableWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-       	formatter.setOutputFieldNames(outputFieldNames);
+        writer.setLookupTable(lookupTable);
+        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        writer.setPartitionKeyNames(partitionKey);
+        writer.setPartitionFileTag(partitionFileTagType);
+       	formatterGetter.setOutputFieldNames(outputFieldNames);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	}
+
+	/**
+	 * Creates and initializes lookup table.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLookupTable() throws ComponentNotReadyException {
+		if (partition == null) return;
+		
+		// Initializing lookup table
+		lookupTable = getGraph().getLookupTable(partition);
+		if (lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
+		}
+		if (!lookupTable.isInitialized()) {
+			lookupTable.init();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -266,6 +296,15 @@ public class TextTableWriter extends Node {
             if(xattribs.exists(XML_BYTES_PER_FILE)) {
             	aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
             }
+			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+				aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -280,9 +319,9 @@ public class TextTableWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = this.formatter.getCharsetName();
+		String charSet = this.formatterGetter.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterGetter.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (skip != 0){
@@ -300,6 +339,15 @@ public class TextTableWriter extends Node {
 		if (bytesPerFile > 0) {
 			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
 		}
+		if (partition != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
+		} else if (lookupTable != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
+		}
+		if (attrPartitionKey != null) {
+			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 	
     /**
@@ -333,4 +381,75 @@ public class TextTableWriter extends Node {
         this.recordsPerFile = recordsPerFile;
     }
 
+    /**
+     * Sets lookup table for data partition.
+     * 
+     * @param lookupTable
+     */
+	public void setLookupTable(LookupTable lookupTable) {
+		this.lookupTable = lookupTable;
+	}
+
+	/**
+	 * Gets lookup table for data partition.
+	 * 
+	 * @return
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @param partition
+	 */
+	public void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartition() {
+		return partition;
+	}
+
+	/**
+	 * Sets partition key for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionKey(String partitionKey) {
+		this.attrPartitionKey = partitionKey;
+	}
+
+	/**
+	 * Gets partition key for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartitionKey() {
+		return attrPartitionKey;
+	}
+	
+	/**
+	 * Sets number file tag for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionFileTag(String partitionFileTagType) {
+		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTagType);
+	}
+
+	/**
+	 * Gets number file tag for data partition.
+	 * 
+	 * @return
+	 */
+	public PartitionFileTagType getPartitionFileTag() {
+		return partitionFileTagType;
+	}
 }
