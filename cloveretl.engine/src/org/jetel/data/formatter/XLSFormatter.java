@@ -128,6 +128,14 @@ public abstract class XLSFormatter implements Formatter {
 	/**
 	 * @return code of first column ("A","B",..,"AA",...)
 	 */
+	public String getFirstColumnName(){
+		return firstColumnIndex;
+	}
+
+	/**
+	 * @return first column number
+	 */
+	@Deprecated
 	public int getFirstColumn() {
 		return firstColumn;
 	}
