@@ -27,8 +27,10 @@ import java.nio.channels.WritableByteChannel;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
-import org.jetel.data.formatter.JExcelXLSDataFormatter;
-import org.jetel.data.formatter.XLSFormatter;
+import org.jetel.data.Defaults;
+import org.jetel.data.formatter.getter.XLSFormatterGetter;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationProblem;
 import org.jetel.exception.ConfigurationStatus;
@@ -118,14 +120,23 @@ public class XLSWriter extends Node {
 	private static final String XML_RECORD_SKIP_ATTRIBUTE = "recordSkip";
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 
 	public final static String COMPONENT_TYPE = "XLS_WRITER";
 	private final static int READ_FROM_PORT = 0;
 
-	private static Log logger = LogFactory.getLog(XLSWriter.class);
+	private String partition;
+	private String attrPartitionKey;
+	private String[] partitionKey;
+	private LookupTable lookupTable;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
 
+	private static Log logger = LogFactory.getLog(XLSWriter.class);
+	
 	private String fileURL;
-	private XLSFormatter formatter;
+	private XLSFormatterGetter formatterGetter;
 	private MultiFileWriter writer;
     private int skip;
 	private int numRecords;
@@ -143,7 +154,7 @@ public class XLSWriter extends Node {
 	public XLSWriter(String id,String fileURL, boolean append){
 		super(id);
 		this.fileURL = fileURL;
-		formatter = new JExcelXLSDataFormatter(append);
+		formatterGetter = new XLSFormatterGetter(append);
 	}
 	
 	/* (non-Javadoc)
@@ -173,12 +184,6 @@ public class XLSWriter extends Node {
 			writer.close();
 		}
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
-	}
-
-	@Override
-	public void free() {
-		super.free();
-		formatter.close();
 	}
 
 	/* (non-Javadoc)
@@ -211,13 +216,15 @@ public class XLSWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		initLookupTable();
+		
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setRecordsPerFile(recordsPerFile);
@@ -225,7 +232,29 @@ public class XLSWriter extends Node {
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
 		writer.setUseChannel(false);
+        writer.setLookupTable(lookupTable);
+        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        writer.setPartitionKeyNames(partitionKey);
+        writer.setPartitionFileTag(partitionFileTagType);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	}
+
+	/**
+	 * Creates and initializes lookup table.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLookupTable() throws ComponentNotReadyException {
+		if (partition == null) return;
+		
+		// Initializing lookup table
+		lookupTable = getGraph().getLookupTable(partition);
+		if (lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
+		}
+		if (!lookupTable.isInitialized()) {
+			lookupTable.init();
+		}
 	}
 
 	public static Node fromXML(TransformationGraph graph, Element nodeXML) throws XMLConfigurationException {
@@ -253,6 +282,15 @@ public class XLSWriter extends Node {
             if(xattribs.exists(XML_RECORDS_PER_FILE)) {
             	xlsWriter.setRecordsPerFile(xattribs.getInteger(XML_RECORDS_PER_FILE));
             }
+			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+				xlsWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+				xlsWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+				xlsWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+            }
 			return xlsWriter;
 		} catch (Exception ex) {
 		    throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -268,12 +306,12 @@ public class XLSWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatter.isAppend()));
-		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatter.getFirstColumn()));
-		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatter.getFirstRow()+1));
-		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatter.getNamesRow()+1));
-		if (formatter.getSheetName() != null) {
-			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatter.getSheetName());
+		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(formatterGetter.isAppend()));
+		xmlElement.setAttribute(XML_FIRSTCOLUMN_ATTRIBUTE,String.valueOf(formatterGetter.getFirstColumn()));
+		xmlElement.setAttribute(XML_FIRSTDATAROW_ATTRIBUTE, String.valueOf(formatterGetter.getFirstRow()+1));
+		xmlElement.setAttribute(XML_NAMESROW_ATTRIBUTE, String.valueOf(formatterGetter.getNamesRow()+1));
+		if (formatterGetter.getSheetName() != null) {
+			xmlElement.setAttribute(XML_SHEETNAME_ATTRIBUTE,formatterGetter.getSheetName());
 		}
 		if (skip != 0){
 			xmlElement.setAttribute(XML_RECORD_SKIP_ATTRIBUTE, String.valueOf(skip));
@@ -284,26 +322,35 @@ public class XLSWriter extends Node {
 		if (recordsPerFile > 0) {
 			xmlElement.setAttribute(XML_RECORDS_PER_FILE, Integer.toString(recordsPerFile));
 		}
+		if (partition != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
+		} else if (lookupTable != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
+		}
+		if (attrPartitionKey != null) {
+			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 
 	private void setSheetName(String sheetName) {
-		formatter.setSheetName(sheetName);
+		formatterGetter.setSheetName(sheetName);
 	}
 
 	private void setSheetNumber(int sheetNumber) {
-		formatter.setSheetNumber(sheetNumber);
+		formatterGetter.setSheetNumber(sheetNumber);
 	}
 	
 	private void setFirstColumn(String firstColumn){
-		formatter.setFirstColumn(firstColumn);
+		formatterGetter.setFirstColumn(firstColumn);
 	}
 	
 	private void setFirstRow(int firstRow){
-		formatter.setFirstRow(firstRow-1);
+		formatterGetter.setFirstRow(firstRow-1);
 	}
 	
 	private void setNamesRow(int namesRow){
-		formatter.setNamesRow(namesRow-1);
+		formatterGetter.setNamesRow(namesRow-1);
 	}
 	
     /**
@@ -326,4 +373,75 @@ public class XLSWriter extends Node {
         this.recordsPerFile = recordsPerFile;
     }
 
+    /**
+     * Sets lookup table for data partition.
+     * 
+     * @param lookupTable
+     */
+	public void setLookupTable(LookupTable lookupTable) {
+		this.lookupTable = lookupTable;
+	}
+
+	/**
+	 * Gets lookup table for data partition.
+	 * 
+	 * @return
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @param partition
+	 */
+	public void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartition() {
+		return partition;
+	}
+
+	/**
+	 * Sets partition key for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionKey(String partitionKey) {
+		this.attrPartitionKey = partitionKey;
+	}
+
+	/**
+	 * Gets partition key for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartitionKey() {
+		return attrPartitionKey;
+	}
+	
+	/**
+	 * Sets number file tag for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionFileTag(String partitionFileTagType) {
+		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTagType);
+	}
+
+	/**
+	 * Gets number file tag for data partition.
+	 * 
+	 * @return
+	 */
+	public PartitionFileTagType getPartitionFileTag() {
+		return partitionFileTagType;
+	}
 }

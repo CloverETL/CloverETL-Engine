@@ -28,6 +28,7 @@ import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
 import org.jetel.data.formatter.getter.DelimitedDataFormatterGetter;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
@@ -78,6 +79,9 @@ import org.w3c.dom.Element;
  *  <tr><td><b>bytesPerFile</b></td><td>Max size of output files. To avoid splitting a record to two files, max size could be slightly overreached.</td>
  *  <tr><td><b>recordSkip</b></td><td>number of skipped records</td>
  *  <tr><td><b>recordCount</b></td><td>number of written records</td>
+ *  <tr><td><b>partitionKey</b></td><td></td>
+ *  <tr><td><b>partition</b></td><td></td>
+ *  <tr><td><b>partitionFileTag</b></td><td></td>
  *  </tr>
  *  </table>  
  *
@@ -98,7 +102,7 @@ public class DelimitedDataWriter extends Node {
 	private static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
 	private static final String XML_PARTITION_ATTRIBUTE = "partition";
-	private static final String XML_NUMBER_FILETAG_ATTRIBUTE = "numberFileTag";
+	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 	
 	private static final boolean APPEND_DATA_AS_DEFAULT = false;
 	
@@ -117,7 +121,7 @@ public class DelimitedDataWriter extends Node {
 	private String attrPartitionKey;
 	private String[] partitionKey;
 	private LookupTable lookupTable;
-	private boolean numberFileTag = true;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
 	
 	static Log logger = LogFactory.getLog(DelimitedDataWriter.class);
 
@@ -207,7 +211,7 @@ public class DelimitedDataWriter extends Node {
         writer.setLookupTable(lookupTable);
         if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
         writer.setPartitionKeyNames(partitionKey);
-        writer.setNumberFileTag(numberFileTag);
+        writer.setPartitionFileTag(partitionFileTagType);
         if(outputFieldNames) {
         	formatterGetter.setHeader(getInputPort(READ_FROM_PORT).getMetadata().getFieldNamesHeader());
         }
@@ -288,7 +292,7 @@ public class DelimitedDataWriter extends Node {
 		if (attrPartitionKey != null) {
 			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
 		}
-		xmlElement.setAttribute(XML_NUMBER_FILETAG_ATTRIBUTE, Boolean.toString(numberFileTag));
+		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 
 	/**
@@ -328,8 +332,8 @@ public class DelimitedDataWriter extends Node {
 			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
 				aDelimitedDataWriterNIO.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
             }
-			if(xattribs.exists(XML_NUMBER_FILETAG_ATTRIBUTE)) {
-				aDelimitedDataWriterNIO.setNumberFileTag(xattribs.getBoolean(XML_NUMBER_FILETAG_ATTRIBUTE));
+			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+				aDelimitedDataWriterNIO.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
             }
 		}catch(Exception ex){
 	           throw new XMLConfigurationException(COMPONENT_TYPE + ":" + xattribs.getString(XML_ID_ATTRIBUTE," unknown ID ") + ":" + ex.getMessage(),ex);
@@ -449,8 +453,8 @@ public class DelimitedDataWriter extends Node {
 	 * 
 	 * @param partitionKey
 	 */
-	public void setNumberFileTag(boolean numberFileTag) {
-		this.numberFileTag = numberFileTag;
+	public void setPartitionFileTag(String partitionFileTagType) {
+		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTagType);
 	}
 
 	/**
@@ -458,8 +462,8 @@ public class DelimitedDataWriter extends Node {
 	 * 
 	 * @return
 	 */
-	public boolean getNumberFileTag() {
-		return numberFileTag;
+	public PartitionFileTagType getPartitionFileTag() {
+		return partitionFileTagType;
 	}
 }
 

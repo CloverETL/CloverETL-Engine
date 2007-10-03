@@ -33,6 +33,7 @@ import org.jetel.data.RecordKey;
 import org.jetel.data.formatter.Formatter;
 import org.jetel.data.formatter.getter.FormatterGetter;
 import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.metadata.DataRecordMetadata;
 
@@ -420,21 +421,21 @@ public class MultiFileWriter {
 	}
 	
 	/**
-	 * Gets NumberFileTag
+	 * Gets partition file tag type
 	 * 
-	 * @return int
+	 * @return PartitionFileTagType
 	 */
-	public boolean getNumberFileTag() {
+	public boolean getPartitionFileTag() {
 		return useNumberFileTag;
 	}
 
 	/**
-	 * Gets NumberFileTag
-	 * 
-	 * @return int
+	 * Sets partition file tag type
+	 *
+	 * @param partitionFileTagType - PartitionFileTagType
 	 */
-	public void setNumberFileTag(boolean useNumberFileTag) {
-		this.useNumberFileTag = useNumberFileTag;
+	public void setPartitionFileTag(PartitionFileTagType partitionFileTagType) {
+		this.useNumberFileTag = partitionFileTagType == PartitionFileTagType.NUMBERFILETAG;
 	}
 
 }

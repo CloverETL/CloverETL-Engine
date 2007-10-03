@@ -28,7 +28,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
 import org.jetel.data.Defaults;
-import org.jetel.data.formatter.StructureFormatter;
+import org.jetel.data.formatter.getter.StructureFormatterGetter;
+import org.jetel.data.lookup.LookupTable;
+import org.jetel.enums.PartitionFileTagType;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.graph.InputPort;
@@ -120,10 +122,13 @@ public class StructureWriter extends Node {
 	public static final String XML_RECORD_COUNT_ATTRIBUTE = "recordCount";
 	private static final String XML_RECORDS_PER_FILE = "recordsPerFile";
 	private static final String XML_BYTES_PER_FILE = "bytesPerFile";
+	private static final String XML_PARTITIONKEY_ATTRIBUTE = "partitionKey";
+	private static final String XML_PARTITION_ATTRIBUTE = "partition";
+	private static final String XML_PARTITION_FILETAG_ATTRIBUTE = "partitionFileTag";
 
 	private String fileURL;
 	private boolean appendData;
-	private StructureFormatter formatter;
+	private StructureFormatterGetter formatterGetter;
 	private String header = null;
 	private String footer = null;
 	private MultiFileWriter writer;
@@ -132,6 +137,12 @@ public class StructureWriter extends Node {
 	private WritableByteChannel writableByteChannel;
 	private int recordsPerFile;
 	private int bytesPerFile;
+
+	private String partition;
+	private String attrPartitionKey;
+	private String[] partitionKey;
+	private LookupTable lookupTable;
+	private PartitionFileTagType partitionFileTagType = PartitionFileTagType.NUMBERFILETAG;
 
 	private static Log logger = LogFactory.getLog(StructureWriter.class);
 
@@ -152,8 +163,8 @@ public class StructureWriter extends Node {
 		super(id);
 		this.fileURL = fileURL;
 		this.appendData = appendData;
-		formatter = new StructureFormatter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
-		formatter.setMask(mask);
+		formatterGetter = new StructureFormatterGetter(charset != null ? charset : Defaults.DataFormatter.DEFAULT_CHARSET_ENCODER);
+		formatterGetter.setMask(mask);
 	}
 
 	/* (non-Javadoc)
@@ -185,11 +196,6 @@ public class StructureWriter extends Node {
         return runIt ? Result.FINISHED_OK : Result.ABORTED;
 	}
 
-	@Override
-	public void free() {
-		super.free();
-		formatter.close();
-	}
 	/* (non-Javadoc)
 	 * @see org.jetel.graph.GraphElement#checkConfig()
 	 */
@@ -217,14 +223,16 @@ public class StructureWriter extends Node {
 	@Override
 	public void init() throws ComponentNotReadyException {
 		super.init();
+		initLookupTable();
+
 		// based on file mask, create/open output file
 		if (fileURL != null) {
-	        writer = new MultiFileWriter(formatter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
+	        writer = new MultiFileWriter(formatterGetter, getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, fileURL);
 		} else {
 			if (writableByteChannel == null) {
 		        writableByteChannel = Channels.newChannel(System.out);
 			}
-	        writer = new MultiFileWriter(formatter, new WritableByteChannelIterator(writableByteChannel));
+	        writer = new MultiFileWriter(formatterGetter, new WritableByteChannelIterator(writableByteChannel));
 		}
         writer.setLogger(logger);
         writer.setBytesPerFile(bytesPerFile);
@@ -232,9 +240,31 @@ public class StructureWriter extends Node {
         writer.setAppendData(appendData);
         writer.setSkip(skip);
         writer.setNumRecords(numRecords);
-        formatter.setHeader(header);
-        formatter.setFooter(footer);
+        writer.setLookupTable(lookupTable);
+        if (attrPartitionKey != null) partitionKey = attrPartitionKey.split(Defaults.Component.KEY_FIELDS_DELIMITER_REGEX);
+        writer.setPartitionKeyNames(partitionKey);
+        writer.setPartitionFileTag(partitionFileTagType);
+        formatterGetter.setHeader(header);
+        formatterGetter.setFooter(footer);
         writer.init(getInputPort(READ_FROM_PORT).getMetadata());
+	}
+
+	/**
+	 * Creates and initializes lookup table.
+	 * 
+	 * @throws ComponentNotReadyException
+	 */
+	private void initLookupTable() throws ComponentNotReadyException {
+		if (partition == null) return;
+		
+		// Initializing lookup table
+		lookupTable = getGraph().getLookupTable(partition);
+		if (lookupTable == null) {
+			throw new ComponentNotReadyException("Lookup table \"" + partition + "\" not found.");
+		}
+		if (!lookupTable.isInitialized()) {
+			lookupTable.init();
+		}
 	}
 
 	/* (non-Javadoc)
@@ -268,6 +298,15 @@ public class StructureWriter extends Node {
             if(xattribs.exists(XML_BYTES_PER_FILE)) {
             	aDataWriter.setBytesPerFile(xattribs.getInteger(XML_BYTES_PER_FILE));
             }
+			if(xattribs.exists(XML_PARTITIONKEY_ATTRIBUTE)) {
+				aDataWriter.setPartitionKey(xattribs.getString(XML_PARTITIONKEY_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_ATTRIBUTE)) {
+				aDataWriter.setPartition(xattribs.getString(XML_PARTITION_ATTRIBUTE));
+            }
+			if(xattribs.exists(XML_PARTITION_FILETAG_ATTRIBUTE)) {
+				aDataWriter.setPartitionFileTag(xattribs.getString(XML_PARTITION_FILETAG_ATTRIBUTE));
+            }
 		}catch(Exception ex){
 			System.err.println(COMPONENT_TYPE + ":" + xattribs.getString(Node.XML_ID_ATTRIBUTE,"unknown ID") + ":" + ex.getMessage());
 			return null;
@@ -282,9 +321,9 @@ public class StructureWriter extends Node {
 	public void toXML(org.w3c.dom.Element xmlElement) {
 		super.toXML(xmlElement);
 		xmlElement.setAttribute(XML_FILEURL_ATTRIBUTE,this.fileURL);
-		String charSet = this.formatter.getCharsetName();
+		String charSet = this.formatterGetter.getCharsetName();
 		if (charSet != null) {
-			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatter.getCharsetName());
+			xmlElement.setAttribute(XML_CHARSET_ATTRIBUTE, this.formatterGetter.getCharsetName());
 		}
 		xmlElement.setAttribute(XML_APPEND_ATTRIBUTE, String.valueOf(this.appendData));
 		if (header != null){
@@ -305,6 +344,15 @@ public class StructureWriter extends Node {
 		if (bytesPerFile > 0) {
 			xmlElement.setAttribute(XML_BYTES_PER_FILE, Integer.toString(bytesPerFile));
 		}
+		if (partition != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, partition);
+		} else if (lookupTable != null) {
+			xmlElement.setAttribute(XML_PARTITION_ATTRIBUTE, lookupTable.getId());
+		}
+		if (attrPartitionKey != null) {
+			xmlElement.setAttribute(XML_PARTITIONKEY_ATTRIBUTE, attrPartitionKey);
+		}
+		xmlElement.setAttribute(XML_PARTITION_FILETAG_ATTRIBUTE, partitionFileTagType.name());
 	}
 	
 	public void setFooter(String footer) {
@@ -339,4 +387,75 @@ public class StructureWriter extends Node {
         this.recordsPerFile = recordsPerFile;
     }
 
+    /**
+     * Sets lookup table for data partition.
+     * 
+     * @param lookupTable
+     */
+	public void setLookupTable(LookupTable lookupTable) {
+		this.lookupTable = lookupTable;
+	}
+
+	/**
+	 * Gets lookup table for data partition.
+	 * 
+	 * @return
+	 */
+	public LookupTable getLookupTable() {
+		return lookupTable;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @param partition
+	 */
+	public void setPartition(String partition) {
+		this.partition = partition;
+	}
+
+	/**
+	 * Gets partition (lookup table id) for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartition() {
+		return partition;
+	}
+
+	/**
+	 * Sets partition key for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionKey(String partitionKey) {
+		this.attrPartitionKey = partitionKey;
+	}
+
+	/**
+	 * Gets partition key for data partition.
+	 * 
+	 * @return
+	 */
+	public String getPartitionKey() {
+		return attrPartitionKey;
+	}
+	
+	/**
+	 * Sets number file tag for data partition.
+	 * 
+	 * @param partitionKey
+	 */
+	public void setPartitionFileTag(String partitionFileTagType) {
+		this.partitionFileTagType = PartitionFileTagType.valueOfIgnoreCase(partitionFileTagType);
+	}
+
+	/**
+	 * Gets number file tag for data partition.
+	 * 
+	 * @return
+	 */
+	public PartitionFileTagType getPartitionFileTag() {
+		return partitionFileTagType;
+	}
 }
