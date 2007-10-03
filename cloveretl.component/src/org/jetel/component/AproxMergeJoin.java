@@ -76,8 +76,8 @@ import org.w3c.dom.Element;
  * conformity. These fields have to be of type "numeric"<br>
  *        [1] - joined records with conformity smaller then given limit but with the same 
  *        matching key. Output metadata can have additional fields (see above)<br>
- *        [2] - driver records for which there is not matching slave  
- *        [3] - slave records for which there is not matching driver<br></td></tr>
+ *        [2] (optional) - driver records for which there is not matching slave  
+ *        [3] (optional) - slave records for which there is not matching driver<br></td></tr>
  * <tr><td><h4><i>Comment:</i></h4></td>
  * </table>
  *  <br>
@@ -339,7 +339,9 @@ public class AproxMergeJoin extends Node {
 		while (slave[CURRENT] != null) {
 			switch (key[DRIVER_ON_PORT].compare(key[SLAVE_ON_PORT], driver, slave[CURRENT])) {
 				case 1:
-					outSlave.writeRecord(slave[CURRENT]);
+					if (outSlave != null) {
+						outSlave.writeRecord(slave[CURRENT]);
+					}					
 					slave[CURRENT] = slavePort.readRecord(slave[CURRENT]);
 					break;
 				case 0:
@@ -508,8 +510,10 @@ public class AproxMergeJoin extends Node {
 				case -1:
 					// driver lower
 					// no corresponding slave
-					notMatchDriverPort.writeRecord(driverRecords[CURRENT]);
-					driverRecords[CURRENT] = driverPort
+					if (notMatchDriverPort != null) {
+						notMatchDriverPort.writeRecord(driverRecords[CURRENT]);
+					}					
+						driverRecords[CURRENT] = driverPort
 							.readRecord(driverRecords[CURRENT]);
 					isDriverDifferent = true;
 					continue;
@@ -565,14 +569,17 @@ public class AproxMergeJoin extends Node {
 		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
 		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
 		DataRecordMetadata[] outMetadata = new DataRecordMetadata[2];
-		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata();
-		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata();
-		if (!outMetadata[0].equals(inMetadata[0])){
-			throw new ComponentNotReadyException("Wrong metadata on output port no 2 (NOT_MATCH_DRIVER_OUT)");
+		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT) != null ? 
+				getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata() : null;
+		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT) != null ?
+				getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata() : null;
+		if (outMetadata[0] != null && !outMetadata[0].equals(inMetadata[0])){
+			throw new ComponentNotReadyException("Wrong metadata on output port no " + 
+					NOT_MATCH_DRIVER_OUT + " (NOT_MATCH_DRIVER_OUT)");
 		}
-		if (!outMetadata[1].equals(inMetadata[1])) {
+		if (outMetadata[1] != null && !outMetadata[1].equals(inMetadata[1])) {
 			throw new ComponentNotReadyException(
-					"Wrong metadata on output port no 3 (NOT_MATCH_SLAVE_OUT)");
+					"Wrong metadata on output port no " + NOT_MATCH_SLAVE_OUT + " (NOT_MATCH_SLAVE_OUT)");
 		}
 		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
 				.getMetadata() };
@@ -805,21 +812,20 @@ public class AproxMergeJoin extends Node {
         super.checkConfig(status);
         
         checkInputPorts(status, 2, 2);
-        checkOutputPorts(status, 4, 4);
-		checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
-		checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(), getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
-
-        try {
+        checkOutputPorts(status, 2, 4);
+		if (getOutputPort(NOT_MATCH_DRIVER_OUT) != null) {
+			checkMetadata(status, getInputPort(DRIVER_ON_PORT).getMetadata(),
+					getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata());
+		}		
+		if (getOutputPort(NOT_MATCH_SLAVE_OUT) != null) {
+			checkMetadata(status, getInputPort(SLAVE_ON_PORT).getMetadata(),
+					getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata());
+		}		
+		try {
         	
-            //Checking metadata on input and on  NOT_MATCH_DRIVER_OUT and NOT_MATCH_SLAVE_OUT outputs
     		DataRecordMetadata[] inMetadata = new DataRecordMetadata[2];
     		inMetadata[0]=getInputPort(DRIVER_ON_PORT).getMetadata();
     		inMetadata[1]=getInputPort(SLAVE_ON_PORT).getMetadata();
-    		DataRecordMetadata[] outMetadata = new DataRecordMetadata[2];
-    		outMetadata[0] = getOutputPort(NOT_MATCH_DRIVER_OUT).getMetadata();
-    		outMetadata[1] = getOutputPort(NOT_MATCH_SLAVE_OUT).getMetadata();
-    		outMetadata = new DataRecordMetadata[] { getOutputPort(CONFORMING_OUT)
-    				.getMetadata() };
     		// initializing join parameters
     		joinKeys = new String[joinParameters.length];
     		maxDifferenceLetters = new int[joinParameters.length];

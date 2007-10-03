@@ -34,6 +34,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -45,7 +46,7 @@ import org.w3c.dom.Element;
  * <h3>CheckForeignKey Component</h3> <!--  Checks a defined foreign key against a table of 
  *  primary keys to verify whether the foreign key is valid. If the foreign key is not
  *  found among primary keys, default foreign key is substituted. The resulting foreign record is 
- *  broadcast to all connected outputs. The table containing the "primary" keys
+ *  sent to output port 0. The table containing the "primary" keys
  *  may contain duplicates but they will be ignored. -->
  *
  * <table border="1">
@@ -63,7 +64,7 @@ import org.w3c.dom.Element;
  *  Checks a defined foreign key against a table of 
  *  primary keys to verify whether the foreign key is valid. If the foreign key is not
  *  found among primary keys, default foreign key is substituted. The resulting foreign record is 
- *  broadcast to all connected outputs. The table containing the "primary" keys
+ *  sent to output port 0. The table containing the "primary" keys
  *  may contain duplicates but they will be ignored.
  *      </td>
  *    </tr>
@@ -75,7 +76,8 @@ import org.w3c.dom.Element;
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [broadcast] - foreign records
+ *        [0] - foreign records with eventually new key
+ *        [1] - (optional) foreign records with invalid key 
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
@@ -124,7 +126,8 @@ import org.w3c.dom.Element;
     
     	private final static int DEFAULT_HASH_TABLE_INITIAL_CAPACITY = Defaults.Lookup.LOOKUP_INITIAL_CAPACITY;
     
-    	private final static int WRITE_TO_PORT = 0; // not really used - we broadcast
+    	private final static int WRITE_TO_PORT = 0; 
+    	private final static int REJECTED_PORT = 1;
         private final static int PRIMARY_ON_PORT = 1;
         private final static int FOREIGN_ON_PORT = 0;
     
@@ -216,6 +219,7 @@ import org.w3c.dom.Element;
     
         @Override
         public Result execute() throws Exception {
+        	OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
     		InputPort inPrimaryPort = getInputPort(PRIMARY_ON_PORT);
     		InputPort inForeignPort = getInputPort(FOREIGN_ON_PORT);
     		DataRecord primaryRecord;
@@ -244,11 +248,14 @@ import org.w3c.dom.Element;
    					primaryRecord = (DataRecord) hashMap.get(foreignHashKey);
    					// do we have to fill default values ?
    					if (primaryRecord == null) {
-                           for (int i=0; i < numFields; i++) {
-                               foreignRecord.getField(keyFields[i]).setValue(defaultRecord.getField(i));
-                           }
+						if (rejectedPort != null) {
+							writeRecord(REJECTED_PORT, foreignRecord);
+						}   						
+						for (int i=0; i < numFields; i++) {
+                           foreignRecord.getField(keyFields[i]).setValue(defaultRecord.getField(i));
+                       }
    					}
-                    writeRecordBroadcast(foreignRecord);
+                    writeRecord(WRITE_TO_PORT, foreignRecord);
    				}
    				SynchronizeUtils.cloverYield();
     		}
@@ -336,7 +343,7 @@ import org.w3c.dom.Element;
     		DataRecordMetadata foreignMetadata = getInputPort(FOREIGN_ON_PORT).getMetadata();
 
     		checkInputPorts(status, 2, 2);
-            checkOutputPorts(status, 1, Integer.MAX_VALUE);
+            checkOutputPorts(status, 1, 2);
         	checkMetadata(status, foreignMetadata, getOutMetadata());
 
         	primaryKey = new RecordKey(primaryKeys, primaryMetadata);

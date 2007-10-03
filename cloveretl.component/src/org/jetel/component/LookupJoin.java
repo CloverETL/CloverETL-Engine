@@ -36,6 +36,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
@@ -90,7 +91,8 @@ import org.w3c.dom.Element;
  * <td>
  * <h4><i>Outputs:</i> </h4>
  * </td>
- * <td> [0] - one output port </td>
+ * <td> [0] - joined records
+ *      [1] - (optional) skipped driver records</td>
  * </tr>
  * <tr>
  * <td>
@@ -197,7 +199,7 @@ public class LookupJoin extends Node {
 	public final static String COMPONENT_TYPE = "LOOKUP_JOIN";
 
 	private final static int WRITE_TO_PORT = 0;
-
+	private final static int REJECTED_PORT = 1;
 	private final static int READ_FROM_PORT = 0;
 
 	private String transformClassName = null;
@@ -266,6 +268,7 @@ public class LookupJoin extends Node {
 	public Result execute() throws Exception {
 		// initialize in and out records
 		InputPort inPort = getInputPort(WRITE_TO_PORT);
+		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 		DataRecord[] outRecord = { new DataRecord(getOutputPort(READ_FROM_PORT)
 				.getMetadata()) };
 		outRecord[0].init();
@@ -280,11 +283,18 @@ public class LookupJoin extends Node {
 				// find slave record in database
 				inRecords[1] = iterator.get(inRecord);
 				do {
-					if ((inRecords[1] != null || leftOuterJoin)
-							&& transformation.transform(inRecords, outRecord)) {
-						writeRecord(WRITE_TO_PORT, outRecord[0]);
+					if ((inRecords[1] != null || leftOuterJoin)) {
+						if (transformation.transform(inRecords, outRecord)) {
+							writeRecord(WRITE_TO_PORT, outRecord[0]);
+						}else{
+							logger.warn(transformation.getMessage());
+						}
+					}else{
+						if (rejectedPort != null) {
+							writeRecord(REJECTED_PORT, inRecord);
+						}							
 					}
-					// get next record from database with the same key
+					// get next record from lookup table with the same key
 					inRecords[1] = iterator.getNext();
 				} while (inRecords[1] != null);
 			}
@@ -310,7 +320,11 @@ public class LookupJoin extends Node {
         super.checkConfig(status);
         
         checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, 2);
+        if (getOutputPort(REJECTED_PORT) != null) {
+        	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
+        			getOutputPort(REJECTED_PORT).getMetadata());
+        }
 
  
 //        try {
@@ -360,6 +374,11 @@ public class LookupJoin extends Node {
 			}
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
+		}
+
+		if (leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
+			logger.info(this.getId() + " info: There will be no skipped records " +
+					"while left outer join is switched on");
 		}
 	}
 

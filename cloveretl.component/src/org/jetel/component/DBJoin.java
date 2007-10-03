@@ -37,6 +37,7 @@ import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.graph.InputPort;
 import org.jetel.graph.Node;
+import org.jetel.graph.OutputPort;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
 import org.jetel.lookup.DBLookupTable;
@@ -66,10 +67,11 @@ import org.w3c.dom.Element;
  *  there is a driver and from database is a slave<br>
  *	For each driver record, slave record is looked up in database.
  *	Pair of driver and slave records is sent to transformation class.<br>
- *	The method <i>transform</i> is called for every pair of driver&amps;slave.<br>
- *	It skips driver records for which there is no corresponding slave - unless 
+ *	The method <i>transform</i> is called for every pair of driver&slave.<br>
+ *	It skips driver records for which there is no corresponding slave (if there is
+ *	connected output port 1, theese records are sent to it) - unless 
  *	outer join (leftOuterJoin option) is specified, when only driver record is 
- *	passed to transform method. 
+ *	passed to transform method (no records is sent to output port 1). 
  *      </td>
  *    </tr>
  *    <tr><td><h4><i>Inputs:</i> </h4></td>
@@ -79,7 +81,8 @@ import org.w3c.dom.Element;
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - one output port
+ *        [0] - joined records
+ *        [1] - (optional) skipped driver records
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
  *      </td>
@@ -136,6 +139,7 @@ public class DBJoin extends Node {
 	public final static String COMPONENT_TYPE = "DBJOIN";
 	
 	private final static int WRITE_TO_PORT = 0;
+	private final static int REJECTED_PORT = 1;
 	private final static int READ_FROM_PORT = 0;
 	
 	private String transformClassName = null;
@@ -165,7 +169,7 @@ public class DBJoin extends Node {
 	 * @param id of component
 	 * @param connectionName id of connection used for connecting with database
 	 * @param query for getting data from database
-	 * @param joinKey fields from input port which defines joing records with record from database
+	 * @param joinKey fields from input port which defines joining records with record from database
 	 */
 	public DBJoin(String id,String connectionName,String query,String[] joinKey,
 			String transform, String transformClass, String transformURL){
@@ -194,13 +198,14 @@ public class DBJoin extends Node {
 	@Override
 	public Result execute() throws Exception {
 		//initialize in and out records
-		InputPort inPort=getInputPort(WRITE_TO_PORT);
-		DataRecord[] outRecord = {new DataRecord(getOutputPort(READ_FROM_PORT).getMetadata())};
+		InputPort inPort=getInputPort(READ_FROM_PORT);
+		DataRecord[] outRecord = {new DataRecord(getOutputPort(WRITE_TO_PORT).getMetadata())};
 		outRecord[0].init();
 		outRecord[0].reset();
 		DataRecord inRecord = new DataRecord(inPort.getMetadata());
 		inRecord.init();
 		DataRecord[] inRecords = new DataRecord[] {inRecord,null};
+		OutputPort rejectedPort = getOutputPort(REJECTED_PORT);
 
 		while (inRecord!=null && runIt) {
 				inRecord = inPort.readRecord(inRecord);
@@ -209,13 +214,21 @@ public class DBJoin extends Node {
 					inRecords[1] = lookupTable.get(inRecord);
 					do{
 						if (transformation != null) {//transform driver and slave
-							if ((inRecords[1] != null || leftOuterJoin)
-									&& transformation.transform(inRecords,
-											outRecord)) {
-								writeRecord(WRITE_TO_PORT, outRecord[0]);
+							if ((inRecords[1] != null || leftOuterJoin)){
+								if (transformation.transform(inRecords,outRecord)) {
+									writeRecord(WRITE_TO_PORT, outRecord[0]);
+								}else{
+									logger.warn(transformation.getMessage());
+								}
+							}else if (rejectedPort != null){
+								writeRecord(REJECTED_PORT, inRecord);
 							}
-						}else if (inRecords[1] != null){//send to output only records from DB
-							writeRecord(WRITE_TO_PORT, inRecords[1]);
+						}else { 
+							if (inRecords[1] != null){//send to output only records from DB
+								writeRecord(WRITE_TO_PORT, inRecords[1]);
+							}else if (rejectedPort != null){
+								writeRecord(REJECTED_PORT, inRecord);
+							}
 						}
 						//get next record from database with the same key
 						inRecords[1] = lookupTable.getNext();					
@@ -243,7 +256,11 @@ public class DBJoin extends Node {
         super.checkConfig(status);
         
         checkInputPorts(status, 1, 1);
-        checkOutputPorts(status, 1, 1);
+        checkOutputPorts(status, 1, 2);
+        if (getOutputPort(REJECTED_PORT) != null) {
+        	checkMetadata(status, getInputPort(READ_FROM_PORT).getMetadata(), 
+        			getOutputPort(REJECTED_PORT).getMetadata());
+        }
 
         try {
         	
@@ -320,6 +337,11 @@ public class DBJoin extends Node {
 			}			
 		} catch (Exception e) {
 			throw new ComponentNotReadyException(this, e);
+		}
+		
+		if (transformation != null && leftOuterJoin && getOutputPort(REJECTED_PORT) != null) {
+			logger.info(this.getId() + " info: There will be no skipped records " +
+					"while left outer join is switched on");
 		}
 	}
 	
