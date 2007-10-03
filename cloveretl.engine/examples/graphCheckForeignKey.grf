@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Graph created="Thu Sep 13 12:37:17 CEST 2007" description="This graph shows usage of CheckForeignKey component. &#10;Data are are from table &quot;customers&quot; and &quot;City&quot; and &quot;State&quot; fields are cheked agains the table of &#10;known cities. If city is not found beteen known cities null is substituted on requested fields.&#10;On output are printed customers, for which there wasn't found &quot;city&quot; and &quot;state&quot; in &quot;city&quot; table." guiVersion="1.8" licenseType="Unlicensed clover.GUI" modified="Thu Sep 13 13:59:58 CEST 2007" name="graphCheckForeignKey" revision="1.13">
+<Graph created="Thu Sep 13 12:37:17 CEST 2007" description="This graph shows usage of CheckForeignKey component. &#10;Data are are from table &quot;customers&quot; and &quot;City&quot; and &quot;State&quot; fields are cheked agains the table of &#10;known cities. If city is not found beteen known cities null is substituted on requested fields.&#10;On output are printed customers, for which there wasn't found &quot;city&quot; and &quot;state&quot; in &quot;city&quot; table." guiVersion="1.8" licenseType="Evaluation license." modified="Tue Oct 02 13:58:39 CEST 2007" name="graphCheckForeignKey" revision="1.16">
 <Global>
 <Metadata id="Metadata2">
 <Record name="City" recordSize="-1" type="delimited">
@@ -8,7 +8,7 @@
 </Record>
 </Metadata>
 <Metadata id="Metadata0">
-<Record name="customer" recordDelimiter="" recordSize="-1" type="delimited">
+<Record name="customer" recordSize="-1" type="delimited">
 <Field delimiter=";" name="customer_id" nullable="true" shift="0" type="integer"/>
 <Field delimiter=";" name="account_num" nullable="true" shift="0" type="long"/>
 <Field delimiter=";" name="lname" nullable="true" shift="0" type="string"/>
@@ -40,14 +40,14 @@
 <Property fileURL="workspace.prm" id="GraphParameter0"/>
 </Global>
 <Phase number="0">
-<Node defaultForeignKey=";;" enabled="enabled" foreignKey="city;country" guiHeight="0" guiName="Check Foreign Key" guiWidth="0" guiX="179" guiY="19" id="CHECK_FOREIGN_KEY0" primaryKey="city;country" type="CHECK_FOREIGN_KEY"/>
-<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="17" guiY="19" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
+<Node defaultForeignKey="-;-;" enabled="enabled" foreignKey="city;country" guiHeight="0" guiName="Check Foreign Key" guiWidth="0" guiX="179" guiY="20" id="CHECK_FOREIGN_KEY0" primaryKey="city;country" type="CHECK_FOREIGN_KEY"/>
+<Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="17" guiY="20" id="DB_INPUT_TABLE0" sqlQuery="select customer.customer_id,customer.account_num,customer.lname,customer.fname,customer.mi,customer.address1,customer.city,customer.state_province,customer.postal_code,customer.country,customer.customer_region_id,customer.phone1,customer.phone2,customer.birthdate,customer.marital_status,customer.yearly_income,customer.gender,customer.total_children,customer.num_children_at_home,customer.education,customer.date_accnt_opened,customer.member_card,customer.occupation,customer.houseowner,customer.num_cars_owned&#10;from customer" type="DB_INPUT_TABLE"/>
 <Node dbConnection="Connection0" enabled="enabled" guiHeight="0" guiName="DB Input Table" guiWidth="0" guiX="17" guiY="104" id="DB_INPUT_TABLE1" sqlQuery="select city.city,city.country&#10;from city" type="DB_INPUT_TABLE"/>
-<Node enabled="enabled" filterExpression="isnull($city)" guiHeight="0" guiName="Ext Filter" guiWidth="0" guiX="343" guiY="19" id="EXT_FILTER0" type="EXT_FILTER"/>
-<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="503" guiY="19" id="TRASH0" type="TRASH"/>
-<Edge fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (foreign records)" toNode="EXT_FILTER0:0"/>
+<Node debugPrint="false" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="344" guiY="20" id="TRASH0" type="TRASH"/>
+<Node debugPrint="true" enabled="enabled" guiHeight="0" guiName="Trash" guiWidth="0" guiX="344" guiY="104" id="TRASH1" type="TRASH"/>
+<Edge debugMode="true" fromNode="CHECK_FOREIGN_KEY0:0" guiBendpoints="" id="Edge1" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (foreign records)" toNode="TRASH0:0"/>
+<Edge fromNode="CHECK_FOREIGN_KEY0:1" guiBendpoints="" id="Edge4" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 1 (invalid foreign records)" toNode="TRASH1:0"/>
 <Edge fromNode="DB_INPUT_TABLE0:0" guiBendpoints="" id="Edge0" inPort="Port 0 (foreign records)" metadata="Metadata0" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:0"/>
 <Edge fromNode="DB_INPUT_TABLE1:0" guiBendpoints="" id="Edge2" inPort="Port 1 (primary records)" metadata="Metadata2" outPort="Port 0 (out)" toNode="CHECK_FOREIGN_KEY0:1"/>
-<Edge fromNode="EXT_FILTER0:0" guiBendpoints="" id="Edge3" inPort="Port 0 (in)" metadata="Metadata0" outPort="Port 0 (accepted)" toNode="TRASH0:0"/>
 </Phase>
 </Graph>
