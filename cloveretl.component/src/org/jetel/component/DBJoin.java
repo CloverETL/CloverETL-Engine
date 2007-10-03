@@ -69,7 +69,7 @@ import org.w3c.dom.Element;
  *	Pair of driver and slave records is sent to transformation class.<br>
  *	The method <i>transform</i> is called for every pair of driver&slave.<br>
  *	It skips driver records for which there is no corresponding slave (if there is
- *	connected output port 1, theese records are sent to it) - unless 
+ *	connected output port 1, thees records are sent to it) - unless 
  *	outer join (leftOuterJoin option) is specified, when only driver record is 
  *	passed to transform method (no records is sent to output port 1). 
  *      </td>
@@ -81,7 +81,7 @@ import org.w3c.dom.Element;
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - joined records
+ *        [0] - joined records<br>
  *        [1] - (optional) skipped driver records
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>
