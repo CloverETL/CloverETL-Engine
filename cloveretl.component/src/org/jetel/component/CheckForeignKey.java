@@ -76,7 +76,7 @@ import org.w3c.dom.Element;
  *    <tr><td> <h4><i>Outputs:</i> </h4>
  *      </td>
  *      <td>
- *        [0] - foreign records with eventually new key
+ *        [0] - foreign records with eventually new key<br>
  *        [1] - (optional) foreign records with invalid key 
  *      </td></tr>
  *    <tr><td><h4><i>Comment:</i> </h4>

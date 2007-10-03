@@ -91,7 +91,7 @@ import org.w3c.dom.Element;
  * <td>
  * <h4><i>Outputs:</i> </h4>
  * </td>
- * <td> [0] - joined records
+ * <td> [0] - joined records<br>
  *      [1] - (optional) skipped driver records</td>
  * </tr>
  * <tr>
