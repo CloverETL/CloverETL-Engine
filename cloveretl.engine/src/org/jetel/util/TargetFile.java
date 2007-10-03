@@ -25,6 +25,7 @@ public class TargetFile {
     private static Log logger = LogFactory.getLog(TargetFile.class);
     
 	private static final char NUM_CHAR='#';			// file markter that is replacet file tag.
+	private static final String EMPTY_STRING="";
 	private DecimalFormat format;					// it is used if the file tag is a number
 
 	private String fileURL;							// output file url
@@ -126,7 +127,8 @@ public class TargetFile {
     	int idxLast = fileURL.lastIndexOf(NUM_CHAR);
     	if (idxLast == -1) {
     		before = fileURL;
-    		after = "";
+    		after = EMPTY_STRING;
+    		format = new DecimalFormat();
     		return;
     	}
     	StringBuilder sb = new StringBuilder();
