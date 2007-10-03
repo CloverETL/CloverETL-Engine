@@ -489,7 +489,7 @@ public class TestInterpreter extends TestCase {
 		      
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b1")).getValue().getBoolean());
 		      assertEquals(true,executor.getGlobalVariable(parser.getGlobalVariableSlot("b2")).getValue().getBoolean());
-		      assertEquals("hello",executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getValue().getString());
+		      assertEquals("hi",executor.getGlobalVariable(parser.getGlobalVariableSlot("b4")).getValue().getString());
 //		      assertEquals(2,executor.getGlobalVariable(parser.getGlobalVariableSlot("in")).getValue().getInt());
 		      
 		    } catch (ParseException e) {
