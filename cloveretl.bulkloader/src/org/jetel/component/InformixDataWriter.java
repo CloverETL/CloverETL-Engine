@@ -365,30 +365,11 @@ public class InformixDataWriter extends Node {
     public void init() throws ComponentNotReadyException {
 		super.init();
 
-		if (columnDelimiter.length() != 1) {
-			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
-		}
-
-		checkAttributes();
-		
 		isDataReadFromPort = !getInPorts().isEmpty() && StringUtils.isEmpty(command);
 		isDataWrittenToPort = !getOutPorts().isEmpty();
 
-		// input port or dataURL or command have to be set
-		if (!isDataReadFromPort) {
-			if (StringUtils.isEmpty(dataURL) && StringUtils.isEmpty(command)) {
-				throw new ComponentNotReadyException(this, "Input port or " + 
-						StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
-						StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " have to be set.");
-			}
-		}
-
-		// check if each of mandatory attributes is set
-		if (StringUtils.isEmpty(dbLoaderPath) || StringUtils.isEmpty(database) || 
-				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
-			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
-		}
-
+		checkAttributes();
+		
 		// prepare name for temporary data file
 		try {
             commandFileName = File.createTempFile(LOADER_FILE_NAME_PREFIX, 
@@ -492,6 +473,9 @@ public class InformixDataWriter extends Node {
 	}
     
     private void checkAttributes() throws ComponentNotReadyException {
+    	if (columnDelimiter.length() != 1) {
+			throw new ComponentNotReadyException(this, XML_COLUMN_DELIMITER_ATTRIBUTE, "Max. length of column delimiter is one.");
+		}
     	if (maxErrors != UNUSED_INT && maxErrors < 0) {
     		throw new ComponentNotReadyException(this, XML_MAX_ERRORS_ATTRIBUTE + " mustn't be less than 0.");
     	}
@@ -500,6 +484,19 @@ public class InformixDataWriter extends Node {
     	}
 		if (commitInterval != UNUSED_INT && commitInterval < 0) {
     		throw new ComponentNotReadyException(this, XML_COMMIT_INTERVAL_ATTRIBUTE + " mustn't be less than 0.");
+		}
+		
+		// input port or dataURL or command have to be set
+		if (!isDataReadFromPort && StringUtils.isEmpty(dataURL) && StringUtils.isEmpty(command)) {
+			throw new ComponentNotReadyException(this, "Input port or " + 
+					StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute or " +
+					StringUtils.quote(XML_COMMAND_ATTRIBUTE) + " have to be set.");
+		}
+
+		// check if each of mandatory attributes is set
+		if (StringUtils.isEmpty(dbLoaderPath) || StringUtils.isEmpty(database) || 
+				(StringUtils.isEmpty(command) && StringUtils.isEmpty(table))) {
+			throw new ComponentNotReadyException(this, "dbLoaderPath, database or (table and command simultaneously) argument isn't fill.");
 		}
     }
     
