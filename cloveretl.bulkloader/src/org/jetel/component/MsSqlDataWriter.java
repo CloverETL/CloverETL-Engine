@@ -77,13 +77,13 @@ import org.w3c.dom.Element;
  * <tr><td><h4><i>Category:</i></h4></td>
  * <td></td></tr>
  * <tr><td><h4><i>Description:</i></h4></td>
- * <td>This component loads data to an MsSql database using the bcp utility. 
- * It creates a temporary file with bcp commands depending on input parameters. Data are read from given 
+ * <td>This component loads data to MsSql database using the bcp utility. 
+ * There is created bcp command depending on input parameters. Data are read from given 
  * input file or from input port and loaded to database.<br>
  * Any generated temporary files can be optionally logged to help diagnose problems.<br>
- * To use this component MsSql client must be installed and configured on the local host.
- * Note: when data is read from input port, one of these values 
- * (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile, inputFile) in parameters attribute has to be used.
+ * If data is read from input port, one of these values (nativeType, characterType, wideCharacterType, keepNonTextNative, formatFile, inputFile) in parameters attribute has to be used.
+ * serverName option in parameters attribute is required when a bcp command is run from a remote computer on the network or a local named instance.<br>
+ * Before you use this component, make sure that SQL Server Client Connectivity Components are installed and configured on the machine where CloverETL runs and bcp.exe command line tool available (part of SQL Server Management Tools, also included in SQL Server Express Edition).
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
@@ -116,8 +116,7 @@ import org.w3c.dom.Element;
  *  Normally this file is a temporary storage for data to be passed to bcp utility. If file URL is not specified, 
  *  the file is created in Clover or OS temporary directory and deleted after load finishes.<br>
  *  If file URL is specified, temporary file is created within given path and name and not 
- *  deleted after being loaded. Next graph run overwrites it. 
- *  <br>
+ *  deleted after being loaded. Next graph run overwrites it.<br>
  *  There is one more meaning of this parameter. If input port is not specified, this file 
  *  is used only for reading by bcp utility and must already contain data in format expected by 
  *  load. The file is neither deleted nor overwritten.</br>
