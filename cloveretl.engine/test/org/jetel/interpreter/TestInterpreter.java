@@ -1852,11 +1852,11 @@ public class TestInterpreter extends TestCase {
         		"boolean isNumber4=is_number('+332e2');\n" +
         		"boolean isNumber5=is_number('8982.8992e-2');print_err(str2num('8982.8992e-2',double));\n" +
         		"boolean isNumber6=is_number('-7888873.2E3');print_err(str2num('-7888873.2E3',number));\n" +
-        		"int isInteger=is_integer('h3');\n" +
-        		"int isInteger1=is_integer('78gd');\n" +
-        		"int isInteger2=is_integer('8982.8992');\n" +
-        		"int isInteger3=is_integer('-766542378');print_err(str2num('-766542378'));\n" +
-        		"int isInteger4=is_integer('78642325688990076654322234');\n" +
+        		"boolean isInteger=is_integer('h3');\n" +
+        		"boolean isInteger1=is_integer('78gd');\n" +
+        		"boolean isInteger2=is_integer('8982.8992');\n" +
+        		"boolean isInteger3=is_integer('-766542378');print_err(str2num('-766542378'));\n" +
+        		"boolean isLong=is_long('7864232568822234');\n" +
         		"boolean isDate5=is_date('20Jul2000','ddMMMyyyy');print_err(str2date('20Jul2000','ddMMMyyyy'));\n" +
         		"boolean isDate6=is_date('20July    2000','ddMMMMMMMMyyyy');print_err(str2date('20July    2000','ddMMMyyyy'));\n" +
         		"boolean isDate3=is_date('4:42','HH:mm');print_err(str2date('4:42','HH:mm'));\n" +
@@ -1899,11 +1899,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber4")).getValue().getBoolean()));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber5")).getValue().getBoolean()));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isNumber6")).getValue().getBoolean()));
-		      assertEquals(-1,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger")).getValue().getInt()));
-		      assertEquals(-1,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger1")).getValue().getInt()));
-		      assertEquals(-1,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger2")).getValue().getInt()));
-		      assertEquals(1,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger3")).getValue().getInt()));
-		      assertEquals(3,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger4")).getValue().getInt()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger1")).getValue().getBoolean()));
+		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger2")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isInteger3")).getValue().getBoolean()));
+		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isLong")).getValue().getBoolean()));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate")).getValue().getBoolean()));
 		      assertEquals(false,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate1")).getValue().getBoolean()));
 		      assertEquals(true,(executor.getGlobalVariable(parser.getGlobalVariableSlot("isDate2")).getValue().getBoolean()));
