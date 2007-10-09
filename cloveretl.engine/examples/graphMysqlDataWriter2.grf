@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Graph created="Wed Aug 29 11:37:17 CEST 2007" guiVersion="1.7" licenseType="Unlicensed clover.GUI" modified="Fri Aug 31 14:31:54 CEST 2007" name="MysqlDataWriter" revision="1.37">
+
+<Global>
+	<Property fileURL="workspace.prm" id="GraphParameter0"/>
+
+	<Metadata id="Metadata0">
+		<Record name="test" recordSize="-1" type="delimited">
+			<Field delimiter="," name="intT" nullable="true" shift="0" type="integer"/>
+			<Field delimiter="," name="smallT" nullable="true" shift="0" type="integer"/>
+			<Field delimiter="," name="decT" nullable="true" shift="0" type="decimal" precision="5" scale="2"/>
+			<Field delimiter="," name="numT" nullable="true" shift="0" type="numeric" precision="5" scale="2"/>
+			<Field delimiter="," name="floatT" nullable="true" shift="0" type="decimal" precision="5" scale="2"/>
+			<Field delimiter="," name="realT" nullable="true" shift="0" type="decimal" precision="5" scale="2"/>
+		
+			<Field delimiter="," name="datetimeT" format="yyyy-MM-dd HH:mm:ss" nullable="true" shift="0" type="date"/>
+			<Field delimiter="," name="timestampT" format="yyyy-MM-dd HH:mm:ss" nullable="true" shift="0" type="date"/>
+			<Field delimiter="," name="dateT" format="yyyy-MM-dd" nullable="true" shift="0" type="date"/>
+			<Field delimiter="," name="timeT" nullable="true" shift="0" type="string"/>
+			<Field delimiter="," name="yearT" format="yyyy" nullable="true" shift="0" type="date"/>
+			
+			<Field delimiter="," name="charT" nullable="true" shift="0" type="string"/>
+			<Field delimiter="," name="varcharT" nullable="true" shift="0" type="string"/>
+			<Field delimiter="\n" name="textT" nullable="true" shift="0" type="string"/>
+		</Record>
+	</Metadata>
+</Global>
+
+<!-- Load data from flat file to database -->
+<Phase number="0" >
+<Node 
+	enabled="enabled"
+ 	mysqlImportPath="mysqlimport" database="testdb"	table="test" 
+ 	fileURL="${WORKSPACE}/data/delimited/mysqlFlat.dat" columnDelimiter="," 
+ 	parameters="fieldsEnclosedBy=*|fieldsIsOptionallyEnclosed"
+ 	id="MYSQL_DATA_WRITER20" type="MYSQL_DATA_WRITER2"
+/>
+</Phase>
+
+<!-- Read data from input port and load them to database -->
+<Phase number="1">
+<Node
+	enabled="disabled" 
+ 	mysqlImportPath="mysqlimport" database="testdb" table="test" 
+ 	id="MYSQL_DATA_WRITER21" type="MYSQL_DATA_WRITER2"
+ 	fileURL="${WORKSPACE}/output/data.dat" 	
+/>
+ 
+ <Node 
+ 	enabled="disabled" 
+ 	fileURL="data/delimited/mysql.dat"
+	id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
+ </Phase>
+ 
+ <Edge debugMode="true" fromNode="DELIMITED_DATA_READER0:0" id="Edge1" inPort="Port 0 (in)" 
+	metadata="Metadata0" outPort="Port 0 (out)" toNode="MYSQL_DATA_WRITER21:0"/>
+ 
+</Graph>
