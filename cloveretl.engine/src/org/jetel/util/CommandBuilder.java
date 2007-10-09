@@ -38,11 +38,13 @@ public class CommandBuilder {
 	private final char EQUAL_CHAR = '=';
 	private final char DEFAULT_PARAMETER_DELIMITER = ' ';
 	private final char DEFAULT_END_CHARACTER = '\n';
+	private final static String DEFAULT_SWITCH_MARK = "-";
 	private final String TRUE = "true";
 	
 	StringBuilder command;
 	char parameterDelimiter;
 	char endCharacter;
+	String switchMark;
 	Properties params;
 	
 	/**
@@ -56,10 +58,11 @@ public class CommandBuilder {
 		this.command = new StringBuilder(command);
 		this.parameterDelimiter = parameterDelimiter;
 		this.endCharacter = endCharacter;
+		this.switchMark = DEFAULT_SWITCH_MARK;
 	}
 
 	/**
-	 * Creates command object with default parameter delimiter (' ') and end char ('\n')
+	 * Creates command object with default parameter delimiter (' '), end char ('\n') and switch mark ("-")
 	 * 
 	 * @param command char, which will be used as
 	 */
@@ -67,8 +70,20 @@ public class CommandBuilder {
 		this.command = new StringBuilder(command);
 		this.parameterDelimiter = DEFAULT_PARAMETER_DELIMITER;
 		this.endCharacter = DEFAULT_END_CHARACTER;
+		this.switchMark = DEFAULT_SWITCH_MARK;
 	}
 
+	/**
+	 * Creates command object
+	 * 
+	 * @param command input command as string
+	 * @param switchMark String, which will be used as switchMark; for example "-" or "--"
+	 */
+	public CommandBuilder(String command, String switchMark){
+		this(command);
+		this.switchMark = switchMark;
+	}
+	
 	/**
 	 * @return parameters
 	 */
@@ -277,15 +292,16 @@ public class CommandBuilder {
 	
 	/**
 	 * if paramName is in properties adds to the end of command: 
-	 *  " <i>-switchChar</i>paramValue"
+	 *  " <i><b>switchMark</b>switchChar</i>paramValue"<br>
+	 *  for exmaple:  -P"password"
 	 * 
 	 * @param paramName
 	 * @param switchChar
 	 */
-	public void addParameterSwitch(String paramName, char switchChar){
+	public void addParameterSwitch(String paramName, char switchChar) {
 		if (params.containsKey(paramName)) {
 			command.append(parameterDelimiter);
-			command.append('-');
+			command.append(switchMark);
 			command.append(switchChar);
 			command.append(StringUtils.quote(params.getProperty(paramName)));
 		}
@@ -293,15 +309,17 @@ public class CommandBuilder {
 	
 	/**
 	 * if value isn;t null adds to the end of command: 
-	 *  " <i>-switchChar</i>value"
+	 *  " <i><b>switchMark</b>switchChar</i>value"<br>
+	 *  for exmaple:  -P"password"
+	 *  
 	 *  
 	 * @param paramName
 	 * @param switchChar
 	 */
 	public void addSwitch(char switchChar, String value) {
-		if (!StringUtils.isEmpty(value)) {
+		if (value != null) {
 			command.append(parameterDelimiter);
-			command.append('-');
+			command.append(switchMark);
 			command.append(switchChar);
 			command.append(StringUtils.quote(value));
 		}
@@ -309,7 +327,8 @@ public class CommandBuilder {
 	
 	/**
 	 * if paramName is in properties adds to the end of command: 
-	 *  " <i>-switchChar</i>"
+	 *  " <i><b>switchMark</b>switchChar</i>"<br>
+	 *  for exmaple:  -P
 	 * 
 	 * @param paramName
 	 * @param switchChar
@@ -317,7 +336,7 @@ public class CommandBuilder {
 	public void addParameterBooleanSwitch(String paramName, char switchChar){
 		if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
 			command.append(parameterDelimiter);
-			command.append('-');
+			command.append(switchMark);
 			command.append(switchChar);
 		}
 	}
