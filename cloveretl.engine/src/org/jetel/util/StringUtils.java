@@ -21,8 +21,8 @@ package org.jetel.util;
 
 import java.nio.CharBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -47,6 +47,10 @@ public class StringUtils {
 	public final static char DECIMAL_POINT='.';
 	public final static char EXPONENT_SYMBOL = 'e';
 	public final static char EXPONENT_SYMBOL_C = 'E';
+	
+	public final static int ASCII_LAST_CHAR = 127;
+	
+	private final static int SEQUENTIAL_TRANLATE_LENGTH = 16;
 	    
 	/**
 	 *  Converts control characters into textual representation<br>
@@ -713,6 +717,13 @@ public class StringUtils {
       	return true;
     }
     
+    public static boolean isAscii(CharSequence str) {
+    	for (int i=0; i < str.length(); i++){
+    		if (str.charAt(i) > ASCII_LAST_CHAR) return false;
+    	}
+    	return true;
+    }
+    
     /**
      * This method copies substring of source to target.
      * 
@@ -766,8 +777,65 @@ public class StringUtils {
      * @param replaceSet replacing characters
      * @return original string with replaced requested characters
      */
-    public static CharSequence translate(CharSequence in, CharSequence searchSet, 
-    		CharSequence replaceSet){
+    public static CharSequence translate(CharSequence in, 
+    		CharSequence searchSet,	CharSequence replaceSet){
+    	if (searchSet.length() < SEQUENTIAL_TRANLATE_LENGTH) {
+    		return translateSequentialSearch(in, searchSet, replaceSet);
+    	}else{
+    		return translateBinarySearch(in, searchSet, replaceSet);
+    	}
+    }
+    
+    public static CharSequence translateMapSearch(CharSequence in, 
+    		CharSequence searchSet,	CharSequence replaceSet){
+    	HashMap<Character, Character> replacement = new HashMap<Character, Character>(searchSet.length());
+    	int replaceSetLength = replaceSet.length();
+    	for (int i=0; i<searchSet.length(); i++) {
+    		replacement.put(searchSet.charAt(i), i < replaceSetLength ? replaceSet.charAt(i) : null);
+    	}
+    	StringBuilder result = new StringBuilder();
+    	Character r;
+    	char ch;
+    	for (int i=0; i < in.length(); i++) {
+    		ch = in.charAt(i);
+    		if (replacement.containsKey(ch)) {
+    			if ( (r = replacement.get(ch)) != null) {
+    				result.append(r);
+    			}
+    		}else {
+    			result.append(ch);
+    		}
+    	}
+    	return result;
+    }
+    
+    public static CharSequence translateBinarySearch(CharSequence in, 
+    		CharSequence searchSet,	CharSequence replaceSet){
+    	CharPair[] replacement = new CharPair[searchSet.length()];
+    	int replaceSetLength = replaceSet.length();
+    	for (int i=0; i<searchSet.length(); i++) {
+    		replacement[i] = new CharPair(searchSet.charAt(i), 
+    				i < replaceSetLength ? replaceSet.charAt(i) : null);
+    	}
+    	StringBuilder result = new StringBuilder();
+    	Arrays.sort(replacement);
+    	int index;
+    	char ch;
+    	for (int i=0; i < in.length(); i++) {
+    		ch = in.charAt(i);
+    		if ((index = Arrays.binarySearch(replacement, ch)) > -1) {
+    			if ( replacement[index].value != null) {
+    				result.append(replacement[index].value);
+    			}
+    		}else {
+    			result.append(ch);
+    		}
+    	}
+    	return result;
+    }
+    
+    public static CharSequence translateSequentialSearch(CharSequence in, 
+    		CharSequence searchSet,	CharSequence replaceSet){
     	StringBuilder result = new StringBuilder();
     	char[] search =  searchSet.toString().toCharArray();
     	char[] replace = replaceSet.toString().toCharArray();
@@ -776,7 +844,7 @@ public class StringUtils {
     	char ch;
     	for (int i=0; i < in.length(); i++) {
     		ch = in.charAt(i);
-    		if ((index = contains(search, ch)) > -1) {
+    		if ((index = indexOf(search, ch)) > -1) {
     			if ( index < length) {
     				result.append(replace[index]);
     			}
@@ -787,7 +855,7 @@ public class StringUtils {
     	return result;
     }
    
-    private static int contains(char[] array, char ch){
+    private static int indexOf(char[] array, char ch){
     	for (int i=0;i<array.length; i++) {
 			if (array[i] == ch) return i;
 		}
@@ -796,5 +864,31 @@ public class StringUtils {
 /*
  *  End class StringUtils
  */
+}
 
+class CharPair implements Comparable{
+	
+	Character key, value;
+	
+	CharPair(Character key, Character value){
+		this.key = key;
+		this.value = value;
+	}
+
+	public int compareTo(Object o) {
+		if (o == null) {
+			return 1;
+		}		
+		if (key == null) {
+			return -1;
+		}		
+		if (o instanceof Character) {
+			return key.compareTo((Character)o);
+		}		
+		if (o instanceof CharPair) {
+			return key.compareTo(((CharPair)o).key);
+		}		
+		throw new ClassCastException();
+	}
+	
 }
