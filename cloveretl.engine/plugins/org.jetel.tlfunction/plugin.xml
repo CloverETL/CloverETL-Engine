@@ -54,6 +54,7 @@
 			<value>is_ascii</value>
 			<value>is_number</value>
 			<value>is_integer</value>
+			<value>is_long</value>
 			<value>is_date</value>
 			<value>remove_diacritic</value>
 			<value>remove_blank_space</value>
