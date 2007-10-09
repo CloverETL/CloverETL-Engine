@@ -333,11 +333,47 @@ public class CommandBuilder {
 	 * @param paramName
 	 * @param switchChar
 	 */
-	public void addParameterBooleanSwitch(String paramName, char switchChar){
+	public void addParameterBooleanSwitch(String paramName, char switchChar) {
+		addParameterBooleanSwitch(paramName, String.valueOf(switchChar));
+	}
+	
+	/**
+	 * if paramValue isn't null or paramName is in properties adds to the end of command:
+	 *  " <i><b>switchMark</b>switchChar</i>paramValue"<br>
+	 *  for exmaple:  --host="localhost"
+	 * 
+	 * @param paramName
+	 * @param switchString
+	 */
+	public void addParameterSwitchWithEqualChar(String paramName, String switchString, String paramValue) {
+		if (paramValue == null && (paramName == null || !params.containsKey(paramName))) {
+			return;
+		}
+		
+		command.append(parameterDelimiter);
+		command.append(switchMark);
+		command.append(switchString);
+		command.append(EQUAL_CHAR);
+		if (paramValue != null) {
+			command.append(StringUtils.specCharToString(paramValue));
+		} else {
+			command.append(StringUtils.specCharToString(params.getProperty(paramName)));
+		}
+	}
+	
+	/**
+	 * if paramName is in properties adds to the end of command: 
+	 *  " <i><b>switchMark</b>switchChar</i>"<br>
+	 *  for exmaple:  --compress
+	 * 
+	 * @param paramName
+	 * @param switchString
+	 */
+	public void addParameterBooleanSwitch(String paramName, String switchString) {
 		if (params.containsKey(paramName) && !"false".equalsIgnoreCase(params.getProperty(paramName))) {
 			command.append(parameterDelimiter);
 			command.append(switchMark);
-			command.append(switchChar);
+			command.append(switchString);
 		}
 	}
 	
