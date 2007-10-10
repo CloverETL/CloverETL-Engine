@@ -960,20 +960,6 @@ public class InformixDataWriter extends Node {
     	 * @throws ComponentNotReadyException when metadata isn't correct
     	 */
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
-    		if (errMetadata == null) {
-        		throw new ComponentNotReadyException("Output port hasn't assigned metadata.");
-        	}
-   		
-    		if (dbMetadata == null) {
-    			return;
-    		}
-    		
-    		// check number of fields; if inNumFields == outNumFields + NUMBER_OF_ADDED_FIELDS
-			if (errMetadata.getNumFields() != dbMetadata.getNumFields() + NUMBER_OF_ADDED_FIELDS) {
-				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(errMetadata.getName()) +  
-						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
-			}
-
 			// check if last - 1  field of errMetadata is integer - rowNumber
 			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
@@ -984,6 +970,16 @@ public class InformixDataWriter extends Node {
 			if (errMetadata.getFieldType(errMsgFieldNo) != DataFieldMetadata.STRING_FIELD) {
 				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
+			}
+    		
+    		if (dbMetadata == null) {
+    			return;
+    		}
+    		
+    		// check number of fields; if inNumFields == outNumFields + NUMBER_OF_ADDED_FIELDS
+			if (errMetadata.getNumFields() != dbMetadata.getNumFields() + NUMBER_OF_ADDED_FIELDS) {
+				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(errMetadata.getName()) +  
+						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
 			}
 			
 			// check if other fields' type of errMetadata are equals as dbMetadat
