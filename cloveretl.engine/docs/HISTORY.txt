@@ -13,6 +13,10 @@ Changes/bug fixes:
 	 - string get_alphanumeric_chars(string,boolean,boolean);
 	 - string translate(string, string,string );
 	 - string join(anytype,....);
+	 - boolean is_long(string)
+	 - integer index_of(string, string, integer)
++ some components have optional "rejected port(s)" (AproxMergeJoin, CheckForeignKey, DBJoin, 
+	LookupJoin)
 
 
 REL 2-3-0 commercial purpose release
