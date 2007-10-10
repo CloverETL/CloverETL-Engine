@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
+import org.jetel.data.parser.AhoCorasick;
 import org.jetel.metadata.DataFieldMetadata;
 
 import sun.text.Normalizer;
@@ -768,6 +769,46 @@ public class StringUtils {
     }
     
     /**
+     * Returns the index within input string of the first occurrence of the specified 
+     * 	substring, starting at the specified index.
+     * 
+     * @param input string for searching 
+     * @param pattern the substring for which to search
+     * @param fromIndex the index from which to start the search
+     * @return the index within this string of the first occurrence of the specified 
+     * 	substring, starting at the specified index, or -1  if the sequence 
+     * 	does not occur
+     */
+    public static int indexOf(CharSequence input, CharSequence pattern, int fromIndex){
+    	AhoCorasick ac = new AhoCorasick(new String[]{pattern.toString()});
+    	for (int i = fromIndex; i < input.length(); i++) {
+    		ac.update(input.charAt(i));
+    		if (ac.isPattern(0)) {
+    			return i-pattern.length() + 1;
+    		}
+    	}
+    	return -1;
+    }
+    
+    /**
+     * Returns the index within this string of the first occurrence of the specified 
+     * 	character, starting the search at the specified index
+     * 
+     * @param input input string for searching 
+     * @param cha character 
+     * @param fromIndex the index from which to start the search
+     * @return the index of the first occurrence of the character in the character 
+     * 	sequence that is greater than or equal to fromIndex, or -1  if the character 
+     * 	does not occur
+     */
+    public static int indexOf(CharSequence input, char ch, int fromIndex){
+    	for(int i=fromIndex; i<input.length(); i++){
+    		if (input.charAt(i) == ch) return i;
+    	}
+    	return -1;
+    }
+    
+    /**
      * Translates single characters in a string to different characters:
      * replaces single characters at a time, translating the <i>n</i>th character in the match 
      * set with the <i>n</i>th character in the replacement set
@@ -784,6 +825,39 @@ public class StringUtils {
     	}else{
     		return translateBinarySearch(in, searchSet, replaceSet);
     	}
+    }
+    
+    public static CharSequence translateOneByOne(CharSequence in, 
+    		CharSequence searchSet,	CharSequence replaceSet){
+    	Character[] result = new Character[in.length()];
+    	for (int i=0; i< result.length; i++){
+    		result[i] = in.charAt(i);
+    	}
+    	char search, replace;
+    	for (int i=0; i<replaceSet.length(); i++){
+    		search = searchSet.charAt(i);
+    		replace = replaceSet.charAt(i);
+    		for (int j=0;j<in.length(); j++) {
+    			if (in.charAt(j) == search) {
+    				result[j] = replace;
+    			}
+    		}
+    	}
+    	for (int i = replaceSet.length(); i < searchSet.length(); i++){
+       		search = searchSet.charAt(i);
+    		for (int j=0;j<in.length(); j++) {
+    			if (in.charAt(j) == search) {
+    				result[i] = null;
+    			}
+    		}
+    	}
+    	StringBuilder out = new StringBuilder(result.length);
+    	for (Character character : result) {
+			if (character != null) {
+				out.append(character);
+			}
+		}
+    	return out;
     }
     
     public static CharSequence translateMapSearch(CharSequence in, 
