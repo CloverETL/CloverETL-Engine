@@ -23,6 +23,7 @@ import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.jetel.data.Defaults;
@@ -938,6 +939,97 @@ public class StringUtils {
 /*
  *  End class StringUtils
  */
+	public static void main(String[] args) {
+		
+		StringBuilder in = new StringBuilder();
+		StringBuilder searchSet = new StringBuilder();
+		StringBuilder replaceSet = new StringBuilder();
+		
+		Random r = new Random();
+		for (int i=0; i<3000000; i++){
+			in.append((char)(r.nextInt('z' - 'a' + 1) + 'a'));
+			if (i<10) {
+				searchSet.append((char)('a'+ i));
+				replaceSet.append((char)(r.nextInt('z' - 'a' + 1) + 'a'));
+			}
+		}
+		
+		CharSequence t1, t2, t3, t4;
+		System.out.println("Search set:" + searchSet);
+		System.out.println("Replace set:" + replaceSet);
+		long start = System.currentTimeMillis();
+		t1 = StringUtils.translateBinarySearch(in, searchSet, replaceSet);
+		long end = System.currentTimeMillis();
+		System.out.println("Binary search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t2 = StringUtils.translateSequentialSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Sequential search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t3 = StringUtils.translateMapSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Map search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t4 = StringUtils.translateOneByOne(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("One by one time:" + (end - start));
+		if (!t1.toString().equals(t2.toString()) || !t1.toString().equals(t3.toString())
+				|| !t1.toString().equals(t4.toString())) 
+			throw new RuntimeException();
+
+		for (int i=0; i < 10; i++){
+			searchSet.append((char)('k' + i));
+			replaceSet.append((char)(r.nextInt('z' - 'a' + 1) + 'a'));
+		}
+		System.out.println("Search set:" + searchSet);
+		System.out.println("Replace set:" + replaceSet);
+		start = System.currentTimeMillis();
+		t1 = StringUtils.translateBinarySearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Binary search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t2 = StringUtils.translateSequentialSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Sequential search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t3 = StringUtils.translateMapSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Map search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t4 = StringUtils.translateOneByOne(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("One by one time:" + (end - start));
+		if (!t1.toString().equals(t2.toString()) || !t1.toString().equals(t3.toString())
+				|| !t1.toString().equals(t4.toString())) 
+			throw new RuntimeException();
+
+		for (int i=0; i < 7; i++){
+			searchSet.append((char)('u' + i));
+			replaceSet.append((char)(r.nextInt('z' - 'a' + 1) + 'a'));
+		}
+		System.out.println("Search set:" + searchSet);
+		System.out.println("Replace set:" + replaceSet);
+		start = System.currentTimeMillis();
+		t1 = StringUtils.translateBinarySearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Binary search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t2 = StringUtils.translateSequentialSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Sequential search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t3 = StringUtils.translateMapSearch(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("Map search time:" + (end - start));
+		start = System.currentTimeMillis();
+		t4 = StringUtils.translateOneByOne(in, searchSet, replaceSet);
+		end = System.currentTimeMillis();
+		System.out.println("One by one time:" + (end - start));
+		if (!t1.toString().equals(t2.toString()) || !t1.toString().equals(t3.toString())
+				|| !t1.toString().equals(t4.toString())) 
+			throw new RuntimeException();
+}
+
 }
 
 class CharPair implements Comparable{
