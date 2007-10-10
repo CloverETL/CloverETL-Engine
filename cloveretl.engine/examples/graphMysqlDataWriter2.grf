@@ -40,14 +40,14 @@
 <!-- Read data from input port and load them to database -->
 <Phase number="1">
 <Node
-	enabled="disabled" 
+	enabled="enabled" 
  	mysqlImportPath="mysqlimport" database="testdb" table="test" 
  	id="MYSQL_DATA_WRITER21" type="MYSQL_DATA_WRITER2"
  	fileURL="${WORKSPACE}/output/data.dat" 	
 />
  
  <Node 
- 	enabled="disabled" 
+ 	enabled="enabled" 
  	fileURL="data/delimited/mysql.dat"
 	id="DELIMITED_DATA_READER0" type="DELIMITED_DATA_READER"/>
  </Phase>
