@@ -43,4 +43,9 @@
 		<parameter id="className" value="org.jetel.component.MsSqlDataWriter"/>
 	</extension>
 	
+	<extension point-id="component">
+		<parameter id="type" value="MYSQL_DATA_WRITER2"/>
+		<parameter id="className" value="org.jetel.component.MysqlDataWriter2"/>
+	</extension>
+	
 </plugin>
