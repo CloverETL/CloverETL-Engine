@@ -1943,7 +1943,13 @@ public class TestInterpreter extends TestCase {
         				"string t1=translate('hello','leo','pi');\n" +
         				"string t2=translate('hello','leo','piims');\n" +
         				"string t3=translate('hello','leo',null);\n" +
-        				"string t4=translate('my language needs the letter e', 'egms', 'X');\n";
+        				"string t4=translate('my language needs the letter e', 'egms', 'X');\n" +
+        				"string input='hello world';\n" +
+        				"int index=index_of(input,'l');\n" +
+        				"int index1=index_of(input,'l',5);\n" +
+        				"int index2=index_of(input,'hello');\n" +
+        				"int index3=index_of(input,'hello',1);\n" +
+        				"int index4=index_of(input,'world',1);\n";
         print_code(expStr);
 
        Log logger = LogFactory.getLog(this.getClass());
@@ -1979,6 +1985,11 @@ public class TestInterpreter extends TestCase {
 		      assertEquals("hippi",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t2")).getValue().getString()));
 		      assertTrue((executor.getGlobalVariable(parser.getGlobalVariableSlot("t3")).isNULL()));
 		      assertEquals("y lanuaX nXXd thX lXttXr X",(executor.getGlobalVariable(parser.getGlobalVariableSlot("t4")).getValue().getString()));
+		      assertEquals(2,(executor.getGlobalVariable(parser.getGlobalVariableSlot("index")).getValue().getInt()));
+		      assertEquals(9,(executor.getGlobalVariable(parser.getGlobalVariableSlot("index1")).getValue().getInt()));
+		      assertEquals(0,(executor.getGlobalVariable(parser.getGlobalVariableSlot("index2")).getValue().getInt()));
+		      assertEquals(-1,(executor.getGlobalVariable(parser.getGlobalVariableSlot("index3")).getValue().getInt()));
+		      assertEquals(6,(executor.getGlobalVariable(parser.getGlobalVariableSlot("index4")).getValue().getInt()));
 
         } catch (ParseException e) {
             System.err.println(e.getMessage());
