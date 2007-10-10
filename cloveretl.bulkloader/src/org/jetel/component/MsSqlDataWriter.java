@@ -955,16 +955,6 @@ public class MsSqlDataWriter extends Node {
     	 * @throws ComponentNotReadyException when metadata isn't correct
     	 */
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
-    		if (dbMetadata == null) {
-    			return;
-    		}
-    		
-    		// check number of fields; if inNumFields == outNumFields + NUMBER_OF_ADDED_FIELDS
-			if (errMetadata.getNumFields() != dbMetadata.getNumFields() + NUMBER_OF_ADDED_FIELDS) {
-				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(errMetadata.getName()) +  
-						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
-			}
-
 			// check if last - 2 field of errMetadata is integer - rowNumber
 			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
 				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
@@ -982,7 +972,17 @@ public class MsSqlDataWriter extends Node {
 				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
-			
+    		
+    		if (dbMetadata == null) {
+    			return;
+    		}
+    		
+    		// check number of fields; if inNumFields == outNumFields + NUMBER_OF_ADDED_FIELDS
+			if (errMetadata.getNumFields() != dbMetadata.getNumFields() + NUMBER_OF_ADDED_FIELDS) {
+				throw new ComponentNotReadyException("Number of fields of " +  StringUtils.quote(errMetadata.getName()) +  
+						" isn't equal number of fields of " +  StringUtils.quote(dbMetadata.getName()) + " + " + NUMBER_OF_ADDED_FIELDS + ".");
+			}
+
 			// check if other fields' type of errMetadata are equals as dbMetadata
 			int count = 0;
 			for (DataFieldMetadata dbFieldMetadata: dbMetadata){
