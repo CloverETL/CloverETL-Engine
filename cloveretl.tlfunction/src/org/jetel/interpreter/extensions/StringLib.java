@@ -23,7 +23,6 @@
  */
 package org.jetel.interpreter.extensions;
 
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.jetel.data.primitive.CloverInteger;
 import org.jetel.data.primitive.Numeric;
 import org.jetel.interpreter.Stack;
 import org.jetel.interpreter.TransformLangExecutorRuntimeException;
@@ -53,7 +51,7 @@ public class StringLib extends TLFunctionLibrary {
                 IS_INTEGER("is_integer"), IS_LONG("is_long"), IS_DATE("is_date"), 
                 REMOVE_DIACRITICS("remove_diacritic"), REMOVE_BLANK_SPACE("remove_blank_space"), 
                 GET_ALPHANUMERIC_CHARS("get_alphanumeric_chars"), TRANSLATE("translate"), 
-                JOIN("join");
+                JOIN("join"), INDEX_OF("index_of");
 
         public String name;
 
@@ -125,6 +123,8 @@ public class StringLib extends TLFunctionLibrary {
         	return new TranslateFunction();
         case JOIN:
         	return new JoinFunction();
+        case INDEX_OF:
+        	return new IndexOfFunction();
         default:
             return null;
         }
@@ -1000,6 +1000,46 @@ public class StringLib extends TLFunctionLibrary {
              return TLContext.createStringContext();
          }
      }
+     
+     //  INDEX OF
+     class IndexOfFunction extends TLFunctionPrototype {
+
+         public IndexOfFunction() {
+             super("string", "indexOf", new TLValueType[] { TLValueType.STRING, 
+            		 TLValueType.STRING, TLValueType.INTEGER}, TLValueType.INTEGER, 3, 2);
+         }
+
+         @Override
+         public TLValue execute(TLValue[] params, TLContext context) {
+             TLValue val = (TLValue)context.getContext();
+             Numeric result = val.getNumeric();
+
+             if (params[0].isNull() || params[0].type != TLValueType.STRING || 
+            	 params[1].isNull() || params[1].type != TLValueType.STRING ||
+            	 (params.length == 3 && params[2].type != TLValueType.INTEGER)) {
+                 throw new TransformLangExecutorRuntimeException(params,
+                 "index_of - wrong type of literal(s)");
+             }else{
+            	 int fromIndex = params.length < 3 ? 0 : params[2].getInt();
+            	 CharSequence pattern = params[1].getCharSequence();
+				if (pattern.length() > 1) {
+					result.setValue(StringUtils.indexOf(params[0].getCharSequence(), 
+							pattern, fromIndex));
+				}else{
+					result.setValue(StringUtils.indexOf(params[0].getCharSequence(), 
+							pattern.charAt(0), fromIndex));
+				}
+             }
+             return val;
+         }
+
+         @Override
+         public TLContext createContext() {
+             return TLContext.createIntegerContext();
+         }
+     }
+
+
 
      class RegexStore{
 	    public Pattern pattern;
