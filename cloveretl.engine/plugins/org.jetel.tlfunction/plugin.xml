@@ -61,6 +61,7 @@
 			<value>get_alphanumeric_chars</value>
 			<value>translate</value>
 			<value>join</value>
+			<value>index_of</value>
 		</parameter>
 	</extension>
 	
