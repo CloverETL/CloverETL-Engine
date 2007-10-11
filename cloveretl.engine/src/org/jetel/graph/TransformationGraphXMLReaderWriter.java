@@ -40,11 +40,12 @@ import org.jetel.data.sequence.Sequence;
 import org.jetel.data.sequence.SequenceFactory;
 import org.jetel.database.ConnectionFactory;
 import org.jetel.database.IConnection;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
+import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
-import org.jetel.exception.AttributeNotFoundException;
 import org.jetel.exception.XMLConfigurationException;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.metadata.DataRecordMetadataStub;
@@ -437,6 +438,7 @@ public class TransformationGraphXMLReaderWriter {
 		String edgeMetadataID;
 		String fromNodeAttr;
 		String toNodeAttr;
+		String edgeType = null;
         boolean debugMode = false;
         boolean fastPropagate = false;
 		String[] specNodePort;
@@ -455,6 +457,7 @@ public class TransformationGraphXMLReaderWriter {
 			edgeMetadataID = attributes.getString("metadata", null); //metadata paramater on the edge can be empty for disabled edges
 			fromNodeAttr = attributes.getString("fromNode");
 			toNodeAttr = attributes.getString("toNode");
+			edgeType = attributes.getString("edgeType", null);
 			}catch(AttributeNotFoundException ex){
 				throw new XMLConfigurationException("Missing attribute at edge "+edgeID+" - "+ex.getMessage());
 			}
@@ -469,11 +472,16 @@ public class TransformationGraphXMLReaderWriter {
 			// do we have real metadata or stub only ??
 			if (metadataObj instanceof DataRecordMetadata){
 				// real
-				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj, debugMode, fastPropagate);
+				graphEdge = new Edge(edgeID, (DataRecordMetadata) metadataObj);
 			}else{ 
 				// stub
-				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj, null, debugMode, fastPropagate);
+				graphEdge = new Edge(edgeID, (DataRecordMetadataStub) metadataObj);
 			}
+			graphEdge.setDebugMode(debugMode);
+			// set edge type
+			int iEdgeType = EdgeTypeEnum.getEdgeType(EdgeTypeEnum.valueOfIgnoreCase(edgeType));
+			if (iEdgeType != EdgeTypeEnum.UNKNOWN) graphEdge.setType(iEdgeType);
+			else if (fastPropagate) graphEdge.setType(Edge.EDGE_TYPE_DIRECT_FAST_PROPAGATE);
             
             // register edge within graph
             graph.addEdge(graphEdge);

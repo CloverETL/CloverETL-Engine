@@ -65,6 +65,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
      * Distinct DirectEdge and DirectEdgeFastPropagate inner implementation of the edge.
      * Used only for EDGE_TYPE_DIRECT.
      */
+	@Deprecated
     private boolean fastPropagate = false;
     
 	private EdgeBase edge;
@@ -75,6 +76,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	public final static int EDGE_TYPE_BUFFERED = 1;
 	/** Proxy represents Edge connecting two different phases */
 	public final static int EDGE_TYPE_PHASE_CONNECTION = 2;
+	/**  Proxy represents Direct Edge fast propagate */
+	public final static int EDGE_TYPE_DIRECT_FAST_PROPAGATE = 3;
 
 
 	/**
@@ -84,6 +87,7 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 * @param  metadata  Metadata describing data transported by this edge
 	 * @since            April 2, 2002
 	 */
+    @Deprecated
 	public Edge(String id, DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
         super(id);
 		this.metadata = metadata;
@@ -98,12 +102,21 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         this(id, metadata, false, false);
     }
     
+	public Edge(String id, DataRecordMetadataStub metadataStub) {
+		this(id, null, false, false);
+		this.metadataStub=metadataStub;
+	}
+
+    @Deprecated
 	public Edge(String id, DataRecordMetadataStub metadataStub,DataRecordMetadata metadata, boolean debugMode, boolean fastPropagate) {
 		this(id,metadata, debugMode, fastPropagate);
 		this.metadataStub=metadataStub;
 	}
 
-
+    public void setDebugMode(boolean debugMode) {
+    	this.debugMode = debugMode;
+    }    
+    
 	/**
 	 *  Sets the type attribute of the EdgeProxy object
 	 *
@@ -244,10 +257,10 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		if (edge == null) {
 			if (edgeType == EDGE_TYPE_BUFFERED) {
 			    edge = new BufferedEdge(this);
-			} else if (edgeType == EDGE_TYPE_PHASE_CONNECTION ){
+			} else if (edgeType == EDGE_TYPE_PHASE_CONNECTION) {
 			    edge = new PhaseConnectionEdge(this);
 			} else {
-				edge = fastPropagate ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
+				edge = fastPropagate || edgeType == EDGE_TYPE_DIRECT_FAST_PROPAGATE ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
 			}
 		}
         if(debugMode) {
@@ -429,10 +442,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
         edge.free();
     }
 
+    @Deprecated
     public boolean isFastPropagate() {
         return fastPropagate;
     }
 
+    @Deprecated
     public void setFastPropagate(boolean fastPropagate) {
         this.fastPropagate = fastPropagate;
     }
