@@ -100,7 +100,7 @@ import org.w3c.dom.Element;
  *    <tr><td><b>transformClass</b><br><i>optional</i></td><td>name of the class to be used for transforming joined data<br>
  *    If no class name is specified then it is expected that the transformation Java source code is embedded in XML 
  *  <tr><td><b>transformURL</b></td><td>path to the file with transformation code</td></tr>
- *  <tr><td><b>charset</b><i>optional</i></td><td>encoding of extern source</td></tr>
+ *  <tr><td><b>charset</b><br><i>optional</i></td><td>encoding of extern source</td></tr>
  *  <tr><td><b>sqlQuery</b><td>query to be sent to database</td>
  *  <tr><td><b>dbConnection</b></td><td>id of the Database Connection object to be used to access the database</td>
  *  <tr><td><b>metadata</b><i>optional</i><td>metadata for data from database</td>
