@@ -85,7 +85,6 @@ import org.jetel.util.crypto.Enigma;
  *  <tr><td nowrap>-stdin</td><td>load graph layout from STDIN</td></tr>
  *  <tr><td nowrap>-loghost</td><td>define host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445</td></tr>
  *  <tr><td nowrap>-checkconfig</td><td>only check graph configuration</td></tr>
- *  <tr><td nowrap>-noJMX</td><td>this switch turns off sending graph tracking information; this switch is recommended if the tracking information are not necessary</td></tr>
  *  <tr><td nowrap><b>filename</b></td><td>filename or URL of the file (even remote) containing graph's layout in XML (this must be the last parameter passed)</td></tr>
  *  </table>
  *  </pre></tt>
@@ -111,6 +110,7 @@ public class runGraph {
     public final static String NO_JMX = "-noJMX";
     public final static String MBEAN_NAME = "-mbean";
 	
+    public static String cmdLineArgs;
     
     /**
      * Clover.ETL engine initialization. Should be called only once.
@@ -175,7 +175,10 @@ public class runGraph {
         boolean onlyCheckConfig = false;
         String graphFileName = null;
         String mbeanName=null;
-        boolean noJMX=false;
+        boolean noJMX=false;        
+        
+        boolean appendArg=true;  
+        StringBuffer arguments = new StringBuffer("");
         
         System.out
                 .println("***  CloverETL framework/transformation graph runner ver "
@@ -193,6 +196,7 @@ public class runGraph {
                 verbose = true;
             } else if (args[i].startsWith(PROPERTY_FILE_SWITCH)) {
                 i++;
+                arguments.append(args[i]+" ");
                 try {
                     InputStream inStream = new BufferedInputStream(
                             new FileInputStream(args[i]));
@@ -210,6 +214,7 @@ public class runGraph {
                 properties.setProperty(tmp.substring(0, tmp.indexOf("=")), tmp
                         .substring(tmp.indexOf("=") + 1));
             } else if (args[i].startsWith(TRACKING_INTERVAL_SWITCH)) {
+            	arguments.append(args[i]+" ");
                 i++;
                 try {
                     trackingInterval = Integer.parseInt(args[i]);
@@ -222,19 +227,23 @@ public class runGraph {
                 printInfo();
                 System.exit(0);
             } else if (args[i].startsWith(PLUGINS_SWITCH)) {
+            	arguments.append(args[i]+" ");
                 i++;
                 pluginsRootDirectory = args[i];
             } else if (args[i].startsWith(PASSWORD_SWITCH)) {
+            	arguments.append(args[i]+" ");
                 i++;
                 password = args[i];
             } else if (args[i].startsWith(LOAD_FROM_STDIN_SWITCH)) {
                 loadFromSTDIN = true;
             } else if (args[i].startsWith(LOG_HOST_SWITCH)) {
+            	arguments.append(args[i]+" ");
                 i++;
                 logHost = args[i];
             } else if (args[i].startsWith(CHECK_CONFIG_SWITCH)) {
                 onlyCheckConfig = true;
             } else if (args[i].startsWith(MBEAN_NAME)){
+            	arguments.append(args[i]+" ");
                 i++;
                 mbeanName = args[i];
             } else if (args[i].startsWith(NO_JMX)){
@@ -244,8 +253,16 @@ public class runGraph {
                 System.exit(-1);
             } else {
                 graphFileName = args[i];
+                appendArg = false;
+            }
+            
+            if(appendArg) {
+            	arguments.append(args[i]+" ");
+            } else {
+            	appendArg = true;
             }
         }
+        cmdLineArgs = arguments.toString();
 
         if (graphFileName == null) {
             printHelp();
@@ -392,7 +409,7 @@ public class runGraph {
         System.out.println("-loghost\t\tdefine host and port number for socket appender of log4j (log4j library is required); i.e. localhost:4445");
         System.out.println("-checkconfig\t\tonly check graph configuration");
        // System.out.println("-mbean <name>\t\tname under which register Clover's JMXBean");
-        System.out.println("-noJMX\t\tturns off sending graph tracking information");
+       // System.out.println("-noJMX\t\tdon't register Clover JMXBean");
         
         System.out.println();
         System.out.println("Note: <graph definition file> can be either local filename or URL of local/remote file");

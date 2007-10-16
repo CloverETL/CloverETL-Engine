@@ -341,8 +341,7 @@ public class WatchDog extends Thread implements CloverRuntime {
 							+ message.getSenderID()
 							+ " finished with status: "
 							+ ((ErrorMsgBody) message.getBody())
-									.getErrorMessage() + " caused by: "
-							+ causeException.getMessage());
+									.getErrorMessage() + (causeException != null ? " caused by: " + causeException.getMessage() : ""));
 					logger.debug("Node " + message.getSenderID()
 							+ " error details:", causeException);
 					abort();
