@@ -32,6 +32,7 @@ import java.util.Stack;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.enums.EnabledEnum;
 import org.jetel.exception.GraphConfigurationException;
 
@@ -222,8 +223,8 @@ public class TransformationGraphAnalyzer {
 							//TODO: potential problem if port is not backed by EDGE - this should not happen
 							Object edge=startNode.getInputPort(i);
 							//assert edge instanceof Edge : "Port not backed by Edge object !";
-							if(((Edge)edge).getType() == Edge.EDGE_TYPE_DIRECT) {
-								((Edge)edge).setType(Edge.EDGE_TYPE_BUFFERED);
+							if(((Edge)edge).getEdgeType() == EdgeTypeEnum.DIRECT) {
+								((Edge)edge).setEdgeType(EdgeTypeEnum.BUFFERED);
 								// DEBUG
 								//System.out.println(((Edge)edge).getID()+" edge should be set to TYPE_BUFFERED.");
 								logger.debug(((Edge)edge).getId()+" edge has been set to TYPE_BUFFERED.");
@@ -323,7 +324,7 @@ public class TransformationGraphAnalyzer {
 			if (readerPhase != writerPhase ) {
 				// edge connecting two nodes belonging to different phases
 				// has to be buffered
-				edge.setType(Edge.EDGE_TYPE_PHASE_CONNECTION);
+				edge.setEdgeType(EdgeTypeEnum.PHASE_CONNECTION);
 				// because at the end of each phase, edges from that phase
 				// are destroyed (their references), we need to preserve
 				// references for those, which span two phases

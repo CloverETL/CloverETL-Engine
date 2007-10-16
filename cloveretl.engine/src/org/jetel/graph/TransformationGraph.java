@@ -39,6 +39,7 @@ import org.apache.commons.logging.LogFactory;
 import org.jetel.data.lookup.LookupTable;
 import org.jetel.data.sequence.Sequence;
 import org.jetel.database.IConnection;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
 import org.jetel.graph.runtime.CloverRuntime;
@@ -721,7 +722,7 @@ public final class TransformationGraph {
 			while (iterator.hasNext()) {
 				edge = (Edge) iterator.next();
 				logger.info("\t" + edge.getId() + " type: "
-					+ (edge.getType() == Edge.EDGE_TYPE_BUFFERED ? "buffered" : "direct"));
+					+ (edge.getEdgeType() == EdgeTypeEnum.BUFFERED ? "buffered" : "direct"));
 			}
 			logger.info("--- end phase ---");
 		}

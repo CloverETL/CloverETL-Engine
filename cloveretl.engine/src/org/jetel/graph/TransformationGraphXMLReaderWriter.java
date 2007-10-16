@@ -479,9 +479,9 @@ public class TransformationGraphXMLReaderWriter {
 			}
 			graphEdge.setDebugMode(debugMode);
 			// set edge type
-			int iEdgeType = EdgeTypeEnum.getEdgeType(EdgeTypeEnum.valueOfIgnoreCase(edgeType));
-			if (iEdgeType != EdgeTypeEnum.UNKNOWN) graphEdge.setType(iEdgeType);
-			else if (fastPropagate) graphEdge.setType(Edge.EDGE_TYPE_DIRECT_FAST_PROPAGATE);
+			EdgeTypeEnum edgeTypeEnum = EdgeTypeEnum.valueOfIgnoreCase(edgeType);
+			if (edgeTypeEnum != null) graphEdge.setEdgeType(edgeTypeEnum);
+			else if (fastPropagate) graphEdge.setEdgeType(EdgeTypeEnum.DIRECT_FAST_PROPAGATE);
             
             // register edge within graph
             graph.addEdge(graphEdge);
