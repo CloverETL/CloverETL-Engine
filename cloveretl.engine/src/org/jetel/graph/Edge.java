@@ -24,6 +24,7 @@ import java.nio.ByteBuffer;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.jetel.data.DataRecord;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.metadata.DataRecordMetadata;
@@ -59,15 +60,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
     protected boolean debugMode;
     protected EdgeDebuger edgeDebuger;
     
-	private int edgeType;
+	private EdgeTypeEnum edgeType;
 
-    /**
-     * Distinct DirectEdge and DirectEdgeFastPropagate inner implementation of the edge.
-     * Used only for EDGE_TYPE_DIRECT.
-     */
-	@Deprecated
-    private boolean fastPropagate = false;
-    
 	private EdgeBase edge;
 
 	/**  Proxy represents Direct Edge */
@@ -93,9 +87,8 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 		this.metadata = metadata;
         this.debugMode = debugMode;
 		reader = writer = null;
-		edgeType = EDGE_TYPE_DIRECT;//default edge is direct (no outside buffering necessary)
+    	edgeType = fastPropagate ? EdgeTypeEnum.DIRECT_FAST_PROPAGATE : EdgeTypeEnum.DIRECT;
 		edge = null;
-        this.fastPropagate = fastPropagate;
 	}
 
     public Edge(String id, DataRecordMetadata metadata) {
@@ -121,21 +114,64 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 	 *  Sets the type attribute of the EdgeProxy object
 	 *
 	 * @param  edgeType  The new type value
+	 * 
+	 * @deprecated
 	 */
+    @Deprecated
 	public void setType(int edgeType) {
-		this.edgeType = edgeType;
+    	switch(edgeType) {
+    	case EDGE_TYPE_DIRECT:
+    		this.edgeType = EdgeTypeEnum.DIRECT;
+    		break;
+    	case EDGE_TYPE_BUFFERED:
+    		this.edgeType = EdgeTypeEnum.BUFFERED;
+    		break;
+    	case EDGE_TYPE_PHASE_CONNECTION:
+    		this.edgeType = EdgeTypeEnum.PHASE_CONNECTION;
+    		break;
+    	case EDGE_TYPE_DIRECT_FAST_PROPAGATE:
+    		this.edgeType = EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
+    		break;
+    	}
+	}
+    
+	/**
+	 *  Gets the type attribute of the Edge object
+	 *
+	 * @return    The type value
+	 * 
+	 * @deprecated
+	 */
+    @Deprecated
+	public int getType() {
+    	if (edgeType == EdgeTypeEnum.BUFFERED) {
+    		return EDGE_TYPE_BUFFERED;
+    	} else if (edgeType == EdgeTypeEnum.PHASE_CONNECTION) {
+    		return EDGE_TYPE_PHASE_CONNECTION;
+    	} else if (edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE) {
+    		return EDGE_TYPE_DIRECT_FAST_PROPAGATE;
+    	} else {
+    		return EDGE_TYPE_DIRECT;
+    	}
 	}
 
+	/**
+	 *  Sets the type attribute of the EdgeProxy object
+	 *
+	 * @param  edgeType  The new type value
+	 */
+	public void setEdgeType(EdgeTypeEnum edgeType) {
+		this.edgeType = edgeType;
+	}
 
 	/**
 	 *  Gets the type attribute of the Edge object
 	 *
 	 * @return    The type value
 	 */
-	public int getType() {
+	public EdgeTypeEnum getEdgeType() {
 		return edgeType;
 	}
-
 
 	/**
 	 *  Gets the Metadata attribute of the Edge object
@@ -255,12 +291,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 			}
 		}
 		if (edge == null) {
-			if (edgeType == EDGE_TYPE_BUFFERED) {
+			if (edgeType == EdgeTypeEnum.BUFFERED) {
 			    edge = new BufferedEdge(this);
-			} else if (edgeType == EDGE_TYPE_PHASE_CONNECTION) {
+			} else if (edgeType == EdgeTypeEnum.PHASE_CONNECTION) {
 			    edge = new PhaseConnectionEdge(this);
 			} else {
-				edge = fastPropagate || edgeType == EDGE_TYPE_DIRECT_FAST_PROPAGATE ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
+				edge = edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE ? (EdgeBase) new DirectEdgeFastPropagate(this) : new DirectEdge(this);
 			}
 		}
         if(debugMode) {
@@ -444,12 +480,12 @@ public class Edge extends GraphElement implements InputPort, OutputPort, InputPo
 
     @Deprecated
     public boolean isFastPropagate() {
-        return fastPropagate;
+        return edgeType == EdgeTypeEnum.DIRECT_FAST_PROPAGATE;
     }
 
     @Deprecated
     public void setFastPropagate(boolean fastPropagate) {
-        this.fastPropagate = fastPropagate;
+    	edgeType = fastPropagate ? EdgeTypeEnum.DIRECT_FAST_PROPAGATE : EdgeTypeEnum.DIRECT;
     }
     
     @Override public int hashCode(){

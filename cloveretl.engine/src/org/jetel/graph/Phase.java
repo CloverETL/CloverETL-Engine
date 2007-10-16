@@ -25,6 +25,7 @@ import java.util.Map;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jetel.enums.EdgeTypeEnum;
 import org.jetel.exception.ComponentNotReadyException;
 import org.jetel.exception.ConfigurationStatus;
 import org.jetel.exception.GraphConfigurationException;
@@ -136,7 +137,7 @@ public class Phase implements Comparable {
 		while (edgeIterator.hasNext()) {
 			try {
 				edge = (Edge) edgeIterator.next();
-                if(edge.getType() != Edge.EDGE_TYPE_PHASE_CONNECTION || 
+                if(edge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION || 
                         edge.getWriter().getPhase() == this) { 
                     edge.init(); //initialization is called only once also for phase edges
                 }
@@ -286,7 +287,7 @@ public class Phase implements Comparable {
         
         //free all edges in this phase
         for(Edge edge : edgesInPhase) {
-            if(edge.getType() != Edge.EDGE_TYPE_PHASE_CONNECTION || 
+            if(edge.getEdgeType() != EdgeTypeEnum.PHASE_CONNECTION || 
                     edge.getReader().getPhase() == this) { 
                 edge.free();
             }
