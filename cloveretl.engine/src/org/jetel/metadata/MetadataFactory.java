@@ -22,6 +22,7 @@ package org.jetel.metadata;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.channels.Channels;
 import java.sql.SQLException;
 
 import org.jetel.graph.TransformationGraph;
@@ -49,12 +50,11 @@ public class MetadataFactory {
 	 * @see	org.jetel.metadata.DataRecordMetadata
 	 */
 	public static DataRecordMetadata fromFile(TransformationGraph graph, String fileURL) throws IOException {
-		URL url = FileUtils.getFileURL(graph.getRuntimeParameters().getProjectURL(), fileURL);
-        
 		DataRecordMetadata recordMetadata;
 		DataRecordMetadataXMLReaderWriter metadataXMLRW = new DataRecordMetadataXMLReaderWriter(graph);
 		try{
-		recordMetadata=metadataXMLRW.read(new BufferedInputStream(url.openStream()));
+		recordMetadata=metadataXMLRW.read(
+				Channels.newInputStream(FileUtils.getReadableChannel(graph.getRuntimeParameters().getProjectURL(), fileURL)));
 			if (recordMetadata==null){
 				throw new RuntimeException("Can't parse metadata definition file: "+fileURL);
 			}

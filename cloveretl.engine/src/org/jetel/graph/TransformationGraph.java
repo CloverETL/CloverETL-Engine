@@ -20,12 +20,11 @@
 // FILE: c:/projects/jetel/org/jetel/graph/TransformationGraph.java
 
 package org.jetel.graph;
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.nio.channels.Channels;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -760,14 +759,13 @@ public final class TransformationGraph {
 		if (graphProperties == null) {
 			graphProperties = new TypedProperties();
 		}
-        URL url;
+		InputStream inStream;
         try {
-            url = FileUtils.getFileURL(getRuntimeParameters().getProjectURL(), fileURL);
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeParameters().getProjectURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
         }
-        InputStream inStream = new BufferedInputStream(url.openStream());
 		graphProperties.load(inStream);
 	}
 
@@ -781,14 +779,13 @@ public final class TransformationGraph {
         if (graphProperties == null) {
             graphProperties = new TypedProperties();
         }
-        URL url; 
+        InputStream inStream;
         try {
-            url = FileUtils.getFileURL(getRuntimeParameters().getProjectURL(), fileURL);
+        	inStream = Channels.newInputStream(FileUtils.getReadableChannel(getRuntimeParameters().getProjectURL(), fileURL));
         } catch(MalformedURLException e) {
             logger.error("Wrong URL/filename of file specified: " + fileURL);
             throw e;
         }
-        InputStream inStream = new BufferedInputStream(url.openStream());
         graphProperties.loadSafe(inStream);
     }
 

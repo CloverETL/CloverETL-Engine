@@ -397,6 +397,40 @@ public class FileUtils {
 		return matcher.find() ? matcher : null;
 	}
 	
+	/**
+	 * Returns file name of input (URL).
+	 * 
+	 * @param input - url file name
+	 * @return file name
+	 * @throws MalformedURLException
+	 * 
+	 * @see java.net.URL#getFile()
+	 */
+	public static String getFile(URL contextURL, String input) throws MalformedURLException {
+		Matcher matcher = getInnerInput(input);
+		String innerSource2, innerSource3;
+		if (matcher != null && (innerSource2 = matcher.group(2)) != null) {
+			if (!(innerSource3 = matcher.group(3)).equals("")) {
+				return innerSource3.substring(1);
+			} else {
+				input = getFile(null, innerSource2);
+			}
+		}
+		URL url = getFileURL(contextURL, input);
+		if (url.getRef() != null) return url.getRef();
+		else {
+			input = url.getFile();
+			if (input.startsWith("zip:")) {
+				input = input.contains("#") ? 
+					input.substring(input.lastIndexOf('#') + 1) : 
+					input.substring(input.indexOf(':') + 1);
+			} else if (input.startsWith("gzip:")) {
+				input = input.substring(input.indexOf(':') + 1);
+			}
+			return input;
+		}
+	}
+	
 }
 
 /*

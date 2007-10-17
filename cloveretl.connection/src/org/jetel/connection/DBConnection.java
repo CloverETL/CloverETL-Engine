@@ -24,16 +24,15 @@ import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.channels.Channels;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -52,11 +51,9 @@ import org.jetel.graph.TransformationGraph;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.ComponentXMLAttributes;
 import org.jetel.util.FileUtils;
-import org.jetel.util.PropertyRefResolver;
 import org.jetel.util.StringUtils;
 import org.jetel.util.crypto.Enigma;
 import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
 
 
 /**
@@ -209,9 +206,7 @@ public class DBConnection extends GraphElement implements IConnection {
         
         if(!StringUtils.isEmpty(configFileName)) {
             try {
-                InputStream stream = null;
-                URL url = FileUtils.getFileURL(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, configFileName);
-                stream = url.openStream();
+                InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(getGraph() != null ? getGraph().getRuntimeParameters().getProjectURL() : null, configFileName));
 
 //old code - last usage in 2.0                 
 //                if (!new File(configFileName).exists()) {
