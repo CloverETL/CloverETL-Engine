@@ -50,6 +50,7 @@ import org.jetel.graph.Node;
 import org.jetel.graph.Phase;
 import org.jetel.graph.Result;
 import org.jetel.graph.TransformationGraph;
+import org.jetel.graph.runtime.GraphRuntimeParameters;
 import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.util.FileUtils;
 import org.jetel.util.JetelVersion;
@@ -273,8 +274,7 @@ public class showData {
             System.out.println("Graph definition file: "
                     + args[args.length - 2]);
             try {
-                URL fileURL = FileUtils.getFileURL(null, args[args.length - 2]);
-                in = fileURL.openStream();
+                in = Channels.newInputStream(FileUtils.getReadableChannel(null, args[args.length - 2]));
             } catch (IOException e) {
                 System.err
                         .println("Error - graph definition file can't be read: "
@@ -410,11 +410,11 @@ public class showData {
 			return;
 		}
 	    
-        // set tracking interval
-        if (trackingInterval != -1) {
-        	viewGraph.setTrackingInterval(trackingInterval * 1000);
-        }
-
+        // set graph runtime parameters
+        GraphRuntimeParameters runtimePar = viewGraph.getRuntimeParameters();
+        if (trackingInterval != -1) runtimePar.setTrackingInterval(trackingInterval * 1000);
+        runtimePar.setGraphFileURL(loadFromSTDIN ? "-" : args[args.length - 2]);
+        
         //	start all Nodes (each node is one thread)
 		Result result=Result.N_A;
 		try {

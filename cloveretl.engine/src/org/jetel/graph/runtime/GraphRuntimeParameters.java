@@ -93,8 +93,7 @@ public class GraphRuntimeParameters {
 
 	public String getGraphFilename() {
 		try {
-			URL url = FileUtils.getFileURL(getProjectURL(), graphFileURL);
-			return url.getFile();
+			return FileUtils.getFile(getProjectURL(), graphFileURL);
 		} catch (MalformedURLException ex) {
 			// do nothing, return null
 			return null;

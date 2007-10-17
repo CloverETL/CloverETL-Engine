@@ -21,6 +21,7 @@ package org.jetel.connection;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.channels.Channels;
 import java.util.Hashtable;
 import java.util.Properties;
 
@@ -113,9 +114,7 @@ public class JmsConnection extends GraphElement implements IConnection {
 	private static Properties readConfig(URL contextURL, String cfgFile) {
 		Properties config = new Properties();
 		try {
-            InputStream stream = null;
-            URL url = FileUtils.getFileURL(contextURL, cfgFile);
-            stream = url.openStream();
+            InputStream stream = Channels.newInputStream(FileUtils.getReadableChannel(contextURL, cfgFile));
             
 //            if (!new File(cfgFile).exists()) {
 //                // config file not found on file system - try classpath

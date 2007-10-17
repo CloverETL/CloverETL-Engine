@@ -23,7 +23,9 @@ import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.channels.Channels;
 import java.util.Properties;
 
 import org.apache.commons.logging.Log;
@@ -306,8 +308,7 @@ public class runGraph {
         } else {
             System.out.println("Graph definition file: " + graphFileName);
             try {
-                URL fileURL = FileUtils.getFileURL(null, graphFileName);
-                in = fileURL.openStream();
+                in = Channels.newInputStream(FileUtils.getReadableChannel(null, graphFileName));
             } catch (IOException e) {
                 System.err
                         .println("Error - graph definition file can't be read: "
