@@ -112,6 +112,10 @@ public class runGraph {
 	
     public static String cmdLineArgs;
     
+    public static String getCmdLineArgs() {
+    	return cmdLineArgs;
+    }
+    
     /**
      * Clover.ETL engine initialization. Should be called only once.
      * @param pluginsRootDirectory directory path, where plugins specification is located 
