@@ -957,19 +957,19 @@ public class MsSqlDataWriter extends Node {
     	private void checkErrPortMetadata() throws ComponentNotReadyException {
 			// check if last - 2 field of errMetadata is integer - rowNumber
 			if (errMetadata.getFieldType(rowNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
-				throw new ComponentNotReadyException("First field of " +  StringUtils.quote(errMetadata.getName()) +  
+				throw new ComponentNotReadyException("Last but two field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
 			// check if last - 1 field of errMetadata is integer - columnNumber
 			if (errMetadata.getFieldType(columnNumberFieldNo) != DataFieldMetadata.INTEGER_FIELD) {
-				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
+				throw new ComponentNotReadyException("Last but one field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from integer.");
 			}
 			
 			// check if last field of errMetadata is string - errMsg
 			if (errMetadata.getFieldType(errMsgFieldNo) != DataFieldMetadata.STRING_FIELD) {
-				throw new ComponentNotReadyException("Second field of " +  StringUtils.quote(errMetadata.getName()) +  
+				throw new ComponentNotReadyException("Last field of " +  StringUtils.quote(errMetadata.getName()) +  
 						" has different type from string.");
 			}
     		
