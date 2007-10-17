@@ -315,8 +315,7 @@ public class InformixDataWriter extends Node {
 		if (process == null) {
 			process = Runtime.getRuntime().exec(createCommandLineForDbLoader());			
 		}
-        ProcBox box = new ProcBox(process, null, consumer, errConsumer);
-		return box;
+        return new ProcBox(process, null, consumer, errConsumer);
 	}
     
     /**
@@ -392,9 +391,16 @@ public class InformixDataWriter extends Node {
 	            }
             } else {
             	if (dataURL == null) {
+            		free();
             		throw new ComponentNotReadyException(this, "There is neither input port nor " 
             				+ StringUtils.quote(XML_FILE_URL_ATTRIBUTE) + " attribute specified.");
             	}
+            	if (!new File(dataURL).exists()) {
+					free();
+					throw new ComponentNotReadyException(this, "Data file "
+								+ StringUtils.quote(dataURL) + " not exists.");
+				}
+            	
             	tmpDataFileName = new File(dataURL).getCanonicalPath();
             }
             
