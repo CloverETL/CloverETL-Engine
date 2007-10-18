@@ -928,7 +928,9 @@ public class InformixDataWriter extends Node {
     	 */
     	private String readLine() throws IOException {
     		String line = reader.readLine();
-    		logger.debug(line);
+    		if (!StringUtils.isEmpty(line)) {
+    			logger.debug(line);
+    		}
     		return line;
     	}
     	
