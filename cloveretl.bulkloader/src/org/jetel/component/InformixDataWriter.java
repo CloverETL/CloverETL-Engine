@@ -83,7 +83,8 @@ import org.w3c.dom.Element;
  * There is created temporary file with dbload commands depending on input parameters. Data are read from given input file or from the input port and loaded to database. 
  * On Linux/Unix system data transfer can be processed by stdin.<br>
  * Any generated scripts/commands can be optionally logged to help diagnose problems.<br>
- * To use this component Informix client must be installed and configured on the local host.
+ * CloverETL must run on the same machine as the Informix server with accesed database.
+ * Dbload command line tool must be also available (standard part of Informix server).
  * </td></tr>
  * <tr><td><h4><i>Inputs:</i></h4></td>
  * <td>[0] - input records. It can be omitted - then <b>fileURL</b> has to be provided.</td></tr>
