@@ -102,6 +102,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	
 	protected int maxCached = 0;
 	protected HashKey cacheKey;
+	protected KeyStore objectCacheKey;
 	protected boolean storeNulls = false;
 	
 	protected int cacheNumber = 0;
@@ -249,34 +250,13 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	 *@param  keys                Description of the Parameter
 	 *@return                     found DataRecord or NULL
 	 */
-	DataRecord storeRecord01 = null;
 	public DataRecord get(Object keys[]) {
-		keys[0] = new Integer(5);
+    	objectCacheKey = new KeyStore(keys);
 		totalNumber++;
-		DataRecord datarecord = null;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
-	    	int[] iKeys = cacheKey.getKeyFields();
-	    	DataRecordMetadata medatata = new DataRecordMetadata("___KEY_DATA");
-	    	Arrays.sort(iKeys);
-	    	DataRecordMetadata keyMetadata = cacheKey.getKeyRecordMetadata();
-	    	int len=0;
-	    	for (int i=0; i<iKeys.length; i++) {
-	    		while(iKeys[i]>len) {
-	    			medatata.addField(keyMetadata.getField(i));
-	    			len++;
-    			}
-    			medatata.addField(keyMetadata.getField(i));
-    			len++;
-	    	}
-	    	datarecord = new DataRecord(medatata);
-	    	datarecord.init();
-	    	for (int i=0; i<iKeys.length; i++) {
-	    		datarecord.getField(iKeys[i]).setValue(keys[i]);
-	    	}
-	        cacheKey.setDataRecord(datarecord);
-			if (resultCache.containsKey(cacheKey)) {
-				DataRecord data = (DataRecord) resultCache.get(cacheKey);
+			if (resultCache.containsKey(objectCacheKey)) {
+				DataRecord data = (DataRecord) resultCache.get(objectCacheKey);
 				cacheNumber++;
 				return data;
 			}	        
@@ -293,17 +273,14 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 			resultSet = pStatement.executeQuery();
 		    //put found records to cache
 		    if (resultCache!=null){
-			    HashKey hashKey = new HashKey(lookupKey, datarecord);
 			    if (fetch()) {
 					do {
 						DataRecord storeRecord = dbDataRecord.duplicate();
-						/*if (storeRecord01 == null) storeRecord = dbDataRecord.duplicate();
-						else storeRecord = storeRecord01;*/
-						resultCache.put(keys, storeRecord);
+						resultCache.put(objectCacheKey, storeRecord);
 					} while (fetch());		    	
 			    }else{
 					if (storeNulls) {
-						resultCache.put(keys, (DataRecord) null);
+						resultCache.put(objectCacheKey, (DataRecord) null);
 					}			    	
 			    }
 		    }else {
@@ -313,7 +290,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     catch (SQLException ex) {
 			throw new RuntimeException(ex.getMessage());
 		}
-    return (DataRecord)resultCache.get(cacheKey);
+    return (DataRecord)resultCache.get(objectCacheKey) ;
 	}
 
 	/**
@@ -329,8 +306,8 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 		totalNumber++;
 	    // if cached, then try to query cache first
 	    if (resultCache!=null){
-			if (resultCache.containsKey(cacheKey)) {
-				DataRecord data = (DataRecord) resultCache.get(cacheKey);
+			if (resultCache.containsKey(keyStr)) {
+				DataRecord data = (DataRecord) resultCache.get(keyStr);
 				cacheNumber++;
 				return data;
 			}	        
@@ -362,7 +339,7 @@ public class DBLookupTable extends GraphElement implements LookupTable {
 	    catch (SQLException ex) {
 	        throw new RuntimeException(ex.getMessage());
 	    }
-	    return (DataRecord)resultCache.get(cacheKey) ;
+	    return (DataRecord)resultCache.get(keyStr) ;
 	}
 
 	/**
@@ -698,4 +675,36 @@ public class DBLookupTable extends GraphElement implements LookupTable {
     public LookupTableIterator getLookupTableIterator(Object lookupKey) {
     	return new BaseLookupTableIterator(lookupKey, this);
     }
+
+/**
+ * Class used as key in cache when using DBLookupTable.get(Object[]) method.
+ * These objects are equal if all theirs parts are equal.
+ * 
+ * @author avackova (agata.vackova@javlinconsulting.cz) ; 
+ * (c) JavlinConsulting s.r.o.
+ *  www.javlinconsulting.cz
+ *
+ * @since Oct 23, 2007
+ *
+ */
+private static class KeyStore {
+	
+	Object[] keyParts;
+	
+	public KeyStore(Object[] keyParts) {
+		this.keyParts = keyParts.clone();
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		if (!(obj instanceof KeyStore)) return false;
+		return Arrays.deepEquals(keyParts, ((KeyStore)obj).keyParts);
+	}
+	
+	@Override
+	public int hashCode() {
+		return Arrays.deepHashCode(keyParts);
+	}
 }
+}
+
