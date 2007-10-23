@@ -195,6 +195,43 @@ public class DBLookupTest extends TestCase {
 		assertNull(employee);
 	}
 	
+	public void test_getObject2() throws ComponentNotReadyException{
+		lookupTable = new DBLookupTable("MyLookup",aDBConnection,null,
+				"select * from employee where management_role=? and gender=?",100);
+		lookupTable.init();
+		lookupTable.setLookupKey(new Object());
+		Object[] key = new Object[2];
+		key[0] = "Senior Management";
+		key[1] = "F";
+		employee = lookupTable.get(key);
+		System.out.println(employee);
+		while ((employee = lookupTable.getNext()) != null) {
+			System.out.println(employee);
+		}
+		System.out.println("Key changed:");
+		System.out.println();
+		employee = lookupTable.get(new Object[]{"Store Management", "M"});
+		System.out.println(employee);
+		while ((employee = lookupTable.getNext()) != null) {
+			System.out.println(employee);
+		}
+		key[0] = "Middle Management";
+		System.out.println("Key changed:");
+		System.out.println();
+		employee = lookupTable.get(new Object[]{key[0], "F"});
+		System.out.println(employee);
+		while ((employee = lookupTable.getNext()) != null) {
+			System.out.println(employee);
+		}
+		System.out.println("Key changed:");
+		System.out.println();
+		employee = lookupTable.get(new Object[]{"Senior Management", key[1]});
+		System.out.println(employee);
+		while ((employee = lookupTable.getNext()) != null) {
+			System.out.println(employee);
+		}
+	}
+	
 	public void test_getStringt() throws ComponentNotReadyException{
 		lookupTable.setLookupKey(new String[1]);
 		employee = lookupTable.get("Nowmer");
