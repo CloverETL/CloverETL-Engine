@@ -162,4 +162,66 @@ public class DBLookupTest extends TestCase {
 		System.out.println("From cache found: " + lookupTable.getCacheNumber());
 		System.out.println("Timing: " + (System.currentTimeMillis() - start));
 }
+	
+	public void test_getObject() throws ComponentNotReadyException{
+		lookupTable.setLookupKey(new Object());
+		employee = lookupTable.get(new String[]{"Nowmer"});
+		assertNotNull(employee);
+		employee = lookupTable.get(new String[]{"Spencer"});
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+
+		lookupTable.setNumCached(1000, true);
+		lookupTable.init();
+		String[] key = new String[1];
+		key[0] = "Nowmer";
+		employee = lookupTable.get(key);
+		assertNotNull(employee);
+		key[0] = "Spencer";
+		employee = lookupTable.get(key);
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+		employee = lookupTable.get(key);
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+	}
+	
+	public void test_getStringt() throws ComponentNotReadyException{
+		lookupTable.setLookupKey(new String[1]);
+		employee = lookupTable.get("Nowmer");
+		assertNotNull(employee);
+		employee = lookupTable.get("Spencer");
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+
+		lookupTable.setNumCached(1000, true);
+		lookupTable.init();
+		employee = lookupTable.get("Nowmer");
+		assertNotNull(employee);
+		employee = lookupTable.get("Spencer");
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+		employee = lookupTable.get("Spencer");
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNotNull(employee);
+		employee = lookupTable.getNext();
+		assertNull(employee);
+	}
+
 }
