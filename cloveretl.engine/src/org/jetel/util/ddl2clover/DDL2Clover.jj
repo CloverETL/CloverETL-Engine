@@ -97,6 +97,10 @@ SPECIAL_TOKEN:
 	<"//"> : WithinLineComment 
 }
 
+SPECIAL_TOKEN: 
+{  
+	<"--"> : WithinLineComment 
+}
 <WithinLineComment> SPECIAL_TOKEN: { <"\n"> : DEFAULT }
 <WithinLineComment> MORE: { <~[]> }
 
