@@ -29,11 +29,12 @@ import java.io.IOException;
 import java.io.Reader;
 
 /**
- * @author david pavlis <david.pavlis@opensys.eu>
- * 
  * This class implements Reader interface on top of CharSequence - i.e.
  * it enables reading chars from String,StringBuffer/Builder,CharBuffer
  *
+ * @author david pavlis <david.pavlis@opensys.eu>
+ * @since       Oct 24, 2007
+ * @revision    $Revision:  $
  */
 
 public class CharSequenceReader extends Reader {
