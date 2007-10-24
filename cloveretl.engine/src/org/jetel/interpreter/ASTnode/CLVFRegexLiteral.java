@@ -4,8 +4,10 @@ package org.jetel.interpreter.ASTnode;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.jetel.interpreter.ExpParser;
+import org.jetel.interpreter.ParseException;
 import org.jetel.interpreter.TransformLangParserVisitor;
 
 public class CLVFRegexLiteral extends SimpleNode {
@@ -25,8 +27,13 @@ public class CLVFRegexLiteral extends SimpleNode {
 		return visitor.visit(this, data);
 	}
 	
-	public void setRegex(String regex){
-		matcher=Pattern.compile(regex.substring(1,regex.length()-1)).matcher(new String("dummy"));
+	public void setRegex(String regex) throws ParseException {
+		try {
+			matcher = Pattern.compile(regex.substring(1, regex.length() - 1))
+					.matcher(new String("dummy"));
+		} catch (PatternSyntaxException ex) {
+			throw new ParseException(null, "Regex pattern error:"+ex.getMessage(), ex);
+		}
 	}
 	
 }
