@@ -209,8 +209,7 @@ public class ExtFilter extends org.jetel.graph.Node {
 	 */
 	public void init() throws ComponentNotReadyException {
 		super.init();
-		TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),
-				new ByteArrayInputStream(filterExpression.getBytes()));
+		TransformLangParser parser=new TransformLangParser(getInputPort(READ_FROM_PORT).getMetadata(),filterExpression);
 		if (parser!=null){
 			try {
 				  recordFilter = parser.StartExpression();
