@@ -9,8 +9,10 @@
 
 options {
    MULTI=true;
-   STATIC=false;
+   STATIC=false; 
    VISITOR=true; 
+   JDK_VERSION = "1.5";
+   CACHE_TOKENS=true;
    NODE_USES_PARSER=true;
    NODE_PREFIX="CLVF";
    //NODE_PACKAGE="org.jetel.interpreter.ASTnode";
@@ -33,6 +35,7 @@ import org.jetel.metadata.DataRecordMetadata;
 import org.jetel.interpreter.ASTnode.*;
 import org.jetel.util.StringUtils;
 import org.jetel.util.FileUtils;
+import org.jetel.util.CharSequenceReader;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +50,8 @@ import java.nio.channels.Channels;
 
 public class TransformLangParser extends ExpParser {
 
+		public static final String SRC_ENCODING = "UTF-8";
+
        DataRecordMetadata[] inRecordsMetadata;
        DataRecordMetadata[] outRecordsMetadata;
        Map inDataRecordsMap;
@@ -54,16 +59,40 @@ public class TransformLangParser extends ExpParser {
 	   ParserHelper parserHelper;       
        List<Throwable> parseExceptions;
        String sourceFilename;
+       boolean hasEvalNode=false;
 
        public TransformLangParser(DataRecordMetadata recordMetadata,java.io.InputStream stream){
-              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,"UTF-8");
+              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],stream,SRC_ENCODING);
        }
        
        
        public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
        							DataRecordMetadata[] outRecordsMetadata,
        							java.io.InputStream stream){
-			this(inRecordsMetadata,outRecordsMetadata,stream,"UTF-8");
+			this(inRecordsMetadata,outRecordsMetadata,stream,SRC_ENCODING);
+       							
+       }
+       
+       public TransformLangParser(DataRecordMetadata recordMetadata,CharSequence source){
+              this(new DataRecordMetadata[] {recordMetadata}, new DataRecordMetadata[0],source);
+       }
+
+	   public TransformLangParser(DataRecordMetadata[] inRecordsMetadata,
+       							DataRecordMetadata[] outRecordsMetadata,
+       							CharSequence source){
+       							this(new CharSequenceReader(source));
+       		  parserHelper=new ParserHelper();
+              this.inRecordsMetadata=inRecordsMetadata;
+              this.outRecordsMetadata=outRecordsMetadata;
+              inDataRecordsMap=new HashMap(inRecordsMetadata.length);
+              outDataRecordsMap=new HashMap(outRecordsMetadata.length);
+              parseExceptions=new LinkedList<Throwable>();
+              for(int i=0;i<inRecordsMetadata.length;i++){
+                inDataRecordsMap.put(inRecordsMetadata[i].getName(),new Integer(i));
+              }
+              for(int i=0;i<outRecordsMetadata.length;i++){
+                outDataRecordsMap.put(outRecordsMetadata[i].getName(),new Integer(i));
+              }
        							
        }
        
@@ -190,6 +219,17 @@ public class TransformLangParser extends ExpParser {
     public List<Throwable> getParseExceptions(){
     	return parseExceptions;
     }
+    
+    /**
+     * Does the parsed AST tree contain any "eval" node ?
+     * If so, executor will need reference to parser to process such
+     * nodes
+     *
+     */
+    
+    public boolean hasEvalNode(){
+    	return hasEvalNode;
+    }
       
 }
 
@@ -235,7 +275,7 @@ TOKEN : {
 |  <OCTAL_LITERAL: "0" (["0"-"7"])*>
 |<FLOATING_POINT_LITERAL:  (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)? (["f","F","d","D"])? | "." (["0"-"9"])+ (<EXPONENT>)? (["f","F","d","D"])? | (["0"-"9"])+ <EXPONENT> (["f","F","d","D"])? | (["0"-"9"])+ (<EXPONENT>)? ["f","F","d","D"]>
 |  <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+>
-| <STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
+|<STRING_LITERAL: <QUOTED_STRING> | <DQUOTED_STRING> >
 |  <#QUOTED_STRING: "\'" (~["\'","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\'">
 |  <#DQUOTED_STRING: "\"" (~["\"","\\","\n","\r"] | "\\" (["n","t","b","r","f","\\","\'","\""] | ["0"-"7"] (["0"-"7"])? | ["0"-"3"] ["0"-"7"] ["0"-"7"]))* "\"">
 | <UNTERMINATED_STRING_LITERAL: <UNTERMINATED_QUOTED_STRING> | <UNTERMINATED_DQUOTED_STRING> >
@@ -247,8 +287,33 @@ TOKEN : {
 |<DATE_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? >
 |<DATETIME_LITERAL: <DIGIT><DIGIT><DIGIT><DIGIT>"-"<DIGIT>(<DIGIT>)?"-"<DIGIT>(<DIGIT>)? " " <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)? ":" <DIGIT>(<DIGIT>)?>
 |<SEMICOLON: ";">
+|<BLOCK_START: "{">
+|<BLOCK_END: "}">
 |<NULL_LITERAL: "null">
 }
+
+/**** DEBUG/TESTING
+TOKEN: {
+	< STRING_LITERAL:
+      "\""
+      (   (~["\"","\\","\n","\r"])
+        | ("\\"
+            ( ["n","t","b","r","f","\\","'","\""]
+            | ["0"-"7"] ( ["0"-"7"] )?
+            | ["0"-"3"] ["0"-"7"] ["0"-"7"]
+            )
+          )
+        | ("\\u"
+        	["0"-"9","A"-"F","a"-"f"]
+        	["0"-"9","A"-"F","a"-"f"]
+        	["0"-"9","A"-"F","a"-"f"]
+        	["0"-"9","A"-"F","a"-"f"]
+          )
+      )*
+      "\""
+  >
+}
+****/
 
 TOKEN : {
 <MAPPING: ":=">
@@ -344,6 +409,8 @@ TOKEN :
 | < SWITCH: "switch" >
 | < CASE_DEFAULT: "default" >
 | < DO: "do" >
+| < TRY: "try" >
+| < CATCH: "catch" >
 }
 
 TOKEN :  /* date parts */
@@ -815,6 +882,8 @@ void Statement() #void :
 		|
 		  DoStatement() 
 		|
+		  TryCatchStatement()
+		|
 		   BreakStatement()
 		|
 		   ContinueStatement()
@@ -830,9 +899,10 @@ void Statement() #void :
 
 // following code causes strange behaviour in case of certain bugs
 // let's put some cap on interations
-//	int i=0;
-//    do {//      t = getNextToken();
-//      i++;//    } while (t.kind != SEMICOLON || t.kind != EOF || i < 99);
+	int i=0;
+    do {    	  t = getNextToken();
+	      i++;	    } while (t.kind != SEMICOLON || t.kind != BLOCK_END || t.kind != EOF || i < 99);
+	    jjtree.popNode();
   }
 }
 
@@ -917,9 +987,7 @@ void ForStatement() :
 }
 
 void ForeachStatement() :
-{
-	Token t;
-}
+{}
 {
 	<FOR_EACH> "(" VarExp() ":" VarExp() ")" Statement()
 }
@@ -929,6 +997,14 @@ void DoStatement() #DoStatement(2) :
 {
   <DO> Statement() <WHILE> "(" Expression() ")" 
 }
+
+void TryCatchStatement() :
+{}
+{
+  <TRY> Statement() <CATCH> "(" VarExp() ")" Statement()
+}
+
+
 
 void BreakStatement() :
 {}
@@ -990,9 +1066,11 @@ void BuildInFunction() #void :
 {
 	"isnull" "(" AdditiveExpression() ")" #IsNullNode(1)
 	|"nvl" "(" AdditiveExpression() "," AdditiveExpression() ")" #NVLNode(2)
+	|"nvl2" "(" AdditiveExpression() "," AdditiveExpression() "," AdditiveExpression()  ")" #NVL2Node(3)
 	|"iif" "(" ConditionalOrExpression() "," AdditiveExpression() "," AdditiveExpression() ")" #IffNode(3) // (condition, express if true, express else)
 	|SequenceNode()
 	|LookupNode()
+	|EvalNode()
 
 // 	procedures 
 	|PrintErrNode()
@@ -1007,6 +1085,13 @@ void PrintErrNode() :
 { Token t;}
 {
 	"print_err" "(" AdditiveExpression() [ "," t=<BOOLEAN_LITERAL> {jjtThis.setPrintLine(Boolean.parseBoolean(t.image));} ] ")" 
+}
+
+
+void EvalNode() :
+{}
+{
+   "eval" "(" AdditiveExpression() ["," AdditiveExpression() ] ")" { hasEvalNode=true; }	
 }
 
 void PrintLogNode() : 
