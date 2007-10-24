@@ -18,6 +18,8 @@
 
 package org.jetel.interpreter;
 
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
@@ -51,6 +53,7 @@ import org.jetel.interpreter.ASTnode.CLVFForeachStatement;
 import org.jetel.interpreter.ASTnode.CLVFFunctionCallStatement;
 import org.jetel.interpreter.ASTnode.CLVFFunctionDeclaration;
 import org.jetel.interpreter.ASTnode.CLVFIfStatement;
+import org.jetel.interpreter.ASTnode.CLVFTryCatchStatement;
 import org.jetel.interpreter.ASTnode.CLVFIffNode;
 import org.jetel.interpreter.ASTnode.CLVFImportSource;
 import org.jetel.interpreter.ASTnode.CLVFIncrDecrStatement;
@@ -63,6 +66,8 @@ import org.jetel.interpreter.ASTnode.CLVFMinusNode;
 import org.jetel.interpreter.ASTnode.CLVFModNode;
 import org.jetel.interpreter.ASTnode.CLVFMulNode;
 import org.jetel.interpreter.ASTnode.CLVFNVLNode;
+import org.jetel.interpreter.ASTnode.CLVFNVL2Node;
+import org.jetel.interpreter.ASTnode.CLVFEvalNode;
 import org.jetel.interpreter.ASTnode.CLVFOperator;
 import org.jetel.interpreter.ASTnode.CLVFOr;
 import org.jetel.interpreter.ASTnode.CLVFOutputFieldLiteral;
@@ -122,8 +127,8 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     protected Node emptyNode; // used as replacement for empty statements
     
     protected TransformationGraph graph;
-
     protected Log runtimeLogger;
+    protected ExpParser parser;
     
     static Log logger = LogFactory.getLog(TransformLangExecutor.class);
 
@@ -236,6 +241,16 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
     
     public void setGlobalVariable(int varSlot,TLVariable value){
         stack.storeGlobalVar(varSlot,value);
+    }
+    
+    
+    /**
+     * Allows to set parser which may be used in "evaL" 
+     * 
+     * @param parser
+     */
+    public void setParser(ExpParser parser){
+    	this.parser=parser;
     }
 
     
@@ -653,6 +668,19 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
 
         return data;
     }
+    
+    public Object visit(CLVFNVL2Node node, Object data) {
+        node.jjtGetChild(0).jjtAccept(this, data);
+        TLValue value = stack.pop();
+
+        if (value.isNull() || (value.type==TLValueType.STRING && value.getCharSequence().length()==0)) {
+            node.jjtGetChild(2).jjtAccept(this, data);
+        } else {
+            node.jjtGetChild(1).jjtAccept(this, data);
+        }
+
+        return data;
+    }
 
     public Object visit(CLVFLiteral node, Object data) {
         stack.push(node.valueTL);
@@ -1014,6 +1042,23 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         return Stack.FALSE_VAL;
     }
 
+    public Object visit(CLVFTryCatchStatement node, Object data) {
+    	try {
+            node.jjtGetChild(0).jjtAccept(this, data); // evaluate the
+        } catch (Exception ex) {
+        	//	 populate chosen variable with exception name
+        	CLVFVariableLiteral varLit = (CLVFVariableLiteral)node.jjtGetChild(1);
+        	TLVariable var=stack.getVar(varLit.localVar, varLit.varSlot);
+        	var.getValue().setValue(ex.getClass().getName());
+        	
+        	// call the catch block
+        	node.jjtGetChild(2).jjtAccept(this, data);
+        }
+
+        return data;
+    }
+
+    
 
     public Object visit(CLVFIncrDecrStatement node, Object data) {
         Node childNode = node.jjtGetChild(0);
@@ -1487,8 +1532,42 @@ public class TransformLangExecutor implements TransformLangParserVisitor,
         
     }
     
+    
+    public Object visit(CLVFEvalNode node, Object data) {
+        // get TL expression
+    	node.jjtGetChild(0).jjtAccept(this, data);
+    	String src=stack.pop().getString();
+    	CLVFStart parseTree;
+    	
+    	// construct parser
+    	try{
+    	((TransformLangParser)parser).ReInit(new ByteArrayInputStream(src.getBytes(TransformLangParser.SRC_ENCODING)), TransformLangParser.SRC_ENCODING);
+	     	parseTree = ((TransformLangParser)parser).Start();
+    	}catch(ParseException ex){
+    		 throw new TransformLangExecutorRuntimeException(node,
+                     "Can't parse \"eval\" expression");
+    	}catch(UnsupportedEncodingException ex){
+    		throw new RuntimeException("Error in \"eval\" execution/parsing." ,ex);
+    	}catch(NullPointerException ex){
+    		throw new RuntimeException("Error in \"eval\" execution/parsing (parser is missing)." ,ex);
+    	}
+    	
+    	/* 
+    	 * option to permanently store parsed expression in this tree
+    	if (true){
+    		//add this subtree to eclosing AST
+    	}
+    	*/
+    	
+    	// execute eval
+    	visit(parseTree,data);
+    	
+        return data;
+    }
+
+    
+    
     public Object visit(CLVFSequenceNode node,Object data){
-        Object seqVal=null;
         if (node.sequence==null){
             if (graph!=null){
                 node.sequence=graph.getSequence(node.sequenceName);
