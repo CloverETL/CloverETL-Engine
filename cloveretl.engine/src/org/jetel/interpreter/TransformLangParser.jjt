@@ -249,12 +249,10 @@ SPECIAL_TOKEN: {  <"/*"> : WithinComment }
 }
 <WithinComment> MORE: { <~[]> }
 
-SPECIAL_TOKEN: {  <"//"> : WithinLineComment }
-<WithinLineComment> SPECIAL_TOKEN:
+SPECIAL_TOKEN : 
 {
-    <"\n"> : DEFAULT
-}
-<WithinLineComment> MORE: { <~[]> }
+    < SINGLE_LINE_COMMENT: "//" (~["\n","\r"])* ("\n"|"\r"|"\r\n")? > 
+} 
 
 SPECIAL_TOKEN: { <"#include"> : WithinInclude }
 <WithinInclude> SPECIAL_TOKEN:
